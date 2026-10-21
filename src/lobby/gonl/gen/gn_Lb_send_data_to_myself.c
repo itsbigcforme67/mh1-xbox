@@ -4,8 +4,8 @@
 #include "../gonl.h"
 
 s32 Lb_check_receipt();
-s32 Online_ck();
 s32 flMemcpy();
+s32 Online_ck();                                    /* extern */
 extern s32 my_user_id;
 extern s8 sendDat;
 

@@ -5,10 +5,10 @@
 
 s32 Lbs_load();
 s32 To_GoToTop();
-s32 all_reset();
 s32 lobby_func_0055A140();
 extern u8 cw;
 extern u8 pNet;
+s32 all_reset();                                /* extern */
 s32 cnWrap_BgmRequest();                 /* extern */
 
 void lbc_matching_failed_04(void) {

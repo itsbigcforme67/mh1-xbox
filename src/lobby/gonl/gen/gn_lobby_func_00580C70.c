@@ -3,7 +3,6 @@
  * tools/build_pc_mhg.sh). */
 #include "../gonl.h"
 
-s32 Fade_busy_ck();
 s32 Lbc_set_prim();
 s32 To_LogOut();
 s32 cnLbc_CheckInFloorOrder();
@@ -14,6 +13,8 @@ s32 lobby_func_0059A270();
 s32 lobby_func_0059E270();
 s32 str_stop();
 extern u8 cw;
+s32 Fade_busy_ck();                                 /* extern */
+
 void lobby_func_00580C70(s32 unused_a0, s32 arg1, s32 arg2, s32 arg3, s32 arg4, s32 arg5, s32 arg6, s32 arg7) {
     u8 temp_v0;
     u8 *temp_a0;

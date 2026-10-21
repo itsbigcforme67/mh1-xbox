@@ -3,9 +3,9 @@
  * tools/build_pc_mhg.sh). */
 #include "../gonl.h"
 
-s32 Online_ck();
 s32 Quest_clear_bit_ck();
 s32 ran_suu();
+s32 Online_ck();                                    /* extern */
 extern s32 flag_quest_tbl;
 extern s32 flag_quest_tbl_local;
 

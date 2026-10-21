@@ -4,9 +4,9 @@
 #include "../gonl.h"
 
 s32 __cnetSub_Return_BgProcess();
-s32 __cnet_Recv_ServerMessage();
 s32 _cnetEvent_JumpCallBack();
 extern u8 CnetSys_w;
+s32 __cnet_Recv_ServerMessage();             /* extern */
 
 void _cnet_Return_CallBack(s32 arg0) {
     u8 g_frame[0x20] __attribute__((aligned(16)));   /* G's stack frame */
@@ -25,7 +25,7 @@ void _cnet_Return_CallBack(s32 arg0) {
             sp18 = 0;
         } else {
             sp18 = -1;
-            __cnet_Recv_ServerMessage();
+            __cnet_Recv_ServerMessage((*(u16 *)((u8 *)&CnetSys_w + 0xFE6)));
         }
         __cnetSub_Return_BgProcess(*(s64 *)&sp18, 1, 0);
         return;

@@ -4,13 +4,13 @@
 #include "../gonl.h"
 
 s32 CallBack_Logout_ShutDown();
-s32 CpInetGetStatus();
 s32 cnLBS_LogoutLobbyServer();
 s32 cnLBS_ShutDownLobbyServer();
 extern u8 COM_R_No_Disconnect;
 extern u8 COM_R_No_Logout;
 extern u8 cw;
 extern u8 game_w;
+s32 CpInetGetStatus();                            /* extern */
 s32 disconnect();                                 /* extern */
 
 s32 tk_logout(s32 arg0) {
@@ -59,7 +59,7 @@ s32 tk_logout(s32 arg0) {
     case 2:                                         /* switch 1 */
         temp_v1 = (*(void **)&cw);
         (*(s32 *)((u8 *)(temp_v1) + 0xBB4)) = (s32) ((*(s32 *)((u8 *)(temp_v1) + 0xBB4)) - 1);
-        if (CpInetGetStatus() == 0) {
+        if (CpInetGetStatus(temp_a1) == 0) {
             if ((*(s32 *)((u8 *)((*(void **)&cw)) + 0xBB4)) < 0) {
                 goto block_18;
             }

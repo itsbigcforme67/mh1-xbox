@@ -5,7 +5,6 @@
 
 s32 CallBack_Result_Lobby_LobbyExit();
 s32 Check_CallBackWait();
-s32 Fade_busy_ck();
 s32 Get_sw();
 s32 Lb_eat_to_bell();
 s32 Lb_put_inputMsgForHTML();
@@ -19,6 +18,7 @@ s32 font_print_double();
 s32 font_set_stack_no();
 extern u8 cw;
 extern u8 pNet;
+s32 Fade_busy_ck(); /* extern */
 s32 cnLBS_LobbyExit(); /* extern */
 s32 sprintf();         /* extern */
 extern s32 g_lb_63E538;
@@ -66,7 +66,7 @@ void lobby_func_00582A20(void) {
         }
         break;
     case 0x3:                                       /* switch 1 */
-        if ((Fade_busy_ck() & 0xFF) != 1) {
+        if ((Fade_busy_ck(1, 2, temp_a2, temp_a3, temp_a3 + 0xB9D) & 0xFF) != 1) {
             Lbc_set_prim(0, 0, 0, 0);
             To_EnterPlaza2Lobby(1, M2C_ERROR(/* Read from unset register $a1 */), M2C_ERROR(/* Read from unset register $a2 */), M2C_ERROR(/* Read from unset register $a3 */));
         }

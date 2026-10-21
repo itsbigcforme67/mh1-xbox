@@ -3,11 +3,12 @@
  * tools/build_pc_mhg.sh). */
 #include "../gonl.h"
 
-s32 Name_ID_change();
-s32 Plaza_get_chat_line_num();
 s32 plaza_chat_log_disp_line();
 s32 se_req();
 extern u8 PitMenu;
+s32 Name_ID_change();                           /* extern */
+u32 Plaza_get_chat_line_num();                      /* extern */
+
 void Plaza_chatlog_mv(s32 arg0) {
     s32 temp_s0;
     u8 temp_a0;

@@ -10,10 +10,8 @@ s32 Lb_eat_to_bell();
 s32 Lb_select();
 s32 Lbs_SeekId();
 s32 Lbs_request_enter_lobby2();
-s32 SaveNetFile_ForLobby();
 s32 SetDialogData();
 s32 SetDialogYesNo();
-s32 SoftKeyboard_alive_check();
 s32 cnWrap_SoundRequest();
 s32 func_00235C80();
 s32 getFriendNow();
@@ -40,6 +38,8 @@ extern u8 lb_sys;
 extern u8 pNet;
 extern u8 tl_member_buff;
 s32 Lbc_RequestNetComment();              /* extern */
+s32 SaveNetFile_ForLobby();                       /* extern */
+s32 SoftKeyboard_alive_check();                     /* extern */
 s16 net_Check_FriendSuu();        /* extern */
 s32 net_Delete_FriendData(); /* extern */
 extern u8 g_main_302CB0;
@@ -571,7 +571,7 @@ loop_158:
         goto block_192;
     case 15:                                        /* switch 1 */
         if ((*(s8 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x1398))) + 0x612)) == 0) {
-            temp_v0_10 = SaveNetFile_ForLobby();
+            temp_v0_10 = SaveNetFile_ForLobby((*(s8 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x1398))) + 0x60C)));
             if ((temp_v0_10 != -1) && (temp_v0_10 != 1)) {
                 goto block_176;
             }

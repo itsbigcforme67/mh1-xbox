@@ -5,9 +5,9 @@
 
 s32 Lb_pl_to_normal();
 s32 Lb_trans_pl();
-s32 get_prim();
 void * get_prim_ptr();
 void * memcpy();
+s16 get_prim();                                     /* extern */
 extern s32 lb_player;
 extern s32 pl01_adr_tbl;
 extern u8 player_work;

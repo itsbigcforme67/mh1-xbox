@@ -3,10 +3,10 @@
  * tools/build_pc_mhg.sh). */
 #include "../gonl.h"
 
-s32 Online_ck();
 void * memset();
 extern u8 cw;
 extern u8 pNet;
+s32 Online_ck(); /* extern */
 extern s32 lb_prim;
 extern s32 text_lobby_trans_ot3;
 
@@ -23,7 +23,7 @@ void Lbc_init_network_work(void) {
     (*(s32 *)((u8 *)((*(s32 **)((u8 *)((*(void **)&pNet)) + 8))) + 0x18)) = 2;
     (*(s32 *)((u8 *)((*(s32 **)((u8 *)((*(void **)&pNet)) + 0xC))) + 0x18)) = 3;
     (*(s32 *)((u8 *)((*(s32 **)((u8 *)((*(void **)&pNet)) + 0x10))) + 0x18)) = 5;
-    if (((*(u8 *)((u8 *)((*(void **)&cw)) + 0xFA61)) == 0) && (Online_ck() == 1)) {
+    if (((*(u8 *)((u8 *)((*(void **)&cw)) + 0xFA61)) == 0) && (Online_ck(5, 3, 2, 1, &text_lobby_trans_ot3, &(*(s32 *)((u8 *)&lb_prim + 0x80)), &(*(s32 *)((u8 *)&lb_prim + 0x60)), &(*(s32 *)((u8 *)&lb_prim + 0x40))) == 1)) {
         (*(s8 *)((u8 *)((*(void **)&pNet)) + 0x28)) = 0x10;
     }
 }

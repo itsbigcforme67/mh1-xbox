@@ -112,9 +112,8 @@ def write_context():
             if name in sigs or ret.startswith(('static', 'if', 'else', 'return', 'while', 'switch')):
                 continue
             if params in ('', 'void'):
-                ps = []
-            else:
-                ps = [ctx_type(re.sub(r'\b\w+(\[\w*\])?$', '', p.strip()) or 's32') for p in params.split(',')]
+                continue        # (matching C passes registers on unnamed: `void f(void) { g(); }` takes g's arguments)
+            ps = [ctx_type(re.sub(r'\b\w+(\[\w*\])?$', '', p.strip()) or 's32') for p in params.split(',')]
             if None in ps or '...' in params or ret in ('', 'else'):
                 continue
             r = 's32' if ret == 'void' else ctx_type(ret)
@@ -140,6 +139,7 @@ def write_context():
                 'strcat': ('void *', ['void *', 'void *']), 'strchr': ('void *', ['void *', 's32'])}
         for n, (r, ps) in LIBC.items():
             sigs[n] = (r, ps)
+        sigs['cnLBS_Send_ChatBinary'] = ('s32', ['void *', 's32'])     # (its matching C is a pass-through `(void)`)
         for n, (r, ps) in sorted(sigs.items()):
             f.write('%s %s(%s);\n' % (r, n, ', '.join(ps) or 'void'))
     CTX.clear()

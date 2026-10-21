@@ -3,9 +3,10 @@
  * tools/build_pc_mhg.sh). */
 #include "../gonl.h"
 
-s32 Fade_busy_ck();
 extern u8 cw;
 extern u8 pNet;
+s32 Fade_busy_ck();                                 /* extern */
+
 void lbc_matching_failed_03(void) {
     u8 *temp_a0;
 

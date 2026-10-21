@@ -40,7 +40,6 @@ s32 Lbs_load();
 s32 SetDialogData();
 s32 SetSceneTitle();
 s32 To_LogOut();
-s32 all_reset();
 s32 lobby_func_0057A370();
 s32 lobby_func_005871D0();
 s32 lobby_func_00587260();
@@ -54,6 +53,7 @@ extern u8 net_common_w;
 extern u8 netr_ret;
 extern u8 pNet;
 extern u8 stage_hit_area_f;
+s32 all_reset();                             /* extern */
 s32 cnLBS_Init_LoginLobbyServer();              /* extern */
 s32 cnLBS_LoginLobbyServer(); /* extern */
 s32 cnLBS_Set_CallBackNoticeEvent(); /* extern */
@@ -84,16 +84,18 @@ void lbc_login_init(s32 unused_a0, s32 arg1, s32 arg2, s32 arg3) {
 #define sp8A (*(s16 *)(g_frame + 0x8A))
 #define sp8C (*(s16 *)(g_frame + 0x8C))
 #define sp8E (*(s16 *)(g_frame + 0x8E))
+    s32 temp_a0;
     u8 temp_v1_2;
     u8 *temp_v1;
     u8 *temp_v1_3;
     u8 *temp_v1_4;
 
     temp_v1 = (*(void **)&cw);
+    temp_a0 = temp_v1 + 0xB9C;
     temp_v1_2 = (*(u8 *)((u8 *)(temp_v1) + 0xB9C));
     switch (temp_v1_2) {                            /* irregular */
     case 0:
-        all_reset();
+        all_reset(temp_a0);
         Lbc_init_network_work(M2C_ERROR(/* Read from unset register $a0 */), M2C_ERROR(/* Read from unset register $a1 */), M2C_ERROR(/* Read from unset register $a2 */), M2C_ERROR(/* Read from unset register $a3 */));
         Lbc_set_prim((s32) (lobby_func_0057A370 + 0x30), 0, 0, 0);
         Lbs_load(M2C_ERROR(/* Read from unset register $a0 */), M2C_ERROR(/* Read from unset register $a1 */), M2C_ERROR(/* Read from unset register $a2 */), M2C_ERROR(/* Read from unset register $a3 */));
@@ -175,7 +177,7 @@ void lbc_login_init(s32 unused_a0, s32 arg1, s32 arg2, s32 arg3) {
         cnLBS_LoginLobbyServer(*(struct { u8 b[0x40]; } *)&sp40, CallBack_Result_LoginLobbyServer);
         break;
     case 3:
-        Check_CallBackWait(temp_v1 + 0xB9C, arg1, arg2, arg3);
+        Check_CallBackWait(temp_a0, arg1, arg2, arg3);
         break;
     default:
         To_LogOut(4, arg1, arg2, arg3);

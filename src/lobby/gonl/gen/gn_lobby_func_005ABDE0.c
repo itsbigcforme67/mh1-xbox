@@ -3,17 +3,18 @@
  * tools/build_pc_mhg.sh). */
 #include "../gonl.h"
 
-s32 cnLBS_Init_LobbyBgProcess();
 extern u8 CnetSys_w;
+s32 cnLBS_Init_LobbyBgProcess(); /* extern */
 extern s32 CnetSys_g;
 
-void lobby_func_005ABDE0(void *arg0) {
+void lobby_func_005ABDE0(void *arg0, s32 arg1) {
     u8 *var_a3;   /* (s32 *) */
-    s32 temp_a1;
+    s32 var_a1;
     s32 var_a6;
     u32 var_a4;
     u32 var_a5;
 
+    var_a1 = arg1;
     var_a6 = 1;
     var_a4 = 0;
     var_a5 = 0;
@@ -22,8 +23,8 @@ loop_1:
     var_a4 += 1;
     var_a3 += 0x164;
     if ((u16) (*(u16 *)((u8 *)&CnetSys_w + 0x43B6)) >= var_a4) {
-        temp_a1 = (*(s32 *)((u8 *)(arg0) + 0x18));
-        if (temp_a1 != (temp_a1 & (*(s32 *)((u8 *)(var_a3) + 0x6734)))) {
+        var_a1 = (*(s32 *)((u8 *)(arg0) + 0x18));
+        if (var_a1 != (var_a1 & (*(s32 *)((u8 *)(var_a3) + 0x6734)))) {
             var_a6 = 0;
         } else {
             var_a5 += 1;
@@ -35,7 +36,7 @@ loop_1:
     if ((*(u8 *)((u8 *)(arg0) + 0x23)) & 0x80) {
         (*(s8 *)((u8 *)(arg0) + 0x21)) = 2;
         (*(s8 *)((u8 *)(arg0) + 0x22)) = 0;
-        cnLBS_Init_LobbyBgProcess();
+        cnLBS_Init_LobbyBgProcess(var_a1, (*(u16 *)((u8 *)&CnetSys_w + 0x43B6)), var_a3, var_a4, var_a5, var_a6);
         return;
     }
     if (var_a6 != 0) {

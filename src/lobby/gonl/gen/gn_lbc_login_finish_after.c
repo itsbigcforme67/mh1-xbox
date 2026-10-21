@@ -5,10 +5,7 @@
 
 s32 CallBack_SendMiniData();
 s32 Check_CallBackWait();
-s32 Fade_busy_ck();
-s32 McCardOperation();
 s32 McOperationSet();
-s32 Q_camera_init();
 s32 SetDialogData();
 s32 To_LogOut();
 s32 fade_set();
@@ -17,13 +14,16 @@ s32 lobby_func_0057CC60();
 s32 lobby_func_00580FA0();
 s32 lobby_func_00581210();
 s32 lobby_func_0058BAA0();
-s32 str_stop_all();
 extern u8 CnetWork;
 extern u8 cw;
 extern u8 jtbl_0063E490;
 extern u8 pNet;
+s32 Fade_busy_ck();    /* extern */
+s32 McCardOperation();    /* extern */
+s32 Q_camera_init();                            /* extern */
 s32 cnLBS_Send_LoginFinish(); /* extern */
 s32 cnLBS_Send_UserMiniData(); /* extern */
+s32 str_stop_all();                             /* extern */
 extern s32 my_user_mini_data;
 
 void lbc_login_finish_after(void) {
@@ -70,7 +70,7 @@ block_39:
     case 1:
         temp_v1 = (*(s32 *)((u8 *)(temp_a2) + 0xBB4));
         if (temp_v1 == 0) {
-            if (McCardOperation() & 0xFF) {
+            if (McCardOperation(temp_a2 + 0xBB4, temp_a1, temp_a2, temp_a3) & 0xFF) {
                 temp_v1_2 = (*(void **)&cw);
                 (*(u8 *)((u8 *)(temp_v1_2) + 0xB9C)) = (u8) ((*(u8 *)((u8 *)(temp_v1_2) + 0xB9C)) + 1);
                 cnLBS_Send_LoginFinish();
@@ -124,7 +124,7 @@ block_39:
         goto block_39;
     case 7:
         (*(s8 *)((u8 *)((*(void **)&pNet)) + 0x2D)) = 1;
-        temp_a0_4 = Fade_busy_ck() & 0xFF;
+        temp_a0_4 = Fade_busy_ck(&jtbl_0063E490, temp_a1, temp_a2, temp_a3) & 0xFF;
         if (temp_a0_4 != 1) {
             if ((*(u8 *)((u8 *)&CnetWork + 0x5)) == 3) {
                 lobby_func_0057CC60(temp_a0_4, M2C_ERROR(/* Read from unset register $a1 */), M2C_ERROR(/* Read from unset register $a2 */), M2C_ERROR(/* Read from unset register $a3 */));

@@ -3,9 +3,10 @@
  * tools/build_pc_mhg.sh). */
 #include "../gonl.h"
 
-s32 Info_Initialization();
 s32 cnLBS_Get_ServerMessage();
 extern u8 cw;
+s32 Info_Initialization();        /* extern */
+
 void CallBack_Event_RoomRemove(void) {
     u8 temp_a0;
     u8 *temp_a1;
@@ -14,7 +15,7 @@ void CallBack_Event_RoomRemove(void) {
     temp_a0 = (*(u8 *)((u8 *)(temp_a1) + 0xB99));
     if ((temp_a0 != 5) && (temp_a0 == 3) && ((*(s8 *)((u8 *)(temp_a1) + 0xB74)) == 0) && ((*(s8 *)((u8 *)(temp_a1) + 0xB73)) == 0)) {
         (*(s8 *)((u8 *)(temp_a1) + 0xB73)) = 1;
-        Info_Initialization();
+        Info_Initialization(temp_a1 + 0xB73, temp_a1);
         cnLBS_Get_ServerMessage((*(void **)&cw) + 0xF75D);
     }
 }

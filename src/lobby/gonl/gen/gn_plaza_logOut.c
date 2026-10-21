@@ -3,7 +3,6 @@
  * tools/build_pc_mhg.sh). */
 #include "../gonl.h"
 
-s32 Fade_busy_ck();
 s32 Get_sw2();
 s32 Lb_select();
 s32 SetDialogData();
@@ -12,6 +11,8 @@ s32 To_LogOut();
 s32 fade_set();
 s32 tl_exit_sub_menu();
 extern u8 pNet;
+s32 Fade_busy_ck();                                 /* extern */
+
 void plaza_logOut(void) {
     s32 temp_v0;
     u8 temp_v1;

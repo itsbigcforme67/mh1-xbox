@@ -3,11 +3,11 @@
  * tools/build_pc_mhg.sh). */
 #include "../gonl.h"
 
-s32 __cnetSub_Get_RestBgWork();
-s32 cnLBS_Init_LobbyBgProcess();
 s32 lobby_func_005ABED0();
 s32 lobby_func_005AC6B0();
 extern u8 CnetSys_w;
+s32 __cnetSub_Get_RestBgWork();                     /* extern */
+s32 cnLBS_Init_LobbyBgProcess();                /* extern */
 s32 cnLBS_Read_PlazaExplain(); /* extern */
 s32 cnLBS_Read_PlazaJoinUser(); /* extern */
 s32 cnLBS_Read_PlazaName(); /* extern */

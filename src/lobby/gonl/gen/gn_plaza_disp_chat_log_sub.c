@@ -3,13 +3,13 @@
  * tools/build_pc_mhg.sh). */
 #include "../gonl.h"
 
-s32 Plaza_get_chat_line_num();
 s32 flfntLocate();
 s32 flfntSetSize();
 s32 font_print_double2();
 s32 font_print_uf();
 s32 font_set_palette();
 s32 lobby_func_0058EDD0();
+u32 Plaza_get_chat_line_num();                      /* extern */
 extern u8 PitMenu;
 
 void plaza_disp_chat_log_sub(s32 arg0, s32 arg1, s32 arg2) {

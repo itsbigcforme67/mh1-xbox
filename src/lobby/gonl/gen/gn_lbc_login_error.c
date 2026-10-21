@@ -3,7 +3,6 @@
  * tools/build_pc_mhg.sh). */
 #include "../gonl.h"
 
-s32 Fade_busy_ck();
 s32 Get_sw2();
 s32 Lb_eat_to_bell();
 s32 Lbc_init_network_work();
@@ -14,15 +13,19 @@ s32 fade_set();
 s32 text_lobby_trans_ot0();
 extern u8 cw;
 extern u8 pNet;
+s32 Fade_busy_ck();                  /* extern */
+
 void lbc_login_error(void) {
     s32 temp_a2;
     s32 temp_v1_2;
     u8 temp_a1;
+    u8 *temp_a0;
     u8 *temp_a1_2;
     u8 *temp_a1_3;
     u8 *temp_v1;
 
-    temp_a1 = (*(u8 *)((u8 *)((*(void **)&cw)) + 0xB9C));
+    temp_a0 = (*(void **)&cw);
+    temp_a1 = (*(u8 *)((u8 *)(temp_a0) + 0xB9C));
     temp_a2 = Get_sw2(0) & 0xFFFF;
     switch (temp_a1) {                              /* irregular */
     case 0:
@@ -53,7 +56,7 @@ void lbc_login_error(void) {
         fade_set(1);
         return;
     case 2:
-        if ((Fade_busy_ck() & 0xFF) != 1) {
+        if ((Fade_busy_ck(temp_a0, temp_a1, temp_a2) & 0xFF) != 1) {
             (*(s8 *)((u8 *)((*(void **)&pNet)) + 0x31)) = 1;
             (*(s8 *)((u8 *)((*(void **)&cw)) + 0xB9B)) = 4;
             (*(u8 *)((u8 *)((*(void **)&cw)) + 0xB9C)) = 1U;

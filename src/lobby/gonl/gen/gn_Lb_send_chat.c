@@ -4,7 +4,6 @@
 #include "../gonl.h"
 
 s32 CallBack_Result_SendChatMessageTU();
-s32 Online_ck();
 s32 Plaza_chat_log_add();
 s32 cnLBS_Send_ChatBinaryTU();
 s32 cnLBS_Send_ChatMessage();
@@ -12,6 +11,7 @@ void * memcpy();
 void * strcpy();
 extern u8 cw;
 s32 Lb_chat_receipt();                 /* extern */
+s32 Online_ck();                                    /* extern */
 s32 Visual_main();                               /* extern */
 extern s8 chatIDList;
 extern u8 chat_cnfg_font_color;

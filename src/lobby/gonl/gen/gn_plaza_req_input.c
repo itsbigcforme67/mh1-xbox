@@ -4,12 +4,12 @@
 #include "../gonl.h"
 
 s32 Get_sw();
-s32 SoftKeyboard_exit();
 s32 SoftKeyboard_move();
 s32 cnWrap_SoundRequest();
 s32 func_00220F40();
 extern u8 Psw;
 extern u8 pNet;
+s32 SoftKeyboard_exit();                     /* extern */
 s32 SoftKeyboard_pos_set();     /* extern */
 
 s32 plaza_req_input(void *arg0, s32 arg1) {
@@ -60,7 +60,7 @@ block_21:
         }
         goto block_21;
     case 2:                                         /* switch 1 */
-        SoftKeyboard_exit();
+        SoftKeyboard_exit(temp_v1 + 0x25);
         (*(u8 *)((u8 *)((*(void **)&pNet)) + 0x25)) = 0U;
         return 1;
     }

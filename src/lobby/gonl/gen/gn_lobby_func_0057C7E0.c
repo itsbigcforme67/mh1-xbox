@@ -3,11 +3,9 @@
  * tools/build_pc_mhg.sh). */
 #include "../gonl.h"
 
-s32 Fade_busy_ck();
 s32 Lbs_load();
 s32 MainBsInitialize();
 s32 To_LogOut();
-s32 all_reset();
 s32 cnWrap_InitWork();
 s32 fade_set();
 s32 lbc_browser_04();
@@ -19,7 +17,9 @@ extern u8 BsLbsErrNum;
 extern u8 cw;
 extern u8 net_char_change;
 extern u8 pNet;
+s32 Fade_busy_ck();                       /* extern */
 s32 FlushCache();                /* extern */
+s32 all_reset();                      /* extern */
 extern s128 BrPersonalData;
 extern s32 FirstURL;
 extern s32 first_url;
@@ -31,6 +31,8 @@ void lobby_func_0057C7E0(s32 unused_a0, s32 arg1, s32 unused_a2, s32 arg3) {
     s32 temp_v0_2;
     s32 var_v1;
     u8 temp_a0;
+    u8 temp_a0_4;
+    u8 temp_a0_5;
     u8 *temp_a0_2;
     u8 *temp_a0_3;
     u8 *temp_a2;
@@ -49,7 +51,7 @@ void lobby_func_0057C7E0(s32 unused_a0, s32 arg1, s32 unused_a2, s32 arg3) {
     case 1:                                         /* switch 1 */
         temp_v1 = (*(void **)&cw);
         (*(u8 *)((u8 *)(temp_v1) + 0xBA7)) = (u8) ((*(u8 *)((u8 *)(temp_v1) + 0xBA7)) + 1);
-        all_reset();
+        all_reset(temp_a0, temp_a2);
         cnWrap_InitWork(M2C_ERROR(/* Read from unset register $a0 */), M2C_ERROR(/* Read from unset register $a1 */), M2C_ERROR(/* Read from unset register $a2 */), M2C_ERROR(/* Read from unset register $a3 */));
         Lbs_load(M2C_ERROR(/* Read from unset register $a0 */), M2C_ERROR(/* Read from unset register $a1 */), M2C_ERROR(/* Read from unset register $a2 */), M2C_ERROR(/* Read from unset register $a3 */));
         (*(s8 *)&net_char_change) = 1;
@@ -89,9 +91,10 @@ void lobby_func_0057C7E0(s32 unused_a0, s32 arg1, s32 unused_a2, s32 arg3) {
         }
         break;
     case 5:                                         /* switch 1 */
-        if ((Fade_busy_ck() & 0xFF) != 1) {
+        temp_a0_4 = Fade_busy_ck(temp_a0, temp_a2) & 0xFF;
+        if (temp_a0_4 != 1) {
             (*(u8 *)((u8 *)((*(void **)&cw)) + 0xBA7)) = 0U;
-            all_reset();
+            all_reset(temp_a0_4);
             Lbs_load(M2C_ERROR(/* Read from unset register $a0 */), M2C_ERROR(/* Read from unset register $a1 */), M2C_ERROR(/* Read from unset register $a2 */), M2C_ERROR(/* Read from unset register $a3 */));
             (*(s8 *)&net_char_change) = 0;
             (*(s8 *)((u8 *)((*(void **)&cw)) + 0xB70)) = 1;
@@ -102,9 +105,10 @@ void lobby_func_0057C7E0(s32 unused_a0, s32 arg1, s32 unused_a2, s32 arg3) {
         }
         return;
     case 6:                                         /* switch 1 */
-        if ((Fade_busy_ck() & 0xFF) != 1) {
+        temp_a0_5 = Fade_busy_ck(temp_a0, temp_a2) & 0xFF;
+        if (temp_a0_5 != 1) {
             (*(u8 *)((u8 *)((*(void **)&cw)) + 0xBA7)) = 0U;
-            all_reset();
+            all_reset(temp_a0_5);
             (*(s8 *)&net_char_change) = 0;
             (*(s8 *)((u8 *)((*(void **)&cw)) + 0xB70)) = 1;
             (*(s8 *)((u8 *)((*(void **)&cw)) + 0xBA8)) = 2;

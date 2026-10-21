@@ -3,14 +3,14 @@
  * tools/build_pc_mhg.sh). */
 #include "../gonl.h"
 
-s32 __cnetSub_Get_RestBgWork();
-s32 cnLBS_Init_LobbyBgProcess();
 s32 lobby_func_005E3340();
 s32 lobby_func_005E3480();
 s32 lobby_func_005E35E0();
 s32 lobby_func_005E3740();
 s32 lobby_func_005E3880();
 extern u8 CnetSys_w;
+s32 __cnetSub_Get_RestBgWork();                     /* extern */
+s32 cnLBS_Init_LobbyBgProcess();                /* extern */
 
 void lobby_func_005E3120(void *arg0) {
     s32 temp_s0;

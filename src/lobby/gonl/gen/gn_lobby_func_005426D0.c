@@ -3,8 +3,8 @@
  * tools/build_pc_mhg.sh). */
 #include "../gonl.h"
 
-s32 Online_ck();
 s32 Quest_clear_bit_ck();
+s32 Online_ck();                                    /* extern */
 extern s32 quest_lv_tbl;
 
 s32 lobby_func_005426D0(s32 arg0) {

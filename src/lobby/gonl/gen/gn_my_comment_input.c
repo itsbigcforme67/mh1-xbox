@@ -3,14 +3,14 @@
  * tools/build_pc_mhg.sh). */
 #include "../gonl.h"
 
-s32 Get_kb_input();
 s32 Get_sw();
-s32 SoftKeyboard_exit();
 s32 SoftKeyboard_move();
 s32 cnWrap_SoundRequest();
 s32 func_00220F40();
 extern u8 Psw;
 extern u8 pNet;
+s32 Get_kb_input();                             /* extern */
+s32 SoftKeyboard_exit();                     /* extern */
 s32 SoftKeyboard_pos_set();     /* extern */
 
 s32 my_comment_input(void *arg0) {
@@ -47,7 +47,7 @@ block_15:
         }
         goto block_15;
     case 2:
-        SoftKeyboard_exit();
+        SoftKeyboard_exit(temp_v1 + 0x25);
         (*(u8 *)((u8 *)((*(void **)&pNet)) + 0x25)) = 0U;
         return 1;
     }

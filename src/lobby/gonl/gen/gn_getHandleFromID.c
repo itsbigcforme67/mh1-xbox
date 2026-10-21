@@ -3,7 +3,6 @@
  * tools/build_pc_mhg.sh). */
 #include "../gonl.h"
 
-s32 Fade_busy_ck();
 s32 Lbc_init_network_work();
 s32 fade_set();
 s32 lobby_func_005690D0();
@@ -12,6 +11,7 @@ s32 lobby_func_00581210();
 extern u8 D_0035EFEB;
 extern u8 cw;
 extern u8 pNet;
+s32 Fade_busy_ck();                       /* extern */
 extern s32 network_work;
 
 s32 getHandleFromID(s32 unused_a0, s32 unused_a1, s32 arg2, s32 arg3) {
@@ -29,7 +29,7 @@ s32 getHandleFromID(s32 unused_a0, s32 unused_a1, s32 arg2, s32 arg3) {
     case 0:
         (*(s8 *)((u8 *)(temp_a1) + 0xB70)) = 1;
         (*(s8 *)&D_0035EFEB) = 1;
-        if (!(Fade_busy_ck() & 0xFF)) {
+        if (!(Fade_busy_ck(temp_a0, temp_a1) & 0xFF)) {
             temp_v1 = (*(void **)&cw);
             (*(u8 *)((u8 *)(temp_v1) + 0xB9C)) = (u8) ((*(u8 *)((u8 *)(temp_v1) + 0xB9C)) + 1);
             (*(s8 *)((u8 *)((*(void **)&cw)) + 0xB9D)) = 0;

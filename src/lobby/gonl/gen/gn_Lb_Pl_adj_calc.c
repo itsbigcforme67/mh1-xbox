@@ -3,12 +3,13 @@
  * tools/build_pc_mhg.sh). */
 #include "../gonl.h"
 
-s32 flvecCalcDistance();
+f32 flvecCalcDistance();                    /* extern */
+
 void Lb_Pl_adj_calc(void *arg0, s16 arg1) {
     f32 temp_f2;
     s32 temp_v1;
 
-    if (!(M2C_BITWISE(f32, flvecCalcDistance()) < 800.0f)) {
+    if (!(flvecCalcDistance(arg0 + 0xAC, arg0 + 0x800) < 800.0f)) {
         (*(s16 *)((u8 *)(arg0) + 0x818)) = 0;
         (*(f32 *)((u8 *)(arg0) + 0xAC)) = (f32) (*(f32 *)((u8 *)(arg0) + 0x800));
         (*(f32 *)((u8 *)(arg0) + 0xB0)) = (f32) (*(f32 *)((u8 *)(arg0) + 0x804));

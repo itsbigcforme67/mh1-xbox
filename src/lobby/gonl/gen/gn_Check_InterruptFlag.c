@@ -6,7 +6,6 @@
 s32 Lb_eat_to_bell();
 s32 Lbc_init_network_work();
 s32 Lbc_set_prim();
-s32 NPCZoomInCameraCancel();
 s32 To_ReadyBattle();
 s32 lobby_func_0055A140();
 s32 lobby_func_0057E3D0();
@@ -15,6 +14,7 @@ extern u8 D_0035EFEB;
 extern u8 cw;
 extern u8 pNet;
 s32 Init_InterruptFlag();                       /* extern */
+s32 NPCZoomInCameraCancel();                    /* extern */
 s32 To_MatchingFailed();         /* extern */
 extern s32 lb_sys;
 

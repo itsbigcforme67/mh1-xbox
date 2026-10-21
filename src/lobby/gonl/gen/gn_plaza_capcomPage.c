@@ -3,7 +3,6 @@
  * tools/build_pc_mhg.sh). */
 #include "../gonl.h"
 
-s32 Fade_busy_ck();
 s32 Get_sw2();
 s32 fade_set();
 s32 lobby_bgm_set2();
@@ -13,6 +12,7 @@ s32 tl_exit_sub_menu();
 extern u8 cw;
 extern u8 jtbl_2033;
 extern u8 pNet;
+s32 Fade_busy_ck(); /* extern */
 s32 Lbc_SendBrowserResult(); /* extern */
 s32 To_BootUpBrowser();                         /* extern */
 extern s32 first_url;
@@ -39,7 +39,7 @@ void plaza_capcomPage(void) {
         (*(s8 *)((u8 *)((*(void **)&cw)) + 0xB70)) = 0;
         return;
     case 1:                                         /* switch 1 */
-        if ((Fade_busy_ck() & 0xFF) != 1) {
+        if ((Fade_busy_ck(&jtbl_2033, temp_a1, temp_a2, temp_a3, temp_a4) & 0xFF) != 1) {
             temp_v1 = (*(void **)&pNet);
             (*(u8 *)((u8 *)(temp_v1) + 0x23)) = (u8) ((*(u8 *)((u8 *)(temp_v1) + 0x23)) + 1);
             (*(s8 *)((u8 *)((*(void **)&pNet)) + 0x31)) = 1;

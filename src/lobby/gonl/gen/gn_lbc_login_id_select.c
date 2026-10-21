@@ -4,7 +4,6 @@
 #include "../gonl.h"
 
 s32 Check_CallBackWait();
-s32 Fade_busy_ck();
 s32 Lbc_init_network_work();
 s32 Lbc_set_prim();
 s32 Set_userdata();
@@ -22,6 +21,7 @@ extern u8 g_main_2EF2A8;
 extern u8 game_w;
 extern u8 lb_gbyte_2EF2A4;
 extern u8 pNet;
+s32 Fade_busy_ck();                       /* extern */
 s32 cnLBS_Send_LoginUserAccount(); /* extern */
 s32 cnWrap_IsBBConnect();                           /* extern */
 s32 cnetGet_Login_DecideUserHandle();     /* extern */
@@ -100,7 +100,7 @@ void lbc_login_id_select(s32 unused_a0, s32 unused_a1, s32 arg2, s32 arg3) {
         (*(u8 *)((u8 *)((*(void **)&pNet)) + 0x29)) = (u8) (*(u8 *)((u8 *)((*(void **)&cw)) + 1));
         return;
     case 2:                                         /* switch 1 */
-        if ((Fade_busy_ck() & 0xFF) != 1) {
+        if ((Fade_busy_ck(temp_a0, temp_a1) & 0xFF) != 1) {
             temp_a0_3 = (*(void **)&cw);
             (*(u8 *)((u8 *)(temp_a0_3) + 0xB9C)) = (u8) ((*(u8 *)((u8 *)(temp_a0_3) + 0xB9C)) + 1);
             if ((*(u8 *)((u8 *)&CnetWork + 0x5)) == 0) {
@@ -124,7 +124,7 @@ void lbc_login_id_select(s32 unused_a0, s32 unused_a1, s32 arg2, s32 arg3) {
         }
         break;
     case 4:                                         /* switch 1 */
-        if ((Fade_busy_ck() & 0xFF) != 1) {
+        if ((Fade_busy_ck(temp_a0, temp_a1) & 0xFF) != 1) {
             temp_v1 = (*(void **)&cw);
             (*(u8 *)((u8 *)(temp_v1) + 0xB9C)) = (u8) ((*(u8 *)((u8 *)(temp_v1) + 0xB9C)) + 1);
             Lbc_set_prim(0, 0, 0, 0);

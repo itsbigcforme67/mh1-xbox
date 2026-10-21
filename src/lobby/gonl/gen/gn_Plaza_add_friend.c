@@ -5,7 +5,6 @@
 
 s32 Get_sw2();
 s32 Lb_select();
-s32 SaveNetFile_ForLobby();
 s32 SetDialogData();
 s32 SetDialogYesNo();
 s32 cnWrap_SoundRequest();
@@ -21,6 +20,7 @@ extern u8 cw;
 extern u8 lb_sys;
 extern u8 pNet;
 extern u8 tl_member_buff;
+s32 SaveNetFile_ForLobby(); /* extern */
 s32 net_Check_FriendData(); /* extern */
 s32 net_Check_FriendFree();       /* extern */
 extern s32 g_main_302CB0;
@@ -118,7 +118,7 @@ block_49:
     case 2:                                         /* switch 1 */
         temp_v0_3 = (*(s16 *)((u8 *)(temp_a2) + 0x1A));
         if (temp_v0_3 == 0) {
-            temp_v0_4 = SaveNetFile_ForLobby();
+            temp_v0_4 = SaveNetFile_ForLobby(temp_a0, 1, temp_a2, temp_a3, temp_a4);
             if ((temp_v0_4 != 1) && (temp_v0_4 != -1)) {
                 (*(s8 *)((u8 *)((*(void **)&pNet)) + 0x2D)) = 1;
                 goto block_49;

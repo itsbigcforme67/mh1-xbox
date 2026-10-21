@@ -8,7 +8,6 @@ s32 Get_sw_on2();
 s32 Lb_cursorUD();
 s32 Lb_select();
 s32 Plaza_log_id_chk();
-s32 SaveNetFile_ForLobby();
 s32 SetDialogData();
 s32 SetDialogYesNo();
 s32 SetHelpLineMsg();
@@ -31,6 +30,7 @@ extern u8 BsProxyUrlstr;
 extern u8 cw;
 extern u8 pNet;
 extern u8 tl_member_buff;
+s32 SaveNetFile_ForLobby();                         /* extern */
 extern void *g_lb_636590;
 extern void *g_lb_636594;
 extern s32 g_lb_653950;

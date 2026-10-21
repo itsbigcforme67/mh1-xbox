@@ -5,11 +5,11 @@
 
 s32 ChatKinsoku_chk();
 s32 Lb_send_chat();
-s32 SoftKeyboard_exit();
 s32 SoftKeyboard_move();
 extern u8 Psw;
 extern u8 game_w;
 s32 Plaza_chatlog_i();                          /* extern */
+s32 SoftKeyboard_exit();                     /* extern */
 
 s32 Plaza_chat_move(void) {
     u8 g_frame[0x50] __attribute__((aligned(16)));   /* G's stack frame */
@@ -26,7 +26,7 @@ s32 Plaza_chat_move(void) {
     }
     temp_v1_2 = ((s8) (var_a0));
     if (temp_v1_2 == -1) {
-        SoftKeyboard_exit();
+        SoftKeyboard_exit(var_a0);
         Plaza_chatlog_i();
         return -1;
     }

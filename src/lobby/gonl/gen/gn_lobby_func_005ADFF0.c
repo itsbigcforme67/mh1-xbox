@@ -3,12 +3,12 @@
  * tools/build_pc_mhg.sh). */
 #include "../gonl.h"
 
-s32 __cnetSub_Get_RestBgWork();
 s32 cnLBS_Read_RoomJoinUser();
 s32 lobby_func_005AE0B0();
 s32 lobby_func_005AE0F0();
 s32 lobby_func_005AE130();
 s32 lobby_func_005AE3D0();
+s32 __cnetSub_Get_RestBgWork();                     /* extern */
 s32 cnLBS_Read_MatchEntryJoinUser(); /* extern */
 
 void lobby_func_005ADFF0(void *arg0) {

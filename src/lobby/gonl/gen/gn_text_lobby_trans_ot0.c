@@ -5,8 +5,6 @@
 
 s32 DispHelpLine();
 s32 DispSceneTitle();
-s32 Disp_back();
-s32 Online_ck();
 s32 Put_2TF();
 s32 SetFilterMode();
 s32 SetTextureStage();
@@ -17,6 +15,8 @@ s32 reload_tex();
 extern u8 CnetWork;
 extern u8 cw;
 extern u8 textLobbyTbl;
+s32 Disp_back();                         /* extern */
+s32 Online_ck();                                    /* extern */
 
 void text_lobby_trans_ot0(void *arg0) {
     u8 temp_a0;
@@ -35,7 +35,7 @@ void text_lobby_trans_ot0(void *arg0) {
             flSetRenderState(0x60, 0, M2C_ERROR(/* Read from unset register $a2 */));
             Put_2TF(&(*(s32 *)((u8 *)&textLobbyTbl + 0x28)));
         } else if (((u32) (temp_v1 - 5) < 2U) || (temp_v1 == 3)) {
-            Disp_back();
+            Disp_back(1);
         } else {
             lobby_func_005936B0(1, M2C_ERROR(/* Read from unset register $a1 */), M2C_ERROR(/* Read from unset register $a2 */), M2C_ERROR(/* Read from unset register $a3 */));
         }

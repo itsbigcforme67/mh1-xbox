@@ -3,18 +3,19 @@
  * tools/build_pc_mhg.sh). */
 #include "../gonl.h"
 
-s32 Get_kb_input();
 s32 Get_sw();
-s32 SoftKeyboard_exit();
 s32 SoftKeyboard_move();
 s32 cnWrap_SoundRequest();
 s32 func_00220F40();
 extern u8 g_main_2EFBAC;
 extern u8 Psw;
 extern u8 g_main_2EFBAC;
+s32 Get_kb_input();                             /* extern */
+s32 SoftKeyboard_exit();                     /* extern */
 s32 SoftKeyboard_pos_set();     /* extern */
 
 s32 lobby_func_0056D570(void *arg0) {
+    s32 temp_a0;
     s32 temp_s0;
     s32 temp_v1_3;
     u8 temp_v1_2;
@@ -25,6 +26,7 @@ s32 lobby_func_0056D570(void *arg0) {
     temp_s0 = Get_sw(0) & 0xFFFF;
     Get_kb_input();
     temp_v1 = (*(void **)&g_main_2EFBAC);
+    temp_a0 = temp_v1 + 0x232;
     temp_v1_2 = (*(u8 *)((u8 *)(temp_v1) + 0x232));
     switch (temp_v1_2) {                            /* irregular */
     case 0:
@@ -47,11 +49,11 @@ block_16:
         }
         goto block_16;
     case 2:
-        SoftKeyboard_exit();
+        SoftKeyboard_exit(temp_a0);
         (*(u8 *)((u8 *)((*(void **)&g_main_2EFBAC)) + 0x232)) = 0U;
         return 1;
     default:
-        SoftKeyboard_exit();
+        SoftKeyboard_exit(temp_a0);
         (*(u8 *)((u8 *)((*(void **)&g_main_2EFBAC)) + 0x232)) = 0U;
         return 1;
     }
