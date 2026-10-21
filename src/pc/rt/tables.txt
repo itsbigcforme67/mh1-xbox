@@ -1086,3 +1086,6 @@ lit_444_0068F0A0
 lit_445_0068F0B0
 lit_446_0068F0C8
 soncho_no_oshie_00389C54
+# flPS2SinFast / CosFast's range and polynomial constants (rt_flmat.c ps2_sincos)
+at_tbl
+SS5432

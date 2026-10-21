@@ -15,7 +15,7 @@ mkdir -p build/pc
 nmc() { if [ -n "$SYM_PREFIX" ]; then $NM "$@" | sed "s/^\\([0-9a-fA-F]* [A-Za-z] \\)$SYM_PREFIX/\\1/"; else $NM "$@"; fi; }
 PC="src/pc/viewer.c src/pc/fl/fl_model.c src/pc/gfx/gfx_gl.c \
     src/pc/fmt/afs.c src/pc/fmt/melt.c src/pc/fmt/amo.c src/pc/fmt/apx.c \
-    src/pc/fmt/ahi.c src/pc/fmt/aan.c src/pc/fmt/hits.c src/pc/pad/pad_sdl.c \
+    src/pc/fmt/ahi.c src/pc/fmt/hits.c src/pc/pad/pad_sdl.c \
     src/pc/fmt/snd.c src/pc/movie/sfd.c src/pc/audio/audio_mix.c src/pc/audio/audio_sdl.c src/pc/gfx/gfx_rec.c src/pc/gfx/gfx_opts.c src/pc/gfx/gfx_pal.c src/pc/gfx/gfx_skin.c src/pc/install.c src/pc/pick.c src/pc/font5x7.c src/pc/menu.c src/pc/dbgmenu.c src/pc/fmt/ps2save.c src/pc/fmt/lzari.c"
 # Decompiled game C run natively. set14_nm.c is the whole set14 file
 # (set14_trans is a near-match on the PS2 side, believed equivalent).
@@ -743,9 +743,15 @@ for f in $NETRT $([ -n "$COV" ] && echo rt_cov) rt_ver rt_game rt_fl rt_flmat rt
     # shellcheck disable=SC2086
     XF=""; [ $f = rt_log ] && XF="-D_GNU_SOURCE"   # ucontext / sigaltstack
     [ $f = rt_menu ] && XF="-DMH1_NO_UTF8"       # include/plf.h declares memset(void *, int, int)
+    # the fl math and the motion player stand in for PS2 library code the game's movement depends on (rotations, root
+    # motion): built with the game's SSE float math, so the PS2 rounding (RT_FPU_PS2, rt_ref.c) reaches them too
+    case $f in rt_flmat|rt_motion|rt_main) XF="$XF $FPSSE" ;; esac
     cc_obj $f "$CC $CFLAGS $XF -DMH1_VERSION=\\\"$MH1_VERSION\\\" $SYS $SDL_CFLAGS -Iinclude $MEMSTAT -c src/pc/rt/$f.c -o build/pc/$f.o"
     OBJS="$OBJS build/pc/$f.o"
 done
+# the motion curves (fmt/aan.c: root motion through flCalcTransVelocity and the poses): the game's SSE float math too
+cc_obj fmt_aan "$CC $CFLAGS $FPSSE $SYS -c src/pc/fmt/aan.c -o build/pc/fmt_aan.o"
+OBJS="$OBJS build/pc/fmt_aan.o"
 # Matched main C (MATCHED_A) must not replace the host's own versions: a global that a strong definition in a
 # src/pc object (rt_*.o) also provides is weakened in the matched object, the host version wins (tools/targets)
 for f in $MATCHED_A; do

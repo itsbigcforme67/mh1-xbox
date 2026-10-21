@@ -375,10 +375,12 @@ void pit_prim_init(void) { memset(pit_prim, 0, 4 * sizeof pit_prim[0]); }
 
 /* ------------------------------------------------------------ maths */
 /* flSinCos (0x173620) */
+f32 flSin(f32 a);
+f32 flCos(f32 a);
 void flSinCos(f32 a, f32 *s, f32 *c)
 {
-    *s = sinf(a);
-    *c = cosf(a);
+    *s = flSin(a);      /* flPS2SinCosFast (rt_flmat.c) */
+    *c = flCos(a);
 }
 /* flmatSetZYX33 (0x172310): rotation part of m from three angles [order a
  * guess; the game's calls only turn about Z] */

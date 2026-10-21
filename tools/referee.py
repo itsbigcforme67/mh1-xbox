@@ -903,11 +903,12 @@ def run(name, out, ticks=None):
                 # nodes (EMW+0x50C -> model work +0x24, 0x190 bytes a node) at the start of these play ticks; the PC
                 # writes the same (RT_REF_NODES, rt_ref.c) for tools/referee.py nodes DIR
                 sl, cnt = nodes_spec[0], nodes_spec[1]
-                mdl = struct.unpack_from('<I', parts[1], sl * g['em_stride'] + 0x50C)[0]
+                mdl = struct.unpack_from('<I', parts[0], 0x50C)[0] if sl < 0 else \
+                    struct.unpack_from('<I', parts[1], sl * g['em_stride'] + 0x50C)[0]     # SLOT -1: the hunter
                 if mdl:
                     sk = ps2.r32(mdl + 0x24)
                     raw = ps2.p.read_many([(sk + 0x190 * j, 64) for j in range(cnt)])
-                    nlog.write('%d %s\n' % (pt, ' '.join('%g' % v for b in raw for v in struct.unpack('<16f', b))))
+                    nlog.write('%d %s\n' % (pt, ' '.join('%.9g' % v for b in raw for v in struct.unpack('<16f', b))))
             pad = pads[pt] if play and 0 <= pt < len(pads) else (0, 0, 0, 0, 0)
             prev_pt = pt if play else -1
             ps2.go(k, fpad_words(pad), [(r, o, t, v) for (p_, r, o, t, v) in pokes if play and p_ == pt])

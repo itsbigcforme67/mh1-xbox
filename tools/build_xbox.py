@@ -27,7 +27,7 @@ RELAX = ['-Wno-error=implicit-function-declaration', '-Wno-error=implicit-int', 
          '-Wno-error=incompatible-function-pointer-types', '-Wno-error=return-type', '-w']
 # the PC front-end (tools/build_pc.sh PC=) with the Xbox stand-ins instead of OpenGL and the host card
 FRONT = ['src/pc/viewer.c', 'src/pc/dbgmenu.c', 'src/pc/menu.c', 'src/pc/font5x7.c', 'src/pc/gfx/gfx_opts.c', 'src/pc/fl/fl_model.c', 'src/pc/xbox/gfx_null.c', 'src/pc/fmt/afs.c', 'src/pc/fmt/melt.c',
-         'src/pc/fmt/amo.c', 'src/pc/fmt/apx.c', 'src/pc/fmt/ahi.c', 'src/pc/fmt/aan.c', 'src/pc/fmt/hits.c',
+         'src/pc/fmt/amo.c', 'src/pc/fmt/apx.c', 'src/pc/fmt/ahi.c', 'src/pc/fmt/hits.c',
          'src/pc/pad/pad_sdl.c', 'src/pc/fmt/snd.c', 'src/pc/movie/sfd.c', 'src/pc/audio/audio_mix.c', 'src/pc/audio/audio_sdl.c',
          'src/pc/gfx/gfx_rec.c', 'src/pc/gfx/gfx_pal.c', 'src/pc/gfx/gfx_skin.c', 'src/pc/rt/rt_mem.c', 'src/pc/xbox/mc_xbox.c', 'src/pc/xbox/xbox_libc.c',
          'src/pc/xbox/xbox_log.c', 'src/pc/xbox/xbox_env.c', 'src/pc/xbox/xbox_ac97.c',

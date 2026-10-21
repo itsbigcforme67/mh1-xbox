@@ -301,17 +301,17 @@ void rt_ref_tick(int raw)
         static FILE *nf;
         int sl, cnt, a, b, j, k;
         u8 *rt_actor_nodes(const void *work, int *max);
-        if (sscanf(getenv("RT_REF_NODES"), "%d:%d:%d-%d", &sl, &cnt, &a, &b) == 4 && ptick >= a && ptick <= b && sl >= 0 &&
+        if (sscanf(getenv("RT_REF_NODES"), "%d:%d:%d-%d", &sl, &cnt, &a, &b) == 4 && ptick >= a && ptick <= b && sl >= -1 &&
             sl < EM_N) {
             int max;
-            u8 *nd = rt_actor_nodes(em_work + EM_STRIDE * sl, &max);
+            u8 *nd = rt_actor_nodes(sl < 0 ? player_work : em_work + EM_STRIDE * sl, &max);     /* -1: the hunter */
             if (!nf)
                 nf = fopen(getenv("RT_REF_NODES_OUT"), "w");
             if (nf && nd) {
                 fprintf(nf, "%d", ptick);
                 for (j = 0; j < cnt && j < max; j++)
                     for (k = 0; k < 16; k++)
-                        fprintf(nf, " %g", (double)((f32 *)(nd + 0x190 * j))[k]);
+                        fprintf(nf, " %.9g", (double)((f32 *)(nd + 0x190 * j))[k]);
                 fprintf(nf, "\n");
                 fflush(nf);
             }

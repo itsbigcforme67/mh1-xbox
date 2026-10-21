@@ -797,15 +797,19 @@ static void place(flmat w, float x, float y, float z, float yaw)
 static void sync_joints(hunter *h, float hyoff)
 {
     static flmat jw[128];
+    flmat wg;
     float p[3];
     int a, nb, j;
     if (h->game) {
         rt_player_pose(lp, &h->master);
         rt_player_get(lp, p, &a);
         place(h->world, p[0], p[1] + hyoff, p[2], (float)(a & 0xFFFF) * (6.2831853f / 65536.0f));
+        /* the game's joints (body_hit, the hit check, effects) at the hunter's own height: hyoff only lowers the drawn
+         * model onto its feet. They had it until 20 Oct 2026, 0.3 units below the PS2's (the referee's REF_NODES) */
+        place(wg, p[0], p[1], p[2], (float)(a & 0xFFFF) * (6.2831853f / 65536.0f));
         nb = h->master.skel.nbone < 128 ? h->master.skel.nbone : 128;
         for (j = 0; j < nb; j++)
-            flmat_mul(jw[j], h->master.world[j], h->world);
+            flmat_mul(jw[j], h->master.world[j], wg);
         rt_player_parts(lp, &jw[0][0], nb);
     }
 }

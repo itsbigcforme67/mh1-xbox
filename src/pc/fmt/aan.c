@@ -127,15 +127,40 @@ void fmt_aan_free(aan_motion *m)
     memset(m, 0, sizeof *m);
 }
 
-static float curve_value(const aan_curve *c, float t, int be)
+/* flFCVFcurveInterpolateLinear / flFCVFcurveInterpolateHermite (main 0x1710E0 / 0x171160, VU0 code [read: asm]):
+ * the PS2's own formulas, operation for operation, so the game's motions (and with them the root motion that moves
+ * hunters and monsters) come out as on the PS2 under its float rounding (src/pc/rt/rt_ref.c). Until 20 Oct 2026 this
+ * used the textbook u = (t - t0) / (t1 - t0) forms, equal in maths, a few bits off in floats (the lockstep referee). */
+static float interp_linear(float t, float v0, float t0, float v1, float t1)
 {
-    float a[4], b[4], d, s, u;
+    float q = 1.0f / (t1 - t0);
+    float slope = (v1 - v0) * q, base = (t1 * v0 - t0 * v1) * q;
+    return slope * t + base;
+}
+static float interp_hermite(float t, float v0, float t0, float s0, float v1, float t1, float s1)
+{
+    float d = t - t0, r = 1.0f / (t1 - t0);
+    float r2 = r * r, d2 = d * d, q = d2 * r, c = (d2 * d) * r2;
+    float h2 = (2.0f * c) * r, h3 = (3.0f * d2) * r2;
+    float acc = v0 * ((h2 - h3) + 1.0f);
+    acc = acc + v1 * (h3 - h2);
+    acc = acc + s0 * (((c - q) - q) + d);
+    acc = acc + s1 * (c - q);
+    return acc;
+}
+
+/* flFCVGetValue2 (0x170240) with its key search (flFCVSeekFcurveKey*): at or before the first key, at or after the
+ * last one, or exactly on a key, that key's value; else the segment around t. A complex key (formats 0x13 / 0x23)
+ * names its segment's interpolation: 0x10000 linear, 0x20000 Hermite, any other value gives 0. */
+static float curve_value_vu(const aan_curve *c, float t, int be)
+{
+    float a[4], b[4];
     int ia, ib, lo, hi;
     key_get(c, 0, be, a, &ia);
     if (t <= a[1] || c->nkey == 1)
         return a[0];
     key_get(c, c->nkey - 1, be, b, &ib);
-    if (t >= b[1])
+    if (!(t < b[1]))
         return b[0];
     lo = 0;
     hi = c->nkey - 1;                 /* binary search for k[lo].t <= t < k[hi].t */
@@ -148,16 +173,23 @@ static float curve_value(const aan_curve *c, float t, int be)
             hi = mid;
     }
     key_get(c, lo, be, a, &ia);
-    key_get(c, hi, be, b, &ib);
-    d = b[1] - a[1];
-    if (d <= 0)
+    if (a[1] == t)
         return a[0];
-    s = t - a[1];
-    u = s / d;
+    key_get(c, hi, be, b, &ib);
     if (ia == 0x10000)
-        return a[0] + (b[0] - a[0]) * u;
-    return (2 * u * u * u - 3 * u * u + 1) * a[0] + (3 * u * u - 2 * u * u * u) * b[0]
-         + (u * u * u - 2 * u * u + u) * d * a[3] + (u * u * u - u * u) * d * b[2];
+        return interp_linear(t, a[0], a[1], b[0], b[1]);
+    if (ia != 0x20000)
+        return 0.0f;
+    return interp_hermite(t, a[0], a[1], a[3], b[0], b[1], b[2]);
+}
+
+#include "../rt/rt_vu.h"
+static float curve_value(const aan_curve *c, float t, int be)
+{
+    unsigned int o = rt_vu_begin();     /* VU0 code on the PS2 (rt_vu.h) */
+    float v = curve_value_vu(c, t, be);
+    rt_vu_end(o);
+    return v;
 }
 
 void fmt_aan_eval(const aan_motion *m, int bone, float t, float chan[9])
