@@ -648,3 +648,10 @@ checked by hand; "real" = G's asm differs in behaviour, not only in registers / 
   in G (MH1 + 0x18), and its small-sheet branch maps jobs 5 / 6 to 1 / 4 (G 0x593100). Fixed in lb_ag01.c; checked on a
   PC G screenshot (great sword, hammer, lance, sword-and-shield icons). The item shop's icons were already the same as
   MH1's. PC texture slots stay MH1's (0x118 / 0x157: the PC's load_pit loads them; G's 0x13F / 0x180 are the PS2's).
+- **Follow-up (owner's log 20261021-194604):** the bed save was written ("saved ... 78032 bytes" at t4162), then Back +
+  Start -> loader -> G -> CONTINUE loaded the old save. Likely cause: the bytes sat in the Xbox kernel's file cache
+  (fflush only hands them to it) and never reached the disk before the console moved on. mc_xbox.c now writes each
+  card write through (NtFlushBuffersFile, as the log), again at close, and xbox_log.c flushes any open card file
+  before leaving. The save / load log lines now carry a check value (FNV-1a of the bytes moved: the next load must show
+  the save's value) and, for a save, the money and wielded weapon of the hunter in play. Both games; builds only,
+  not run on hardware or xemu.
