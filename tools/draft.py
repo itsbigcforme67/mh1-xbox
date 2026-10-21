@@ -99,7 +99,7 @@ def jump_tables(module, fn_text):
                         if cnt:
                             labels.add(w)
             if words and all(w.upper() in labels for w in words):
-                jt = n.replace("lit_", "jtbl_") if n.startswith("lit_") else "jt_" + n
+                jt = n.replace("lit_", "jtbl_")
                 fn_text = fn_text.replace(n, jt)
                 out += ".section .rodata\nglabel %s\n" % jt + "".join("    .word .L%s\n" % w.upper() for w in words) + "\n"
             break

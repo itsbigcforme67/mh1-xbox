@@ -90,10 +90,27 @@ def fix(src):
                  lambda m: ref(GP + int(m[2], 0), m[1]), src)
     src = re.sub(r'\*\((\w+ \*)\)0x([0-9A-Fa-f]+)', lambda m: ref(int(m[2], 16), m[1]), src)
 
+    # m2c's declared type of each D_ symbol: `extern T D_00XXXXXX;` (a field reached by its own D_ name keeps that type)
+    dtype = {}
+    arrays = set()
+    for m in re.finditer(r'^extern ([\w ]+?\**)\s*(\(\*)?D_0*([0-9A-F]{6})\b(\[)?', src, re.M):
+        if not m.group(2):
+            t = m.group(1).strip()
+            dtype[m.group(3)] = 'u8' if t in ('M2C_UNK', '?') else t
+            if m.group(4):
+                arrays.add(m.group(3))
+
     def dn(m):
-        n = name_of(int(m[1], 16))
-        return n.replace('+', ' + ') if n and '+' not in n else ('/*G:0x%s*/D_%s' % (m[1].lstrip('0'), m[1]) if n is None
-                                                                  else '(*(u8 *)((u8 *)&%s + %s))' % tuple(n.split('+')))
+        hexa = m[1][-6:]
+        n = name_of(int(hexa, 16))
+        if n is None:
+            return '/*G:0x%s*/D_%s' % (hexa.lstrip('0'), hexa)
+        if '+' not in n:
+            return n
+        base, off = n.split('+')
+        if hexa in arrays:        # (an array: its element pointer, indexed as m2c wrote it)
+            return '((%s *)((u8 *)&%s + %s))' % (dtype[hexa], base, off)
+        return '(*(%s *)((u8 *)&%s + %s))' % (dtype.get(hexa, 'u8'), base, off)
     src = re.sub(r'\bD_00([0-9A-F]{6})\b', dn, src)
     src = re.sub(r'\bD_([0-9A-F]{6})\b', dn, src)
     src = fields(src)

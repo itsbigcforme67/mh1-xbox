@@ -725,6 +725,17 @@ for o in $OBJS; do
     W=$(nmc --defined-only -g "$o" | awk 'NF == 3 {print $3}' | sort -u | comm -12 - "$(printf '%s\n' $BSYMS | sort -u > build/pc/.bsyms; echo build/pc/.bsyms)")
     for w in $W; do echo "weak $o $w"; done >> $REQ
 done
+# G online: G's own versions (src/lobby/gonl) win over every other lobby object's copy, the matched MH1 ones too
+if [ -n "$GONL" ]; then
+    GOBJS=$(for f in $GONL; do printf 'build/pc/lb__%s.o ' "$(basename "$f" .c)"; done)
+    for f in $GOBJS; do nmc --defined-only -g "$f" | awk 'NF == 3 && $2 == "T" {print $3}'; done | sort -u > build/pc/.gsyms
+    for o in $OBJS; do
+        case " $GOBJS " in *" $o "*) continue ;; esac
+        case "$o" in build/pc/lb__*) ;; *) continue ;; esac
+        nmc --defined-only -g "$o" | awk 'NF == 3 {print $3}' | sort -u | comm -12 - build/pc/.gsyms | while read -r w; do
+            echo "weak $o $w"; done >> $REQ
+    done
+fi
 sort -u -o $REQ $REQ
 # libmpeg2 0.5.1 (third_party/libmpeg2, GPL v2, plain C): the movies' MPEG-2 video
 for f in alloc cpu_accel cpu_state decode header idct motion_comp slice; do

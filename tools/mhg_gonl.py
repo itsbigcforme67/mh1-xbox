@@ -69,6 +69,7 @@ def convert(src):
     src = by_value_args(src)
     src = byte_pointers(src)
     src = byte_globals(src)
+    src = function_tables(src)
     src = unprototype(src)
     # m2c's declarations of names that became NAME+offset are no declarations any more
     src = re.sub(r'^extern [^;\n]*\(\*\([^;\n]*;\n', '', src, flags=re.M)
@@ -78,6 +79,82 @@ def convert(src):
     used = set(re.findall(r'\bg_(?:main|sub|lb)_[0-9A-F]{6}\b', src))
     decl = ''.join('extern u8 %s;\n' % n for n in sorted(used) if not re.search(r'extern [^;]*\b%s\b' % n, src))
     return decl + undeclared(src)
+
+
+KEEP_MH1 = {'nwDispStr_Html', 'Display_StringData', 'Analysis_StringData', 'DispDialogData', 'Draw_menu_square'}
+
+
+LABELS = None
+
+
+def labels():
+    """G lobby address -> its asm label (the names m2c's drafts call functions by)"""
+    global LABELS
+    if LABELS is None:
+        import glob
+        LABELS = {}
+        for f in glob.glob(os.path.join(ROOT, 'asm/mhg/lobby/text/*.s')):
+            cur = None
+            for ln in open(f):
+                m = re.match(r'glabel (\S+)', ln)
+                if m:
+                    cur = m[1]
+                    continue
+                if cur:
+                    m = re.match(r'\s*/\* [0-9A-F]+ ([0-9A-F]{8}) ', ln)
+                    if m:
+                        LABELS[int(m[1], 16)] = cur
+                        cur = None
+    return LABELS
+
+
+def symbol_addr(name):
+    for f in ('lobby', 'main', 'sub_main'):
+        for ln in open(os.path.join(ROOT, 'config/mhg/symbols/%s.txt' % f)):
+            m = re.match(r'(\S+) = 0x([0-9A-Fa-f]+);', ln)
+            if m and m[1] == name:
+                return int(m[2], 16)
+    return None
+
+
+def function_tables(src):
+    """m2c's call through a table of functions, (*(s32 *)((u8 *)&TBL + (I * 4)))(...), becomes a call through a C
+    array of the same functions by name (the PC's copy of G's table holds addresses the PC cannot call)"""
+    import struct
+    d = open(os.path.join(ROOT, 'build/mhg/split/lobby.bin'), 'rb').read()
+    key = '(*(s32 *)((u8 *)&'
+    out, i, decls = '', 0, ''
+    while True:
+        j = src.find(key, i)
+        if j < 0:
+            return decls + out + src[i:] if decls else src
+        k, depth = j + 1, 1
+        while depth:
+            depth += (src[k] == '(') - (src[k] == ')')
+            k += 1
+        m = re.match(r'^\(\*\(s32 \*\)\(\(u8 \*\)&(\w+) \+ \((.*) \* 4\)\)\)$', src[j:k], re.S)
+        if not m or src[k] != '(':
+            out += src[i:k]
+            i = k
+            continue
+        tbl, idx = m[1], m[2]
+        a = symbol_addr(tbl)
+        names = []
+        while a and 0x542600 <= a < 0x542600 + len(d):
+            w = struct.unpack_from('<I', d, a - 0x542600)[0]
+            if w not in labels():
+                break
+            names.append(labels()[w])
+            a += 4
+        if not names:
+            out += src[i:k]
+            i = k
+            continue
+        decls += ''.join('s32 %s();\n' % n for n in sorted(set(names)))
+        decls += 'static s32 (*const %s_g[])() = { %s };   /* G\'s table of functions, by name */\n' % (tbl, ', '.join(names))
+        out += src[i:j] + '%s_g[%s]' % (tbl, idx)
+        i = k
+    return src
 
 
 def frame_size(addr):
@@ -98,7 +175,8 @@ def stack_buffers(src, addr):
     n = frame_size(addr)
     if not n:
         return src
-    decls = list(re.finditer(r'^    ([\w ]+?\**)\s*\b(sp([0-9A-F]+));\n', src, re.M))
+    decls = [m for m in re.finditer(r'^    ([\w ]+?\**)\s*\b(sp([0-9A-F]+));( +/\*.*?\*/)?\n', src, re.M)
+             if m.group(1).split()[0] not in ('return', 'goto', 'case')]
     used = set(re.findall(r'\b(sp([0-9A-F]+))\b', src))
     if not used:
         return src
@@ -193,6 +271,39 @@ def undeclared(src):
     return ''.join(out) + src
 
 
+def next_symbol_gap(a):
+    """bytes from a G address to the next named G object (a size for a name the generator made), 4..0x100"""
+    import bisect
+    keys = []
+    for f in ('main', 'sub_main'):
+        for ln in open(os.path.join(ROOT, 'config/mhg/symbols/%s.txt' % f)):
+            m = re.match(r'\S+ = 0x([0-9A-Fa-f]+);', ln)
+            if m:
+                keys.append(int(m[1], 16))
+    keys.sort()
+    i = bisect.bisect_right(keys, a)
+    gap = (keys[i] - a) if i < len(keys) else 0x100
+    return max(4, min(gap, 0x100))
+
+
+def write_names(names):
+    """lobby names: config/mhg/pc_names.txt (the PC aliases them into its copy of lobby.bin); main / sub_main names:
+    config/mhg/pc_data.txt (the PC imports them as host objects with the ELF's bytes and pointers)"""
+    p = os.path.join(ROOT, 'config/mhg/pc_names.txt')
+    have = open(p).read()
+    with open(p, 'a') as f:
+        for n, (m, a) in sorted(names.items()):
+            if m == 'lobby' and ' %s ' % n not in have:
+                f.write('lobby %s 0x%06X  # tools/mhg_gonl.py: a G address the G online code uses, no name yet\n' % (n, a))
+    p = os.path.join(ROOT, 'config/mhg/pc_data.txt')
+    have = open(p).read()
+    with open(p, 'a') as f:
+        for n, (m, a) in sorted(names.items()):
+            if m != 'lobby' and '\n%s = ' % n not in have:
+                f.write('[%s]\n%s = 0x%08X; // size:0x%X   # tools/mhg_gonl.py: G data the G online code uses (size: up to the '
+                        'next name)\n' % (m, n, a, next_symbol_gap(a)))
+
+
 HEADER = '''/* G online (PC): %s, written from Monster Hunter G's code at lobby 0x%06X by tools/mhg_gonl.py (an m2c draft with
  * G's names; docs/network.md 3.12). Not compared with anything; the G online PC build links it (ONLINE=1
  * tools/build_pc_mhg.sh). */
@@ -221,8 +332,13 @@ def main():
     os.makedirs(out, exist_ok=True)
     bad = []
     names = [n for n in names if not (0x5C1800 <= gaddr(n) < 0x5E1000)]    # the in-game browser: not on the PC
+    # the lobby-server receive handlers are src/lobby/cnet/cnet_g.c's (gnet_*, named per address in pc_names.txt);
+    # the text / dialog drawing keeps MH1's C (it works in G's village): see KEEP_MH1
+    gnet = set(int(l.split()[2], 16) for l in open(os.path.join(ROOT, 'config/mhg/pc_names.txt'))
+               if len(l.split()) > 2 and l.split()[1].startswith('gnet_'))
+    names = [n for n in names if gaddr(n) not in gnet and n not in KEEP_MH1 and not re.match(r'(Bs|bs|Draw|draw)[A-Z]', n)]
     for n in names:
-        path = os.path.join(out, n + '.c')
+        path = os.path.join(out, 'gn_' + n + '.c')     # (gn_: an object name of its own; src/lobby/b/nm has files named after functions too)
         if os.path.exists(path) and 'HAND-FIXED' in open(path).read() and '--force' not in sys.argv:
             continue
         d = draft(n)
@@ -233,13 +349,7 @@ def main():
             d = stack_buffers(convert(d), gaddr(n))
         open(path, 'w').write(HEADER % (n, gaddr(n)) + d)
     if NEW_NAMES:
-        p = os.path.join(ROOT, 'config/mhg/pc_names.txt')
-        have = open(p).read()
-        with open(p, 'a') as f:
-            for n, (m, a) in sorted(NEW_NAMES.items()):
-                if ' %s ' % n not in have:
-                    f.write('%s %s 0x%06X  # tools/mhg_gonl.py: a G address the G online code uses, no name yet\n'
-                            % (m, n, a))
+        write_names(NEW_NAMES)
     print('%d functions, %d by hand (%s), %d new names' % (len(names), len(bad), ' '.join(bad), len(NEW_NAMES)))
 
 
