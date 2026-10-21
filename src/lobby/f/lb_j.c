@@ -1,5 +1,6 @@
 /* Lobby: player move handlers lb_pl_mvNNN (SLPM_654.95 lobby overlay 0x5D0690-). Whole file; runs split into lb_jNN.c */
 #include "lobby_f.h"
+unsigned char Lb_stick_pow_get();   /* its real return type: was implicitly int (tools/check_kr_returns.py) */
 
 void lb_pl_mv044(PLW *pl) {
     u8 s;

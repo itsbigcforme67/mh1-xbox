@@ -1,5 +1,8 @@
 /* lb_z40 - auto-drafted 0x005D8160-0x005D8274: Lb_select (first drafted by tools/lbauto.py). */
 #include "lobby_f.h"
+#ifndef __MWERKS__
+unsigned short Get_sw2();   /* its real return type: was implicitly int (tools/check_kr_returns.py) */
+#endif
 extern u8 * pNet;
 
 s32 Lb_select(void) {

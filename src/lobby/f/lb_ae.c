@@ -4,7 +4,7 @@
 extern u8 *pNet;
 extern s16 ang_894;
 void McOperationSet();
-int McCardOperation();
+unsigned char McCardOperation();
 void SetDialogData();
 void SetDialogYesNo();
 void str_fadeout();
@@ -19,7 +19,7 @@ void Lbs_LogOutRequest();
 void Lb_Pl_basic_flagset();
 void Lb_pl_chr_set();
 void Lb_pl_to_normal();
-int Get_sw2();
+unsigned short Get_sw2();
 int Online_ck();
 void adx_se_set();
 void Eft25_set();

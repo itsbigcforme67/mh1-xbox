@@ -1,6 +1,9 @@
 /* lb_sh1a - one translation unit 0x00537C10-0x00539A90 (lbtu3). */
 #include "lobby_s.h"
 #include "lbsys_g.h"
+#ifndef __MWERKS__
+unsigned char Warehouse_search_space();   /* (declared before its first use) */
+#endif
 extern f32 tagMoveY[];
 #define flfntLocate_a2 flfntLocate_hdr   /* lobby_a.h declares it K&R; the original caller sign-extends y */
 #undef flfntLocate_a2
@@ -48,7 +51,11 @@ int Seisan_ok_ck(int, s16, int);
 int Get_equip_bit();
 char *Get_equip_name();
 u32 Get_equip_price();
+#ifdef __MWERKS__
 int Warehouse_search_space();
+#else
+unsigned char Warehouse_search_space();   /* the real return type (tools/check_kr_returns.py) */
+#endif
 int Warehouse_space_ck();
 int Now_equip_ck();
 char *strcpy(char *, const char *);

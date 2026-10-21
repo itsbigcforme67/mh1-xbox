@@ -1,4 +1,6 @@
 #include "lobby_b.h"
+unsigned short Get_sw2();   /* its real return type: was implicitly int (tools/check_kr_returns.py) */
+signed char Lb_get_quest_type();   /* its real return type: was implicitly int (tools/check_kr_returns.py) */
 #include "lbsys_g.h"
 extern s32 quest_price;
 extern u32 joinQuest;

@@ -57,7 +57,7 @@ void em_cmd_ck(EMW *);
 u8 Em_Dmg_Sys(EMW *, u8 *);
 void em_mahi_dmg_timer_set(EMW *);
 void em_sleep_dmg_timer_set(EMW *);
-int act_ck(EMW *, int, int);
+short act_ck(EMW *, int, int);
 void Quest_enemy_revival_set(EMW *);
 void em_status_init(EMW *);
 void Quest_enemy_escape(EMW *);

@@ -1,5 +1,8 @@
 /* emu02 - monster update 0x0010BE30-0x0010BF28: em_init. Whole file in emupd_nm.c. */
 #include "types.h"
+#ifndef __MWERKS__
+unsigned char Em_max_parts_get(int);   /* (declared before its first use) */
+#endif
 
 typedef struct PRIM_H { u8 _pad00[8]; f32 pos[3]; void (*trans)(struct PRIM_H *); struct EMX *owner; } PRIM_H;
 
@@ -74,7 +77,11 @@ void func_536BC0(EMX *, int);
 void func_539C90(EMX *);
 void func_539C40(EMX *);
 void func_53A2B0(EMX *);
+#ifdef __MWERKS__
 int Em_max_parts_get(int);
+#else
+unsigned char Em_max_parts_get(int);   /* the real return type (tools/check_kr_returns.py) */
+#endif
 void em_init_sub(EMX *);
 void em_dur_init(EMX *);
 void World_calc(EMX *);

@@ -1,6 +1,9 @@
 /* lb_by151 - agent B 0x005B3ED0-0x005B4330: Lb_menu_move_Core (village / lobby start menu: step 0 = open (ListSelect offline, Menu_select_mv online; confirm calls the page init), step 1 = per-page move handler; the *_i / *_mv handlers take no arguments, a0 is whatever lbmw left in it). */
 #include "lobby_f.h"
 #include "lbsys_g.h"
+#ifndef __MWERKS__
+unsigned short Menu_chatcnfg_mv();   /* (declared before its first use) */
+#endif
 extern u8 *lbmw;
 int Chk_lb_status();
 int Cockpit_chat_chk();
@@ -30,7 +33,11 @@ int lb_menu_mix_mv();
 int Menu_data_mv();
 int Menu_status_mv();
 int Menu_equipment_mv();
+#ifdef __MWERKS__
 int Menu_chatcnfg_mv();
+#else
+unsigned short Menu_chatcnfg_mv();   /* the real return type (tools/check_kr_returns.py) */
+#endif
 int Menu_chatlog_mv();
 int lm_place_mv();
 int lm_member_list_mv();

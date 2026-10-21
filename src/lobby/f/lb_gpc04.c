@@ -1,5 +1,8 @@
 /* lb_gpc04 - plaza chat 0x0060D750-0x0060D80C: Plaza_chat_move. Whole file in lb_pc.c. */
 #include "lobby_f.h"
+#ifndef __MWERKS__
+signed char SoftKeyboard_move();   /* (declared before its first use) */
+#endif
 extern char PitMenu[];
 /* plaza chat log state bytes (bss 0x39DADE..) */
 #define PZ_HEAD (*(u8 *)0x39DADE)   /* newest entry index */
@@ -9,7 +12,11 @@ extern char PitMenu[];
 #define PZ_ARROWS (*(u8 *)0x39DAE2) /* bit0 scroll down arrow, bit1 scroll up arrow, bit2/3 scrolled this frame */
 void SoftKeyboard_pos_set(f32, int);
 int SoftKeyboard_set();
+#ifdef __MWERKS__
 int SoftKeyboard_move();
+#else
+signed char SoftKeyboard_move();   /* the real return type (tools/check_kr_returns.py) */
+#endif
 void SoftKeyboard_exit();
 void Plaza_chatlog_i();
 int ChatKinsoku_chk();

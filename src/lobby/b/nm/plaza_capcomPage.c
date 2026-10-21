@@ -1,4 +1,5 @@
 #include "lobby_a.h"
+unsigned short Get_sw2();   /* its real return type: was implicitly int (tools/check_kr_returns.py) */
 #include "lbsys_g.h"
 extern char jtbl_2033[];
 extern char first_url[];

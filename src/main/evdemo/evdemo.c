@@ -7,6 +7,9 @@
  * camera on the monster with the given id. Field meanings are guesses. */
 #include "g_alias.h"
 #include "types.h"
+#ifndef __MWERKS__
+signed char DemoCameraCheck();   /* (declared before its first use) */
+#endif
 
 typedef struct EVD {
     u8 x0;          /* 0x0 */
@@ -81,7 +84,11 @@ void Event_flag_clear();
 int evdemo_init_sub();
 void evdemo_camera_request();
 void DemoCameraRequest();
+#ifdef __MWERKS__
 int DemoCameraCheck();
+#else
+signed char DemoCameraCheck();   /* the real return type (tools/check_kr_returns.py) */
+#endif
 void DemoCameraCancel();
 void str_pause();
 void adx_se_set();

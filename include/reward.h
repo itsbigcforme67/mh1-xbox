@@ -117,7 +117,11 @@ typedef struct RESULT_W {
     u8 _pad06[2];
 } RESULT_W;
 extern RESULT_W result_w;       /* small data */
+#ifdef __MWERKS__
 int Get_hunter_rank();
+#else
+unsigned char Get_hunter_rank();   /* the real return type (tools/check_kr_returns.py) */
+#endif
 int Hunter_point_add();
 void Gold_add();
 int sprintf(char *, const char *, ...);

@@ -1,5 +1,6 @@
 /* lb_by84 - agent B promoted near-match 0x0053CD50-0x0053CF5C: lb_armor_decide (first drafted by tools/lbauto.py). */
 #include "lobby_s.h"
+unsigned char Warehouse_equip_stack();   /* its real return type: was implicitly int (tools/check_kr_returns.py) */
 extern s8 armor_shop_r;
 extern char User_data[];
 extern void shop_armor_put_shopHelp();

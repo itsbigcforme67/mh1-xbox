@@ -56,7 +56,7 @@ void flfntSetSize();
 void font_print_ex();
 void font_print_sp();
 void font_set_palette();
-int Equip_moji_color_rare();
+unsigned char Equip_moji_color_rare();
 extern u8 lb_shop_msg[];
 extern char lit_359_00654D68[];
 extern char lit_360_00654D70[];
@@ -72,7 +72,7 @@ extern void *Lb_mix_item_checkMax_p;
 
 
 void Gold_add();
-int Item_preparation();
+short Item_preparation();
 
 
 

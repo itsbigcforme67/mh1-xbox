@@ -1,10 +1,19 @@
 /* lb_v01 - guild: quest level, talk, rule sheet trans 0x005C71D0-0x005C7348: lb_get_quest_level. Whole file in lb_v.c. */
 #include "lobby_f.h"
+#ifndef __MWERKS__
+signed char SoftKeyboard_move();   /* (declared before its first use) */
+unsigned char Get_kb_input();   /* (declared before its first use) */
+unsigned short Get_sw2();   /* (declared before its first use) */
+#endif
 extern s8 key_quest_num;
 extern u8 key_quest;
 extern u8 *pNet;
 int Quest_clear_bit_ck();
+#ifdef __MWERKS__
 int Get_sw2();
+#else
+unsigned short Get_sw2();   /* the real return type (tools/check_kr_returns.py) */
+#endif
 int get_questLevelNum();
 int lb_get_quest_level();
 int Event_flag_ck();
@@ -36,10 +45,18 @@ char *strcpy();
 char *strcat();
 char *strrchr();
 void Get_sw();
+#ifdef __MWERKS__
 int Get_kb_input();
+#else
+unsigned char Get_kb_input();   /* the real return type (tools/check_kr_returns.py) */
+#endif
 void SoftKeyboard_pos_set(f32, int);
 void SoftKeyboard_set();
+#ifdef __MWERKS__
 int SoftKeyboard_move();
+#else
+signed char SoftKeyboard_move();   /* the real return type (tools/check_kr_returns.py) */
+#endif
 void SoftKeyboard_exit();
 void Lbc_set_prim();
 void Lb_guild_trans();

@@ -68,7 +68,11 @@ void eft09_set(EMW *, int);
 void Eft20_set(f32, EMW *, int, int);
 void shell01_set(EMW *, int);
 s16 em_hp_vital_set2(EMW *, s16, s16);
+#ifdef __MWERKS__
 int em_act_search(void *);
+#else
+unsigned short em_act_search(void *);   /* the real return type (tools/check_kr_returns.py) */
+#endif
 void em_char_set(EMW *, int, int, int);
 void em_char_set2();
 void em_act_set(EMW *, int, u16);
@@ -367,6 +371,9 @@ void move_default_00574E90(EMW *em) {
 asm void ef_move_sub_00574EE0(EMW *em, EM01W *w)
 {
 #include "ef_move_sub_00574EE0.inc"
+#ifndef __MWERKS__
+unsigned short em_act_search(void *);   /* (declared before its first use) */
+#endif
 }
 #else
 void ef_move_sub_00574EE0(EMW *em, EM01W *w) {

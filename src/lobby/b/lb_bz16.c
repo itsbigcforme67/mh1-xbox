@@ -1,5 +1,8 @@
 /* lb_bz16 - lobby UI/client 0x005B3E20-0x005B3ECC: lb_menu_init, Lb_menu_exit, Lb_menu_move (first drafted by tools/lbauto.py). */
 #include "lobby_f.h"
+#ifndef __MWERKS__
+unsigned short Get_sw2();   /* its real return type: was implicitly int (tools/check_kr_returns.py) */
+#endif
 extern u8 * lbmw;
 
 #if !defined(G_PART)

@@ -1,6 +1,9 @@
 /* SLPM_654.95 0x0010EC00-0x0010EC18: common_local_init .. dummy_em_prog. See f_em_nm.c. */
 #include "em.h"
 #include "game.h"
+#ifndef __MWERKS__
+unsigned char Em_max_parts_get(int);   /* (declared before its first use) */
+#endif
 
 #define EB(o) (*(u8 *)((u8 *)em + (o)))
 #define ESB(o) (*(s8 *)((u8 *)em + (o)))
@@ -45,7 +48,11 @@ void em_search_data_set(EMW *, u8);
 void em_range_set(EMW *, s8);
 void Ikari_Data_Set(EMW *);
 void em_tsuushin_set(EMW *);
+#ifdef __MWERKS__
 int Em_max_parts_get(int);
+#else
+unsigned char Em_max_parts_get(int);   /* the real return type (tools/check_kr_returns.py) */
+#endif
 void em_dur_init(EMW *);
 void World_calc(void *);
 void eft01_set(void *, int);

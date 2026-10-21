@@ -1,5 +1,8 @@
 /* lb_gac03 - near-match fixes 0x005CF600-0x005CF6F8: lb_check_target. Whole file in lb_ac.c. */
 #include "lobby_f.h"
+#ifndef __MWERKS__
+signed char SoftKeyboard_alive_check();   /* (declared before its first use) */
+#endif
 extern PLW player_work[];
 extern u8 sw_flag_1260;
 extern u8 em_work[];
@@ -12,7 +15,11 @@ u8 *Stage_unique_data_get();
 void Lb_put_unique_act_hint();
 int lb_ck_unique_act();
 int Lb_Pl_stg_ck();
+#ifdef __MWERKS__
 int SoftKeyboard_alive_check();
+#else
+signed char SoftKeyboard_alive_check();   /* the real return type (tools/check_kr_returns.py) */
+#endif
 
 int lb_check_target(f32 range, PLW *pl, u8 *tgt, u8 **list, int ang, int x) {
     f32 d;

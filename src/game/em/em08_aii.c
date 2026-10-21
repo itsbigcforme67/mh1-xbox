@@ -60,7 +60,11 @@ void eft09_set(EMW *, int);
 void Eft20_set(f32, EMW *, int, int);
 void shell01_set(EMW *, int);
 s16 em_hp_vital_set2(EMW *, s16, s16);
+#ifdef __MWERKS__
 int em_act_search(void *);
+#else
+unsigned short em_act_search(void *);   /* the real return type (tools/check_kr_returns.py) */
+#endif
 void em_char_set(EMW *, int, int, int);
 void em_char_set2();
 void em_char_set2();
@@ -145,7 +149,11 @@ void em_mahi_eff_set(EMW *, int);
 void em_tail_off_sub(EMW *);
 void wyvern_kill_cnt_up(void *, int);
 extern EMW em_work[];
+#ifdef __MWERKS__
 int em08_fly_adjy2(EMW *);
+#else
+unsigned char em08_fly_adjy2(EMW *);   /* the real return type (tools/check_kr_returns.py) */
+#endif
 void em08_fly_adjy2_init(EMW *, int);
 void Eft08_set(f32 *, int, int, f32);
 void shell21_set(EMW *, int);
@@ -279,6 +287,10 @@ void toride_eff_set(EMW *);
 asm void em08_main_sub(EMW *em, EM08W *w)
 {
 #include "em08_main_sub.inc"
+#ifndef __MWERKS__
+unsigned char em08_fly_adjy2(EMW *);   /* (declared before its first use) */
+unsigned short em_act_search(void *);   /* (declared before its first use) */
+#endif
 }
 #else
 void em08_main_sub(EMW *em, EM08W *w) {

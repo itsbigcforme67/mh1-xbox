@@ -38,7 +38,7 @@ void sk_skb_kill(void);
 void sk_disp_palette_set(void);
 void sk_palette_cursor_set(void);
 void sk_set_yn_kigou_f(void);
-int sk_zenkaku_ck();
+signed char sk_zenkaku_ck();
 static s16 sk_key_repeat(s16, s16);
 static void sk_init_mode(u8);
 void HardKeyboard_move(void);

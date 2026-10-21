@@ -38,14 +38,14 @@ extern int slash_bar_color[];
 extern u8 Battle_type[];
 extern s16 *Pl_slash_tbl[];
 
-int Get_equip_rare(u8, u16);
+unsigned char Get_equip_rare(u8, u16);
 int Get_equip_name(u8, u16);
-int Get_weapon_job(void *);
-int Get_bowgun_atk(void *);
+unsigned char Get_weapon_job(void *);
+short Get_bowgun_atk(void *);
 void *Get_equip_data_ptr(void *);
 void Get_equip_icon_uv(u8 *, s16 *, s16 *);
 int Equip_icon_color_rare(int, int, int);
-int Equip_moji_color_rare(int);
+unsigned char Equip_moji_color_rare(int);
 u8 sub_main_func_004F0020(PLW *, int);
 int gskill_gun_mask(PLW *);
 void gskill_list(PLW *, int, int);

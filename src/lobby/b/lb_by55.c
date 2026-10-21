@@ -1,5 +1,6 @@
 /* lb_by55 - agent B promoted near-match 0x00539460-0x00539504: check_items (first drafted by tools/lbauto.py). */
 #include "lobby_a.h"
+short Ud_stock_item_num_ck3();   /* its real return type: was implicitly int (tools/check_kr_returns.py) */
 
 s32 check_items(u8 *p, s8 stocked) {
     s16 have;

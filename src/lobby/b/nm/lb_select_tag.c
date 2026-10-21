@@ -2,6 +2,8 @@
 #define flfntLocate flfntLocate_hdr
 #define font_print_double font_print_double_hdr
 #include "lobby_b.h"
+signed char Lb_get_quest_type();   /* its real return type: was implicitly int (tools/check_kr_returns.py) */
+unsigned short Lbs_GetClassAdd();   /* its real return type: was implicitly int (tools/check_kr_returns.py) */
 #include "lbsys_g.h"
 #undef flfntLocate
 #undef font_print_double

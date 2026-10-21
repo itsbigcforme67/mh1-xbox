@@ -1,5 +1,8 @@
 /* em15 draft */
 #include "em.h"
+unsigned char Em_Dmg_Sys();   /* its real return type: was implicitly int (tools/check_kr_returns.py) */
+unsigned char em15_fly_adjy2();   /* its real return type: was implicitly int (tools/check_kr_returns.py) */
+unsigned short em15_senkai_target();   /* its real return type: was implicitly int (tools/check_kr_returns.py) */
 #include "game.h"
 #include "fl.h"
 #include "pl.h"

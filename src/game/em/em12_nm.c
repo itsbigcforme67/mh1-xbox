@@ -96,7 +96,7 @@ void em_act_set(EMW *, int, u16);
 s16 em_hp_vital_set(EMW *, s16);
 void flvecCopy(f32 *, f32 *);
 f32 CalcDistanceXZ(f32 *, f32 *);
-int calc_vec_ang(f32, f32, f32, f32);
+unsigned short calc_vec_ang(f32, f32, f32, f32);
 void flvecRotY(f32 *, f32);
 void em_cmd_reset(EMW *);
 void Eft16_set_ex(EMW *, int, int);

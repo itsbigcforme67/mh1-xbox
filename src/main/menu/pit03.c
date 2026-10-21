@@ -5,6 +5,10 @@
 #include "pl.h"
 
 #include "version.h"
+#ifndef __MWERKS__
+short Pl_item_num_ck();   /* (declared before its first use) */
+short act_ck();   /* (declared before its first use) */
+#endif
 extern u8 Item_data[327][ITEM_ROW];
 extern u8 PIT_TEX[];
 extern u8 PitMenu[];
@@ -13,8 +17,16 @@ int load_texlist();
 int mkTexture();
 int mkmapTexture();
 int se_req();
+#ifdef __MWERKS__
 int act_ck();
+#else
+short act_ck();   /* the real return type (tools/check_kr_returns.py) */
+#endif
+#ifdef __MWERKS__
 int Pl_item_num_ck();
+#else
+short Pl_item_num_ck();   /* the real return type (tools/check_kr_returns.py) */
+#endif
 int pl_flag_ck();
 s16 Pl_trap_use_ck();
 int Nikuyaki_ck();

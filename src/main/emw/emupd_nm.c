@@ -76,7 +76,7 @@ void func_536BC0(EMX *, int);
 void func_539C90(EMX *);
 void func_539C40(EMX *);
 void func_53A2B0(EMX *);
-int Em_max_parts_get(int);
+unsigned char Em_max_parts_get(int);
 void em_init_sub(EMX *);
 void em_dur_init(EMX *);
 void World_calc(EMX *);

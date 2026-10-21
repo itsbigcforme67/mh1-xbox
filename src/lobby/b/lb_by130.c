@@ -1,6 +1,7 @@
 /* lb_by130 - agent B 0x0053A9B0-0x0053AB4C: item_to_stack (shop: put the bought item / gun part into the box). The list/cur loads
  * through a u16 pointer local give the original operand order of the entry address. */
 #include "lobby_s.h"
+unsigned char Warehouse_equip_stack();   /* its real return type: was implicitly int (tools/check_kr_returns.py) */
 #include "lbsys_g.h"
 extern s16 armorIndex;
 extern char User_data[];

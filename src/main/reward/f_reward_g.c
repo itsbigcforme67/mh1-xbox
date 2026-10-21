@@ -82,7 +82,7 @@ void se_stop_all();
 void all_reset();
 int strlen();
 int Hunter_point_add();
-int Get_hunter_rank();
+unsigned char Get_hunter_rank();
 void Gold_add();
 char *Quest_str_get();
 

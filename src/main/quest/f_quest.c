@@ -22,7 +22,11 @@ typedef char *va_list;
 extern s16 questName[];
 int func_63AF40();
 void load_file_mdl();
+#ifdef __MWERKS__
 int Get_hunter_rank();
+#else
+unsigned char Get_hunter_rank();   /* the real return type (tools/check_kr_returns.py) */
+#endif
 int Online_ck();
 void net_send_sys();
 extern char lit_656_0036B1F0[];
@@ -59,14 +63,22 @@ typedef struct HAGI {
 extern HAGI *em_hagi_type_tbl[];
 void get_joint_pos_em();
 f32 flSqrt(f32);
+#ifdef __MWERKS__
 int Item_get_ck();
+#else
+unsigned short Item_get_ck();   /* the real return type (tools/check_kr_returns.py) */
+#endif
 int strlen();
 int vsprintf();
 void set01_set2_use_mem();
 extern char lit_1730_0036B290[];
 int Quest_f_dra_ck();
 extern u16 capture_type_tbl[];
+#ifdef __MWERKS__
 int Pl_item_num_ck();
+#else
+short Pl_item_num_ck();   /* the real return type (tools/check_kr_returns.py) */
+#endif
 void func_535D20();
 extern s32 quest_timer_disp_tbl[][2];
 extern char lit_2393[];
@@ -2590,6 +2602,11 @@ static void em_herb_set(void)
 asm void Quest_net_sub(void)
 {
 #include "Quest_net_sub.inc"
+#ifndef __MWERKS__
+short Pl_item_num_ck();   /* (declared before its first use) */
+unsigned char Get_hunter_rank();   /* (declared before its first use) */
+unsigned short Item_get_ck();   /* (declared before its first use) */
+#endif
 }
 #endif
 #endif

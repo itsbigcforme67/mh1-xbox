@@ -5,6 +5,9 @@
 #include "ud.h"
 #include "em.h"
 #include "lbsys_g.h"
+#ifndef __MWERKS__
+unsigned short Get_sw2();   /* (declared before its first use) */
+#endif
 
 int Lb_put_npc_default();
 void lb_talk_init();
@@ -952,7 +955,11 @@ void Lb_reset_talk_count(void) {
     }
 }
 
+#ifdef __MWERKS__
 int Get_sw2();
+#else
+unsigned short Get_sw2();   /* the real return type (tools/check_kr_returns.py) */
+#endif
 int NPC_Message();
 
 typedef struct LB_TALKENT {

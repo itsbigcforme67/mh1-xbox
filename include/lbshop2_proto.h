@@ -34,7 +34,11 @@ extern void flfntSetSize();
 extern void font_print_ex();
 extern void font_print_sp();
 extern void font_set_palette();
+#ifdef __MWERKS__
 extern int Equip_moji_color_rare();
+#else
+extern unsigned char Equip_moji_color_rare();   /* the real return type (tools/check_kr_returns.py) */
+#endif
 extern u8 lb_shop_msg[];
 extern char lit_324_0065E1D0[];
 extern char lit_325_0065E1D8[];

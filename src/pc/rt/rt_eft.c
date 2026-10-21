@@ -373,7 +373,7 @@ static void stack_pull(void **st, s8 *cnt, void *p)
 
 /* push_senko (0x16A570) also runs Em_Senko_Ck(p) (game.bin 0x539340: the
  * flash blinds the monsters that see it) when it takes the entry. */
-int Em_Senko_Ck(void *p);
+unsigned char Em_Senko_Ck(void *p);
 int push_senko(void *p)
 {
     int i;

@@ -32,7 +32,7 @@ typedef struct STG_MV {
 
 STG_MV *Stage_mv_data_get();
 f32 flSqrt(f32);
-int hit_point_cbd(f32, f32, f32 *, f32 *, f32 *);
+unsigned char hit_point_cbd(f32, f32, f32 *, f32 *, f32 *);
 void Pl_ofs_set();
 void net_send_pl();
 void se_req2();

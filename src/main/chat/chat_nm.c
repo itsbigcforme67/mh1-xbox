@@ -2,6 +2,7 @@
  * windows (status, equipment), reibun (preset phrases). Near-match C, not built; matching runs are
  * built from it as chatNN.c. Field meanings are guesses. */
 #include "types.h"
+unsigned char Get_weapon_job();   /* its real return type: was implicitly int (tools/check_kr_returns.py) */
 #include "menu.h"
 #include "ud.h"
 #include "pl.h"
@@ -1315,13 +1316,13 @@ extern char *Skill_name[];
 extern u8 my_user_id[];
 int Event_flag_ck(int);
 void Get_hunter_status(void *, u8 *, int *, int *);
-int Get_weapon_job2(u8, u16);
+unsigned char Get_weapon_job2(u8, u16);
 void PrintPlayerJob(void *);
 void PlayerEquipmentWindow(PLW *);
 void Put_comment(int, int, int, void *);
 
 int Get_equip_name(u8, u16);
-int Get_equip_rare(u8, u16);
+unsigned char Get_equip_rare(u8, u16);
 #ifndef VERSION_MHG    /* G: src/main/menu/status_g.c (five pages, G tables) */
 void PlayerStatusWindow(u8 *pl, int tab) {
     char buf[0x40];
@@ -1412,7 +1413,7 @@ extern u8 menu_stat_icon_tbl1[5];
 extern u8 menu_stat_icon_tbl2[8];
 extern char lit_3652[];
 int Get_equip_name(u8, u16);
-int Get_equip_rare(u8, u16);
+unsigned char Get_equip_rare(u8, u16);
 
 void PlayerEquipmentWindow(PLW *pl) {
     PFLP8 q;
@@ -1581,9 +1582,9 @@ extern char lit_4172[];
 extern char lit_4173[];
 void *Get_equip_data_ptr(void *);
 void font_print_strings(int, int, void *, int);
-int Get_bowgun_atk(void *);
-int Get_weapon_job(void *);
-int Get_equip_rare(u8, u16);
+short Get_bowgun_atk(void *);
+unsigned char Get_weapon_job(void *);
+unsigned char Get_equip_rare(u8, u16);
 void sword_zokusei(u8 *, int, s16);
 void slash_level_bar(u8 *, s16, f32);
 
@@ -1970,7 +1971,7 @@ void EquipmentCompareWindowA(u8 *cur, u8 *other, s16 x, s16 y, int page, int alp
 extern u8 Battle_type[];
 extern s16 *Pl_slash_tbl[];
 extern int slash_bar_color[];
-f32 flps0009(void *);
+int flps0009(void *);
 
 /* asm 0x27B3D0: the two end caps are triangles (flps0009: 3 points + colour); m2c had them as a 4-short quad */
 void slash_level_bar(u8 *pl, s16 y, f32 x) {

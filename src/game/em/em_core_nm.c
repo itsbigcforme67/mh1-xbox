@@ -26,7 +26,7 @@ extern f32 D_3E4C9C[3];
 f32 flvecCalcDistance(f32 *, f32 *);
 u16 Em_Calc_angY(f32 *, f32 *);
 void hit_line2_pk(f32 *, f32 *, void *);
-int hit_line_sphr2(void *, EM_SPOT *, f32);
+unsigned char hit_line_sphr2(void *, EM_SPOT *, f32);
 void cpRotMatrix(s32 *, void *);
 void frame_init(EMW *, u16, s16, int);
 int em_pl_pos_set(EMW *, u8, f32 *);

@@ -1,5 +1,9 @@
 /* lb_v16 - offline guild quest table 0x005CA3D0-0x005CA8C0: Lb_make_quest_tbl_local (fills lb_quest_info rows from the offline tables, key quest, shuffle). */
 #include "types.h"
+#ifndef __MWERKS__
+unsigned char get_flag_quest();   /* (declared before its first use) */
+unsigned char get_new_quest();   /* (declared before its first use) */
+#endif
 int ran_suu();
 extern u8 *quest_local_tbl[];
 extern u8 lb_quest_info[];
@@ -8,8 +12,16 @@ extern u8 key_quest;
 extern s8 key_quest_num;
 int lb_get_quest_level();
 int lb_set_key_quest_local();
+#ifdef __MWERKS__
 int get_new_quest();
+#else
+unsigned char get_new_quest();   /* the real return type (tools/check_kr_returns.py) */
+#endif
+#ifdef __MWERKS__
 int get_flag_quest();
+#else
+unsigned char get_flag_quest();   /* the real return type (tools/check_kr_returns.py) */
+#endif
 int Quest_clear_bit_ck();
 int Event_flag_ck();
 void Event_flag_set();

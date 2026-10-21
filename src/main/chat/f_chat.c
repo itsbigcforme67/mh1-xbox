@@ -1317,7 +1317,11 @@ extern char *Skill_name[];
 extern u8 my_user_id[];
 int Event_flag_ck(int);
 void Get_hunter_status(void *, u8 *, int *, int *);
+#ifdef __MWERKS__
 int Get_weapon_job2(u8, u16);
+#else
+unsigned char Get_weapon_job2(u8, u16);   /* the real return type (tools/check_kr_returns.py) */
+#endif
 void PrintPlayerJob(void *);
 void PlayerEquipmentWindow(PLW *);
 void Put_comment(int, int, int, void *);
@@ -1342,7 +1346,11 @@ extern u8 menu_stat_icon_tbl1[5];
 extern u8 menu_stat_icon_tbl2[8];
 extern char lit_3652[];
 int Get_equip_name(u8, u16);
+#ifdef __MWERKS__
 int Get_equip_rare(u8, u16);
+#else
+unsigned char Get_equip_rare(u8, u16);   /* the real return type (tools/check_kr_returns.py) */
+#endif
 
 #if !defined(G_PART)
 void PlayerEquipmentWindow(PLW *pl) {
@@ -1527,9 +1535,21 @@ extern char lit_4172[];
 extern char lit_4173[];
 void *Get_equip_data_ptr(void *);
 void font_print_strings(int, int, void *, int);
+#ifdef __MWERKS__
 int Get_bowgun_atk(void *);
+#else
+short Get_bowgun_atk(void *);   /* the real return type (tools/check_kr_returns.py) */
+#endif
+#ifdef __MWERKS__
 int Get_weapon_job(void *);
+#else
+unsigned char Get_weapon_job(void *);   /* the real return type (tools/check_kr_returns.py) */
+#endif
+#ifdef __MWERKS__
 int Get_equip_rare(u8, u16);
+#else
+unsigned char Get_equip_rare(u8, u16);   /* the real return type (tools/check_kr_returns.py) */
+#endif
 static void sword_zokusei(u8 *, int, s16);
 static void slash_level_bar(u8 *, s16);
 
@@ -1619,7 +1639,11 @@ void EquipmentCompareWindowA(u8 *cur, u8 *other, s16 x, s16 y, int page, int alp
 extern u8 Battle_type[];
 extern s16 *Pl_slash_tbl[];
 extern int slash_bar_color[];
+#ifdef __MWERKS__
 f32 flps0009(void *);
+#else
+int flps0009(void *);   /* the real return type (tools/check_kr_returns.py) */
+#endif
 
 /* original bytes: build/raw/slash_level_bar.inc (config/c_rawfuncs.txt) */
 #ifdef __MWERKS__
@@ -1721,6 +1745,12 @@ static int zen_kigou_suuji_chk(u8 *);
 asm static int ng_word_sub(char *text, char *ng, s8 mode)
 {
 #include "ng_word_sub.inc"
+#ifndef __MWERKS__
+short Get_bowgun_atk(void *);   /* (declared before its first use) */
+unsigned char Get_equip_rare(u8, u16);   /* (declared before its first use) */
+unsigned char Get_weapon_job(void *);   /* (declared before its first use) */
+unsigned char Get_weapon_job2(u8, u16);   /* (declared before its first use) */
+#endif
 }
 #endif
 #endif

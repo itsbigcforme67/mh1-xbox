@@ -1,5 +1,8 @@
 /* lb_bz143 - lobby UI/client 0x005C2180-0x005C2278: id_select_02 (first drafted by tools/lbauto.py). */
 #include "lobby_a.h"
+#ifndef __MWERKS__
+unsigned short Get_sw2();   /* its real return type: was implicitly int (tools/check_kr_returns.py) */
+#endif
 extern s8 ret_stat_0038A900;
 typedef struct { u8 pad0000[0x2]; s8 x0002; u8 x0003; u8 pad0004[0x8]; s8 x000C; } ARG_id_select_02_arg0;
 

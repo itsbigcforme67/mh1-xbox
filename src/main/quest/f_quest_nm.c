@@ -48,7 +48,7 @@ void Quest_pl_stage_init();
 int Quest_time_get();
 void quest_em_init();
 void Ext_pick_point_init();
-int Get_hunter_rank();
+unsigned char Get_hunter_rank();
 int Online_ck();
 void net_send_sys();
 void station_em_set();
@@ -118,7 +118,7 @@ void Ext_pick_point_clr();
 void Ext_pick_point_pos();
 void Em_hagi_point_clr();
 f32 flSqrt(f32);
-int Item_get_ck();
+unsigned short Item_get_ck();
 
 int strlen();
 int vsprintf();
@@ -134,7 +134,7 @@ void quest_em_init_sub2();
 int Quest_f_dra_ck();
 
 extern u16 capture_type_tbl[];
-int Pl_item_num_ck();
+short Pl_item_num_ck();
 void em_herb_set();
 int quest_enemy_ck_sub2();
 void func_535D20();

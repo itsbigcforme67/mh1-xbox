@@ -1,5 +1,8 @@
 /* lb_bz01 - lobby UI/client 0x005AF260-0x005AF2B8: Lb_put_itemRare (first drafted by tools/lbauto.py). */
 #include "lobby_a.h"
+#ifndef __MWERKS__
+unsigned char Equip_moji_color_rare();   /* its real return type: was implicitly int (tools/check_kr_returns.py) */
+#endif
 extern char lit_333_0065E1E0[];
 
 void Lb_put_itemRare(int arg0, int arg1, int arg2) {

@@ -41,7 +41,11 @@ int Item_ok_chk(int, void *);
 int item_present_chk();
 int func_5D8370(s8);
 void func_5CB310(u8);
+#ifdef __MWERKS__
 int Item_preparation_rate_0(void *, int);
+#else
+signed char Item_preparation_rate_0(void *, int);   /* the real return type (tools/check_kr_returns.py) */
+#endif
 void player_name_id_print(void *);
 void font_print_quest_money(int);
 void font_print_quest_time(int);
@@ -97,7 +101,11 @@ void disp_map_sign(int x, int y, s16 timer, int color);
 void wyvn_efct_ripple(void);
 void flmatSetZYX33(f32, f32, f32, FLMAT *);
 void flvecApplyMat33(f32 *, f32 *, FLMAT *);
+#ifdef __MWERKS__
 int Pl_item_num_ck(PLW *, int);
+#else
+short Pl_item_num_ck(PLW *, int);   /* the real return type (tools/check_kr_returns.py) */
+#endif
 typedef struct PFLPS2 {
     s16 s[4];
     u32 col;
@@ -115,6 +123,13 @@ typedef struct PFLP12 {
 
 /* ===== item window and gauges (0x12E3E0-0x1306A0) ===== */
 #include "version.h"
+#ifndef __MWERKS__
+short Get_Use_itemnum(PLW *);   /* (declared before its first use) */
+short Pl_item_num_ck(PLW *, int);   /* (declared before its first use) */
+signed char Item_preparation_rate_0(void *, int);   /* (declared before its first use) */
+unsigned char Pl_slash_lv_ck(PLW *);   /* (declared before its first use) */
+unsigned short Pl_shell_set(PLW *, u16, int);   /* (declared before its first use) */
+#endif
 extern u8 Item_data[][ITEM_ROW];
 extern u32 item_col_tbl[];
 extern u8 item_normal_base[];
@@ -198,12 +213,20 @@ extern u8 pf_chat_cnfg[], pf_chcnfg_reibun[], pf_lb_chcnfg_sendpl[];
 extern u8 str_tbl_reibun0[];
 extern void *q_sendpl_list[];
 extern void *lb_sendpl_list[];
+#ifdef __MWERKS__
 int Pl_slash_lv_ck(PLW *);
+#else
+unsigned char Pl_slash_lv_ck(PLW *);   /* the real return type (tools/check_kr_returns.py) */
+#endif
 int PachingerCamChk(PLW *);
 s8 GetPachingerInfo(PLW *, u8 *, u8 *, f32 *);
 void Put_sprite_rotate(void *, s8, ...);
 f32 flCos(f32);
+#ifdef __MWERKS__
 int Pl_shell_set(PLW *, u16, int);
+#else
+unsigned short Pl_shell_set(PLW *, u16, int);   /* the real return type (tools/check_kr_returns.py) */
+#endif
 void disp_gun_load_mess(int);
 void func_5B4B20();
 int Game_clear_ck(int);
@@ -301,9 +324,17 @@ f32 flSqrt(f32);
 extern u8 item_select_base[];
 extern u8 btn_item_sel_3360[];
 extern s16 sy_tbl_3417[];
+#ifdef __MWERKS__
 int Get_Use_itemnum(PLW *);
+#else
+short Get_Use_itemnum(PLW *);   /* the real return type (tools/check_kr_returns.py) */
+#endif
 u16 item_sel_sub(PLW *, u16, int);
+#ifdef __MWERKS__
 int Pl_shell_set(PLW *, u16, int);
+#else
+unsigned short Pl_shell_set(PLW *, u16, int);   /* the real return type (tools/check_kr_returns.py) */
+#endif
 
 
 /* 0x133550 */

@@ -1,5 +1,7 @@
 /* PC note: the shop-list fields at +0x24 (lh) and +0x26 (lhu) are 16-bit in the asm (0x53B764, 0x53B7B4); reading them as s32 crashed the PC forge screen. */
 #include "lobby_s.h"
+unsigned char Equip_moji_color_rare();   /* its real return type: was implicitly int (tools/check_kr_returns.py) */
+unsigned char Get_equip_rare();   /* its real return type: was implicitly int (tools/check_kr_returns.py) */
 #include "lbsys_g.h"
 extern char kakou_tbl[];
 extern char shopList2[];
