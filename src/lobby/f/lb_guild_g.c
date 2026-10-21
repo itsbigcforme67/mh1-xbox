@@ -110,7 +110,7 @@ int Lbs_InRoomCheck();
 int Lb_put_npc_default();
 void Lb_menu_quest_info();
 void Lb_set_mini_data();
-int Lb_get_quest_type();
+s8 Lb_get_quest_type();   /* s8 (lb_t01.c): declared int, the Xbox clang read EAX's upper bytes: type 16385, crash (21 Oct 2026) */
 void Lb_num_to_str();
 int sprintf();
 char *strcpy();

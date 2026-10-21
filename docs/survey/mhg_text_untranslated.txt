@@ -3,14 +3,14 @@ game:0x663990	code literals (game)	G only	in Portable
 game:0x67AC14	code literals (game)	G only
 game:0x67ADC4	code literals (game)	G only
 game:0x67ADD4	code literals (game)	G only
-game:0x6886D4	code literals (game)	G only	in Portable
+game:0x6886D4	code literals (game)	G only
 game:0x6982A8	code literals (game)	G only	in Portable
 game:0x698600	code literals (game)	G only	in Portable
 game:0x6A8370	code literals (game)	G only	in Portable
-game:0x6CD730	code literals (game)	G only	in Portable
-game:0x6CD748	code literals (game)	G only	in Portable
-game:0x6D1FE0	code literals (game)	G only	in Portable
-game:0x6D2000	code literals (game)	G only	in Portable
+game:0x6CD730	code literals (game)	G only
+game:0x6CD748	code literals (game)	G only
+game:0x6D1FE0	code literals (game)	G only
+game:0x6D2000	code literals (game)	G only
 game:0x6DB0D4	code literals (game)	G only	in Portable
 game:0x6DB9E0	code literals (game)	G only	ambiguous: the English names a button the Japanese does not
 game:0x6DBC40	tutorial pages	edited in G	ambiguous: the English names a button the Japanese does not
@@ -86,12 +86,12 @@ lobby:0x5B6AB8	code literals (lobby)	G only
 lobby:0x5C99B0	code literals (lobby)	G only
 lobby:0x5CE000	code literals (lobby)	G only
 lobby:0x5CE174	code literals (lobby)	G only
-lobby:0x5E8E40	code literals (lobby)	G only	in Portable
-lobby:0x5E8E80	code literals (lobby)	G only	in Portable
-lobby:0x5E8F20	code literals (lobby)	G only	in Portable
-lobby:0x5E8F38	code literals (lobby)	G only	in Portable
-lobby:0x5E8F80	code literals (lobby)	G only	in Portable
-lobby:0x5E8FA0	code literals (lobby)	G only	in Portable
+lobby:0x5E8E40	code literals (lobby)	G only
+lobby:0x5E8E80	code literals (lobby)	G only
+lobby:0x5E8F20	code literals (lobby)	G only
+lobby:0x5E8F38	code literals (lobby)	G only
+lobby:0x5E8F80	code literals (lobby)	G only
+lobby:0x5E8FA0	code literals (lobby)	G only
 lobby:0x5E9330	other tables (lit_188_0065EF) [G table]	G only
 lobby:0x5E9E30	other tables (lit_198_0065F) [G table]	G only	in Portable
 lobby:0x5EA460	other tables (lit_224_0065FA) [G table]	G only	in Portable
@@ -166,7 +166,7 @@ lobby:0x5F80C0	other tables (lit_445) [G table]	G only	in Portable
 lobby:0x5F8100	other tables (lit_445) [G table]	G only	in Portable
 lobby:0x5F8230	other tables (lit_445) [G table]	G only	in Portable
 lobby:0x5F8360	other tables (lit_445) [G table]	G only	in Portable
-lobby:0x5F8404	code literals (lobby)	G only	in Portable
+lobby:0x5F8404	code literals (lobby)	G only
 lobby:0x5F8490	other tables (lit_445) [G table]	G only	in Portable
 lobby:0x5F85C0	other tables (lit_445) [G table]	G only	in Portable
 lobby:0x5F86F0	other tables (lit_445) [G table]	G only	in Portable
@@ -210,11 +210,11 @@ lobby:0x5FB240	other tables (lit_445) [G table]	G only
 lobby:0x5FB370	other tables (lit_445) [G table]	G only
 lobby:0x5FB4A0	other tables (lit_445) [G table]	G only
 lobby:0x5FB5D0	other tables (lit_445) [G table]	G only
-lobby:0x5FBD00	code literals (lobby)	G only	in Portable
-lobby:0x5FDB00	code literals (lobby)	G only	in Portable
-lobby:0x5FDB20	code literals (lobby)	G only	in Portable
-lobby:0x5FDB40	code literals (lobby)	G only	in Portable
-lobby:0x5FDCC0	code literals (lobby)	G only	in Portable
+lobby:0x5FBD00	code literals (lobby)	G only
+lobby:0x5FDB00	code literals (lobby)	G only
+lobby:0x5FDB20	code literals (lobby)	G only
+lobby:0x5FDB40	code literals (lobby)	G only
+lobby:0x5FDCC0	code literals (lobby)	G only
 lobby:0x5FE140	village NPC lines and talk	edited in G
 lobby:0x5FE230	village NPC lines and talk [G table]	G only
 lobby:0x5FE270	village NPC lines and talk [G table]	G only
@@ -656,8 +656,8 @@ lobby:0x62DC40	village NPC lines and talk	edited in G
 lobby:0x62DD20	village NPC lines and talk [G table]	G only
 lobby:0x62F15C	code literals (lobby)	G only	in Portable
 lobby:0x631E6C	code literals (lobby)	G only	in Portable
-lobby:0x6373C0	code literals (lobby)	G only	in Portable
-lobby:0x6373D8	code literals (lobby)	G only	in Portable
+lobby:0x6373C0	code literals (lobby)	G only
+lobby:0x6373D8	code literals (lobby)	G only
 lobby:0x637620	online, keyboard, word filter	twin without US English	in Portable
 lobby:0x6376E0	online, keyboard, word filter	twin without US English	in Portable
 lobby:0x637780	online, keyboard, word filter	twin without US English	in Portable
@@ -735,11 +735,6 @@ lobby:0x6400C8	other tables (pit_help_itembox_str) [G table]	G only	in Portable
 lobby:0x6400D8	village / plaza / guild / shop UI [G table]	G only	in Portable
 lobby:0x6400E0	village / plaza / guild / shop UI [G table]	G only	in Portable
 lobby:0x6400F0	village / plaza / guild / shop UI [G table]	G only	in Portable
-lobby:0x6400F8	village / plaza / guild / shop UI [G table]	G only	in Portable	ambiguous: the same Japanese has two different English texts
-lobby:0x640108	village / plaza / guild / shop UI [G table]	G only	in Portable	ambiguous: the same Japanese has two different English texts
-lobby:0x640118	village / plaza / guild / shop UI [G table]	G only	in Portable	ambiguous: the same Japanese has two different English texts
-lobby:0x640128	village / plaza / guild / shop UI [G table]	G only	in Portable	ambiguous: the same Japanese has two different English texts
-lobby:0x640138	village / plaza / guild / shop UI [G table]	G only	in Portable	ambiguous: the same Japanese has two different English texts
 lobby:0x640148	village / plaza / guild / shop UI [G table]	G only	in Portable
 lobby:0x640158	village / plaza / guild / shop UI [G table]	G only	in Portable
 lobby:0x640188	village / plaza / guild / shop UI [G table]	G only	in Portable
@@ -950,36 +945,36 @@ lobby:0x644830	village / plaza / guild / shop UI [G table]	G only
 lobby:0x644B90	code literals (lobby)	G only	in Portable
 lobby:0x645FA8	other tables (special_tag_dat)	twin without US English
 lobby:0x645FC0	other tables (special_tag_dat)	twin without US English
-main:0x25D810	code literals (main)	G only	in Portable
-main:0x25D82C	code literals (main)	G only	in Portable
+main:0x25D810	code literals (main)	G only
+main:0x25D82C	code literals (main)	G only
 main:0x25D862	code literals (main)	G only	in Portable
 main:0x25D866	code literals (main)	G only	in Portable
-main:0x25E590	code literals (main)	G only	in Portable
-main:0x25E5B0	code literals (main)	G only	in Portable
-main:0x25E5D0	code literals (main)	G only	in Portable
-main:0x25E5E8	code literals (main)	G only	in Portable
-main:0x25E600	code literals (main)	G only	in Portable
-main:0x25E618	code literals (main)	G only	in Portable
-main:0x25E640	code literals (main)	G only	in Portable
-main:0x25E6A0	code literals (main)	G only	in Portable
-main:0x25E790	code literals (main)	G only	in Portable
-main:0x25E7B0	code literals (main)	G only	in Portable
-main:0x25E7E0	code literals (main)	G only	in Portable
-main:0x25E800	code literals (main)	G only	in Portable
-main:0x25E830	code literals (main)	G only	in Portable
-main:0x25E850	code literals (main)	G only	in Portable
-main:0x25E870	code literals (main)	G only	in Portable
-main:0x25E8C0	code literals (main)	G only	in Portable
-main:0x25E8E0	code literals (main)	G only	in Portable
+main:0x25E590	code literals (main)	G only
+main:0x25E5B0	code literals (main)	G only
+main:0x25E5D0	code literals (main)	G only
+main:0x25E5E8	code literals (main)	G only
+main:0x25E600	code literals (main)	G only
+main:0x25E618	code literals (main)	G only
+main:0x25E640	code literals (main)	G only
+main:0x25E6A0	code literals (main)	G only
+main:0x25E790	code literals (main)	G only
+main:0x25E7B0	code literals (main)	G only
+main:0x25E7E0	code literals (main)	G only
+main:0x25E800	code literals (main)	G only
+main:0x25E830	code literals (main)	G only
+main:0x25E850	code literals (main)	G only
+main:0x25E870	code literals (main)	G only
+main:0x25E8C0	code literals (main)	G only
+main:0x25E8E0	code literals (main)	G only
 main:0x2897C2	code literals (main)	G only	in Portable
 main:0x2A1ED0	other tables (num_chars)	twin without US English
 main:0x2A347A	code literals (main)	G only	in Portable
 main:0x2A3512	code literals (main)	G only	in Portable
-main:0x2A42F4	code literals (main)	G only	in Portable
-main:0x2A4324	code literals (main)	G only	in Portable
-main:0x2A4354	code literals (main)	G only	in Portable
-main:0x2A4384	code literals (main)	G only	in Portable
-main:0x2A43B4	code literals (main)	G only	in Portable
+main:0x2A42F4	code literals (main)	G only
+main:0x2A4324	code literals (main)	G only
+main:0x2A4354	code literals (main)	G only
+main:0x2A4384	code literals (main)	G only
+main:0x2A43B4	code literals (main)	G only
 main:0x2A43D0	online, keyboard, word filter	twin without US English	in Portable
 main:0x2A43E0	code literals (main)	G only	in Portable
 main:0x2A43F0	code literals (main)	G only	in Portable
@@ -1004,16 +999,16 @@ main:0x2A4530	code literals (main)	G only
 main:0x2A4540	code literals (main)	G only
 main:0x2A4A0E	code literals (main)	G only
 main:0x2A7060	code literals (main)	G only
-main:0x2B0200	code literals (main)	G only	in Portable
-main:0x2B0218	code literals (main)	G only	in Portable
-main:0x2B0230	code literals (main)	G only	in Portable
-main:0x2B0248	code literals (main)	G only	in Portable
-main:0x2B0260	code literals (main)	G only	in Portable
-main:0x2B0C50	code literals (main)	G only	in Portable
-main:0x2B0C70	code literals (main)	G only	in Portable
-main:0x2B0C90	code literals (main)	G only	in Portable
-main:0x2B0CB0	code literals (main)	G only	in Portable
-main:0x2B0CD0	code literals (main)	G only	in Portable
+main:0x2B0200	code literals (main)	G only
+main:0x2B0218	code literals (main)	G only
+main:0x2B0230	code literals (main)	G only
+main:0x2B0248	code literals (main)	G only
+main:0x2B0260	code literals (main)	G only
+main:0x2B0C50	code literals (main)	G only
+main:0x2B0C70	code literals (main)	G only
+main:0x2B0C90	code literals (main)	G only
+main:0x2B0CB0	code literals (main)	G only
+main:0x2B0CD0	code literals (main)	G only
 main:0x2B1750	code literals (main)	G only
 main:0x2B1770	code literals (main)	G only
 main:0x2B1788	code literals (main)	G only
@@ -1036,28 +1031,28 @@ main:0x2BEAC0	online, keyboard, word filter	twin without US English	in Portable
 main:0x2BEAC8	online, keyboard, word filter	twin without US English	in Portable
 main:0x2BEAE0	online, keyboard, word filter	twin without US English	in Portable
 main:0x2BEAE8	online, keyboard, word filter	twin without US English	in Portable
-main:0x2BEB10	online, keyboard, word filter	twin without US English	in Portable
+main:0x2BEB10	online, keyboard, word filter	twin without US English
 main:0x2BEB18	online, keyboard, word filter	twin without US English	in Portable
-main:0x2BEB30	online, keyboard, word filter	twin without US English	in Portable
+main:0x2BEB30	online, keyboard, word filter	twin without US English
 main:0x2BEB38	online, keyboard, word filter	twin without US English	in Portable
-main:0x2BEB50	online, keyboard, word filter	twin without US English	in Portable
+main:0x2BEB50	online, keyboard, word filter	twin without US English
 main:0x2BEB58	online, keyboard, word filter	twin without US English	in Portable
-main:0x2BEB70	online, keyboard, word filter	twin without US English	in Portable
+main:0x2BEB70	online, keyboard, word filter	twin without US English
 main:0x2BEB78	online, keyboard, word filter	twin without US English	in Portable
-main:0x2BEB90	online, keyboard, word filter	twin without US English	in Portable
+main:0x2BEB90	online, keyboard, word filter	twin without US English
 main:0x2BEB98	online, keyboard, word filter	twin without US English	in Portable
 main:0x2BEBF8	online, keyboard, word filter	twin without US English
 main:0x2BEC00	online, keyboard, word filter	twin without US English
-main:0x2BEC18	online, keyboard, word filter	twin without US English	in Portable
+main:0x2BEC18	online, keyboard, word filter	twin without US English
 main:0x2BEC20	online, keyboard, word filter	twin without US English	in Portable
-main:0x2BEC38	online, keyboard, word filter	twin without US English	in Portable
+main:0x2BEC38	online, keyboard, word filter	twin without US English
 main:0x2BEC40	online, keyboard, word filter	twin without US English	in Portable
 main:0x2BEC58	online, keyboard, word filter	twin without US English	in Portable
 main:0x2BEC60	online, keyboard, word filter	twin without US English	in Portable
-main:0x2BEC78	online, keyboard, word filter	twin without US English	in Portable
+main:0x2BEC78	online, keyboard, word filter	twin without US English
 main:0x2BEC80	online, keyboard, word filter	twin without US English	in Portable
-main:0x2BEC98	online, keyboard, word filter	twin without US English	in Portable
-main:0x2BECA0	online, keyboard, word filter	twin without US English	in Portable
+main:0x2BEC98	online, keyboard, word filter	twin without US English
+main:0x2BECA0	online, keyboard, word filter	twin without US English
 main:0x2BECD0	online, keyboard, word filter	twin without US English	in Portable
 main:0x2BECD8	online, keyboard, word filter	twin without US English	in Portable
 main:0x2BECF0	online, keyboard, word filter	twin without US English	in Portable
@@ -1066,7 +1061,7 @@ main:0x2BED10	online, keyboard, word filter	twin without US English	in Portable
 main:0x2BED18	online, keyboard, word filter	twin without US English	in Portable
 main:0x2BED30	online, keyboard, word filter	twin without US English	in Portable
 main:0x2BED38	online, keyboard, word filter	twin without US English	in Portable
-main:0x2BED50	online, keyboard, word filter	twin without US English	in Portable
+main:0x2BED50	online, keyboard, word filter	twin without US English
 main:0x2BED58	online, keyboard, word filter	twin without US English	in Portable
 main:0x2BED70	online, keyboard, word filter	twin without US English
 main:0x2BED78	online, keyboard, word filter	twin without US English
@@ -1114,19 +1109,19 @@ main:0x2BF028	online, keyboard, word filter	twin without US English	in Portable
 main:0x2BF030	online, keyboard, word filter	twin without US English	in Portable
 main:0x2BF048	online, keyboard, word filter	twin without US English	in Portable
 main:0x2BF050	online, keyboard, word filter	twin without US English	in Portable
-main:0x2BF068	online, keyboard, word filter	twin without US English	in Portable
-main:0x2BF070	online, keyboard, word filter	twin without US English	in Portable
+main:0x2BF068	online, keyboard, word filter	twin without US English
+main:0x2BF070	online, keyboard, word filter	twin without US English
 main:0x2BF088	online, keyboard, word filter	twin without US English	in Portable
 main:0x2BF090	online, keyboard, word filter	twin without US English	in Portable
 main:0x2BF0A8	online, keyboard, word filter	twin without US English	in Portable
 main:0x2BF0B0	online, keyboard, word filter	twin without US English	in Portable
-main:0x2BF0D8	online, keyboard, word filter	twin without US English	in Portable
+main:0x2BF0D8	online, keyboard, word filter	twin without US English
 main:0x2BF0E0	online, keyboard, word filter	twin without US English	in Portable
-main:0x2BF0F8	online, keyboard, word filter	twin without US English	in Portable
+main:0x2BF0F8	online, keyboard, word filter	twin without US English
 main:0x2BF100	online, keyboard, word filter	twin without US English	in Portable
-main:0x2BF118	online, keyboard, word filter	twin without US English	in Portable
-main:0x2BF120	online, keyboard, word filter	twin without US English	in Portable
-main:0x2BF138	online, keyboard, word filter	twin without US English	in Portable
+main:0x2BF118	online, keyboard, word filter	twin without US English
+main:0x2BF120	online, keyboard, word filter	twin without US English
+main:0x2BF138	online, keyboard, word filter	twin without US English
 main:0x2BF140	online, keyboard, word filter	twin without US English	in Portable
 main:0x2BF158	online, keyboard, word filter	twin without US English	in Portable
 main:0x2BF160	online, keyboard, word filter	twin without US English	in Portable
@@ -1150,28 +1145,28 @@ main:0x2BF2A8	online, keyboard, word filter	twin without US English
 main:0x2BF2B0	online, keyboard, word filter	twin without US English
 main:0x2BF2C8	online, keyboard, word filter	twin without US English
 main:0x2BF2D0	online, keyboard, word filter	twin without US English
-main:0x2BF330	online, keyboard, word filter	twin without US English	in Portable
-main:0x2BF338	online, keyboard, word filter	twin without US English	in Portable
-main:0x2BF350	online, keyboard, word filter	twin without US English	in Portable
+main:0x2BF330	online, keyboard, word filter	twin without US English
+main:0x2BF338	online, keyboard, word filter	twin without US English
+main:0x2BF350	online, keyboard, word filter	twin without US English
 main:0x2BF358	online, keyboard, word filter	twin without US English	in Portable
 main:0x2BF370	online, keyboard, word filter	twin without US English	in Portable
-main:0x2BF378	online, keyboard, word filter	twin without US English	in Portable
+main:0x2BF378	online, keyboard, word filter	twin without US English
 main:0x2BF390	online, keyboard, word filter	twin without US English	in Portable
-main:0x2BF398	online, keyboard, word filter	twin without US English	in Portable
+main:0x2BF398	online, keyboard, word filter	twin without US English
 main:0x2BF3B0	online, keyboard, word filter	twin without US English	in Portable
 main:0x2BF3B8	online, keyboard, word filter	twin without US English	in Portable
-main:0x2BF3E0	online, keyboard, word filter	twin without US English	in Portable
+main:0x2BF3E0	online, keyboard, word filter	twin without US English
 main:0x2BF3E8	online, keyboard, word filter	twin without US English	in Portable
 main:0x2BF408	online, keyboard, word filter	twin without US English	in Portable
-main:0x2BF410	online, keyboard, word filter	twin without US English	in Portable
+main:0x2BF410	online, keyboard, word filter	twin without US English
 main:0x2BF428	online, keyboard, word filter	twin without US English	in Portable
-main:0x2BF430	online, keyboard, word filter	twin without US English	in Portable
+main:0x2BF430	online, keyboard, word filter	twin without US English
 main:0x2BF448	online, keyboard, word filter	twin without US English	in Portable
 main:0x2BF450	online, keyboard, word filter	twin without US English	in Portable
 main:0x2BF468	online, keyboard, word filter	twin without US English	in Portable
 main:0x2BF470	online, keyboard, word filter	twin without US English	in Portable
 main:0x2BF488	online, keyboard, word filter	twin without US English	in Portable
-main:0x2BF490	online, keyboard, word filter	twin without US English	in Portable
+main:0x2BF490	online, keyboard, word filter	twin without US English
 main:0x2BF4A8	online, keyboard, word filter	twin without US English
 main:0x2BF4B0	online, keyboard, word filter	twin without US English
 main:0x2BF4C8	online, keyboard, word filter	twin without US English
@@ -1220,15 +1215,15 @@ main:0x2BF7B0	online, keyboard, word filter	twin without US English
 main:0x2BF7B8	online, keyboard, word filter	twin without US English
 main:0x2BF7D0	online, keyboard, word filter	twin without US English
 main:0x2BF7D8	online, keyboard, word filter	twin without US English
-main:0x2BF7F0	online, keyboard, word filter	twin without US English	in Portable
-main:0x2BF7F8	online, keyboard, word filter	twin without US English	in Portable
+main:0x2BF7F0	online, keyboard, word filter	twin without US English
+main:0x2BF7F8	online, keyboard, word filter	twin without US English
 main:0x2BF810	online, keyboard, word filter	twin without US English	in Portable
 main:0x2BF818	online, keyboard, word filter	twin without US English	in Portable
-main:0x2BF830	online, keyboard, word filter	twin without US English	in Portable
-main:0x2BF838	online, keyboard, word filter	twin without US English	in Portable
+main:0x2BF830	online, keyboard, word filter	twin without US English
+main:0x2BF838	online, keyboard, word filter	twin without US English
 main:0x2BF850	online, keyboard, word filter	twin without US English	in Portable
-main:0x2BF858	online, keyboard, word filter	twin without US English	in Portable
-main:0x2BF870	online, keyboard, word filter	twin without US English	in Portable
+main:0x2BF858	online, keyboard, word filter	twin without US English
+main:0x2BF870	online, keyboard, word filter	twin without US English
 main:0x2BF878	online, keyboard, word filter	twin without US English	in Portable
 main:0x2BF890	online, keyboard, word filter	twin without US English
 main:0x2BF898	online, keyboard, word filter	twin without US English
@@ -1240,35 +1235,35 @@ main:0x2BF8F0	online, keyboard, word filter	twin without US English
 main:0x2BF8F8	online, keyboard, word filter	twin without US English
 main:0x2BF910	online, keyboard, word filter	twin without US English
 main:0x2BF918	online, keyboard, word filter	twin without US English
-main:0x2BF930	online, keyboard, word filter	twin without US English	in Portable
-main:0x2BF938	online, keyboard, word filter	twin without US English	in Portable
-main:0x2BF950	online, keyboard, word filter	twin without US English	in Portable
-main:0x2BF958	online, keyboard, word filter	twin without US English	in Portable
-main:0x2BF970	online, keyboard, word filter	twin without US English	in Portable
+main:0x2BF930	online, keyboard, word filter	twin without US English
+main:0x2BF938	online, keyboard, word filter	twin without US English
+main:0x2BF950	online, keyboard, word filter	twin without US English
+main:0x2BF958	online, keyboard, word filter	twin without US English
+main:0x2BF970	online, keyboard, word filter	twin without US English
 main:0x2BF978	online, keyboard, word filter	twin without US English	in Portable
-main:0x2BF990	online, keyboard, word filter	twin without US English	in Portable
+main:0x2BF990	online, keyboard, word filter	twin without US English
 main:0x2BF998	online, keyboard, word filter	twin without US English	in Portable
-main:0x2BF9B0	online, keyboard, word filter	twin without US English	in Portable
+main:0x2BF9B0	online, keyboard, word filter	twin without US English
 main:0x2BF9B8	online, keyboard, word filter	twin without US English	in Portable
-main:0x2BF9D8	online, keyboard, word filter	twin without US English	in Portable
+main:0x2BF9D8	online, keyboard, word filter	twin without US English
 main:0x2BF9E0	online, keyboard, word filter	twin without US English	in Portable
 main:0x2BF9F8	online, keyboard, word filter	twin without US English	in Portable
-main:0x2BFA00	online, keyboard, word filter	twin without US English	in Portable
-main:0x2BFA18	online, keyboard, word filter	twin without US English	in Portable
+main:0x2BFA00	online, keyboard, word filter	twin without US English
+main:0x2BFA18	online, keyboard, word filter	twin without US English
 main:0x2BFA20	online, keyboard, word filter	twin without US English	in Portable
-main:0x2BFA38	online, keyboard, word filter	twin without US English	in Portable
-main:0x2BFA40	online, keyboard, word filter	twin without US English	in Portable
-main:0x2BFA58	online, keyboard, word filter	twin without US English	in Portable
-main:0x2BFA60	online, keyboard, word filter	twin without US English	in Portable
-main:0x2BFA78	online, keyboard, word filter	twin without US English	in Portable
+main:0x2BFA38	online, keyboard, word filter	twin without US English
+main:0x2BFA40	online, keyboard, word filter	twin without US English
+main:0x2BFA58	online, keyboard, word filter	twin without US English
+main:0x2BFA60	online, keyboard, word filter	twin without US English
+main:0x2BFA78	online, keyboard, word filter	twin without US English
 main:0x2BFA80	online, keyboard, word filter	twin without US English	in Portable
-main:0x2BFA98	online, keyboard, word filter	twin without US English	in Portable
-main:0x2BFAA0	online, keyboard, word filter	twin without US English	in Portable
+main:0x2BFA98	online, keyboard, word filter	twin without US English
+main:0x2BFAA0	online, keyboard, word filter	twin without US English
 main:0x2BFAB8	online, keyboard, word filter	twin without US English	in Portable
-main:0x2BFAC0	online, keyboard, word filter	twin without US English	in Portable
+main:0x2BFAC0	online, keyboard, word filter	twin without US English
 main:0x2BFAD8	online, keyboard, word filter	twin without US English	in Portable
 main:0x2BFAE0	online, keyboard, word filter	twin without US English	in Portable
-main:0x2BFAF8	online, keyboard, word filter	twin without US English	in Portable
+main:0x2BFAF8	online, keyboard, word filter	twin without US English
 main:0x2BFB00	online, keyboard, word filter	twin without US English	in Portable
 main:0x2BFB18	online, keyboard, word filter	twin without US English
 main:0x2BFB20	online, keyboard, word filter	twin without US English
@@ -1327,16 +1322,16 @@ main:0x2BFE98	online, keyboard, word filter	twin without US English
 main:0x2BFEA0	online, keyboard, word filter	twin without US English
 main:0x2BFEB8	online, keyboard, word filter	twin without US English
 main:0x2BFEC0	online, keyboard, word filter	twin without US English
-main:0x2BFED8	online, keyboard, word filter	twin without US English	in Portable
+main:0x2BFED8	online, keyboard, word filter	twin without US English
 main:0x2BFEE0	online, keyboard, word filter	twin without US English	in Portable
 main:0x2BFEF8	online, keyboard, word filter	twin without US English	in Portable
-main:0x2BFF00	online, keyboard, word filter	twin without US English	in Portable
+main:0x2BFF00	online, keyboard, word filter	twin without US English
 main:0x2BFF18	online, keyboard, word filter	twin without US English	in Portable
 main:0x2BFF20	online, keyboard, word filter	twin without US English	in Portable
-main:0x2BFF38	online, keyboard, word filter	twin without US English	in Portable
-main:0x2BFF40	online, keyboard, word filter	twin without US English	in Portable
+main:0x2BFF38	online, keyboard, word filter	twin without US English
+main:0x2BFF40	online, keyboard, word filter	twin without US English
 main:0x2BFF58	online, keyboard, word filter	twin without US English	in Portable
-main:0x2BFF60	online, keyboard, word filter	twin without US English	in Portable
+main:0x2BFF60	online, keyboard, word filter	twin without US English
 main:0x2BFF78	online, keyboard, word filter	twin without US English
 main:0x2BFF80	online, keyboard, word filter	twin without US English
 main:0x2BFF98	online, keyboard, word filter	twin without US English
@@ -1347,28 +1342,28 @@ main:0x2BFFD8	online, keyboard, word filter	twin without US English
 main:0x2BFFE0	online, keyboard, word filter	twin without US English
 main:0x2BFFF8	online, keyboard, word filter	twin without US English
 main:0x2C0000	online, keyboard, word filter	twin without US English
-main:0x2C0018	online, keyboard, word filter	twin without US English	in Portable
+main:0x2C0018	online, keyboard, word filter	twin without US English
 main:0x2C0020	online, keyboard, word filter	twin without US English	in Portable
 main:0x2C0038	online, keyboard, word filter	twin without US English	in Portable
 main:0x2C0040	online, keyboard, word filter	twin without US English	in Portable
-main:0x2C0058	online, keyboard, word filter	twin without US English	in Portable
+main:0x2C0058	online, keyboard, word filter	twin without US English
 main:0x2C0060	online, keyboard, word filter	twin without US English	in Portable
 main:0x2C0078	online, keyboard, word filter	twin without US English	in Portable
-main:0x2C0080	online, keyboard, word filter	twin without US English	in Portable
-main:0x2C0098	online, keyboard, word filter	twin without US English	in Portable
-main:0x2C00A0	online, keyboard, word filter	twin without US English	in Portable
-main:0x2C00B8	online, keyboard, word filter	twin without US English	in Portable
-main:0x2C00C0	online, keyboard, word filter	twin without US English	in Portable
-main:0x2C00F0	online, keyboard, word filter	twin without US English	in Portable
-main:0x2C00F8	online, keyboard, word filter	twin without US English	in Portable
+main:0x2C0080	online, keyboard, word filter	twin without US English
+main:0x2C0098	online, keyboard, word filter	twin without US English
+main:0x2C00A0	online, keyboard, word filter	twin without US English
+main:0x2C00B8	online, keyboard, word filter	twin without US English
+main:0x2C00C0	online, keyboard, word filter	twin without US English
+main:0x2C00F0	online, keyboard, word filter	twin without US English
+main:0x2C00F8	online, keyboard, word filter	twin without US English
 main:0x2C0110	online, keyboard, word filter	twin without US English	in Portable
-main:0x2C0118	online, keyboard, word filter	twin without US English	in Portable
-main:0x2C0130	online, keyboard, word filter	twin without US English	in Portable
-main:0x2C0138	online, keyboard, word filter	twin without US English	in Portable
+main:0x2C0118	online, keyboard, word filter	twin without US English
+main:0x2C0130	online, keyboard, word filter	twin without US English
+main:0x2C0138	online, keyboard, word filter	twin without US English
 main:0x2C0150	online, keyboard, word filter	twin without US English	in Portable
 main:0x2C0158	online, keyboard, word filter	twin without US English	in Portable
 main:0x2C0170	online, keyboard, word filter	twin without US English	in Portable
-main:0x2C0178	online, keyboard, word filter	twin without US English	in Portable
+main:0x2C0178	online, keyboard, word filter	twin without US English
 main:0x2C0190	online, keyboard, word filter	twin without US English
 main:0x2C0198	online, keyboard, word filter	twin without US English
 main:0x2C01B0	online, keyboard, word filter	twin without US English
@@ -1380,7 +1375,7 @@ main:0x2C01F8	online, keyboard, word filter	twin without US English
 main:0x2C0210	online, keyboard, word filter	twin without US English
 main:0x2C0218	online, keyboard, word filter	twin without US English
 main:0x2C0230	online, keyboard, word filter	twin without US English	in Portable
-main:0x2C0238	online, keyboard, word filter	twin without US English	in Portable
+main:0x2C0238	online, keyboard, word filter	twin without US English
 main:0x2C0250	online, keyboard, word filter [G table]	G only	in Portable
 main:0x2C0258	online, keyboard, word filter [G table]	G only	in Portable
 main:0x2C0260	online, keyboard, word filter [G table]	G only
@@ -1437,9 +1432,11 @@ main:0x2C1AE0	online, keyboard, word filter	twin without US English
 main:0x2C1B10	online, keyboard, word filter	twin without US English
 main:0x2C1B40	online, keyboard, word filter	twin without US English
 main:0x2C1B58	online, keyboard, word filter	twin without US English
+main:0x2C1B68	online, keyboard, word filter	twin without US English
 main:0x2C1B80	online, keyboard, word filter	twin without US English
 main:0x2C1BA0	online, keyboard, word filter	twin without US English
 main:0x2C1C10	online, keyboard, word filter	twin without US English
+main:0x2C1C60	online, keyboard, word filter	edited in G
 main:0x2C1C80	online, keyboard, word filter	twin without US English
 main:0x2C1C90	online, keyboard, word filter	twin without US English
 main:0x2C1E90	online, keyboard, word filter	twin without US English
@@ -1465,6 +1462,8 @@ main:0x2C2390	online, keyboard, word filter	twin without US English
 main:0x2C23B0	online, keyboard, word filter	twin without US English
 main:0x2C23E0	online, keyboard, word filter	twin without US English
 main:0x2C2410	online, keyboard, word filter	twin without US English
+main:0x2C2440	online, keyboard, word filter	edited in G
+main:0x2C25A8	online, keyboard, word filter	edited in G
 main:0x2C2B20	online, keyboard, word filter	twin without US English
 main:0x2C2B40	online, keyboard, word filter	twin without US English
 main:0x2C2C20	online, keyboard, word filter	twin without US English
@@ -4403,25 +4402,25 @@ quest:20050:0xA4	quests	G only
 quest:60029:0x68	quests	G only	in Portable
 quest:60029:0x71	quests	G only	in Portable
 quest:60029:0x9C	quests	G only
-sub_main:0x4DFB60	code literals (sub_main)	G only	in Portable
-sub_main:0x4DFEB0	code literals (sub_main)	G only	in Portable
+sub_main:0x4DFB60	code literals (sub_main)	G only
+sub_main:0x4DFEB0	code literals (sub_main)	G only
 sub_main:0x4E014C	code literals (sub_main)	G only	in Portable
 sub_main:0x4FD164	code literals (sub_main)	G only	in Portable
-sub_main:0x525EA0	code literals (sub_main)	G only	in Portable
-sub_main:0x525EC0	code literals (sub_main)	G only	in Portable
-sub_main:0x525EE0	code literals (sub_main)	G only	in Portable
-sub_main:0x525F00	code literals (sub_main)	G only	in Portable
-sub_main:0x525F20	code literals (sub_main)	G only	in Portable
-sub_main:0x525F40	code literals (sub_main)	G only	in Portable
-sub_main:0x525F60	code literals (sub_main)	G only	in Portable
-sub_main:0x526170	code literals (sub_main)	G only	in Portable
+sub_main:0x525EA0	code literals (sub_main)	G only
+sub_main:0x525EC0	code literals (sub_main)	G only
+sub_main:0x525EE0	code literals (sub_main)	G only
+sub_main:0x525F00	code literals (sub_main)	G only
+sub_main:0x525F20	code literals (sub_main)	G only
+sub_main:0x525F40	code literals (sub_main)	G only
+sub_main:0x525F60	code literals (sub_main)	G only
+sub_main:0x526170	code literals (sub_main)	G only
 sub_main:0x526880	other tables (lit_175_00359E) [G table]	G only	in Portable
 sub_main:0x5280D0	code literals (sub_main)	G only	in Portable
 sub_main:0x528184	code literals (sub_main)	G only	in Portable
 sub_main:0x528238	code literals (sub_main)	G only	in Portable
 sub_main:0x529040	code literals (sub_main)	G only	in Portable
 sub_main:0x529050	code literals (sub_main)	G only	in Portable
-sub_main:0x5292C0	code literals (sub_main)	G only	in Portable
+sub_main:0x5292C0	code literals (sub_main)	G only
 sub_main:0x529A70	items (names, help)	twin without US English	in Portable
 sub_main:0x529AD0	items (names, help) [G table]	G only	in Portable
 sub_main:0x529B58	items (names, help) [G table]	G only	in Portable
@@ -5762,11 +5761,6 @@ sub_main:0x53A130	menus, options, HUD [G table]	G only	in Portable
 sub_main:0x53A150	menus, options, HUD [G table]	G only	in Portable
 sub_main:0x53A170	menus, options, HUD [G table]	G only	in Portable
 sub_main:0x53A190	menus, options, HUD [G table]	G only	in Portable
-sub_main:0x53A1E0	menus, options, HUD	edited in G	in Portable
-sub_main:0x53A230	menus, options, HUD	edited in G
-sub_main:0x53A2D0	menus, options, HUD	edited in G	in Portable
-sub_main:0x53A310	menus, options, HUD	edited in G
-sub_main:0x53A360	menus, options, HUD	edited in G	in Portable
 sub_main:0x53A380	menus, options, HUD [G table]	G only	in Portable
 sub_main:0x53A3F0	other tables (yes_or_no_str) [G table]	G only	in Portable
 sub_main:0x53A400	other tables (yes_or_no_str) [G table]	G only	in Portable
@@ -6170,6 +6164,7 @@ yn:0xA10CC0	memory card and yes/no dialogs	twin without US English
 yn:0xA10CF0	memory card and yes/no dialogs	twin without US English
 yn:0xA10D20	memory card and yes/no dialogs	twin without US English
 yn:0xA10DC0	memory card and yes/no dialogs	twin without US English
+yn:0xA10DE0	memory card and yes/no dialogs	edited in G
 yn:0xA10E00	code literals (yn)	G only
 yn:0xA10E10	memory card and yes/no dialogs	twin without US English
 yn:0xA10E30	memory card and yes/no dialogs	twin without US English

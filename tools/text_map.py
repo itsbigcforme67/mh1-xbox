@@ -1337,6 +1337,12 @@ def _norm_jp(b):
     return b.strip(b" ").replace(b"\x81\x40", b" ").strip(b" ")
 
 
+def _shares_word(a, b):
+    """two English labels share a word (case and a plural s ignored): spellings of one label in two contexts"""
+    w = lambda x: {re.sub(rb"s$", b"", t) for t in re.findall(rb"[a-z]+", x.lower())}
+    return bool(w(a) & w(b))
+
+
 def _one_english(c):
     """the English of a Counter of candidates when they differ only in blanks at the ends (most common spelling,
     the shorter one on a tie); None when they really differ"""
@@ -1345,14 +1351,14 @@ def _one_english(c):
     return sorted(c, key=lambda x: (-c[x], len(x), x))[0]
 
 
-def propagate_same_text(jp, S, owner, en_jp, minlen=4):
+def propagate_same_text(jp, S, owner, en_jp, minlen=4, skip=()):
     """A JP string no table paired (its US table was not located, or the US code no longer uses it) takes the
     English of the same Japanese text (blanks at the ends ignored) when every paired occurrence of that text has
     the same English: a menu label shown by two windows, one of which the US build rewired. Strings of the line-split
     dialogs are left out."""
     eng = collections.defaultdict(collections.Counter)
     for jk, xb in en_jp.items():
-        if jk[0] == "quest":
+        if jk[0] == "quest" or jk in skip:
             continue
         eng[_norm_jp(jp.cstr(*jk))][xb] += 1
     n = 0
@@ -1374,7 +1380,7 @@ def propagate_same_text(jp, S, owner, en_jp, minlen=4):
     return n
 
 
-def propagate_same_text_g(jp, g, GS, en_jp, en_g, owner, minlen=4):
+def propagate_same_text_g(jp, g, GS, en_jp, en_g, owner, minlen=4, skip=()):
     """A G string no table paired takes the English of the same Japanese text (blanks at the ends ignored) from
     the JP build or from G itself when every paired occurrence has the same English: the G-only label tables
     (menu words, shop commands) repeat MH1 words whose US twin was paired in another table. Lines of the item
@@ -1382,7 +1388,7 @@ def propagate_same_text_g(jp, g, GS, en_jp, en_g, owner, minlen=4):
     and its US line need not say the same thing (g_rules pairs whole descriptions instead)."""
     eng = collections.defaultdict(collections.Counter)
     for jk, xb in en_jp.items():
-        if jk[0] != "quest" and not _fragment(owner, jk):
+        if jk[0] != "quest" and not _fragment(owner, jk) and jk not in skip:
             eng[_norm_jp(jp.cstr(*jk))][xb] += 1
     for gk, xb in en_g.items():
         if gk[0] not in ("quest", "slot") and gk in GS:
@@ -1409,6 +1415,8 @@ def propagate_same_text_g(jp, g, GS, en_jp, en_g, owner, minlen=4):
 #   marks     + kanji digits written as digits, punctuation and quote brackets (。、！？・…「」≪≫【】)
 #   buttons   + G wrote a pad symbol (○ □ △ ×) as a ~Bnn icon code: the English's US icon code is re-pointed to G's code
 #               for the same symbol (US code -> symbol table learned from the MH1 pairs)
+#   button labels  a row of labels G wrote with ~Bnn icons in front ('~B00決定　　~B01キャンセル') whose words equal an MH1
+#               row ('　決定　　　キャンセル') with US English ('  Confirm    Cancel'): the US words get G's icons in front
 #   numbers   + G changed a number: the number is replaced in the English when it occurs there exactly once and neither
 #               the old nor the new number is 1 (singular / plural would change: listed as ambiguous instead)
 # Sources are whole messages only: lines of the description tables and of the line-split dialogs are not, so descriptions
@@ -1455,6 +1463,17 @@ def _btn_key(t):
 
 def _btn_tokens(t):
     return re.findall(r"~B\d\d|[%s]" % BTN_SYMS, t)
+
+
+def _label_segs(b):
+    """the words of a row of button labels ('　決定　　　キャンセル'): Japanese segments between blanks, or None"""
+    t = _u(b).replace("\u3000", " ")
+    if any(c in BTN_SYMS for c in t) or "~" in t or "\n" in t:
+        return None
+    segs = t.split()
+    if not segs or not re.search(r" {2,}|^ ", t) and len(segs) > 1:
+        return None
+    return segs if all(is_japanese(x.encode("cp932", "replace")) or len(x) <= 4 for x in segs) else None
 
 
 def us_button_table(jp, en_jp, owner):
@@ -1599,7 +1618,7 @@ def g_rules(jp, g, GS, owner, cells, en_jp, en_g, Jq, Gq, skip=()):
 
     # ---- whole messages: index the JP sources by each normal form
     us_btn = us_button_table(jp, en_jp, owner)
-    idx = {n: collections.defaultdict(list) for n in ("exact", "layout", "marks", "buttons", "numbers")}
+    idx = {n: collections.defaultdict(list) for n in ("exact", "layout", "marks", "buttons", "numbers", "labels")}
     for jk, xb in en_jp.items():
         if jk[0] == "slot" or _fragment(owner, jk) or jk in skip:
             continue
@@ -1612,6 +1631,9 @@ def g_rules(jp, g, GS, owner, cells, en_jp, en_g, Jq, Gq, skip=()):
         if any(c in BTN_SYMS for c in m) and "~B" not in m:
             idx["buttons"][_btn_key(m)].append(e)
         idx["numbers"][re.sub(r"\d+", "#", m)].append(e)
+        segs = _label_segs(b)
+        if segs and len(segs) >= 2:
+            idx["labels"][tuple(segs)].append(e)
 
     def same_place(lst, gk):
         """a G quest field takes English from quest text of a JP quest on another map only when neither the Japanese
@@ -1648,6 +1670,12 @@ def g_rules(jp, g, GS, owner, cells, en_jp, en_g, Jq, Gq, skip=()):
             if not lst:
                 continue
             xb, c = consensus(lst, gb)
+            if xb is None and len(c) > 1:
+                # two US versions of one label (the village's "Reward:  " and the board's "Reward："): the one from the
+                # same overlay as the G string (the same screen family) when that leaves one
+                xb, _c2 = consensus([e for e in lst if e[2][0] == gk[0]], gb)
+                if xb is not None:
+                    name = "same overlay"
             if xb is not None:
                 take(gk, xb, name)
             elif len(c) > 1:
@@ -1656,6 +1684,17 @@ def g_rules(jp, g, GS, owner, cells, en_jp, en_g, Jq, Gq, skip=()):
             break
         if done:
             continue
+        if "~B" in m and gk[0] != "quest":
+            parts = re.findall(r"(~B\d\d)?([^~\s\u3000]+)", _u(gb).replace("\u3000", " "))
+            if parts and all(c for c, _t in parts) and re.fullmatch(r"(?:~B\d\d[^~\s\u3000]+[\s\u3000]*)+", _u(gb).replace("\u3000", " ")):
+                outs = set()
+                for b, xb, _jk in idx["labels"].get(tuple(t for _c, t in parts), ()):
+                    ex = [x for x in re.split(r" {2,}", xb.decode("latin-1").strip()) if x]
+                    if len(ex) == len(parts):
+                        outs.add("   ".join(c + x for (c, _t), x in zip(parts, ex)).encode("latin-1"))
+                if len(outs) == 1:
+                    take(gk, outs.pop(), "button labels")
+                    continue
         if "~B" in m:
             lst = same_place(idx["buttons"].get(_btn_key(m)) or [], gk)
             outs, reason = set(), ""
@@ -1712,36 +1751,279 @@ def g_rules(jp, g, GS, owner, cells, en_jp, en_g, Jq, Gq, skip=()):
     return new, rule, sorted(amb.items(), key=lambda kv: key_id(kv[0]))
 
 
-# ---------------------------------------------------------------- Monster Hunter Portable (PSP JP): what Freedom may cover
-SJIS_RUN = re.compile(rb"(?:[\x81-\x9f\xe0-\xea][\x40-\x7e\x80-\xfc]|[\x20-\x7e\x0a\x09])+\x00")
+# ---------------------------------------------------------------- Monster Hunter Portable (PSP JP) and Freedom (PSP US)
+# Portable (ULJM-05066, disc/mhp) is the PSP release of G; Monster Hunter Freedom (ULUS-10084) is its US release.
+# Layout (checked on Portable, docs/english_g.md "Portable's DATA.BIN"):
+#   PSP_GAME/USRDIR/DATA.BIN = a file table of 2048-byte sector numbers from offset 0 (entry i spans sector w[i] to
+#   w[i+1]; the table ends where the numbers stop rising, the last one is the file's end), then the entries.
+#   Text lives in plain (uncompressed) entries: string packs (u32 count, u32 8, count u32 block offsets; a block is
+#   u32 offsets to NUL-ended strings relative to the block, count = first offset / 4, 0xFFFFFFFF = no string), single
+#   blocks, and record / offset-list files (quests, village talk, shops) with the strings inline. Code overlays (MWo3,
+#   uncompressed on the PSP) and SYSDIR/BOOT.BIN (an unencrypted ELF) hold a few hundred more. Not text: entry 0 (300 MB
+#   of uniform high-entropy bytes, no header: likely UMD filler), audio (RIFF), movies (PSMF), textures (.TMH, PNG),
+#   encrypted modules (~PSP).
+# Freedom is expected to have the same DATA.BIN layout (same engine, a localisation): entry i of Portable pairs with
+# entry i of Freedom, string slot by slot. Every entry is checked before it is used (see freedom_pairs).
+PSP_SKIP = (b"RIFF", b"PSMF", b".TMH", b"\x89PNG", b"~PSP", b"MIG.", b"SPUM")
+PSP_RUN = re.compile(rb"(?:[\x81-\x9f\xe0-\xfc][\x40-\x7e\x80-\xfc]|[\x20-\x7e\x0a\x09])+(?=\x00)")
 
 
-def mhp_texts(disc):
-    """normal forms (norm_marks) of the Shift-JIS strings in Monster Hunter Portable's USRDIR/DATA.BIN. Portable is
-    the PSP release of G; Monster Hunter Freedom is its US release, so a G text that Portable has word for word is
-    one that Freedom has an official English line for (to be paired once the owner supplies Freedom). Only the
-    uncompressed strings are seen, so this is a lower bound. Set of str; empty when the disc is not there."""
-    path = os.path.join(disc, "PSP_GAME", "USRDIR", "DATA.BIN")
-    out = set()
-    if not os.path.exists(path):
-        return out
-    ch = 16 << 20
-    with open(path, "rb") as f:
-        off = 0
-        while True:
-            f.seek(off)
-            d = f.read(ch + 4096)
-            if not d:
-                break
-            for m in SJIS_RUN.finditer(d):
-                if m.start() >= ch:
-                    break
-                b = m.group(0)[:-1]
-                nd = sum(1 for i in range(len(b) - 1) if td.dbl(b, i))
-                if nd >= 1 and td.texty(b, nd):
-                    out.add(norm_marks(b))
-            off += ch
+def _jtext(s):
+    """a Shift-JIS text (text_dump's rule: at least one double-byte character, and kana / full-width letters or a
+    short kanji word)"""
+    nd, i = 0, 0
+    while i < len(s) - 1:
+        if td.dbl(s, i):
+            nd += 1
+            i += 2
+        else:
+            i += 1
+    return nd >= 1 and td.texty(s, nd)
+
+
+class PSPDisc:
+    """a PSP game from an extracted folder (PSP_GAME/...) or from an ISO image of the UMD in that folder"""
+
+    def __init__(self, path):
+        self.path = path
+        self.iso = None
+        if os.path.isfile(path) and path.lower().endswith(".iso"):
+            self.iso = path
+        elif os.path.isdir(path) and not os.path.exists(os.path.join(path, "PSP_GAME")):
+            isos = sorted(x for x in os.listdir(path) if x.lower().endswith(".iso"))
+            if isos:
+                self.iso = os.path.join(path, isos[0])
+        self._files = {}
+
+    def exists(self):
+        return self.iso is not None or os.path.exists(os.path.join(self.path, "PSP_GAME", "USRDIR", "DATA.BIN"))
+
+    def _iso_find(self, name):
+        """(offset, size) of a file in an ISO 9660 image (stdlib only; names compared upper case without ';1')"""
+        with open(self.iso, "rb") as f:
+            f.seek(16 * 2048)
+            pvd = f.read(2048)
+            if pvd[1:6] != b"CD001":
+                raise ValueError("%s is not an ISO 9660 image" % self.iso)
+            rec = pvd[156:190]
+            lba, size = struct.unpack_from("<I", rec, 2)[0], struct.unpack_from("<I", rec, 10)[0]
+            for part in name.upper().split("/"):
+                f.seek(lba * 2048)
+                d = f.read(size)
+                o, hit = 0, None
+                while o < len(d):
+                    ln = d[o]
+                    if ln == 0:
+                        o = (o // 2048 + 1) * 2048
+                        continue
+                    nm = d[o + 33:o + 33 + d[o + 32]].decode("ascii", "replace").split(";")[0].upper()
+                    if nm == part:
+                        hit = (struct.unpack_from("<I", d, o + 2)[0], struct.unpack_from("<I", d, o + 10)[0])
+                        break
+                    o += ln
+                if hit is None:
+                    raise FileNotFoundError("%s not in %s" % (name, self.iso))
+                lba, size = hit
+            return lba * 2048, size
+
+    def open(self, name):
+        """(file object, base offset, size) for PSP_GAME/... inside the folder or the ISO"""
+        if self.iso:
+            if name not in self._files:
+                self._files[name] = self._iso_find(name)
+            o, sz = self._files[name]
+            return open(self.iso, "rb"), o, sz
+        p = os.path.join(self.path, *name.split("/"))
+        return open(p, "rb"), 0, os.path.getsize(p)
+
+    def read(self, name):
+        f, o, sz = self.open(name)
+        with f:
+            f.seek(o)
+            return f.read(sz)
+
+    def entries(self):
+        """[(offset in DATA.BIN, size)] from its sector table"""
+        f, base, size = self.open("PSP_GAME/USRDIR/DATA.BIN")
+        with f:
+            f.seek(base)
+            head = f.read(0x8000)
+        w = struct.unpack_from("<%dI" % (len(head) // 4), head)
+        n = next((i for i in range(1, len(w)) if w[i] < w[i - 1]), len(w))
+        return [(w[i] * 2048, (w[i + 1] - w[i]) * 2048) for i in range(n - 1)]
+
+    def entry(self, e):
+        if not hasattr(self, "_ents"):
+            self._ents = self.entries()
+        f, base, size = self.open("PSP_GAME/USRDIR/DATA.BIN")
+        o, sz = self._ents[e]
+        with f:
+            f.seek(base + o)
+            return f.read(sz)
+
+
+def _psp_block(b, o, end):
+    """strings of an offset block at o, or None"""
+    if o + 4 > end:
+        return None
+    f0, = struct.unpack_from("<I", b, o)
+    if f0 % 4 or f0 < 4 or o + f0 > end:
+        return None
+    offs = struct.unpack_from("<%dI" % (f0 // 4), b, o)
+    out = []
+    for x in offs:
+        if x == 0xFFFFFFFF:
+            out.append(None)
+            continue
+        if x < f0 or o + x >= end:
+            return None
+        e = b.find(b"\0", o + x, end)
+        if e < 0:
+            return None
+        out.append(b[o + x:e])
     return out
+
+
+def psp_slots(b):
+    """(kind, {slot: string bytes}) of one DATA.BIN entry. kind 'pack' (slot (block, index)), 'block' (slot index) or
+    'runs' (slot (byte offset, order): every NUL-delimited text run, for the record and offset-list files)"""
+    if len(b) >= 12:
+        c, t = struct.unpack_from("<2I", b, 0)
+        if t == 8 and 0 < c < 400 and 8 + 4 * c <= len(b):
+            offs = struct.unpack_from("<%dI" % c, b, 8)
+            blocks = [_psp_block(b, o, len(b)) for o in offs]
+            if all(x is not None for x in blocks):
+                return "pack", {(k, j): s for k, bl in enumerate(blocks) for j, s in enumerate(bl) if s}
+    bl = _psp_block(b, 0, len(b))
+    if bl and len(bl) >= 2 and sum(1 for x in bl if x) >= 2:
+        return "block", {j: s for j, s in enumerate(bl) if s}
+    return "runs", {(m.start(), n): m.group(0) for n, m in enumerate(PSP_RUN.finditer(b))}
+
+
+def psp_text_entries(disc):
+    """{entry index: (kind, slots)} for the DATA.BIN entries that hold text (Japanese for Portable: at least 3 Japanese
+    strings; for another disc, the same entry numbers are read), plus 'boot' for SYSDIR/BOOT.BIN"""
+    out = {}
+    for e, (o, sz) in enumerate(disc.entries()):
+        if e == 0 or sz > (4 << 20):
+            continue
+        b = disc.entry(e)
+        if b[:4] in PSP_SKIP:
+            continue
+        kind, sl = psp_slots(b)
+        if sum(1 for x in sl.values() if is_japanese(x) and _jtext(x)) >= 3:
+            out[e] = (kind, sl)
+    try:
+        boot = disc.read("PSP_GAME/SYSDIR/BOOT.BIN")
+        if boot[:4] == b"\x7fELF":
+            out["boot"] = ("runs", {(m.start(), n): m.group(0) for n, m in enumerate(PSP_RUN.finditer(boot))})
+    except OSError:
+        pass
+    return out
+
+
+def mhp_texts(path):
+    """normal forms (norm_marks) of Portable's Japanese strings -> [(entry, slot)]; {} when the disc is not there"""
+    disc = PSPDisc(path)
+    if not disc.exists():
+        return {}
+    idx = {}
+    for e, (kind, sl) in psp_text_entries(disc).items():
+        for k, s in sl.items():
+            if _jtext(s):
+                idx.setdefault(norm_marks(s), []).append((e, k))
+    return idx
+
+
+def freedom_pairs(port, free, selftest=False):
+    """{(entry, slot): Freedom string} for Portable's Japanese strings, entry by entry, plus a report {entry: why}.
+    An entry is used when it has the same kind in both (pack / block / runs) and: pack and block - the same slots;
+    runs - the same number of text runs (then paired in order). Each pair must look like a translation (not still
+    Japanese, same printf conversions); an entry where fewer than 80% of its pairs pass is dropped whole (the layout
+    did not mirror). selftest pairs Portable with itself and skips the language checks (plumbing test)."""
+    pe, fe = psp_text_entries(port), {}
+    fdisc_entries = free.entries()
+    out, rep = {}, {}
+    for e, (kind, sl) in pe.items():
+        if e == "boot":
+            try:
+                b = free.read("PSP_GAME/SYSDIR/BOOT.BIN")
+            except OSError:
+                rep[e] = "no BOOT.BIN"
+                continue
+            if b[:4] != b"\x7fELF":
+                rep[e] = "BOOT.BIN encrypted"
+                continue
+            fk, fs = "runs", {(m.start(), n): m.group(0) for n, m in enumerate(PSP_RUN.finditer(b))}
+        else:
+            if e >= len(fdisc_entries):
+                rep[e] = "no such entry"
+                continue
+            fk, fs = psp_slots(free.entry(e))
+        if fk != kind:
+            rep[e] = "kind %s vs %s" % (kind, fk)
+            continue
+        if kind == "runs":
+            if len(fs) != len(sl):
+                rep[e] = "%d vs %d text runs" % (len(sl), len(fs))
+                continue
+            fo = [fs[k] for k in sorted(fs, key=lambda k: k[1])]
+            pairs = [(k, fo[k[1]]) for k in sl]
+        else:
+            if set(fs) - set(sl) or len(set(sl) - set(fs)) > 0.05 * len(sl):
+                rep[e] = "slots differ"
+                continue
+            pairs = [(k, fs[k]) for k in sl if k in fs]
+        jp_pairs = [(k, x) for k, x in pairs if _jtext(sl[k])]
+        good = [(k, x) for k, x in jp_pairs if selftest or good_english(sl[k], x)[0]]
+        if jp_pairs and len(good) < 0.8 * len(jp_pairs):
+            rep[e] = "only %d of %d pairs look translated" % (len(good), len(jp_pairs))
+            continue
+        for k, x in good:
+            out[(e, k)] = x
+        rep[e] = "ok %d" % len(good)
+    return out, rep
+
+
+def freedom_for_g(g, GS, Gq, en_g, idx, fpairs, runs, selftest=False):
+    """English for G strings without it: G text -> the same Japanese in Portable (normal form) -> Freedom's string in
+    that slot (all slots of that text must agree). A G description (one pointer per line) takes Freedom's
+    description when its whole text matches, split at Freedom's line breaks when the line count is the same.
+    Returns ({g key: English}, Counter(why))."""
+    new, why = {}, collections.Counter()
+
+    def english(norm):
+        c = collections.Counter(fpairs[s] for s in idx.get(norm, ()) if s in fpairs)
+        return _one_english(c) if c else None
+
+    def gtext(k):
+        return cstr_at(Gq[k[1]], k[2]) if k[0] == "quest" else g.cstr(*k)
+    for _sp, run in runs:
+        if any(k in en_g for k in run):
+            continue
+        xb = english(norm_marks(b"".join(g.cstr(*k) for k in run)))
+        if xb is None:
+            continue
+        lines = xb.split(b"\n")
+        if len(lines) != len(run):
+            why["description with another line count"] += 1
+            continue
+        for k, ln in zip(run, lines):
+            new[k] = ln
+        why["whole description"] += len(run)
+    targets = [k for k in GS if k not in en_g and k not in new]
+    targets += [("quest", n, o) for n, d in Gq.items() for o, b in quest_fields_g(d) if b and ("quest", n, o) not in en_g]
+    for gk in targets:
+        gb = gtext(gk)
+        xb = english(norm_marks(gb))
+        if xb is None:
+            continue
+        if selftest or good_english(gb, xb)[0]:
+            new[gk] = xb
+            why["same Japanese"] += 1
+        else:
+            why["refused (format / still Japanese)"] += 1
+    return new, why
 
 
 MANUAL = os.path.join(HERE, "text_pairs_manual.txt")
@@ -1771,6 +2053,26 @@ def manual_pairs(path=MANUAL):
             continue
         {"jp": jpm, "g": gm, "gf": gf}[line[0]][x_key(line[1])] = x_key(line[2])
     return jpm, gm, gf, drop
+
+
+def manual_keeptail(path=MANUAL):
+    """`keeptail jp|g SPACE:0xADDR`: the US label dropped the Japanese row's tail that the code fills in around (the page
+    counter of 'クエスト詳細　　　　／３', whose digit the game draws into the blanks): the English gets that tail back
+    (one full-width blank less, the English label being wider)"""
+    out = []
+    if os.path.exists(path):
+        for line in open(path):
+            f = line.split("#")[0].split()
+            if len(f) == 3 and f[0] == "keeptail" and f[1] in ("jp", "g"):
+                out.append((f[1], x_key(f[2])))
+    return out
+
+
+def keep_tail(jb, xb):
+    m = re.search(rb"((?:\x81\x40)+)((?:\x81[\x5e-\x5f]|\x82[\x4f-\x58])+)$", jb)   # blanks, then ／ and digits
+    if not m or len(m.group(1)) < 4:
+        return xb
+    return xb.rstrip() + m.group(1)[2:] + m.group(2)
 
 
 def manual_msgs(path=MANUAL):
@@ -2350,6 +2652,11 @@ def main():
     ap.add_argument("-o", "--out", default=os.path.join(ROOT, "build", "text"))
     ap.add_argument("--mhp", default=os.path.join(ROOT, "disc", "mhp"),
                     help="Monster Hunter Portable (PSP JP) folder, only to estimate what Freedom covers (report)")
+    ap.add_argument("--freedom", default=None,
+                    help="Monster Hunter Freedom (PSP US, ULUS-10084): an ISO of your own UMD, or a folder holding one or "
+                         "holding PSP_GAME/ (default: disc/mhfr if it exists; see docs/english_g.md)")
+    ap.add_argument("--freedom-selftest", action="store_true",
+                    help="test the Portable -> Freedom step by pairing Portable with itself; reports counts, writes no English")
     ap.add_argument("--report", help="write the coverage report (counts and ids, no text) to this file")
     ap.add_argument("--ids", help="write the list of G strings without English (ids and areas only) to this file")
     ap.add_argument("--no-cache", action="store_true")
@@ -2435,16 +2742,46 @@ def main():
             en_jp[jk] = xb
             slot_cov.add(jk)
     log("memory-card messages: %d slots re-flowed from the US groups" % len(lsp))
-    nprop = propagate_same_text(jp, S, owner, en_jp)
+    nprop = propagate_same_text(jp, S, owner, en_jp, skip=slot_cov)
     log("same Japanese text elsewhere: %d more JP strings" % nprop)
     for kind, k in man_drop:
         if kind == "jp":
             en_jp.pop(k, None)
     log("US: %d JP strings with English (%d quest fields); dropped %s; %.0fs" % (len(en_jp), nq, dict(drop), time.time() - t0))
+    # hand-checked G pairs (tools/text_pairs_manual.txt, read on both discs) also hold for MH1 strings with the same Japanese:
+    # they fill MH1 strings the structure could not pair (the bed's save hint, the shop's yes/no) and win over a position
+    # pair that disagrees (the shop menus' 売る had the US "Buy" of the row above)
+    man_text = collections.defaultdict(collections.Counter)
+    for gk, xk in list(man_g.items()) + list(man_gf.items()):
+        xb = us.cstr(*xk)
+        if xb and not is_japanese(xb):
+            man_text[_norm_jp(g.cstr(*gk))][xb] += 1
+    n_add = n_fix = 0
+    for jk in S:
+        if jk in slot_cov or _fragment(owner, jk):
+            continue
+        jb = jp.cstr(*jk)
+        c = man_text.get(_norm_jp(jb))
+        xb = _one_english(c) if c else None
+        if not xb or len(_norm_jp(jb)) < 2 or not good_english(jb, xb)[0]:
+            continue
+        if jk not in en_jp:
+            en_jp[jk] = xb
+            n_add += 1
+        elif not _shares_word(en_jp[jk], xb):     # only a different meaning, not a context spelling (plural, abbreviation)
+            if os.environ.get("TM_DEBUG"):
+                log("  corrected %s %r -> %r" % (key_id(jk), en_jp[jk], xb))
+            en_jp[jk] = xb
+            n_fix += 1
+    log("MH1 from the hand-checked G pairs: %d added, %d corrected" % (n_add, n_fix))
     hdr = ["English text table for MH1 JP, made by tools/text_map.py from your own discs. Do not share.",
            "ids are the Japanese build's (rt_text.c); source: the US disc"]
+    for kind, k in manual_keeptail():
+        if kind == "jp" and k in en_jp:
+            en_jp[k] = keep_tail(jp.cstr(*k), en_jp[k])
+    talk_jp = {jk for jk in en_jp if owner.get(jk) and TALK_TABLES.match(owner[jk][1])}
     write_table(os.path.join(args.out, "en_mh1.txt"),
-                merged(en_jp, slot_cov, slot_jp), hdr)
+                {k: (talk_layout(v) if k in talk_jp else v) for k, v in merged(en_jp, slot_cov, slot_jp).items()}, hdr)
 
     # ---- G
     omg, outg, rowsg = run_g(jp, g, funcs, objs, S, cells, GS, cache)
@@ -2460,7 +2797,7 @@ def main():
     gstat = collections.Counter()
     for jk, lst in gmap.items():
         for gk, same in lst:
-            if jk not in en_jp:
+            if jk not in en_jp or jk in slot_cov:      # a line of a re-flowed message: right only in its own slot
                 gstat["no US English for the JP string"] += 1
                 continue
             if same:
@@ -2499,10 +2836,12 @@ def main():
         xb = us.cstr(*xk)
         if xb and not is_japanese(xb):
             en_g[gk] = xb
-    same_g = propagate_same_text_g(jp, g, GS, en_jp, en_g, owner)
+    same_g = propagate_same_text_g(jp, g, GS, en_jp, en_g, owner, skip=slot_cov)
     en_g.update(same_g)
     rule_g, gstat_rules, amb_g = g_rules(jp, g, GS, owner, cells, en_jp, en_g, Jq, Gq, slot_cov)
     en_g.update(rule_g)
+    fr_g = run_freedom(args, g, GS, Gq, en_g, cache)
+    en_g.update(fr_g)
     for kind, k in man_drop:
         if kind == "g":
             en_g.pop(k, None)
@@ -2513,7 +2852,11 @@ def main():
            "ids are G's (main incl. sub_main, game, lobby, select, yn addresses; quest:N:offset of mNNNNN.mib); source: the US disc via MH1 JP"]
     # G's resident sub_main (0x4A0C80..) lies below the overlay load address and above main: the PC text layer
     # (rt_data.c: v < LB_VRAM -> main space) already treats it as part of main, so its ids are written as main:
-    write_table(os.path.join(args.out, "en_mhg.txt"), {(("main",) + k[1:]) if k[0] == "sub_main" else k: v
+    g_owner = g_area_fn(g, gmap, owner)[1].owner
+    talk_g = {gk for gk in en_g if gk[0] not in ("quest", "slot") and TALK_TABLES.match(g_owner(gk) or "")}
+    log("talk window layout: %d MH1 lines, %d G lines" % (len(talk_jp), len(talk_g)))
+    write_table(os.path.join(args.out, "en_mhg.txt"), {(("main",) + k[1:]) if k[0] == "sub_main" else k:
+                                                      (talk_layout(v) if k in talk_g else v)
                                                       for k, v in merged(en_g, gk_slot, slot_g).items()}, hdr)
 
     summary = dict(jp_strings=len(S), jp_en=len(en_jp), g_strings=len(GS), g_en=len(en_g), gstat=gstat, drop=drop)
@@ -2521,6 +2864,45 @@ def main():
         write_report(args, jp, us, g, S, GS, cells, owner, omu, rowsu, omg, rowsg, en_jp, en_g, gmap, gstat, drop,
                      Jq, Uq, Gq, qm, gqmatch, funcs, objs, len(same_g), gstat_rules, amb_g, set(rule_g), cache)
     return summary
+
+
+FREEDOM_IDS = ("ULUS-10084",)        # Monster Hunter Freedom, US UMD (the European ULES-00318 is untested)
+
+
+def run_freedom(args, g, GS, Gq, en_g, cache):
+    """the Portable -> Freedom step: {} when Freedom is not given (an explicit --freedom that does not exist is an error)"""
+    default = os.path.join(ROOT, "disc", "mhfr")
+    path = args.freedom or default
+    port = PSPDisc(args.mhp)
+    if args.freedom_selftest:
+        free, selftest = port, True
+    else:
+        free, selftest = PSPDisc(path), False
+        if not free.exists():
+            if args.freedom:
+                sys.exit("text_map: Monster Hunter Freedom not found at %s: give an ISO of your own UMD (ULUS-10084), "
+                         "or a folder with one .iso or with PSP_GAME/ (docs/english_g.md)" % path)
+            log("Freedom: not found at %s; skipped (docs/english_g.md says what to put there)" % default)
+            return {}
+    if not port.exists():
+        sys.exit("text_map: the Freedom step needs Monster Hunter Portable (JP) at %s" % args.mhp)
+    if not selftest:
+        try:
+            gid = free.read("UMD_DATA.BIN")[:10].decode("ascii", "replace")
+        except OSError:
+            gid = "?"
+        if gid not in FREEDOM_IDS:
+            log("Freedom: game id %s is not %s; trying anyway (entries that do not mirror Portable are skipped)"
+                % (gid, " / ".join(FREEDOM_IDS)))
+    idx = cached(cache and cache + "_mhp2.pkl", lambda: mhp_texts(args.mhp))
+    fp, rep = freedom_pairs(port, free, selftest)
+    used = sum(1 for v in rep.values() if v.startswith("ok"))
+    log("Freedom%s: %d of %d text entries paired, %d strings; not used: %s" % (
+        " self-test" if selftest else "", used, len(rep), len(fp),
+        dict(collections.Counter(re.sub(r"\d+", "N", v) for v in rep.values() if not v.startswith("ok")))))
+    new, why = freedom_for_g(g, GS, Gq, en_g, idx, fp, g_ptr_runs(g, GS), selftest)
+    log("Freedom%s: %d more G strings %s" % (" self-test (would get)" if selftest else "", len(new), dict(why)))
+    return {} if selftest else new
 
 
 def g_data_symbols():
@@ -2538,8 +2920,9 @@ def g_data_symbols():
     return out
 
 
-def write_report(args, jp, us, g, S, GS, cells, owner, omu, rowsu, omg, rowsg, en_jp, en_g, gmap, gstat, drop,
-                 Jq, Uq, Gq, qm, gqmatch, funcs, objs, n_same=0, gstat_rules=None, amb_g=(), rule_keys=(), cache=None):
+def g_area_fn(g, gmap, owner):
+    """(G key -> (JP twin key, same text?), area function): the area of a G string is its MH1 twin's table, else the
+    table of the nearest pointer (same run) that leads to an MH1 twin, else the nearest MH1 name at G addresses"""
     gtwin = {}
     for jk, lst in gmap.items():
         for gk, same in lst:
@@ -2588,6 +2971,90 @@ def write_report(args, jp, us, g, S, GS, cells, owner, omu, rowsu, omg, rowsg, e
                 return area_of_name(lst[k][1]) + (" [G table]" if gk not in gtwin else "")
             return "unnamed G tables (%s)" % c[0]
         return "code literals (%s)" % gk[0]
+
+    def twin_name(gk):
+        if gk in gtwin and gtwin[gk][0][0] != "quest":
+            jo = owner.get(gtwin[gk][0])
+            return jo[1] if jo else None
+        return None
+
+    def g_owner(gk):
+        """the MH1 table name of the G string's twin, or of the nearest twin in its run of pointers"""
+        n = twin_name(gk)
+        if n or gk[0] == "quest":
+            return n
+        c = gcell.get(gk)
+        if not c:
+            return None
+        for d in range(1, 65):
+            for pos in (c[1] - 4 * d, c[1] + 4 * d):
+                t = gptr.get((c[0], pos))
+                n = twin_name(t) if t else None
+                if n:
+                    return n
+            if (c[0], c[1] - 4 * d) not in gptr and (c[0], c[1] + 4 * d) not in gptr:
+                return None
+        return None
+    g_area.owner = g_owner
+    return gtwin, g_area
+
+
+# ---------------------------------------------------------------- the NPC talk window (Disp_NPC_message)
+# The village talk window (chat_nm.c Disp_NPC_message, MH1 and G alike) cuts the typed message into rows of at most 11
+# characters of 2 bytes each, and checks for a line feed only where a 2-byte character would start. Japanese text has
+# only 2-byte characters; an English line of odd length puts its line feed in the middle of a pair, the row runs on into
+# the next line and the rows overlap (seen in G, 20 Oct 2026: "bu" + "t here's a little" on one row). The US build drew
+# its talk with 22 one-byte columns and broke long lines itself. talk_layout re-lays the US lines for the JP window:
+# lines longer than 22 bytes are cut at 22 as the US window did, each line is padded with a blank to an even length (a
+# 2-byte character or a ~Cnn code never starts at an odd offset), and a line of 22 bytes ends without a line feed
+# (the window starts a new row by itself; a line feed there would give an empty row).
+TALK_TABLES = re.compile(r"^(npc_|talk_|tl_)")
+TALK_ROW = 22
+
+
+def talk_layout(xb):
+    out = []
+    rows = []
+    for line in xb.split(b"\n"):
+        while len(line) > TALK_ROW:
+            cut = TALK_ROW
+            if 0x81 <= line[cut - 1] <= 0xFC and _sjis_at(line, cut - 1):
+                cut -= 1
+            rows.append(line[:cut])
+            line = line[cut:]
+        rows.append(line)
+    for i, r in enumerate(rows):
+        b = bytearray()
+        k = 0
+        while k < len(r):
+            if r[k:k + 1] == b"~" and len(r) >= k + 4:
+                if len(b) % 2:
+                    b += b" "
+                b += r[k:k + 4]
+                k += 4
+            elif _sjis_at(r, k):
+                if len(b) % 2:
+                    b += b" "
+                b += r[k:k + 2]
+                k += 2
+            else:
+                b += r[k:k + 1]
+                k += 1
+        if len(b) % 2:
+            b += b" "
+        out.append(bytes(b))
+        if i + 1 < len(rows) and len(b) < TALK_ROW:
+            out.append(b"\n")
+    return b"".join(out)
+
+
+def _sjis_at(b, k):
+    return k + 1 < len(b) and ((0x81 <= b[k] <= 0x9F) or (0xE0 <= b[k] <= 0xFC)) and 0x40 <= b[k + 1] <= 0xFC
+
+
+def write_report(args, jp, us, g, S, GS, cells, owner, omu, rowsu, omg, rowsg, en_jp, en_g, gmap, gstat, drop,
+                 Jq, Uq, Gq, qm, gqmatch, funcs, objs, n_same=0, gstat_rules=None, amb_g=(), rule_keys=(), cache=None):
+    gtwin, g_area = g_area_fn(g, gmap, owner)
 
     # all G strings: scanned ones plus quest fields
     gall = {}
@@ -2644,7 +3111,7 @@ def write_report(args, jp, us, g, S, GS, cells, owner, omu, rowsu, omg, rowsg, e
 
     gtab, gtot = table(rows, ["twin without US English", "edited in G", "G only"])
     # ---- per category, with the new rules and the Portable estimate
-    mhp = cached(cache and cache + "_mhp.pkl", lambda: mhp_texts(args.mhp)) if getattr(args, "mhp", None) else set()
+    mhp = cached(cache and cache + "_mhp2.pkl", lambda: mhp_texts(args.mhp)) if getattr(args, "mhp", None) else {}
     amb = dict(amb_g)
     in_mhp = set()
     if mhp:
@@ -2761,8 +3228,8 @@ def write_report(args, jp, us, g, S, GS, cells, owner, omu, rowsu, omg, rowsg, e
            "buttons, numbers): %s; %d more by identical text elsewhere. *Ambiguous* means a rule found MH1 English but it was "
            "left out (%s). *Portable* is Monster Hunter Portable (PSP JP, disc/mhp), the Japanese of Monster Hunter Freedom: "
            "a G string whose Japanese is in Portable word for word (same normal form as the *marks* rule) is one Freedom should "
-           "have an official English line for; only the uncompressed strings of its DATA.BIN were scanned (%d texts), so it is a "
-           "lower bound." % (", ".join("%s %d" % kv for kv in (gstat_rules or {}).items()), n_same,
+           "have an official English line for; all text entries of its DATA.BIN (string packs, record files, code overlays; "
+           "none is compressed) and BOOT.BIN were read (%d distinct texts)." % (", ".join("%s %d" % kv for kv in (gstat_rules or {}).items()), n_same,
                              ", ".join("%s %d" % kv for kv in amb_why.most_common()) or "none", len(mhp)),
            "",
            "\n".join(ctab),

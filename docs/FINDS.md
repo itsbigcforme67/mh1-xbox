@@ -373,3 +373,11 @@ not affected. Likely origin of the rumour: pet twice, hunt, come back to a prese
   STAGE_TEX ...) have 92 entries, not 88: stages 88-91 are G's own (88 = the volcano of event quest 60029, the gallery's
   "災厄降臨" scene). Demo_cam_tbl has 38 cameras; the command lists of cameras 5-9 and 35-37 have no symbol in the split.
   m60029.mib (AFS_DATA 0xC6A), an event quest's mission file, is on the disc for the gallery's sake.
+
+## G's code for stages 89-91 (agent A, 20 Oct 2026)
+- [checked: G asm game 0x64FBB0 / 0x64FD90 / 0x64FF60, sub_main stage_set_set] G's set04 (a swaying flip-book model
+  with a looping sound) has cases for stages 0x59-0x5B (89-91), and G's stage_set_set spawns it there, with set13's
+  sun and set09 / set14 / set19 pieces. G's per-stage tables have 88 entries (stage_start_pos, the stage file tables),
+  so those stages cannot be entered: leftovers of three planned (or cut) areas. [what they were: unknown]
+- [checked: asm] G's quest 10035 (the Plesioth opening scene) hides the two Velociprey of stage 54 until the scene's
+  event flag 0x16: a demo act (6, 6) G added only for that quest (game 0x6025F0).

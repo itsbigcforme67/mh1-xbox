@@ -572,6 +572,9 @@ for f in $GAME; do
         -Ddisp_others_info=rt_hud_disp_others_info -Ddisp_map=rt_hud_disp_map -Ddisp_item=rt_hud_disp_item \
         -Ddisp_item_sub_select_ex=rt_hud_disp_item_sub_select_ex" ;;
     # widescreen: the village's talk window and chat / message lines keep to the left edge, whoever calls them (rt_2d.c)
+    # text layer: the info banners size their frame with strlen of the shown string; measure the English when a table
+    # replaces it (rt_text_sp.c), else the frame is the Japanese string's width
+    src/main/set/set01.c) ABI="-Dstrlen=rt_text_strlen" ;;
     src/main/chat/chat_nm.c) ABI="-DDisp_NPC_message=rt_real_Disp_NPC_message -DPit_disp_chat=rt_real_Pit_disp_chat \
         -DPit_disp_receive_mes=rt_real_Pit_disp_receive_mes" ;;
     # em_cmd_nm.c GetWaterData / em_core_nm.c NextStage_No_Set: a0 = em left over (tools/pc_patch.py)

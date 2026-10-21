@@ -8,7 +8,6 @@
 #include "fl.h"
 #include "pl.h"
 #include "plf.h"
-#include "em_demo_g.h"
 
 /* Per-monster work at EMW+0x444 (em27.c has the same start). */
 typedef struct EM27W {
@@ -95,6 +94,11 @@ void Em_hagi_point_clr(EMW *);
 int Quest_enemy_revival_ck(EMW *);
 void Quest_enemy_revival_set(EMW *);
 void em_status_init(EMW *);
+#ifdef VERSION_MHG
+#define EM27_G(g, mh1) (g)
+#else
+#define EM27_G(g, mh1) (mh1)
+#endif
 void em27_init(EMW *);
 int Event_flag_ck(int);
 extern f32 st01_pos_tbl[6];
@@ -977,7 +981,13 @@ static void em_atk05_0060F570(EMW *em, EM27W *w) {
     }
 }
 
+#ifdef VERSION_MHG
+/* G em_atk06 (game 0x63DEA0): a variant argument (G em_move03 x15 6 -> 0, the new x15 14 -> 1); variant 1 fires the
+ * Shell08 with x07 = 3 */
+static void em_atk06_0060F860(EMW *em, EM27W *w, int var) {
+#else
 static void em_atk06_0060F860(EMW *em, EM27W *w) {
+#endif
     switch (em->x05) {
     case 0:
         em->x05++;
@@ -985,7 +995,11 @@ static void em_atk06_0060F860(EMW *em, EM27W *w) {
         break;
     case 1:
         if (em_frame_check(em, 80.0f, 0) != 0) {
+#ifdef VERSION_MHG
+            Shell08_set_ang(em, 0xF, 9, var == 1 ? 3 : 1, 0xF8E5, 0);
+#else
             Shell08_set_ang(em, 0xF, 9, 1, 0xF8E5, 0);
+#endif
         }
         if (em->x194 == 0) {
             em27_to_normal(em, 0, 0);
@@ -1314,7 +1328,11 @@ void em_move03_006105E0(EMW *em, EM27W *w) {
     case 3: em_atk03_0060F160(em, w); break;
     case 4: em_atk04_0060F280(em, w); break;
     case 5: em_atk05_0060F570(em, w); break;
+#ifdef VERSION_MHG
+    case 6: em_atk06_0060F860(em, w, 0); break;
+#else
     case 6: em_atk06_0060F860(em, w); break;
+#endif
     case 7: em_atk07_0060F910(em, w); break;
     case 8: em_atk08_0060FA40(em, w); break;
     case 9: em_atk09_0060FC40(em, w); break;
@@ -1322,6 +1340,9 @@ void em_move03_006105E0(EMW *em, EM27W *w) {
     case 11: em_atk11_0060FF80(em, w); break;
     case 12: em_atk12_00610210(em, w); break;
     case 13: em_atk13_006104A0(em, w); break;
+#ifdef VERSION_MHG
+    case 14: em_atk06_0060F860(em, w, 1); break;   /* G em_move03 (game 0x63EC70) */
+#endif
     }
 }
 
@@ -1413,11 +1434,12 @@ static void em_dmg02_006108E0(EMW *em, EM27W *w) {
     }
 }
 
+/* G em_dmg03 (game 0x63F110): motions 0x25 / 0x26 (G swapped them with die03's) */
 static void em_dmg03_00610A70(EMW *em, EM27W *w) {
     switch (em->x05) {
     case 0:
         em->x05++;
-        em_char_set(em, 0x23, 0, 0);
+        em_char_set(em, EM27_G(0x25, 0x23), 0, 0);
         w->spd[0] = 0;
         w->spd[1] = (u16)(em->ang[1] - 0x4000);
         w->spd[2] = 0;
@@ -1434,7 +1456,7 @@ static void em_dmg03_00610A70(EMW *em, EM27W *w) {
             if (em->pos[1] <= em->x5AC) {
                 em->x05++;
                 em->x388 = 0;
-                em_char_set(em, 0x24, 0, 0);
+                em_char_set(em, EM27_G(0x26, 0x24), 0, 0);
             }
         }
         break;
@@ -1514,7 +1536,9 @@ static void em_dmg06_00610E20(EMW *em, EM27W *w) {
         break;
     case 1:
         if (--em->work08 <= 0) {
+#ifndef VERSION_MHG     /* G em_dmg06 (game 0x63F4C0) leaves Em_Mahi_End to act 0xA (em_act10), which calls it in both games */
             Em_Mahi_End(em);
+#endif
             em->x05++;
             em27_act_set(em, 0, 0xA, 4);
         }
@@ -1598,7 +1622,7 @@ static void em_die00_00610FC0(EMW *em, EM27W *w) {
     case 6:
         if (em->x8C3 == 0) {
             em->x05++;
-            em27_act_set(em, 5, 4, 2);
+            em27_act_set(em, 5, 4, EM27_G(4, 2));
         }
         break;
     }
@@ -1662,7 +1686,7 @@ static void em_die01_00611200(EMW *em, EM27W *w) {
     case 6:
         if (em->x8C3 == 0) {
             em->x05++;
-            em27_act_set(em, 5, 4, 2);
+            em27_act_set(em, 5, 4, EM27_G(4, 2));
         }
         break;
     }
@@ -1726,12 +1750,13 @@ static void em_die02_00611450(EMW *em, EM27W *w) {
     case 6:
         if (em->x8C3 == 0) {
             em->x05++;
-            em27_act_set(em, 5, 4, 2);
+            em27_act_set(em, 5, 4, EM27_G(4, 2));
         }
         break;
     }
 }
 
+/* G em_die03 (game 0x63FD30): motions 0x23 / 0x24 */
 static void em_die03_006116A0(EMW *em, EM27W *w) {
     Em_Mode_Chg(em, 0, 0);
     switch (em->x05) {
@@ -1739,7 +1764,7 @@ static void em_die03_006116A0(EMW *em, EM27W *w) {
         em->x05++;
         ((u8 *)w)[0x50] = 1;
         Quest_enemy_die(em);
-        em_char_set(em, 0x25, 0, 0);
+        em_char_set(em, EM27_G(0x23, 0x25), 0, 0);
         w->spd[0] = 0;
         w->spd[1] = (u16)(em->ang[1] + 0x4000);
         w->spd[2] = 0;
@@ -1754,7 +1779,7 @@ static void em_die03_006116A0(EMW *em, EM27W *w) {
         if (em->pos[1] <= em->x5AC) {
             em->x05++;
             em->x388 = 0;
-            em_char_set(em, 0x26, 0, 0);
+            em_char_set(em, EM27_G(0x24, 0x26), 0, 0);
         }
         break;
     case 2:
@@ -1790,12 +1815,82 @@ static void em_die03_006116A0(EMW *em, EM27W *w) {
     case 6:
         if (em->x8C3 == 0) {
             em->x05++;
-            em27_act_set(em, 5, 4, 2);
+            em27_act_set(em, 5, 4, EM27_G(4, 2));
         }
         break;
     }
 }
 
+#ifdef VERSION_MHG
+/* G (game 0x63BA30): where a returning Velocidrome-family boss starts: em27_init, then MH1's die04 start points
+ * (same tables, per stage). G's em27_act_set calls it for the die act (5, 4) together with
+ * Quest_enemy_revival_set and em_status_init (include/em_revive_g.h), before die04 runs. */
+void em27_revive_init(EMW *em) {
+    f32 v[3];
+    int r;
+
+    em27_init(em);
+    switch (em->stg) {
+    case 1:
+        SetVector(em->pos, st01_pos_tbl[0], st01_pos_tbl[1], st01_pos_tbl[2]);
+        SetVector(em->x5A0, st01_pos_tbl[0], st01_pos_tbl[1], st01_pos_tbl[2]);
+        SetVector(v, st01_pos_tbl[3], st01_pos_tbl[4], st01_pos_tbl[5]);
+        em->ang[1] = Em_Calc_angY(em->pos, v);
+        break;
+    case 0x22:
+        SetVector(em->pos, st34_pos_tbl[0], st34_pos_tbl[1], st34_pos_tbl[2]);
+        SetVector(em->x5A0, st34_pos_tbl[0], st34_pos_tbl[1], st34_pos_tbl[2]);
+        SetVector(v, st34_pos_tbl[3], st34_pos_tbl[4], st34_pos_tbl[5]);
+        em->ang[1] = Em_Calc_angY(em->pos, v);
+        break;
+    case 0x26:
+        r = (u16)(em->x39A % 2);
+        SetVector(em->pos, st38_pos_tbl_00671470[r][0], st38_pos_tbl_00671470[r][1], st38_pos_tbl_00671470[r][2]);
+        SetVector(em->x5A0, st38_pos_tbl_00671470[r][0], st38_pos_tbl_00671470[r][1], st38_pos_tbl_00671470[r][2]);
+        SetVector(v, st38_pos_tbl_00671470[r][3], st38_pos_tbl_00671470[r][4], st38_pos_tbl_00671470[r][5]);
+        em->ang[1] = Em_Calc_angY(em->pos, v);
+        break;
+    case 0x27:
+        r = (u16)(em->x39A % 4);
+        SetVector(em->pos, st39_pos_tbl_006714A0[r][0], st39_pos_tbl_006714A0[r][1], st39_pos_tbl_006714A0[r][2]);
+        SetVector(em->x5A0, st39_pos_tbl_006714A0[r][0], st39_pos_tbl_006714A0[r][1], st39_pos_tbl_006714A0[r][2]);
+        SetVector(v, st39_pos_tbl_006714A0[r][3], st39_pos_tbl_006714A0[r][4], st39_pos_tbl_006714A0[r][5]);
+        em->ang[1] = Em_Calc_angY(em->pos, v);
+        break;
+    case 0x35:
+        SetVector(em->pos, st53_pos_tbl_00671500[0], st53_pos_tbl_00671500[1], st53_pos_tbl_00671500[2]);
+        SetVector(em->x5A0, st53_pos_tbl_00671500[0], st53_pos_tbl_00671500[1], st53_pos_tbl_00671500[2]);
+        SetVector(v, st53_pos_tbl_00671500[3], st53_pos_tbl_00671500[4], st53_pos_tbl_00671500[5]);
+        em->ang[1] = Em_Calc_angY(em->pos, v);
+        break;
+    }
+}
+
+/* G em_die04 (game 0x63FF80): only picks the act of a returning monster (or ends it); the revival itself and the
+ * start point moved to em27_act_set / em27_revive_init */
+static void em_die04_006118F0(EMW *em, EM27W *w) {
+    if (em->x05 != 0) {
+        return;
+    }
+    if (Quest_enemy_revival_ck(em) == 1) {
+        em_cmd_reset(em);
+        em->x839 = 0;
+        switch (em->stg) {
+        case 1:
+        case 0x22:
+        case 0x26:
+        case 0x27:
+            em_act_set(em, 7, 0);
+            break;
+        default:
+            em_act_set(em, 0, 0xB);
+            break;
+        }
+    } else {
+        em->x04++;
+    }
+}
+#else
 static void em_die04_006118F0(EMW *em, EM27W *w) {
     f32 v[3];
 
@@ -1859,6 +1954,7 @@ static void em_die04_006118F0(EMW *em, EM27W *w) {
         break;
     }
 }
+#endif
 
 void em_move05_00611D40(EMW *em, EM27W *w) {
     em->x40C = 10;
@@ -2044,6 +2140,14 @@ void em_move07_006123A0(EMW *em, EM27W *w) {
 
 void em27_main_sub(EMW *em, EM27W *w);
 
+/* G em27_main (game 0x6407A0): a flinch / knock-back first turns the monster by the side the hit came from
+ * (EM27_FACE: ang = the hit's direction + 0x8000 / -0x4000 / +0x4000 / +0 by quadrant), and the quest 0x89
+ * demo stop is G's quest 10014 */
+#ifdef VERSION_MHG
+#define EM27_FACE(em, v) ((em)->ang[1] = (v))
+#else
+#define EM27_FACE(em, v) ((void)0)
+#endif
 void em27_main(EMW *em) {
     EM27W *w = (EM27W *)em->ex;
     u8 dmg[4];
@@ -2092,12 +2196,16 @@ void em27_main(EMW *em) {
     case 2:
         d = (u16)(em->dm_ang - em->ang[1]);
         if (d >= 0x6000 && d < 0xA000) {
+            EM27_FACE(em, (s32)em->dm_ang + 0x8000);
             em27_act_set(em, 5, 0, 2);
         } else if (d >= 0x2000 && d < 0x6000) {
+            EM27_FACE(em, (s32)em->dm_ang - 0x4000);
             em27_act_set(em, 5, 2, 2);
         } else if (d >= 0xA000 && d < 0xE000) {
+            EM27_FACE(em, (s32)em->dm_ang + 0x4000);
             em27_act_set(em, 5, 3, 2);
         } else {
+            EM27_FACE(em, em->dm_ang);
             em27_act_set(em, 5, 1, 2);
         }
         break;
@@ -2108,12 +2216,16 @@ void em27_main(EMW *em) {
         }
         d = (u16)(em->dm_ang - em->ang[1]);
         if (d >= 0x6000 && d < 0xA000) {
+            EM27_FACE(em, (s32)em->dm_ang + 0x8000);
             em27_act_set(em, 4, 1, 2);
         } else if (d >= 0x2000 && d < 0x6000) {
+            EM27_FACE(em, (s32)em->dm_ang - 0x4000);
             em27_act_set(em, 4, 3, 2);
         } else if (d >= 0xA000 && d < 0xE000) {
+            EM27_FACE(em, (s32)em->dm_ang + 0x4000);
             em27_act_set(em, 4, 4, 2);
         } else {
+            EM27_FACE(em, em->dm_ang);
             em27_act_set(em, 4, 2, 2);
         }
         break;
@@ -2133,12 +2245,16 @@ void em27_main(EMW *em) {
     case 12:
         d = (u16)(em->dm_ang - em->ang[1]);
         if (d >= 0x6000 && d < 0xA000) {
+            EM27_FACE(em, (s32)em->dm_ang + 0x8000);
             em27_act_set(em, 4, 1, 2);
         } else if (d >= 0x2000 && d < 0x6000) {
+            EM27_FACE(em, (s32)em->dm_ang - 0x4000);
             em27_act_set(em, 4, 3, 2);
         } else if (d >= 0xA000 && d < 0xE000) {
+            EM27_FACE(em, (s32)em->dm_ang + 0x4000);
             em27_act_set(em, 4, 4, 2);
         } else {
+            EM27_FACE(em, em->dm_ang);
             em27_act_set(em, 4, 2, 2);
         }
         break;
@@ -2147,20 +2263,24 @@ void em27_main(EMW *em) {
         if (em->x388 == 2) {
             d = em->dm_ang;
             if (d >= 0x6000 && d < 0xA000) {
-                em27_act_set(em, 4, 1, 2);
+                EM27_FACE(em, (s32)em->dm_ang + 0x8000);
+            em27_act_set(em, 4, 1, 2);
             } else if (d >= 0x2000 && d < 0x6000) {
-                em27_act_set(em, 4, 3, 2);
+                EM27_FACE(em, (s32)em->dm_ang - 0x4000);
+            em27_act_set(em, 4, 3, 2);
             } else if (d >= 0xA000 && d < 0xE000) {
-                em27_act_set(em, 4, 4, 2);
+                EM27_FACE(em, (s32)em->dm_ang + 0x4000);
+            em27_act_set(em, 4, 4, 2);
             } else {
-                em27_act_set(em, 4, 2, 2);
+                EM27_FACE(em, em->dm_ang);
+            em27_act_set(em, 4, 2, 2);
             }
         } else {
             em27_act_set(em, 4, 0, 2);
         }
         break;
     }
-    if (quest_w.x08 == QN(0x89, 10014) && em->stg == 0x22 && Event_flag_ck(0xC) == 0) {
+    if (quest_w.x08 == EM27_G(10014, 0x89) && em->stg == 0x22 && Event_flag_ck(0xC) == 0) {
         if (game_w.info_stop == 1 && em->mode != 6) {
             em27_act_set(em, 6, 0, 1);
         }

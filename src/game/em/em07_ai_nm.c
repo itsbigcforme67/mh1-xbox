@@ -231,11 +231,28 @@ void em07_item_set(EMW *em) {
         w->item_pt = -1;
     }
     s.rad = 340.0f;
+#ifdef VERSION_MHG      /* G em07_item_set (game 0x5BAF40): G's pick ids, by kind and quest rank (mission header 0x42) */
+    switch (((s8 *)quest_w.x64)[0x42]) {
+    case 3:
+        s.id = 375;
+        break;
+    case 2:
+        s.id = em->kind == 7 ? 373 : 374;
+        break;
+    case 1:
+        s.id = em->kind == 7 ? 372 : 373;
+        break;
+    default:
+        s.id = 371;
+        break;
+    }
+#else
     if (quest_w.x14E == 0) {
         s.id = 0x9B;
     } else {
         s.id = 0x9C;
     }
+#endif
     s.x14 = 2;
     s.cnt = w->x09;
     s.stg = em->stg;
@@ -251,11 +268,28 @@ void em07_hagi_set(EMW *em) {
     f32 pos[3];
     int i;
 
+#ifdef VERSION_MHG      /* G em07_hagi_set (game 0x5BB0A0): G's pick ids, by kind and quest rank (mission header 0x42) */
+    switch (((s8 *)quest_w.x64)[0x42]) {
+    case 3:
+        s.id = 286;
+        break;
+    case 2:
+        s.id = em->kind == 7 ? 320 : 370;
+        break;
+    case 1:
+        s.id = em->kind == 7 ? 248 : 320;
+        break;
+    default:
+        s.id = 208;
+        break;
+    }
+#else
     if (quest_w.x14E == 0) {
         s.id = 0xE4;
     } else {
         s.id = 0xE5;
     }
+#endif
     for (i = 0; i < 3; i++) {
         s.rad = hagi_r_tbl_00657788[i];
         s.stg = em->stg;
