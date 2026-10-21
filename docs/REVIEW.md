@@ -873,3 +873,13 @@ Both games unless marked.
 - **Changed:** the hunter's game joints (sync_joints -> rt_player_parts) no longer include hunter_yoff (the drawn
   model keeps it). **Why:** 0.3 units below the PS2's (R-F17).
 - **To revert:** the commits "WIP referee: ..." / "referee round 3 ..." on agent-D.
+
+## Referee, fourth round (agent D, 20-21 Oct 2026)
+- **Dropped:** fl_model.c's Euler-angle lerp for blended bones; **now** flmatBlend's matrix blend per bone (rows x / y
+  mixed and re-orthonormalised); RT_EULER_BLEND=1 brings the old way back for comparison. **Why:** a blend bent joints
+  up to 18 units away from the PS2's (RELEASE_G R-F22).
+- **Added:** fl_skel extra Y turns (monster necks, rt_em.c rt_em_neck) applied in bone_world.
+- **Changed (G only):** em01_main / em15_main / em20_main needs blocks, small-monster size after their inits,
+  config/mhg/pc_noptr.txt entries (vital rows, Item_get rows).
+- **Added (referee):** 15 scenarios (g_*), the tick-0 sync of EMW+0x39A.
+- **To revert:** the commits "WIP referee G monsters ..." / "WIP referee: motion blends ..." on agent-D.
