@@ -8,7 +8,7 @@ extern u8 CnetSys_w;
 void lobby_func_005ABC40(void *arg0) {
     (*(u8 *)((u8 *)(arg0) + 0x22)) = (u8) ((*(u8 *)((u8 *)(arg0) + 0x22)) + 1);
     (*(s8 *)((u8 *)(arg0) + 0x23)) = 0;
-    if ((*(u8 *)((u8 *)&CnetSys_w + 0x43B6)) == 0) {
+    if ((*(u16 *)((u8 *)&CnetSys_w + 0x43B6)) == 0) {
         (*(s8 *)((u8 *)(arg0) + 0x21)) = 1;
         (*(u8 *)((u8 *)(arg0) + 0x22)) = 0U;
     }

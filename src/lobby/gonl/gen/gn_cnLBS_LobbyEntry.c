@@ -6,7 +6,7 @@
 extern u8 pFunc;
 s32 __cnetSub_Set_BgProcess();      /* extern */
 s32 __cnet_KeepEntryFloorInfo();    /* extern */
-s16 __cnet_SendReq_RoomEntry();         /* extern */
+s16 __cnet_SendReq_RoomEntry();             /* extern */
 
 s32 cnLBS_LobbyEntry(s32 arg0, s32 arg1) {
     s32 temp_v0;
@@ -16,7 +16,7 @@ s32 cnLBS_LobbyEntry(s32 arg0, s32 arg1) {
     var_v0 = -1;
     if (temp_v0 != -1) {
         __cnet_KeepEntryFloorInfo(1, arg0);
-        *(&(*(u8 *)((u8 *)&pFunc + 0xEE)) + (temp_v0 * 0x1C)) = __cnet_SendReq_RoomEntry(arg0, arg1);
+        (*(s32 *)((u8 *)&(*(u8 *)((u8 *)&pFunc + 0xEE)) + (temp_v0 * 0x1C))) = __cnet_SendReq_RoomEntry(arg0, arg1);
         var_v0 = temp_v0;
     }
     return var_v0;

@@ -67,7 +67,7 @@ void plaza_enterLobbyTrans(s64 arg0, s32 arg1) {
             return;
         case 3:                                     /* switch 1 */
             lobby_func_005791D0(0, temp_a1);
-            var_s4 = (s64) ((arg1 + 0x3E) << 0x30) >> 0x30;
+            var_s4 = ((s16) ((arg1 + 0x3E)));
             if ((*(u8 *)((u8 *)((*(void **)&pNet)) + 0x27)) == 0) {
                 flfntSetSize(0x16, 0x12);
                 font_set_palette(4);
@@ -79,10 +79,10 @@ void plaza_enterLobbyTrans(s64 arg0, s32 arg1) {
 loop_12:
             if ((var_s3 + ((*(s16 *)((u8 *)(&tl_member_buff) + 6)) * 8)) < 0xA) {
                 if (*var_s0 != 0) {
-                    put_member_info((s64) ((((s64) (arg0 << 0x30) >> 0x30) + 0xA) << 0x30) >> 0x30, var_s4, var_s0, var_s0 + 8);
+                    put_member_info(((s16) (((((s16) (arg0))) + 0xA))), var_s4, var_s0, var_s0 + 8);
                 }
                 var_s3 += 1;
-                var_s4 = (s64) ((var_s4 + 0x16) << 0x30) >> 0x30;
+                var_s4 = ((s16) ((var_s4 + 0x16)));
                 var_s0 += 0x5C;
                 if (var_s3 >= 8) {
 
@@ -98,26 +98,26 @@ loop_12:
         default:                                    /* switch 1 */
             put_main_cursor2(arg0, arg1, (*(u8 *)((u8 *)(temp_a1) + 0x2B)));
             lobby_func_005791D0(2);
-            temp_fp = (s64) (arg0 << 0x30) >> 0x30;
-            var_s4_2 = (s64) ((arg1 + 0x3E) << 0x30) >> 0x30;
+            temp_fp = ((s16) (arg0));
+            var_s4_2 = ((s16) ((arg1 + 0x3E)));
             temp_s6 = temp_fp + 0xA;
             var_s7 = (*(s16 *)((u8 *)((*(void **)&pNet)) + 0x1C)) * 7;
             var_s3_2 = (u8 *)&LobbyInfo + (var_s7 * 0x15C);
             do {
                 if (var_s7 < (s32) (*(u8 *)((u8 *)&ClassInfo + 0x6))) {
                     temp_s1 = (*(s16 *)((u8 *)(var_s3_2) + 0x12));
-                    var_s0_2 = (s64) (((*(s16 *)((u8 *)(var_s3_2) + 6)) - temp_s1) << 0x30) >> 0x30;
+                    var_s0_2 = ((s16) (((*(s16 *)((u8 *)(var_s3_2) + 6)) - temp_s1)));
                     if (var_s0_2 < 0) {
                         var_s0_2 = 0;
                     }
                     sprintf(&spA0, &lit_2316, var_s3_2 + 0x1A);
                     if ((u16) (*(s16 *)((u8 *)(var_s3_2) + 6)) == 0) {
-                        var_s0_3 = (s64) (var_s0_2 << 0x30) >> 0x30;
-                        var_s2 = var_s0_3 + ((s64) ((s64) temp_s1 << 0x30) >> 0x30);
+                        var_s0_3 = ((s16) (var_s0_2));
+                        var_s2 = var_s0_3 + (((s16) ((s64) temp_s1)));
                         sprintf(&spE0, &g_lb_63E1F0, var_s2, (*(u16 *)((u8 *)(var_s3_2) + 8)));
                     } else {
-                        var_s0_3 = (s64) (var_s0_2 << 0x30) >> 0x30;
-                        var_s2 = var_s0_3 + ((s64) ((s64) temp_s1 << 0x30) >> 0x30);
+                        var_s0_3 = ((s16) (var_s0_2));
+                        var_s2 = var_s0_3 + (((s16) ((s64) temp_s1)));
                         sprintf(&spE0, &g_lb_63E210, var_s2, (*(u16 *)((u8 *)(var_s3_2) + 8)));
                     }
                     temp_v1 = (*(u8 *)((u8 *)(var_s3_2) + 0x16));
@@ -134,29 +134,29 @@ loop_12:
                         break;
                     }
                     if (var_s5 == (*(u8 *)((u8 *)((*(void **)&pNet)) + 0x2B))) {
-                        font_print_double((s64) (temp_s6 << 0x30) >> 0x30, var_s4_2, 1, var_a3);
-                        flfntLocate(0x1B8, (s64) ((((s64) (var_s4_2 << 0x30) >> 0x30) + 2) << 0x30) >> 0x30);
+                        font_print_double(((s16) (temp_s6)), var_s4_2, 1, var_a3);
+                        flfntLocate(0x1B8, ((s16) (((((s16) (var_s4_2))) + 2))));
                         font_set_palette(1);
                         font_print(&g_lb_63E230, var_s2, (*(u16 *)((u8 *)(var_s3_2) + 8)), var_s0_3);
                         flfntLocate(0x1B6, var_s4_2);
                         func_0012BDD0(&lit_2316, &spE0);
                     } else {
                         font_set_palette(var_a3);
-                        flfntLocate((s64) (temp_s6 << 0x30) >> 0x30, var_s4_2);
+                        flfntLocate(((s16) (temp_s6)), var_s4_2);
                         font_print(&lit_2316, &spA0);
                         flfntLocate(0x1B6, var_s4_2);
                         func_0012BDD0(&lit_2316, &spE0);
                     }
                 }
                 var_s5 += 1;
-                var_s4_2 = (s64) ((var_s4_2 + 0x16) << 0x30) >> 0x30;
+                var_s4_2 = ((s16) ((var_s4_2 + 0x16)));
                 var_s3_2 += 0x15C;
                 var_s7 += 1;
             } while (var_s5 < 7);
             temp_s0 = temp_fp + 0x13C;
-            flfntLocate((s64) (temp_s0 << 0x30) >> 0x30, var_s4_2);
+            flfntLocate(((s16) (temp_s0)), var_s4_2);
             temp_v0 = (*(void **)&pNet);
-            Put_page_num((s64) (temp_s0 << 0x30) >> 0x30, var_s4_2, (*(s16 *)((u8 *)(temp_v0) + 0x1C)), (*(s16 *)((u8 *)(temp_v0) + 0x1E)));
+            Put_page_num(((s16) (temp_s0)), var_s4_2, (*(s16 *)((u8 *)(temp_v0) + 0x1C)), (*(s16 *)((u8 *)(temp_v0) + 0x1E)));
             break;
         }
     }

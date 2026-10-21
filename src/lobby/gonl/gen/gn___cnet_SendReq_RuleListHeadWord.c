@@ -5,7 +5,7 @@
 
 s32 SetSendCommand();             /* extern */
 s32 SetSendCommandLen();               /* extern */
-s32 SetSendStringData2(); /* extern */
+s32 SetSendStringData2();    /* extern */
 s32 Write_Socket();                    /* extern */
 extern u8 send_work;
 

@@ -28,7 +28,7 @@ void lobby_func_0059AB90(void *arg0, s32 arg1) {
             sp35 = (*(u8 *)((u8 *)&lb_sys + 0x7A));
         } else if (((*(u8 *)((u8 *)(arg0) + 0x14)) == 0) && ((*(u8 *)((u8 *)(arg0) + 0x15)) == 0x4D)) {
             sp35 = (u8) *(*(u16 **)((u8 *)(arg0) + 0x878));
-            (*(u8 *)((u8 *)&lb_sys + 0x14)) &= ~(1 << sp35);
+            (*(u16 *)((u8 *)&lb_sys + 0x14)) &= ~(1 << sp35);
         }
         lb_send_dataTU(0xA, 0xA, &sp30, arg1);
     }

@@ -3,11 +3,14 @@
  * tools/build_pc_mhg.sh). */
 #include "../gonl.h"
 
+extern u8 g_main_2EFAE8;
 extern u8 cw;
+extern u8 g_main_2EFAE8;
 extern u8 game_w;
 s32 Draw_menu_square(); /* extern */
 s32 flfntSetSize();             /* extern */
 s32 font_print_double(); /* extern */
+extern s32 g_lb_654E00;
 
 void DispSceneSubTitle(void) {
     u8 *temp_v1;
@@ -15,11 +18,11 @@ void DispSceneSubTitle(void) {
     flfntSetSize(0x12, 0x12);
     temp_v1 = (*(void **)&cw);
     if (((*(u8 *)((u8 *)(temp_v1) + 0xFA61)) != 0) && ((*(s8 *)((u8 *)(((*(u8 *)((u8 *)&game_w + 0x3A)) + temp_v1)) + 0xB64)) != 0)) {
-        Draw_menu_square(0xD4, 0x30, 0xC0, 0x20);
-        font_print_double(0xE1, 0x38, 1, 0);
+        Draw_menu_square(0xD4, 0x30, 0xC0, 0x20, 0, 0xA0000000);
+        font_print_double(0xE1, 0x38, 1, 0, &g_lb_654E00);
         return;
     }
-    Draw_menu_square(0xD4, 0x44, 0xC0, 0x20);
-    font_print_double(0xE1, 0x4C, 1, 0);
+    Draw_menu_square(0xD4, 0x44, 0xC0, 0x20, 1, (*(s32 *)&g_main_2EFAE8));
+    font_print_double(0xE1, 0x4C, 1, 0, &g_lb_654E00);
 }
 

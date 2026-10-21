@@ -21,8 +21,8 @@ s32 han2zen();              /* extern */
 s32 put_plaza_menu();                           /* extern */
 s32 reload_tex();               /* extern */
 s32 sprintf();         /* extern */
-extern u8 g_lb_63E1D8;
-extern u8 g_main_2EEE70;
+extern s32 g_lb_63E1D8;
+extern s32 g_main_2EEE70;
 extern u8 pfl_menu_2138;
 extern u8 textLobbyTbl;
 
@@ -42,7 +42,7 @@ void Lbs_plaza_trans(void *arg0) {
 
     temp_a1 = (*(u8 *)((u8 *)((*(void **)&pNet)) + 0x29)) * 4;
     var_s3 = (*(s32 *)((u8 *)&g_main_2EEE70 + temp_a1));
-    (*(u8 *)((u8 *)&pfl_menu_2138 + 0x7)) = 0xC;
+    (*(s8 *)((u8 *)&pfl_menu_2138 + 0x7)) = 0xC;
     font_set_stack_no((*(s32 *)((u8 *)(arg0) + 0x18)), temp_a1);
     flfntSetSize(0x12, 0x12);
     font_set_palette(0);
@@ -69,7 +69,7 @@ void Lbs_plaza_trans(void *arg0) {
         font_print(&sp50);
     } else {
         font_set_palette(0);
-        Put_page_num(0x82, 0x56, (*(u8 *)((u8 *)((*(void **)&pNet)) + 0x29)), 2);
+        Put_page_num(0x82, 0x56, (*(u8 *)((u8 *)((*(void **)&pNet)) + 0x29)), 2, 0);
     }
     spA8 = 0x30FFFFFF;
     spA0 = 0x16;

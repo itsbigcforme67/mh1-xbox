@@ -3,7 +3,7 @@
  * tools/build_pc_mhg.sh). */
 #include "../gonl.h"
 
-s32 strcpy();                    /* extern */
+s32 strcpy();                        /* extern */
 extern u8 CnetSys_g;
 
 s32 lobby_func_005E3900(s32 arg0, s32 arg1) {

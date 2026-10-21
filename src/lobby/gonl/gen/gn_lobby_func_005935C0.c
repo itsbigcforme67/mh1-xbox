@@ -9,11 +9,11 @@ s64 lobby_func_005935C0(s64 arg1, s64 arg2) {
     s32 temp_v0;
     s32 var_v1;
 
-    temp_v0 = ((s64) (arg2 << 0x30) >> 0x30) * strlen_sp();
+    temp_v0 = (((s16) (arg2))) * strlen_sp();
     var_v1 = temp_v0 >> 2;
     if (temp_v0 < 0) {
         var_v1 = (s32) (temp_v0 + 3) >> 2;
     }
-    return (s64) ((((s64) (arg1 << 0x30) >> 0x30) - var_v1) << 0x30) >> 0x30;
+    return ((s16) (((((s16) (arg1))) - var_v1)));
 }
 

@@ -14,7 +14,7 @@ s32 lobby_func_005C05B0(s32 arg0) {
     temp_v0 = __cnetSub_Set_BgProcess(1, 0, arg0);
     var_v0 = -1;
     if (temp_v0 != -1) {
-        *(&(*(u8 *)((u8 *)&pFunc + 0xEE)) + (temp_v0 * 0x1C)) = lobby_func_005C0650();
+        (*(s32 *)((u8 *)&(*(u8 *)((u8 *)&pFunc + 0xEE)) + (temp_v0 * 0x1C))) = lobby_func_005C0650();
         var_v0 = temp_v0;
     }
     return var_v0;

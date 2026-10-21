@@ -38,7 +38,7 @@ void lobby_func_005E3120(void *arg0) {
         }
         temp_a0 = temp_s0 + 1;
         (*(s32 *)((u8 *)(arg0) + 0xC)) = (s32) ((*(s32 *)((u8 *)(arg0) + 0xC)) + 1);
-        if ((u16) (*(u8 *)((u8 *)&CnetSys_w + 0x43B4)) >= temp_a0) {
+        if ((u16) (*(u16 *)((u8 *)&CnetSys_w + 0x43B4)) >= temp_a0) {
             if (temp_a0 >= 0x1BU) {
                 goto block_15;
             }

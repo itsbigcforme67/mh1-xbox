@@ -5,7 +5,7 @@
 
 s32 cnLBS_Get_RoomExplain();         /* extern */
 s32 cnetGet_Room_LastRecvNumber();         /* extern */
-extern u8 g_lb_6DE120;
+extern s32 g_lb_6DE120;
 
 void lobby_func_00587810(void) {
     u8 g_frame[0x20] __attribute__((aligned(16)));   /* G's stack frame */

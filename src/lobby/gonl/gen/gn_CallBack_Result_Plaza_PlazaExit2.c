@@ -19,7 +19,7 @@ void CallBack_Result_Plaza_PlazaExit2(s64 arg0) {
     sp10 = arg0;
     if (((*(u8 *)((u8 *)(temp_a2) + 0xB99)) != 5) && (temp_a3 = temp_a2 + 0xBA9, ((*(u8 *)((u8 *)(temp_a2) + 0xBA9)) == 0x18))) {
         if ((s8) sp10 == 2) {
-            if (((s64) ((s64) (((s8 *)&sp10)[1]) << 0x38) >> 0x38) == 0xB) {
+            if ((((s8) ((s64) (((s8 *)&sp10)[1])))) == 0xB) {
                 cnLBS_Get_AllocationProgressCount(&sp1C, (((s8 *)&sp10)[1]), temp_a2, temp_a3);
                 return;
             }

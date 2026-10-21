@@ -21,10 +21,11 @@ s32 lobby_func_00559FF0();              /* extern */
 s32 lobby_func_005737C0();                   /* extern */
 s32 lobby_func_005791D0();               /* extern */
 s32 sprintf();    /* extern */
-extern u8 lb_ibox_str;
-extern u8 g_lb_636B50;
-extern u8 g_lb_63E268;
-extern u8 g_lb_63E2B8;
+extern s32 lb_ibox_str;
+extern s32 g_lb_636B50;
+extern s32 g_lb_636DF8;
+extern s32 g_lb_63E268;
+extern s32 g_lb_63E2B8;
 extern u8 lit_2316;
 
 void lobby_func_00576A70(void) {
@@ -56,10 +57,10 @@ void lobby_func_00576A70(void) {
 loop_4:
         temp_a1 = (*(u8 **)&g_main_2EFBC0);
         temp_a0 = *temp_a1;
-        var_s4 = (s64) ((var_s4 + 0x16) << 0x30) >> 0x30;
+        var_s4 = ((s16) ((var_s4 + 0x16)));
         if (var_s5 >= (s32) temp_a0) {
             if (temp_a0 == 0x64) {
-                font_print_double(0x118, var_s4, 1, 4);
+                font_print_double(0x118, var_s4, 1, 4, g_lb_636DF8);
             }
         } else {
             temp_s0 = lobby_func_00559FF0(temp_a1 + var_s2 + 4, temp_a1) & 0xFFFF;
@@ -67,7 +68,7 @@ loop_4:
             font_set_palette(lobby_func_00559E20(temp_s0));
             func_0012BDD0(lobby_func_00559EB0(temp_s0));
             font_set_palette(0);
-            temp_a2 = (s64) ((Lb_back_money(temp_s0) & 0xFF) << 0x30) >> 0x30;
+            temp_a2 = ((s16) ((Lb_back_money(temp_s0) & 0xFF)));
             if (temp_a2 != 0) {
                 sprintf(&sp130, &g_lb_63E268, temp_a2);
             } else {

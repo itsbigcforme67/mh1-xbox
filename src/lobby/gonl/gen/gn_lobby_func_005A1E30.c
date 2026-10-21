@@ -18,6 +18,6 @@ void lobby_func_005A1E30(void) {
     (*(s8 *)&MMBB_LOGIN) = 3;
     (*(s8 *)&COM_R_No_3) = 0;
     (*(s8 *)&COM_R_No_4) = 0;
-    (*(u8 *)((u8 *)&CnetWork + 0x5)) = 0;
+    (*(s8 *)((u8 *)&CnetWork + 0x5)) = 0;
 }
 

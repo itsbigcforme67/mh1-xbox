@@ -13,7 +13,7 @@ s32 DispHelpLine();                             /* extern */
 s32 DispSceneTitle();                           /* extern */
 s32 Lb_put_button();   /* extern */
 s32 Lb_put_icon_free(); /* extern */
-s32 Paint_square();   /* extern */
+s32 Paint_square(); /* extern */
 s32 Put_2TF();                         /* extern */
 s32 SetTextureStage();                   /* extern */
 s32 SetTrnslMode();             /* extern */
@@ -28,9 +28,9 @@ s32 lobby_func_005926C0(); /* extern */
 s64 lobby_func_005935C0();         /* extern */
 s32 lobby_func_005936B0();                      /* extern */
 s32 reload_tex();               /* extern */
-extern u8 g_lb_5FBBF0;
-extern u8 g_lb_636CD0;
-extern u8 g_lb_63E530;
+extern s32 g_lb_5FBBF0;
+extern s32 g_lb_636CD0;
+extern s32 g_lb_63E530;
 extern u8 PlazaInfo;
 
 void lobby_func_0057D5D0(void *arg0) {
@@ -43,10 +43,10 @@ void lobby_func_0057D5D0(void *arg0) {
 #define spAC (*(s32 *)(g_frame + 0xAC))
 #define spB0 (*(s32 *)(g_frame + 0xB0))
 #define spB4 (*(s32 *)(g_frame + 0xB4))
+    u8 *var_a4;   /* (s32 *) */
     u8 *var_s1;   /* (s32 *) */
     u8 *var_s2;   /* (s32 *) */
     u8 *var_s4_2;   /* (s32 *) */
-    u8 *var_t0;   /* (s32 *) */
     s32 var_s4;
     f32 temp_f2;
     f32 var_a0_2;
@@ -58,9 +58,9 @@ void lobby_func_0057D5D0(void *arg0) {
     s16 temp_v0;
     u8 *var_s0;   /* (s32 *) */
     s32 var_a0;
+    s32 var_a5;
     s32 var_s3;
     s32 var_s7;
-    s32 var_t1;
     s32 var_v1;
     s64 temp_a2;
     s64 temp_fp;
@@ -84,7 +84,7 @@ void lobby_func_0057D5D0(void *arg0) {
         } else {
             var_s4 = 0;
         }
-        font_print_double((s64) (lobby_func_005935C0((*(s32 *)var_s0), (*(s16 *)((u8 *)(var_s1) + 0)), 0x12) << 0x30) >> 0x30, (*(s16 *)((u8 *)(var_s1) + 2)), 1, var_s4);
+        font_print_double(((s16) (lobby_func_005935C0((*(s32 *)var_s0), (*(s16 *)((u8 *)(var_s1) + 0)), 0x12))), (*(s16 *)((u8 *)(var_s1) + 2)), 1, var_s4, (*(s32 *)var_s0));
         var_s3 += 1;
         var_s2 += 0x14;
         var_s1 += 4;
@@ -97,24 +97,24 @@ void lobby_func_0057D5D0(void *arg0) {
     do {
         var_a0 = 0;
         var_v1 = 0;
-        var_t1 = 0;
-        if ((s32) (*(u8 *)((u8 *)&ClassInfo + 0x2)) > 0) {
-            var_t0 = &PlazaInfo;
+        var_a5 = 0;
+        if ((s32) (*(u16 *)((u8 *)&ClassInfo + 0x2)) > 0) {
+            var_a4 = &PlazaInfo;
             do {
-                if ((var_s7 + 0x31) == (*(s8 *)((u8 *)(var_t0) + 0x5B))) {
-                    var_v1 += (*(u16 *)((u8 *)(var_t0) + 8));
-                    var_a0 += (*(u16 *)((u8 *)(var_t0) + 6));
+                if ((var_s7 + 0x31) == (*(s8 *)((u8 *)(var_a4) + 0x5B))) {
+                    var_v1 += (*(u16 *)((u8 *)(var_a4) + 8));
+                    var_a0 += (*(u16 *)((u8 *)(var_a4) + 6));
                 }
-                var_t1 += 1;
-                var_t0 += 0x15C;
-            } while (var_t1 < (s32) (*(u8 *)((u8 *)&ClassInfo + 0x2)));
+                var_a5 += 1;
+                var_a4 += 0x15C;
+            } while (var_a5 < (s32) (*(u16 *)((u8 *)&ClassInfo + 0x2)));
         }
         temp_v0 = (*(s16 *)((u8 *)(var_s4_2) + 0)) - 0x46;
         temp_a2 = (*(s16 *)((u8 *)(var_s4_2) + 2)) + 0x23;
         spA0 = temp_v0;
         spA4 = temp_v0;
         spA2 = (s16) temp_a2;
-        temp_s0 = (s64) (temp_a2 << 0x30) >> 0x30;
+        temp_s0 = ((s16) (temp_a2));
         spA6 = temp_s0 + 0xC;
         spA8 = 0xFF00FF00;
         spB0 = 0xFF00FF00;
@@ -144,12 +144,12 @@ void lobby_func_0057D5D0(void *arg0) {
         } else {
             var_a0_4 = M2C_BITWISE(f32, (M2C_BITWISE(s32, (var_f3 - 2.1474836e9f)) | 0x80000000));
         }
-        temp_fp = (s64) (((s64) ((s64) temp_v0 << 0x30) >> 0x30) << 0x30) >> 0x30;
+        temp_fp = ((s16) ((((s16) ((s64) temp_v0)))));
         spAC = (M2C_BITWISE(s32, var_a0_4) & 0xFF) + (((M2C_BITWISE(s32, var_a0_2) & 0xFF) << 0x10) + 0xFF000000 + ((M2C_BITWISE(s32, var_a0_3) & 0xFF) << 8));
         spB4 = spAC;
-        Paint_square((s64) ((temp_fp + 4) << 0x30) >> 0x30, (s64) ((temp_s0 + 3) << 0x30) >> 0x30, 0x8C, 0xC);
+        Paint_square(((s16) ((temp_fp + 4))), ((s16) ((temp_s0 + 3))), 0x8C, 0xC, 0xFF010101, var_a5);
         func_0012A800(&spA0);
-        Lb_put_icon_free((s64) ((temp_fp - 0x10) << 0x30) >> 0x30, (s64) ((temp_s0 - 7) << 0x30) >> 0x30, 0x18, -1);
+        Lb_put_icon_free(((s16) ((temp_fp - 0x10))), ((s16) ((temp_s0 - 7))), 0x18, -1, 0x2E);
         var_s7 += 1;
         var_s4_2 += 4;
     } while (var_s7 < 5);
@@ -158,12 +158,12 @@ void lobby_func_0057D5D0(void *arg0) {
         DispHelpLine();
     }
     if ((s32) (*(u8 *)&BsLbsCount) >= 2) {
-        lobby_func_005926C0(0, 0x54, 0xC8, 0x1A);
+        lobby_func_005926C0(0, 0x54, 0xC8, 0x1A, 0x80006000, 0);
         Lb_put_button(0x14, 0x56, 1);
         flfntSetSize(0x12, 0x12);
         flfntLocate(0x2E, 0x58);
         font_set_palette(0);
-        font_print(&g_lb_63E530, (*(u8 *)((u8 *)&net_etc_mes_tbl + 0x18)), (*(u8 *)((u8 *)&lb_rule_member + 0x24)));
+        font_print(&g_lb_63E530, (*(s32 *)((u8 *)&net_etc_mes_tbl + 0x18)), (*(s32 *)((u8 *)&lb_rule_member + 0x24)));
     }
 }
 

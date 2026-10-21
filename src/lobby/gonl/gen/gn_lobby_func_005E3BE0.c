@@ -4,7 +4,7 @@
 #include "../gonl.h"
 
 s32 GetRecvData16();                       /* extern */
-s32 GetRecvDataString();            /* extern */
+s32 GetRecvDataString();                /* extern */
 extern u8 recv_work;
 
 void lobby_func_005E3BE0(s32 arg1) {

@@ -9,7 +9,7 @@ s32 SetDialogData();                     /* extern */
 s32 SetDialogYesNo();                    /* extern */
 s32 cnLBS_Get_ConditionSearchUser();   /* extern */
 s32 memset();        /* extern */
-extern u8 g_main_2EFBC4;
+extern s32 g_main_2EFBC4;
 
 void lobby_func_0056ED00(void) {
     memset(&(*(u8 *)((u8 *)&tl_member_buff + 0x18)), 0, 0x1376);

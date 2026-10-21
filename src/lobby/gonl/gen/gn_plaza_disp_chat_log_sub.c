@@ -57,9 +57,9 @@ loop_7:
                         } else {
                             lobby_func_0058EDD0(&sp80, temp_s5 + 0x46);
                         }
-                        font_print_double2(0xD8, var_s1, 1, (*(u8 *)((u8 *)(temp_s5) + 0x44)));
+                        font_print_double2(0xD8, var_s1, 1, (*(u8 *)((u8 *)(temp_s5) + 0x44)), &sp80);
                     }
-                    var_s1 = (s64) ((var_s1 - 0x15) << 0x30) >> 0x30;
+                    var_s1 = ((s16) ((var_s1 - 0x15)));
                     if (var_s1 >= 0x7C) {
                         var_s2 -= 1;
                         var_s0 -= 0x20;
@@ -91,7 +91,7 @@ loop_21:
                 } else {
                     lobby_func_0058EDD0(&sp80, temp_s1 + 0x46);
                 }
-                font_print_double2(0xD8, var_s3_2, 1, (*(u8 *)((u8 *)(temp_s1) + 0x44)));
+                font_print_double2(0xD8, var_s3_2, 1, (*(u8 *)((u8 *)(temp_s1) + 0x44)), &sp80);
                 font_set_palette((*(u8 *)((u8 *)(temp_s1) + 0x45)));
                 var_s0_2 = 0;
                 if ((s32) (*(u8 *)((u8 *)(temp_s1) + 0x40)) > 0) {
@@ -99,7 +99,7 @@ loop_21:
 loop_27:
                     flfntLocate(0x14B, var_s3_2);
                     font_print_uf(var_s5);
-                    var_s3_2 = (s64) ((var_s3_2 + 0x15) << 0x30) >> 0x30;
+                    var_s3_2 = ((s16) ((var_s3_2 + 0x15)));
                     if (var_s3_2 < 0x125) {
                         var_s0_2 += 1;
                         var_s5 += 0x20;

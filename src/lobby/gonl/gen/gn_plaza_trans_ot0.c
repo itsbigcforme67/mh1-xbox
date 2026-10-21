@@ -3,6 +3,7 @@
  * tools/build_pc_mhg.sh). */
 #include "../gonl.h"
 
+extern u8 lb_shop_msg;
 extern u8 pNet;
 extern u8 textLobbyTbl;
 extern u8 tl_mail_tbl;
@@ -38,9 +39,9 @@ s32 plaza_mailBoxTrans(); /* extern */
 s32 plaza_movePlazaTrans();                     /* extern */
 s32 plaza_setMyCommentTrans(); /* extern */
 s32 reload_tex();               /* extern */
-s32 sprintf();    /* extern */
+s32 sprintf(); /* extern */
 extern u8 ClassInfo;
-extern u8 g_main_30645A;
+extern s32 g_main_30645A;
 extern u8 lit_2316;
 extern s128 lit_3199;
 extern u8 lit_3241;
@@ -51,10 +52,12 @@ void plaza_trans_ot0(void *arg0) {
 #define sp2C (*(s32 *)(g_frame + 0x2C))
 #define sp30 (*(s32 *)(g_frame + 0x30))
 #define sp70 (*(s32 *)(g_frame + 0x70))
+    s32 var_s0;
     u8 temp_v0;
     u8 temp_v1;
     u8 temp_v1_2;
 
+    var_s0 = 0xFF537F56;
     sp20 = lit_3199;
     font_set_stack_no((*(s32 *)((u8 *)(arg0) + 0x18)));
     reload_tex(1, 0x180);
@@ -62,17 +65,19 @@ void plaza_trans_ot0(void *arg0) {
     SetFilterMode(1);
     flSetRenderState(0x60, 0);
     Put_2TF(&(*(u8 *)((u8 *)&textLobbyTbl + 0x14)));
-    lobby_func_00578C40((s64) (((*(u8 *)((u8 *)&textLobbyTbl + 0x16)) + 0x1B) << 0x30) >> 0x30);
+    lobby_func_00578C40(((s16) (((*(s16 *)((u8 *)&textLobbyTbl + 0x16)) + 0x1B))));
     DispSceneTitle();
     DispHelpLine();
     temp_v1 = (*(u8 *)((u8 *)((*(void **)&pNet)) + 0x28));
     switch (temp_v1) {                              /* switch 1; irregular */
     case 11:                                        /* switch 1 */
+        var_s0 = 0xFF564D33;
         sp2C = 0xC6201A14;
         lobby_func_0059F6E0(0xC6201A14);
         break;
     case 16:                                        /* switch 1 */
     case 12:                                        /* switch 1 */
+        var_s0 = 0xFF564D33;
         sp2C = 0xCC151200;
         lobby_func_0059F6E0(0xCC151200);
         break;
@@ -80,8 +85,8 @@ void plaza_trans_ot0(void *arg0) {
     temp_v1_2 = (*(u8 *)((u8 *)((*(void **)&pNet)) + 0x28));
     if ((temp_v1_2 != 0xE) && (temp_v1_2 != 4) && (temp_v1_2 != 3) && (temp_v1_2 != 8) && (temp_v1_2 != 0)) {
         DispFrameMessage(&sp20, 0);
-        Draw_square(0xD8, 0x76, 0x192, 1);
-        Draw_square(0xD8, 0x13C, 0x192, 1);
+        Draw_square(0xD8, 0x76, 0x192, 1, var_s0);
+        Draw_square(0xD8, 0x13C, 0x192, 1, var_s0);
     }
     temp_v0 = (*(u8 *)((u8 *)((*(void **)&pNet)) + 0x28));
     switch (temp_v0) {                              /* switch 2 */
@@ -130,7 +135,7 @@ void plaza_trans_ot0(void *arg0) {
     DispButtonHelp((*(void **)&pNet));
     flfntSetSize(0x12, 0x12);
     font_set_palette(0);
-    sprintf(&sp70, &lit_3241, (*(u8 *)((u8 *)&tl_mail_tbl + 0x30)), (*(s32 *)((u8 *)&g_main_30645A + (ClassInfo * 0x15C))));
+    sprintf(&sp70, &lit_3241, (*(s32 *)((u8 *)&tl_mail_tbl + 0x30)), (*(s32 *)((u8 *)&g_main_30645A + (ClassInfo * 0x15C))), (*(s32 *)((u8 *)&lb_shop_msg + 0x8)));
     han2zen(&sp70, &sp30);
     flfntLocate(0x1AE, 0x1F);
     font_print(&lit_2316, &sp30);

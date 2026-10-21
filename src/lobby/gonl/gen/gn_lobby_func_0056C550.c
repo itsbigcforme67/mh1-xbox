@@ -42,8 +42,8 @@ s32 memset();      /* extern */
 s16 net_Check_FriendSuu();        /* extern */
 s32 net_Delete_FriendData(); /* extern */
 s32 strcpy();                     /* extern */
-extern u8 g_main_302CB0;
-extern u8 g_main_3064AF;
+extern s32 g_main_302CB0;
+extern s32 g_main_3064AF;
 
 s32 lobby_func_0056C550(s32 arg0) {
     u8 *var_a1;   /* (s16 *) */
@@ -56,14 +56,14 @@ s32 lobby_func_0056C550(s32 arg0) {
     u8 *var_a3_6;   /* (s16 *) */
     u8 *var_a3_7;   /* (s16 *) */
     u8 *var_a3_8;   /* (s16 *) */
-    u8 *var_t0;   /* (s16 *) */
-    u8 *var_t0_2;   /* (s16 *) */
-    u8 *var_t0_3;   /* (s16 *) */
-    u8 *var_t0_4;   /* (s16 *) */
-    u8 *var_t0_5;   /* (s16 *) */
-    u8 *var_t0_6;   /* (s16 *) */
-    u8 *var_t0_7;   /* (s16 *) */
-    u8 *var_t0_8;   /* (s16 *) */
+    u8 *var_a4;   /* (s16 *) */
+    u8 *var_a4_2;   /* (s16 *) */
+    u8 *var_a4_3;   /* (s16 *) */
+    u8 *var_a4_4;   /* (s16 *) */
+    u8 *var_a4_5;   /* (s16 *) */
+    u8 *var_a4_6;   /* (s16 *) */
+    u8 *var_a4_7;   /* (s16 *) */
+    u8 *var_a4_8;   /* (s16 *) */
     s16 temp_s1;
     s32 temp_a0;
     s32 temp_a0_2;
@@ -105,7 +105,7 @@ s32 lobby_func_0056C550(s32 arg0) {
     u8 *temp_v1_2;
     u8 *temp_v1_4;
     u8 *var_a3_9;
-    u8 *var_t0_9;
+    u8 *var_a4_9;
     u8 *var_v0;
     u8 *var_v1;
 
@@ -119,7 +119,7 @@ s32 lobby_func_0056C550(s32 arg0) {
     case 0:                                         /* switch 1 */
         (*(s8 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x1398))) + 0x60C)) = (s8) ((*(s8 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x1398))) + 0x60C)) + 1);
         (*(s8 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x1398))) + 0x60D)) = 0;
-        if (((*(s16 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x1398))) + 0x608)) == 0) || (*(&(*(u8 *)((u8 *)&lb_sys + 0xA0)) + ((*(s16 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x1398))) + 0x604)) * 2)) != 0)) {
+        if (((*(s16 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x1398))) + 0x608)) == 0) || ((*(s32 *)((u8 *)&(*(u8 *)((u8 *)&lb_sys + 0xA0)) + ((*(s16 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x1398))) + 0x604)) * 2))) != 0)) {
             (*(s8 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x1398))) + 0x60C)) = 2;
         } else {
         case 1:                                     /* switch 1 */
@@ -202,8 +202,8 @@ block_192:
             }
         } else {
             temp_s1 = (*(s16 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x1398))) + 0x604));
-            lobby_func_00569390(&(*(u8 *)((u8 *)&tl_member_buff + 0x1398)) + 0x60F, &(*(u8 *)((u8 *)&tl_member_buff + 0x1398)) + 0x604, 7, (*(s16 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x1398))) + 0x608)));
-            if ((((s64) ((s64) temp_s1 << 0x30) >> 0x30) != (*(s16 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x1398))) + 0x604))) && (*(&(*(u8 *)((u8 *)&lb_sys + 0xA0)) + ((*(s16 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x1398))) + 0x604)) * 2)) == 0)) {
+            lobby_func_00569390((u8 *)&(*(u8 *)((u8 *)&tl_member_buff + 0x1398)) + 0x60F, (u8 *)&(*(u8 *)((u8 *)&tl_member_buff + 0x1398)) + 0x604, 7, (*(s16 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x1398))) + 0x608)), var_s1);
+            if (((((s16) ((s64) temp_s1))) != (*(s16 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x1398))) + 0x604))) && ((*(s32 *)((u8 *)&(*(u8 *)((u8 *)&lb_sys + 0xA0)) + ((*(s16 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x1398))) + 0x604)) * 2))) == 0)) {
                 (*(s8 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x1398))) + 0x60C)) = 1;
             }
         }
@@ -437,90 +437,90 @@ block_87:
                     var_v1 = temp_a1_3 + (var_a0 * 0x24A);
                     var_v0 = temp_a1_3 + (var_a0 * 0x24A);
                     do {
-                        var_t0 = var_v1 + 0x1266;
+                        var_a4 = var_v1 + 0x1266;
                         var_a3 = var_v0 + 0x101C;
                         var_a2 = 0x125;
 loop_138:
                         var_a2 -= 1;
-                        (*(s16 *)var_a3) = (*(s16 *)var_t0);
-                        var_t0 += 2;
+                        (*(s16 *)var_a3) = (*(s16 *)var_a4);
+                        var_a4 += 2;
                         var_a3 += 2;
                         if (var_a2 > 0) {
                             goto loop_138;
                         }
-                        var_t0_2 = var_v1 + 0x14B0;
+                        var_a4_2 = var_v1 + 0x14B0;
                         var_a3_2 = var_v0 + 0x1266;
                         var_a2_2 = 0x125;
 loop_140:
                         var_a2_2 -= 1;
-                        (*(s16 *)var_a3_2) = (*(s16 *)var_t0_2);
-                        var_t0_2 += 2;
+                        (*(s16 *)var_a3_2) = (*(s16 *)var_a4_2);
+                        var_a4_2 += 2;
                         var_a3_2 += 2;
                         if (var_a2_2 > 0) {
                             goto loop_140;
                         }
-                        var_t0_3 = var_v1 + 0x16FA;
+                        var_a4_3 = var_v1 + 0x16FA;
                         var_a3_3 = var_v0 + 0x14B0;
                         var_a2_3 = 0x125;
 loop_142:
                         var_a2_3 -= 1;
-                        (*(s16 *)var_a3_3) = (*(s16 *)var_t0_3);
-                        var_t0_3 += 2;
+                        (*(s16 *)var_a3_3) = (*(s16 *)var_a4_3);
+                        var_a4_3 += 2;
                         var_a3_3 += 2;
                         if (var_a2_3 > 0) {
                             goto loop_142;
                         }
-                        var_t0_4 = var_v1 + 0x1944;
+                        var_a4_4 = var_v1 + 0x1944;
                         var_a3_4 = var_v0 + 0x16FA;
                         var_a2_4 = 0x125;
 loop_144:
                         var_a2_4 -= 1;
-                        (*(s16 *)var_a3_4) = (*(s16 *)var_t0_4);
-                        var_t0_4 += 2;
+                        (*(s16 *)var_a3_4) = (*(s16 *)var_a4_4);
+                        var_a4_4 += 2;
                         var_a3_4 += 2;
                         if (var_a2_4 > 0) {
                             goto loop_144;
                         }
-                        var_t0_5 = var_v1 + 0x1B8E;
+                        var_a4_5 = var_v1 + 0x1B8E;
                         var_a3_5 = var_v0 + 0x1944;
                         var_a2_5 = 0x125;
 loop_146:
                         var_a2_5 -= 1;
-                        (*(s16 *)var_a3_5) = (*(s16 *)var_t0_5);
-                        var_t0_5 += 2;
+                        (*(s16 *)var_a3_5) = (*(s16 *)var_a4_5);
+                        var_a4_5 += 2;
                         var_a3_5 += 2;
                         if (var_a2_5 > 0) {
                             goto loop_146;
                         }
-                        var_t0_6 = var_v1 + 0x1DD8;
+                        var_a4_6 = var_v1 + 0x1DD8;
                         var_a3_6 = var_v0 + 0x1B8E;
                         var_a2_6 = 0x125;
 loop_148:
                         var_a2_6 -= 1;
-                        (*(s16 *)var_a3_6) = (*(s16 *)var_t0_6);
-                        var_t0_6 += 2;
+                        (*(s16 *)var_a3_6) = (*(s16 *)var_a4_6);
+                        var_a4_6 += 2;
                         var_a3_6 += 2;
                         if (var_a2_6 > 0) {
                             goto loop_148;
                         }
-                        var_t0_7 = var_v1 + 0x2022;
+                        var_a4_7 = var_v1 + 0x2022;
                         var_a3_7 = var_v0 + 0x1DD8;
                         var_a2_7 = 0x125;
 loop_150:
                         var_a2_7 -= 1;
-                        (*(s16 *)var_a3_7) = (*(s16 *)var_t0_7);
-                        var_t0_7 += 2;
+                        (*(s16 *)var_a3_7) = (*(s16 *)var_a4_7);
+                        var_a4_7 += 2;
                         var_a3_7 += 2;
                         if (var_a2_7 > 0) {
                             goto loop_150;
                         }
-                        var_t0_8 = var_v1 + 0x226C;
+                        var_a4_8 = var_v1 + 0x226C;
                         var_a3_8 = var_v0 + 0x2022;
                         var_a2_8 = 0x125;
 loop_152:
                         var_a2_8 -= 1;
-                        (*(s16 *)var_a3_8) = (*(s16 *)var_t0_8);
-                        var_t0_8 += 2;
+                        (*(s16 *)var_a3_8) = (*(s16 *)var_a4_8);
+                        var_a4_8 += 2;
                         var_a3_8 += 2;
                         if (var_a2_8 > 0) {
                             goto loop_152;
@@ -532,10 +532,10 @@ loop_152:
                 }
                 if ((s32) var_a0 < 0x63) {
                     temp_a2_4 = (*(void **)&cw);
-                    var_t0_9 = temp_a2_4 + (var_a0 * 0x24A);
+                    var_a4_9 = temp_a2_4 + (var_a0 * 0x24A);
                     var_a3_9 = temp_a2_4 + ((var_a0 & 0xFF) * 0x24A);
                     do {
-                        var_a2_9 = var_t0_9 + 0x1266;
+                        var_a2_9 = var_a4_9 + 0x1266;
                         var_a1 = var_a3_9 + 0x101C;
                         var_v1_2 = 0x125;
 loop_158:
@@ -546,7 +546,7 @@ loop_158:
                         if (var_v1_2 > 0) {
                             goto loop_158;
                         }
-                        var_t0_9 += 0x24A;
+                        var_a4_9 += 0x24A;
                         var_a0 = (var_a0 + 1) & 0xFF;
                         var_a3_9 += 0x24A;
                     } while ((s32) var_a0 < 0x63);

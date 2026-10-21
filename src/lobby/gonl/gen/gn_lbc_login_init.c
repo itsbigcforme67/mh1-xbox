@@ -1,4 +1,4 @@
-/* G online (PC): lbc_login_init, written from Monster Hunter G's code at lobby 0x57A420 by tools/mhg_gonl.py (an m2c draft with
+/* HAND-FIXED (the login struct by value). G online (PC): lbc_login_init, written from Monster Hunter G's code at lobby 0x57A420 by tools/mhg_gonl.py (an m2c draft with
  * G's names; docs/network.md 3.12). Not compared with anything; the G online PC build links it (ONLINE=1
  * tools/build_pc_mhg.sh). */
 #include "../gonl.h"
@@ -174,7 +174,7 @@ void lbc_login_init(void) {
         strncpy(&sp42, &(*(u8 *)((u8 *)&bsCsvWork + 0x11)), 0xA);
         strncpy(&sp4D, &bsCsvWork, 0x10);
         CallBackWaitInit();
-        cnLBS_LoginLobbyServer(&sp40, &CallBack_Result_LoginLobbyServer);
+        cnLBS_LoginLobbyServer(*(struct { u8 b[0x40]; } *)&sp40, &CallBack_Result_LoginLobbyServer);   /* HAND-FIXED: the PC takes CNET_LOGIN by value (EE GCC passes a pointer to a copy) */
         break;
     case 3:
         Check_CallBackWait(temp_a0);

@@ -1,4 +1,4 @@
-/* G online (PC): lobby_func_00570320, written from Monster Hunter G's code at lobby 0x570320 by tools/mhg_gonl.py (an m2c draft with
+/* HAND-FIXED (a u8 read of a byte-pointer sum). G online (PC): lobby_func_00570320, written from Monster Hunter G's code at lobby 0x570320 by tools/mhg_gonl.py (an m2c draft with
  * G's names; docs/network.md 3.12). Not compared with anything; the G online PC build links it (ONLINE=1
  * tools/build_pc_mhg.sh). */
 #include "../gonl.h"
@@ -62,9 +62,9 @@ void lobby_func_00570320(void) {
     u8 *temp_a1_7;
 
     temp_v0 = Get_sw2(0);
-    var_a2 = (*(u8 *)((u8 *)&tl_member_buff + 0x138A));
-    var_a1 = (*(u8 *)((u8 *)&tl_member_buff + 0x137C));
-    (*(u8 *)((u8 *)&tl_member_buff + 0x1380)) = var_a2 + (var_a1 * 7);
+    var_a2 = (*(s8 *)((u8 *)&tl_member_buff + 0x138A));
+    var_a1 = (*(s16 *)((u8 *)&tl_member_buff + 0x137C));
+    (*(s16 *)((u8 *)&tl_member_buff + 0x1380)) = var_a2 + (var_a1 * 7);
     temp_t0 = temp_v0 & 0xFFFF;
     if ((u8) (*(u8 *)((u8 *)&tl_member_buff + 0x1382)) < 9U) {
         var_a0 = &jtbl_0063E100;
@@ -102,7 +102,7 @@ void lobby_func_00570320(void) {
             temp_s1 = (*(u8 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x18))) + 0x136F));
             (*(u8 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x18))) + 0x136F)) = Lb_cursorUD(temp_s1, 2, var_a2);
             SetDialogYesNo((*(u8 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x18))) + 0x136F)));
-            if (((s64) ((s64) temp_s1 << 0x38) >> 0x38) != (*(u8 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x18))) + 0x136F))) {
+            if ((((s8) ((s64) temp_s1))) != (*(u8 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x18))) + 0x136F))) {
                 SetHelpLineMsg((*(u8 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x18))) + 0x136F)) + 0x25);
                 return;
             }

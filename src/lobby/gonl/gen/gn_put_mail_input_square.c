@@ -52,8 +52,8 @@ void put_mail_input_square(s64 arg0, s64 arg1) {
         }
         if (temp_a1 == 2) {
             var_s3 = 0;
-            var_s2 = ((s64) (arg1 << 0x30) >> 0x30) + 0x2A;
-            spA0 = ((s64) (arg0 << 0x30) >> 0x30) + 0x33;
+            var_s2 = (((s16) (arg1))) + 0x2A;
+            spA0 = (((s16) (arg0))) + 0x33;
             do {
                 spB0 = (s16) spA0;
                 if ((s32) (*(u8 *)((u8 *)((*(void **)&g_main_2EFBAC)) + 0x233)) >= 0) {
@@ -83,12 +83,12 @@ void put_mail_input_square(s64 arg0, s64 arg1) {
                 var_s2 += 0x16;
             } while (var_s3 < 3U);
         }
-        spB0 = ((s64) (arg0 << 0x30) >> 0x30) + 0x33;
+        spB0 = (((s16) (arg0))) + 0x33;
         spB4 = spB0 + 0x151;
         if ((*(u8 *)((u8 *)((*(void **)&g_main_2EFBAC)) + 0x230)) == 2) {
-            spB2 = ((s64) (arg1 << 0x30) >> 0x30) + 0x6C;
+            spB2 = (((s16) (arg1))) + 0x6C;
         } else {
-            spB2 = ((s64) (arg1 << 0x30) >> 0x30) + 0x40;
+            spB2 = (((s16) (arg1))) + 0x40;
         }
         spB6 = spB2 + 0x58;
         if (var_s4 == 1) {

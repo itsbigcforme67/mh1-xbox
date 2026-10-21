@@ -7,7 +7,7 @@ extern u8 cw;
 s32 Lbs_CheckMatchingFlag();                     /* extern */
 s32 Online_ck();                                    /* extern */
 s32 cnLBS_Send_ChatBinary();           /* extern */
-s32 flMemcpy();          /* extern */
+s32 flMemcpy();              /* extern */
 extern s8 sendDat;
 
 void lb_send_data(s32 arg0, s8 arg1, s32 arg2) {

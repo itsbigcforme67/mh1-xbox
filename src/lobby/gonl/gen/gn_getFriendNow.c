@@ -13,7 +13,7 @@ s32 cnLBS_Get_SerchUserPlace(); /* extern */
 s32 lobby_func_00580910();      /* extern */
 extern s16 g_lb_6B42B4;
 extern s8 g_lb_6B42BD;
-extern u8 g_main_302CB0;
+extern s32 g_main_302CB0;
 
 s32 getFriendNow(u8 arg0, s64 arg1) {
     s32 temp_a2;
@@ -35,7 +35,7 @@ s32 getFriendNow(u8 arg0, s64 arg1) {
     temp_v0 = (u8 *)&g_main_302CB0 + temp_a2;
     switch (g_lb_6B42BD) {                           /* switch 1; irregular */
     case 0:                                         /* switch 1 */
-        *(&(*(u8 *)((u8 *)&lb_sys + 0xA0)) + ((*(s16 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x1398))) + 0x604)) * 2)) = (*(u16 *)&g_main_2EFAD8);
+        (*(s32 *)((u8 *)&(*(u8 *)((u8 *)&lb_sys + 0xA0)) + ((*(s16 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x1398))) + 0x604)) * 2))) = (*(u16 *)&g_main_2EFAD8);
         (*(s8 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x1398))) + 0x60D)) = (s8) ((*(s8 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x1398))) + 0x60D)) + 1);
         (*(u8 *)((u8 *)((*(void **)&pNet)) + 0x27)) = arg0;
         /* fallthrough */
@@ -50,7 +50,7 @@ s32 getFriendNow(u8 arg0, s64 arg1) {
         temp_v1_2 = temp_a1 + 1;
         if (*(temp_v0 + (temp_a1 * 0x30)) == 0) {
             (*(u8 *)((u8 *)(temp_v1) + 0x27)) = temp_v1_2;
-            if ((temp_v1_2 & 0xFF) >= ((s64) (arg1 << 0x38) >> 0x38)) {
+            if ((temp_v1_2 & 0xFF) >= (((s8) (arg1)))) {
                 (*(s8 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x1398))) + 0x60D)) = 0;
                 return 0;
             }
@@ -72,7 +72,7 @@ block_27:
             temp_a0 = (*(void **)&pNet);
             temp_v1_4 = (*(u8 *)((u8 *)(temp_a0) + 0x27)) + 1;
             (*(u8 *)((u8 *)(temp_a0) + 0x27)) = temp_v1_4;
-            if ((temp_v1_4 & 0xFF) >= ((s64) (arg1 << 0x38) >> 0x38)) {
+            if ((temp_v1_4 & 0xFF) >= (((s8) (arg1)))) {
                 (*(s8 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x1398))) + 0x60D)) = 0;
                 return 0;
             }
@@ -84,7 +84,7 @@ block_27:
             temp_a0_2 = (*(void **)&pNet);
             temp_v1_5 = (*(u8 *)((u8 *)(temp_a0_2) + 0x27)) + 1;
             (*(u8 *)((u8 *)(temp_a0_2) + 0x27)) = temp_v1_5;
-            if ((temp_v1_5 & 0xFF) >= ((s64) (arg1 << 0x38) >> 0x38)) {
+            if ((temp_v1_5 & 0xFF) >= (((s8) (arg1)))) {
                 (*(s8 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x1398))) + 0x60D)) = 0;
                 return 0;
             }

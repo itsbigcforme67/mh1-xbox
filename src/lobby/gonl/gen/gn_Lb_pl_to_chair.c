@@ -10,7 +10,7 @@ s32 Lb_send_chair_release(); /* extern */
 s32 Lb_send_pl_warp();       /* extern */
 f32 flSqrt();                                /* extern */
 s32 flvecCopy(void *, f32 *);                   /* extern */
-extern u8 lb_sys;
+extern s32 lb_sys;
 extern u8 player_work;
 
 void Lb_pl_to_chair(void) {
@@ -33,12 +33,12 @@ void Lb_pl_to_chair(void) {
     temp_s1 = (u8 *)&player_work + temp_a2;
     if ((*(u8 *)((u8 *)&game_w + 0x14)) == 0x4D) {
         if (lb_sys != 0x1A) {
-            (*(u8 *)((u8 *)&lb_sys + 0x8)) = 0;
+            (*(s32 *)((u8 *)&lb_sys + 0x8)) = 0;
             Lb_send_chair_release(temp_s1, &player_work, temp_a2, temp_a3);
             lb_sys = 0;
             return;
         }
-        (*(u8 *)((u8 *)&lb_sys + 0x8)) = 0;
+        (*(s32 *)((u8 *)&lb_sys + 0x8)) = 0;
         var_a2 = 0;
         lb_sys = 0;
 loop_13:

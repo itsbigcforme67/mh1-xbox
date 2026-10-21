@@ -9,7 +9,7 @@ s32 flfntSetSize();             /* extern */
 s32 font_print_double(); /* extern */
 s32 font_set_palette();              /* extern */
 extern u8 lb_ibox_str;
-extern u8 g_main_2EEE70;
+extern s32 g_main_2EEE70;
 
 void put_plaza_menu(void) {
     s64 var_s0;
@@ -36,13 +36,13 @@ void put_plaza_menu(void) {
                     Lb_put_msg2(0x2B, var_s0, (*(s32 *)((u8 *)&lb_ibox_str + ((*(s16 *)((u8 *)(var_s1) + 2)) * 4))));
                 }
             } else if (var_a1 == 0) {
-                font_print_double(0x19, var_s0, 1, 0);
+                font_print_double(0x19, var_s0, 1, 0, (*(s32 *)((u8 *)&lb_ibox_str + ((*(s16 *)((u8 *)(var_s1) + 2)) * 4))));
             } else {
-                font_print_double(0x2B, var_s0, 1, 0);
+                font_print_double(0x2B, var_s0, 1, 0, (*(s32 *)((u8 *)&lb_ibox_str + ((*(s16 *)((u8 *)(var_s1) + 2)) * 4))));
             }
             var_s1 += 4;
             var_a1 = *var_s1;
-            var_s0 = (s64) ((var_s0 + 0x16) << 0x30) >> 0x30;
+            var_s0 = ((s16) ((var_s0 + 0x16)));
         } while (var_a1 != 2);
     }
 }

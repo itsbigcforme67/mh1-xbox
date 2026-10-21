@@ -25,14 +25,14 @@ void CallBack_Result_Plaza_ReadLobbyAllocation2(s64 arg0) {
     sp38 = arg0;
     if ((*(u8 *)((u8 *)((*(void **)&cw)) + 0xB99)) != 5) {
         if ((s8) sp38 == 2) {
-            if (((s64) ((s64) (((s8 *)&sp38)[1]) << 0x38) >> 0x38) != 0xB) {
+            if ((((s8) ((s64) (((s8 *)&sp38)[1])))) != 0xB) {
 
             }
         } else {
             if ((s8) sp38 == 0) {
-                cnLBS_Get_PlazaCount(&(*(u8 *)((u8 *)&ClassInfo + 0x6)), (((s8 *)&sp38)[1]));
+                cnLBS_Get_PlazaCount(&(*(u16 *)((u8 *)&ClassInfo + 0x6)), (((s8 *)&sp38)[1]));
                 var_s1 = 0;
-                if ((s32) (*(u8 *)((u8 *)&ClassInfo + 0x6)) > 0) {
+                if ((s32) (*(u16 *)((u8 *)&ClassInfo + 0x6)) > 0) {
                     var_s0 = &LobbyInfo;
                     do {
                         temp_v0 = var_s1 + 1;
@@ -44,7 +44,7 @@ void CallBack_Result_Plaza_ReadLobbyAllocation2(s64 arg0) {
                         lobby_func_005AC230((var_s1 + 1) & 0xFFFF, var_s0 + 8);
                         var_s1 += 1;
                         var_s0 += 0x15C;
-                    } while (var_s1 < (s32) (*(u8 *)((u8 *)&ClassInfo + 0x6)));
+                    } while (var_s1 < (s32) (*(u16 *)((u8 *)&ClassInfo + 0x6)));
                 }
                 temp_a0 = (*(void **)&cw);
                 (*(u8 *)((u8 *)(temp_a0) + 0xB9D)) = (u8) ((*(u8 *)((u8 *)(temp_a0) + 0xB9D)) + 1);

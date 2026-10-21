@@ -6,7 +6,7 @@
 extern u8 CnetSys_w;
 
 s32 lobby_func_005AC230(s32 arg0, u16 *arg1) {
-    *arg1 = *(&(*(u8 *)((u8 *)&CnetSys_w + 0x669A)) + ((arg0 & 0xFFFF) * 0x164));
+    *arg1 = (*(s32 *)((u8 *)&(*(u8 *)((u8 *)&CnetSys_w + 0x669A)) + ((arg0 & 0xFFFF) * 0x164)));
     return 0;
 }
 

@@ -8,7 +8,7 @@ extern u8 cw;
 s32 Lb_put_chat();         /* extern */
 s32 cnLBS_Get_MatchEntryJoinUser(); /* extern */
 s32 cnWrap_SoundRequest();               /* extern */
-extern u8 lb_sys;
+extern s32 lb_sys;
 extern s8 mhRule;
 
 void CallBack_Event_MatchEntryUser(void) {

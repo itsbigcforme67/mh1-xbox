@@ -5,10 +5,10 @@
 
 extern u8 tl_member_buff;
 s32 memset();        /* extern */
-extern u8 g_lb_6B46D0;
+extern s32 g_lb_6B46D0;
 
 void lobby_func_0056DA20(void) {
-    (*(u8 *)((u8 *)&tl_member_buff + 0x1383)) = 0;
+    (*(s8 *)((u8 *)&tl_member_buff + 0x1383)) = 0;
     memset(&g_lb_6B46D0, 0, 0x110);
 }
 

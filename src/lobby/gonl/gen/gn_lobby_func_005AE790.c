@@ -19,18 +19,18 @@ extern u8 lobby_func_005AEA50;
 void lobby_func_005AE790(void *arg0) {
     if (__cnetSub_Get_RestBgWork() >= 3) {
         (*(u8 *)((u8 *)(arg0) + 0x22)) = (u8) ((*(u8 *)((u8 *)(arg0) + 0x22)) + 1);
-        if (((*(u8 *)((u8 *)&CnetSys_w + 0x12CA)) != 0) && (g_lb_72E068 == 1)) {
-            cnLBS_SendMessage(&(*(u8 *)((u8 *)&CnetSys_w + 0x12CA)), strlen(&(*(u8 *)((u8 *)&CnetSys_w + 0x12CA))) & 0xFFFF, &lobby_func_005AE9D0);
+        if (((*(s8 *)((u8 *)&CnetSys_w + 0x12CA)) != 0) && (g_lb_72E068 == 1)) {
+            cnLBS_SendMessage(&(*(s8 *)((u8 *)&CnetSys_w + 0x12CA)), strlen(&(*(s8 *)((u8 *)&CnetSys_w + 0x12CA))) & 0xFFFF, &lobby_func_005AE9D0);
         } else {
             (*(u8 *)((u8 *)(arg0) + 0x23)) = (u8) ((*(u8 *)((u8 *)(arg0) + 0x23)) | 1);
         }
-        if (((*(u8 *)((u8 *)&CnetSys_w + 0x130B)) != 0) && (g_lb_72E069 == 1)) {
-            cnLBS_Read_RoomRuleCaption(&(*(u8 *)((u8 *)&CnetSys_w + 0x130B)), strlen(&(*(u8 *)((u8 *)&CnetSys_w + 0x130B))) & 0xFFFF, &lobby_func_005AEA10);
+        if (((*(s8 *)((u8 *)&CnetSys_w + 0x130B)) != 0) && (g_lb_72E069 == 1)) {
+            cnLBS_Read_RoomRuleCaption(&(*(s8 *)((u8 *)&CnetSys_w + 0x130B)), strlen(&(*(s8 *)((u8 *)&CnetSys_w + 0x130B))) & 0xFFFF, &lobby_func_005AEA10);
         } else {
             (*(u8 *)((u8 *)(arg0) + 0x23)) = (u8) ((*(u8 *)((u8 *)(arg0) + 0x23)) | 2);
         }
-        if (((*(u8 *)((u8 *)&CnetSys_w + 0x1314)) != 0) && (g_lb_72E06A == 1)) {
-            cnLBS_Read_RoomRuleChoiceCount(&(*(u8 *)((u8 *)&CnetSys_w + 0x1314)), strlen(&(*(u8 *)((u8 *)&CnetSys_w + 0x1314))) & 0xFFFF, &lobby_func_005AEA50);
+        if (((*(s8 *)((u8 *)&CnetSys_w + 0x1314)) != 0) && (g_lb_72E06A == 1)) {
+            cnLBS_Read_RoomRuleChoiceCount(&(*(s8 *)((u8 *)&CnetSys_w + 0x1314)), strlen(&(*(s8 *)((u8 *)&CnetSys_w + 0x1314))) & 0xFFFF, &lobby_func_005AEA50);
             return;
         }
         (*(u8 *)((u8 *)(arg0) + 0x23)) = (u8) ((*(u8 *)((u8 *)(arg0) + 0x23)) | 4);

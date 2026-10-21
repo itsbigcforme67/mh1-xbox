@@ -12,7 +12,7 @@ s32 lobby_func_005AE500();  /* extern */
 s32 memset();        /* extern */
 s32 strcpy();                     /* extern */
 extern u8 CallBack_Result_Plaza_LobbyMember2;
-extern u8 g_lb_636E08;
+extern s32 g_lb_636E08;
 
 s32 lbc_in_plaza_03(s64 arg0) {
     u8 g_frame[0x170] __attribute__((aligned(16)));   /* G's stack frame */
@@ -27,7 +27,7 @@ s32 lbc_in_plaza_03(s64 arg0) {
     case 0x0:
         (*(u8 *)((u8 *)(temp_v1) + 0xB9D)) = (u8) (temp_v1_2 + 1);
         memset(&sp20, 0, 0x14B);
-        temp_v1_3 = (s64) (arg0 << 0x30) >> 0x30;
+        temp_v1_3 = ((s16) (arg0));
         if (temp_v1_3 == 0x10) {
             strcpy(&sp20, g_lb_636E08);
         } else {

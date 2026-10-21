@@ -32,9 +32,9 @@ void CallBack_Result_Plaza_ReadAllocation(s64 arg0) {
             (*(u8 *)((u8 *)(temp_a1) + 0xBA9)) = 0U;
             temp_v1 = (*(void **)&cw);
             (*(u8 *)((u8 *)(temp_v1) + 0xB9C)) = (u8) ((*(u8 *)((u8 *)(temp_v1) + 0xB9C)) + 1);
-            lobby_func_005E3420(&(*(u8 *)((u8 *)&ClassInfo + 0x2)), temp_a1, temp_a2);
+            lobby_func_005E3420(&(*(u16 *)((u8 *)&ClassInfo + 0x2)), temp_a1, temp_a2);
             var_s2 = 0;
-            if ((s32) (*(u8 *)((u8 *)&ClassInfo + 0x2)) > 0) {
+            if ((s32) (*(u16 *)((u8 *)&ClassInfo + 0x2)) > 0) {
                 var_s1 = &PlazaInfo;
                 do {
                     temp_s0 = (var_s2 & 0xFFFF) + 1;
@@ -47,7 +47,7 @@ void CallBack_Result_Plaza_ReadAllocation(s64 arg0) {
                     lobby_func_005E36D0(temp_s0 & 0xFFFF, var_s1 + 0x14);
                     var_s2 = (var_s2 + 1) & 0xFFFF;
                     var_s1 += 0x15C;
-                } while (var_s2 < (s32) (*(u8 *)((u8 *)&ClassInfo + 0x2)));
+                } while (var_s2 < (s32) (*(u16 *)((u8 *)&ClassInfo + 0x2)));
             }
         } else {
             (*(u8 *)((u8 *)(temp_a1) + 0xB9C)) = 0x63U;

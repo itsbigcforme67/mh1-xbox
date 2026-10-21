@@ -7,7 +7,7 @@ extern u8 game_w;
 s32 Lb_get_plID();                        /* extern */
 s32 Lb_pl_to_chair();                           /* extern */
 s32 Lb_send_chair_release();              /* extern */
-extern u8 lb_sys;
+extern s32 lb_sys;
 extern u8 player_work;
 
 void lb_set_chair(void *arg1) {
@@ -19,13 +19,13 @@ void lb_set_chair(void *arg1) {
         temp_s0 = (*(u8 *)((u8 *)&game_w + 0x3A));
         if ((temp_s0 == (Lb_get_plID(arg1 + 2) & 0xFF)) && (lb_sys == 0x1A)) {
             lb_sys = 0;
-            (*(u8 *)((u8 *)&lb_sys + 0x8)) = 0;
+            (*(s32 *)((u8 *)&lb_sys + 0x8)) = 0;
         }
         return;
     }
     temp_a2 = (*(u8 *)((u8 *)(arg1) + 1));
     temp_s0_2 = (*(u8 *)((u8 *)&game_w + 0x3A));
-    (*(u8 *)((u8 *)&lb_sys + 0x14)) |= 1 << temp_a2;
+    (*(u16 *)((u8 *)&lb_sys + 0x14)) |= 1 << temp_a2;
     if (temp_s0_2 == (Lb_get_plID(arg1 + 2, temp_a2) & 0xFF)) {
         if (((*(u8 *)((u8 *)&game_w + 0x14)) == 0x4D) && (lb_sys == 0x1A)) {
             Lb_pl_to_chair();

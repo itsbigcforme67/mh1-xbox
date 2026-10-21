@@ -12,7 +12,7 @@ void _cnet_Return_CallBack(s32 arg0) {
     u8 g_frame[0x20] __attribute__((aligned(16)));   /* G's stack frame */
 #define sp18 (*(s8 *)(g_frame + 0x18))
 
-    switch ((*(u8 *)((u8 *)&CnetSys_w + 0xFE6))) {                           /* irregular */
+    switch ((*(u16 *)((u8 *)&CnetSys_w + 0xFE6))) {                           /* irregular */
     case 1:
         /* fallthrough */
     case 16:
@@ -21,11 +21,11 @@ void _cnet_Return_CallBack(s32 arg0) {
         }
         return;
     case 2:
-        if ((*(u8 *)((u8 *)&CnetSys_w + 0xFEC)) == 0) {
+        if ((*(s8 *)((u8 *)&CnetSys_w + 0xFEC)) == 0) {
             sp18 = 0;
         } else {
             sp18 = -1;
-            __cnet_Recv_ServerMessage((*(u8 *)((u8 *)&CnetSys_w + 0xFE6)));
+            __cnet_Recv_ServerMessage((*(u16 *)((u8 *)&CnetSys_w + 0xFE6)));
         }
         __cnetSub_Return_BgProcess((s64) sp18, 1, 0);
         return;

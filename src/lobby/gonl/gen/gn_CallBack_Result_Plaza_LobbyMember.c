@@ -93,7 +93,7 @@ block_18:
                         temp_v1_2 = (*(void **)&cw);
                         memcpy(temp_v1_2 + 3, temp_v1_2 + temp_s3 + 0x38C, 8);
                     }
-                    Lb_set_mini_data_to_pl((s64) ((s64) var_s1 << 0x38) >> 0x38, (*(void **)&cw) + temp_s3 + 0x3A8);
+                    Lb_set_mini_data_to_pl(((s8) ((s64) var_s1)), (*(void **)&cw) + temp_s3 + 0x3A8);
                     temp_v0 = (*(void **)&cw) + temp_s3;
                     (*(u8 *)((u8 *)&game_w + 0x3C)) = (u8) ((*(u8 *)((u8 *)&game_w + 0x3C)) + 1);
                     Lb_set_player(var_s1 & 0xFF, temp_v0 + 0x38C, temp_v0 + 0x394);
@@ -103,7 +103,7 @@ block_18:
             (*(u8 *)((u8 *)((*(void **)&cw)) + 0xFA5D)) = (u8) (*(u8 *)((u8 *)&game_w + 0x3C));
             temp_a0 = (*(void **)&cw);
             (*(u8 *)((u8 *)(temp_a0) + 0xB9D)) = (u8) ((*(u8 *)((u8 *)(temp_a0) + 0xB9D)) + 1);
-            (*(u8 *)((u8 *)&lb_sys + 0x1A)) = 0;
+            (*(s8 *)((u8 *)&lb_sys + 0x1A)) = 0;
             return;
         }
         To_LogOut(4, temp_a1, temp_a1 + 0xBA9);

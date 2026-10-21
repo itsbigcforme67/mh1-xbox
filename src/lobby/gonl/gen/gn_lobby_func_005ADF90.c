@@ -5,11 +5,11 @@
 
 extern u8 CnetSys_w;
 s32 memset();        /* extern */
-extern u8 g_lb_72E068;
+extern s32 g_lb_72E068;
 
 void lobby_func_005ADF90(void *arg0) {
     (*(u8 *)((u8 *)(arg0) + 0x22)) = (u8) ((*(u8 *)((u8 *)(arg0) + 0x22)) + 1);
-    (*(u8 *)((u8 *)&CnetSys_w + 0x1032)) = 0;
+    (*(s16 *)((u8 *)&CnetSys_w + 0x1032)) = 0;
     memset(&g_lb_72E068, 0, 3);
     (*(s32 *)((u8 *)(arg0) + 8)) = 1;
     (*(s32 *)((u8 *)(arg0) + 0xC)) = 1;

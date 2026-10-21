@@ -6,8 +6,8 @@
 extern u8 BsProxyUrlstr;
 extern u8 pNet;
 extern u8 tl_member_buff;
-s32 Draw_menu_square();    /* extern */
-s32 Draw_square();    /* extern */
+s32 Draw_menu_square(); /* extern */
+s32 Draw_square(); /* extern */
 s32 flfntSetSize();             /* extern */
 s32 lobby_func_005737C0();                   /* extern */
 s32 lobby_func_00574750();          /* extern */
@@ -15,30 +15,30 @@ s32 lobby_func_005748B0();     /* extern */
 s32 lobby_func_00574AE0();          /* extern */
 s32 lobby_func_00574CB0();              /* extern */
 s32 lobby_func_005C14D0();        /* extern */
-s32 put_mainWindow();                           /* extern */
-s32 put_mainWindowTex();                        /* extern */
-extern u8 g_lb_636B4C;
-extern u8 g_lb_636B58;
-extern u8 g_lb_636B5C;
+s32 put_mainWindow();                    /* extern */
+s32 put_mainWindowTex();                 /* extern */
+extern s32 g_lb_636B4C;
+extern s32 g_lb_636B58;
+extern s32 g_lb_636B5C;
 
 void lobby_func_00574D70(s64 arg0, s64 arg1, s64 arg2) {
     s64 temp_s3;
     s64 temp_v1;
 
-    temp_v1 = (s64) (arg2 << 0x38) >> 0x38;
+    temp_v1 = ((s8) (arg2));
     switch (temp_v1) {                              /* switch 1; irregular */
     case 0:                                         /* switch 1 */
         if ((*(s8 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x1398))) + 0x60C)) == 2) {
-            Draw_menu_square((s64) ((((s64) (arg0 << 0x30) >> 0x30) - 6) << 0x30) >> 0x30, 0x1A0, 0x110);
-            temp_s3 = (s64) (arg1 << 0x30) >> 0x30;
-            Draw_square(arg0, (s64) ((temp_s3 + 0x26) << 0x30) >> 0x30, 0x192, 1);
-            Draw_square(arg0, (s64) ((temp_s3 + 0xEC) << 0x30) >> 0x30, 0x192, 1);
+            Draw_menu_square(((s16) (((((s16) (arg0))) - 6))), 0x1A0, 0x110, 1, 0xB0462000);
+            temp_s3 = ((s16) (arg1));
+            Draw_square(arg0, ((s16) ((temp_s3 + 0x26))), 0x192, 1, 0xFF8E5C2C);
+            Draw_square(arg0, ((s16) ((temp_s3 + 0xEC))), 0x192, 1, 0xFF8E5C2C);
         } else {
-            put_mainWindow();
+            put_mainWindow(1);
         }
         break;
     case 1:                                         /* switch 1 */
-        put_mainWindowTex();
+        put_mainWindowTex(1);
         break;
     }
     if (((*(u8 *)((u8 *)((*(void **)&pNet)) + 0x2D)) != 0) || ((*(s8 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x1398))) + 0x60C)) == 0xF)) {

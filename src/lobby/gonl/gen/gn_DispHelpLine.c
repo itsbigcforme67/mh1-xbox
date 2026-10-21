@@ -17,7 +17,7 @@ s32 font_set_palette();                  /* extern */
 s32 reload_tex();               /* extern */
 extern s16 g_lb_654CFC;
 extern s16 g_lb_654CFE;
-extern u8 helpLineStr;
+extern s32 helpLineStr;
 
 void DispHelpLine(void) {
     s32 temp_s0;
@@ -35,30 +35,30 @@ void DispHelpLine(void) {
     } else {
         var_v0 = 0xC8302000;
     }
-    (*(u8 *)((u8 *)&helpLineTbl + 0x1C)) = var_v0;
-    (*(u8 *)((u8 *)&helpLineTbl + 0x14)) = g_lb_654CFC - 0x24;
-    (*(u8 *)((u8 *)&helpLineTbl + 0x16)) = g_lb_654CFE - 6;
-    Put_2TF(&(*(u8 *)((u8 *)&helpLineTbl + 0x14)));
-    if ((*(u8 *)((u8 *)&helpLineStr + 0x4)) >= 0) {
-        temp_v0 = (*(u8 *)((u8 *)&helpLineStr + 0x8)) + 1;
-        (*(u8 *)((u8 *)&helpLineStr + 0x8)) = temp_v0;
+    (*(s32 *)((u8 *)&helpLineTbl + 0x1C)) = var_v0;
+    (*(s16 *)((u8 *)&helpLineTbl + 0x14)) = g_lb_654CFC - 0x24;
+    (*(s16 *)((u8 *)&helpLineTbl + 0x16)) = g_lb_654CFE - 6;
+    Put_2TF(&(*(s16 *)((u8 *)&helpLineTbl + 0x14)));
+    if ((*(s32 *)((u8 *)&helpLineStr + 0x4)) >= 0) {
+        temp_v0 = (*(s32 *)((u8 *)&helpLineStr + 0x8)) + 1;
+        (*(s32 *)((u8 *)&helpLineStr + 0x8)) = temp_v0;
         if (temp_v0 > 0) {
-            temp_v0_2 = (*(u8 *)((u8 *)&helpLineStr + 0x4)) + 1;
-            (*(u8 *)((u8 *)&helpLineStr + 0x8)) = 0;
-            (*(u8 *)((u8 *)&helpLineStr + 0x4)) = temp_v0_2;
+            temp_v0_2 = (*(s32 *)((u8 *)&helpLineStr + 0x4)) + 1;
+            (*(s32 *)((u8 *)&helpLineStr + 0x8)) = 0;
+            (*(s32 *)((u8 *)&helpLineStr + 0x4)) = temp_v0_2;
             if (temp_v0_2 >= 0x101) {
-                (*(u8 *)((u8 *)&helpLineStr + 0x4)) = -1;
+                (*(s32 *)((u8 *)&helpLineStr + 0x4)) = -1;
             }
         }
     }
     if (temp_s0 & 0xFFFF & 0x100) {
-        (*(u8 *)((u8 *)&helpLineStr + 0x4)) = -1;
+        (*(s32 *)((u8 *)&helpLineStr + 0x4)) = -1;
     }
     flfntSetSize(0x12, 0x12);
     font_set_palette(0);
     if (helpLineStr != 0) {
         flfntLocate(g_lb_654CFC, g_lb_654CFE);
-        font_print_sp((s16) (*(u8 *)((u8 *)&helpLineStr + 0x4)), helpLineStr);
+        font_print_sp((s16) (*(s32 *)((u8 *)&helpLineStr + 0x4)), helpLineStr);
     }
 }
 

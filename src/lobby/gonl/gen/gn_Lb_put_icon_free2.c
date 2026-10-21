@@ -6,7 +6,7 @@
 s32 flps0008(); /* extern */
 extern u8 lb_icon_tbl;
 
-void Lb_put_icon_free2(s32 arg0, s16 arg1, s16 arg2, s32 arg3) {
+void Lb_put_icon_free2(s32 arg0, s16 arg1, s16 arg2, s32 arg3, s64 arg4) {
     u8 g_frame[0x30] __attribute__((aligned(16)));   /* G's stack frame */
 #define sp10 (*(s16 *)(g_frame + 0x10))
 #define sp12 (*(s16 *)(g_frame + 0x12))
@@ -15,14 +15,14 @@ void Lb_put_icon_free2(s32 arg0, s16 arg1, s16 arg2, s32 arg3) {
 #define sp18 (*(s32 *)(g_frame + 0x18))
 #define sp1C (*(s32 *)(g_frame + 0x1C))
 #define sp20 (*(s32 *)(g_frame + 0x20))
-    s64 temp_t0;
+    s64 temp_a4;
     u8 *temp_a3;
 
-    temp_t0 = (s64) (M2C_ERROR(/* Read from unset register $t0 */) << 0x30) >> 0x30;
-    if (temp_t0 != 0x30) {
+    temp_a4 = ((s16) (arg4));
+    if (temp_a4 != 0x30) {
         sp12 = arg1;
         sp18 = arg3;
-        temp_a3 = (u8 *)&lb_icon_tbl + (temp_t0 * 8);
+        temp_a3 = (u8 *)&lb_icon_tbl + (temp_a4 * 8);
         sp14 = arg2;
         sp16 = arg2;
         sp10 = M2C_BITWISE(s16, (0.8f * (f32) arg0));
@@ -30,7 +30,7 @@ void Lb_put_icon_free2(s32 arg0, s16 arg1, s16 arg2, s32 arg3) {
         (*(s16 *)((u8 *)(&sp1C) + 2)) = (s16) (*(s16 *)((u8 *)(temp_a3) + 2));
         (*(s16 *)((u8 *)(&sp20) + 0)) = (s16) (*(s16 *)((u8 *)(temp_a3) + 4));
         (*(s16 *)((u8 *)(&sp20) + 2)) = (s16) (*(s16 *)((u8 *)(temp_a3) + 6));
-        flps0008(&sp10, &sp20, &sp1C, temp_a3);
+        flps0008(&sp10, &sp20, &sp1C, temp_a3, temp_a4);
     }
 }
 

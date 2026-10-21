@@ -3,8 +3,8 @@
  * tools/build_pc_mhg.sh). */
 #include "../gonl.h"
 
-s32 sprintf();                /* extern */
-extern u8 g_lb_63E908;
+s32 sprintf();                    /* extern */
+extern s32 g_lb_63E908;
 
 void lobby_func_0058EDD0(s32 arg1) {
     sprintf(&g_lb_63E908, arg1);

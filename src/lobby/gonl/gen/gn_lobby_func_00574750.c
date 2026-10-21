@@ -21,19 +21,19 @@ void lobby_func_00574750(s32 arg1, s64 arg2) {
     s64 var_s3;
     s8 *var_s2;
 
-    put_main_cursor2((s64) (arg2 << 0x38) >> 0x38);
+    put_main_cursor2(((s8) (arg2)));
     lobby_func_005791D0(4);
     var_s1 = 0;
-    var_s3 = (s64) ((arg1 + 0x3E) << 0x30) >> 0x30;
+    var_s3 = ((s16) ((arg1 + 0x3E)));
     var_s2 = &g_main_302290;
     if ((*(s8 *)&g_main_302290) != 0) {
 loop_2:
-        temp_v1 = (s64) (var_s1 << 0x30) >> 0x30;
+        temp_v1 = ((s16) (var_s1));
         if (temp_v1 < 8) {
             han2zen(var_s2, &sp60);
-            if (((s64) ((temp_v1 != ((s64) (arg2 << 0x38) >> 0x38)) << 0x30) >> 0x30) == 0) {
-                font_print_double(0xF4, var_s3, 1, 4);
-                font_print_double(0x1F4, var_s3, 1, 4);
+            if ((((s16) ((temp_v1 != (((s8) (arg2))))))) == 0) {
+                font_print_double(0xF4, var_s3, 1, 4, var_s2 + 8);
+                font_print_double(0x1F4, var_s3, 1, 4, &sp60);
             } else {
                 font_set_palette(0);
                 flfntLocate(0xF4, var_s3);
@@ -42,8 +42,8 @@ loop_2:
                 font_print(&lit_2316, &sp60);
             }
             var_s2 += 0x18;
-            var_s3 = (s64) ((var_s3 + 0x16) << 0x30) >> 0x30;
-            var_s1 = (s64) ((var_s1 + 1) << 0x30) >> 0x30;
+            var_s3 = ((s16) ((var_s3 + 0x16)));
+            var_s1 = ((s16) ((var_s1 + 1)));
             if (*var_s2 == 0) {
 
             } else {

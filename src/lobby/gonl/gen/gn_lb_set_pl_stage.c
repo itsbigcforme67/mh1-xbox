@@ -44,7 +44,7 @@ void lb_set_pl_stage(s32 arg0, u8 *arg1) {
         }
         if ((*arg1 == 0) && ((*(u8 *)((u8 *)((*(void **)&cw)) + 0xFA61)) != 0)) {
             temp_a1_2 = temp_s0 * 0x5C;
-            if (*(&(*(u8 *)((u8 *)&lbCommer + 0x8)) + temp_a1_2) != 0) {
+            if ((*(s32 *)((u8 *)&(*(u8 *)((u8 *)&lbCommer + 0x8)) + temp_a1_2)) != 0) {
                 Lb_put_chat(7, (u8 *)&lbCommer + temp_a1_2 + 8);
             }
         }

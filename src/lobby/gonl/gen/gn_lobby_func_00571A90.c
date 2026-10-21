@@ -19,7 +19,7 @@ loop_1:
     if ((*(s8 *)((u8 *)(var_a2) + 1)) != 0) {
         temp_a1 = (*(void **)&g_main_2EFBAC);
         var_a2 += 0x9A;
-        var_a3 = (s64) ((var_a3 + 1) << 0x38) >> 0x38;
+        var_a3 = ((s8) ((var_a3 + 1)));
         (*(u8 *)((u8 *)(temp_a1) + 0x235)) = (u8) ((*(u8 *)((u8 *)(temp_a1) + 0x235)) + 1);
         if (var_a3 >= 8) {
 

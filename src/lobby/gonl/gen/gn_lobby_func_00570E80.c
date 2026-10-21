@@ -53,7 +53,7 @@ block_13:
         temp_v1_3 = (*(void **)&pNet);
         temp_v0 = (*(s16 *)((u8 *)(temp_v1_3) + 0x18)) + 1;
         (*(s16 *)((u8 *)(temp_v1_3) + 0x18)) = temp_v0;
-        if ((((s64) ((s64) temp_v0 << 0x30) >> 0x30) >= 0x12D) && (lobby_func_00570DA0((*(u8 *)((u8 *)((*(void **)&pNet)) + 0x32))) == 1)) {
+        if (((((s16) ((s64) temp_v0))) >= 0x12D) && (lobby_func_00570DA0((*(u8 *)((u8 *)((*(void **)&pNet)) + 0x32))) == 1)) {
             (*(s16 *)((u8 *)((*(void **)&pNet)) + 0x18)) = 0;
         }
         temp_v1_4 = (*(u8 *)((u8 *)((*(void **)&pNet)) + 0x2B));

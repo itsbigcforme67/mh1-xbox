@@ -6,7 +6,7 @@
 extern u8 CnetSys_w;
 s32 memset();        /* extern */
 extern s8 g_lb_731162;
-extern u8 g_lb_731170;
+extern s32 g_lb_731170;
 extern u8 lobby_func_005BFA20;
 
 s32 lobby_func_005BF990(s32 arg0) {

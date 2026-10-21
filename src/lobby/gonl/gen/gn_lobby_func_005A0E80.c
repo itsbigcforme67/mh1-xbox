@@ -16,15 +16,15 @@ void lobby_func_005A0E80(s32 arg0) {
     u8 *temp_v1;
 
     if (((s32) (*(u16 *)&System_timer) % 40) < 0x15) {
-        temp_s0 = (s64) (lobby_func_005935C0(0x1A0, 0x12) << 0x30) >> 0x30;
+        temp_s0 = ((s16) (lobby_func_005935C0(0x1A0, 0x12)));
         flfntSetSize(0x14, 0x14);
         font_set_palette(0);
         temp_v1 = (*(void **)&cw);
         if (((*(u8 *)((u8 *)(temp_v1) + 0xFA61)) != 0) && ((*(s8 *)((u8 *)(((*(u8 *)((u8 *)&game_w + 0x3A)) + temp_v1)) + 0xB64)) != 0)) {
-            font_print_double(temp_s0, 0x12B, 1, 4);
+            font_print_double(temp_s0, 0x12B, 1, 4, arg0);
             return;
         }
-        font_print_double(temp_s0, 0x143, 1, 4);
+        font_print_double(temp_s0, 0x143, 1, 4, arg0);
     }
 }
 

@@ -9,7 +9,7 @@ s32 SetSendData16();              /* extern */
 s32 SetSendStringData2(); /* extern */
 s32 Write_Socket();                    /* extern */
 s32 strlen();                              /* extern */
-extern u8 g_lb_644C58;
+extern s32 g_lb_644C58;
 extern u8 send_work;
 
 s32 __cnet_SendReq_RoomEntry(s32 arg0, s32 *arg1) {

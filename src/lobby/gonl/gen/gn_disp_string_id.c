@@ -25,7 +25,7 @@ void disp_string_id(s32 arg0, s32 arg1) {
     memset(&sp30, 0, 0x1E);
     temp_v1 = ((arg1 & 0xFF) * 8) + (*(s32 *)&cw);
     if ((*(s8 *)((u8 *)(temp_v1) + 0xB)) == 0) {
-        strcpy(&sp30, (*(u8 *)((u8 *)&net_etc_mes_tbl + 0x20)));
+        strcpy(&sp30, (*(s32 *)((u8 *)&net_etc_mes_tbl + 0x20)));
     } else {
         han2zen(temp_v1 + 0xB, &sp30);
     }
@@ -36,8 +36,8 @@ void disp_string_id(s32 arg0, s32 arg1) {
         var_v0 = 0;
     }
     temp_s0 = (temp_v1_2 * 0x58) + 0x7A;
-    font_print_double(0x1A4, (s64) (temp_s0 << 0x30) >> 0x30, 1, (s64) (var_v0 << 0x38) >> 0x38);
-    flfntLocate(0x168, (s64) (temp_s0 << 0x30) >> 0x30);
-    font_print((*(u8 *)((u8 *)&tl_mail_tbl + 0xC)));
+    font_print_double(0x1A4, ((s16) (temp_s0)), 1, ((s8) (var_v0)), &sp30);
+    flfntLocate(0x168, ((s16) (temp_s0)));
+    font_print((*(s32 *)((u8 *)&tl_mail_tbl + 0xC)));
 }
 

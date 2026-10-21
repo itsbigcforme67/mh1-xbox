@@ -7,7 +7,7 @@ extern u8 CnetSys_w;
 
 void lobby_func_005AE760(void *arg0) {
     (*(u8 *)((u8 *)(arg0) + 0x22)) = (u8) ((*(u8 *)((u8 *)(arg0) + 0x22)) + 1);
-    (*(u8 *)((u8 *)&CnetSys_w + 0x1032)) = 0;
+    (*(s16 *)((u8 *)&CnetSys_w + 0x1032)) = 0;
     (*(s32 *)((u8 *)(arg0) + 8)) = 1;
     (*(s32 *)((u8 *)(arg0) + 0xC)) = 1;
     (*(s8 *)((u8 *)(arg0) + 0x23)) = 0;

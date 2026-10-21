@@ -6,7 +6,7 @@
 extern u8 cw;
 s32 cnLBS_Get_ServerMessage();            /* extern */
 s32 lobby_func_005E6680(); /* extern */
-extern u8 g_main_2EFBC0;
+extern s32 g_main_2EFBC0;
 
 void lobby_func_005803C0(s64 arg0) {
     u8 g_frame[0x20] __attribute__((aligned(16)));   /* G's stack frame */

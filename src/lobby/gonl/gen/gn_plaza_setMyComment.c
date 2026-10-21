@@ -12,7 +12,7 @@ s32 cnWrap_SoundRequest();          /* extern */
 s32 memcpy();      /* extern */
 s32 my_comment_input();                          /* extern */
 extern s32 *g_lb_636A00;
-extern u8 g_lb_63E128;
+extern s32 g_lb_63E128;
 
 s32 plaza_setMyComment(s32 arg0) {
     u8 *var_s0;   /* (s32 **) */

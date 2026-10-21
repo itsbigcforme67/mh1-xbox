@@ -48,7 +48,7 @@ s32 memcmp();               /* extern */
 s32 memcpy();                /* extern */
 s32 memset();        /* extern */
 s32 tl_exit_sub_menu();         /* extern */
-extern u8 g_lb_636E10;
+extern s32 g_lb_636E10;
 extern s8 g_lb_6B46D0;
 extern u8 my_user_id;
 extern u8 seekStr;
@@ -82,13 +82,13 @@ void lobby_func_0056ED50(void) {
     u8 *temp_v1_4;
 
     temp_v0 = Get_sw2(0);
-    (*(u8 *)((u8 *)&tl_member_buff + 0x1380)) = (*(u8 *)((u8 *)&tl_member_buff + 0x138A)) + ((*(u8 *)((u8 *)&tl_member_buff + 0x137C)) * 7);
+    (*(s16 *)((u8 *)&tl_member_buff + 0x1380)) = (*(s8 *)((u8 *)&tl_member_buff + 0x138A)) + ((*(s16 *)((u8 *)&tl_member_buff + 0x137C)) * 7);
     temp_s0 = temp_v0 & 0xFFFF;
     switch ((*(u8 *)((u8 *)&tl_member_buff + 0x1382))) {                           /* switch 1 */
     case 0:                                         /* switch 1 */
         (*(u8 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x18))) + 0x136A)) = (u8) ((*(u8 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x18))) + 0x136A)) + 1);
         (*(s8 *)((u8 *)((*(void **)&pNet)) + 0x2D)) = 1;
-        SetDialogData(0x48, (*(u8 *)((u8 *)&tl_member_buff + 0x137C)), (*(u8 *)((u8 *)&tl_member_buff + 0x138A)));
+        SetDialogData(0x48, (*(s16 *)((u8 *)&tl_member_buff + 0x137C)), (*(s8 *)((u8 *)&tl_member_buff + 0x138A)));
         SetDialogYesNo(0U);
         (*(u8 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x18))) + 0x136F)) = 0U;
         return;
@@ -97,9 +97,9 @@ void lobby_func_0056ED50(void) {
         (*(s8 *)((u8 *)((*(void **)&pNet)) + 0x2D)) = 1;
         if (temp_a1 & 0x20) {
             if ((*(u8 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x18))) + 0x136F)) != 2) {
-                SetHelpLineMsg(0x24, temp_a1, (*(u8 *)((u8 *)&tl_member_buff + 0x138A)));
+                SetHelpLineMsg(0x24, temp_a1, (*(s8 *)((u8 *)&tl_member_buff + 0x138A)));
             } else {
-                SetHelpLineMsg(0x23, temp_a1, (*(u8 *)((u8 *)&tl_member_buff + 0x138A)));
+                SetHelpLineMsg(0x23, temp_a1, (*(s8 *)((u8 *)&tl_member_buff + 0x138A)));
             }
             if ((*(u8 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x18))) + 0x136F)) == 0) {
                 if ((*(u16 *)&g_main_2EFA74) == 0) {
@@ -129,18 +129,18 @@ void lobby_func_0056ED50(void) {
             return;
         }
         if (temp_a1 & 0x40) {
-            tl_exit_sub_menu(0, temp_a1, (*(u8 *)((u8 *)&tl_member_buff + 0x138A)));
+            tl_exit_sub_menu(0, temp_a1, (*(s8 *)((u8 *)&tl_member_buff + 0x138A)));
             return;
         }
         temp_s0_2 = (*(u8 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x18))) + 0x136F));
-        (*(u8 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x18))) + 0x136F)) = Lb_cursorUD(temp_s0_2, 3, (*(u8 *)((u8 *)&tl_member_buff + 0x138A)));
+        (*(u8 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x18))) + 0x136F)) = Lb_cursorUD(temp_s0_2, 3, (*(s8 *)((u8 *)&tl_member_buff + 0x138A)));
         if ((*(u8 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x18))) + 0x136F)) != (temp_s0_2 & 0xFF)) {
             SetHelpLineMsg((*(u8 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x18))) + 0x136F)) + 0x1F);
         }
         SetDialogYesNo((*(u8 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x18))) + 0x136F)));
         return;
     case 2:                                         /* switch 1 */
-        temp_v0_2 = lobby_func_0056DE60(&jtbl_0063E0C0, (*(u8 *)((u8 *)&tl_member_buff + 0x137C)), (*(u8 *)((u8 *)&tl_member_buff + 0x138A)));
+        temp_v0_2 = lobby_func_0056DE60(&jtbl_0063E0C0, (*(s16 *)((u8 *)&tl_member_buff + 0x137C)), (*(s8 *)((u8 *)&tl_member_buff + 0x138A)));
         switch (temp_v0_2) {                        /* switch 2; irregular */
         case 0:                                     /* switch 2 */
             if ((*(u8 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x18))) + 0x1370)) == 0) {
@@ -164,7 +164,7 @@ void lobby_func_0056ED50(void) {
         break;
     case 3:                                         /* switch 1 */
         (*(s8 *)((u8 *)((*(void **)&pNet)) + 0x2D)) = 1;
-        temp_v0_3 = lobby_func_005807E0(&seekStr, (*(u8 *)((u8 *)&tl_member_buff + 0x137C)), (*(u8 *)((u8 *)&tl_member_buff + 0x138A)));
+        temp_v0_3 = lobby_func_005807E0(&seekStr, (*(s16 *)((u8 *)&tl_member_buff + 0x137C)), (*(s8 *)((u8 *)&tl_member_buff + 0x138A)));
         switch (temp_v0_3) {                        /* switch 3; irregular */
         case 0:                                     /* switch 3 */
             if (*(*(u8 **)&g_main_2EFBB0) != 0) {
@@ -195,7 +195,7 @@ void lobby_func_0056ED50(void) {
         break;
     case 4:                                         /* switch 1 */
         (*(s8 *)((u8 *)((*(void **)&pNet)) + 0x2D)) = 1;
-        temp_v0_4 = lobby_func_0056E9E0(&jtbl_0063E0C0, (*(u8 *)((u8 *)&tl_member_buff + 0x137C)), (*(u8 *)((u8 *)&tl_member_buff + 0x138A)));
+        temp_v0_4 = lobby_func_0056E9E0(&jtbl_0063E0C0, (*(s16 *)((u8 *)&tl_member_buff + 0x137C)), (*(s8 *)((u8 *)&tl_member_buff + 0x138A)));
         if ((temp_v0_4 != 1) && (temp_v0_4 != 0)) {
             return;
         }
@@ -204,13 +204,13 @@ void lobby_func_0056ED50(void) {
         return;
     case 5:                                         /* switch 1 */
         (*(s8 *)((u8 *)((*(void **)&pNet)) + 0x2D)) = 1;
-        temp_v0_5 = lobby_func_00580910(&g_lb_6B46D0 + ((*(u8 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x18))) + 0x136C)) * 0x44) + 4, (*(u8 *)((u8 *)&tl_member_buff + 0x137C)), (*(u8 *)((u8 *)&tl_member_buff + 0x138A)));
+        temp_v0_5 = lobby_func_00580910(&g_lb_6B46D0 + ((*(u8 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x18))) + 0x136C)) * 0x44) + 4, (*(s16 *)((u8 *)&tl_member_buff + 0x137C)), (*(s8 *)((u8 *)&tl_member_buff + 0x138A)));
         switch (temp_v0_5) {                        /* switch 4; irregular */
         case 0:                                     /* switch 4 */
         case 3:                                     /* switch 4 */
             (*(u8 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x18))) + 0x136D)) = (u8) ((*(u8 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x18))) + 0x136D)) + 1);
-            memcpy(&(*(u8 *)((u8 *)&tl_member_buff + 0x18)) + ((*(u8 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x18))) + 0x136C)) * 0x5C), &g_lb_6B46D0 + ((*(u8 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x18))) + 0x136C)) * 0x44) + 4, 9);
-            temp_v0_6 = &(*(u8 *)((u8 *)&tl_member_buff + 0x18)) + ((*(u8 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x18))) + 0x136C)) * 0x24A);
+            memcpy((u8 *)&(*(u8 *)((u8 *)&tl_member_buff + 0x18)) + ((*(u8 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x18))) + 0x136C)) * 0x5C), &g_lb_6B46D0 + ((*(u8 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x18))) + 0x136C)) * 0x44) + 4, 9);
+            temp_v0_6 = (u8 *)&(*(u8 *)((u8 *)&tl_member_buff + 0x18)) + ((*(u8 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x18))) + 0x136C)) * 0x24A);
             cnLBS_Get_SerchUserPlace(temp_v0_6 + 0x154, temp_v0_6 + 0x156, temp_v0_6 + 0x158, temp_v0_6 + 0x35D);
             temp_v1 = (*(u8 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x18))) + 0x136C)) + 1;
             (*(u8 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x18))) + 0x136C)) = temp_v1;
@@ -224,9 +224,9 @@ void lobby_func_0056ED50(void) {
         case 1:                                     /* switch 4 */
             (*(u8 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x18))) + 0x136D)) = (u8) ((*(u8 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x18))) + 0x136D)) + 1);
             if (Visual_main(&g_lb_6B46D0 + ((*(u8 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x18))) + 0x136C)) * 0x44) + 4) < 6) {
-                memset(&(*(u8 *)((u8 *)&tl_member_buff + 0x18)) + ((*(u8 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x18))) + 0x136C)) * 0x5C), 0, 0x5C);
+                memset((u8 *)&(*(u8 *)((u8 *)&tl_member_buff + 0x18)) + ((*(u8 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x18))) + 0x136C)) * 0x5C), 0, 0x5C);
             } else {
-                memcpy(&(*(u8 *)((u8 *)&tl_member_buff + 0x18)) + ((*(u8 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x18))) + 0x136C)) * 0x5C), &g_lb_6B46D0 + ((*(u8 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x18))) + 0x136C)) * 0x44) + 4, 9);
+                memcpy((u8 *)&(*(u8 *)((u8 *)&tl_member_buff + 0x18)) + ((*(u8 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x18))) + 0x136C)) * 0x5C), &g_lb_6B46D0 + ((*(u8 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x18))) + 0x136C)) * 0x44) + 4, 9);
             }
             (*(s8 *)((u8 *)((((*(u8 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x18))) + 0x136C)) * 0x24A) + &(*(u8 *)((u8 *)&tl_member_buff + 0x18)))) + 0x35D)) = 2;
             temp_v1_2 = (*(u8 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x18))) + 0x136C)) + 1;
@@ -241,7 +241,7 @@ void lobby_func_0056ED50(void) {
         }
         break;
     case 6:                                         /* switch 1 */
-        temp_v0_7 = lobby_func_0056DA50(&jtbl_0063E0C0, (*(u8 *)((u8 *)&tl_member_buff + 0x137C)), (*(u8 *)((u8 *)&tl_member_buff + 0x138A)));
+        temp_v0_7 = lobby_func_0056DA50(&jtbl_0063E0C0, (*(s16 *)((u8 *)&tl_member_buff + 0x137C)), (*(s8 *)((u8 *)&tl_member_buff + 0x138A)));
         switch (temp_v0_7) {                        /* switch 5; irregular */
         case 0:                                     /* switch 5 */
             (*(u8 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x18))) + 0x136A)) = (u8) ((*(u8 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x18))) + 0x136A)) + 1);
@@ -255,7 +255,7 @@ void lobby_func_0056ED50(void) {
         break;
     case 7:                                         /* switch 1 */
         (*(s8 *)((u8 *)((*(void **)&pNet)) + 0x2D)) = 1;
-        temp_v0_8 = Lbc_ConditionSearch(&g_lb_6B46D0, (*(u8 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x18))) + 0x136F)) == 1, (*(u8 *)((u8 *)&tl_member_buff + 0x138A)));
+        temp_v0_8 = Lbc_ConditionSearch(&g_lb_6B46D0, (*(u8 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x18))) + 0x136F)) == 1, (*(s8 *)((u8 *)&tl_member_buff + 0x138A)));
         switch (temp_v0_8) {                        /* switch 6; irregular */
         case 0:                                     /* switch 6 */
             (*(u8 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x18))) + 0x136D)) = (u8) *(*(u8 **)&g_main_2EFBC4);
@@ -306,7 +306,7 @@ void lobby_func_0056ED50(void) {
             if ((*(u8 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x18))) + 0x136D)) != 0) {
                 switch ((*(u8 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x18))) + 0x1371))) { /* switch 7; irregular */
                 case 3:                             /* switch 7 */
-                    temp_a1_3 = &(*(u8 *)((u8 *)&tl_member_buff + 0x18)) + (((s16) (*(s16 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x18))) + 0x1368)) % 3) * 0x5C);
+                    temp_a1_3 = (u8 *)&(*(u8 *)((u8 *)&tl_member_buff + 0x18)) + (((s16) (*(s16 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x18))) + 0x1368)) % 3) * 0x5C);
                     if (*temp_a1_3 != 0) {
                         if (memcmp(&my_user_id, temp_a1_3, 8) == 0) {
                             goto block_94;
@@ -329,7 +329,7 @@ block_94:
                         return;
                     }
                     memset(&(*(u8 *)((u8 *)&tl_member_buff + 0x18)), 0, 0x114);
-                    memcpy(&(*(u8 *)((u8 *)&tl_member_buff + 0x18)) + (((s16) (*(s16 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x18))) + 0x1368)) % 3) * 0x5C), (*(u8 **)&g_main_2EFBB0) + ((*(s16 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x18))) + 0x1368)) * 0x28) + 4, 8);
+                    memcpy((u8 *)&(*(u8 *)((u8 *)&tl_member_buff + 0x18)) + (((s16) (*(s16 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x18))) + 0x1368)) % 3) * 0x5C), (*(u8 **)&g_main_2EFBB0) + ((*(s16 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x18))) + 0x1368)) * 0x28) + 4, 8);
                     goto block_102;
                 default:                            /* switch 7 */
                     if (memcmp(&my_user_id, (*(u8 **)&g_main_2EFBC4) + ((*(s16 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x18))) + 0x1368)) * 0x5C) + 4, 8) == 0) {
@@ -339,13 +339,13 @@ block_94:
                     goto block_102;
                 }
             } else {
-                cnWrap_SoundRequest(7, temp_a1_2, (*(u8 *)((u8 *)&tl_member_buff + 0x138A)));
+                cnWrap_SoundRequest(7, temp_a1_2, (*(s8 *)((u8 *)&tl_member_buff + 0x138A)));
                 return;
             }
         } else if (temp_a1_2 & 0x40) {
             switch ((*(u8 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x18))) + 0x1371))) { /* switch 8; irregular */
             case 0:                                 /* switch 8 */
-                tl_exit_sub_menu(0, temp_a1_2, (*(u8 *)((u8 *)&tl_member_buff + 0x138A)));
+                tl_exit_sub_menu(0, temp_a1_2, (*(s8 *)((u8 *)&tl_member_buff + 0x138A)));
                 return;
             case 1:                                 /* switch 8 */
                 if ((*(u8 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x18))) + 0x1370)) == 0) {
@@ -353,7 +353,7 @@ block_94:
                 }
                 (*(u8 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x18))) + 0x136A)) = 6U;
                 (*(s8 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x18))) + 0x136B)) = 0;
-                SetHelpLineMsg(0x24, temp_a1_2, (*(u8 *)((u8 *)&tl_member_buff + 0x138A)));
+                SetHelpLineMsg(0x24, temp_a1_2, (*(s8 *)((u8 *)&tl_member_buff + 0x138A)));
                 cnWrap_SoundRequest(3);
                 return;
             case 3:                                 /* switch 8 */
@@ -361,7 +361,7 @@ block_94:
                 (*(s8 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x18))) + 0x1373)) = 0;
                 (*(u8 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x18))) + 0x136A)) = 2U;
                 (*(s8 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x18))) + 0x136B)) = 0;
-                SetHelpLineMsg(0x23, temp_a1_2, (*(u8 *)((u8 *)&tl_member_buff + 0x138A)));
+                SetHelpLineMsg(0x23, temp_a1_2, (*(s8 *)((u8 *)&tl_member_buff + 0x138A)));
                 cnWrap_SoundRequest(3);
                 return;
             }
@@ -370,18 +370,18 @@ block_94:
                 if ((*(u8 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x18))) + 0x136D)) != 0) {
                     (*(u8 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x18))) + 0x136E)) = (u8) (*(u8 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x18))) + 0x136A));
                     (*(u8 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x18))) + 0x136A)) = 0xCU;
-                    lobby_func_00571450((*(u8 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x18))) + 0x136F)), temp_a1_2, (*(u8 *)((u8 *)&tl_member_buff + 0x138A)));
+                    lobby_func_00571450((*(u8 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x18))) + 0x136F)), temp_a1_2, (*(s8 *)((u8 *)&tl_member_buff + 0x138A)));
                     (*(u8 **)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x1398))) + 0x600)) = (u8 *) ((*(u8 **)&g_main_2EFBC4) + ((*(s16 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x18))) + 0x1368)) * 0x5C) + 4);
                     cnWrap_SoundRequest(6, (*(s16 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x18))) + 0x1368)));
                     return;
                 }
-                cnWrap_SoundRequest(7, temp_a1_2, (*(u8 *)((u8 *)&tl_member_buff + 0x138A)));
+                cnWrap_SoundRequest(7, temp_a1_2, (*(s8 *)((u8 *)&tl_member_buff + 0x138A)));
                 return;
             }
         } else {
             temp_s0_3 = (*(s16 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x18))) + 0x1364));
-            lobby_func_00569390(&(*(u8 *)((u8 *)&tl_member_buff + 0x18)) + 0x1372, &(*(u8 *)((u8 *)&tl_member_buff + 0x18)) + 0x1364, 7, (*(u8 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x18))) + 0x136D)));
-            if (((*(u8 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x18))) + 0x1371)) == 2) && (((s64) ((s64) temp_s0_3 << 0x30) >> 0x30) != (*(s16 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x18))) + 0x1364)))) {
+            lobby_func_00569390((u8 *)&(*(u8 *)((u8 *)&tl_member_buff + 0x18)) + 0x1372, (u8 *)&(*(u8 *)((u8 *)&tl_member_buff + 0x18)) + 0x1364, 7, (*(u8 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x18))) + 0x136D)), temp_s0);
+            if (((*(u8 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x18))) + 0x1371)) == 2) && ((((s16) ((s64) temp_s0_3))) != (*(s16 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x18))) + 0x1364)))) {
                 (*(u8 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x18))) + 0x136A)) = 4U;
                 (*(s8 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x18))) + 0x136B)) = 0;
                 SetDialogData(0x1E);
@@ -392,9 +392,9 @@ block_94:
     case 9:                                         /* switch 1 */
         (*(s8 *)((u8 *)((*(void **)&pNet)) + 0x2D)) = 1;
         if (((*(u8 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x18))) + 0x1371)) != 2) && ((*(u8 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x18))) + 0x1371)) != 3)) {
-            var_v0 = getUserInfo((*(u8 **)&g_main_2EFBC4) + ((*(s16 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x18))) + 0x1368)) * 0x5C) + 4, (*(u8 *)((u8 *)&tl_member_buff + 0x137C)), (*(u8 *)((u8 *)&tl_member_buff + 0x138A)));
+            var_v0 = getUserInfo((*(u8 **)&g_main_2EFBC4) + ((*(s16 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x18))) + 0x1368)) * 0x5C) + 4, (*(s16 *)((u8 *)&tl_member_buff + 0x137C)), (*(s8 *)((u8 *)&tl_member_buff + 0x138A)));
         } else {
-            var_v0 = getUserInfo(&(*(u8 *)((u8 *)&tl_member_buff + 0x18)) + (((s16) (*(s16 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x18))) + 0x1368)) % 3) * 0x5C), (*(u8 *)((u8 *)&tl_member_buff + 0x137C)), (*(u8 *)((u8 *)&tl_member_buff + 0x138A)));
+            var_v0 = getUserInfo((u8 *)&(*(u8 *)((u8 *)&tl_member_buff + 0x18)) + (((s16) (*(s16 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x18))) + 0x1368)) % 3) * 0x5C), (*(s16 *)((u8 *)&tl_member_buff + 0x137C)), (*(s8 *)((u8 *)&tl_member_buff + 0x138A)));
         }
         switch (var_v0) {                           /* switch 9; irregular */
         case 0:                                     /* switch 9 */
@@ -417,11 +417,11 @@ block_94:
         (*(s8 *)((u8 *)((*(void **)&pNet)) + 0x2D)) = 1;
         switch ((*(u8 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x18))) + 0x1371))) { /* switch 10; irregular */
         case 2:                                     /* switch 10 */
-            var_v0_2 = lobby_func_0057FEA0((*(u8 **)&g_main_2EFBB0) + ((*(s16 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x18))) + 0x1368)) * 0x28) + 4, (*(u8 *)((u8 *)&tl_member_buff + 0x137C)), (*(u8 *)((u8 *)&tl_member_buff + 0x138A)));
+            var_v0_2 = lobby_func_0057FEA0((*(u8 **)&g_main_2EFBB0) + ((*(s16 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x18))) + 0x1368)) * 0x28) + 4, (*(s16 *)((u8 *)&tl_member_buff + 0x137C)), (*(s8 *)((u8 *)&tl_member_buff + 0x138A)));
             break;
         default:                                    /* switch 10 */
         case 3:                                     /* switch 10 */
-            var_v0_2 = lobby_func_0057FEA0(&(*(u8 *)((u8 *)&tl_member_buff + 0x18)) + (((s16) (*(s16 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x18))) + 0x1368)) % 3) * 0x5C), (*(u8 *)((u8 *)&tl_member_buff + 0x137C)), (*(u8 *)((u8 *)&tl_member_buff + 0x138A)));
+            var_v0_2 = lobby_func_0057FEA0((u8 *)&(*(u8 *)((u8 *)&tl_member_buff + 0x18)) + (((s16) (*(s16 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x18))) + 0x1368)) % 3) * 0x5C), (*(s16 *)((u8 *)&tl_member_buff + 0x137C)), (*(s8 *)((u8 *)&tl_member_buff + 0x138A)));
             break;
         }
         if ((var_v0_2 != 1) && (var_v0_2 != 0)) {
@@ -430,8 +430,8 @@ block_94:
         temp_v1_3 = (*(u8 **)&g_main_2EFBC4);
         temp_a1_4 = temp_v1_3 + 0xC;
         if (*temp_v1_3 != 0) {
-            memcpy(&(*(u8 *)((u8 *)&tl_member_buff + 0x18)) + (((s16) (*(s16 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x18))) + 0x1368)) % 3) * 0x5C) + 8, temp_a1_4, 0x11);
-            memcpy(&(*(u8 *)((u8 *)&tl_member_buff + 0x18)) + (((s16) (*(s16 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x18))) + 0x1368)) % 3) * 0x5C) + 0x1C, (*(u8 **)&g_main_2EFBC4) + 0x20, 0x40);
+            memcpy((u8 *)&(*(u8 *)((u8 *)&tl_member_buff + 0x18)) + (((s16) (*(s16 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x18))) + 0x1368)) % 3) * 0x5C) + 8, temp_a1_4, 0x11);
+            memcpy((u8 *)&(*(u8 *)((u8 *)&tl_member_buff + 0x18)) + (((s16) (*(s16 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x18))) + 0x1368)) % 3) * 0x5C) + 0x1C, (*(u8 **)&g_main_2EFBC4) + 0x20, 0x40);
             (*(u8 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x18))) + 0x136A)) = (u8) ((*(u8 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x18))) + 0x136A)) + 1);
             return;
         }
@@ -442,7 +442,7 @@ block_94:
     case 11:                                        /* switch 1 */
         temp_a0 = (*(void **)&pNet);
         temp_a1_5 = temp_s0 & 0xFFFF;
-        (*(s16 *)((u8 *)(temp_a0) + 0x20)) = Get_sw_on2(0, (*(u8 *)((u8 *)&tl_member_buff + 0x137C)), (*(u8 *)((u8 *)&tl_member_buff + 0x138A)));
+        (*(s16 *)((u8 *)(temp_a0) + 0x20)) = Get_sw_on2(0, (*(s16 *)((u8 *)&tl_member_buff + 0x137C)), (*(s8 *)((u8 *)&tl_member_buff + 0x138A)));
         if (temp_a1_5 & 0x40) {
             (*(u8 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x18))) + 0x136A)) = 8U;
             cnWrap_SoundRequest(3, temp_a1_5);
@@ -482,14 +482,14 @@ block_94:
         (*(s8 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x18))) + 0x1375)) = Eft25_set((*(s8 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x18))) + 0x1375)), 3);
         return;
     case 12:                                        /* switch 1 */
-        temp_v0_9 = Plaza_add_friend(&jtbl_0063E0C0, (*(u8 *)((u8 *)&tl_member_buff + 0x137C)), (*(u8 *)((u8 *)&tl_member_buff + 0x138A)));
+        temp_v0_9 = Plaza_add_friend(&jtbl_0063E0C0, (*(s16 *)((u8 *)&tl_member_buff + 0x137C)), (*(s8 *)((u8 *)&tl_member_buff + 0x138A)));
         if ((temp_v0_9 != 1) && (temp_v0_9 != 0)) {
             return;
         }
         (*(u8 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x18))) + 0x136A)) = (u8) (*(u8 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x18))) + 0x136E));
         return;
     case 13:                                        /* switch 1 */
-        temp_v0_10 = lobby_func_0056D770(&jtbl_0063E0C0, (*(u8 *)((u8 *)&tl_member_buff + 0x137C)), (*(u8 *)((u8 *)&tl_member_buff + 0x138A)));
+        temp_v0_10 = lobby_func_0056D770(&jtbl_0063E0C0, (*(s16 *)((u8 *)&tl_member_buff + 0x137C)), (*(s8 *)((u8 *)&tl_member_buff + 0x138A)));
         switch (temp_v0_10) {                       /* switch 11; irregular */
         case 3:                                     /* switch 11 */
             (*(u8 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x18))) + 0x136A)) = 0xBU;
@@ -504,15 +504,15 @@ block_94:
         (*(s8 *)((u8 *)((*(void **)&pNet)) + 0x2D)) = 1;
         if (temp_s0 & 0xFFFF & 0x20) {
             if ((*(u8 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x18))) + 0x136E)) == 0xF) {
-                tl_exit_sub_menu(0, 1, (*(u8 *)((u8 *)&tl_member_buff + 0x138A)));
+                tl_exit_sub_menu(0, 1, (*(s8 *)((u8 *)&tl_member_buff + 0x138A)));
             } else {
                 (*(u8 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x18))) + 0x136A)) = (u8) (*(u8 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x18))) + 0x136E));
                 (*(u8 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x18))) + 0x136E)) = 0U;
                 if (((*(u8 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x18))) + 0x136A)) == 6) || ((*(u8 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x18))) + 0x136A)) == 2)) {
                     if ((*(u8 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x18))) + 0x136F)) != 2) {
-                        SetHelpLineMsg(0x24, 1, (*(u8 *)((u8 *)&tl_member_buff + 0x138A)));
+                        SetHelpLineMsg(0x24, 1, (*(s8 *)((u8 *)&tl_member_buff + 0x138A)));
                     } else {
-                        SetHelpLineMsg(0x23, 1, (*(u8 *)((u8 *)&tl_member_buff + 0x138A)));
+                        SetHelpLineMsg(0x23, 1, (*(s8 *)((u8 *)&tl_member_buff + 0x138A)));
                     }
                 }
             }
@@ -521,7 +521,7 @@ block_94:
         }
         break;
     default:                                        /* switch 1 */
-        tl_exit_sub_menu(0, (*(u8 *)((u8 *)&tl_member_buff + 0x137C)), (*(u8 *)((u8 *)&tl_member_buff + 0x138A)));
+        tl_exit_sub_menu(0, (*(s16 *)((u8 *)&tl_member_buff + 0x137C)), (*(s8 *)((u8 *)&tl_member_buff + 0x138A)));
         break;
     }
 }

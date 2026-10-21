@@ -20,10 +20,10 @@ void CallBack_NoticeUserMiniData(void) {
     var_s0 = &lbCommer;
 loop_1:
     if (memcmp(var_s0, &sp40, 8) == 0) {
-        memcpy((u8 *)&lbCommer + (((s64) (var_s1 << 0x38) >> 0x38) * 0x5C) + 0x1C, &sp5C, 0x40);
+        memcpy((u8 *)&lbCommer + ((((s8) (var_s1))) * 0x5C) + 0x1C, &sp5C, 0x40);
         return;
     }
-    var_s1 = (s64) ((var_s1 + 1) << 0x38) >> 0x38;
+    var_s1 = ((s8) ((var_s1 + 1)));
     var_s0 += 0x5C;
     if (var_s1 >= 0xA) {
         return;

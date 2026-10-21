@@ -28,13 +28,13 @@ s32 my_comment_input(s32 arg0) {
     switch (temp_v1_2) {                            /* irregular */
     case 0:
         (*(u8 *)((u8 *)(temp_v1) + 0x25)) = (u8) (temp_v1_2 + 1);
-        SoftKeyboard_pos_set(0x42C80000, 0x140);
+        SoftKeyboard_pos_set(0x140, 0x42C80000);
         func_00220F40(1, 0xE, 0x60, arg0);
 block_15:
     default:
         return 0;
     case 1:
-        temp_v1_3 = (s64) (SoftKeyboard_move(arg0, (*(s16 *)&Psw), (*(s16 *)((u8 *)&Psw + 0x4))) << 0x38) >> 0x38;
+        temp_v1_3 = ((s8) (SoftKeyboard_move(arg0, (*(s16 *)&Psw), (*(s16 *)((u8 *)&Psw + 0x4)))));
         if ((temp_v1_3 != -1) && (temp_v1_3 != 1)) {
             if ((temp_s0 & 0xFFFF) == 0x4000) {
                 temp_v1_4 = (*(void **)&pNet);

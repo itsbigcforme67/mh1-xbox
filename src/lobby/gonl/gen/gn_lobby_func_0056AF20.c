@@ -16,7 +16,7 @@ s32 lobby_func_0056AF20(s32 arg0, s32 arg1, s64 arg2) {
         SetDialogData(0x16);
         return 0;
     }
-    temp_a0 = (*(s32 *)&g_main_2EF390) + 0x23F4 + 0x20 + (((s64) ((((s64) (arg2 << 0x38) >> 0x38) - 0x31) << 0x38) >> 0x38) * 2);
+    temp_a0 = (*(s32 *)&g_main_2EF390) + 0x23F4 + 0x20 + ((((s8) (((((s8) (arg2))) - 0x31)))) * 2);
     if ((s32) (*(u8 *)((u8 *)(&my_user_mini_data) + 1)) < (*(s8 *)((u8 *)(temp_a0) + 0x27E))) {
         SetDialogData(0xD);
         return 0;

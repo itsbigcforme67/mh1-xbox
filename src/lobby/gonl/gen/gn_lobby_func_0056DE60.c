@@ -28,7 +28,7 @@ extern s8 g_lb_653A50;
 extern s8 g_lb_6B46D0;
 extern u8 g_lb_6B46D1;
 extern u8 g_lb_6B4759;
-extern u8 g_main_302CB0;
+extern s32 g_main_302CB0;
 extern u8 my_user_id;
 extern s8 seekStr;
 
@@ -155,14 +155,14 @@ block_46:
     case 2:                                         /* switch 1 */
         (*(u8 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x18))) + 0x136B)) = (u8) ((*(u8 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x18))) + 0x136B)) + 1);
         (*(s8 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x1398))) + 0x60D)) = 0;
-        if (*(&(*(u8 *)((u8 *)&lb_sys + 0xA0)) + ((*(s16 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x18))) + 0x1364)) * 2)) != 0) {
+        if ((*(s32 *)((u8 *)&(*(u8 *)((u8 *)&lb_sys + 0xA0)) + ((*(s16 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x18))) + 0x1364)) * 2))) != 0) {
             (*(u8 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x18))) + 0x136B)) = 4U;
         } else {
         case 3:                                     /* switch 1 */
             if (getFriendNow(0, 7) != 0) {
 
             } else {
-                *(&(*(u8 *)((u8 *)&lb_sys + 0xA0)) + ((*(s16 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x18))) + 0x1364)) * 2)) = (*(u16 *)&g_main_2EFAD8);
+                (*(s32 *)((u8 *)&(*(u8 *)((u8 *)&lb_sys + 0xA0)) + ((*(s16 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x18))) + 0x1364)) * 2))) = (*(u16 *)&g_main_2EFAD8);
                 (*(u8 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x18))) + 0x136B)) = (u8) ((*(u8 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x18))) + 0x136B)) + 1);
             }
         }
@@ -176,18 +176,18 @@ block_46:
             goto block_113;
         }
         if (temp_a1_3 & 0x20) {
-            temp_a0 = (s64) (((*(s8 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x18))) + 0x1374)) + ((*(s16 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x18))) + 0x1364)) * 7)) << 0x30) >> 0x30;
+            temp_a0 = ((s16) (((*(s8 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x18))) + 0x1374)) + ((*(s16 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x18))) + 0x1364)) * 7))));
             if ((*(s16 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x1398))) + 0x608)) == 0) {
                 cnWrap_SoundRequest(7, (*(s8 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x18))) + 0x1374)));
                 goto block_113;
             }
             (*(s16 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x18))) + 0x1364)) = 0;
             if ((*(u8 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x18))) + 0x1370)) == 1) {
-                var_s0 = (u8 *)&g_main_302CB0 + (((s64) (temp_a0 << 0x30) >> 0x30) * 0x30);
+                var_s0 = (u8 *)&g_main_302CB0 + ((((s16) (temp_a0))) * 0x30);
                 var_s1 = var_s0;
                 goto block_69;
             }
-            var_s0 = (u8 *)&g_main_302CB0 + (((s64) (temp_a0 << 0x30) >> 0x30) * 0x30);
+            var_s0 = (u8 *)&g_main_302CB0 + ((((s16) (temp_a0))) * 0x30);
             var_s1 = var_s0 + 8;
             if (Visual_main(var_s1, (*(s8 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x18))) + 0x1374))) >= 9) {
                 SetDialogData(0x6B);
@@ -221,8 +221,8 @@ block_69:
             goto block_113;
         }
         temp_s0_3 = (*(s16 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x18))) + 0x1364));
-        lobby_func_00569390(&(*(u8 *)((u8 *)&tl_member_buff + 0x18)) + 0x1374, &(*(u8 *)((u8 *)&tl_member_buff + 0x18)) + 0x1364, 7, (*(s16 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x1398))) + 0x608)));
-        if (((s64) ((s64) temp_s0_3 << 0x30) >> 0x30) != (*(s16 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x18))) + 0x1364))) {
+        lobby_func_00569390((u8 *)&(*(u8 *)((u8 *)&tl_member_buff + 0x18)) + 0x1374, (u8 *)&(*(u8 *)((u8 *)&tl_member_buff + 0x18)) + 0x1364, 7, (*(s16 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x1398))) + 0x608)), temp_s0);
+        if ((((s16) ((s64) temp_s0_3))) != (*(s16 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x18))) + 0x1364))) {
             (*(s16 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x1398))) + 0x604)) = (s16) (*(s16 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x18))) + 0x1364));
             (*(u8 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x18))) + 0x136B)) = 2U;
         }

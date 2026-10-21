@@ -31,11 +31,11 @@ s32 lobby_func_005C15F0(); /* extern */
 s32 memcpy();         /* extern */
 s32 memset();            /* extern */
 s32 tl_exit_sub_menu();             /* extern */
-extern u8 g_lb_636590;
-extern u8 g_lb_636594;
-extern u8 g_lb_653950;
+extern s32 g_lb_636590;
+extern s32 g_lb_636594;
+extern s32 g_lb_653950;
 extern s8 g_lb_6B42BC;
-extern u8 g_main_302290;
+extern s32 g_main_302290;
 
 s32 lobby_func_0056B790(void) {
     u8 *var_s1;   /* (s32 *) */
@@ -104,7 +104,7 @@ loop_6:
             temp_s0_2 = (*(s8 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x1398))) + 0x60F));
             (*(s8 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x1398))) + 0x60F)) = Lb_cursorUD(temp_s0_2, 2);
             SetDialogYesNo((u8) (*(s8 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x1398))) + 0x60F)));
-            if (((s64) ((s64) temp_s0_2 << 0x38) >> 0x38) != (*(s8 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x1398))) + 0x60F))) {
+            if ((((s8) ((s64) temp_s0_2))) != (*(s8 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x1398))) + 0x60F))) {
                 SetHelpLineMsg((*(s8 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x1398))) + 0x60F)) + 0x27);
             }
         }
@@ -133,7 +133,7 @@ block_99:
             return 3;
         }
         if (temp_v1_2 & 0x20) {
-            temp_v0_2 = lobby_func_005C1560(&(*(u8 *)((u8 *)&BsProxyUrlstr + 0x110)), 8, &(*(u8 *)((u8 *)&tl_member_buff + 0x1398)) + ((*(s16 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x1398))) + 0x60A)) * 0x18), (*(s16 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x1398))) + 0x608)));
+            temp_v0_2 = lobby_func_005C1560(&(*(u8 *)((u8 *)&BsProxyUrlstr + 0x110)), 8, (u8 *)&(*(u8 *)((u8 *)&tl_member_buff + 0x1398)) + ((*(s16 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x1398))) + 0x60A)) * 0x18), (*(s16 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x1398))) + 0x608)));
             if (temp_v0_2 == -1) {
                 temp_v0_3 = lobby_func_005C1510(&(*(u8 *)((u8 *)&BsProxyUrlstr + 0x110)), 8);
                 if (temp_v0_3 == -1) {
@@ -142,7 +142,7 @@ block_99:
                     (*(s8 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x1398))) + 0x60E)) = (s8) (*(s8 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x1398))) + 0x60C));
                     (*(s8 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x1398))) + 0x60C)) = 7;
                 } else {
-                    memcpy(&(*(u8 *)((u8 *)&BsProxyUrlstr + 0x110)) + (temp_v0_3 * 0x18), &(*(u8 *)((u8 *)&tl_member_buff + 0x1398)) + ((*(s16 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x1398))) + 0x60A)) * 0x18), 0x18);
+                    memcpy((u8 *)&(*(u8 *)((u8 *)&BsProxyUrlstr + 0x110)) + (temp_v0_3 * 0x18), (u8 *)&(*(u8 *)((u8 *)&tl_member_buff + 0x1398)) + ((*(s16 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x1398))) + 0x60A)) * 0x18), 0x18);
                 }
             } else {
                 lobby_func_005C15F0(&(*(u8 *)((u8 *)&BsProxyUrlstr + 0x110)), temp_v0_2 & 0xFF, 8);
@@ -154,7 +154,7 @@ block_99:
             lobby_func_0059F6E0(0xB0462000);
             cnWrap_SoundRequest(6);
         } else {
-            lobby_func_00569390(&(*(u8 *)((u8 *)&tl_member_buff + 0x1398)) + 0x610, &(*(u8 *)((u8 *)&tl_member_buff + 0x1398)) + 0x604, 7, (*(s16 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x1398))) + 0x608)));
+            lobby_func_00569390((u8 *)&(*(u8 *)((u8 *)&tl_member_buff + 0x1398)) + 0x610, (u8 *)&(*(u8 *)((u8 *)&tl_member_buff + 0x1398)) + 0x604, 7, (*(s16 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x1398))) + 0x608)), temp_s0);
         }
         goto block_99;
     case 2:                                         /* switch 1 */

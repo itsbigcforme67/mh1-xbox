@@ -72,7 +72,7 @@ block_46:
                 var_s0 = var_s1 * 8;
                 do {
                     memset((*(void **)&g_main_2EF390) + 0x23F4 + var_s0, 0, 8);
-                    memset(&(*(u8 *)((u8 *)&quest_title + 0x30)) + ((var_s1 - 1) << 9), 0, 0x200);
+                    memset((u8 *)&(*(u8 *)((u8 *)&quest_title + 0x30)) + ((var_s1 - 1) << 9), 0, 0x200);
                     var_s1 = (var_s1 + 1) & 0xFF;
                     var_s0 += 8;
                 } while ((s32) var_s1 < 4);
@@ -98,7 +98,7 @@ block_46:
                 temp_a0_2 = M2C_ERROR(/* Read from unset register $a3 */) & 0xFF;
                 (*(s8 *)((u8 *)((*(void **)&cw)) + 0xBA9)) = 0x1C;
                 if (temp_a0_2 != 0) {
-                    lobby_func_005BFD60(M2C_ERROR(/* Read from unset register $a3 */), &(*(u8 *)((u8 *)&quest_title + 0x30)) + ((temp_a0_2 - 1) << 9), 0x200, &lobby_func_005817C0);
+                    lobby_func_005BFD60(M2C_ERROR(/* Read from unset register $a3 */), (u8 *)&(*(u8 *)((u8 *)&quest_title + 0x30)) + ((temp_a0_2 - 1) << 9), 0x200, &lobby_func_005817C0);
                     memcpy((*(void **)&g_main_2EF390) + 0x23F4 + temp_s0, sp38, 8);
                 } else {
                     lobby_func_005BFD60(M2C_ERROR(/* Read from unset register $a3 */), (*(void **)&g_main_2EF390) + 0x23F4 + 0x20, (*(s32 *)((u8 *)(sp38) + 0)), &lobby_func_005817C0);

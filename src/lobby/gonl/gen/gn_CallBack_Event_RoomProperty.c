@@ -5,7 +5,7 @@
 
 s32 cnLBS_Get_RoomProperty();        /* extern */
 s32 cnetGet_Room_LastRecvNumber();         /* extern */
-extern u8 g_lb_6DE120;
+extern s32 g_lb_6DE120;
 
 void CallBack_Event_RoomProperty(void) {
     u8 g_frame[0x20] __attribute__((aligned(16)));   /* G's stack frame */

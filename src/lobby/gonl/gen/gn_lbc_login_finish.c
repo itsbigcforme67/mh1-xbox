@@ -55,10 +55,10 @@ void lbc_login_finish(void) {
         if ((*(u8 *)((u8 *)&CnetWork + 0x5)) == 0) {
             if ((*(u8 *)((u8 *)((*(void **)&cw)) + 0xFA5E)) == 0) {
                 var_a1 = 0x4C;
-                *(&(*(u8 *)((u8 *)&player_work + 0x736)) + ((*(u8 *)((u8 *)&game_w + 0x3A)) * 0xA00)) = 0x4C;
+                (*(s32 *)((u8 *)&(*(u8 *)((u8 *)&player_work + 0x736)) + ((*(u8 *)((u8 *)&game_w + 0x3A)) * 0xA00))) = 0x4C;
             } else {
                 var_a1 = 0x4D;
-                *(&(*(u8 *)((u8 *)&player_work + 0x736)) + ((*(u8 *)((u8 *)&game_w + 0x3A)) * 0xA00)) = 0x4D;
+                (*(s32 *)((u8 *)&(*(u8 *)((u8 *)&player_work + 0x736)) + ((*(u8 *)((u8 *)&game_w + 0x3A)) * 0xA00))) = 0x4D;
             }
             (*(s8 *)((u8 *)&game_w + 0x14)) = var_a1;
             Lb_set_mini_data(&my_user_mini_data, var_a1);

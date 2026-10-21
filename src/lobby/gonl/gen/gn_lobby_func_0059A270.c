@@ -27,7 +27,7 @@ void lobby_func_0059A270(void) {
     u8 *temp_v1;
 
     flMemset(&lb_sys, 0, 0x98);
-    (*(u8 *)((u8 *)&lb_sys + 0x95)) = 1;
+    (*(s8 *)((u8 *)&lb_sys + 0x95)) = 1;
     var_a3 = 0;
     var_a2 = &player_work;
     var_a1 = &lb_player;
@@ -51,8 +51,8 @@ void lobby_func_0059A270(void) {
         var_a0 += 5;
     } while (var_a3 < 0xA);
     init_set_work(var_a0, var_a1, var_a2, var_a3);
-    (*(s32 **)&cw) = &client_work;
-    (*(s32 **)&pNet) = &network_work;
+    (*(u8 **)&cw) = &client_work;
+    (*(u8 **)&pNet) = &network_work;
     Lbc_init_network_work();
     temp_a1 = (*(u8 *)((u8 *)&game_w + 0x3A));
     if ((*(s32 *)((u8 *)&player_work + (temp_a1 * 0xA00))) != 0) {

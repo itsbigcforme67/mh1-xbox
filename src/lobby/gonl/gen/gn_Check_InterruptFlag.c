@@ -16,7 +16,7 @@ s32 To_ReadyBattle();                     /* extern */
 s32 lobby_func_0055A140();       /* extern */
 s32 lobby_func_0057E3D0();       /* extern */
 s32 lobby_func_00582C70();               /* extern */
-extern u8 lb_sys;
+extern s32 lb_sys;
 
 s32 Check_InterruptFlag(void) {
     s8 temp_v1;
@@ -69,7 +69,7 @@ s32 Check_InterruptFlag(void) {
                 Lb_eat_to_bell((*(void **)&cw) + 0xF75D);
                 (*(s8 *)&D_0035EFEB) = 0;
                 lb_sys = 0x17;
-                (*(u8 *)((u8 *)&lb_sys + 0x8)) = 1;
+                (*(s32 *)((u8 *)&lb_sys + 0x8)) = 1;
                 (*(s8 *)((u8 *)((*(void **)&cw)) + 0xBA9)) = 0;
                 (*(s8 *)((u8 *)((*(void **)&cw)) + 0xB9D)) = 0;
                 Lbc_init_network_work();

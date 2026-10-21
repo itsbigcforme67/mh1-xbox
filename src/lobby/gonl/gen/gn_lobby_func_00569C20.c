@@ -15,11 +15,11 @@ u8 lobby_func_00569C20(s32 arg0) {
     u8 temp_v1;
     u8 *temp_a2;
 
-    temp_v1 = *(&(*(u8 *)((u8 *)&LobbyInfo + 0x16)) + (arg0 * 0x15C));
+    temp_v1 = (*(s32 *)((u8 *)&(*(u8 *)((u8 *)&LobbyInfo + 0x16)) + (arg0 * 0x15C)));
     switch (temp_v1) {                              /* irregular */
     case 1:
         (*(s8 *)((u8 *)((*(void **)&pNet)) + 0x2D)) = 1;
-        (*(u8 *)((u8 *)&ClassInfo + 0x4)) = arg0 + 1;
+        (*(s8 *)((u8 *)&ClassInfo + 0x4)) = arg0 + 1;
         SetDialogData(0x41, 1U);
         cnWrap_SoundRequest(0);
         return 6U;
@@ -27,7 +27,7 @@ u8 lobby_func_00569C20(s32 arg0) {
         temp_a2 = (*(void **)&pNet);
         temp_a1 = (*(u8 *)((u8 *)(temp_a2) + 0x23));
         (*(u8 *)((u8 *)(temp_a2) + 0x26)) = temp_a1;
-        (*(u8 *)((u8 *)&ClassInfo + 0x4)) = arg0 + 1;
+        (*(s8 *)((u8 *)&ClassInfo + 0x4)) = arg0 + 1;
         (*(s8 *)((u8 *)((*(void **)&pNet)) + 0x2D)) = 1;
         SetDialogData(0x3F, temp_a1, temp_a2);
         SetDialogYesNo(1);

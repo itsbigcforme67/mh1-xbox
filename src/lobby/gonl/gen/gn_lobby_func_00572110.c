@@ -36,7 +36,7 @@ s16 net_Check_FriendSuu();        /* extern */
 s32 plaza_req_input();                 /* extern */
 s32 strcpy();                     /* extern */
 extern s8 g_lb_653A50;
-extern u8 g_main_302CB0;
+extern s32 g_main_302CB0;
 extern s8 my_user_id;
 
 s32 lobby_func_00572110(void) {
@@ -197,7 +197,7 @@ block_109:
         (*(u8 *)((u8 *)(temp_v0) + 0x233)) = (u8) (temp_a0 + 1);
         (*(s8 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x1398))) + 0x60D)) = 0;
         temp_a0_2 = (*(void **)&g_main_2EFBAC);
-        if (*(&(*(u8 *)((u8 *)&lb_sys + 0xA0)) + ((*(s16 *)((u8 *)(temp_a0_2) + 0x22E)) * 2)) != 0) {
+        if ((*(s32 *)((u8 *)&(*(u8 *)((u8 *)&lb_sys + 0xA0)) + ((*(s16 *)((u8 *)(temp_a0_2) + 0x22E)) * 2))) != 0) {
             (*(u8 *)((u8 *)(temp_a0_2) + 0x233)) = 4U;
         } else {
         case 3:                                     /* switch 1 */
@@ -205,7 +205,7 @@ block_109:
 
             } else {
                 temp_a1_5 = (*(void **)&g_main_2EFBAC);
-                *(&(*(u8 *)((u8 *)&lb_sys + 0xA0)) + ((*(s16 *)((u8 *)(temp_a1_5) + 0x22E)) * 2)) = (*(u16 *)&g_main_2EFAD8);
+                (*(s32 *)((u8 *)&(*(u8 *)((u8 *)&lb_sys + 0xA0)) + ((*(s16 *)((u8 *)(temp_a1_5) + 0x22E)) * 2))) = (*(u16 *)&g_main_2EFAD8);
                 (*(u8 *)((u8 *)(temp_a1_5) + 0x233)) = (u8) ((*(u8 *)((u8 *)(temp_a1_5) + 0x233)) + 1);
             }
         }
@@ -224,7 +224,7 @@ block_109:
             if ((*(s16 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x1398))) + 0x608)) == 0) {
                 cnWrap_SoundRequest(7, temp_a1_7, temp_a2_2);
             } else {
-                temp_s0_2 = (u8 *)&g_main_302CB0 + (((s64) (((s64) ((temp_a2_2 + (temp_a1_7 * 7)) << 0x30) >> 0x30) << 0x30) >> 0x30) * 0x30);
+                temp_s0_2 = (u8 *)&g_main_302CB0 + ((((s16) ((((s16) ((temp_a2_2 + (temp_a1_7 * 7)))))))) * 0x30);
                 if (memcmp(temp_s0_2, temp_v0_4 + (((s32) ((*(s8 *)((u8 *)(temp_v0_4) + 0x237)) + 1) % 3) * 0x5C) + 0x9A, 8) != 0) {
                     temp_a1_8 = (*(void **)&g_main_2EFBAC);
                     if (memcmp(temp_s0_2, temp_a1_8 + (((s32) ((*(s8 *)((u8 *)(temp_a1_8) + 0x237)) + 2) % 3) * 0x5C) + 0x9A, 8) == 0) {
@@ -253,13 +253,13 @@ block_51:
             temp_v0_5 = (*(void **)&g_main_2EFBAC);
             temp_s0_3 = (*(s16 *)((u8 *)(temp_v0_5) + 0x22E));
             temp_s2 = (u8) (*(s8 *)((u8 *)(temp_v0_5) + 0x238));
-            lobby_func_00569390(temp_v0_5 + 0x238, temp_v0_5 + 0x22E, 7, (*(s16 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x1398))) + 0x608)));
+            lobby_func_00569390(temp_v0_5 + 0x238, temp_v0_5 + 0x22E, 7, (*(s16 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x1398))) + 0x608)), temp_s0);
             temp_v1_6 = (*(s8 *)((u8 *)((*(void **)&g_main_2EFBAC)) + 0x238));
             if ((temp_s2 & 0xFF) != temp_v1_6) {
                 (*(s8 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x1398))) + 0x60F)) = temp_v1_6;
             }
             temp_v1_7 = (*(s16 *)((u8 *)((*(void **)&g_main_2EFBAC)) + 0x22E));
-            if (((s64) ((s64) temp_s0_3 << 0x30) >> 0x30) != temp_v1_7) {
+            if ((((s16) ((s64) temp_s0_3))) != temp_v1_7) {
                 (*(s16 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x1398))) + 0x604)) = temp_v1_7;
                 (*(s8 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x1398))) + 0x60F)) = 0;
                 (*(u8 *)((u8 *)((*(void **)&g_main_2EFBAC)) + 0x233)) = 2U;

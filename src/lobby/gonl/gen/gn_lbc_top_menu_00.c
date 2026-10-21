@@ -21,8 +21,8 @@ void lbc_top_menu_00(void) {
     u8 *temp_v0;
 
     ClassInfo = 0;
-    (*(u8 *)((u8 *)&ClassInfo + 0x4)) = 0;
-    (*(u8 *)((u8 *)&ClassInfo + 0x8)) = 0;
+    (*(s8 *)((u8 *)&ClassInfo + 0x4)) = 0;
+    (*(s8 *)((u8 *)&ClassInfo + 0x8)) = 0;
     memset(&PlazaInfo, 0, 0x2358);
     (*(s8 *)((u8 *)&game_w + 0x25)) = 0x4A;
     str_play_vol(0, 0x4A, 0x1E);
@@ -40,7 +40,7 @@ void lbc_top_menu_00(void) {
         (*(s8 *)((u8 *)(var_v1) + 0x99A)) = 0;
         var_v1 += 0xAE0;
     } while (var_a0 < 0x12);
-    temp_v0 = &(*(u8 *)((u8 *)&PlazaInfo + 0x16)) + (var_a0 * 0x15C);
+    temp_v0 = (u8 *)&(*(u8 *)((u8 *)&PlazaInfo + 0x16)) + (var_a0 * 0x15C);
     (*(s8 *)((u8 *)(temp_v0) + 0)) = 0;
     (*(s8 *)((u8 *)(temp_v0) + 0x15C)) = 0;
     Lbc_init_network_work(var_a0);

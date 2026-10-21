@@ -3,7 +3,7 @@
  * tools/build_pc_mhg.sh). */
 #include "../gonl.h"
 
-extern u8 g_lb_731168;
+extern s32 g_lb_731168;
 
 void lobby_func_005BFF80(void *arg0) {
     if (g_lb_731168 != 0) {

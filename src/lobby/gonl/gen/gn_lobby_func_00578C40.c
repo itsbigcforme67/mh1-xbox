@@ -3,6 +3,7 @@
  * tools/build_pc_mhg.sh). */
 #include "../gonl.h"
 
+extern u8 lb_shop_msg;
 extern u8 textLobbyTbl;
 extern u8 tl_mail_tbl;
 s32 Put_2TF();                             /* extern */
@@ -15,9 +16,9 @@ s32 font_print();           /* extern */
 s32 font_set_palette();                  /* extern */
 s32 han2zen();              /* extern */
 s32 reload_tex();               /* extern */
-s32 sprintf();    /* extern */
+s32 sprintf(); /* extern */
 extern u8 ClassInfo;
-extern u8 g_main_306468;
+extern s32 g_main_306468;
 extern u8 lit_2316;
 extern u8 lit_3241;
 
@@ -32,16 +33,18 @@ void lobby_func_00578C40(s16 arg0) {
     SetTextureStage(0x180);
     SetFilterMode(1);
     flSetRenderState(0x60, 0);
-    (*(f64 *)((u8 *)(&sp90) + 0)) = (f64) (*(f64 *)((u8 *)(&(*(u8 *)((u8 *)&textLobbyTbl + 0x14))) + 0));
-    (*(f64 *)((u8 *)(&sp90) + 8)) = (f64) (*(f64 *)((u8 *)(&(*(u8 *)((u8 *)&textLobbyTbl + 0x14))) + 8));
+    (*(f32 *)((u8 *)(&sp90) + 0)) = (f32) (*(f32 *)((u8 *)(&(*(u8 *)((u8 *)&textLobbyTbl + 0x14))) + 0));
+    (*(f32 *)((u8 *)(&sp90) + 4)) = (f32) (*(f32 *)((u8 *)(&(*(u8 *)((u8 *)&textLobbyTbl + 0x14))) + 4));
+    (*(f32 *)((u8 *)(&sp90) + 8)) = (f32) (*(f32 *)((u8 *)(&(*(u8 *)((u8 *)&textLobbyTbl + 0x14))) + 8));
+    (*(f32 *)((u8 *)(&sp90) + 0xC)) = (f32) (*(f32 *)((u8 *)(&(*(u8 *)((u8 *)&textLobbyTbl + 0x14))) + 0xC));
     (*(f32 *)((u8 *)(&sp90) + 0x10)) = (f32) (*(f32 *)((u8 *)(&(*(u8 *)((u8 *)&textLobbyTbl + 0x14))) + 0x10));
     sp92 = arg0;
     Put_2TF(&sp90);
     flfntSetSize(0x12, 0x12);
     font_set_palette(0);
-    sprintf(&sp70, &lit_3241, (*(u8 *)((u8 *)&tl_mail_tbl + 0x34)), (*(s32 *)((u8 *)&g_main_306468 + (ClassInfo * 0x15C))));
+    sprintf(&sp70, &lit_3241, (*(s32 *)((u8 *)&tl_mail_tbl + 0x34)), (*(s32 *)((u8 *)&g_main_306468 + (ClassInfo * 0x15C))), (*(s32 *)((u8 *)&lb_shop_msg + 0x8)));
     han2zen(&sp70, &sp30);
-    flfntLocate((s64) ((sp90 + 0xA) << 0x30) >> 0x30, (s64) ((sp92 + 3) << 0x30) >> 0x30);
+    flfntLocate(((s16) ((sp90 + 0xA))), ((s16) ((sp92 + 3))));
     font_print(&lit_2316, &sp30);
 }
 

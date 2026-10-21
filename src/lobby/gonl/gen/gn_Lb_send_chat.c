@@ -7,11 +7,12 @@ extern u8 cw;
 s32 Lb_chat_receipt();                 /* extern */
 s32 Online_ck();                                    /* extern */
 s32 Plaza_chat_log_add();              /* extern */
-s32 Visual_main();                           /* extern */
+s32 Visual_main();                               /* extern */
 s32 cnLBS_Send_ChatBinaryTU(); /* extern */
-s32 cnLBS_Send_ChatMessage();       /* extern */
+s32 cnLBS_Send_ChatMessage();           /* extern */
 s32 memcpy();      /* extern */
-s32 strcpy();                 /* extern */
+s32 strcpy();                     /* extern */
+extern u8 CallBack_Result_SendChatMessageTU;
 extern s8 chatIDList;
 extern u8 chat_cnfg_font_color;
 extern u8 my_user_handle;
@@ -38,7 +39,7 @@ void Lb_send_chat(s32 arg1, s32 arg2) {
         var_s0 = &chatIDList;
         do {
             if (*var_s0 != 0) {
-                cnLBS_Send_ChatBinaryTU(arg2 & 0xFF, var_s0, arg1, temp_v0 & 0xFFFF);
+                cnLBS_Send_ChatBinaryTU(arg2 & 0xFF, var_s0, arg1, temp_v0 & 0xFFFF, &CallBack_Result_SendChatMessageTU);
             }
             var_s2 += 1;
             var_s0 += 8;

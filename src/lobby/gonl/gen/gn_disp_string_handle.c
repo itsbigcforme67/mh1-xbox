@@ -26,7 +26,7 @@ void disp_string_handle(s32 arg0, s32 arg1) {
     memset(&sp30, 0, 0x1E);
     temp_v1 = ((arg1 & 0xFF) * 0x11) + (*(s32 *)&cw);
     if ((*(s8 *)((u8 *)(temp_v1) + 0x2B)) == 0) {
-        sprintf(&sp30, (*(u8 *)((u8 *)&net_etc_mes_tbl + 0x20)));
+        sprintf(&sp30, (*(s32 *)((u8 *)&net_etc_mes_tbl + 0x20)));
     } else {
         strcpy(&sp30, temp_v1 + 0x2B);
     }
@@ -38,9 +38,9 @@ void disp_string_handle(s32 arg0, s32 arg1) {
     }
     flfntSetSize(0x18, 0x14);
     temp_s0_2 = (temp_s0 * 0x58) + 0x62;
-    font_print_double(0x1A4, (s64) (temp_s0_2 << 0x30) >> 0x30, 1, (s64) (((s64) (var_v0 << 0x38) >> 0x38) << 0x38) >> 0x38);
+    font_print_double(0x1A4, ((s16) (temp_s0_2)), 1, ((s8) ((((s8) (var_v0))))), &sp30);
     flfntSetSize(0x14, 0x14);
-    flfntLocate(0x168, (s64) (temp_s0_2 << 0x30) >> 0x30);
-    font_print((*(u8 *)((u8 *)&tl_mail_tbl + 0x8)));
+    flfntLocate(0x168, ((s16) (temp_s0_2)));
+    font_print((*(s32 *)((u8 *)&tl_mail_tbl + 0x8)));
 }
 

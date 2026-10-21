@@ -16,7 +16,7 @@ s32 lobby_func_005E39E0(s32 arg0, s32 arg1) {
     var_v0 = -1;
     if (temp_v0 != -1) {
         __cnet_KeepEntryFloorInfo(0, arg0);
-        *(&(*(u8 *)((u8 *)&pFunc + 0xEE)) + (temp_v0 * 0x1C)) = __cnet_SendReq_PieceEntry(0, arg0);
+        (*(s32 *)((u8 *)&(*(u8 *)((u8 *)&pFunc + 0xEE)) + (temp_v0 * 0x1C))) = __cnet_SendReq_PieceEntry(0, arg0);
         var_v0 = temp_v0;
     }
     return var_v0;

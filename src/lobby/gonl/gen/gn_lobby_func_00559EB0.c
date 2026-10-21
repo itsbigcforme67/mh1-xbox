@@ -6,7 +6,7 @@
 extern u8 cw;
 s32 Lb_get_quest_str();                 /* extern */
 void *lobby_func_00559C30();                        /* extern */
-extern u8 g_lb_636814;
+extern s32 g_lb_636814;
 
 s32 lobby_func_00559EB0(s32 arg0) {
     s32 temp_a0;

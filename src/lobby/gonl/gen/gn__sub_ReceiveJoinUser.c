@@ -16,7 +16,7 @@ void _sub_ReceiveJoinUser(s32 arg0) {
 #define sp2E (*(u16 *)(g_frame + 0x2E))
     u8 *temp_s0;
 
-    if ((*(u8 *)((u8 *)&CnetSys_w + 0xFEC)) == 0) {
+    if ((*(s8 *)((u8 *)&CnetSys_w + 0xFEC)) == 0) {
         __cnet_Recv_PieceJoinUserMH(&sp2E, 4, &sp20);
         temp_s0 = arg0 + ((sp2E - 1) * 0x164);
         (*(u16 *)((u8 *)(temp_s0) + 8)) = sp2E;

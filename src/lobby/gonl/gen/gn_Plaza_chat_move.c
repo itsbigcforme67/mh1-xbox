@@ -22,9 +22,9 @@ s32 Plaza_chat_move(void) {
     temp_v1 = (*(u16 *)((u8 *)&Psw + 0x4));
     sp10 = 0;
     if (!(temp_v1 & 0x4000)) {
-        var_a0 = (s64) (SoftKeyboard_move(&sp10, (*(s16 *)&Psw), (s64) ((s64) temp_v1 << 0x30) >> 0x30) << 0x38) >> 0x38;
+        var_a0 = ((s8) (SoftKeyboard_move(&sp10, (*(s16 *)&Psw), ((s16) ((s64) temp_v1)))));
     }
-    temp_v1_2 = (s64) (var_a0 << 0x38) >> 0x38;
+    temp_v1_2 = ((s8) (var_a0));
     if (temp_v1_2 == -1) {
         SoftKeyboard_exit(var_a0);
         Plaza_chatlog_i();

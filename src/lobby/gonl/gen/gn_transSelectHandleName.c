@@ -3,8 +3,11 @@
  * tools/build_pc_mhg.sh). */
 #include "../gonl.h"
 
+extern u8 User_data;
+extern u8 lb_rule_member;
 extern u8 net_etc_mes_tbl;
 extern u8 textLobbyTbl;
+extern u8 tl_mail_tbl;
 s32 DispFrameMessage();          /* extern */
 s32 DispHelpLine();                             /* extern */
 s32 DispSceneTitle();                           /* extern */
@@ -23,9 +26,9 @@ s32 font_print_double(); /* extern */
 s32 font_set_palette();                  /* extern */
 s32 lobby_func_005926C0(); /* extern */
 s32 reload_tex(); /* extern */
-extern u8 g_lb_636EC0;
-extern u8 g_lb_636EC4;
-extern u8 g_lb_645018;
+extern s32 g_lb_636EC0;
+extern s32 g_lb_636EC4;
+extern s32 g_lb_645018;
 extern s128 lit_324_00617F70;
 extern s128 lit_326_00617F80;
 
@@ -52,11 +55,11 @@ void transSelectHandleName(void *arg0) {
     sp42 += 0x58;
     DispFrameMessage(&sp40, 0);
     flfntSetSize(0x14, 0x14);
-    font_print_double(0x32, 0x6A, 1, 5);
+    font_print_double(0x32, 0x6A, 1, 5, (*(s32 * *)((u8 *)&lb_rule_member + 0x20)));
     DispFrameMessage(&sp30, 0);
-    font_print_double(0x34, 0x90, 1, 0);
+    font_print_double(0x34, 0x90, 1, 0, (*(s32 * *)((u8 *)&tl_mail_tbl + 0x8)));
     flfntSetSize(0x18, 0x14);
-    font_print_double(0x70, 0x90, 1, 0);
+    font_print_double(0x70, 0x90, 1, 0, &(*(u8 *)((u8 *)&User_data + 0x8)));
     var_s1 = 0;
     do {
         temp_a1 = var_s1 & 0xFF;
@@ -67,14 +70,14 @@ void transSelectHandleName(void *arg0) {
     } while (var_s1 < 3);
     DispHelpLine();
     DispSceneTitle();
-    lobby_func_005926C0(0x17C, 0x1C, 0x84, 0x30);
+    lobby_func_005926C0(0x17C, 0x1C, 0x84, 0x30, 0x80006000, 1);
     Lb_put_button(0x216, 0x1C, 0);
     Lb_put_button(0x216, 0x34, 1);
     flfntSetSize(0x12, 0x12);
     font_set_palette(0);
     flfntLocate(0x230, 0x1F);
-    font_print(&g_lb_645018, (*(u8 *)((u8 *)&net_etc_mes_tbl + 0x18)), g_lb_636EC0);
+    font_print(&g_lb_645018, (*(s32 *)((u8 *)&net_etc_mes_tbl + 0x18)), g_lb_636EC0);
     flfntLocate(0x230, 0x37);
-    font_print(&g_lb_645018, (*(u8 *)((u8 *)&net_etc_mes_tbl + 0x18)), g_lb_636EC4);
+    font_print(&g_lb_645018, (*(s32 *)((u8 *)&net_etc_mes_tbl + 0x18)), g_lb_636EC4);
 }
 

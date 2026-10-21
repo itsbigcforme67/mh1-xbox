@@ -14,7 +14,7 @@ extern u8 send_work;
 s32 __cnet_SendReq_EchoPacket(void) {
     s32 temp_s0;
 
-    (*(u8 *)((u8 *)&CnetSys_w + 0x102C)) = 0;
+    (*(s16 *)((u8 *)&CnetSys_w + 0x102C)) = 0;
     temp_s0 = SetSendCommand(&send_work, 0xA) & 0xFFFF;
     SetSendStringData2(&send_work, &lit_336_0065E008, 1);
     SetSendCommandLen(&send_work);

@@ -83,12 +83,12 @@ void BsSoftKbdSprTrans(void *arg0) {
                 (*(s8 *)((u8 *)((*(void **)&bsSys)) + 0x2E)) = 8;
                 return;
             }
-            temp_s0_2 = (s64) ((s64) (*(u8 *)((u8 *)((*(s32 *)((u8 *)&bsOW + ((*(s32 *)((u8 *)((*(void **)&bsCur)) + 0x20)) * 4)))) + 5)) << 0x30) >> 0x30;
-            var_a1 = (s64) (strlen(&inputStrBuf) << 0x30) >> 0x30;
+            temp_s0_2 = ((s16) ((s64) (*(u8 *)((u8 *)((*(s32 *)((u8 *)&bsOW + ((*(s32 *)((u8 *)((*(void **)&bsCur)) + 0x20)) * 4)))) + 5))));
+            var_a1 = ((s16) (strlen(&inputStrBuf)));
             if ((s32) (*(u8 *)((u8 *)((*(s32 *)((u8 *)&bsOW + ((*(s32 *)((u8 *)((*(void **)&bsCur)) + 0x20)) * 4)))) + 5)) < var_a1) {
-                var_a1 = (s64) (temp_s0_2 << 0x30) >> 0x30;
+                var_a1 = ((s16) (temp_s0_2));
             }
-            temp_t2 = (s64) (var_a1 << 0x30) >> 0x30;
+            temp_t2 = ((s16) (var_a1));
             var_t4 = 0;
             if (temp_t2 > 0) {
                 if (temp_t2 >= 9) {

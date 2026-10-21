@@ -13,7 +13,7 @@ s32 func_0012D000();                         /* extern */
 s32 lobby_func_005A0E80();                   /* extern */
 s32 put_button_help(); /* extern */
 s32 reload_tex();               /* extern */
-extern u8 g_lb_636B54;
+extern s32 g_lb_636B54;
 
 void DispButtonHelp(void *arg0) {
     s32 temp_s0_10;

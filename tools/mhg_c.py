@@ -100,6 +100,10 @@ def fix(src):
             if m.group(4):
                 arrays.add(m.group(3))
 
+    # m2c counts `*(&D_X + k)` / `&D_X + k` in bytes: keep that before D_X gets its typed name
+    import mhg_gonl
+    src = mhg_gonl.byte_globals(src)
+
     def dn(m):
         hexa = m[1][-6:]
         n = name_of(int(hexa, 16))
@@ -114,6 +118,7 @@ def fix(src):
     src = re.sub(r'\bD_00([0-9A-F]{6})\b', dn, src)
     src = re.sub(r'\bD_([0-9A-F]{6})\b', dn, src)
     src = fields(src)
+    src = re.sub(r'^extern M2C_UNK (\w+);', r'extern u8 \1;', src, flags=re.M)     # data of unknown type: bytes
     src = src.replace('M2C_UNK', 's32')
     return src
 
@@ -142,8 +147,9 @@ def fields(src):
 
 
 def main():
+    env = dict(os.environ, DRAFT_T=os.environ.get('DRAFT_T', 'mipsee-gcc-c'))     # (G's EE ABI: see mhg_gonl.draft)
     p = subprocess.run([sys.executable, os.path.join(ROOT, 'tools/draft.py'), 'mhg/lobby'] + sys.argv[1:],
-                       capture_output=True, text=True)
+                       capture_output=True, text=True, env=env)
     print(fix(p.stdout))
 
 

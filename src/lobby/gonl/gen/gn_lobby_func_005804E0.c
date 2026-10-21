@@ -10,7 +10,7 @@ s32 CallBackWaitInit();                 /* extern */
 s32 Check_CallBackWait();               /* extern */
 s32 lobby_func_005E6C80();   /* extern */
 s32 lobby_func_005E6D20();        /* extern */
-extern u8 g_lb_6B4510;
+extern s32 g_lb_6B4510;
 extern u8 lobby_func_00580450;
 
 s32 lobby_func_005804E0(s32 arg0) {

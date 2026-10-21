@@ -8,20 +8,20 @@ s64 lobby_func_00569320(s64 arg0, s64 arg1) {
     s64 temp_v1;
     s64 var_v0;
 
-    temp_v1 = (s64) (arg1 << 0x30) >> 0x30;
+    temp_v1 = ((s16) (arg1));
     if (temp_v1 == 0) {
         return 1;
     }
-    temp_a0 = (s64) (arg0 << 0x30) >> 0x30;
+    temp_a0 = ((s16) (arg0));
     if (temp_v1 == 0) {
         M2C_BREAK(0);
     }
-    var_v0 = (s64) ((s64) (temp_a0 / temp_v1) << 0x30) >> 0x30;
+    var_v0 = ((s16) ((s64) (temp_a0 / temp_v1)));
     if (temp_v1 == 0) {
         M2C_BREAK(0);
     }
     if ((temp_a0 % temp_v1) != 0) {
-        var_v0 = (s64) ((var_v0 + 1) << 0x30) >> 0x30;
+        var_v0 = ((s16) ((var_v0 + 1)));
     }
     return var_v0;
 }

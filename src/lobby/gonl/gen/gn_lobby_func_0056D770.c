@@ -13,7 +13,7 @@ s32 SetDialogData();                     /* extern */
 s32 lobby_func_0056AF20();              /* extern */
 s32 lobby_func_00580A40();                  /* extern */
 s32 lobby_func_00581210();                /* extern */
-extern u8 g_main_3064AF;
+extern s32 g_main_3064AF;
 
 s32 lobby_func_0056D770(void) {
     s32 temp_v0;

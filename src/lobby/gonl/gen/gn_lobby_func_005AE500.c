@@ -29,7 +29,7 @@ s32 lobby_func_005AE500(s8 *arg0, s32 arg1) {
     if ((*(u8 *)((u8 *)(&(*(u8 *)((u8 *)&CnetSys_w + 0xEB0))) + 0x20)) == 0) {
         memset(&(*(u8 *)((u8 *)&CnetSys_w + 0xEB0)), 0, 0x28);
         var_a1_2 = &sp30;
-        var_a0_2 = &(*(u8 *)((u8 *)&CnetSys_w + 0x12CA));
+        var_a0_2 = &(*(s8 *)((u8 *)&CnetSys_w + 0x12CA));
         var_v1_2 = 0x14B;
         do {
             var_v1_2 -= 1;

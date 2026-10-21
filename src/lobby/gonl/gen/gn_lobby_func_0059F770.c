@@ -40,8 +40,10 @@ void lobby_func_0059F770(void) {
 
     reload_tex(1, 0x180);
     SetTextureStage(0x180);
-    (*(f64 *)((u8 *)(&spE0) + 0)) = (f64) (*(f32 *)((u8 *)(&(*(u8 *)((u8 *)&helpLineTbl + 0x28))) + 4));
-    (*(f64 *)((u8 *)(&spE0) + 8)) = (f64) (*(f64 *)((u8 *)(&(*(u8 *)((u8 *)&helpLineTbl + 0x28))) + 8));
+    (*(f32 *)((u8 *)(&spE0) + 0)) = (f32) (*(f32 *)((u8 *)(&(*(u8 *)((u8 *)&helpLineTbl + 0x28))) + 0));
+    (*(f32 *)((u8 *)(&spE0) + 4)) = (f32) (*(f32 *)((u8 *)(&(*(u8 *)((u8 *)&helpLineTbl + 0x28))) + 4));
+    (*(f32 *)((u8 *)(&spE0) + 8)) = (f32) (*(f32 *)((u8 *)(&(*(u8 *)((u8 *)&helpLineTbl + 0x28))) + 8));
+    (*(f32 *)((u8 *)(&spE0) + 0xC)) = (f32) (*(f32 *)((u8 *)(&(*(u8 *)((u8 *)&helpLineTbl + 0x28))) + 0xC));
     (*(f32 *)((u8 *)(&spE0) + 0x10)) = (f32) (*(f32 *)((u8 *)(&(*(u8 *)((u8 *)&helpLineTbl + 0x28))) + 0x10));
     temp_s5 = spE2;
     temp_s2 = spE4;
@@ -49,14 +51,14 @@ void lobby_func_0059F770(void) {
     spE2 = temp_s5;
     spE4 = temp_s2;
     Put_2TF(&spE0);
-    temp_v0 = (s64) ((s64) temp_s5 << 0x30) >> 0x30;
+    temp_v0 = ((s16) ((s64) temp_s5));
     spB0 = (s32) temp_v0;
-    temp_v0_2 = (s64) ((s64) spE0 << 0x30) >> 0x30;
+    temp_v0_2 = ((s16) ((s64) spE0));
     spA0 = (s32) temp_v0_2;
     var_s7 = 0;
-    temp_v0_3 = ((s64) ((s64) temp_s2 << 0x30) >> 0x30) + temp_v0_2;
+    temp_v0_3 = (((s16) ((s64) temp_s2))) + temp_v0_2;
     spD0 = temp_v0_3;
-    temp_fp = temp_v0 + ((s64) ((s64) temp_s6 << 0x30) >> 0x30);
+    temp_fp = temp_v0 + (((s16) ((s64) temp_s6)));
     (*(s16 *)((u8 *)(&(*(u8 *)((u8 *)&helpLineTbl + 0x3C))) + 2)) = (s16) (temp_v0 - 8);
     spC0 = temp_v0_2 - 8;
     temp_s0 = temp_v0_3 + 8;
@@ -64,14 +66,16 @@ void lobby_func_0059F770(void) {
         (*(s16 *)((u8 *)(&(*(u8 *)((u8 *)&helpLineTbl + 0x3C))) + 0)) = (s16) spC0;
         (*(s16 *)((u8 *)(&(*(u8 *)((u8 *)&helpLineTbl + 0x3C))) + 4)) = 0x28;
         (*(s16 *)((u8 *)(&(*(u8 *)((u8 *)&helpLineTbl + 0x3C))) + 6)) = 8;
-        (*(f64 *)((u8 *)(&spE0) + 0)) = (f64) (*(s16 *)((u8 *)(&(*(u8 *)((u8 *)&helpLineTbl + 0x3C))) + 0));
-        (*(f64 *)((u8 *)(&spE0) + 8)) = (f64) (*(f64 *)((u8 *)(&(*(u8 *)((u8 *)&helpLineTbl + 0x3C))) + 8));
+        (*(f32 *)((u8 *)(&spE0) + 0)) = (f32) (*(s16 *)((u8 *)(&(*(u8 *)((u8 *)&helpLineTbl + 0x3C))) + 0));
+        (*(f32 *)((u8 *)(&spE0) + 4)) = (f32) (*(s16 *)((u8 *)(&(*(u8 *)((u8 *)&helpLineTbl + 0x3C))) + 4));
+        (*(f32 *)((u8 *)(&spE0) + 8)) = (f32) (*(f32 *)((u8 *)(&(*(u8 *)((u8 *)&helpLineTbl + 0x3C))) + 8));
+        (*(f32 *)((u8 *)(&spE0) + 0xC)) = (f32) (*(f32 *)((u8 *)(&(*(u8 *)((u8 *)&helpLineTbl + 0x3C))) + 0xC));
         (*(f32 *)((u8 *)(&spE0) + 0x10)) = (f32) (*(f32 *)((u8 *)(&(*(u8 *)((u8 *)&helpLineTbl + 0x3C))) + 0x10));
         var_v0 = spE0 + spE4;
         if (temp_s0 >= var_v0) {
             do {
                 Put_sprite_rotate(&spE0, 2);
-                temp_v0_4 = spE0 + ((s64) ((spE4 - 1) << 0x30) >> 0x30);
+                temp_v0_4 = spE0 + (((s16) ((spE4 - 1))));
                 spE0 = temp_v0_4;
                 var_v0 = temp_v0_4 + spE4;
             } while (temp_s0 >= var_v0);
@@ -79,9 +83,9 @@ void lobby_func_0059F770(void) {
         spE4 -= var_v0 - temp_s0;
         spE4 = M2C_BITWISE(s16, (0.8f * (f32) spE4));
         temp_a2 = (*(s16 *)((u8 *)(&(*(u8 *)((u8 *)&helpLineTbl + 0x3C))) + 0x12)) - (*(s16 *)((u8 *)(&(*(u8 *)((u8 *)&helpLineTbl + 0x3C))) + 0xE));
-        spF2 = spEE + ((s64) (M2C_BITWISE(s64, (0.025f * ((f32) spE4 * (f32) temp_a2))) << 0x30) >> 0x30);
+        spF2 = spEE + (((s16) (M2C_BITWISE(s64, (0.025f * ((f32) spE4 * (f32) temp_a2))))));
         Put_sprite_rotate(&spE0, 2, temp_a2, (*(s16 *)((u8 *)(&(*(u8 *)((u8 *)&helpLineTbl + 0x3C))) + 0x12)));
-        var_s7 = (s64) ((var_s7 + 1) << 0x30) >> 0x30;
+        var_s7 = ((s16) ((var_s7 + 1)));
         (*(s16 *)((u8 *)(&(*(u8 *)((u8 *)&helpLineTbl + 0x3C))) + 2)) = temp_fp;
     } while (var_s7 < 2);
     temp_s1 = temp_fp + 8;
@@ -91,23 +95,25 @@ void lobby_func_0059F770(void) {
         (*(s16 *)((u8 *)(&(*(u8 *)((u8 *)&helpLineTbl + 0x64))) + 2)) = (s16) (spB0 - 8);
         (*(s16 *)((u8 *)(&(*(u8 *)((u8 *)&helpLineTbl + 0x64))) + 4)) = 0xA;
         (*(s16 *)((u8 *)(&(*(u8 *)((u8 *)&helpLineTbl + 0x64))) + 6)) = 0x28;
-        (*(f64 *)((u8 *)(&spE0) + 0)) = (f64) (*(s16 *)((u8 *)(&(*(u8 *)((u8 *)&helpLineTbl + 0x64))) + 0));
-        (*(f64 *)((u8 *)(&spE0) + 8)) = (f64) (*(f64 *)((u8 *)(&(*(u8 *)((u8 *)&helpLineTbl + 0x64))) + 8));
+        (*(f32 *)((u8 *)(&spE0) + 0)) = (f32) (*(s16 *)((u8 *)(&(*(u8 *)((u8 *)&helpLineTbl + 0x64))) + 0));
+        (*(f32 *)((u8 *)(&spE0) + 4)) = (f32) (*(s16 *)((u8 *)(&(*(u8 *)((u8 *)&helpLineTbl + 0x64))) + 4));
+        (*(f32 *)((u8 *)(&spE0) + 8)) = (f32) (*(f32 *)((u8 *)(&(*(u8 *)((u8 *)&helpLineTbl + 0x64))) + 8));
+        (*(f32 *)((u8 *)(&spE0) + 0xC)) = (f32) (*(f32 *)((u8 *)(&(*(u8 *)((u8 *)&helpLineTbl + 0x64))) + 0xC));
         (*(f32 *)((u8 *)(&spE0) + 0x10)) = (f32) (*(f32 *)((u8 *)(&(*(u8 *)((u8 *)&helpLineTbl + 0x64))) + 0x10));
         var_a0 = spE2 + spE6;
         if (var_a0 < temp_s1) {
             do {
                 Put_2TF(&spE0);
-                spE2 += (s64) ((spE6 - 1) << 0x30) >> 0x30;
+                spE2 += ((s16) ((spE6 - 1)));
                 var_a0 = spE2 + spE6;
             } while (var_a0 < temp_s1);
         }
         spE6 -= var_a0 - temp_s1;
         temp_a1 = (*(s16 *)((u8 *)(&(*(u8 *)((u8 *)&helpLineTbl + 0x64))) + 0x12)) - (*(s16 *)((u8 *)(&(*(u8 *)((u8 *)&helpLineTbl + 0x64))) + 0xE));
-        spF2 = spEE + ((s64) (M2C_BITWISE(s64, (0.025f * ((f32) spE6 * (f32) temp_a1))) << 0x30) >> 0x30);
+        spF2 = spEE + (((s16) (M2C_BITWISE(s64, (0.025f * ((f32) spE6 * (f32) temp_a1))))));
         Put_2TF(&spE0, temp_a1, (*(s16 *)((u8 *)(&(*(u8 *)((u8 *)&helpLineTbl + 0x64))) + 0x12)));
         (*(s16 *)((u8 *)(&(*(u8 *)((u8 *)&helpLineTbl + 0x64))) + 0)) = (s16) spD0;
-        var_s5 = (s64) ((var_s5 + 1) << 0x30) >> 0x30;
+        var_s5 = ((s16) ((var_s5 + 1)));
     } while (var_s5 < 2);
 }
 

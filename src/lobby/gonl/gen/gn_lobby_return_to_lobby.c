@@ -7,18 +7,18 @@ extern u8 cw;
 extern u8 game_w;
 extern u8 jtbl_1035_0065E950;
 extern u8 pNet;
-s32 CallBackWaitInit();   /* extern */
+s32 CallBackWaitInit(); /* extern */
 s32 CallBack_Result_Plaza_LobbyEntry(); /* extern */
 s32 Check_CallBackWait(); /* extern */
 s32 Lbc_SendMiniData();                         /* extern */
-s32 MH_lobbyClear();      /* extern */
+s32 MH_lobbyClear(); /* extern */
 s32 Set_userdata();                       /* extern */
 s32 To_EnterLobby();                            /* extern */
-s32 To_LogOut();     /* extern */
+s32 To_LogOut(); /* extern */
 s32 cnLBS_Read_CurrentPlace();         /* extern */
 s32 cnLBS_Read_PlazaAllocation(); /* extern */
-s32 lobby_func_00580FA0();     /* extern */
-s32 lobby_func_00581210();     /* extern */
+s32 lobby_func_00580FA0(); /* extern */
+s32 lobby_func_00581210(); /* extern */
 s32 lobby_func_005AB8B0(); /* extern */
 s32 memset();        /* extern */
 extern u8 CallBack_ReadCurrentPlace;
@@ -40,9 +40,11 @@ void lobby_return_to_lobby(void) {
     u8 *temp_a2;
     u8 *temp_a3;
     u8 *temp_a3_2;
+    u8 *temp_a4;
 
     temp_a2 = (*(void **)&cw);
     temp_a1 = (*(u8 *)((u8 *)(temp_a2) + 0xB9A));
+    temp_a4 = temp_a2 + 0xB9A;
     switch (temp_a1) {                              /* switch 1 */
     case 0:                                         /* switch 1 */
         (*(u8 *)((u8 *)(temp_a2) + 0xB9A)) = (u8) (temp_a1 + 1);
@@ -62,7 +64,7 @@ block_43:
         (*(s8 *)((u8 *)((*(void **)&pNet)) + 0x2D)) = 1;
         return;
     case 1:                                         /* switch 1 */
-        Check_CallBackWait(&jtbl_1035_0065E950, temp_a1, temp_a2);
+        Check_CallBackWait(&jtbl_1035_0065E950, temp_a1, temp_a2, temp_a4);
         goto block_43;
     case 2:                                         /* switch 1 */
         temp_a0 = (*(u8 *)((u8 *)(temp_a2) + 0xB9D));
@@ -70,20 +72,20 @@ block_43:
         switch (temp_a0) {                          /* switch 2; irregular */
         case 0:                                     /* switch 2 */
             (*(u8 *)((u8 *)(temp_a2) + 0xB9D)) = (u8) (temp_a0 + 1);
-            CallBackWaitInit(temp_a0, temp_a1, temp_a2, temp_a3);
+            CallBackWaitInit(temp_a0, temp_a1, temp_a2, temp_a3, temp_a4);
             cnLBS_Read_PlazaAllocation(0, 0xF, &lobby_func_0057ECE0);
             Set_userdata((u8 *)&player_work + ((*(u8 *)((u8 *)&game_w + 0x3A)) * 0xA00));
             Lbc_SendMiniData();
             break;
         case 1:                                     /* switch 2 */
-            Check_CallBackWait((s32 *) temp_a0, temp_a1, temp_a2, temp_a3);
+            Check_CallBackWait((s32 *) temp_a0, temp_a1, temp_a2, temp_a3, temp_a4);
             break;
         case 2:                                     /* switch 2 */
             (*(u8 *)((u8 *)(temp_a2) + 0xB9A)) = (u8) (temp_a1 + 1);
             (*(u8 *)((u8 *)((*(void **)&cw)) + 0xB9D)) = 0U;
             break;
         default:                                    /* switch 2 */
-            To_LogOut(4, temp_a1, temp_a2, temp_a3);
+            To_LogOut(4, temp_a1, temp_a2, temp_a3, temp_a4);
             break;
         }
         goto block_43;
@@ -94,24 +96,24 @@ block_43:
         case 0:                                     /* switch 3 */
             (*(u8 *)((u8 *)(temp_a2) + 0xB9D)) = (u8) (temp_a0_2 + 1);
             (*(s8 *)((u8 *)((*(void **)&cw)) + 0xFA61)) = 1;
-            MH_lobbyClear(temp_a0_2, temp_a1, temp_a2, temp_a3_2);
+            MH_lobbyClear(temp_a0_2, temp_a1, temp_a2, temp_a3_2, temp_a4);
             CallBackWaitInit();
             lobby_func_005AB8B0(0, 0x87, &CallBack_Result_Plaza_ReadLobbyAllocation2);
             break;
         case 1:                                     /* switch 3 */
-            Check_CallBackWait((s32 *) temp_a0_2, temp_a1, temp_a2, temp_a3_2);
+            Check_CallBackWait((s32 *) temp_a0_2, temp_a1, temp_a2, temp_a3_2, temp_a4);
             break;
         case 2:                                     /* switch 3 */
             (*(u8 *)((u8 *)(temp_a2) + 0xB9A)) = (u8) (temp_a1 + 1);
             (*(u8 *)((u8 *)((*(void **)&cw)) + 0xB9D)) = 0U;
             break;
         default:                                    /* switch 3 */
-            To_LogOut(4, temp_a1, temp_a2, temp_a3_2);
+            To_LogOut(4, temp_a1, temp_a2, temp_a3_2, temp_a4);
             break;
         }
         goto block_43;
     case 4:                                         /* switch 1 */
-        temp_v0 = CallBack_Result_Plaza_LobbyEntry(&jtbl_1035_0065E950, temp_a1, temp_a2);
+        temp_v0 = CallBack_Result_Plaza_LobbyEntry(&jtbl_1035_0065E950, temp_a1, temp_a2, temp_a4);
         switch (temp_v0) {                          /* switch 4; irregular */
         case 0:                                     /* switch 4 */
             temp_a0_3 = (*(void **)&cw);
@@ -123,7 +125,7 @@ block_43:
         }
         goto block_43;
     case 5:                                         /* switch 1 */
-        temp_v0_2 = lobby_func_00581210(&jtbl_1035_0065E950, temp_a1, temp_a2);
+        temp_v0_2 = lobby_func_00581210(&jtbl_1035_0065E950, temp_a1, temp_a2, temp_a4);
         if ((temp_v0_2 != 0) && (temp_v0_2 != 1)) {
             goto block_43;
         }
@@ -132,7 +134,7 @@ block_43:
         (*(s8 *)((u8 *)((*(void **)&pNet)) + 0x2D)) = 1;
         return;
     case 6:                                         /* switch 1 */
-        temp_v0_3 = lobby_func_00580FA0(&jtbl_1035_0065E950, temp_a1, temp_a2);
+        temp_v0_3 = lobby_func_00580FA0(&jtbl_1035_0065E950, temp_a1, temp_a2, temp_a4);
         if ((temp_v0_3 != 0) && (temp_v0_3 != 1)) {
             goto block_43;
         }

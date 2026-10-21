@@ -14,7 +14,7 @@ extern u8 g_main_2EFAD8;
 extern u8 g_main_2EFADC;
 extern u8 g_main_2EFAE0;
 s32 memcpy();                  /* extern */
-extern u8 g_sub_541E40;
+extern s32 g_sub_541E40;
 
 void lobby_func_0059A210(void) {
     u16 temp_v0_2;

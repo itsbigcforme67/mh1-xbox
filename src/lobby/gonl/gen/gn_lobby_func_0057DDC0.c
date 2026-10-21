@@ -35,13 +35,13 @@ s32 lobby_func_0057DDC0(void) {
     temp_a0 = (*(u8 *)((u8 *)(temp_v1) + 0xBA1));
     temp_a1 = temp_v1 + 0xBA1;
     if (temp_a2 & 0x20) {
-        if (lobby_func_0056AF20(0, 0, (s64) (((temp_a0 & 0xFF) + 0x31) << 0x38) >> 0x38) == 0) {
+        if (lobby_func_0056AF20(0, 0, ((s8) (((temp_a0 & 0xFF) + 0x31)))) == 0) {
             SetDialogData(0xD);
             cnWrap_SoundRequest(7);
             return 1;
         }
         var_a3 = 0;
-        if ((s32) (*(u8 *)((u8 *)&ClassInfo + 0x2)) > 0) {
+        if ((s32) (*(u16 *)((u8 *)&ClassInfo + 0x2)) > 0) {
             var_a2 = &PlazaInfo;
             temp_a1_2 = (*(u8 *)((u8 *)((*(void **)&cw)) + 0xBA1)) + 0x31;
 loop_5:
@@ -51,12 +51,12 @@ loop_5:
             }
             var_a3 += 1;
             var_a2 += 0x15C;
-            if (var_a3 == (*(u8 *)((u8 *)&ClassInfo + 0x2))) {
+            if (var_a3 == (*(u16 *)((u8 *)&ClassInfo + 0x2))) {
                 SetDialogData(0x12, temp_a1_2, var_a2, var_a3);
                 cnWrap_SoundRequest(3);
                 return 1;
             }
-            if (var_a3 >= (s32) (*(u8 *)((u8 *)&ClassInfo + 0x2))) {
+            if (var_a3 >= (s32) (*(u16 *)((u8 *)&ClassInfo + 0x2))) {
                 goto block_14;
             }
             goto loop_5;
@@ -106,12 +106,12 @@ block_39:
     temp_v0 = (*(void **)&cw);
     if ((temp_a0 & 0xFF) != (*(u8 *)((u8 *)(temp_v0) + 0xBA1))) {
         temp_a1_3 = (*(u8 *)((u8 *)(temp_v0) + 0xBA1));
-        *(&(*(u8 *)((u8 *)&textLobbyTbl + 0x58)) + (temp_a1_3 * 0x14)) = func_0012E1C0(1, temp_a1, temp_a2);
+        (*(s32 *)((u8 *)&(*(u8 *)((u8 *)&textLobbyTbl + 0x58)) + (temp_a1_3 * 0x14))) = func_0012E1C0(1, temp_a1, temp_a2);
         lobby_func_0059F740((*(s32 *)&g_main_2EF390) + 0x23F4 + 0x20 + ((*(u8 *)((u8 *)(temp_v0) + 0xBA1)) << 8) + 0x288, temp_a1_3);
         lobby_func_0059F750(0xFA, 0x16A);
         cnWrap_SoundRequest(1);
     } else {
-        *(&(*(u8 *)((u8 *)&textLobbyTbl + 0x58)) + ((*(u8 *)((u8 *)((*(void **)&cw)) + 0xBA1)) * 0x14)) = func_0012E1C0(0, temp_a1, temp_a2);
+        (*(s32 *)((u8 *)&(*(u8 *)((u8 *)&textLobbyTbl + 0x58)) + ((*(u8 *)((u8 *)((*(void **)&cw)) + 0xBA1)) * 0x14))) = func_0012E1C0(0, temp_a1, temp_a2);
     }
     return 2;
 }

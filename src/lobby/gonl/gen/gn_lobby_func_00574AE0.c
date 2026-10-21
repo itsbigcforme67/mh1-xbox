@@ -11,7 +11,7 @@ s32 font_print_double(); /* extern */
 s32 font_set_palette();                  /* extern */
 s32 han2zen();                        /* extern */
 s32 lobby_func_005791D0();               /* extern */
-s32 lobby_func_005799F0();          /* extern */
+s32 lobby_func_005799F0(); /* extern */
 s64 lobby_func_005C1560();       /* extern */
 extern u8 lit_2316;
 
@@ -24,33 +24,33 @@ void lobby_func_00574AE0(s64 arg0, s32 arg1, s64 arg2) {
     s64 var_s5;
     s8 *var_s4;
 
-    lobby_func_005799F0((s64) (arg2 << 0x38) >> 0x38, 0xFF3A2818);
+    lobby_func_005799F0(((s8) (arg2)), 0xFF3A2818, -0x418C);
     lobby_func_005791D0(4);
-    temp_s1 = ((s64) (arg0 << 0x30) >> 0x30) + 0xA;
+    temp_s1 = (((s16) (arg0))) + 0xA;
     var_s3 = 0;
-    var_s4 = &(*(u8 *)((u8 *)&BsProxyUrlstr + 0x110));
-    var_s5 = (s64) ((arg1 + 0x3E) << 0x30) >> 0x30;
-    temp_s0 = ((s64) (temp_s1 << 0x30) >> 0x30) + 0x14;
+    var_s4 = &(*(s8 *)((u8 *)&BsProxyUrlstr + 0x110));
+    var_s5 = ((s16) ((arg1 + 0x3E)));
+    temp_s0 = (((s16) (temp_s1))) + 0x14;
     do {
         if (*var_s4 != 0) {
             han2zen(var_s4, &sp80);
-            if (((s64) ((((s64) (var_s3 << 0x30) >> 0x30) != ((s64) (arg2 << 0x38) >> 0x38)) << 0x30) >> 0x30) == 0) {
-                font_print_double((s64) (temp_s0 << 0x30) >> 0x30, var_s5, 1, 4);
-                font_print_double(0x1F4, var_s5, 1, 4);
+            if ((((s16) (((((s16) (var_s3))) != (((s8) (arg2))))))) == 0) {
+                font_print_double(((s16) (temp_s0)), var_s5, 1, 4, var_s4 + 8);
+                font_print_double(0x1F4, var_s5, 1, 4, &sp80);
             } else {
                 font_set_palette(0);
-                flfntLocate((s64) (temp_s0 << 0x30) >> 0x30, var_s5);
+                flfntLocate(((s16) (temp_s0)), var_s5);
                 font_print(&lit_2316, var_s4 + 8);
                 flfntLocate(0x1F4, var_s5);
                 font_print(&lit_2316, &sp80);
             }
-            if (((s64) (lobby_func_005C1560(&(*(u8 *)((u8 *)&BsProxyUrlstr + 0x110)), 8, var_s4) << 0x30) >> 0x30) != -1) {
-                Lb_put_icon((s64) (temp_s1 << 0x30) >> 0x30, var_s5, 0x2C, -1);
+            if ((((s16) (lobby_func_005C1560(&(*(s8 *)((u8 *)&BsProxyUrlstr + 0x110)), 8, var_s4)))) != -1) {
+                Lb_put_icon(((s16) (temp_s1)), var_s5, 0x2C, -1);
             }
         }
         var_s4 += 0x18;
-        var_s3 = (s64) ((var_s3 + 1) << 0x30) >> 0x30;
-        var_s5 = (s64) ((var_s5 + 0x16) << 0x30) >> 0x30;
+        var_s3 = ((s16) ((var_s3 + 1)));
+        var_s5 = ((s16) ((var_s5 + 0x16)));
     } while (var_s3 < 8);
 }
 

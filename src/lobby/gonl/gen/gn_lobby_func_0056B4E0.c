@@ -34,7 +34,7 @@ void lobby_func_0056B4E0(void) {
         if ((*(s16 *)((u8 *)(temp_a0) + 0x1E)) != 0) {
             temp_v0 = (*(s16 *)((u8 *)(temp_a0) + 0x1C)) - 1;
             (*(s16 *)((u8 *)(temp_a0) + 0x1C)) = temp_v0;
-            if (((s64) ((s64) temp_v0 << 0x30) >> 0x30) < 0) {
+            if ((((s16) ((s64) temp_v0))) < 0) {
                 temp_v1 = (*(void **)&pNet);
                 (*(s16 *)((u8 *)(temp_v1) + 0x1C)) = (s16) ((*(s16 *)((u8 *)(temp_v1) + 0x1E)) - 1);
             }
@@ -61,7 +61,7 @@ void lobby_func_0056B4E0(void) {
         if (temp_v1_3 != 0) {
             temp_v0_2 = (*(s16 *)((u8 *)(temp_a0_2) + 0x1C)) + 1;
             (*(s16 *)((u8 *)(temp_a0_2) + 0x1C)) = temp_v0_2;
-            if (((s64) ((s64) temp_v0_2 << 0x30) >> 0x30) >= temp_v1_3) {
+            if ((((s16) ((s64) temp_v0_2))) >= temp_v1_3) {
                 (*(s16 *)((u8 *)((*(void **)&pNet)) + 0x1C)) = 0;
             }
             temp_v1_4 = (*(s16 *)((u8 *)((*(void **)&pNet)) + 0x1C));

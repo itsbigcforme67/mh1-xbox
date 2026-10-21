@@ -108,7 +108,7 @@ s32 lobby_func_00569D40(void) {
         case 0:                                     /* switch 1 */
             (*(u8 *)((u8 *)(temp_v0_2) + 0x23)) = (u8) (temp_a2 + 1);
             (*(u8 *)((u8 *)((*(void **)&pNet)) + 0x32)) = 0U;
-            (*(s16 *)((u8 *)((*(void **)&pNet)) + 0x1E)) = lobby_func_00569320((*(u8 *)((u8 *)&ClassInfo + 0x6)), 7, temp_a2);
+            (*(s16 *)((u8 *)((*(void **)&pNet)) + 0x1E)) = lobby_func_00569320((*(s16 *)((u8 *)&ClassInfo + 0x6)), 7, temp_a2);
             (*(s16 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x18))) + 0x1364)) = 0;
 block_128:
             return 2;
@@ -124,32 +124,32 @@ block_128:
             }
             if (temp_a1_2 & 0x200) {
                 temp_a0_2 = temp_s1 * 0x15C;
-                temp_v1 = *(&(*(u8 *)((u8 *)&LobbyInfo + 0x16)) + temp_a0_2);
+                temp_v1 = (*(s32 *)((u8 *)&(*(u8 *)((u8 *)&LobbyInfo + 0x16)) + temp_a0_2));
                 if ((temp_v1 != 3) && (temp_v1 != 4)) {
                     cnWrap_SoundRequest(7, temp_a1_2);
                 } else {
                     temp_a1_3 = (*(void **)&pNet);
                     (*(u8 *)((u8 *)(temp_a1_3) + 0x32)) = 0U;
                     (*(u8 *)((u8 *)&ClassInfo + 0x4)) = temp_s1 + 1;
-                    (*(s8 *)((u8 *)((*(void **)&pNet)) + 0x27)) = (s8) *(&(*(u8 *)((u8 *)&LobbyInfo + 0x6)) + temp_a0_2);
+                    (*(s8 *)((u8 *)((*(void **)&pNet)) + 0x27)) = (s8) (*(s32 *)((u8 *)&(*(u8 *)((u8 *)&LobbyInfo + 0x6)) + temp_a0_2));
                     cnWrap_SoundRequest(6, (u32) temp_a1_3);
-                    memset(&(*(u8 *)((u8 *)&lb_quest_all + 0xA0)), 0, 0x398);
+                    memset(&(*(s8 *)((u8 *)&lb_quest_all + 0xA0)), 0, 0x398);
                     temp_v1_2 = (*(void **)&pNet);
                     (*(u8 *)((u8 *)(temp_v1_2) + 0x23)) = (u8) ((*(u8 *)((u8 *)(temp_v1_2) + 0x23)) + 1);
                 }
             } else {
                 temp_v0_3 = (*(void **)&pNet);
-                lobby_func_00569390(temp_v0_3 + 0x2B, temp_v0_3 + 0x1C, 7, (*(u8 *)((u8 *)&ClassInfo + 0x6)));
+                lobby_func_00569390(temp_v0_3 + 0x2B, temp_v0_3 + 0x1C, 7, (*(s16 *)((u8 *)&ClassInfo + 0x6)), temp_s0);
             }
             goto block_128;
         case 2:                                     /* switch 1 */
             if ((*(u8 *)((u8 *)(temp_v0_2) + 0x32)) & 1) {
                 (*(u8 *)((u8 *)(temp_v0_2) + 0x23)) = (u8) (temp_a2 + 1);
-            } else if (lobby_func_0057FD30((s64) (temp_s1 << 0x30) >> 0x30, &jtbl_0063DFE0, temp_a2) == 1) {
+            } else if (lobby_func_0057FD30(((s16) (temp_s1)), &jtbl_0063DFE0, temp_a2) == 1) {
                 temp_v1_3 = (*(void **)&pNet);
                 var_a1 = 0;
                 var_a2 = 0;
-                var_a0 = &(*(u8 *)((u8 *)&lb_quest_all + 0xA0));
+                var_a0 = &(*(s8 *)((u8 *)&lb_quest_all + 0xA0));
                 (*(u8 *)((u8 *)(temp_v1_3) + 0x23)) = (u8) ((*(u8 *)((u8 *)(temp_v1_3) + 0x23)) + 1);
                 temp_v1_4 = (*(void **)&pNet);
                 (*(u8 *)((u8 *)(temp_v1_4) + 0x32)) = (u8) ((*(u8 *)((u8 *)(temp_v1_4) + 0x32)) | 1);
@@ -161,14 +161,14 @@ block_128:
                     var_a0 += 0x5C;
                 } while (var_a2 < 0xA);
                 (*(s16 *)((u8 *)(&tl_member_buff) + 6)) = 0;
-                (*(s16 *)((u8 *)(&tl_member_buff) + 8)) = lobby_func_00569320((s16) ((s64) (var_a1 << 0x30) >> 0x30), 8, (u8) var_a2);
+                (*(s16 *)((u8 *)(&tl_member_buff) + 8)) = lobby_func_00569320((s16) (((s16) (var_a1))), 8, (u8) var_a2);
             }
             goto block_128;
         case 3:                                     /* switch 1 */
             temp_a2_2 = (*(void **)&pNet);
             temp_a1_4 = temp_s1 * 0x15C;
             (*(s16 *)((u8 *)(temp_a2_2) + 0x20)) = Get_sw_on2(0, &jtbl_0063DFE0, temp_a2);
-            temp_a0_3 = *(&(*(u8 *)((u8 *)&LobbyInfo + 0x16)) + temp_a1_4);
+            temp_a0_3 = (*(s32 *)((u8 *)&(*(u8 *)((u8 *)&LobbyInfo + 0x16)) + temp_a1_4));
             if ((temp_a0_3 != 3) && (temp_a0_3 != 4)) {
                 (*(u8 *)((u8 *)((*(void **)&pNet)) + 0x23)) = 0xFU;
                 (*(u8 *)((u8 *)((*(void **)&pNet)) + 0x26)) = 1U;
@@ -180,7 +180,7 @@ block_128:
                     (*(u8 *)((u8 *)((*(void **)&pNet)) + 0x23)) = lobby_func_00569C20(temp_s1, temp_a1_4, temp_a2_2);
                 } else if (temp_v1_5 & 0x40) {
                     (*(u8 *)((u8 *)((*(void **)&pNet)) + 0x23)) = 1U;
-                    (*(s16 *)((u8 *)((*(void **)&pNet)) + 0x1E)) = lobby_func_00569320((*(u8 *)((u8 *)&ClassInfo + 0x6)), 7, (u8) temp_a2_2);
+                    (*(s16 *)((u8 *)((*(void **)&pNet)) + 0x1E)) = lobby_func_00569320((*(s16 *)((u8 *)&ClassInfo + 0x6)), 7, (u8) temp_a2_2);
                     temp_a3 = (*(u8 *)((u8 *)&ClassInfo + 0x4)) - 1;
                     temp_a1_5 = temp_a3 >> 0x1F;
                     (*(s16 *)((u8 *)((*(void **)&pNet)) + 0x1C)) = (s16) ((((*(u8 *)((u8 *)&ClassInfo + 0x4)) - 1) / 7) + temp_a1_5);
@@ -228,7 +228,7 @@ block_128:
             goto block_128;
         case 5:                                     /* switch 1 */
             temp_a1_6 = temp_s1 * 0x15C;
-            temp_a0_4 = *(&(*(u8 *)((u8 *)&LobbyInfo + 0x16)) + temp_a1_6);
+            temp_a0_4 = (*(s32 *)((u8 *)&(*(u8 *)((u8 *)&LobbyInfo + 0x16)) + temp_a1_6));
             if ((temp_a0_4 != 3) && (temp_a0_4 != 4)) {
                 (*(u8 *)((u8 *)(temp_v0_2) + 0x23)) = 0xFU;
                 (*(u8 *)((u8 *)((*(void **)&pNet)) + 0x26)) = 1U;
@@ -241,7 +241,7 @@ block_128:
                     (*(u8 *)((u8 *)((*(void **)&pNet)) + 0x23)) = lobby_func_00569C20(temp_s1, temp_a1_7);
                 } else if (temp_a1_7 & 0x40) {
                     (*(u8 *)((u8 *)((*(void **)&pNet)) + 0x23)) = 1U;
-                    (*(s16 *)((u8 *)((*(void **)&pNet)) + 0x1E)) = lobby_func_00569320((*(u8 *)((u8 *)&ClassInfo + 0x6)), 7);
+                    (*(s16 *)((u8 *)((*(void **)&pNet)) + 0x1E)) = lobby_func_00569320((*(s16 *)((u8 *)&ClassInfo + 0x6)), 7);
                     temp_a3_2 = (*(u8 *)((u8 *)&ClassInfo + 0x4)) - 1;
                     temp_a1_8 = temp_a3_2 >> 0x1F;
                     (*(s16 *)((u8 *)((*(void **)&pNet)) + 0x1C)) = (s16) ((((*(u8 *)((u8 *)&ClassInfo + 0x4)) - 1) / 7) + temp_a1_8);
@@ -337,7 +337,7 @@ block_128:
             goto block_128;
         case 11:                                    /* switch 1 */
             temp_a2_4 = temp_s1 * 0x15C;
-            temp_a1_9 = *(&(*(u8 *)((u8 *)&LobbyInfo + 0x16)) + temp_a2_4);
+            temp_a1_9 = (*(s32 *)((u8 *)&(*(u8 *)((u8 *)&LobbyInfo + 0x16)) + temp_a2_4));
             if ((temp_a1_9 != 3) && (temp_a1_9 != 4)) {
                 (*(u8 *)((u8 *)(temp_v0_2) + 0x23)) = 0xFU;
                 (*(u8 *)((u8 *)((*(void **)&pNet)) + 0x26)) = 1U;

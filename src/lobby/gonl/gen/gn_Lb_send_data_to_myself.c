@@ -5,7 +5,7 @@
 
 s32 Lb_check_receipt();          /* extern */
 s32 Online_ck();                                    /* extern */
-s32 flMemcpy();          /* extern */
+s32 flMemcpy();              /* extern */
 extern u8 my_user_id;
 extern s8 sendDat;
 

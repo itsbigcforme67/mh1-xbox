@@ -15,10 +15,10 @@ void lobby_func_0056AFF0(void) {
     u32 temp_s0;
 
     temp_s0 = ClassInfo - 1;
-    (*(u8 *)((u8 *)((*(void **)&pNet)) + 0x27)) = (u8) (*(&(*(u8 *)((u8 *)&PlazaInfo + 0x5B)) + (temp_s0 * 0x15C)) - 0x31);
+    (*(u8 *)((u8 *)((*(void **)&pNet)) + 0x27)) = (u8) ((*(s32 *)((u8 *)&(*(u8 *)((u8 *)&PlazaInfo + 0x5B)) + (temp_s0 * 0x15C))) - 0x31);
     lobby_func_0059F740((*(s32 *)&g_main_2EF390) + 0x23F4 + 0x20 + ((*(u8 *)((u8 *)((*(void **)&pNet)) + 0x27)) << 8) + 0x288, ClassInfo);
     (*(s16 *)((u8 *)((*(void **)&pNet)) + 0x1C)) = (s16) (((ClassInfo - 1) / 7) + (temp_s0 >> 0x1F));
     (*(s8 *)((u8 *)((*(void **)&pNet)) + 0x2B)) = (s8) ((s32) temp_s0 % 7);
-    (*(s16 *)((u8 *)((*(void **)&pNet)) + 0x1E)) = lobby_func_00569320((*(u8 *)((u8 *)&ClassInfo + 0x2)), 7);
+    (*(s16 *)((u8 *)((*(void **)&pNet)) + 0x1E)) = lobby_func_00569320((*(s16 *)((u8 *)&ClassInfo + 0x2)), 7);
 }
 

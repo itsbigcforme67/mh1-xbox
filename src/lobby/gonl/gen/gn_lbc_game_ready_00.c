@@ -12,7 +12,7 @@ s32 cnLBS_Read_MatchInfomation();      /* extern */
 s32 memcpy();           /* extern */
 s32 memset();        /* extern */
 extern u8 CallBack_Result_Match_MatchInformation;
-extern u8 g_sub_541E30;
+extern s32 g_sub_541E30;
 extern u8 room_member_handle;
 extern u8 room_member_id;
 extern u8 room_member_mini_data;

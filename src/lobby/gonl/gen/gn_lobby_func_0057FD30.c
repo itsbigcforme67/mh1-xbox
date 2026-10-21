@@ -22,7 +22,7 @@ s32 lobby_func_0057FD30(s64 arg0) {
         (*(s8 *)((u8 *)(temp_a1) + 0xBA9)) = 0xE;
         temp_v1_2 = (*(void **)&cw);
         (*(u8 *)((u8 *)(temp_v1_2) + 0xB9D)) = (u8) ((*(u8 *)((u8 *)(temp_v1_2) + 0xB9D)) + 1);
-        cnLBS_Read_LobbyMemberList((((s64) (arg0 << 0x30) >> 0x30) + 1) & 0xFFFF, &CallBack_Result_Plaza_ReadLobbyAllocation, temp_a2);
+        cnLBS_Read_LobbyMemberList(((((s16) (arg0))) + 1) & 0xFFFF, &CallBack_Result_Plaza_ReadLobbyAllocation, temp_a2);
 block_9:
     default:
         return 0;

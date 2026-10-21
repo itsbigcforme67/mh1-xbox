@@ -31,9 +31,14 @@ GPR = ["zero", "at", "v0", "v1", "a0", "a1", "a2", "a3", "t0", "t1", "t2", "t3",
        "t8", "t9", "k0", "k1", "gp", "sp", "fp", "ra"]
 
 
+# the EE ABI (DRAFT_T=mipsee-...) passes arguments 5-8 in $8-$11, which m2c's mipsee target calls a4-a7 (then t0-t3 = $12-$15)
+GPR_EE = GPR[:8] + ["a4", "a5", "a6", "a7", "t0", "t1", "t2", "t3"] + GPR[16:]
+
+
 def named_regs(text):
     """The split uses numeric GPRs ($31) for GNU as; m2c needs $ra etc."""
-    return re.sub(r"\$(\d+)\b", lambda m: "$" + (GPR[int(m.group(1))] if int(m.group(1)) < 32 else m.group(1)), text)
+    names = GPR_EE if os.environ.get("DRAFT_T", "").startswith("mipsee") else GPR
+    return re.sub(r"\$(\d+)\b", lambda m: "$" + (names[int(m.group(1))] if int(m.group(1)) < 32 else m.group(1)), text)
 
 
 def jt_patch(text, module):

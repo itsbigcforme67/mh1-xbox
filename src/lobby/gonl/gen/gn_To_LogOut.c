@@ -19,7 +19,7 @@ void To_LogOut(s8 arg0) {
     (*(s16 *)((u8 *)((*(void **)&cw)) + 0xFA88)) = -1;
     lobby_func_0055A140(1, 5);
     if ((arg0 & 0xFF) == 7) {
-        (*(u8 *)((u8 *)&CnetWork + 0x6)) = 1;
+        (*(s8 *)((u8 *)&CnetWork + 0x6)) = 1;
         cnLbc_Set_NgServerId();
         return;
     }

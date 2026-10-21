@@ -16,7 +16,7 @@ void Lb_clearChatList(void) {
     (*(s8 *)((u8 *)((*(void **)&cw)) + 0xF74E)) = 0;
     do {
         memset(var_s0, 0, 8);
-        var_s1 = (s64) ((var_s1 + 1) << 0x38) >> 0x38;
+        var_s1 = ((s8) ((var_s1 + 1)));
         var_s0 += 8;
     } while (var_s1 < 7);
 }

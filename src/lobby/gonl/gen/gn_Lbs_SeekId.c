@@ -35,7 +35,7 @@ block_10:
         Check_CallBackWait(temp_a2);
         goto block_10;
     case 0x2:
-        temp_s0 = ((s64) (arg0 << 0x30) >> 0x30) * 0x24A;
+        temp_s0 = (((s16) (arg0))) * 0x24A;
         (*(u8 *)((u8 *)(temp_v1) + 0xB9D)) = 0U;
         (*(s8 *)((u8 *)((temp_s0 + (*(void **)&cw))) + 0x1062)) = 1;
         temp_v0 = (*(void **)&cw) + temp_s0;

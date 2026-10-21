@@ -26,9 +26,9 @@ void lobby_func_0057ECE0(s64 arg0) {
     sp38 = arg0;
     if (((*(u8 *)((u8 *)((*(void **)&cw)) + 0xB99)) != 5) && ((s8) sp38 != 2)) {
         if ((s8) sp38 == 0) {
-            lobby_func_005E3420(&(*(u8 *)((u8 *)&ClassInfo + 0x2)));
+            lobby_func_005E3420(&(*(u16 *)((u8 *)&ClassInfo + 0x2)));
             var_s1 = 0;
-            if ((s32) (*(u8 *)((u8 *)&ClassInfo + 0x2)) > 0) {
+            if ((s32) (*(u16 *)((u8 *)&ClassInfo + 0x2)) > 0) {
                 var_s0 = &PlazaInfo;
                 do {
                     temp_v0 = var_s1 + 1;
@@ -41,7 +41,7 @@ void lobby_func_0057ECE0(s64 arg0) {
                     lobby_func_005E36D0((var_s1 + 1) & 0xFFFF, var_s0 + 0x14);
                     var_s1 += 1;
                     var_s0 += 0x15C;
-                } while (var_s1 < (s32) (*(u8 *)((u8 *)&ClassInfo + 0x2)));
+                } while (var_s1 < (s32) (*(u16 *)((u8 *)&ClassInfo + 0x2)));
             }
             temp_a0 = (*(void **)&cw);
             (*(u8 *)((u8 *)(temp_a0) + 0xB9D)) = (u8) ((*(u8 *)((u8 *)(temp_a0) + 0xB9D)) + 1);

@@ -11,7 +11,7 @@ s32 cnWrap_SoundRequest();          /* extern */
 s32 memcmp();               /* extern */
 s32 memset();             /* extern */
 s32 strncpy();          /* extern */
-extern u8 g_main_302290;
+extern s32 g_main_302290;
 extern u8 RecvMailInfo;
 
 void CallBack_Event_RecvMail(void) {

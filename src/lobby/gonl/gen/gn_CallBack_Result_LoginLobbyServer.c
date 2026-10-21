@@ -29,7 +29,7 @@ void CallBack_Result_LoginLobbyServer(s64 arg0) {
 
     sp18 = arg0;
     if ((s8) sp18 != -1) {
-        temp_v1 = (s64) ((s64) (((s8 *)&sp18)[1]) << 0x38) >> 0x38;
+        temp_v1 = ((s8) ((s64) (((s8 *)&sp18)[1])));
         switch (temp_v1) {                          /* switch 1 */
         case 4:                                     /* switch 1 */
             (*(s8 *)((u8 *)((*(void **)&cw)) + 0xB9B)) = 2;
@@ -89,7 +89,7 @@ void CallBack_Result_LoginLobbyServer(s64 arg0) {
             return;
         }
     } else {
-        temp_a0 = (s64) ((s64) (((s8 *)&sp18)[1]) << 0x38) >> 0x38;
+        temp_a0 = ((s8) ((s64) (((s8 *)&sp18)[1])));
         switch (temp_a0) {                          /* switch 3; irregular */
         case 7:                                     /* switch 3 */
             (*(s8 *)((u8 *)((*(void **)&cw)) + 0xB9B)) = 6;

@@ -10,8 +10,8 @@ s64 lobby_func_005935C0();          /* extern */
 void lobby_func_005737C0(s32 arg0) {
     s64 temp_s0;
 
-    temp_s0 = (s64) (lobby_func_005935C0(0x1A6, 0x14) << 0x30) >> 0x30;
+    temp_s0 = ((s16) (lobby_func_005935C0(0x1A6, 0x14)));
     flfntSetSize(0x14, 0x14);
-    font_print_double(temp_s0, 0xBC, 1, 4);
+    font_print_double(temp_s0, 0xBC, 1, 4, arg0);
 }
 

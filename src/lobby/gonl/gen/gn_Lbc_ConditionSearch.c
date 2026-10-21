@@ -69,7 +69,7 @@ s32 Lbc_ConditionSearch(void *arg0, s64 arg1, s32 arg3) {
     switch (temp_v1_2) {                            /* irregular */
     case 0:
         (*(u8 *)((u8 *)(temp_v1) + 0xB9D)) = (u8) (temp_v1_2 + 1);
-        temp_v1_3 = (s64) (var_a1 << 0x38) >> 0x38;
+        temp_v1_3 = ((s8) (var_a1));
         sp10 = 0x64;
         var_a2 = 0;
         sp11 = (s8) var_a1;

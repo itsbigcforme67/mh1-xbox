@@ -11,17 +11,17 @@ s32 CallBackWaitInit(); /* extern */
 s32 Check_CallBackWait(); /* extern */
 s32 Get_sw2();                               /* extern */
 s32 Lb_eat_to_bell(); /* extern */
-s32 To_LogOut();     /* extern */
-s32 check_warning_level();    /* extern */
+s32 To_LogOut(); /* extern */
+s32 check_warning_level(); /* extern */
 s32 cnLBS_Answer_LoginWarningMessage();  /* extern */
-s32 cnWrap_FontDisp();     /* extern */
+s32 cnWrap_FontDisp(); /* extern */
 s32 cnWrap_SetFontColor();               /* extern */
 s32 cnWrap_SoundRequest(); /* extern */
 s32 flfntSetSize();             /* extern */
-s32 memcpy();    /* extern */
+s32 memcpy(); /* extern */
 
 void lbc_login_warning_message(void) {
-    s32 temp_t0;
+    s32 temp_a4;
     u8 temp_a1;
     u8 *temp_a0;
     u8 *temp_a0_2;
@@ -33,12 +33,12 @@ void lbc_login_warning_message(void) {
     u8 *temp_v1_3;
 
     temp_a2 = (*(void **)&cw);
-    temp_t0 = Get_sw2(0) & 0xFFFF;
+    temp_a4 = Get_sw2(0) & 0xFFFF;
     temp_a1 = (*(u8 *)((u8 *)(temp_a2) + 0xB9C));
     temp_a3 = temp_a2 + 0xB9C;
     switch (temp_a1) {
     case 0:
-        if (check_warning_level((*(u8 *)((u8 *)(temp_a2) + 0xFA8A)), temp_a1, temp_a2, temp_a3) == 0) {
+        if (check_warning_level((*(u8 *)((u8 *)(temp_a2) + 0xFA8A)), temp_a1, temp_a2, temp_a3, temp_a4) == 0) {
             (*(u8 *)((u8 *)((*(void **)&cw)) + 0xB9C)) = 5U;
             CallBackWaitInit();
             cnLBS_Answer_LoginWarningMessage(0);
@@ -56,10 +56,10 @@ void lbc_login_warning_message(void) {
         temp_v1 = (*(void **)&cw);
         if ((*(u8 *)((u8 *)(temp_v1) + 0xFA8A)) != 0) {
             (*(s32 *)((u8 *)(temp_v1) + 0xBB8)) = 8;
-            Lb_eat_to_bell((*(void **)&cw) + 0xFA8E, temp_a1, temp_a2, temp_a3);
+            Lb_eat_to_bell((*(void **)&cw) + 0xFA8E, temp_a1, temp_a2, temp_a3, temp_a4);
             return;
         }
-        memcpy(temp_v1 + 0xF75D, temp_v1 + 0xFA8E, 0x300, temp_a3);
+        memcpy(temp_v1 + 0xF75D, temp_v1 + 0xFA8E, 0x300, temp_a3, temp_a4);
         To_LogOut(5);
         return;
     case 3:
@@ -80,24 +80,24 @@ void lbc_login_warning_message(void) {
             }
             return;
         }
-        if (temp_t0 & 0xFFFF & 0x20) {
+        if (temp_a4 & 0xFFFF & 0x20) {
             (*(u8 *)((u8 *)(temp_a1_2) + 0xB9C)) = (u8) ((*(u8 *)((u8 *)(temp_a1_2) + 0xB9C)) + 1);
-            cnWrap_SoundRequest(0, temp_a1_2, temp_a2, temp_a3);
+            cnWrap_SoundRequest(0, temp_a1_2, temp_a2, temp_a3, temp_a4);
         }
         cnWrap_SetFontColor(5);
         flfntSetSize(0x14, 0x14);
-        cnWrap_FontDisp(0x43520000, 0x40000000, (*(u8 *)((u8 *)&lb_rule_member + 0x1C)));
+        cnWrap_FontDisp((*(s32 *)((u8 *)&lb_rule_member + 0x1C)), 0x43520000, 0x43970000, 0x40000000);
         return;
     case 4:
         (*(u8 *)((u8 *)(temp_a2) + 0xB9C)) = (u8) (temp_a1 + 1);
-        CallBackWaitInit(&jtbl_548_0065E870, temp_a1, temp_a2, temp_a3);
+        CallBackWaitInit(&jtbl_548_0065E870, temp_a1, temp_a2, temp_a3, temp_a4);
         cnLBS_Answer_LoginWarningMessage(1);
         return;
     case 5:
-        Check_CallBackWait(&jtbl_548_0065E870, temp_a1, temp_a2, temp_a3);
+        Check_CallBackWait(&jtbl_548_0065E870, temp_a1, temp_a2, temp_a3, temp_a4);
         return;
     default:
-        To_LogOut(4, temp_a1, temp_a2, temp_a3);
+        To_LogOut(4, temp_a1, temp_a2, temp_a3, temp_a4);
         break;
     }
 }

@@ -5,16 +5,16 @@
 
 extern u8 pFunc;
 s32 __cnetSub_Set_BgProcess(); /* extern */
-s16 lobby_func_005C0A90(); /* extern */
+s16 lobby_func_005C0A90();        /* extern */
 
-s32 lobby_func_005C09F0(s32 arg0, s32 arg1, s32 arg2, s32 arg3) {
+s32 lobby_func_005C09F0(s32 arg0, s32 arg1, s32 arg2, s32 arg3, s32 arg4) {
     s32 temp_v0;
     s32 var_v0;
 
-    temp_v0 = __cnetSub_Set_BgProcess(1, 0, M2C_ERROR(/* Read from unset register $t0 */));
+    temp_v0 = __cnetSub_Set_BgProcess(1, 0, arg4);
     var_v0 = -1;
     if (temp_v0 != -1) {
-        *(&(*(u8 *)((u8 *)&pFunc + 0xEE)) + (temp_v0 * 0x1C)) = lobby_func_005C0A90(arg0, arg1, arg2, arg3);
+        (*(s32 *)((u8 *)&(*(u8 *)((u8 *)&pFunc + 0xEE)) + (temp_v0 * 0x1C))) = lobby_func_005C0A90(arg0, arg1, arg2, arg3);
         var_v0 = temp_v0;
     }
     return var_v0;

@@ -31,19 +31,19 @@ void lobby_func_005778B0(s64 arg0, s64 arg1) {
     case 0:
     case 5:
     case 7:
-        temp_s0 = (s64) (arg1 << 0x30) >> 0x30;
-        temp_s1 = (s64) (arg0 << 0x30) >> 0x30;
-        put_titles((s64) ((temp_s1 + 0xA) << 0x30) >> 0x30, (s64) ((temp_s0 + 0x28) << 0x30) >> 0x30, (*(u8 *)((u8 *)&tl_msg_tbl + 0x10)), temp_a3);
-        temp_s0_2 = (s64) ((temp_s0 + 0x28) << 0x30) >> 0x30;
-        lobby_func_00578A90((s64) ((temp_s1 + 0xA) << 0x30) >> 0x30, (s64) ((temp_s0_2 + 0x16) << 0x30) >> 0x30);
-        put_mail_input_square((s64) ((temp_s1 + 0xA) << 0x30) >> 0x30, (s64) ((temp_s0_2 - 0x16) << 0x30) >> 0x30);
+        temp_s0 = ((s16) (arg1));
+        temp_s1 = ((s16) (arg0));
+        put_titles(((s16) ((temp_s1 + 0xA))), ((s16) ((temp_s0 + 0x28))), (*(s32 *)((u8 *)&tl_msg_tbl + 0x10)), temp_a3);
+        temp_s0_2 = ((s16) ((temp_s0 + 0x28)));
+        lobby_func_00578A90(((s16) ((temp_s1 + 0xA))), ((s16) ((temp_s0_2 + 0x16))));
+        put_mail_input_square(((s16) ((temp_s1 + 0xA))), ((s16) ((temp_s0_2 - 0x16))));
         if (((*(s8 *)((u8 *)((*(void **)&cw)) + 0xF00)) != 0) && (temp_v1_2 = (*(void **)&g_main_2EFBAC), temp_a1 = (*(u8 *)((u8 *)(temp_v1_2) + 0x23C)), (((*(u8 *)((u8 *)(temp_v1_2) + 0x23E)) + (temp_a1 + (*(u8 *)((u8 *)(temp_v1_2) + 0x23D)))) != 3))) {
             font_set_palette(0, temp_a1);
         } else {
             font_set_palette(0xA);
         }
-        flfntLocate((s64) ((temp_s1 + 0xA) << 0x30) >> 0x30, (s64) ((temp_s0_2 + 0xB0) << 0x30) >> 0x30);
-        font_print(&lit_2316, (*(u8 *)((u8 *)&tl_msg_tbl + 0x14)));
+        flfntLocate(((s16) ((temp_s1 + 0xA))), ((s16) ((temp_s0_2 + 0xB0))));
+        font_print(&lit_2316, (*(s32 *)((u8 *)&tl_msg_tbl + 0x14)));
         return;
     case 2:
     case 3:

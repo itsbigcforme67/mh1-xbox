@@ -11,9 +11,9 @@ extern u8 tl_member_buff;
 s32 DispNameAndIDonDialog(); /* extern */
 s32 Online_ck();                                    /* extern */
 s32 lobby_func_005790B0();            /* extern */
-extern u8 g_main_302290;
-extern u8 g_main_302CB0;
-extern u8 lb_sys;
+extern s32 g_main_302290;
+extern s32 g_main_302CB0;
+extern s32 lb_sys;
 
 void Lb_on_dialog(void) {
     u8 temp_a0;

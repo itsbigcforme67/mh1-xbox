@@ -15,7 +15,7 @@ s32 cnLbc_CheckInFloorOrder();               /* extern */
 s32 fade_set();                          /* extern */
 s32 memset();        /* extern */
 extern u8 CallBack_Result_Lobby_JoinUser;
-extern u8 g_lb_6DE120;
+extern s32 g_lb_6DE120;
 
 void To_EnterLobby(void) {
     (*(s8 *)((u8 *)((*(void **)&cw)) + 0xB99)) = 3;
@@ -25,11 +25,11 @@ void To_EnterLobby(void) {
     (*(s8 *)((u8 *)((*(void **)&cw)) + 0xB9D)) = 0;
     Init_InterruptFlag();
     memset(&g_lb_6DE120, 0, 0xAE0);
-    (*(u8 *)((u8 *)&ClassInfo + 0x8)) = 0;
+    (*(s8 *)((u8 *)&ClassInfo + 0x8)) = 0;
     (*(s8 *)((u8 *)((*(void **)&cw)) + 0xFA5F)) = 0;
     (*(s8 *)((u8 *)((*(void **)&cw)) + 0xFA60)) = 0;
     (*(s8 *)&D_0035EFEB) = 1;
-    (*(u8 *)((u8 *)&lb_sys + 0x7B)) = 0;
+    (*(s8 *)((u8 *)&lb_sys + 0x7B)) = 0;
     Plaza_chat_clear();
     Lb_clearChatList();
     cnLBS_Read_PlazaJoinUser(cnLbc_CheckInFloorOrder(1) & 0xFFFF, &CallBack_Result_Lobby_JoinUser);

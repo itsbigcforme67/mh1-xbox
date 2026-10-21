@@ -5,7 +5,7 @@
 
 extern u8 pNet;
 s32 add_prim2(); /* extern */
-extern u8 g_main_2EF31C;
+extern s32 g_main_2EF31C;
 extern u8 ot2;
 extern u8 ot5;
 extern u8 ot6;

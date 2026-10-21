@@ -14,7 +14,7 @@ s32 cnLBS_PlazaExit(s32 arg0) {
     temp_v0 = __cnetSub_Set_BgProcess(1, 0, arg0);
     var_v0 = -1;
     if (temp_v0 != -1) {
-        *(&(*(u8 *)((u8 *)&pFunc + 0xEE)) + (temp_v0 * 0x1C)) = __cnet_SendReq_PieceExit();
+        (*(s32 *)((u8 *)&(*(u8 *)((u8 *)&pFunc + 0xEE)) + (temp_v0 * 0x1C))) = __cnet_SendReq_PieceExit();
         var_v0 = temp_v0;
     }
     return var_v0;

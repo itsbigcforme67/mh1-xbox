@@ -5,12 +5,12 @@
 
 s32 flfntLocate();                              /* extern */
 s32 func_0012BDD0();                         /* extern */
-extern u8 g_lb_636CF0;
+extern s32 g_lb_636CF0;
 
 void Lb_put_msg_type2(s64 arg2) {
     s64 temp_s0;
 
-    temp_s0 = (s64) (arg2 << 0x30) >> 0x30;
+    temp_s0 = ((s16) (arg2));
     if (temp_s0 < 0x4E) {
         flfntLocate();
         func_0012BDD0((*(s32 *)((u8 *)&g_lb_636CF0 + (temp_s0 * 4))));

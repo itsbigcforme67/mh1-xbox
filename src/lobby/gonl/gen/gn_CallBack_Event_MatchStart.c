@@ -27,7 +27,7 @@ void CallBack_Event_MatchStart(void) {
     Lbc_set_prim(0, 0, 0, 0);
     lobby_func_0059ACD0(0);
     temp_a0 = (*(u8 *)((u8 *)&game_w + 0x3A));
-    *(&(*(u8 *)((u8 *)&player_work + 0x916)) + (temp_a0 * 0xA00)) = 0;
+    (*(s32 *)((u8 *)&(*(u8 *)((u8 *)&player_work + 0x916)) + (temp_a0 * 0xA00))) = 0;
     Lbc_SendMiniData(temp_a0);
     var_s4 = 0;
     var_s3 = &room_member_id;
@@ -41,7 +41,7 @@ void CallBack_Event_MatchStart(void) {
         memcpy(var_s0, (*(void **)&cw) + var_s2 + 0x238, 0x40);
         var_s3 += 8;
         var_s2 += 0x5C;
-        var_s4 = (s64) ((var_s4 + 1) << 0x38) >> 0x38;
+        var_s4 = ((s8) ((var_s4 + 1)));
         var_s1 += 0x11;
         var_s0 += 0x40;
     } while (var_s4 < 4);

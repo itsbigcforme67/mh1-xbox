@@ -35,14 +35,14 @@ void lbc_login_patch(void) {
         cnLBS_Get_PatchInformation((*(void **)&cw) + 0x11A94, temp_a1, temp_a2, temp_a3);
         ms_net_patch_set_init();
         all_reset();
-        (*(u8 *)((u8 *)&network_work + 0x31)) = 1;
+        (*(s8 *)((u8 *)&network_work + 0x31)) = 1;
         return;
     case 1:
         (*(u8 *)((u8 *)(temp_a2) + 0xB9C)) = (u8) (temp_a1 + 1);
-        (*(u8 *)((u8 *)&network_work + 0x31)) = 1;
+        (*(s8 *)((u8 *)&network_work + 0x31)) = 1;
         return;
     case 2:
-        (*(u8 *)((u8 *)&network_work + 0x31)) = 1;
+        (*(s8 *)((u8 *)&network_work + 0x31)) = 1;
         temp_v0 = ms_net_patch_set(&jtbl_575_0065E890, temp_a1, temp_a2, temp_a3);
         if (temp_v0 == 1) {
             temp_v1 = (*(void **)&cw);
@@ -57,7 +57,7 @@ void lbc_login_patch(void) {
     case 3:
         (*(u8 *)((u8 *)(temp_a2) + 0xB9C)) = (u8) (temp_a1 + 1);
         Lbs_load(&jtbl_575_0065E890, temp_a1, temp_a2, temp_a3);
-        (*(u8 *)((u8 *)&network_work + 0x31)) = 0;
+        (*(s8 *)((u8 *)&network_work + 0x31)) = 0;
         return;
     case 4:
         (*(u8 *)((u8 *)(temp_a2) + 0xB9C)) = (u8) (temp_a1 + 1);
@@ -71,7 +71,7 @@ void lbc_login_patch(void) {
     case 6:
         (*(u8 *)((u8 *)(temp_a2) + 0xB9C)) = (u8) (temp_a1 + 1);
         Lbs_load(&jtbl_575_0065E890, temp_a1, temp_a2, temp_a3);
-        (*(u8 *)((u8 *)&network_work + 0x31)) = 0;
+        (*(s8 *)((u8 *)&network_work + 0x31)) = 0;
         return;
     case 7:
         (*(s8 *)((u8 *)(temp_a2) + 0xB70)) = 1;

@@ -17,11 +17,11 @@ void lb_check_chair(s32 arg0, u8 *arg1) {
     if (memcmp(temp_v0 + 0x1C0, temp_v0 + 3, 8) == 0) {
         temp_a2 = *arg1;
         temp_a0 = 1 << temp_a2;
-        if ((*(u8 *)((u8 *)&lb_sys + 0x14)) & temp_a0) {
+        if ((*(u16 *)((u8 *)&lb_sys + 0x14)) & temp_a0) {
             Lb_send_chair_status(arg0, 0, temp_a2);
             return;
         }
-        (*(u8 *)((u8 *)&lb_sys + 0x14)) |= temp_a0;
+        (*(u16 *)((u8 *)&lb_sys + 0x14)) |= temp_a0;
         Lb_send_chair_status(arg0, 1, *arg1);
     }
 }

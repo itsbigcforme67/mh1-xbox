@@ -5,7 +5,7 @@
 
 extern u8 pNet;
 extern u8 tl_member_buff;
-s32 Put_page_num();   /* extern */
+s32 Put_page_num(); /* extern */
 s32 lobby_func_00576A70();                      /* extern */
 s32 lobby_func_00576CB0();                      /* extern */
 s32 lobby_func_00576F20();                    /* extern */
@@ -18,7 +18,7 @@ void lobby_func_005774D0(void) {
         case 4:
             put_main_cursor((*(s8 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x18))) + 0x1372)));
             lobby_func_00576A70();
-            Put_page_num(0x1E0, 0x128, (*(s16 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x18))) + 0x1364)), (*(s16 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x18))) + 0x1366)));
+            Put_page_num(0x1E0, 0x128, (*(s16 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x18))) + 0x1364)), (*(s16 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x18))) + 0x1366)), 0);
             return;
         case 2:
             if ((*(u8 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x18))) + 0x136B)) != 1) {

@@ -10,25 +10,25 @@ extern u8 CnetSys_g;
 void lobby_func_005E3250(void *arg0) {
     u8 *var_a3;   /* (s32 *) */
     s32 temp_a1;
-    s32 var_t2;
-    u32 var_t0;
-    u32 var_t1;
+    s32 var_a6;
+    u32 var_a4;
+    u32 var_a5;
     u8 temp_a1_2;
 
-    var_t2 = 1;
-    var_t0 = 0;
-    var_t1 = 0;
+    var_a6 = 1;
+    var_a4 = 0;
+    var_a5 = 0;
     var_a3 = &CnetSys_g;
 loop_1:
-    var_t0 += 1;
+    var_a4 += 1;
     var_a3 += 0x164;
-    if ((u16) (*(u8 *)((u8 *)&CnetSys_w + 0x43B4)) >= var_t0) {
+    if ((u16) (*(u16 *)((u8 *)&CnetSys_w + 0x43B4)) >= var_a4) {
         temp_a1 = (*(s32 *)((u8 *)(arg0) + 0x18));
         if (temp_a1 != (temp_a1 & (*(s32 *)((u8 *)(var_a3) + 0x430C)))) {
-            var_t2 = 0;
+            var_a6 = 0;
         } else {
-            var_t1 += 1;
-            if (var_t1 < 0x1AU) {
+            var_a5 += 1;
+            if (var_a5 < 0x1AU) {
                 goto loop_1;
             }
         }
@@ -36,10 +36,10 @@ loop_1:
     temp_a1_2 = (*(u8 *)((u8 *)(arg0) + 0x23));
     if (temp_a1_2 == 2) {
         (*(s8 *)((u8 *)(arg0) + 0x21)) = 2;
-        cnLBS_Init_LobbyBgProcess(temp_a1_2, (*(u8 *)((u8 *)&CnetSys_w + 0x43B4)), var_a3);
+        cnLBS_Init_LobbyBgProcess(temp_a1_2, (*(u16 *)((u8 *)&CnetSys_w + 0x43B4)), var_a3, var_a4, var_a5, var_a6);
         return;
     }
-    if (var_t2 != 0) {
+    if (var_a6 != 0) {
         (*(s8 *)((u8 *)(arg0) + 0x21)) = 1;
         (*(s8 *)((u8 *)(arg0) + 0x22)) = 0;
     }

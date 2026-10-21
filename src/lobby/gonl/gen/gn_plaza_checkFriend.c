@@ -78,7 +78,7 @@ s32 plaza_checkFriend(s16 arg0) {
                 temp_a1_2 = (*(s8 *)((u8 *)(temp_a3) + 0x236));
                 (*(s32 *)((u8 *)&RecvMailInfo + (temp_a1_2 * 0x9A))) = 0;
                 (*(u8 *)((u8 *)(temp_a3) + 0x230)) = (u8) ((*(u8 *)((u8 *)(temp_a3) + 0x230)) + 1);
-                cnWrap_SoundRequest(0, temp_a1_2, var_a2, temp_a3);
+                cnWrap_SoundRequest(0, temp_a1_2, var_a2, temp_a3, temp_a3 + 0x236);
             } else {
                 cnWrap_SoundRequest(7, temp_a1);
             }

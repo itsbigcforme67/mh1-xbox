@@ -9,8 +9,10 @@ s32 font_print_double(); /* extern */
 s32 font_set_palette();                  /* extern */
 s32 han2zen();              /* extern */
 s32 lobby_func_005791D0();               /* extern */
+extern s32 *g_lb_636D30;
 extern u16 g_lb_6B4518;
-extern u8 g_lb_6B4620;
+extern s32 g_lb_6B4620;
+extern s32 *tl_mail_tbl;
 
 void lobby_func_00577370(void) {
     u8 g_frame[0x60] __attribute__((aligned(16)));   /* G's stack frame */
@@ -30,18 +32,18 @@ void lobby_func_00577370(void) {
     var_s0 = 0;
     if ((s32) g_lb_6B4518 > 0) {
         do {
-            font_print_double(0xE0, var_s1, 1, 0);
+            font_print_double(0xE0, var_s1, 1, 0, var_s2 + 8);
             han2zen(var_s2, &sp40);
-            font_print_double(0x15E, var_s1, 1, 0);
+            font_print_double(0x15E, var_s1, 1, 0, &sp40);
             if ((*(u8 *)((u8 *)(var_s2) + 0x1A)) != 0) {
-                font_print_double(0x220, var_s1, 1, 0);
+                font_print_double(0x220, var_s1, 1, 0, g_lb_636D30);
             } else {
-                font_print_double(0x220, var_s1, 1, 0);
+                font_print_double(0x220, var_s1, 1, 0, tl_mail_tbl);
             }
-            Lb_put_icon(0x1E0, (s64) ((((s64) (var_s1 << 0x30) >> 0x30) - 2) << 0x30) >> 0x30, (*(u8 *)((u8 *)(var_s2) + 0x19)) + 2, -1);
+            Lb_put_icon(0x1E0, ((s16) (((((s16) (var_s1))) - 2))), (*(u8 *)((u8 *)(var_s2) + 0x19)) + 2, -1);
             var_s2 += 0x20;
             var_s0 = (var_s0 + 1) & 0xFFFF;
-            var_s1 = (s64) ((var_s1 + 0x16) << 0x30) >> 0x30;
+            var_s1 = ((s16) ((var_s1 + 0x16)));
         } while (var_s0 < (s32) g_lb_6B4518);
     }
 }

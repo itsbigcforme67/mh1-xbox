@@ -8,7 +8,7 @@ s32 CallBackWaitInit();                      /* extern */
 s32 Check_CallBackWait();                    /* extern */
 s32 cnLBS_LobbyEntry(); /* extern */
 s32 cnLbc_CheckInFloorOrder();               /* extern */
-extern u8 g_lb_63E540;
+extern s32 g_lb_63E540;
 extern u8 lobby_func_0057EFF0;
 
 s32 Lbs_request_enter_lobby(void) {

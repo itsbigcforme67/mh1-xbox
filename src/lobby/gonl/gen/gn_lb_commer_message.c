@@ -11,8 +11,8 @@ void lb_commer_message(s64 arg0) {
     s32 temp_a1;
 
     if ((*(u8 *)((u8 *)((*(void **)&cw)) + 0xFA61)) != 0) {
-        temp_a1 = ((s64) (arg0 << 0x38) >> 0x38) * 0x5C;
-        if (*(&(*(u8 *)((u8 *)&lbCommer + 0x8)) + temp_a1) != 0) {
+        temp_a1 = (((s8) (arg0))) * 0x5C;
+        if ((*(s32 *)((u8 *)&(*(u8 *)((u8 *)&lbCommer + 0x8)) + temp_a1)) != 0) {
             Lb_put_chat(3, (u8 *)&lbCommer + temp_a1 + 8);
         }
     }

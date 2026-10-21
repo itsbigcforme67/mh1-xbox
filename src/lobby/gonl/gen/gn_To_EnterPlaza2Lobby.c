@@ -29,8 +29,8 @@ void To_EnterPlaza2Lobby(s32 arg0) {
     (*(s8 *)((u8 *)((*(void **)&cw)) + 0xBA0)) = 0;
     Init_InterruptFlag();
     Lbc_init_network_work();
-    (*(u8 *)((u8 *)&ClassInfo + 0x4)) = 0;
-    (*(u8 *)((u8 *)&ClassInfo + 0x8)) = 0;
+    (*(s8 *)((u8 *)&ClassInfo + 0x4)) = 0;
+    (*(s8 *)((u8 *)&ClassInfo + 0x8)) = 0;
     memset(&LobbyInfo, 0, 0x2F94);
     Pit_reset();
     all_reset();

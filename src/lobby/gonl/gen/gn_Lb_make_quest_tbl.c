@@ -47,7 +47,6 @@ void Lb_make_quest_tbl(void) {
     s32 var_s0_5;
     s32 var_s6;
     s32 var_s6_2;
-    s8 *var_s7;
     u8 *var_fp;   /* (u16 **) */
     u8 *var_a0;   /* (u16 *) */
     u8 *var_a0_2;   /* (u16 *) */
@@ -70,18 +69,20 @@ void Lb_make_quest_tbl(void) {
     u32 temp_fp;
     u32 temp_hi;
     u32 var_s3;
+    u8 *var_s5_2;
+    u8 *var_s7;
 
     (*(u16 *)&g_main_2EFA6C) = 0U;
     (*(s16 *)&g_main_2EFA68) = 0;
     sp110 = 0;
     memset(&(*(u8 *)((u8 *)&guildStr + 0x100)), 0, 0xA0);
-    sp130 = (u32) ((s64) (lb_get_quest_level(1) << 0x38) >> 0x38);
+    sp130 = (u32) (((s8) (lb_get_quest_level(1))));
     var_s6 = 0;
     var_fp = &quest_lv_tbl;
-    spE0 = &(*(u8 *)((u8 *)&guildStr + 0x120));
+    spE0 = &(*(s8 *)((u8 *)&guildStr + 0x120));
     var_s5 = &lb_quest_all;
     var_s7 = &(*(u8 *)((u8 *)&guildStr + 0x100));
-    spD0 = &(*(u8 *)((u8 *)&guildStr + 0x110));
+    spD0 = &(*(s8 *)((u8 *)&guildStr + 0x110));
     do {
         var_s2 = (*(u16 **)var_fp);
         var_s3 = 0;
@@ -128,29 +129,30 @@ loop_12:
         spD0 += 1;
         var_s7 += 1;
     } while (var_s6 < 8);
-    (*(u8 *)((u8 *)&lb_quest_all + 0x80)) = 0;
-    spC0 = &(*(u8 *)((u8 *)&lb_quest_all + 0x82));
-    (*(u8 *)((u8 *)&lb_quest_all + 0x90)) = 0;
-    spB0 = &(*(u8 *)((u8 *)&lb_quest_all + 0x84));
+    (*(u16 *)((u8 *)&lb_quest_all + 0x80)) = 0;
+    spC0 = &(*(s16 *)((u8 *)&lb_quest_all + 0x82));
+    (*(s16 *)((u8 *)&lb_quest_all + 0x90)) = 0;
+    spB0 = &(*(s16 *)((u8 *)&lb_quest_all + 0x84));
     var_s6_2 = 0;
     var_s3_3 = &lb_quest_all;
-    (*(u8 *)((u8 *)&lb_quest_all + 0x82)) = 0;
-    (*(u8 *)((u8 *)&lb_quest_all + 0x92)) = 0;
-    spA0 = &(*(u8 *)((u8 *)&lb_quest_all + 0x84)) + 2;
-    (*(s16 *)((u8 *)(&(*(u8 *)((u8 *)&lb_quest_all + 0x84))) + 0)) = 0;
-    (*(u8 *)((u8 *)&lb_quest_all + 0x94)) = 0;
+    var_s5_2 = &(*(u8 *)((u8 *)&guildStr + 0x100));
+    (*(s16 *)((u8 *)&lb_quest_all + 0x82)) = 0;
+    (*(s16 *)((u8 *)&lb_quest_all + 0x92)) = 0;
+    spA0 = (u8 *)&(*(s16 *)((u8 *)&lb_quest_all + 0x84)) + 2;
+    (*(s16 *)((u8 *)(&(*(s16 *)((u8 *)&lb_quest_all + 0x84))) + 0)) = 0;
+    (*(s16 *)((u8 *)&lb_quest_all + 0x94)) = 0;
     sp100 = &quest_lv_tbl;
-    spF0 = &(*(u8 *)((u8 *)&guildStr + 0x120));
-    (*(s16 *)((u8 *)(&(*(u8 *)((u8 *)&lb_quest_all + 0x84))) + 2)) = 0;
-    (*(u8 *)((u8 *)&lb_quest_all + 0x96)) = 0;
-    (*(u8 *)((u8 *)&lb_quest_all + 0x88)) = 0;
-    (*(u8 *)((u8 *)&lb_quest_all + 0x98)) = 0;
-    (*(u8 *)((u8 *)&lb_quest_all + 0x8A)) = 0;
-    (*(u8 *)((u8 *)&lb_quest_all + 0x9A)) = 0;
-    (*(u8 *)((u8 *)&lb_quest_all + 0x8C)) = 0;
-    (*(u8 *)((u8 *)&lb_quest_all + 0x9C)) = 0;
-    (*(u8 *)((u8 *)&lb_quest_all + 0x8E)) = 0;
-    (*(u8 *)((u8 *)&lb_quest_all + 0x9E)) = 0;
+    spF0 = &(*(s8 *)((u8 *)&guildStr + 0x120));
+    (*(s16 *)((u8 *)(&(*(s16 *)((u8 *)&lb_quest_all + 0x84))) + 2)) = 0;
+    (*(s16 *)((u8 *)&lb_quest_all + 0x96)) = 0;
+    (*(s16 *)((u8 *)&lb_quest_all + 0x88)) = 0;
+    (*(s16 *)((u8 *)&lb_quest_all + 0x98)) = 0;
+    (*(s16 *)((u8 *)&lb_quest_all + 0x8A)) = 0;
+    (*(s16 *)((u8 *)&lb_quest_all + 0x9A)) = 0;
+    (*(s16 *)((u8 *)&lb_quest_all + 0x8C)) = 0;
+    (*(s16 *)((u8 *)&lb_quest_all + 0x9C)) = 0;
+    (*(s16 *)((u8 *)&lb_quest_all + 0x8E)) = 0;
+    (*(s16 *)((u8 *)&lb_quest_all + 0x9E)) = 0;
     do {
         var_s2_2 = (*(u16 **)sp100);
         temp_s4 = get_new_quest(var_s6_2, 0) & 0xFFFF;
@@ -210,7 +212,7 @@ loop_12:
                 var_a0 = var_s3_3;
 loop_48:
                 if (sp110 == (*(u16 *)var_a0)) {
-                    lobby_func_00543520(var_s3_3, sp110, 7, 1);
+                    lobby_func_00543520(var_s3_3, sp110, 7, 1, *var_s5_2);
                 } else {
                     var_s0_3 += 1;
                     var_a0 += 2;
@@ -219,7 +221,7 @@ loop_48:
                     }
                 }
                 if ((var_s0_3 == 8) && (sp110 != 0)) {
-                    lobby_func_00543520(var_s3_3, sp110, 7, 1);
+                    lobby_func_00543520(var_s3_3, sp110, 7, 1, *var_s5_2);
                 }
             }
         }
@@ -229,7 +231,7 @@ loop_48:
             var_a0_2 = var_s3_3;
 loop_57:
             if (temp_s4 == (*(u16 *)var_a0_2)) {
-                lobby_func_00543520(var_s3_3, temp_s4, 0, 1);
+                lobby_func_00543520(var_s3_3, temp_s4, 0, 1, *var_s5_2);
             } else {
                 var_s0_4 += 1;
                 var_a0_2 += 2;
@@ -238,7 +240,7 @@ loop_57:
                 }
             }
             if ((var_s0_4 == 8) && (temp_s4 != 0)) {
-                lobby_func_00543520(var_s3_3, temp_s4, 0, 1);
+                lobby_func_00543520(var_s3_3, temp_s4, 0, 1, *var_s5_2);
             }
         } else {
             sp120 = 0;
@@ -288,7 +290,7 @@ loop_68:
                             } else {
 block_92:
                                 if (lobby_func_005438F0((*(u16 *)var_s2_2)) != 1) {
-                                    lobby_func_00543520(var_s3_3, (*(u16 *)var_s2_2), temp_s1 & 0xFF, 0);
+                                    lobby_func_00543520(var_s3_3, (*(u16 *)var_s2_2), temp_s1 & 0xFF, 0, *var_s5_2);
                                 }
                             }
                         }
@@ -302,22 +304,23 @@ block_92:
         var_s3_3 += 0x10;
         sp100 += 4;
         spF0 += 1;
+        var_s5_2 += 1;
     } while (var_s6_2 < 8);
     temp_a2_2 = (*(u16 *)&g_main_2EFA6C);
     if (temp_a2_2 != 0) {
         if (temp_a2_2 != 0xBBC) {
             var_v1 = 1;
-            (*(u8 *)((u8 *)&lb_quest_all + 0x80)) = temp_a2_2;
+            (*(u16 *)((u8 *)&lb_quest_all + 0x80)) = temp_a2_2;
         } else {
-            (*(u8 *)((u8 *)&lb_quest_all + 0x80)) = temp_a2_2;
+            (*(u16 *)((u8 *)&lb_quest_all + 0x80)) = temp_a2_2;
             (*(s16 *)spC0) = temp_a2_2 + 1;
             (*(s16 *)spB0) = temp_a2_2 + 2;
             (*(s16 *)spA0) = temp_a2_2 + 3;
             var_v1 = 5;
-            (*(u8 *)((u8 *)&lb_quest_all + 0x88)) = 0xBBB;
+            (*(s16 *)((u8 *)&lb_quest_all + 0x88)) = 0xBBB;
         }
         (*(s16 *)&g_main_2EFA68) = var_v1;
     }
-    (*(u8 *)((u8 *)&guildStr + 0x108)) = (s8) (*(s16 *)&g_main_2EFA68);
+    (*(s8 *)((u8 *)&guildStr + 0x108)) = (s8) (*(s16 *)&g_main_2EFA68);
 }
 

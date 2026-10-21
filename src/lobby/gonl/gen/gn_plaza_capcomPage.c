@@ -6,11 +6,11 @@
 extern u8 cw;
 extern u8 jtbl_2033;
 extern u8 pNet;
-s32 Fade_busy_ck();    /* extern */
+s32 Fade_busy_ck(); /* extern */
 s32 Get_sw2();                               /* extern */
 s32 Lbc_SendBrowserResult(); /* extern */
 s32 To_BootUpBrowser();                         /* extern */
-s32 fade_set();      /* extern */
+s32 fade_set(); /* extern */
 s32 lobby_bgm_set2();                    /* extern */
 s32 lobby_func_0057C7E0(); /* extern */
 s32 strcpy();      /* extern */
@@ -19,7 +19,7 @@ extern u8 first_url;
 extern u8 lit_2032_0065DD40;
 
 void plaza_capcomPage(void) {
-    s32 temp_t0;
+    s32 temp_a4;
     s32 temp_v0;
     u8 temp_a1;
     u8 *temp_a2;
@@ -29,17 +29,17 @@ void plaza_capcomPage(void) {
     u8 *temp_v1_3;
 
     temp_a2 = (*(void **)&pNet);
-    temp_t0 = Get_sw2(0) & 0xFFFF;
+    temp_a4 = Get_sw2(0) & 0xFFFF;
     temp_a1 = (*(u8 *)((u8 *)(temp_a2) + 0x23));
     temp_a3 = temp_a2 + 0x23;
     switch (temp_a1) {                              /* switch 1 */
     case 0:                                         /* switch 1 */
         (*(u8 *)((u8 *)(temp_a2) + 0x23)) = (u8) (temp_a1 + 1);
-        fade_set(1, temp_a1, temp_a2, temp_a3);
+        fade_set(1, temp_a1, temp_a2, temp_a3, temp_a4);
         (*(s8 *)((u8 *)((*(void **)&cw)) + 0xB70)) = 0;
         return;
     case 1:                                         /* switch 1 */
-        if ((Fade_busy_ck(&jtbl_2033, temp_a1, temp_a2, temp_a3) & 0xFF) != 1) {
+        if ((Fade_busy_ck(&jtbl_2033, temp_a1, temp_a2, temp_a3, temp_a4) & 0xFF) != 1) {
             temp_v1 = (*(void **)&pNet);
             (*(u8 *)((u8 *)(temp_v1) + 0x23)) = (u8) ((*(u8 *)((u8 *)(temp_v1) + 0x23)) + 1);
             (*(s8 *)((u8 *)((*(void **)&pNet)) + 0x31)) = 1;
@@ -57,20 +57,20 @@ void plaza_capcomPage(void) {
             (*(u8 *)((u8 *)(temp_v1_2) + 0x23)) = (u8) ((*(u8 *)((u8 *)(temp_v1_2) + 0x23)) + 1);
             (*(s8 *)((u8 *)((*(void **)&pNet)) + 0x24)) = 0;
             (*(u8 *)((u8 *)((*(void **)&cw)) + 0xBA8)) = 0U;
-            fade_set(2, temp_a1, temp_a2, temp_a3);
+            fade_set(2, temp_a1, temp_a2, temp_a3, temp_a4);
             lobby_bgm_set2(0x4B);
             if ((*(u8 *)((u8 *)((*(void **)&cw)) + 0xBA4)) != 0) {
                 (*(u8 *)((u8 *)((*(void **)&pNet)) + 0x23)) = 4U;
             }
             return;
         }
-        lobby_func_0057C7E0(2, temp_a1, temp_a2, temp_a3);
+        lobby_func_0057C7E0(2, temp_a1, temp_a2, temp_a3, temp_a4);
         return;
     case 3:                                         /* switch 1 */
-        tl_exit_sub_menu(1, temp_a1, temp_a2, temp_a3);
+        tl_exit_sub_menu(1, temp_a1, temp_a2, temp_a3, temp_a4);
         return;
     case 4:                                         /* switch 1 */
-        temp_v0 = Lbc_SendBrowserResult(&jtbl_2033, temp_a1, temp_a2, temp_a3);
+        temp_v0 = Lbc_SendBrowserResult(&jtbl_2033, temp_a1, temp_a2, temp_a3, temp_a4);
         switch (temp_v0) {                          /* switch 2; irregular */
         case 0:                                     /* switch 2 */
             (*(s8 *)((u8 *)((*(void **)&cw)) + 0xB70)) = 1;
@@ -86,7 +86,7 @@ block_22:
         break;
     case 5:                                         /* switch 1 */
         (*(s8 *)((u8 *)(temp_a2) + 0x2D)) = 1;
-        if (temp_t0 & 0xFFFF & 0x20) {
+        if (temp_a4 & 0xFFFF & 0x20) {
             goto block_22;
         }
         break;

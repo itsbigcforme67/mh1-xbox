@@ -15,7 +15,7 @@ void Lb_put_inputMsgForHTML(void) {
         font_set_stack_no(5);
         flfntLocate(0xC8, 0x17C);
         font_set_palette(5);
-        func_0012BDD0((*(u8 *)((u8 *)&lb_rule_member + 0x1C)));
+        func_0012BDD0((*(s32 *)((u8 *)&lb_rule_member + 0x1C)));
     }
 }
 

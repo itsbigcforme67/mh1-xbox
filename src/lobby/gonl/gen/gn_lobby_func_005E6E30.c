@@ -8,7 +8,7 @@ s16 __cnetSub_Set_BgProcess(); /* extern */
 s16 lobby_func_005E6EE0();                       /* extern */
 s32 memset();        /* extern */
 extern s16 g_lb_733664;
-extern u8 g_lb_733E3A;
+extern s32 g_lb_733E3A;
 
 s16 lobby_func_005E6E30(s64 arg0, s32 arg1) {
     u8 g_frame[0x30] __attribute__((aligned(16)));   /* G's stack frame */
@@ -21,7 +21,7 @@ s16 lobby_func_005E6E30(s64 arg0, s32 arg1) {
     temp_v0 = __cnetSub_Set_BgProcess(1, 0, arg1);
     var_v0 = -1;
     if (temp_v0 != -1) {
-        *(&(*(u8 *)((u8 *)&pFunc + 0xEE)) + (temp_v0 * 0x1C)) = lobby_func_005E6EE0(sp28);
+        (*(s32 *)((u8 *)&(*(u8 *)((u8 *)&pFunc + 0xEE)) + (temp_v0 * 0x1C))) = lobby_func_005E6EE0(sp28);
         g_lb_733664 = temp_v0;
         var_v0 = temp_v0;
     }

@@ -44,8 +44,10 @@ def gen_name(a):
 
 
 def draft(name):
+    # m2c's EE target: G passes arguments 5-8 in $8-$11 (mips-mwcc reads them from the stack and loses them)
+    env = dict(os.environ, DRAFT_T=os.environ.get('DRAFT_T', 'mipsee-gcc-c'))
     p = subprocess.run([sys.executable, os.path.join(ROOT, 'tools/draft.py'), 'mhg/lobby', name],
-                       capture_output=True, text=True)
+                       capture_output=True, text=True, env=env)
     return p.stdout
 
 
@@ -69,12 +71,14 @@ def convert(src):
     src = by_value_args(src)
     src = byte_pointers(src)
     src = byte_globals(src)
+    src = pointer_globals(src)
+    src = sign_extends(src)
     src = function_tables(src)
     src = unprototype(src)
     # m2c's declarations of names that became NAME+offset are no declarations any more
     src = re.sub(r'^extern [^;\n]*\(\*\([^;\n]*;\n', '', src, flags=re.M)
-    # declarations: data of unknown type as bytes
-    src = re.sub(r'^extern s32 (\w+);', r'extern u8 \1;', src, flags=re.M)
+    # (data m2c typed by its loads and stores keeps that type: `dialogData = arg0` is a word store; byte_globals keeps
+    # m2c's byte offsets on it)
     # m2c declares the D_ names it saw; after renaming, declare the new names once
     used = set(re.findall(r'\bg_(?:main|sub|lb)_[0-9A-F]{6}\b', src))
     decl = ''.join('extern u8 %s;\n' % n for n in sorted(used) if not re.search(r'extern [^;]*\b%s\b' % n, src))
@@ -154,6 +158,14 @@ def function_tables(src):
         decls += 'static s32 (*const %s_g[])() = { %s };   /* G\'s table of functions, by name */\n' % (tbl, ', '.join(names))
         out += src[i:j] + '%s_g[%s]' % (tbl, idx)
         i = k
+        # m2c writes `()` when the caller's own a0.. reach the table's function untouched (the G code does not set
+        # them): pass the caller's arguments on
+        if src.startswith('()', k):
+            heads = re.findall(r'^\w[\w *]*?\b\w+\(([^()]*)\) \{$', src[:j], re.M)
+            args = re.findall(r'\b(arg\d)\b', heads[-1]) if heads else []
+            if args:
+                out += '(%s)' % ', '.join(args)
+                i = k + 2
     return src
 
 
@@ -232,6 +244,49 @@ def byte_globals(src):
             i = k
         src = re.sub(r'(?<!\(u8 \*\))&%s \+ ' % name, '(u8 *)&%s + ' % name, out)
     return src
+
+
+def sign_extends(src):
+    """m2c's 64-bit sign / zero extension `(s64) (X << 0x38) >> 0x38` shifts a 32-bit int by 56 (undefined in C: GCC drops
+    the loop that counts with it): a cast to the narrow type"""
+    while True:
+        new = sign_extends_once(src)
+        if new == src:
+            return src
+        src = new
+
+
+def sign_extends_once(src):
+    W = {'0x38': '8', '0x30': '16', '0x20': '32'}
+    out, i = '', 0
+    while True:
+        m = re.compile(r'\(([su])64\) \(').search(src, i)
+        if not m:
+            return out + src[i:]
+        q, depth = m.end() - 1, 0
+        k = q
+        while True:
+            depth += (src[k] == '(') - (src[k] == ')')
+            k += 1
+            if depth == 0:
+                break
+        inner = src[q + 1:k - 1]
+        t = re.match(r'^(.*) << (0x38|0x30|0x20)$', inner, re.S)
+        if t and src.startswith(' >> %s' % t[2], k) and 'M2C_ERROR' not in inner:
+            out += src[i:m.start()] + '((%s%s) (%s))' % (m[1], W[t[2]], t[1])
+            i = k + len(' >> %s' % t[2])
+        else:
+            out += src[i:m.end()]
+            i = m.end()
+
+
+def pointer_globals(src):
+    """and for pointers kept in globals: `(*(s32 **)&cw) + 0xFA84` is m2c's cw plus 0xFA84 bytes: the pointer is read
+    as a u8 *; a dereference `*(*(s32 **)&X)` keeps its width"""
+    T = r'(s16|u16|s32|u32|f32|s64|u64)'
+    X = r'(&\w+|\(\(u8 \*\)&\w+ \+ 0x[0-9A-Fa-f]+\))'
+    src = re.sub(r'(?<![\w)\]])\*\(\*\(%s \*\*\)%s\)' % (T, X), r'(*(\1 *)(*(u8 **)\2))', src)
+    return re.sub(r'\(\*\(%s \*\*\)%s\)' % (T, X), r'(*(u8 **)\2)', src)
 
 
 def by_value_args(src):
@@ -337,6 +392,11 @@ def main():
     gnet = set(int(l.split()[2], 16) for l in open(os.path.join(ROOT, 'config/mhg/pc_names.txt'))
                if len(l.split()) > 2 and l.split()[1].startswith('gnet_'))
     names = [n for n in names if gaddr(n) not in gnet and n not in KEEP_MH1 and not re.match(r'(Bs|bs|Draw|draw)[A-Z]', n)]
+    # G functions the PC already has as reviewed C (the G village: src/lobby/f/lb_g.c, lb_guild_g.c; cnet_g.c) stay theirs
+    have = set()
+    for f in ('src/lobby/f/lb_g.c', 'src/lobby/f/lb_guild_g.c', 'src/lobby/cnet/cnet_g.c'):
+        have |= set(re.findall(r'^[A-Za-z_][\w \*]*?\b(\w+)\([^;]*$', open(os.path.join(ROOT, f)).read(), re.M))
+    names = [n for n in names if n not in have]
     for n in names:
         path = os.path.join(out, 'gn_' + n + '.c')     # (gn_: an object name of its own; src/lobby/b/nm has files named after functions too)
         if os.path.exists(path) and 'HAND-FIXED' in open(path).read() and '--force' not in sys.argv:

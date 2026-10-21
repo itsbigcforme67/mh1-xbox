@@ -27,7 +27,7 @@ loop_1:
         (*(s8 *)((u8 *)(arg0) + 0x29)) = var_s2;
         return;
     }
-    var_s2 = (s8) ((s64) ((var_s2 + 1) << 0x38) >> 0x38);
+    var_s2 = (s8) (((s8) ((var_s2 + 1))));
     var_s1 += 0x11;
     if (var_s2 >= 3) {
         return;

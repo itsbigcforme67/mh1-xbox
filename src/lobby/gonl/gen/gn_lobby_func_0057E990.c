@@ -19,7 +19,7 @@ s32 font_set_stack_no();                 /* extern */
 s32 lobby_func_005E3AB0();             /* extern */
 s32 sprintf();         /* extern */
 extern u8 CallBack_Result_Plaza_PlazaEntry2;
-extern u8 g_lb_63E538;
+extern s32 g_lb_63E538;
 
 void lobby_func_0057E990(void) {
     u8 g_frame[0x30] __attribute__((aligned(16)));   /* G's stack frame */
@@ -31,6 +31,7 @@ void lobby_func_0057E990(void) {
     u8 *temp_a0_2;
     u8 *temp_a0_3;
     u8 *temp_a3;
+    u8 *temp_a4;
     u8 *temp_v1_2;
     u8 *temp_v1_3;
 
@@ -38,10 +39,11 @@ void lobby_func_0057E990(void) {
     (*(s8 *)((u8 *)((*(void **)&pNet)) + 0x2D)) = 1;
     temp_a3 = (*(void **)&cw);
     temp_a1 = (*(u8 *)((u8 *)(temp_a3) + 0xB9C));
+    temp_a4 = temp_a3 + 0xB9C;
     switch (temp_a1) {                              /* switch 1; irregular */
     case 0x0:                                       /* switch 1 */
         (*(u8 *)((u8 *)(temp_a3) + 0xB9C)) = (u8) (temp_a1 + 1);
-        Lbc_init_network_work(2, temp_a1, 1, temp_a3);
+        Lbc_init_network_work(2, temp_a1, 1, temp_a3, temp_a4);
         (*(u32 *)((u8 *)((*(void **)&cw)) + 0xBB4)) = 0x12CU;
         Lb_eat_to_bell((*(void **)&cw) + 0xF75D);
         CallBackWaitInit();
@@ -63,7 +65,7 @@ block_13:
             font_set_stack_no(5);
             temp_v1_2 = (*(void **)&cw);
             sprintf(&sp20, &g_lb_63E538, ((*(u32 *)((u8 *)(temp_v1_2) + 0xBB4)) / 30) + ((u32) (*(u32 *)((u8 *)(temp_v1_2) + 0xBB4)) >> 0x1F));
-            font_print_double(0x1D6, 0x54, 1, 5);
+            font_print_double(0x1D6, 0x54, 1, 5, &sp20);
             return;
         case 1:                                     /* switch 2 */
             Lb_put_inputMsgForHTML(temp_a0);
@@ -77,7 +79,7 @@ block_13:
         }
         break;
     case 0x1:                                       /* switch 1 */
-        Check_CallBackWait(2, temp_a1, 1, temp_a3);
+        Check_CallBackWait(2, temp_a1, 1, temp_a3, temp_a4);
         goto block_13;
     case 0x2:                                       /* switch 1 */
         if ((*(u8 *)((u8 *)((*(void **)&pNet)) + 0x27)) == 2) {
@@ -85,7 +87,7 @@ block_13:
             (*(s8 *)((u8 *)((*(void **)&cw)) + 0xB9A)) = 0;
             (*(s8 *)((u8 *)((*(void **)&cw)) + 0xB9B)) = 0;
             (*(u8 *)((u8 *)((*(void **)&cw)) + 0xB9C)) = 0U;
-            Init_InterruptFlag(2, temp_a1, 1, temp_a3);
+            Init_InterruptFlag(2, temp_a1, 1, temp_a3, temp_a4);
             return;
         }
         goto block_13;

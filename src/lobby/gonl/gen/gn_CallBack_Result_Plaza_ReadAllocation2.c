@@ -41,9 +41,9 @@ block_12:
         Check_CallBackWait(temp_a0);
         goto block_12;
     case 2:
-        cnLBS_Get_PlazaCount(&(*(u8 *)((u8 *)&ClassInfo + 0x6)));
+        cnLBS_Get_PlazaCount(&(*(u16 *)((u8 *)&ClassInfo + 0x6)));
         var_s1 = 0;
-        if ((*(u8 *)((u8 *)&ClassInfo + 0x6)) != 0) {
+        if ((*(u16 *)((u8 *)&ClassInfo + 0x6)) != 0) {
             var_s0 = &LobbyInfo;
             do {
                 temp_v0 = var_s1 + 1;
@@ -55,7 +55,7 @@ block_12:
                 lobby_func_005AC230((var_s1 + 1) & 0xFFFF, var_s0 + 8);
                 var_s1 += 1;
                 var_s0 += 0x15C;
-            } while (var_s1 < (u16) (*(u8 *)((u8 *)&ClassInfo + 0x6)));
+            } while (var_s1 < (u16) (*(u16 *)((u8 *)&ClassInfo + 0x6)));
         }
         (*(u8 *)((u8 *)((*(void **)&cw)) + 0xB9D)) = 0U;
         return 0;

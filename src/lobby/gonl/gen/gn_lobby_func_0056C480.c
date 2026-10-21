@@ -11,34 +11,34 @@ s32 lobby_func_0056D6E0();                      /* extern */
 s32 lobby_func_00571AF0();                      /* extern */
 s32 memset(); /* extern */
 s16 net_Check_FriendSuu();        /* extern */
-extern u8 g_main_302CB0;
+extern s32 g_main_302CB0;
 
 void lobby_func_0056C480(void) {
     s32 temp_v0;
     s32 var_a2;
-    s32 var_t0;
-    s32 var_t1;
+    s32 var_a4;
+    s32 var_a5;
     u8 *var_a3;   /* (u16 *) */
 
-    var_t1 = 0;
-    var_a3 = &(*(u8 *)((u8 *)&lb_sys + 0xA0));
+    var_a5 = 0;
+    var_a3 = &(*(u16 *)((u8 *)&lb_sys + 0xA0));
     var_a2 = 0;
     do {
-        var_t0 = 0;
+        var_a4 = 0;
         if ((*(u16 *)var_a3) == 0) {
             do {
-                temp_v0 = var_t0 + var_a2;
+                temp_v0 = var_a4 + var_a2;
                 if (temp_v0 < 0x65) {
                     (*(s8 *)((u8 *)(((*(s32 *)&cw) + (temp_v0 * 0x24A))) + 0x1265)) = 2;
                 }
-                var_t0 += 1;
-            } while (var_t0 < 7);
+                var_a4 += 1;
+            } while (var_a4 < 7);
         }
-        var_t1 += 1;
+        var_a5 += 1;
         var_a3 += 2;
         var_a2 += 7;
-    } while (var_t1 < 0xC);
-    memset(&(*(u8 *)((u8 *)&tl_member_buff + 0x1398)), 0, 0x618, var_a3);
+    } while (var_a5 < 0xC);
+    memset(&(*(u8 *)((u8 *)&tl_member_buff + 0x1398)), 0, 0x618, var_a3, var_a4, var_a5);
     (*(s8 *)((u8 *)((*(void **)&pNet)) + 0x2E)) = 1;
     (*(s16 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x1398))) + 0x608)) = net_Check_FriendSuu(&g_main_302CB0, 0x32);
     lobby_func_0056D6E0();

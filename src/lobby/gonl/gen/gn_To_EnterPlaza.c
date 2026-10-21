@@ -20,8 +20,8 @@ void To_EnterPlaza(void) {
     (*(s8 *)((u8 *)((*(void **)&cw)) + 0xB9C)) = 0;
     (*(s8 *)((u8 *)((*(void **)&cw)) + 0xB9D)) = 0;
     Init_InterruptFlag();
-    (*(u8 *)((u8 *)&ClassInfo + 0x4)) = 0;
-    (*(u8 *)((u8 *)&ClassInfo + 0x8)) = 0;
+    (*(s8 *)((u8 *)&ClassInfo + 0x4)) = 0;
+    (*(s8 *)((u8 *)&ClassInfo + 0x8)) = 0;
     memset(&LobbyInfo, 0, 0x2F94);
     Plaza_chat_clear();
     Lb_clearChatList();

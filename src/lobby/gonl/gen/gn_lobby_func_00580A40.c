@@ -34,7 +34,7 @@ block_10:
     case 0x2:
         (*(u8 *)((u8 *)(temp_v1) + 0xB9D)) = 0U;
         ClassInfo = arg0;
-        (*(u8 *)((u8 *)&ClassInfo + 0x4)) = arg1;
+        (*(s8 *)((u8 *)&ClassInfo + 0x4)) = arg1;
         MH_lobbyClear(temp_a0, arg0);
         return 0;
     default:
