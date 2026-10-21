@@ -1535,8 +1535,8 @@ build/mhg/pctree (its build/pc holds G's objects and recorded commands), the fro
 output build/mhg/xbox[/nv2a]/default.xbe + mhg.iso. 803 objects, links with no undefined symbols (first try).
 `./mh1 xbox DISC` with the G disc does all of it and makes dist/xbox/MHG (XBE + data/: AFS_DATA.AFS,
 AFS00.AFS, AFS01.AFS, SLPM_658.69, ~1.1 GB); tools/disc_files.py knows G's files (sizes + CRC32, checked
-on the folder and on the .iso; `disc_files.py game DISC` prints mh1 / mhg); `./mh1 linux|windows` refuse a
-G disc for now. tools/xbox_install.sh sends a folder holding SLPM_658.69 to E:\Games\MHG.
+on the folder and on the .iso; `disc_files.py game DISC` prints mh1 / mhg); `./mh1 linux|windows` build G for
+the PC too since 15 Oct (docs/PLAYING.md "Monster Hunter G"). tools/xbox_install.sh sends a folder holding SLPM_658.69 to E:\Games\MHG.
 xemu: `tools/run_xemu.sh --version mhg --gfx nv2a --data disc/mhg ...` (or VERSION=mhg).
 
 **Identity, so MH1 and G install side by side** (src/pc/xbox/xbox_title.h, VERSION_MHG block): title id
