@@ -1115,7 +1115,8 @@ def pc_side(name, out, rng_sync=True):
         rsync = os.path.join(out, 'ps2_rnd.txt')
         with open(rsync, 'w') as f:
             for t in sorted(ps.recs):
-                f.write('%d %d %d\n' % ((t,) + struct.unpack('<HH', ps.region(ps.recs[t], 'rnd'))))
+                f.write('%d %d %d %d\n' % ((t,) + struct.unpack('<HH', ps.region(ps.recs[t], 'rnd'))
+                                           + (struct.unpack_from('<H', ps.region(ps.recs[t], 'gw'), 0x1E)[0],)))
     rc = run_pc(gname, out, pads, pokes, os.path.join(out, 'user_data.bin'), rnd, n, rsync=rsync)
     pc = Trace(os.path.join(out, 'pc.ref'))
     print('%s: PC %d play ticks (exit %d)' % (name, len(pc.recs), rc))

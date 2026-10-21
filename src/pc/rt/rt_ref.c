@@ -13,7 +13,8 @@
  *   RT_REF_RND=a,b    Rnd_w (the game's random state, ran_suu) set at the first play tick
  *   RT_REF_POKE=file  writes at play ticks, the same ones the PS2 side makes: lines "PTICK REGION OFFSET TYPE VALUE"
  *                     (REGION plw / emN / gw / qw / ud; TYPE u8 u16 u32 f32): scenario aids (an area change)
- *   RT_REF_RNDS=file  the PS2's Rnd_w at the start of each play tick ("PTICK A B" lines), set after this side's record
+ *   RT_REF_RNDS=file  the PS2's Rnd_w (and frame counter game_w+0x1E) at the start of each play tick ("PTICK A B [F]"
+ *                     lines), set after this side's record
  *                     of the tick: a difference in random calls then only shows in the tick where it happens instead
  *                     of moving everything random afterwards (the record still shows the PC's own value)
  *   RT_REF_RNG=file   every ran_suu call: "PTICK CHANNEL OFFSET" (the caller's return address minus ran_suu's own, so
@@ -93,6 +94,7 @@ static void load_pokes(const char *path)
 
 static FILE *rng;
 static u16 (*rnds)[2];
+static s32 *rfrm;       /* the PS2's frame counter (game_w+0x1E) at the start of each play tick, -1 none */
 static int nrnds;
 extern int rt_ref_rng_on;
 u32 ran_suu(int ch);
@@ -181,18 +183,23 @@ void rt_ref_init(void)
         load_pokes(k);
     if (getenv("RT_REF_RNDS")) {
         FILE *f = fopen(getenv("RT_REF_RNDS"), "r");
-        int t, a, b, cap = 0;
-        while (f && fscanf(f, "%d %d %d", &t, &a, &b) == 3) {
-            if (t < 0)
+        int t, a, b, c, n, cap = 0;
+        char line[128];
+        while (f && fgets(line, sizeof line, f)) {
+            n = sscanf(line, "%d %d %d %d", &t, &a, &b, &c);
+            if (n < 3 || t < 0)
                 continue;
             while (t >= cap) {
                 int nc = cap ? cap * 2 : 4096;
                 rnds = realloc(rnds, sizeof *rnds * (size_t)nc);
                 memset(rnds + cap, 0xFF, sizeof *rnds * (size_t)(nc - cap));
+                rfrm = realloc(rfrm, sizeof *rfrm * (size_t)nc);
+                memset(rfrm + cap, 0xFF, sizeof *rfrm * (size_t)(nc - cap));
                 cap = nc;
             }
             rnds[t][0] = (u16)a;
             rnds[t][1] = (u16)b;
+            rfrm[t] = n >= 4 ? (c & 0xFFFF) : -1;
             if (t >= nrnds)
                 nrnds = t + 1;
         }
@@ -343,6 +350,10 @@ void rt_ref_tick(int raw)
         Rnd_w[0] = rnds[ptick][0];
         Rnd_w[1] = rnds[ptick][1];
     }
+    /* and its frame counter: the PS2 counts the frames of an area load (42 on a stage change) that the PC's quick
+     * load does not have, and the hunter's red-health recovery, the effect animations and some sounds go by it */
+    if (play && rfrm && ptick < nrnds && rfrm[ptick] >= 0)
+        *(u16 *)(game_w + 0x1E) = (u16)rfrm[ptick];
 }
 
 /* this tick's pad (read_pad in viewer.c): 1 when the referee gives it */
