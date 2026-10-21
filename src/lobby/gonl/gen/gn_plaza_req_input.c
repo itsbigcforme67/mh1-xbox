@@ -3,13 +3,13 @@
  * tools/build_pc_mhg.sh). */
 #include "../gonl.h"
 
+s32 cnWrap_SoundRequest();
 extern u8 Psw;
 extern u8 pNet;
 s32 Get_sw();                                /* extern */
 s32 SoftKeyboard_exit();                     /* extern */
 s64 SoftKeyboard_move();               /* extern */
 s32 SoftKeyboard_pos_set();     /* extern */
-s32 cnWrap_SoundRequest();               /* extern */
 s32 func_00220F40(); /* extern */
 
 s32 plaza_req_input(s32 arg0, s32 arg1) {

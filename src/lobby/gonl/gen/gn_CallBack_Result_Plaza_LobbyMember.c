@@ -3,14 +3,14 @@
  * tools/build_pc_mhg.sh). */
 #include "../gonl.h"
 
+s32 Lb_set_mini_data_to_pl();
+s32 Lb_set_player();
+s32 To_LogOut();
+s32 lobby_func_0058BAA0();
 extern u8 cw;
 extern u8 game_w;
 extern u8 lb_sys;
-s32 Lb_set_mini_data_to_pl();        /* extern */
-s32 Lb_set_player();         /* extern */
-s32 To_LogOut();         /* extern */
 s32 cnLBS_Get_LobbyMemberList(); /* extern */
-s32 lobby_func_0058BAA0();                  /* extern */
 s32 memcmp();                    /* extern */
 s32 memcpy();                /* extern */
 s32 memset();             /* extern */
@@ -93,10 +93,10 @@ block_18:
                         temp_v1_2 = (*(void **)&cw);
                         memcpy(temp_v1_2 + 3, temp_v1_2 + temp_s3 + 0x38C, 8);
                     }
-                    Lb_set_mini_data_to_pl(((s8) ((s64) var_s1)), (*(void **)&cw) + temp_s3 + 0x3A8);
+                    Lb_set_mini_data_to_pl(((s8) ((s64) var_s1)));
                     temp_v0 = (*(void **)&cw) + temp_s3;
                     (*(u8 *)((u8 *)&game_w + 0x3C)) = (u8) ((*(u8 *)((u8 *)&game_w + 0x3C)) + 1);
-                    Lb_set_player(var_s1 & 0xFF, temp_v0 + 0x38C, temp_v0 + 0x394);
+                    Lb_set_player(var_s1 & 0xFF, (s32) (temp_v0 + 0x38C), (s32) (temp_v0 + 0x394));
                 }
                 var_s2 += 1;
             } while (var_s2 < 0xA);
@@ -106,7 +106,7 @@ block_18:
             (*(s8 *)((u8 *)&lb_sys + 0x1A)) = 0;
             return;
         }
-        To_LogOut(4, temp_a1, temp_a1 + 0xBA9);
+        To_LogOut(4);
     }
 }
 

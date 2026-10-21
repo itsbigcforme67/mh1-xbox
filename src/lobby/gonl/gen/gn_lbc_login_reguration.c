@@ -3,12 +3,12 @@
  * tools/build_pc_mhg.sh). */
 #include "../gonl.h"
 
+s32 Check_CallBackWait();
+s32 To_LogOut();
+s32 lobby_func_0057C7E0();
 extern u8 cw;
-s32 Check_CallBackWait();             /* extern */
 s32 To_BootUpBrowser();                         /* extern */
-s32 To_LogOut();             /* extern */
 s32 fade_set();              /* extern */
-s32 lobby_func_0057C7E0();   /* extern */
 s32 strcpy();               /* extern */
 extern u8 first_url;
 extern u8 lit_452_0065E820;
@@ -35,13 +35,13 @@ void lbc_login_reguration(void) {
             fade_set(1, temp_a1, temp_a2);
             return;
         }
-        lobby_func_0057C7E0(1, temp_a1, temp_a2);
+        lobby_func_0057C7E0();
         return;
     case 3:
-        Check_CallBackWait(temp_a1, temp_a2);
+        Check_CallBackWait();
         return;
     default:
-        To_LogOut(4, temp_a1, temp_a2);
+        To_LogOut(4);
         return;
     }
 }

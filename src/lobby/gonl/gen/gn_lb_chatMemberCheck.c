@@ -3,13 +3,11 @@
  * tools/build_pc_mhg.sh). */
 #include "../gonl.h"
 
+s32 CallBack_Result_Plaza_LobbyEntry();
+s32 Lbs_request_enter_lobby();
+s32 MH_lobbyClear();
 extern u8 cw;
-s32 CallBack_Result_Plaza_LobbyEntry();          /* extern */
-s32 Lbs_request_enter_lobby();                      /* extern */
-s32 MH_lobbyClear();                         /* extern */
-
 s32 lb_chatMemberCheck(void) {
-    s32 temp_a0;
     s32 temp_v0;
     s32 temp_v0_2;
     u8 temp_v1_2;
@@ -17,12 +15,11 @@ s32 lb_chatMemberCheck(void) {
     u8 *temp_v1_3;
 
     temp_v1 = (*(void **)&cw);
-    temp_a0 = temp_v1 + 0xB9E;
     temp_v1_2 = (*(u8 *)((u8 *)(temp_v1) + 0xB9E));
     switch (temp_v1_2) {                            /* switch 1; irregular */
     case 0:                                         /* switch 1 */
         (*(u8 *)((u8 *)(temp_v1) + 0xB9E)) = (u8) (temp_v1_2 + 1);
-        MH_lobbyClear(temp_a0);
+        MH_lobbyClear();
         /* fallthrough */
     case 1:                                         /* switch 1 */
         temp_v0 = Lbs_request_enter_lobby();
@@ -38,7 +35,7 @@ s32 lb_chatMemberCheck(void) {
         }
         break;
     case 2:                                         /* switch 1 */
-        temp_v0_2 = CallBack_Result_Plaza_LobbyEntry(temp_a0);
+        temp_v0_2 = CallBack_Result_Plaza_LobbyEntry();
         switch (temp_v0_2) {                        /* switch 3; irregular */
         case 0:                                     /* switch 3 */
             (*(u8 *)((u8 *)((*(void **)&cw)) + 0xB9E)) = 0U;

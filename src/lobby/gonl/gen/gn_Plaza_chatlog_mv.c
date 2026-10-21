@@ -3,10 +3,10 @@
  * tools/build_pc_mhg.sh). */
 #include "../gonl.h"
 
+s32 plaza_chat_log_disp_line();
 extern u8 PitMenu;
 s32 Name_ID_change();                           /* extern */
 u32 Plaza_get_chat_line_num();                      /* extern */
-s32 plaza_chat_log_disp_line();                   /* extern */
 s32 se_req();          /* extern */
 
 void Plaza_chatlog_mv(s32 arg0) {
@@ -23,7 +23,8 @@ void Plaza_chatlog_mv(s32 arg0) {
         if ((*(u8 *)((u8 *)&PitMenu + 0x27)) != 0) {
             (*(u8 *)((u8 *)&PitMenu + 0x29)) = (u8) ((*(u8 *)((u8 *)&PitMenu + 0x29)) | 2);
         }
-        if ((plaza_chat_log_disp_line((*(u8 *)((u8 *)&PitMenu + 0x27))) & 0xFF) >= 0xA) {
+        plaza_chat_log_disp_line((s32) (*(u8 *)((u8 *)&PitMenu + 0x27)));
+        if ((M2C_ERROR(/* Read from unset register $v0 */) & 0xFF) >= 0xA) {
             (*(u8 *)((u8 *)&PitMenu + 0x29)) = (u8) ((*(u8 *)((u8 *)&PitMenu + 0x29)) | 1);
             if (temp_s0 & 0x2000) {
                 temp_a0 = (*(u8 *)((u8 *)&PitMenu + 0x27));
@@ -32,7 +33,8 @@ void Plaza_chatlog_mv(s32 arg0) {
                     (*(u8 *)((u8 *)&PitMenu + 0x27)) = (u8) (temp_a0 + 1);
                     (*(u8 *)((u8 *)&PitMenu + 0x29)) = (u8) ((*(u8 *)((u8 *)&PitMenu + 0x29)) | 4);
                     se_req(7, 0x17, 0);
-                    if ((plaza_chat_log_disp_line((*(u8 *)((u8 *)&PitMenu + 0x27))) & 0xFF) < 0xA) {
+                    plaza_chat_log_disp_line((s32) (*(u8 *)((u8 *)&PitMenu + 0x27)));
+                    if ((M2C_ERROR(/* Read from unset register $v0 */) & 0xFF) < 0xA) {
                         (*(u8 *)((u8 *)&PitMenu + 0x28)) = 1;
                     }
                 }

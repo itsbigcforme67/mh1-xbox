@@ -3,36 +3,34 @@
  * tools/build_pc_mhg.sh). */
 #include "../gonl.h"
 
+s32 Lb_select();
+s32 SetDialogData();
+s32 SetDialogYesNo();
+s32 To_LogOut();
+s32 tl_exit_sub_menu();
 extern u8 pNet;
 s32 Fade_busy_ck();                                 /* extern */
 s32 Get_sw2();                           /* extern */
-s32 Lb_select();             /* extern */
-s32 SetDialogData();     /* extern */
-s32 SetDialogYesNo();                    /* extern */
-s32 To_LogOut();         /* extern */
 s32 fade_set();                          /* extern */
-s32 tl_exit_sub_menu();                  /* extern */
 
 void plaza_logOut(void) {
     s32 temp_v0;
     u8 temp_v1;
     u8 *temp_a1;
-    u8 *temp_a2;
     u8 *temp_v1_2;
 
     Get_sw2(0);
     temp_a1 = (*(void **)&pNet);
     temp_v1 = (*(u8 *)((u8 *)(temp_a1) + 0x23));
-    temp_a2 = temp_a1 + 0x23;
     switch (temp_v1) {                              /* switch 1; irregular */
     case 0:                                         /* switch 1 */
         (*(u8 *)((u8 *)(temp_a1) + 0x23)) = (u8) (temp_v1 + 1);
-        SetDialogData(0x35, temp_a1, temp_a2);
+        SetDialogData(0x35);
         SetDialogYesNo(1);
         return;
     case 1:                                         /* switch 1 */
         (*(s8 *)((u8 *)(temp_a1) + 0x2D)) = 1;
-        temp_v0 = Lb_select(1, temp_a1, temp_a2);
+        temp_v0 = Lb_select();
         switch (temp_v0) {                          /* switch 2; irregular */
         case 0:                                     /* switch 2 */
             temp_v1_2 = (*(void **)&pNet);
@@ -51,7 +49,7 @@ void plaza_logOut(void) {
         }
         return;
     default:                                        /* switch 1 */
-        To_LogOut(1, temp_a1, temp_a2);
+        To_LogOut(1);
         break;
     }
 }

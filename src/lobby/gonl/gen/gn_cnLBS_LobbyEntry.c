@@ -3,12 +3,12 @@
  * tools/build_pc_mhg.sh). */
 #include "../gonl.h"
 
+s32 __cnet_SendReq_RoomEntry();
 extern u8 pFunc;
 s32 __cnetSub_Set_BgProcess();      /* extern */
 s32 __cnet_KeepEntryFloorInfo();    /* extern */
-s16 __cnet_SendReq_RoomEntry();             /* extern */
 
-s32 cnLBS_LobbyEntry(s32 arg0, s32 arg1) {
+s32 cnLBS_LobbyEntry(s32 arg0, void *arg1) {
     s32 temp_v0;
     s32 var_v0;
 

@@ -3,9 +3,9 @@
  * tools/build_pc_mhg.sh). */
 #include "../gonl.h"
 
+s32 lobby_func_005E66A0();
 extern u8 pFunc;
 s32 __cnetSub_Set_BgProcess(); /* extern */
-s16 lobby_func_005E66A0();                 /* extern */
 
 s32 lobby_func_005E65F0(void *arg0, s32 arg1) {
     u8 g_frame[0x50] __attribute__((aligned(16)));   /* G's stack frame */

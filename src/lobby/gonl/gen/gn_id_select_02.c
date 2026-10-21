@@ -3,13 +3,13 @@
  * tools/build_pc_mhg.sh). */
 #include "../gonl.h"
 
+s32 Lb_select();
+s32 SetDialogYesNo();
+s32 SetHelpLineMsg();
+s32 SetSceneTitle();
 extern u8 ret_stat_0038A900;
 s32 Fade_busy_ck();                      /* extern */
 s32 Get_sw2();                           /* extern */
-s32 Lb_select();                         /* extern */
-s32 SetDialogYesNo();           /* extern */
-s32 SetHelpLineMsg();                    /* extern */
-s32 SetSceneTitle();                     /* extern */
 s32 fade_set();                          /* extern */
 
 void id_select_02(void *arg0) {
@@ -22,10 +22,10 @@ void id_select_02(void *arg0) {
     switch (temp_a0) {                              /* switch 1; irregular */
     case 0:                                         /* switch 1 */
         (*(u8 *)((u8 *)(arg0) + 0x23)) = (u8) (temp_a0 + 1);
-        SetDialogYesNo(0, 1);
+        SetDialogYesNo(0);
         return;
     case 1:                                         /* switch 1 */
-        temp_v0 = Lb_select(temp_a0, 1);
+        temp_v0 = Lb_select();
         switch (temp_v0) {                          /* switch 2; irregular */
         case 0:                                     /* switch 2 */
             fade_set(1);

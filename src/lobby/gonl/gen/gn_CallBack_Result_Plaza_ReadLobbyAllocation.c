@@ -3,11 +3,11 @@
  * tools/build_pc_mhg.sh). */
 #include "../gonl.h"
 
+s32 To_LogOut();
+s32 lobby_func_0058BAA0();
 extern u8 cw;
 extern u8 lb_quest_all;
-s32 To_LogOut();         /* extern */
 s32 cnLBS_Get_LobbyMemberList(); /* extern */
-s32 lobby_func_0058BAA0();                /* extern */
 
 void CallBack_Result_Plaza_ReadLobbyAllocation(s64 arg0) {
     u8 g_frame[0x40] __attribute__((aligned(16)));   /* G's stack frame */
@@ -31,7 +31,7 @@ void CallBack_Result_Plaza_ReadLobbyAllocation(s64 arg0) {
                 var_s0 += 0x5C;
             } while (var_s1 < 0xA);
         } else {
-            To_LogOut(4, temp_a1, temp_a1 + 0xBA9);
+            To_LogOut(4);
         }
         temp_a0 = (*(void **)&cw);
         (*(u8 *)((u8 *)(temp_a0) + 0xB9D)) = (u8) ((*(u8 *)((u8 *)(temp_a0) + 0xB9D)) + 1);

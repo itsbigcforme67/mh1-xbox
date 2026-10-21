@@ -3,10 +3,10 @@
  * tools/build_pc_mhg.sh). */
 #include "../gonl.h"
 
+s32 Lb_put_icon();
+s32 Lb_put_icon_free();
 extern u8 lb_num_str;
 s32 Lb_get_cursor_col();                            /* extern */
-s32 Lb_put_icon();        /* extern */
-s32 Lb_put_icon_free(); /* extern */
 s32 SetTextureStage();                   /* extern */
 s32 flfntLocate();                      /* extern */
 s32 flfntSetSize();             /* extern */
@@ -58,27 +58,27 @@ void Put_page_num(s64 arg0, s64 arg1, s64 arg2, s64 arg3, s32 arg4) {
             if (temp_s0 < 0xA) {
                 temp_s0_2 = ((s16) (arg0));
                 temp_s2 = (((s16) (arg1))) - 1;
-                Lb_put_icon_free(((s16) ((temp_s0_2 - 0x18))), ((s16) (temp_s2)), 0x14, temp_s1, 0);
-                Lb_put_icon_free(((s16) ((temp_s0_2 + 0x28))), ((s16) (temp_s2)), 0x14, temp_s1, 1);
+                Lb_put_icon_free((s32) (((s16) ((temp_s0_2 - 0x18)))), (s32) (((s16) (temp_s2))), 0x14, temp_s1, 0);
+                Lb_put_icon_free((s32) (((s16) ((temp_s0_2 + 0x28)))), (s32) (((s16) (temp_s2))), 0x14, temp_s1, 1);
                 return;
             }
             temp_s2_2 = (((s16) (arg1))) - 1;
             temp_s0_3 = ((s16) (arg0));
-            Lb_put_icon_free(((s16) ((temp_s0_3 - 0x18))), ((s16) (temp_s2_2)), 0x14, temp_s1, 0);
-            Lb_put_icon_free(((s16) ((temp_s0_3 + 0x3A))), ((s16) (temp_s2_2)), 0x14, temp_s1, 1);
+            Lb_put_icon_free((s32) (((s16) ((temp_s0_3 - 0x18)))), (s32) (((s16) (temp_s2_2))), 0x14, temp_s1, 0);
+            Lb_put_icon_free((s32) (((s16) ((temp_s0_3 + 0x3A)))), (s32) (((s16) (temp_s2_2))), 0x14, temp_s1, 1);
             return;
         }
         if (temp_s0 < 0xA) {
             temp_s0_4 = ((s16) (arg0));
             temp_s2_3 = (((s16) (arg1))) - 3;
-            Lb_put_icon(((s16) ((temp_s0_4 - 0x1A))), ((s16) (temp_s2_3)), 0, temp_s1);
-            Lb_put_icon(((s16) ((temp_s0_4 + 0x36))), ((s16) (temp_s2_3)), 1, temp_s1);
+            Lb_put_icon((s32) (((s16) ((temp_s0_4 - 0x1A)))), (s32) (((s16) (temp_s2_3))), 0, temp_s1);
+            Lb_put_icon((s32) (((s16) ((temp_s0_4 + 0x36)))), (s32) (((s16) (temp_s2_3))), 1, temp_s1);
             return;
         }
         temp_s2_4 = (((s16) (arg1))) - 3;
         temp_s0_5 = ((s16) (arg0));
-        Lb_put_icon(((s16) ((temp_s0_5 - 0x1A))), ((s16) (temp_s2_4)), 0, temp_s1);
-        Lb_put_icon(((s16) ((temp_s0_5 + 0x5A))), ((s16) (temp_s2_4)), 1, temp_s1);
+        Lb_put_icon((s32) (((s16) ((temp_s0_5 - 0x1A)))), (s32) (((s16) (temp_s2_4))), 0, temp_s1);
+        Lb_put_icon((s32) (((s16) ((temp_s0_5 + 0x5A)))), (s32) (((s16) (temp_s2_4))), 1, temp_s1);
     }
 }
 

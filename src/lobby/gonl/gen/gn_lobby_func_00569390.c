@@ -3,8 +3,7 @@
  * tools/build_pc_mhg.sh). */
 #include "../gonl.h"
 
-s32 cnWrap_SoundRequest(); /* extern */
-
+s32 cnWrap_SoundRequest();
 s64 lobby_func_00569390(u8 *arg0, s16 *arg1, s64 arg2, s64 arg3, s32 arg4) {
     s16 temp_v0;
     s16 var_s1;
@@ -13,7 +12,6 @@ s64 lobby_func_00569390(u8 *arg0, s16 *arg1, s64 arg2, s64 arg3, s32 arg4) {
     s64 temp_a0;
     s64 temp_a1;
     s64 temp_a2;
-    s64 temp_a2_2;
     s64 temp_a3;
     s64 temp_a4;
     s64 var_a6;
@@ -79,8 +77,7 @@ s64 lobby_func_00569390(u8 *arg0, s16 *arg1, s64 arg2, s64 arg3, s32 arg4) {
         }
         temp_a4 = ((s16) ((s64) var_s1));
         temp_a3 = temp_a4 * temp_a2;
-        temp_a2_2 = (var_s2 & 0xFF) + temp_a3;
-        var_s0 = ((s16) (temp_a2_2));
+        var_s0 = ((s16) (((var_s2 & 0xFF) + temp_a3)));
         if (var_s0 >= temp_a0) {
             var_s2 = 0;
             var_s0 = ((s16) (temp_a3));
@@ -88,7 +85,7 @@ s64 lobby_func_00569390(u8 *arg0, s16 *arg1, s64 arg2, s64 arg3, s32 arg4) {
         if ((temp_v1 == (var_s2 & 0xFF)) && (temp_v0 == temp_a4)) {
             return ((s16) (temp_a1));
         }
-        cnWrap_SoundRequest(1, temp_a1, temp_a2_2, temp_a3, temp_a4, temp_a5, var_a6);
+        cnWrap_SoundRequest(1);
         *arg1 = var_s1;
         *arg0 = var_s2;
         return ((s16) (var_s0));

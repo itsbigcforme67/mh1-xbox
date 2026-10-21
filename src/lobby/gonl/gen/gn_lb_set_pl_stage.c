@@ -3,12 +3,12 @@
  * tools/build_pc_mhg.sh). */
 #include "../gonl.h"
 
+s32 Lb_act_set();
+s32 Lb_put_chat();
 extern u8 cw;
 extern u8 game_w;
 s32 Lb_Pl_basic_flagset(); /* extern */
-s32 Lb_act_set();       /* extern */
 s32 Lb_pl_chr_set(); /* extern */
-s32 Lb_put_chat();               /* extern */
 extern u8 lbCommer;
 extern u8 player_work;
 
@@ -45,7 +45,7 @@ void lb_set_pl_stage(s32 arg0, u8 *arg1) {
         if ((*arg1 == 0) && ((*(u8 *)((u8 *)((*(void **)&cw)) + 0xFA61)) != 0)) {
             temp_a1_2 = temp_s0 * 0x5C;
             if ((*(s32 *)((u8 *)&(*(u8 *)((u8 *)&lbCommer + 0x8)) + temp_a1_2)) != 0) {
-                Lb_put_chat(7, (u8 *)&lbCommer + temp_a1_2 + 8);
+                Lb_put_chat(7, (s32) ((u8 *)&lbCommer + temp_a1_2 + 8));
             }
         }
     }

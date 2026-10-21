@@ -3,9 +3,9 @@
  * tools/build_pc_mhg.sh). */
 #include "../gonl.h"
 
+s32 lobby_func_005C0480();
 extern u8 pFunc;
 s32 __cnetSub_Set_BgProcess(); /* extern */
-s16 lobby_func_005C0480();                       /* extern */
 
 s32 lobby_func_005C0400(s32 arg0, s32 arg1) {
     s32 temp_v0;

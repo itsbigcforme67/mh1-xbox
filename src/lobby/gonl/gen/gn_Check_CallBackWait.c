@@ -3,9 +3,8 @@
  * tools/build_pc_mhg.sh). */
 #include "../gonl.h"
 
+s32 To_LogOut();
 extern u8 cw;
-s32 To_LogOut();                         /* extern */
-
 s32 Check_CallBackWait(void) {
     u8 *temp_v1;
     u8 *temp_v1_2;

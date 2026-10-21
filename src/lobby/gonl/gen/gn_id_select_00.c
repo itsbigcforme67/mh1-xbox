@@ -3,19 +3,19 @@
  * tools/build_pc_mhg.sh). */
 #include "../gonl.h"
 
+s32 Lbc_set_prim();
+s32 SetHelpLineMsg();
+s32 SetSceneTitle();
+s32 transOtSelectHandleName();
 extern u8 User_data;
 extern u8 cw;
-s32 Lbc_set_prim(); /* extern */
-s32 SetHelpLineMsg();                    /* extern */
-s32 SetSceneTitle();                     /* extern */
 s32 memcmp();                /* extern */
-extern u8 transOtSelectHandleName;
 
 void id_select_00(void *arg0) {
     s32 var_s1;
     s8 var_s2;
 
-    Lbc_set_prim(0, 0, &transOtSelectHandleName, 0);
+    Lbc_set_prim(0, 0, (s32) transOtSelectHandleName, 0);
     (*(u8 *)((u8 *)(arg0) + 0x22)) = (u8) ((*(u8 *)((u8 *)(arg0) + 0x22)) + 1);
     SetSceneTitle(4);
     SetHelpLineMsg(1);

@@ -3,32 +3,31 @@
  * tools/build_pc_mhg.sh). */
 #include "../gonl.h"
 
+s32 CallBackWaitInit();
+s32 CallBack_SendMiniData();
+s32 Check_CallBackWait();
+s32 SetDialogData();
+s32 To_LogOut();
+s32 lobby_func_0057C0B0();
+s32 lobby_func_0057CC60();
+s32 lobby_func_00580FA0();
+s32 lobby_func_00581210();
+s32 lobby_func_0058BAA0();
 extern u8 CnetWork;
 extern u8 cw;
 extern u8 jtbl_0063E490;
 extern u8 pNet;
-s32 CallBackWaitInit(); /* extern */
-s32 Check_CallBackWait(); /* extern */
 s32 Fade_busy_ck();    /* extern */
 s32 McCardOperation();    /* extern */
 s32 McOperationSet(); /* extern */
 s32 Q_camera_init();                            /* extern */
-s32 SetDialogData();                     /* extern */
-s32 To_LogOut();     /* extern */
 s32 cnLBS_Send_LoginFinish(); /* extern */
 s32 cnLBS_Send_UserMiniData(); /* extern */
 s32 fade_set();                          /* extern */
-s32 lobby_func_0057C0B0(); /* extern */
-s32 lobby_func_0057CC60();                   /* extern */
-s32 lobby_func_00580FA0(); /* extern */
-s32 lobby_func_00581210(); /* extern */
-s32 lobby_func_0058BAA0();             /* extern */
 s32 str_stop_all();                             /* extern */
-extern u8 CallBack_SendMiniData;
 extern u8 my_user_mini_data;
 
 void lbc_login_finish_after(void) {
-    s32 temp_a0_4;
     s32 temp_v0;
     s32 temp_v0_2;
     s32 temp_v0_3;
@@ -86,7 +85,7 @@ block_39:
         goto block_39;
     case 2:
         (*(s8 *)((u8 *)((*(void **)&pNet)) + 0x2D)) = 1;
-        temp_v0 = lobby_func_00581210(&jtbl_0063E490, temp_a1, temp_a2, temp_a3);
+        temp_v0 = lobby_func_00581210();
         if ((temp_v0 != 0) && (temp_v0 != 1)) {
             goto block_39;
         }
@@ -95,7 +94,7 @@ block_39:
         return;
     case 3:
         (*(s8 *)((u8 *)((*(void **)&pNet)) + 0x2D)) = 1;
-        temp_v0_2 = lobby_func_00580FA0(&jtbl_0063E490, temp_a1, temp_a2, temp_a3);
+        temp_v0_2 = lobby_func_00580FA0();
         if ((temp_v0_2 != 0) && (temp_v0_2 != 1)) {
             goto block_39;
         }
@@ -104,17 +103,17 @@ block_39:
         return;
     case 4:
         (*(u8 *)((u8 *)(temp_a2) + 0xB9C)) = (u8) (temp_a1 + 1);
-        CallBackWaitInit(&jtbl_0063E490, temp_a1, temp_a2, temp_a3);
+        CallBackWaitInit();
         (*(s8 *)((u8 *)((*(void **)&cw)) + 0xBA9)) = 2;
         lobby_func_0058BAA0(&my_user_mini_data);
-        cnLBS_Send_UserMiniData(&my_user_mini_data, 0x40, &CallBack_SendMiniData);
+        cnLBS_Send_UserMiniData(&my_user_mini_data, 0x40, CallBack_SendMiniData);
         goto block_39;
     case 5:
-        Check_CallBackWait(&jtbl_0063E490, temp_a1, temp_a2, temp_a3);
+        Check_CallBackWait();
         goto block_39;
     case 6:
         (*(s8 *)((u8 *)((*(void **)&pNet)) + 0x2D)) = 1;
-        temp_v0_3 = lobby_func_0057C0B0(&jtbl_0063E490, temp_a1, temp_a2, temp_a3);
+        temp_v0_3 = lobby_func_0057C0B0();
         if ((temp_v0_3 != 0) && (temp_v0_3 != 1)) {
 
         } else {
@@ -124,13 +123,12 @@ block_39:
         goto block_39;
     case 7:
         (*(s8 *)((u8 *)((*(void **)&pNet)) + 0x2D)) = 1;
-        temp_a0_4 = Fade_busy_ck(&jtbl_0063E490, temp_a1, temp_a2, temp_a3) & 0xFF;
-        if (temp_a0_4 != 1) {
+        if ((Fade_busy_ck(&jtbl_0063E490, temp_a1, temp_a2, temp_a3) & 0xFF) != 1) {
             if ((*(u8 *)((u8 *)&CnetWork + 0x5)) == 3) {
-                lobby_func_0057CC60(temp_a0_4);
+                lobby_func_0057CC60();
                 (*(s8 *)((u8 *)((*(void **)&cw)) + 0xFA5E)) = 1;
             } else {
-                lobby_func_0057CC60(temp_a0_4);
+                lobby_func_0057CC60();
                 (*(s8 *)((u8 *)((*(void **)&cw)) + 0xFA5E)) = 0;
             }
             (*(u8 *)((u8 *)&CnetWork + 0x5)) = 2;
@@ -138,7 +136,7 @@ block_39:
         }
         goto block_39;
     default:
-        To_LogOut(4, temp_a1, temp_a2, temp_a3);
+        To_LogOut(4);
         goto block_39;
     }
 }

@@ -3,14 +3,14 @@
  * tools/build_pc_mhg.sh). */
 #include "../gonl.h"
 
+s32 cnWrap_SoundRequest();
+s32 my_comment_input();
 extern u8 User_data;
 extern u8 cw;
 extern u8 game_w;
 extern u8 pNet;
 s32 KinshiYogo_chk();                        /* extern */
-s32 cnWrap_SoundRequest();          /* extern */
 s32 memcpy();      /* extern */
-s32 my_comment_input();                          /* extern */
 extern s32 *g_lb_636A00;
 extern s32 g_lb_63E128;
 
@@ -42,7 +42,7 @@ block_14:
         temp_a0 = arg0 & 0xFFFF;
         if (temp_a0 & 0x20) {
             (*(u8 *)((u8 *)(temp_v1) + 0x23)) = (u8) (temp_v1_2 + 1);
-            cnWrap_SoundRequest(0, temp_v1 + 0x23);
+            cnWrap_SoundRequest(0);
         case 2:
             if (my_comment_input((*(s32 *)&cw) + ((*(u8 *)((u8 *)&game_w + 0x3A)) * 0x62) + 0x724) == 1) {
                 KinshiYogo_chk((*(s32 *)&cw) + ((*(u8 *)((u8 *)&game_w + 0x3A)) * 0x62) + 0x724);

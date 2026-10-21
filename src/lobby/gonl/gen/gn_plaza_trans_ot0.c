@@ -3,17 +3,29 @@
  * tools/build_pc_mhg.sh). */
 #include "../gonl.h"
 
+s32 DispButtonHelp();
+s32 DispHelpLine();
+s32 DispSceneSubTitle();
+s32 DispSceneTitle();
+s32 Plaza_disp_ReibunEdit();
+s32 lobby_func_00574D70();
+s32 lobby_func_00574FC0();
+s32 lobby_func_00576300();
+s32 lobby_func_005774D0();
+s32 lobby_func_005782A0();
+s32 lobby_func_00578C40();
+s32 lobby_func_0059F6E0();
+s32 plaza_checkMyStatusTrans();
+s32 plaza_enterLobbyTrans();
+s32 plaza_mailBoxTrans();
+s32 plaza_movePlazaTrans();
+s32 plaza_setMyCommentTrans();
 extern u8 lb_shop_msg;
 extern u8 pNet;
 extern u8 textLobbyTbl;
 extern u8 tl_mail_tbl;
-s32 DispButtonHelp();                     /* extern */
 s32 DispFrameMessage();          /* extern */
-s32 DispHelpLine();                             /* extern */
-s32 DispSceneSubTitle();                        /* extern */
-s32 DispSceneTitle();                           /* extern */
 s32 Draw_square(); /* extern */
-s32 Plaza_disp_ReibunEdit();                    /* extern */
 s32 Plaza_disp_chat();                          /* extern */
 s32 Plaza_disp_chatlog();                       /* extern */
 s32 Put_2TF();                         /* extern */
@@ -26,18 +38,6 @@ s32 font_print();           /* extern */
 s32 font_set_palette();                  /* extern */
 s32 font_set_stack_no();                     /* extern */
 s32 han2zen();              /* extern */
-s32 lobby_func_00574D70(); /* extern */
-s32 lobby_func_00574FC0(); /* extern */
-s32 lobby_func_00576300();                      /* extern */
-s32 lobby_func_005774D0();                      /* extern */
-s32 lobby_func_005782A0();                      /* extern */
-s32 lobby_func_00578C40();                   /* extern */
-s32 lobby_func_0059F6E0();               /* extern */
-s32 plaza_checkMyStatusTrans();                 /* extern */
-s32 plaza_enterLobbyTrans();    /* extern */
-s32 plaza_mailBoxTrans(); /* extern */
-s32 plaza_movePlazaTrans();                     /* extern */
-s32 plaza_setMyCommentTrans(); /* extern */
 s32 reload_tex();               /* extern */
 s32 sprintf(); /* extern */
 extern u8 ClassInfo;
@@ -65,7 +65,7 @@ void plaza_trans_ot0(void *arg0) {
     SetFilterMode(1);
     flSetRenderState(0x60, 0);
     Put_2TF(&(*(u8 *)((u8 *)&textLobbyTbl + 0x14)));
-    lobby_func_00578C40(((s16) (((*(s16 *)((u8 *)&textLobbyTbl + 0x16)) + 0x1B))));
+    lobby_func_00578C40((s32) (((s16) (((*(s16 *)((u8 *)&textLobbyTbl + 0x16)) + 0x1B)))));
     DispSceneTitle();
     DispHelpLine();
     temp_v1 = (*(u8 *)((u8 *)((*(void **)&pNet)) + 0x28));
@@ -73,13 +73,13 @@ void plaza_trans_ot0(void *arg0) {
     case 11:                                        /* switch 1 */
         var_s0 = 0xFF564D33;
         sp2C = 0xC6201A14;
-        lobby_func_0059F6E0(0xC6201A14);
+        lobby_func_0059F6E0(-0x39DFE5EC);
         break;
     case 16:                                        /* switch 1 */
     case 12:                                        /* switch 1 */
         var_s0 = 0xFF564D33;
         sp2C = 0xCC151200;
-        lobby_func_0059F6E0(0xCC151200);
+        lobby_func_0059F6E0(-0x33EAEE00);
         break;
     }
     temp_v1_2 = (*(u8 *)((u8 *)((*(void **)&pNet)) + 0x28));
@@ -91,7 +91,7 @@ void plaza_trans_ot0(void *arg0) {
     temp_v0 = (*(u8 *)((u8 *)((*(void **)&pNet)) + 0x28));
     switch (temp_v0) {                              /* switch 2 */
     default:                                        /* switch 2 */
-        lobby_func_0059F6E0(0xCC151200);
+        lobby_func_0059F6E0(-0x33EAEE00);
         Plaza_disp_chat();
         break;
     case 0:                                         /* switch 2 */

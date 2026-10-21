@@ -3,14 +3,14 @@
  * tools/build_pc_mhg.sh). */
 #include "../gonl.h"
 
+s32 cnLBS_PlazaExit();
+s32 lobby_func_005AEA90();
 s32 __cnetSub_Get_RestBgWork();                     /* extern */
-s32 cnLBS_PlazaExit();                 /* extern */
-extern u8 lobby_func_005AEA90;
 
 void lobby_func_005AE930(void *arg0) {
     if (__cnetSub_Get_RestBgWork() > 0) {
         (*(u8 *)((u8 *)(arg0) + 0x22)) = (u8) ((*(u8 *)((u8 *)(arg0) + 0x22)) + 1);
-        cnLBS_PlazaExit(&lobby_func_005AEA90);
+        cnLBS_PlazaExit((s32) lobby_func_005AEA90);
     }
 }
 

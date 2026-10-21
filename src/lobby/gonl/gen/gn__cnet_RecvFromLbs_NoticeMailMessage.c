@@ -3,9 +3,9 @@
  * tools/build_pc_mhg.sh). */
 #include "../gonl.h"
 
+s32 Lbc_init_network_work();
+s32 Lbc_set_prim();
 extern u8 cw;
-s32 Lbc_init_network_work();                    /* extern */
-s32 Lbc_set_prim(); /* extern */
 s32 cnWrap_BgmVolume();                  /* extern */
 s32 fade_set();                          /* extern */
 extern u8 put_back;
@@ -17,7 +17,7 @@ void _cnet_RecvFromLbs_NoticeMailMessage(void) {
     (*(u8 *)((u8 *)(temp_v1) + 0xB9B)) = (u8) ((*(u8 *)((u8 *)(temp_v1) + 0xB9B)) + 1);
     cnWrap_BgmVolume(0);
     Lbc_init_network_work();
-    Lbc_set_prim(&put_back, 0, 0, 0);
+    Lbc_set_prim((s32) &put_back, 0, 0, 0);
     fade_set(0xA);
 }
 

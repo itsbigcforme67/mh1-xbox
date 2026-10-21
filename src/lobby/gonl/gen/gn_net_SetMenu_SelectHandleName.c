@@ -3,12 +3,12 @@
  * tools/build_pc_mhg.sh). */
 #include "../gonl.h"
 
+s32 transSelectHandleName();
 extern u8 ret_stat_0038A900;
 s32 id_select_00();
 s32 id_select_01();
 s32 id_select_02();
 static s32 (*const ranking_jmp_175_g[])() = { id_select_00, id_select_01, id_select_02 };   /* G's table of functions, by name */
-s32 transSelectHandleName();              /* extern */
 extern u8 ranking_jmp_175;
 
 s8 net_SetMenu_SelectHandleName(void *arg0) {

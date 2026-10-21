@@ -3,16 +3,16 @@
  * tools/build_pc_mhg.sh). */
 #include "../gonl.h"
 
+s32 Lbc_set_prim();
+s32 To_LogOut();
+s32 cnLbc_CheckInFloorOrder();
+s32 cnWrap_InitWork();
+s32 lobby_func_00579B90();
+s32 lobby_func_0059A270();
+s32 lobby_func_0059E270();
 extern u8 cw;
 s32 Fade_busy_ck();                                 /* extern */
-s32 Lbc_set_prim(); /* extern */
-s32 To_LogOut();                         /* extern */
-s32 cnLbc_CheckInFloorOrder();           /* extern */
-s32 cnWrap_InitWork();                    /* extern */
 s32 fade_set();                          /* extern */
-s32 lobby_func_00579B90();                      /* extern */
-s32 lobby_func_0059A270();                      /* extern */
-s32 lobby_func_0059E270();               /* extern */
 s32 str_stop();                          /* extern */
 
 void lobby_func_00580C70(void) {
@@ -28,7 +28,7 @@ void lobby_func_00580C70(void) {
         (*(s8 *)((u8 *)((*(void **)&cw)) + 0xB9D)) = 0;
         (*(s8 *)((u8 *)((*(void **)&cw)) + 0xFA61)) = 1;
         (*(s8 *)((u8 *)((*(void **)&cw)) + 0xF751)) = 0;
-        cnWrap_InitWork(temp_a0);
+        cnWrap_InitWork();
         Lbc_set_prim(0, 0, 0, 0);
         lobby_func_00579B90();
         lobby_func_0059A270();
@@ -40,7 +40,7 @@ void lobby_func_00580C70(void) {
         }
         return;
     case 1:
-        lobby_func_0059E270(1);
+        lobby_func_0059E270();
         return;
     default:
         To_LogOut(4);

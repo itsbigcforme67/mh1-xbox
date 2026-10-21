@@ -3,25 +3,25 @@
  * tools/build_pc_mhg.sh). */
 #include "../gonl.h"
 
+s32 CallBackWaitInit();
+s32 CallBack_Result_Lobby_LobbyExit();
+s32 Check_CallBackWait();
+s32 Lb_eat_to_bell();
+s32 Lb_put_inputMsgForHTML();
+s32 Lbc_set_prim();
+s32 SetDialogData();
+s32 To_EnterPlaza2Lobby();
+s32 To_LogOut();
+s32 cnWrap_SoundRequest();
 extern u8 cw;
 extern u8 pNet;
-s32 CallBackWaitInit();                         /* extern */
-s32 Check_CallBackWait(); /* extern */
 s32 Fade_busy_ck(); /* extern */
 s32 Get_sw();                                /* extern */
-s32 Lb_eat_to_bell(); /* extern */
-s32 Lb_put_inputMsgForHTML();                 /* extern */
-s32 Lbc_set_prim(); /* extern */
-s32 SetDialogData();                     /* extern */
-s32 To_EnterPlaza2Lobby();               /* extern */
-s32 To_LogOut(); /* extern */
-s32 cnLBS_LobbyExit();                 /* extern */
-s32 cnWrap_SoundRequest();               /* extern */
+s32 cnLBS_LobbyExit();             /* extern */
 s32 fade_set(); /* extern */
 s32 font_print_double(); /* extern */
 s32 font_set_stack_no();                 /* extern */
 s32 sprintf();         /* extern */
-extern u8 CallBack_Result_Lobby_LobbyExit;
 extern s32 g_lb_63E538;
 
 void lobby_func_00582A20(void) {
@@ -34,15 +34,13 @@ void lobby_func_00582A20(void) {
     u8 *temp_a0;
     u8 *temp_a0_3;
     u8 *temp_a0_4;
-    u8 *temp_a1;
     u8 *temp_a3;
     u8 *temp_a4;
     u8 *temp_v1_2;
     u8 *temp_v1_3;
 
-    temp_a1 = (*(void **)&pNet);
     temp_s0 = Get_sw(0) & 0xFFFF;
-    (*(s8 *)((u8 *)(temp_a1) + 0x2D)) = 1;
+    (*(s8 *)((u8 *)((*(void **)&pNet)) + 0x2D)) = 1;
     temp_a3 = (*(void **)&cw);
     temp_a2 = (*(u8 *)((u8 *)(temp_a3) + 0xB9D));
     temp_a4 = temp_a3 + 0xB9D;
@@ -50,14 +48,14 @@ void lobby_func_00582A20(void) {
     case 0x0:                                       /* switch 1 */
         (*(u8 *)((u8 *)(temp_a3) + 0xB9D)) = (u8) (temp_a2 + 1);
         (*(u32 *)((u8 *)((*(void **)&cw)) + 0xBB4)) = 0x12CU;
-        Lb_eat_to_bell((*(void **)&cw) + 0xF75D, 2, temp_a2, temp_a3, temp_a4);
+        Lb_eat_to_bell((s32) ((*(void **)&cw) + 0xF75D));
         (*(u8 *)((u8 *)((*(void **)&pNet)) + 0x27)) = 0U;
         CallBackWaitInit();
         (*(s8 *)((u8 *)((*(void **)&cw)) + 0xBA9)) = 0x26;
-        cnLBS_LobbyExit(&CallBack_Result_Lobby_LobbyExit);
+        cnLBS_LobbyExit(CallBack_Result_Lobby_LobbyExit);
         break;
     case 0x1:                                       /* switch 1 */
-        Check_CallBackWait(1, 2, temp_a2, temp_a3, temp_a4);
+        Check_CallBackWait();
         break;
     case 0x2:                                       /* switch 1 */
         if ((*(u8 *)((u8 *)((*(void **)&pNet)) + 0x27)) == 2) {
@@ -75,10 +73,10 @@ void lobby_func_00582A20(void) {
         break;
     case 0x63:                                      /* switch 1 */
         (*(u8 *)((u8 *)(temp_a3) + 0xB9D)) = 0U;
-        To_LogOut(4, temp_a1, temp_a2, temp_a3, temp_a4);
+        To_LogOut(4);
         break;
     default:                                        /* switch 1 */
-        To_LogOut(4, (void *)2, temp_a2, temp_a3, temp_a4);
+        To_LogOut(4);
         break;
     }
     temp_a0_2 = (*(u8 *)((u8 *)((*(void **)&pNet)) + 0x27));
@@ -98,7 +96,7 @@ void lobby_func_00582A20(void) {
         font_print_double(0x1D6, 0x54, 1, 5, &sp20);
         return;
     case 1:                                         /* switch 2 */
-        Lb_put_inputMsgForHTML(temp_a0_2);
+        Lb_put_inputMsgForHTML();
         if (temp_s0 & 0xFFFF & 0x20) {
             temp_v1_3 = (*(void **)&pNet);
             (*(u8 *)((u8 *)(temp_v1_3) + 0x27)) = (u8) ((*(u8 *)((u8 *)(temp_v1_3) + 0x27)) + 1);

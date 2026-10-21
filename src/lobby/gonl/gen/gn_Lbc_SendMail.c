@@ -3,12 +3,11 @@
  * tools/build_pc_mhg.sh). */
 #include "../gonl.h"
 
+s32 CallBackWaitInit();
+s32 Check_CallBackWait();
+s32 lobby_func_005E5C50();
 extern u8 cw;
-s32 CallBackWaitInit();                         /* extern */
-s32 Check_CallBackWait();         /* extern */
 s32 Visual_main();                    /* extern */
-s32 lobby_func_005E5C50(); /* extern */
-extern u8 CallBack_Result_Mail_SendMail;
 
 s32 Lbc_SendMail(void) {
     u8 temp_v1;
@@ -29,14 +28,14 @@ s32 Lbc_SendMail(void) {
         CallBackWaitInit();
         (*(s8 *)((u8 *)((*(void **)&cw)) + 0xBA9)) = 0x33;
         temp_v0 = (*(void **)&cw);
-        lobby_func_005E5C50(temp_v0 + 0xF81, temp_v0 + 0xF9A, &CallBack_Result_Mail_SendMail);
+        lobby_func_005E5C50((s32) (temp_v0 + 0xF81), (s32) (temp_v0 + 0xF9A));
         temp_v1_2 = (*(void **)&cw);
         (*(u8 *)((u8 *)(temp_v1_2) + 0xB9D)) = (u8) ((*(u8 *)((u8 *)(temp_v1_2) + 0xB9D)) + 1);
 block_17:
     default:
         return 2;
     case 1:
-        Check_CallBackWait(temp_a1 + 0xB9D, temp_a1);
+        Check_CallBackWait();
         goto block_17;
     case 2:
         (*(u8 *)((u8 *)(temp_a1) + 0xB9D)) = 0U;

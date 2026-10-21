@@ -43,9 +43,72 @@ def gen_name(a):
     return n
 
 
+CTX_PATH = os.path.join(ROOT, 'build/mhg/gonl_ctx.h')
+CTX = {}     # function name -> return type for the declarations m2c then leaves out
+
+
+def ctx_type(t):
+    t = t.strip()
+    if '*' in t:
+        return 'void *'
+    if t in ('f32', 'float', 'f64', 'double'):
+        return None
+    if t in ('s64', 'u64'):
+        return 's64'
+    return 's32'
+
+
+def write_context():
+    """m2c guesses a callee's arguments from the registers set before the call, and shows them positionally (a1 alone
+    becomes the first argument). A context of the signatures known so far (the generated files, then the PC's own
+    G-side C) gives the right count: build/mhg/gonl_ctx.h, from the files of the previous run (run twice after a big
+    change). Functions with float arguments are left out (their m2c prototype keeps them as floats)."""
+    sigs = {}
+    srcs = [os.path.join(ROOT, 'src/lobby/gonl/gen', f) for f in sorted(os.listdir(os.path.join(ROOT, 'src/lobby/gonl/gen')))]
+    srcs += [os.path.join(ROOT, f) for f in ('src/lobby/gonl/gonl_g.c', 'src/lobby/f/lb_g.c', 'src/lobby/f/lb_guild_g.c')]
+    for f in srcs:
+        if not os.path.exists(f) or not f.endswith('.c'):
+            continue
+        for m in re.finditer(r'^(?:static )?(\w[\w ]*?\**)\s*\b(\w+)\(([^()]*)\)\s*\{', open(f).read(), re.M):
+            ret, name, params = m.group(1).strip(), m.group(2), m.group(3).strip()
+            if name in sigs or ret == 'static':
+                continue
+            if params in ('', 'void'):
+                ps = []
+            else:
+                ps = [ctx_type(re.sub(r'\b\w+$', '', p.strip()) or 's32') for p in params.split(',')]
+            if None in ps or '...' in params:
+                continue
+            r = 'void' if ret == 'void' else (ctx_type(ret) or None)
+            if r is None:
+                continue
+            sigs[name] = (r, ps)
+    os.makedirs(os.path.dirname(CTX_PATH), exist_ok=True)
+    with open(CTX_PATH, 'w') as f:
+        f.write('typedef int s32; typedef unsigned int u32; typedef long long s64;\n')
+        for n, (r, ps) in sorted(sigs.items()):
+            f.write('%s %s(%s);\n' % (r, n, ', '.join(ps) or 'void'))
+    CTX.clear()
+    CTX.update((n, r) for n, (r, ps) in sigs.items())
+
+
+def declare_ctx_calls(src):
+    """the functions m2c knew from the context get no declaration from it: declare them (no parameters, as the rest)"""
+    head = ''
+    for n in sorted(set(re.findall(r'\b([A-Za-z_]\w*)\b', src)) & set(CTX)):    # (calls, and function names as values)
+        if n in CTX and not re.search(r'^\w[\w ]*\**\s*\b%s\(' % n, src, re.M):
+            head += '%s %s();\n' % ('void *' if CTX[n] == 'void *' else 's64' if CTX[n] == 's64' else 's32', n)
+    return head + src
+
+
 def draft(name):
     # m2c's EE target: G passes arguments 5-8 in $8-$11 (mips-mwcc reads them from the stack and loses them)
     env = dict(os.environ, DRAFT_T=os.environ.get('DRAFT_T', 'mipsee-gcc-c'))
+    if CTX:     # (without the function itself: m2c would take its parameter types from there, void * for an s32 *)
+        own = CTX_PATH + '.one'
+        with open(own, 'w') as f:
+            f.writelines(l for l in open(CTX_PATH) if not re.search(r'\b%s\(' % name, l))
+        env['DRAFT_CTX'] = own
     p = subprocess.run([sys.executable, os.path.join(ROOT, 'tools/draft.py'), 'mhg/lobby', name],
                        capture_output=True, text=True, env=env)
     return p.stdout
@@ -82,7 +145,7 @@ def convert(src):
     # m2c declares the D_ names it saw; after renaming, declare the new names once
     used = set(re.findall(r'\bg_(?:main|sub|lb)_[0-9A-F]{6}\b', src))
     decl = ''.join('extern u8 %s;\n' % n for n in sorted(used) if not re.search(r'extern [^;]*\b%s\b' % n, src))
-    return decl + undeclared(src)
+    return declare_ctx_calls(decl + undeclared(src))
 
 
 KEEP_MH1 = {'nwDispStr_Html', 'Display_StringData', 'Analysis_StringData', 'DispDialogData', 'Draw_menu_square'}
@@ -318,7 +381,7 @@ def undeclared(src):
     """names the conversion introduced (&NAME) without a declaration: bytes"""
     out = []
     for n in sorted(set(re.findall(r'&(\w+)\b', src))):
-        if re.search(r'^(?:extern |static )?[\w ]+\**\s*\b%s\b\s*(?:\(|;|\[)' % n, src, re.M):
+        if n in CTX or re.search(r'^(?:extern |static )?\w[\w ]*\**\s*\b%s\b\s*(?:\(|;|\[)' % n, src, re.M):
             continue
         if re.search(r'^\s+(?:s8|u8|s16|u16|s32|u32|f32|s64|u64|s128|void \*)\s+\**%s\b' % n, src, re.M):
             continue
@@ -385,6 +448,8 @@ def main():
     for a in args:
         names += [l.split()[-1] for l in open(a)] if os.path.isfile(a) else [a]
     os.makedirs(out, exist_ok=True)
+    if '--no-ctx' not in sys.argv:
+        write_context()
     bad = []
     names = [n for n in names if not (0x5C1800 <= gaddr(n) < 0x5E1000)]    # the in-game browser: not on the PC
     # the lobby-server receive handlers are src/lobby/cnet/cnet_g.c's (gnet_*, named per address in pc_names.txt);

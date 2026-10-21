@@ -3,20 +3,20 @@
  * tools/build_pc_mhg.sh). */
 #include "../gonl.h"
 
+s32 cnLBS_Read_RoomJoinUser();
+s32 lobby_func_005AE0B0();
+s32 lobby_func_005AE0F0();
+s32 lobby_func_005AE130();
+s32 lobby_func_005AE3D0();
 s32 __cnetSub_Get_RestBgWork();                     /* extern */
 s32 cnLBS_Read_MatchEntryJoinUser(); /* extern */
-s32 cnLBS_Read_RoomJoinUser();    /* extern */
-s32 lobby_func_005AE3D0();        /* extern */
-extern u8 lobby_func_005AE0B0;
-extern u8 lobby_func_005AE0F0;
-extern u8 lobby_func_005AE130;
 
 void lobby_func_005ADFF0(void *arg0) {
     if (__cnetSub_Get_RestBgWork() >= 3) {
         (*(u8 *)((u8 *)(arg0) + 0x22)) = (u8) ((*(u8 *)((u8 *)(arg0) + 0x22)) + 1);
-        cnLBS_Read_MatchEntryJoinUser((*(u16 *)((u8 *)(arg0) + 0x14)), &lobby_func_005AE0B0);
-        cnLBS_Read_RoomJoinUser((*(u16 *)((u8 *)(arg0) + 0x14)), &lobby_func_005AE0F0);
-        lobby_func_005AE3D0((*(u16 *)((u8 *)(arg0) + 0x14)), &lobby_func_005AE130);
+        cnLBS_Read_MatchEntryJoinUser((*(u16 *)((u8 *)(arg0) + 0x14)), lobby_func_005AE0B0);
+        cnLBS_Read_RoomJoinUser((s32) (*(u16 *)((u8 *)(arg0) + 0x14)), (s32) lobby_func_005AE0F0);
+        lobby_func_005AE3D0((s32) (*(u16 *)((u8 *)(arg0) + 0x14)), (s32) lobby_func_005AE130);
     }
 }
 

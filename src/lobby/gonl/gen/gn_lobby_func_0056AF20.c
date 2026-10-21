@@ -3,9 +3,9 @@
  * tools/build_pc_mhg.sh). */
 #include "../gonl.h"
 
+s32 SetDialogData();
 extern u8 g_main_2EF390;
 extern u8 g_main_2EF390;
-s32 SetDialogData();                     /* extern */
 extern u8 ClassInfo;
 extern u8 my_user_mini_data;
 

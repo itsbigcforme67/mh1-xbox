@@ -3,13 +3,13 @@
  * tools/build_pc_mhg.sh). */
 #include "../gonl.h"
 
+s32 CallBack_Result_Plaza_ReadAllocation2();
+s32 To_LogOut();
 extern u8 g_main_2EFA74;
 extern u8 cw;
 extern u8 g_main_2EFA74;
 extern u8 pNet;
-s32 CallBack_Result_Plaza_ReadAllocation2(); /* extern */
 s32 Fade_busy_ck();                     /* extern */
-s32 To_LogOut();                    /* extern */
 s32 fade_set();                          /* extern */
 
 s32 lbc_in_plaza_00(void) {
@@ -31,7 +31,7 @@ s32 lbc_in_plaza_00(void) {
 block_15:
         return 2;
     case 1:
-        if (CallBack_Result_Plaza_ReadAllocation2(1, temp_a1) != 0) {
+        if (CallBack_Result_Plaza_ReadAllocation2() != 0) {
 
         } else {
             temp_v1_3 = (*(void **)&cw);
@@ -46,7 +46,7 @@ block_15:
         }
         goto block_15;
     default:
-        To_LogOut(4, temp_a1);
+        To_LogOut(4);
         goto block_15;
     }
 }

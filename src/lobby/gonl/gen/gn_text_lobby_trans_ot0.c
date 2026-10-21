@@ -3,11 +3,12 @@
  * tools/build_pc_mhg.sh). */
 #include "../gonl.h"
 
+s32 DispHelpLine();
+s32 DispSceneTitle();
+s32 lobby_func_005936B0();
 extern u8 CnetWork;
 extern u8 cw;
 extern u8 textLobbyTbl;
-s32 DispHelpLine();                             /* extern */
-s32 DispSceneTitle();                 /* extern */
 s32 Disp_back();                         /* extern */
 s32 Online_ck();                                    /* extern */
 s32 Put_2TF();                         /* extern */
@@ -15,7 +16,6 @@ s32 SetFilterMode();                     /* extern */
 s32 SetTextureStage();                   /* extern */
 s32 flSetRenderState();         /* extern */
 s32 font_set_stack_no();                     /* extern */
-s32 lobby_func_005936B0();               /* extern */
 s32 reload_tex();               /* extern */
 
 void text_lobby_trans_ot0(void *arg0) {
@@ -37,7 +37,7 @@ void text_lobby_trans_ot0(void *arg0) {
         } else if (((u32) (temp_v1 - 5) < 2U) || (temp_v1 == 3)) {
             Disp_back(1);
         } else {
-            lobby_func_005936B0(1);
+            lobby_func_005936B0();
         }
     } else {
         reload_tex(1, 0x140);
@@ -52,7 +52,7 @@ void text_lobby_trans_ot0(void *arg0) {
     if ((*(u8 *)((u8 *)(temp_a1) + 0xB99)) != 5) {
         temp_a0 = (*(u8 *)((u8 *)(temp_a1) + 0xB9B));
         if ((temp_a0 == 4) && (temp_a0 == 3)) {
-            DispSceneTitle(temp_a0, temp_a1);
+            DispSceneTitle();
             DispHelpLine();
         }
     }

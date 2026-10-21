@@ -3,8 +3,8 @@
  * tools/build_pc_mhg.sh). */
 #include "../gonl.h"
 
+s32 lobby_func_00571A90();
 extern u8 g_main_2EFBAC;
-s32 lobby_func_00571A90();               /* extern */
 s32 memset();           /* extern */
 
 void lobby_func_00571AF0(void) {
@@ -20,6 +20,6 @@ void lobby_func_00571AF0(void) {
     (*(s8 *)((u8 *)((*(void **)&g_main_2EFBAC)) + 0x23E)) = 1;
     (*(s8 *)((u8 *)((*(void **)&g_main_2EFBAC)) + 0x23D)) = 1;
     (*(s8 *)((u8 *)((*(void **)&g_main_2EFBAC)) + 0x23C)) = 1;
-    lobby_func_00571A90(1);
+    lobby_func_00571A90();
 }
 

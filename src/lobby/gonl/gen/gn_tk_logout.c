@@ -3,15 +3,15 @@
  * tools/build_pc_mhg.sh). */
 #include "../gonl.h"
 
+s32 CallBack_Logout_ShutDown();
 extern u8 COM_R_No_Disconnect;
 extern u8 COM_R_No_Logout;
 extern u8 cw;
 extern u8 game_w;
 s32 CpInetGetStatus();                            /* extern */
-s32 cnLBS_LogoutLobbyServer();     /* extern */
-s32 cnLBS_ShutDownLobbyServer();   /* extern */
+s32 cnLBS_LogoutLobbyServer();    /* extern */
+s32 cnLBS_ShutDownLobbyServer();  /* extern */
 s32 disconnect();                                 /* extern */
-extern u8 CallBack_Logout_ShutDown;
 
 s32 tk_logout(s32 arg0) {
     s32 temp_v0_2;
@@ -41,7 +41,7 @@ s32 tk_logout(s32 arg0) {
                 temp_a1_2 = (*(u8 *)&COM_R_No_Logout) + 1;
                 (*(u8 *)&COM_R_No_Logout) = temp_a1_2;
                 (*(s8 *)((u8 *)((*(void **)&cw)) + 0xBA9)) = 0x36;
-                cnLBS_LogoutLobbyServer(&CallBack_Logout_ShutDown, temp_a1_2);
+                cnLBS_LogoutLobbyServer(CallBack_Logout_ShutDown, temp_a1_2);
                 break;
             case 1:                                 /* switch 2 */
             case 3:                                 /* switch 2 */
@@ -50,7 +50,7 @@ s32 tk_logout(s32 arg0) {
                 temp_a1_3 = (*(u8 *)&COM_R_No_Logout) + 1;
                 (*(u8 *)&COM_R_No_Logout) = temp_a1_3;
                 (*(s8 *)((u8 *)((*(void **)&cw)) + 0xBA9)) = 0x36;
-                cnLBS_ShutDownLobbyServer(&CallBack_Logout_ShutDown, temp_a1_3);
+                cnLBS_ShutDownLobbyServer(CallBack_Logout_ShutDown, temp_a1_3);
                 break;
             case 6:                                 /* switch 2 */
                 (*(u8 *)&COM_R_No_Logout) = 3U;

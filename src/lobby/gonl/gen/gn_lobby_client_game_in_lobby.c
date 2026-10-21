@@ -3,13 +3,13 @@
  * tools/build_pc_mhg.sh). */
 #include "../gonl.h"
 
+s32 Check_InterruptFlag();
+s32 Lbc_set_prim();
+s32 To_LogOut();
+s32 lobby_func_00580C70();
+s32 lobby_func_00582A20();
 extern u8 cw;
 extern u8 pNet;
-s32 Check_InterruptFlag();                          /* extern */
-s32 Lbc_set_prim(); /* extern */
-s32 To_LogOut();                         /* extern */
-s32 lobby_func_00580C70();                      /* extern */
-s32 lobby_func_00582A20();                      /* extern */
 extern u8 put_back;
 
 void lobby_client_game_in_lobby(void) {
@@ -19,7 +19,7 @@ void lobby_client_game_in_lobby(void) {
     if (Check_InterruptFlag() != 0) {
         temp_a0 = (*(void **)&cw);
         if (((*(u8 *)((u8 *)(temp_a0) + 0xB9B)) == 0) && ((*(u8 *)((u8 *)(temp_a0) + 0xB9C)) == 1)) {
-            Lbc_set_prim(0, 0, &put_back, 0);
+            Lbc_set_prim(0, 0, (s32) &put_back, 0);
             (*(s8 *)((u8 *)((*(void **)&pNet)) + 0x31)) = 0;
         }
         return;

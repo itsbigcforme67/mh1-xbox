@@ -3,11 +3,11 @@
  * tools/build_pc_mhg.sh). */
 #include "../gonl.h"
 
+s32 Lb_on_dialog();
 extern u8 cw;
 extern u8 pNet;
 s32 DispDialogData();                         /* extern */
 s32 DispSoftkeyboard();                  /* extern */
-s32 Lb_on_dialog();                             /* extern */
 s32 SoftKeyboard_alive_check();                     /* extern */
 s32 font_set_stack_no();                     /* extern */
 

@@ -3,10 +3,10 @@
  * tools/build_pc_mhg.sh). */
 #include "../gonl.h"
 
+s32 lobby_func_00559FF0();
 extern u8 g_main_2EFBC0;
 extern u8 g_main_2EFBC0;
 s8 Lb_back_money();                              /* extern */
-s64 lobby_func_00559FF0();                    /* extern */
 
 void lobby_func_0056FDE0(void) {
     u8 g_frame[0xD0] __attribute__((aligned(16)));   /* G's stack frame */

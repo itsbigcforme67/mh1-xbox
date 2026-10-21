@@ -3,7 +3,7 @@
  * tools/build_pc_mhg.sh). */
 #include "../gonl.h"
 
-s32 Lb_pl_to_normal(); /* extern */
+s32 Lb_pl_to_normal();
 s16 get_prim();                                     /* extern */
 void *get_prim_ptr();                            /* extern */
 s32 memcpy();          /* extern */

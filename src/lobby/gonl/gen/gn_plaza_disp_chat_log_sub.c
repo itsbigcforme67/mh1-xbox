@@ -3,13 +3,13 @@
  * tools/build_pc_mhg.sh). */
 #include "../gonl.h"
 
+s32 lobby_func_0058EDD0();
 u32 Plaza_get_chat_line_num();                      /* extern */
 s32 flfntLocate();                  /* extern */
 s32 flfntSetSize();             /* extern */
 s32 font_print_double2(); /* extern */
 s32 font_print_uf();                      /* extern */
 s32 font_set_palette();                       /* extern */
-s32 lobby_func_0058EDD0();     /* extern */
 extern u8 PitMenu;
 
 void plaza_disp_chat_log_sub(s32 arg0, s32 arg1, s32 arg2) {
@@ -53,9 +53,9 @@ loop_7:
                     font_print_uf(var_s0);
                     if (var_s2 == 0) {
                         if (!(arg2 & 0xFF)) {
-                            lobby_func_0058EDD0(&sp80, temp_s5 + 0x4E);
+                            lobby_func_0058EDD0((s32) &sp80);
                         } else {
-                            lobby_func_0058EDD0(&sp80, temp_s5 + 0x46);
+                            lobby_func_0058EDD0((s32) &sp80);
                         }
                         font_print_double2(0xD8, var_s1, 1, (*(u8 *)((u8 *)(temp_s5) + 0x44)), &sp80);
                     }
@@ -87,9 +87,9 @@ loop_21:
                 temp_s2 = var_s2_2 & 0x3F;
                 temp_s1 = (u8 *)&PitMenu + (temp_s2 * 0x5F) + 0x2A;
                 if (!(arg2 & 0xFF)) {
-                    lobby_func_0058EDD0(&sp80, temp_s1 + 0x4E);
+                    lobby_func_0058EDD0((s32) &sp80);
                 } else {
-                    lobby_func_0058EDD0(&sp80, temp_s1 + 0x46);
+                    lobby_func_0058EDD0((s32) &sp80);
                 }
                 font_print_double2(0xD8, var_s3_2, 1, (*(u8 *)((u8 *)(temp_s1) + 0x44)), &sp80);
                 font_set_palette((*(u8 *)((u8 *)(temp_s1) + 0x45)));

@@ -3,9 +3,9 @@
  * tools/build_pc_mhg.sh). */
 #include "../gonl.h"
 
+s32 Lb_put_icon();
 extern u8 pNet;
 extern u8 tl_msg_tbl;
-s32 Lb_put_icon();    /* extern */
 s32 flfntLocate();                      /* extern */
 s32 flfntSetSize();             /* extern */
 s32 font_print();           /* extern */
@@ -42,17 +42,17 @@ void put_member_info(s64 arg0, s32 arg1, s8 *arg2, s32 *arg3, void *arg4, s64 ar
         if (((((s8) (arg5))) == 0) && ((*(u8 *)((u8 *)((*(void **)&pNet)) + 0x2D)) == 0)) {
             if (memcmp(arg2, &my_user_id, 8) == 0) {
                 var_s2 = 0xA;
-                var_s5 = 0xFF808080;
+                var_s5 = -0x7F7F80;
             } else {
                 var_s2 = 4;
-                var_s5 = 0xFF8080FF;
+                var_s5 = -0x7F7F01;
             }
             font_print_double(arg0, arg1, 1, var_s2, arg3);
             font_print_double(((s16) (((((s16) (arg0))) + 0xA2))), arg1, 1, var_s2, &sp70);
         } else {
             if (memcmp(arg2, &my_user_id, 8) == 0) {
                 var_a0 = 0xA;
-                var_s5 = 0xFF808080;
+                var_s5 = -0x7F7F80;
             } else {
                 var_a0 = 0;
                 var_s5 = -1;

@@ -3,14 +3,13 @@
  * tools/build_pc_mhg.sh). */
 #include "../gonl.h"
 
-s32 lobby_func_00559B40();                      /* extern */
-s32 lobby_func_00559C70();                      /* extern */
-
+s32 lobby_func_00559B40();
+void * lobby_func_00559C70();
 void lobby_func_00559C30(s32 arg0) {
     if ((arg0 & 0xFFFF) >= 0xC350) {
-        lobby_func_00559C70();
+        lobby_func_00559C70(arg0);
         return;
     }
-    lobby_func_00559B40();
+    lobby_func_00559B40(arg0);
 }
 

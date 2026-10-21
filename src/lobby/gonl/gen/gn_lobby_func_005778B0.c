@@ -3,6 +3,9 @@
  * tools/build_pc_mhg.sh). */
 #include "../gonl.h"
 
+s32 lobby_func_005775C0();
+s32 lobby_func_00578A90();
+s32 put_mail_input_square();
 extern u8 g_main_2EFBAC;
 extern u8 cw;
 extern u8 g_main_2EFBAC;
@@ -10,9 +13,6 @@ extern u8 tl_msg_tbl;
 s32 flfntLocate();                      /* extern */
 s32 font_print();                 /* extern */
 s32 font_set_palette();              /* extern */
-s32 lobby_func_005775C0();               /* extern */
-s32 lobby_func_00578A90();              /* extern */
-s32 put_mail_input_square();            /* extern */
 s32 put_titles();          /* extern */
 extern u8 lit_2316;
 
@@ -48,7 +48,7 @@ void lobby_func_005778B0(s64 arg0, s64 arg1) {
     case 2:
     case 3:
     case 4:
-        lobby_func_005775C0((*(s8 *)((u8 *)(temp_a3) + 0x238)), (*(s16 *)((u8 *)(temp_a3) + 0x22E)));
+        lobby_func_005775C0(arg0, arg1, (s64) (*(s8 *)((u8 *)(temp_a3) + 0x238)), (s64) (*(s16 *)((u8 *)(temp_a3) + 0x22E)));
         /* fallthrough */
     default:
         return;

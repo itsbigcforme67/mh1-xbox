@@ -3,9 +3,9 @@
  * tools/build_pc_mhg.sh). */
 #include "../gonl.h"
 
+s32 Lb_pl_to_chair();
 extern u8 game_w;
 s32 Lb_get_plID();                        /* extern */
-s32 Lb_pl_to_chair();                           /* extern */
 s32 Lb_send_chair_release();              /* extern */
 extern s32 lb_sys;
 extern u8 player_work;

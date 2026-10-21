@@ -3,8 +3,8 @@
  * tools/build_pc_mhg.sh). */
 #include "../gonl.h"
 
-s32 Lb_put_icon_free();  /* extern */
-s32 Lb_put_icon_free2(); /* extern */
+s32 Lb_put_icon_free();
+s32 Lb_put_icon_free2();
 s32 SetTextureStage();                   /* extern */
 s32 reload_tex();               /* extern */
 

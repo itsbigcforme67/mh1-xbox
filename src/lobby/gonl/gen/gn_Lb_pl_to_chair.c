@@ -3,11 +3,11 @@
  * tools/build_pc_mhg.sh). */
 #include "../gonl.h"
 
+s32 Lb_Pl_adj_calc();
+s32 Lb_send_pl_warp();
 extern u8 game_w;
 s32 Lb_Pl_act_set2(); /* extern */
-s32 Lb_Pl_adj_calc();            /* extern */
 s32 Lb_send_chair_release(); /* extern */
-s32 Lb_send_pl_warp();       /* extern */
 f32 flSqrt();                                /* extern */
 s32 flvecCopy(void *, f32 *);                   /* extern */
 extern s32 lb_sys;
@@ -51,7 +51,7 @@ loop_13:
                 goto block_9;
             }
 block_15:
-            Lb_send_pl_warp(temp_s1, (*(u8 *)((u8 *)&lb_sys + 0x7A)), var_a2, temp_a3);
+            Lb_send_pl_warp(temp_s1);
             goto block_16;
         }
 block_9:

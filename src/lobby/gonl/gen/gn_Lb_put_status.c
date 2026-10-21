@@ -3,43 +3,36 @@
  * tools/build_pc_mhg.sh). */
 #include "../gonl.h"
 
-extern u8 jtbl_0063E9E0;
-s32 Lb_put_icon_free();           /* extern */
-
-void Lb_put_status(s64 arg4, s32 *arg5) {
-    u8 *var_a5;   /* (s32 *) */
+s32 Lb_put_icon_free();
+void Lb_put_status(s32 arg0, s32 arg1, s32 arg2, s32 arg3, s64 arg4) {
     s64 temp_v1;
     s64 var_a4;
 
     var_a4 = arg4;
-    var_a5 = arg5;
     temp_v1 = ((s16) (var_a4));
-    if ((u32) temp_v1 < 7U) {
-        var_a5 = &jtbl_0063E9E0;
-        switch (temp_v1) {
-            return;
-        case 5:
-            var_a4 = 0x10;
-            goto block_10;
-        case 2:
-            var_a4 = 0x11;
-            goto block_10;
-        case 1:
-            var_a4 = 8;
-            goto block_10;
-        case 4:
-            var_a4 = 0x12;
-            goto block_10;
-        case 6:
-            var_a4 = 0x13;
-            goto block_10;
-        case 3:
-            var_a4 = 0x2F;
-            goto block_10;
-        }
-    } else {
+    switch (temp_v1) {
+        return;
+    case 5:
+        var_a4 = 0x10;
+    default:
 block_10:
-        Lb_put_icon_free(var_a4, var_a5);
+        Lb_put_icon_free(arg0, arg1, arg2, arg3, var_a4);
+        return;
+    case 2:
+        var_a4 = 0x11;
+        goto block_10;
+    case 1:
+        var_a4 = 8;
+        goto block_10;
+    case 4:
+        var_a4 = 0x12;
+        goto block_10;
+    case 6:
+        var_a4 = 0x13;
+        goto block_10;
+    case 3:
+        var_a4 = 0x2F;
+        goto block_10;
     }
 }
 

@@ -3,12 +3,12 @@
  * tools/build_pc_mhg.sh). */
 #include "../gonl.h"
 
-s32 Lb_put_icon();    /* extern */
+s32 Lb_put_icon();
+s32 lobby_func_005791D0();
 s32 flfntSetSize();             /* extern */
 s32 font_print_double(); /* extern */
 s32 font_set_palette();                  /* extern */
 s32 han2zen();              /* extern */
-s32 lobby_func_005791D0();               /* extern */
 extern s32 *g_lb_636D30;
 extern u16 g_lb_6B4518;
 extern s32 g_lb_6B4620;
@@ -40,7 +40,7 @@ void lobby_func_00577370(void) {
             } else {
                 font_print_double(0x220, var_s1, 1, 0, tl_mail_tbl);
             }
-            Lb_put_icon(0x1E0, ((s16) (((((s16) (var_s1))) - 2))), (*(u8 *)((u8 *)(var_s2) + 0x19)) + 2, -1);
+            Lb_put_icon(0x1E0, (s32) (((s16) (((((s16) (var_s1))) - 2)))), (*(u8 *)((u8 *)(var_s2) + 0x19)) + 2, -1);
             var_s2 += 0x20;
             var_s0 = (var_s0 + 1) & 0xFFFF;
             var_s1 = ((s16) ((var_s1 + 0x16)));

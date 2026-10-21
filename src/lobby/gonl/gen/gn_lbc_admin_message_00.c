@@ -3,6 +3,7 @@
  * tools/build_pc_mhg.sh). */
 #include "../gonl.h"
 
+s32 lobby_func_00584E10();
 extern u8 cw;
 s32 Fade_busy_ck();                       /* extern */
 s32 Info_Initialization();                /* extern */
@@ -13,7 +14,6 @@ s32 font_print();                 /* extern */
 s32 font_set_palette();                  /* extern */
 s32 font_set_stack_no();                 /* extern */
 extern u8 lit_3323;
-extern u8 lobby_func_00584E10;
 
 void lbc_admin_message_00(void) {
     u8 temp_a0;
@@ -35,7 +35,7 @@ void lbc_admin_message_00(void) {
         (*(s16 *)((u8 *)((*(void **)&cw)) + 0xEDC)) = 0x12C;
         Info_Initialization(temp_a0_2);
         (*(s8 *)((u8 *)((*(void **)&cw)) + 0xBC4)) = 2;
-        *(s32 **)0x355944 = &lobby_func_00584E10;
+        *(void (**)())0x355944 = lobby_func_00584E10;
         /* fallthrough */
     case 1:
         temp_v1 = (*(void **)&cw);

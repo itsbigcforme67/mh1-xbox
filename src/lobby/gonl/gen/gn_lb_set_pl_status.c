@@ -3,12 +3,12 @@
  * tools/build_pc_mhg.sh). */
 #include "../gonl.h"
 
+s32 Lb_Pl_adj_calc();
+s32 Lb_act_set();
+s32 lobby_func_00595530();
 extern u8 lb_sys;
 s32 Lb_Pl_act_set2(); /* extern */
-s32 Lb_Pl_adj_calc();            /* extern */
-s32 Lb_act_set();            /* extern */
 s32 flMemcpy();               /* extern */
-s32 lobby_func_00595530();                    /* extern */
 extern u8 player_work;
 
 void lb_set_pl_status(s32 arg0) {
@@ -34,7 +34,7 @@ void lb_set_pl_status(s32 arg0) {
         (*(f32 *)((u8 *)(temp_s1) + 0x808)) = (f32) (*(s16 *)((u8 *)(&sp30) + 2));
         (*(u8 *)((u8 *)(temp_s1) + 0x8EC)) = (u8) (*(u8 *)((u8 *)(&sp30) + 8));
         Lb_Pl_adj_calc(temp_s1, 0xA);
-        if (lobby_func_00595530((*(u8 *)((u8 *)(&sp30) + 6)), (*(u8 *)((u8 *)(&sp30) + 7))) == 1) {
+        if (lobby_func_00595530((s32) (*(u8 *)((u8 *)(&sp30) + 6)), (s32) (*(u8 *)((u8 *)(&sp30) + 7))) == 1) {
             temp_v1_2 = (*(u8 *)((u8 *)(&sp30) + 5));
             if (((s32) temp_v1_2 > 0) && ((s32) temp_v1_2 < 0xB)) {
                 (*(u16 *)((u8 *)&lb_sys + 0x14)) |= 1 << temp_v1_2;
@@ -53,7 +53,7 @@ void lb_set_pl_status(s32 arg0) {
             }
         } else {
 block_22:
-            Lb_act_set(temp_s1, (*(u8 *)((u8 *)(&sp30) + 6)), temp_a3 & 0xFF, temp_a3);
+            Lb_act_set(temp_s1, (s32) (*(u8 *)((u8 *)(&sp30) + 6)), temp_a3 & 0xFF);
         }
     }
 }

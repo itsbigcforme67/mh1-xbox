@@ -3,31 +3,28 @@
  * tools/build_pc_mhg.sh). */
 #include "../gonl.h"
 
+s32 CallBackWaitInit();
+s32 CallBack_Result_ConditionSearchUser();
+s32 Check_CallBackWait();
+s32 lobby_func_005E64F0();
 extern u8 cw;
-s32 CallBackWaitInit();                 /* extern */
-s32 Check_CallBackWait();               /* extern */
-s32 lobby_func_005E64F0();    /* extern */
-extern u8 CallBack_Result_ConditionSearchUser;
-
 s32 lobby_func_0057FEA0(s32 arg0) {
-    s32 temp_a0;
     u8 temp_v1_2;
     u8 *temp_v1;
 
     temp_v1 = (*(void **)&cw);
-    temp_a0 = temp_v1 + 0xB9D;
     temp_v1_2 = (*(u8 *)((u8 *)(temp_v1) + 0xB9D));
     switch (temp_v1_2) {                            /* irregular */
     case 0:
         (*(u8 *)((u8 *)(temp_v1) + 0xB9D)) = (u8) (temp_v1_2 + 1);
-        CallBackWaitInit(temp_a0, arg0);
+        CallBackWaitInit();
         (*(s8 *)((u8 *)((*(void **)&cw)) + 0xBA9)) = 0xE;
-        lobby_func_005E64F0(M2C_ERROR(/* Read from unset register $a1 */), &CallBack_Result_ConditionSearchUser);
+        lobby_func_005E64F0(M2C_ERROR(/* Read from unset register $a1 */), (s32) CallBack_Result_ConditionSearchUser);
 block_11:
     default:
         return 2;
     case 1:
-        Check_CallBackWait(temp_a0, arg0);
+        Check_CallBackWait();
         goto block_11;
     case 2:
         (*(u8 *)((u8 *)(temp_v1) + 0xB9D)) = 0U;

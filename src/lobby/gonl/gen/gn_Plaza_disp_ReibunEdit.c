@@ -3,12 +3,12 @@
  * tools/build_pc_mhg.sh). */
 #include "../gonl.h"
 
-s32 Put_page_num(); /* extern */
+s32 Put_page_num();
+s32 put_main_cursor();
 s32 Reibun_print();                 /* extern */
 s32 flfntLocate();                  /* extern */
 s32 flfntSetSize();             /* extern */
 s32 font_set_palette();                  /* extern */
-s32 put_main_cursor();                       /* extern */
 extern u8 reibun_edit;
 extern u8 str_tbl_reibun0;
 

@@ -3,14 +3,14 @@
  * tools/build_pc_mhg.sh). */
 #include "../gonl.h"
 
+s32 _cnet_CallBack_Result_RoomSetFinish();
 s32 __cnetSub_Get_RestBgWork();                     /* extern */
-s32 cnLBS_Read_PlazaCount();           /* extern */
-extern u8 _cnet_CallBack_Result_RoomSetFinish;
+s32 cnLBS_Read_PlazaCount();       /* extern */
 
 void lobby_func_005ABB50(void *arg0) {
     if (__cnetSub_Get_RestBgWork() > 0) {
         (*(u8 *)((u8 *)(arg0) + 0x22)) = (u8) ((*(u8 *)((u8 *)(arg0) + 0x22)) + 1);
-        cnLBS_Read_PlazaCount(&_cnet_CallBack_Result_RoomSetFinish);
+        cnLBS_Read_PlazaCount(_cnet_CallBack_Result_RoomSetFinish);
     }
 }
 

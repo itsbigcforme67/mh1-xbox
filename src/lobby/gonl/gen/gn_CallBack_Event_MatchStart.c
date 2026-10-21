@@ -3,12 +3,12 @@
  * tools/build_pc_mhg.sh). */
 #include "../gonl.h"
 
+s32 Lbc_SendMiniData();
+s32 Lbc_set_prim();
+s32 lobby_func_0059ACD0();
 extern u8 cw;
 extern u8 game_w;
 extern u8 player_work;
-s32 Lbc_SendMiniData();                       /* extern */
-s32 Lbc_set_prim(); /* extern */
-s32 lobby_func_0059ACD0();               /* extern */
 s32 memcpy();         /* extern */
 s32 memset();        /* extern */
 extern u8 room_member_handle;
@@ -21,14 +21,12 @@ void CallBack_Event_MatchStart(void) {
     u8 *var_s3;   /* (s32 *) */
     s32 var_s2;
     s64 var_s4;
-    u8 temp_a0;
 
     (*(s8 *)((u8 *)((*(void **)&cw)) + 0xB74)) = 1;
     Lbc_set_prim(0, 0, 0, 0);
     lobby_func_0059ACD0(0);
-    temp_a0 = (*(u8 *)((u8 *)&game_w + 0x3A));
-    (*(s32 *)((u8 *)&(*(u8 *)((u8 *)&player_work + 0x916)) + (temp_a0 * 0xA00))) = 0;
-    Lbc_SendMiniData(temp_a0);
+    (*(s32 *)((u8 *)&(*(u8 *)((u8 *)&player_work + 0x916)) + ((*(u8 *)((u8 *)&game_w + 0x3A)) * 0xA00))) = 0;
+    Lbc_SendMiniData();
     var_s4 = 0;
     var_s3 = &room_member_id;
     var_s2 = 0;

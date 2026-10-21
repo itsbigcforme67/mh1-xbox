@@ -3,9 +3,9 @@
  * tools/build_pc_mhg.sh). */
 #include "../gonl.h"
 
+s32 lobby_func_005AE5D0();
 extern u8 CnetSys_w;
 s32 memset();        /* extern */
-extern u8 lobby_func_005AE5D0;
 
 s32 lobby_func_005AE500(s8 *arg0, s32 arg1) {
     u8 g_frame[0x180] __attribute__((aligned(16)));   /* G's stack frame */
@@ -39,7 +39,7 @@ s32 lobby_func_005AE500(s8 *arg0, s32 arg1) {
         } while (var_v1_2 > 0);
         (*(u8 *)((u8 *)(&(*(u8 *)((u8 *)&CnetSys_w + 0xEB0))) + 0x20)) = 1U;
         (*(s32 *)((u8 *)(&(*(u8 *)((u8 *)&CnetSys_w + 0xEB0))) + 4)) = arg1;
-        (*(s32 **)((u8 *)(&(*(u8 *)((u8 *)&CnetSys_w + 0xEB0))) + 0)) = &lobby_func_005AE5D0;
+        (*(void (**)())((u8 *)(&(*(u8 *)((u8 *)&CnetSys_w + 0xEB0))) + 0)) = lobby_func_005AE5D0;
         return 0;
     }
     return -1;

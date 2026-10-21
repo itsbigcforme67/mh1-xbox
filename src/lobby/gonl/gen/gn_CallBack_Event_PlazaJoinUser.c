@@ -3,9 +3,9 @@
  * tools/build_pc_mhg.sh). */
 #include "../gonl.h"
 
+s32 lobby_func_005E36D0();
 s32 cnLBS_Get_mhRoomJoinUser(); /* extern */
 s32 cnetGet_Room_LastRecvNumber();         /* extern */
-s32 lobby_func_005E36D0();           /* extern */
 extern u8 PlazaInfo;
 
 void CallBack_Event_PlazaJoinUser(void) {
@@ -16,6 +16,6 @@ void CallBack_Event_PlazaJoinUser(void) {
     cnetGet_Room_LastRecvNumber(&sp1E);
     temp_v0 = (u8 *)&PlazaInfo + ((sp1E - 1) * 0x15C);
     cnLBS_Get_mhRoomJoinUser(sp1E, temp_v0 + 6, temp_v0 + 0x12);
-    lobby_func_005E36D0(sp1E, (u8 *)&PlazaInfo + ((sp1E - 1) * 0x15C) + 0x14);
+    lobby_func_005E36D0((s32) sp1E, (u8 *)&PlazaInfo + ((sp1E - 1) * 0x15C) + 0x14);
 }
 

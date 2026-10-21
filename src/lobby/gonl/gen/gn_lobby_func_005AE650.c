@@ -3,31 +3,30 @@
  * tools/build_pc_mhg.sh). */
 #include "../gonl.h"
 
-s32 lobby_func_005AE760();                    /* extern */
-s32 lobby_func_005AE790();                    /* extern */
-s32 lobby_func_005AE8E0();                    /* extern */
-s32 lobby_func_005AE930();                    /* extern */
-s32 lobby_func_005AE980();                    /* extern */
-
+s32 lobby_func_005AE760();
+s32 lobby_func_005AE790();
+s32 lobby_func_005AE8E0();
+s32 lobby_func_005AE930();
+s32 lobby_func_005AE980();
 void lobby_func_005AE650(void *arg0) {
     u8 temp_a1;
 
     temp_a1 = (*(u8 *)((u8 *)(arg0) + 0x22));
     switch (temp_a1) {                              /* irregular */
     case 0:
-        lobby_func_005AE760(temp_a1);
+        lobby_func_005AE760(arg0);
         return;
     case 1:
-        lobby_func_005AE790(temp_a1);
+        lobby_func_005AE790(arg0);
         return;
     case 2:
-        lobby_func_005AE8E0(temp_a1);
+        lobby_func_005AE8E0(arg0);
         return;
     case 3:
-        lobby_func_005AE930(temp_a1);
+        lobby_func_005AE930(arg0);
         return;
     case 4:
-        lobby_func_005AE980(temp_a1);
+        lobby_func_005AE980(arg0);
         return;
     }
 }

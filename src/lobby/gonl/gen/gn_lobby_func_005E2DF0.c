@@ -3,22 +3,22 @@
  * tools/build_pc_mhg.sh). */
 #include "../gonl.h"
 
+s32 lobby_func_005E2E70();
+s32 lobby_func_005E2F10();
+s32 lobby_func_005E2F40();
 extern u8 CnetSys_w;
-s32 lobby_func_005E2E70();         /* extern */
-s32 lobby_func_005E2F10();         /* extern */
-s32 lobby_func_005E2F40();         /* extern */
 
 void lobby_func_005E2DF0(void) {
     if ((*(u8 *)((u8 *)(&(*(u8 *)((u8 *)&CnetSys_w + 0xDC0))) + 0x20)) != 0) {
         switch ((*(u8 *)((u8 *)(&(*(u8 *)((u8 *)&CnetSys_w + 0xDC0))) + 0x21))) { /* irregular */
         case 0:
-            lobby_func_005E2E70(&(*(u8 *)((u8 *)&CnetSys_w + 0xDC0)), (*(u8 *)((u8 *)(&(*(u8 *)((u8 *)&CnetSys_w + 0xDC0))) + 0x21)));
+            lobby_func_005E2E70(&(*(u8 *)((u8 *)&CnetSys_w + 0xDC0)));
             return;
         case 1:
-            lobby_func_005E2F10(&(*(u8 *)((u8 *)&CnetSys_w + 0xDC0)), (*(u8 *)((u8 *)(&(*(u8 *)((u8 *)&CnetSys_w + 0xDC0))) + 0x21)));
+            lobby_func_005E2F10(&(*(u8 *)((u8 *)&CnetSys_w + 0xDC0)));
             return;
         case 2:
-            lobby_func_005E2F40(&(*(u8 *)((u8 *)&CnetSys_w + 0xDC0)), (*(u8 *)((u8 *)(&(*(u8 *)((u8 *)&CnetSys_w + 0xDC0))) + 0x21)));
+            lobby_func_005E2F40(&(*(u8 *)((u8 *)&CnetSys_w + 0xDC0)));
             break;
         }
     }

@@ -3,11 +3,11 @@
  * tools/build_pc_mhg.sh). */
 #include "../gonl.h"
 
+s32 Lb_put_chat();
+s32 cnWrap_SoundRequest();
 extern u8 ClassInfo;
 extern u8 cw;
-s32 Lb_put_chat();         /* extern */
 s32 cnLBS_Get_MatchEntryJoinUser(); /* extern */
-s32 cnWrap_SoundRequest();               /* extern */
 extern s32 lb_sys;
 extern s8 mhRule;
 
@@ -36,7 +36,7 @@ void CallBack_Event_MatchEntryUser(void) {
         if (temp_a2_2 >= 2) {
             temp_a1_2 = (*(void **)&cw);
             if ((((*(u16 *)((u8 *)(temp_a1_2) + 0xF752)) + 1) < temp_a2_2) && ((*(u8 *)((u8 *)(temp_a1_2) + 0xF751)) != 0)) {
-                Lb_put_chat(1, 0, temp_a2_2);
+                Lb_put_chat(1, 0);
             }
         }
     }

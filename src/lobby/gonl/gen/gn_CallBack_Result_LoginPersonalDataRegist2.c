@@ -3,8 +3,8 @@
  * tools/build_pc_mhg.sh). */
 #include "../gonl.h"
 
+s32 Lb_eat_to_bell();
 extern u8 cw;
-s32 Lb_eat_to_bell();                     /* extern */
 s32 cnLBS_Get_ServerMessage();    /* extern */
 
 void CallBack_Result_LoginPersonalDataRegist2(s64 arg0) {
@@ -21,7 +21,7 @@ void CallBack_Result_LoginPersonalDataRegist2(s64 arg0) {
         }
         (*(u8 *)((u8 *)(temp_a1) + 0xB9D)) = 3U;
         cnLBS_Get_ServerMessage((*(void **)&cw) + 0xF75D, temp_a1);
-        Lb_eat_to_bell((*(void **)&cw) + 0xF75D);
+        Lb_eat_to_bell((s32) ((*(void **)&cw) + 0xF75D));
     }
 }
 

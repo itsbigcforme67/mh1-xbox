@@ -3,15 +3,15 @@
  * tools/build_pc_mhg.sh). */
 #include "../gonl.h"
 
+s32 To_LogOut();
+s32 lobby_func_005AC230();
+s32 lobby_func_005AC580();
 extern u8 ClassInfo;
 extern u8 cw;
-s32 To_LogOut();                     /* extern */
 s32 cnLBS_Get_PlazaCount();            /* extern */
 s32 cnLBS_Get_PlazaName();           /* extern */
 s32 cnLBS_Get_PlazaStatus();         /* extern */
 s32 cnLBS_Get_mhPlazaJoinUser(); /* extern */
-s32 lobby_func_005AC230();           /* extern */
-s32 lobby_func_005AC580();        /* extern */
 extern u8 LobbyInfo;
 
 void CallBack_Result_Plaza_ReadLobbyAllocation2(s64 arg0) {
@@ -50,7 +50,7 @@ void CallBack_Result_Plaza_ReadLobbyAllocation2(s64 arg0) {
                 (*(u8 *)((u8 *)(temp_a0) + 0xB9D)) = (u8) ((*(u8 *)((u8 *)(temp_a0) + 0xB9D)) + 1);
                 return;
             }
-            To_LogOut(4, (((s8 *)&sp38)[1]));
+            To_LogOut(4);
         }
     }
 }

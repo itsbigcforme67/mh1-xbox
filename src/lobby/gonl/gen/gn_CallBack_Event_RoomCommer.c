@@ -3,8 +3,8 @@
  * tools/build_pc_mhg.sh). */
 #include "../gonl.h"
 
+s32 Lb_put_chat();
 extern u8 cw;
-s32 Lb_put_chat();                 /* extern */
 s32 cnLBS_Get_RoomLeaveUser();              /* extern */
 s32 memcpy();              /* extern */
 s32 memset();        /* extern */
@@ -39,7 +39,7 @@ loop_1:
         }
     }
     if (((*(u8 *)((u8 *)((*(void **)&cw)) + 0xFA61)) != 0) && (sp38 != 0)) {
-        Lb_put_chat(4, &sp38);
+        Lb_put_chat(4, (s32) &sp38);
     }
 }
 

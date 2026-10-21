@@ -3,6 +3,8 @@
  * tools/build_pc_mhg.sh). */
 #include "../gonl.h"
 
+s32 lobby_func_0057C7E0();
+s32 tl_exit_sub_menu();
 extern u8 cw;
 extern u8 jtbl_2033;
 extern u8 pNet;
@@ -12,9 +14,7 @@ s32 Lbc_SendBrowserResult(); /* extern */
 s32 To_BootUpBrowser();                         /* extern */
 s32 fade_set(); /* extern */
 s32 lobby_bgm_set2();                    /* extern */
-s32 lobby_func_0057C7E0(); /* extern */
 s32 strcpy();      /* extern */
-s32 tl_exit_sub_menu(); /* extern */
 extern u8 first_url;
 extern u8 lit_2032_0065DD40;
 
@@ -64,10 +64,10 @@ void plaza_capcomPage(void) {
             }
             return;
         }
-        lobby_func_0057C7E0(2, temp_a1, temp_a2, temp_a3, temp_a4);
+        lobby_func_0057C7E0();
         return;
     case 3:                                         /* switch 1 */
-        tl_exit_sub_menu(1, temp_a1, temp_a2, temp_a3, temp_a4);
+        tl_exit_sub_menu(1);
         return;
     case 4:                                         /* switch 1 */
         temp_v0 = Lbc_SendBrowserResult(&jtbl_2033, temp_a1, temp_a2, temp_a3, temp_a4);

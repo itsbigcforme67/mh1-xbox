@@ -3,15 +3,14 @@
  * tools/build_pc_mhg.sh). */
 #include "../gonl.h"
 
+s32 SetDialogData();
+s32 SetDialogYesNo();
+s32 cnWrap_SoundRequest();
 extern u8 ClassInfo;
 extern u8 LobbyInfo;
 extern u8 pNet;
-s32 SetDialogData();         /* extern */
-s32 SetDialogYesNo();                    /* extern */
-s32 cnWrap_SoundRequest();      /* extern */
 
 u8 lobby_func_00569C20(s32 arg0) {
-    u8 temp_a1;
     u8 temp_v1;
     u8 *temp_a2;
 
@@ -20,21 +19,20 @@ u8 lobby_func_00569C20(s32 arg0) {
     case 1:
         (*(s8 *)((u8 *)((*(void **)&pNet)) + 0x2D)) = 1;
         (*(s8 *)((u8 *)&ClassInfo + 0x4)) = arg0 + 1;
-        SetDialogData(0x41, 1U);
+        SetDialogData(0x41);
         cnWrap_SoundRequest(0);
         return 6U;
     case 3:
         temp_a2 = (*(void **)&pNet);
-        temp_a1 = (*(u8 *)((u8 *)(temp_a2) + 0x23));
-        (*(u8 *)((u8 *)(temp_a2) + 0x26)) = temp_a1;
+        (*(u8 *)((u8 *)(temp_a2) + 0x26)) = (u8) (*(u8 *)((u8 *)(temp_a2) + 0x23));
         (*(s8 *)((u8 *)&ClassInfo + 0x4)) = arg0 + 1;
         (*(s8 *)((u8 *)((*(void **)&pNet)) + 0x2D)) = 1;
-        SetDialogData(0x3F, temp_a1, temp_a2);
+        SetDialogData(0x3F);
         SetDialogYesNo(1);
         cnWrap_SoundRequest(0);
         return 0xBU;
     default:
-        cnWrap_SoundRequest(7, 1);
+        cnWrap_SoundRequest(7);
         return (*(u8 *)((u8 *)((*(void **)&pNet)) + 0x23));
     }
 }

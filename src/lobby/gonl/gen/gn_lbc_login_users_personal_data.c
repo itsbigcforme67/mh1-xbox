@@ -3,21 +3,20 @@
  * tools/build_pc_mhg.sh). */
 #include "../gonl.h"
 
+s32 CallBackWaitInit();
+s32 CallBack_Result_LoginPersonalDataRegist();
+s32 Check_CallBackWait();
+s32 Lb_eat_to_bell();
+s32 To_LogOut();
+s32 lobby_func_0057C7E0();
 extern u8 cw;
-extern u8 jtbl_708_0065E8E0;
 extern u8 pNet;
-s32 CallBackWaitInit();                         /* extern */
-s32 Check_CallBackWait(); /* extern */
 s32 Get_sw2();                               /* extern */
-s32 Lb_eat_to_bell(); /* extern */
 s32 To_BootUpBrowser();                         /* extern */
-s32 To_LogOut(); /* extern */
 s32 cnLBS_RegistPersonalData(); /* extern */
-s32 lobby_func_0057C7E0(); /* extern */
 s32 memcmp();   /* extern */
 s32 strcpy(); /* extern */
 extern s128 BrPersonalData;
-extern u8 CallBack_Result_LoginPersonalDataRegist;
 extern u8 first_url;
 extern u8 lit_707_0065E8D0;
 extern s128 tmpPersonalData;
@@ -25,12 +24,11 @@ extern s128 tmpPersonalData;
 void lbc_login_users_personal_data(void) {
     u8 *var_a0;   /* (s128 *) */
     u8 *var_a1;   /* (s128 *) */
-    s32 temp_a0_2;
+    s32 temp_a0;
     s32 temp_a4;
     s32 var_v1;
-    u8 temp_a0;
     u8 temp_a1;
-    u8 *temp_a0_3;
+    u8 *temp_a0_2;
     u8 *temp_a1_2;
     u8 *temp_a2;
     u8 *temp_a2_2;
@@ -61,13 +59,12 @@ void lbc_login_users_personal_data(void) {
         To_BootUpBrowser();
         return;
     case 2:
-        temp_a0 = (*(u8 *)((u8 *)(temp_a2) + 0xBA8));
-        if (temp_a0 == 2) {
+        if ((*(u8 *)((u8 *)(temp_a2) + 0xBA8)) == 2) {
             (*(u8 *)((u8 *)(temp_a2) + 0xB9C)) = (u8) (temp_a1 + 1);
             (*(u8 *)((u8 *)((*(void **)&cw)) + 0xBA8)) = 0U;
             return;
         }
-        lobby_func_0057C7E0(temp_a0, temp_a1, temp_a2, temp_a3, temp_a4);
+        lobby_func_0057C7E0();
         return;
     case 3:
         if (memcmp(&tmpPersonalData, &BrPersonalData, 0x1D0, temp_a3, temp_a4) != 0) {
@@ -75,33 +72,33 @@ void lbc_login_users_personal_data(void) {
             temp_a2_3 = (*(void **)&cw);
             (*(u8 *)((u8 *)(temp_a2_3) + 0xB9C)) = (u8) ((*(u8 *)((u8 *)(temp_a2_3) + 0xB9C)) + 1);
             (*(s8 *)((u8 *)((*(void **)&cw)) + 0xBA9)) = 0x1D;
-            cnLBS_RegistPersonalData(&BrPersonalData, &CallBack_Result_LoginPersonalDataRegist, temp_a2_3);
+            cnLBS_RegistPersonalData(&BrPersonalData, CallBack_Result_LoginPersonalDataRegist, temp_a2_3);
             return;
         }
         (*(u8 *)((u8 *)((*(void **)&cw)) + 0xB9C)) = 8U;
         return;
     case 4:
-        Check_CallBackWait(&jtbl_708_0065E8E0, temp_a1, temp_a2, temp_a3, temp_a4);
+        Check_CallBackWait();
         return;
     case 5:
         (*(u8 *)((u8 *)(temp_a2) + 0xB9C)) = (u8) (temp_a1 + 1);
         (*(s32 *)((u8 *)((*(void **)&cw)) + 0xBB4)) = 0;
-        Lb_eat_to_bell((*(void **)&cw) + 0xF75D, temp_a1, temp_a2, temp_a3, temp_a4);
+        Lb_eat_to_bell((s32) ((*(void **)&cw) + 0xF75D));
         return;
     case 6:
         (*(s8 *)((u8 *)((*(void **)&pNet)) + 0x2D)) = 1;
         temp_a1_2 = (*(void **)&cw);
-        temp_a0_2 = (*(s32 *)((u8 *)(temp_a1_2) + 0xBB4));
-        (*(s32 *)((u8 *)(temp_a1_2) + 0xBB4)) = (s32) (temp_a0_2 + 1);
-        if (temp_a0_2 < 0x12C) {
+        temp_a0 = (*(s32 *)((u8 *)(temp_a1_2) + 0xBB4));
+        (*(s32 *)((u8 *)(temp_a1_2) + 0xBB4)) = (s32) (temp_a0 + 1);
+        if (temp_a0 < 0x12C) {
             if (((*(s32 *)((u8 *)((*(void **)&cw)) + 0xBB4)) >= 0x1E) && (temp_a4 & 0xFFFF & 0x60)) {
                 goto block_19;
             }
             return;
         }
 block_19:
-        temp_a0_3 = (*(void **)&cw);
-        (*(u8 *)((u8 *)(temp_a0_3) + 0xB9C)) = (u8) ((*(u8 *)((u8 *)(temp_a0_3) + 0xB9C)) + 1);
+        temp_a0_2 = (*(void **)&cw);
+        (*(u8 *)((u8 *)(temp_a0_2) + 0xB9C)) = (u8) ((*(u8 *)((u8 *)(temp_a0_2) + 0xB9C)) + 1);
         return;
     case 7:
         (*(u8 *)((u8 *)(temp_a2) + 0xB9C)) = (u8) (temp_a1 + 1);
@@ -112,7 +109,7 @@ block_19:
         (*(s8 *)((u8 *)((*(void **)&cw)) + 0xB9D)) = 0;
         return;
     default:
-        To_LogOut(4, temp_a1, temp_a2, temp_a3, temp_a4);
+        To_LogOut(4);
         break;
     }
 }

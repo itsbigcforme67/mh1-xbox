@@ -3,13 +3,13 @@
  * tools/build_pc_mhg.sh). */
 #include "../gonl.h"
 
+s32 Lb_select();
+s32 SetDialogData();
+s32 SetDialogYesNo();
+s32 cnWrap_SoundRequest();
 extern u8 cw;
 extern u8 ret_stat_0038A900;
 s32 Get_sw2();                               /* extern */
-s32 Lb_select();                    /* extern */
-s32 SetDialogData();            /* extern */
-s32 SetDialogYesNo();                    /* extern */
-s32 cnWrap_SoundRequest();      /* extern */
 
 void id_select_01(void *arg0) {
     s32 temp_a2;
@@ -31,7 +31,7 @@ void id_select_01(void *arg0) {
             } else {
                 (*(u8 *)((u8 *)(arg0) + 0x29)) = (u8) (temp_v0 - 1);
             }
-            cnWrap_SoundRequest(1, temp_a1, temp_a2_2);
+            cnWrap_SoundRequest(1);
             return;
         }
         if (temp_a2_2 & 0x1000) {
@@ -40,18 +40,18 @@ void id_select_01(void *arg0) {
             if ((temp_v0_2 & 0xFF) >= 3) {
                 (*(u8 *)((u8 *)(arg0) + 0x29)) = 0U;
             }
-            cnWrap_SoundRequest(1, temp_a1, temp_a2_2);
+            cnWrap_SoundRequest(1);
             return;
         }
         if (temp_a2_2 & 0x20) {
             (*(u8 *)((u8 *)(arg0) + 0x23)) = (u8) (temp_a1 + 1);
             (*(s16 *)((u8 *)(arg0) + 0x18)) = 0x28;
-            cnWrap_SoundRequest(0, temp_a1, temp_a2_2);
+            cnWrap_SoundRequest(0);
             return;
         }
         if (temp_a2_2 & 0x40) {
             (*(u8 *)((u8 *)(arg0) + 0x23)) = 2U;
-            SetDialogData(0x35, temp_a1, temp_a2_2);
+            SetDialogData(0x35);
             SetDialogYesNo(1);
             (*(s8 *)((u8 *)(arg0) + 0x2D)) = 1;
             cnWrap_SoundRequest(3);
@@ -60,9 +60,9 @@ void id_select_01(void *arg0) {
         return;
     case 1:                                         /* switch 1 */
         if ((*(s8 *)((u8 *)((((*(u8 *)((u8 *)(arg0) + 0x29)) * 8) + (*(s32 *)&cw))) + 0xB)) == 0) {
-            SetDialogData(6, temp_a1, temp_a2);
+            SetDialogData(6);
         } else {
-            SetDialogData(5, temp_a1, temp_a2);
+            SetDialogData(5);
         }
         (*(u8 *)((u8 *)(arg0) + 0x22)) = (u8) ((*(u8 *)((u8 *)(arg0) + 0x22)) + 1);
         (*(u8 *)((u8 *)(arg0) + 0x23)) = 0U;
@@ -70,7 +70,7 @@ void id_select_01(void *arg0) {
         return;
     case 2:                                         /* switch 1 */
         (*(s8 *)((u8 *)(arg0) + 0x2D)) = 1;
-        temp_v0_3 = Lb_select(2, temp_a1, temp_a2);
+        temp_v0_3 = Lb_select();
         switch (temp_v0_3) {                        /* switch 2; irregular */
         case 0:                                     /* switch 2 */
             (*(s8 *)&ret_stat_0038A900) = -2;

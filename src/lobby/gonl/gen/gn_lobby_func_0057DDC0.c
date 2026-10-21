@@ -3,28 +3,24 @@
  * tools/build_pc_mhg.sh). */
 #include "../gonl.h"
 
-extern u8 g_main_2EF390;
+s32 SetDialogData();
+s32 cnWrap_SoundRequest();
+s32 lobby_func_0056AF20();
+s32 lobby_func_0059F740();
+s32 lobby_func_0059F750();
 extern u8 BsLbsCount;
 extern u8 cw;
-extern u8 g_main_2EF390;
 extern u8 textLobbyTbl;
 s32 Get_sw();                                /* extern */
-s32 SetDialogData(); /* extern */
-s32 cnWrap_SoundRequest();  /* extern */
 s32 func_0012E1C0();            /* extern */
-s32 lobby_func_0056AF20();     /* extern */
-s32 lobby_func_0059F740();               /* extern */
-s32 lobby_func_0059F750();      /* extern */
 extern s8 ClassInfo;
 extern u8 PlazaInfo;
 
 s32 lobby_func_0057DDC0(void) {
     u8 *var_a2;   /* (s32 *) */
-    s32 temp_a1_2;
     s32 temp_a2;
     s32 var_a3;
     u8 temp_a0;
-    u8 temp_a1_3;
     u8 var_v0;
     u8 *temp_a1;
     u8 *temp_v0;
@@ -43,16 +39,15 @@ s32 lobby_func_0057DDC0(void) {
         var_a3 = 0;
         if ((s32) (*(u16 *)((u8 *)&ClassInfo + 0x2)) > 0) {
             var_a2 = &PlazaInfo;
-            temp_a1_2 = (*(u8 *)((u8 *)((*(void **)&cw)) + 0xBA1)) + 0x31;
 loop_5:
-            if ((temp_a1_2 == (*(s8 *)((u8 *)(var_a2) + 0x5B))) && ((*(u8 *)((u8 *)(var_a2) + 0x16)) == 3)) {
+            if ((((*(u8 *)((u8 *)((*(void **)&cw)) + 0xBA1)) + 0x31) == (*(s8 *)((u8 *)(var_a2) + 0x5B))) && ((*(u8 *)((u8 *)(var_a2) + 0x16)) == 3)) {
                 ClassInfo = var_a3 + 1;
                 goto block_14;
             }
             var_a3 += 1;
             var_a2 += 0x15C;
             if (var_a3 == (*(u16 *)((u8 *)&ClassInfo + 0x2))) {
-                SetDialogData(0x12, temp_a1_2, var_a2, var_a3);
+                SetDialogData(0x12);
                 cnWrap_SoundRequest(3);
                 return 1;
             }
@@ -67,7 +62,7 @@ block_14:
     }
     if (temp_a2 & 0x40) {
         if ((s32) (*(u8 *)&BsLbsCount) >= 2) {
-            cnWrap_SoundRequest(3, temp_a1, temp_a2);
+            cnWrap_SoundRequest(3);
             return 3;
         }
         goto block_39;
@@ -105,9 +100,8 @@ block_38:
 block_39:
     temp_v0 = (*(void **)&cw);
     if ((temp_a0 & 0xFF) != (*(u8 *)((u8 *)(temp_v0) + 0xBA1))) {
-        temp_a1_3 = (*(u8 *)((u8 *)(temp_v0) + 0xBA1));
-        (*(s32 *)((u8 *)&(*(u8 *)((u8 *)&textLobbyTbl + 0x58)) + (temp_a1_3 * 0x14))) = func_0012E1C0(1, temp_a1, temp_a2);
-        lobby_func_0059F740((*(s32 *)&g_main_2EF390) + 0x23F4 + 0x20 + ((*(u8 *)((u8 *)(temp_v0) + 0xBA1)) << 8) + 0x288, temp_a1_3);
+        (*(s32 *)((u8 *)&(*(u8 *)((u8 *)&textLobbyTbl + 0x58)) + ((*(u8 *)((u8 *)(temp_v0) + 0xBA1)) * 0x14))) = func_0012E1C0(1, temp_a1, temp_a2);
+        lobby_func_0059F740();
         lobby_func_0059F750(0xFA, 0x16A);
         cnWrap_SoundRequest(1);
     } else {

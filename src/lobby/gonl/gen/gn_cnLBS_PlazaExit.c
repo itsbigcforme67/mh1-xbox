@@ -3,9 +3,9 @@
  * tools/build_pc_mhg.sh). */
 #include "../gonl.h"
 
+s32 __cnet_SendReq_PieceExit();
 extern u8 pFunc;
 s32 __cnetSub_Set_BgProcess(); /* extern */
-s16 __cnet_SendReq_PieceExit();                     /* extern */
 
 s32 cnLBS_PlazaExit(s32 arg0) {
     s32 temp_v0;

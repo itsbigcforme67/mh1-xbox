@@ -3,22 +3,22 @@
  * tools/build_pc_mhg.sh). */
 #include "../gonl.h"
 
+s32 Lb_put_status();
+s32 lb_put_comment();
+s32 put_mainWindow();
+s32 put_mainWindowTex();
 extern u8 User_data;
 extern u8 cw;
 extern u8 game_w;
 extern u8 net_etc_mes_tbl;
 extern u8 tl_mail_tbl;
-s32 Lb_put_status(); /* extern */
 s32 flfntLocate();                      /* extern */
 s32 flfntSetSize();             /* extern */
 s32 font_print();           /* extern */
 s32 font_set_palette();                  /* extern */
 s32 func_0012BDD0();                         /* extern */
 s32 han2zen();              /* extern */
-s32 lb_put_comment();  /* extern */
 s32 memcpy();      /* extern */
-s32 put_mainWindow();                   /* extern */
-s32 put_mainWindowTex();                /* extern */
 s32 put_titles();                  /* extern */
 s32 sprintf();           /* extern */
 extern s32 g_lb_636A00;
@@ -29,7 +29,7 @@ extern u8 lit_2316;
 extern u8 my_user_mini_data;
 extern u8 tl_job_tbl;
 
-void plaza_setMyCommentTrans(s64 arg0, s32 arg1, s64 arg2) {
+void plaza_setMyCommentTrans(s64 arg0, s64 arg1, s64 arg2) {
     u8 g_frame[0x100] __attribute__((aligned(16)));   /* G's stack frame */
 #define sp60 (*(s32 *)(g_frame + 0x60))
 #define spC0 (*(s32 *)(g_frame + 0xC0))
@@ -104,10 +104,10 @@ void plaza_setMyCommentTrans(s64 arg0, s32 arg1, s64 arg2) {
     }
     memcpy((*(s32 *)((u8 *)&g_lb_636A00 + ((*(u8 *)((u8 *)(var_s4) + 2)) * 4))), &g_lb_63E128, 4);
     func_0012BDD0((*(s32 *)((u8 *)&g_lb_636A00 + ((*(u8 *)((u8 *)(var_s4) + 2)) * 4))));
-    Lb_put_status(((s16) ((temp_s2 + 0x40))), temp_s0_6, 0x14, -1, (*(u8 *)((u8 *)(var_s4) + 2)));
+    Lb_put_status((s32) (((s16) ((temp_s2 + 0x40)))), (s32) temp_s0_6, 0x14, -1, (s64) (*(u8 *)((u8 *)(var_s4) + 2)));
     temp_s0_7 = ((s16) ((temp_s0_6 + 0x16)));
     flfntLocate(arg0, temp_s0_7);
     font_print(&lit_2316, (*(s32 * *)((u8 *)&tl_mail_tbl + 0x24)));
-    lb_put_comment(((s16) ((temp_s2 + 0x5E))), ((s16) (((((s16) (temp_s0_7))) - 2))), (*(void **)&cw) + ((*(u8 *)((u8 *)&game_w + 0x3A)) * 0x62) + 0x724, 1);
+    lb_put_comment(((s16) ((temp_s2 + 0x5E))), ((s16) (((((s16) (temp_s0_7))) - 2))), (s32) ((*(void **)&cw) + ((*(u8 *)((u8 *)&game_w + 0x3A)) * 0x62) + 0x724), 1);
 }
 

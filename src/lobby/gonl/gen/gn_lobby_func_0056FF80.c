@@ -3,11 +3,11 @@
  * tools/build_pc_mhg.sh). */
 #include "../gonl.h"
 
+s32 SetDialogData();
+s32 SetDialogYesNo();
+s32 SetHelpLineMsg();
 extern u8 pNet;
 extern u8 tl_member_buff;
-s32 SetDialogData();                     /* extern */
-s32 SetDialogYesNo();                    /* extern */
-s32 SetHelpLineMsg();   /* extern */
 s32 memset();        /* extern */
 extern s8 g_lb_6B46A0;
 extern s8 g_lb_6B46A1;
@@ -15,17 +15,14 @@ extern s16 g_lb_6B46A2;
 extern s8 g_lb_6B46A4;
 
 void lobby_func_0056FF80(void) {
-    u8 *temp_a1;
-
     memset(&(*(u8 *)((u8 *)&tl_member_buff + 0x18)), 0, 0x1376);
     SetDialogData(0x49);
     SetDialogYesNo(0);
-    temp_a1 = (*(void **)&pNet);
-    (*(s8 *)((u8 *)(temp_a1) + 0x2D)) = 1;
+    (*(s8 *)((u8 *)((*(void **)&pNet)) + 0x2D)) = 1;
     g_lb_6B46A0 = 0x50;
     g_lb_6B46A1 = 1;
     g_lb_6B46A4 = 2;
     g_lb_6B46A2 = 0;
-    SetHelpLineMsg(0x25, temp_a1, 1);
+    SetHelpLineMsg(0x25);
 }
 

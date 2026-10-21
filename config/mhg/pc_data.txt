@@ -16,6 +16,8 @@ quest_size_dist_tbl = 0x004FDC40; // size:0x20           # pointers to the size 
 quest_size_dist_sel = 0x004FDC60; // size:0x20           # random number -> size distribution
 quest_file_lists = 0x004FDCF0; // size:0x220          # quest file (AFS index) lists per quest group 00xxx..20xxx
 quest_file_tbl = 0x004FDF10; // size:0x20           # pointers to the six lists (Quest_start)
+quest_lv_tbl = 0x004FD630; // size:0x20             # online quest counter: 8 levels' quest lists (MH1 6; Lb_make_quest_tbl, G online)
+flag_quest_tbl = 0x004FD6E0; // size:0x20           # online: 8 levels' key-quest lists (MH1 6)
 em_cmdg0_tbl = 0x00502300; // size:0xD0           # em_cmd_init's tables for game_w.x2E 0, 1 (G-only)
 em_cmdg1_tbl = 0x005023D0; // size:0xD0           # x2E 2
 em_cmdg2_tbl = 0x005024A0; // size:0xD0           # x2E 3
@@ -493,6 +495,8 @@ g_main_302290 = 0x00302290; // size:0x100   # tools/mhg_gonl.py: G data the G on
 g_main_302CB0 = 0x00302CB0; // size:0x100   # tools/mhg_gonl.py: G data the G online code uses (size: up to the next name)
 [main]
 g_main_3034B4 = 0x003034B4; // size:0x100   # tools/mhg_gonl.py: G data the G online code uses (size: up to the next name)
+[main]
+g_main_3034BA = 0x003034BA; // size:0x100   # tools/mhg_gonl.py: G data the G online code uses (size: up to the next name)
 [main]
 g_main_30645A = 0x0030645A; // size:0x100   # tools/mhg_gonl.py: G data the G online code uses (size: up to the next name)
 [main]

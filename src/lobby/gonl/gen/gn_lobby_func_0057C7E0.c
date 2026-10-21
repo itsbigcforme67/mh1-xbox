@@ -3,6 +3,11 @@
  * tools/build_pc_mhg.sh). */
 #include "../gonl.h"
 
+s32 Lbs_load();
+s32 To_LogOut();
+s32 cnWrap_InitWork();
+s32 lbc_browser_04();
+s32 lobby_func_005A1E30();
 extern u8 BS_MODE_R_NO;
 extern u8 BsLbsErrNum;
 extern u8 cw;
@@ -10,14 +15,9 @@ extern u8 net_char_change;
 extern u8 pNet;
 s32 Fade_busy_ck();                       /* extern */
 s32 FlushCache();                /* extern */
-s32 Lbs_load();                                 /* extern */
 s32 MainBsInitialize();                  /* extern */
-s32 To_LogOut();                 /* extern */
 s32 all_reset();                      /* extern */
-s32 cnWrap_InitWork();                          /* extern */
 s32 fade_set();          /* extern */
-s32 lbc_browser_04();                     /* extern */
-s32 lobby_func_005A1E30();               /* extern */
 s32 memset();        /* extern */
 s32 strcpy();               /* extern */
 extern s128 BrPersonalData;
@@ -78,7 +78,7 @@ void lobby_func_0057C7E0(void) {
         fade_set(2, var_a1, temp_a2);
         return;
     case 4:                                         /* switch 1 */
-        temp_v0_2 = lbc_browser_04(temp_a0, temp_a2);
+        temp_v0_2 = lbc_browser_04();
         switch (temp_v0_2) {                        /* switch 2; irregular */
         case 0:                                     /* switch 2 */
             temp_a0_2 = (*(void **)&cw);
@@ -113,13 +113,13 @@ void lobby_func_0057C7E0(void) {
             (*(s8 *)((u8 *)((*(void **)&cw)) + 0xB70)) = 1;
             (*(s8 *)((u8 *)((*(void **)&cw)) + 0xBA8)) = 2;
             (*(s8 *)((u8 *)((*(void **)&pNet)) + 0x31)) = 0;
-            lobby_func_005A1E30(1);
+            lobby_func_005A1E30();
             (*(s8 *)&BsLbsErrNum) = 0;
             return;
         }
         break;
     default:                                        /* switch 1 */
-        To_LogOut(4, temp_a2);
+        To_LogOut(4);
         break;
     }
 }

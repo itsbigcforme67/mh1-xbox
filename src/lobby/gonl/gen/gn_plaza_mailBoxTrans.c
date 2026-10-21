@@ -3,25 +3,25 @@
  * tools/build_pc_mhg.sh). */
 #include "../gonl.h"
 
+s32 Lb_put_icon();
+s32 lobby_func_005737C0();
+s32 lobby_func_005778B0();
+s32 lobby_func_005791D0();
+s32 plaza_disp_mail();
+s32 put_mainWindow();
+s32 put_mainWindowTex();
+s32 put_main_cursor2();
 extern u8 g_main_2EFBAC;
 extern u8 g_main_2EFBAC;
 extern u8 pNet;
 extern u8 tl_mail_tbl;
 extern u8 tl_msg_tbl;
-s32 Lb_put_icon();    /* extern */
 s32 flfntLocate();                      /* extern */
 s32 flfntSetSize();             /* extern */
 s32 font_print();           /* extern */
 s32 font_print_double(); /* extern */
 s32 font_set_palette();                  /* extern */
 s32 han2zen();                 /* extern */
-s32 lobby_func_005737C0();                   /* extern */
-s32 lobby_func_005778B0();              /* extern */
-s32 lobby_func_005791D0();       /* extern */
-s32 plaza_disp_mail();                  /* extern */
-s32 put_mainWindow();                        /* extern */
-s32 put_mainWindowTex();                     /* extern */
-s32 put_main_cursor2();             /* extern */
 s32 put_titles();                  /* extern */
 extern s32 g_lb_636B44;
 extern u8 RecvMailInfo;
@@ -52,10 +52,10 @@ void plaza_mailBoxTrans(s64 arg0, s64 arg1, s64 arg2) {
     var_s3 = &RecvMailInfo;
     switch (temp_a2) {                              /* switch 1; irregular */
     case 0:                                         /* switch 1 */
-        put_mainWindow(temp_a2);
+        put_mainWindow(arg0, arg1);
         break;
     case 1:                                         /* switch 1 */
-        put_mainWindowTex(temp_a2);
+        put_mainWindowTex(arg0, arg1);
         break;
     }
     if ((*(u8 *)((u8 *)((*(void **)&pNet)) + 0x2D)) == 0) {
@@ -66,7 +66,7 @@ void plaza_mailBoxTrans(s64 arg0, s64 arg1, s64 arg2) {
         switch (temp_a0) {                          /* switch 2; irregular */
         case 0:                                     /* switch 2 */
             if ((*(u8 *)((u8 *)(temp_a1) + 0x235)) != 0) {
-                put_main_cursor2(arg0, arg1, (*(s8 *)((u8 *)(temp_a1) + 0x236)));
+                put_main_cursor2(arg0, arg1, (s32) (*(s8 *)((u8 *)(temp_a1) + 0x236)));
                 lobby_func_005791D0(5);
                 var_s2 = 0;
                 var_s4 = ((s16) ((arg1 + 0x3E)));
@@ -81,28 +81,28 @@ void plaza_mailBoxTrans(s64 arg0, s64 arg1, s64 arg2) {
 loop_14:
                     if ((*(s8 *)((u8 *)(var_s3) + 1)) != 0) {
                         if ((*(s8 *)((u8 *)((*(void **)&g_main_2EFBAC)) + 0x236)) == (((s16) (var_s2)))) {
-                            font_print_double(((s16) (temp_s5)), var_s4, 1, 4, (*(s32 **)((u8 *)(var_s1) + 4)));
+                            font_print_double(((s16) (temp_s5)), (s32) var_s4, 1, 4, (*(s32 **)((u8 *)(var_s1) + 4)));
                             flfntSetSize(0x16, 0x12);
-                            font_print_double(((s16) (temp_s6)), var_s4, 1, 4, var_s0 + 9);
+                            font_print_double(((s16) (temp_s6)), (s32) var_s4, 1, 4, var_s0 + 9);
                             flfntSetSize(0x12, 0x12);
                             han2zen(var_s0 + 1, &spA0);
-                            font_print_double(((s16) (temp_s7)), var_s4, 1, 4, &spA0);
+                            font_print_double(((s16) (temp_s7)), (s32) var_s4, 1, 4, &spA0);
                         } else {
                             font_set_palette(0);
-                            flfntLocate(((s16) (temp_s5)), var_s4);
+                            flfntLocate(((s16) (temp_s5)), (s32) var_s4);
                             font_print(&lit_2316, (*(s32 **)((u8 *)(var_s1) + 4)));
                             flfntSetSize(0x16, 0x12);
-                            flfntLocate(((s16) (temp_s6)), var_s4);
+                            flfntLocate(((s16) (temp_s6)), (s32) var_s4);
                             font_print(&lit_2316, var_s0 + 9);
                             flfntSetSize(0x12, 0x12);
-                            flfntLocate(((s16) (temp_s7)), var_s4);
+                            flfntLocate(((s16) (temp_s7)), (s32) var_s4);
                             han2zen(var_s0 + 1, &spA0);
                             font_print(&lit_2316, &spA0);
                         }
                         if ((*(u8 *)((u8 *)(var_s3) + 0)) == 0) {
-                            Lb_put_icon(((s16) (temp_fp)), var_s4, 0xA, -1);
+                            Lb_put_icon((s32) (((s16) (temp_fp))), (s32) var_s4, 0xA, -1);
                         } else {
-                            Lb_put_icon(((s16) (temp_fp)), var_s4, 9, -1);
+                            Lb_put_icon((s32) (((s16) (temp_fp))), (s32) var_s4, 9, -1);
                         }
                         var_s3 += 0x9A;
                         var_s1 += 4;
@@ -116,9 +116,9 @@ loop_14:
                     }
                 }
             } else {
-                lobby_func_005791D0(5, temp_a1);
+                lobby_func_005791D0(5);
                 flfntSetSize(0x14, 0x14);
-                lobby_func_005737C0(g_lb_636B44);
+                lobby_func_005737C0((s64) g_lb_636B44);
                 return;
             }
             break;

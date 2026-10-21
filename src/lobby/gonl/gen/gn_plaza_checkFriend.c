@@ -3,21 +3,21 @@
  * tools/build_pc_mhg.sh). */
 #include "../gonl.h"
 
+s32 Lb_cursorUD();
+s32 Plaza_add_friend();
+s32 cnWrap_SoundRequest();
+s32 lobby_func_00570FF0();
+s32 lobby_func_00571040();
+s32 lobby_func_00571450();
+s32 lobby_func_00571A90();
+s32 lobby_func_00572110();
 extern u8 g_main_2EFBAC;
 extern u8 D_0035EFEB;
 extern u8 cw;
 extern u8 g_main_2EFBAC;
 extern u8 pNet;
 extern u8 tl_member_buff;
-s8 Lb_cursorUD();                             /* extern */
-s32 Plaza_add_friend();                  /* extern */
 s32 SoftKeyboard_alive_check();                     /* extern */
-s32 cnWrap_SoundRequest(); /* extern */
-s32 lobby_func_00570FF0(); /* extern */
-s32 lobby_func_00571040();               /* extern */
-s32 lobby_func_00571450(); /* extern */
-s32 lobby_func_00571A90();                      /* extern */
-s32 lobby_func_00572110();               /* extern */
 s32 memcpy();            /* extern */
 s32 memset();  /* extern */
 s32 strcpy();       /* extern */
@@ -26,22 +26,20 @@ extern u8 RecvMailInfo;
 
 s32 plaza_checkFriend(s16 arg0) {
     s16 var_s1;
+    s32 temp_a1;
     s32 temp_a2;
     s32 temp_v0_3;
     s32 temp_v0_4;
     s32 var_a0;
-    s8 temp_a1;
-    s8 temp_a1_2;
     s8 temp_v0;
     u8 temp_a0;
-    u8 temp_a1_3;
+    u8 temp_a1_2;
     u8 *temp_a0_2;
     u8 *temp_a0_3;
     u8 *temp_a0_4;
     u8 *temp_a0_5;
     u8 *temp_a0_6;
     u8 *temp_a0_7;
-    u8 *temp_a0_8;
     u8 *temp_a3;
     u8 *temp_v0_2;
     u8 *temp_v1;
@@ -75,12 +73,11 @@ s32 plaza_checkFriend(s16 arg0) {
                     (*(s8 *)((u8 *)(var_a1) + 1)) = temp_v0;
                     var_a1 += 2;
                 } while (var_a0 > 0);
-                temp_a1_2 = (*(s8 *)((u8 *)(temp_a3) + 0x236));
-                (*(s32 *)((u8 *)&RecvMailInfo + (temp_a1_2 * 0x9A))) = 0;
+                (*(s32 *)((u8 *)&RecvMailInfo + ((*(s8 *)((u8 *)(temp_a3) + 0x236)) * 0x9A))) = 0;
                 (*(u8 *)((u8 *)(temp_a3) + 0x230)) = (u8) ((*(u8 *)((u8 *)(temp_a3) + 0x230)) + 1);
-                cnWrap_SoundRequest(0, temp_a1_2, var_a2, temp_a3, temp_a3 + 0x236);
+                cnWrap_SoundRequest(0);
             } else {
-                cnWrap_SoundRequest(7, temp_a1);
+                cnWrap_SoundRequest(7);
             }
             goto block_54;
         }
@@ -101,7 +98,7 @@ s32 plaza_checkFriend(s16 arg0) {
             if ((*(u8 *)((u8 *)(temp_a0_2) + 0x235)) != 0) {
                 (*(u8 *)((u8 *)(temp_a0_2) + 0x23A)) = (u8) (*(u8 *)((u8 *)(temp_a0_2) + 0x230));
                 (*(u8 *)((u8 *)((*(void **)&g_main_2EFBAC)) + 0x230)) = 3U;
-                lobby_func_00571450(temp_a0_2, temp_a1);
+                lobby_func_00571450();
                 (*(s8 *)((u8 *)((*(void **)&cw)) + 0xB70)) = 0;
                 temp_a0_3 = (*(void **)&g_main_2EFBAC);
                 memcpy(temp_a0_3 + 0x9A, (u8 *)&RecvMailInfo + ((*(s8 *)((u8 *)(temp_a0_3) + 0x236)) * 0x9A) + 1, 8);
@@ -110,25 +107,24 @@ s32 plaza_checkFriend(s16 arg0) {
                 (*(void **)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x1398))) + 0x600)) = (void *) ((*(void **)&g_main_2EFBAC) + 0x9A);
                 cnWrap_SoundRequest(6);
             } else {
-                cnWrap_SoundRequest(7, temp_a1);
+                cnWrap_SoundRequest(7);
             }
         } else {
             temp_v0_2 = (*(void **)&g_main_2EFBAC);
-            temp_a1_3 = (*(u8 *)((u8 *)(temp_v0_2) + 0x235));
-            if ((s32) temp_a1_3 >= 2) {
-                (*(s8 *)((u8 *)((*(void **)&g_main_2EFBAC)) + 0x236)) = Lb_cursorUD((*(s8 *)((u8 *)(temp_v0_2) + 0x236)), temp_a1_3);
+            temp_a1_2 = (*(u8 *)((u8 *)(temp_v0_2) + 0x235));
+            if ((s32) temp_a1_2 >= 2) {
+                (*(s8 *)((u8 *)((*(void **)&g_main_2EFBAC)) + 0x236)) = Lb_cursorUD((s32) (*(s8 *)((u8 *)(temp_v0_2) + 0x236)), (s32) temp_a1_2);
             }
         }
 block_54:
         return 2;
     case 1:
-        temp_a0_5 = (*(void **)&pNet);
         temp_a2 = var_s1 & 0xFFFF;
-        (*(s16 *)((u8 *)(temp_a0_5) + 0x20)) = var_s1;
+        (*(s16 *)((u8 *)((*(void **)&pNet)) + 0x20)) = var_s1;
         if (temp_a2 & 0x40) {
             temp_v1 = (*(void **)&g_main_2EFBAC);
             (*(u8 *)((u8 *)(temp_v1) + 0x230)) = (u8) ((*(u8 *)((u8 *)(temp_v1) + 0x230)) - 1);
-            cnWrap_SoundRequest(3, 4, (void *) temp_a2, (void *)2);
+            cnWrap_SoundRequest(3);
         } else if (temp_a2 & 0x80) {
             (*(s8 *)((u8 *)((*(void **)&cw)) + 0xF00)) = 0;
             strcpy((*(void **)&g_main_2EFBAC) + 0x9A, (*(void **)&cw) + 0xEE7, temp_a2, 2);
@@ -142,10 +138,10 @@ block_54:
             (*(s8 *)((u8 *)((*(void **)&g_main_2EFBAC)) + 0x237)) = 0;
             cnWrap_SoundRequest(6);
         } else if (temp_a2 & 0x200) {
-            temp_a0_6 = (*(void **)&g_main_2EFBAC);
-            (*(u8 *)((u8 *)(temp_a0_6) + 0x23A)) = (u8) (*(u8 *)((u8 *)(temp_a0_6) + 0x230));
+            temp_a0_5 = (*(void **)&g_main_2EFBAC);
+            (*(u8 *)((u8 *)(temp_a0_5) + 0x23A)) = (u8) (*(u8 *)((u8 *)(temp_a0_5) + 0x230));
             (*(u8 *)((u8 *)((*(void **)&g_main_2EFBAC)) + 0x230)) = 3U;
-            lobby_func_00571450(temp_a0_6, 4, temp_a2, 2);
+            lobby_func_00571450();
             (*(s8 *)((u8 *)((*(void **)&cw)) + 0xB70)) = 0;
             strcpy((*(void **)&g_main_2EFBAC) + 0x9A, (*(void **)&cw) + 0xEE7);
             strcpy((*(void **)&g_main_2EFBAC) + 0xA2, (*(void **)&cw) + 0xEEF);
@@ -155,18 +151,18 @@ block_54:
             temp_v1_2 = (*(void **)&g_main_2EFBAC);
             (*(u8 *)((u8 *)(temp_v1_2) + 0x23A)) = (u8) (*(u8 *)((u8 *)(temp_v1_2) + 0x230));
             (*(u8 *)((u8 *)((*(void **)&g_main_2EFBAC)) + 0x230)) = 4U;
-            lobby_func_00570FF0(temp_a0_5, 4, temp_a2, 2);
+            lobby_func_00570FF0();
             (*(s8 *)((u8 *)((*(void **)&cw)) + 0xB70)) = 0;
+            temp_a0_6 = (*(void **)&g_main_2EFBAC);
+            memcpy(temp_a0_6 + 0x9A, (u8 *)&RecvMailInfo + ((*(s8 *)((u8 *)(temp_a0_6) + 0x236)) * 0x9A) + 1, 8);
             temp_a0_7 = (*(void **)&g_main_2EFBAC);
-            memcpy(temp_a0_7 + 0x9A, (u8 *)&RecvMailInfo + ((*(s8 *)((u8 *)(temp_a0_7) + 0x236)) * 0x9A) + 1, 8);
-            temp_a0_8 = (*(void **)&g_main_2EFBAC);
-            memcpy(temp_a0_8 + 0xA2, (u8 *)&RecvMailInfo + ((*(s8 *)((u8 *)(temp_a0_8) + 0x236)) * 0x9A) + 9, 0x10);
+            memcpy(temp_a0_7 + 0xA2, (u8 *)&RecvMailInfo + ((*(s8 *)((u8 *)(temp_a0_7) + 0x236)) * 0x9A) + 9, 0x10);
             (*(void **)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x1398))) + 0x600)) = (void *) ((*(void **)&g_main_2EFBAC) + 0x9A);
             cnWrap_SoundRequest(6);
         }
         goto block_54;
     case 2:
-        if (lobby_func_00572110(temp_a0, 4) != 0) {
+        if (lobby_func_00572110() != 0) {
 
         } else {
             (*(u8 *)((u8 *)((*(void **)&g_main_2EFBAC)) + 0x230)) = 0U;
@@ -174,7 +170,7 @@ block_54:
         }
         goto block_54;
     case 3:
-        temp_v0_3 = Plaza_add_friend(temp_a0, 4);
+        temp_v0_3 = Plaza_add_friend();
         if ((temp_v0_3 != 1) && (temp_v0_3 != 0)) {
 
         } else {
@@ -184,7 +180,7 @@ block_54:
         (*(s8 *)((u8 *)((*(void **)&pNet)) + 0x2D)) = 1;
         goto block_54;
     case 4:
-        temp_v0_4 = lobby_func_00571040(temp_a0, 4);
+        temp_v0_4 = lobby_func_00571040();
         if ((temp_v0_4 != 1) && (temp_v0_4 != 0)) {
 
         } else {

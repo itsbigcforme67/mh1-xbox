@@ -3,13 +3,13 @@
  * tools/build_pc_mhg.sh). */
 #include "../gonl.h"
 
+s32 put_main_cursor();
+s32 put_main_cursor2();
 extern u8 g_main_2EFBAC;
 extern u8 cw;
 extern u8 g_main_2EFBAC;
 extern u8 pNet;
 s32 Put_F();                               /* extern */
-s32 put_main_cursor();           /* extern */
-s32 put_main_cursor2(); /* extern */
 
 void put_mail_input_square(s64 arg0, s64 arg1) {
     u8 g_frame[0xC0] __attribute__((aligned(16)));   /* G's stack frame */
@@ -121,10 +121,10 @@ void put_mail_input_square(s64 arg0, s64 arg1) {
             temp_a1_3 = (*(void **)&g_main_2EFBAC);
             if ((*(u8 *)((u8 *)(temp_a1_3) + 0x230)) != 2) {
                 if ((*(s8 *)((u8 *)(temp_a1_3) + 0x236)) == 1) {
-                    put_main_cursor(7, temp_a1_3);
+                    put_main_cursor(7);
                 }
             } else if ((*(s8 *)((u8 *)(temp_a1_3) + 0x237)) == 4) {
-                put_main_cursor(7, temp_a1_3);
+                put_main_cursor(7);
             }
         }
     }

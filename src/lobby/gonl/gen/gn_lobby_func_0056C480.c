@@ -3,12 +3,12 @@
  * tools/build_pc_mhg.sh). */
 #include "../gonl.h"
 
+s32 lobby_func_0056D6E0();
+s32 lobby_func_00571AF0();
 extern u8 cw;
 extern u8 lb_sys;
 extern u8 pNet;
 extern u8 tl_member_buff;
-s32 lobby_func_0056D6E0();                      /* extern */
-s32 lobby_func_00571AF0();                      /* extern */
 s32 memset(); /* extern */
 s16 net_Check_FriendSuu();        /* extern */
 extern s32 g_main_302CB0;

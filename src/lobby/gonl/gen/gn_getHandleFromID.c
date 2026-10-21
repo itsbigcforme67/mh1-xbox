@@ -3,15 +3,15 @@
  * tools/build_pc_mhg.sh). */
 #include "../gonl.h"
 
+s32 Lbc_init_network_work();
+s32 lobby_func_005690D0();
+s32 lobby_func_00580FA0();
+s32 lobby_func_00581210();
 extern u8 D_0035EFEB;
 extern u8 cw;
 extern u8 pNet;
 s32 Fade_busy_ck();                       /* extern */
-s32 Lbc_init_network_work();                    /* extern */
 s32 fade_set();                          /* extern */
-s32 lobby_func_005690D0();         /* extern */
-s32 lobby_func_00580FA0();                /* extern */
-s32 lobby_func_00581210();                /* extern */
 extern u8 network_work;
 
 s32 getHandleFromID(void) {
@@ -42,7 +42,7 @@ block_21:
         return 2;
     case 1:
         (*(s8 *)((u8 *)((*(void **)&pNet)) + 0x2D)) = 1;
-        temp_v0 = lobby_func_00581210(temp_a0, temp_a1);
+        temp_v0 = lobby_func_00581210();
         if ((temp_v0 != 0) && (temp_v0 != 1)) {
 
         } else {
@@ -52,7 +52,7 @@ block_21:
         goto block_21;
     case 2:
         (*(s8 *)((u8 *)((*(void **)&pNet)) + 0x2D)) = 1;
-        temp_v0_2 = lobby_func_00580FA0(temp_a0, temp_a1);
+        temp_v0_2 = lobby_func_00580FA0();
         if ((temp_v0_2 != 0) && (temp_v0_2 != 1)) {
 
         } else {
@@ -62,7 +62,7 @@ block_21:
         }
         goto block_21;
     case 3:
-        return lobby_func_005690D0(&network_work, temp_a1);
+        return lobby_func_005690D0(&network_work);
     }
 }
 

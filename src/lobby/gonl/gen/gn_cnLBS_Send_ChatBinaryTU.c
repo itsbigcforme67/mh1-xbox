@@ -3,9 +3,9 @@
  * tools/build_pc_mhg.sh). */
 #include "../gonl.h"
 
+s32 lobby_func_005B0730();
 extern u8 pFunc;
 s32 __cnetSub_Set_BgProcess(); /* extern */
-s16 lobby_func_005B0730();        /* extern */
 
 s32 cnLBS_Send_ChatBinaryTU(s32 arg0, s32 arg1, s32 arg2, s32 arg3, s32 arg4) {
     s32 temp_v0;

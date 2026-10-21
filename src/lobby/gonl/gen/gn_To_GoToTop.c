@@ -3,9 +3,8 @@
  * tools/build_pc_mhg.sh). */
 #include "../gonl.h"
 
+s32 SetDialogData();
 extern u8 cw;
-s32 SetDialogData();                     /* extern */
-
 void To_GoToTop(void) {
     (*(s8 *)((u8 *)((*(void **)&cw)) + 0xB99)) = 7;
     (*(s8 *)((u8 *)((*(void **)&cw)) + 0xB9A)) = 0;

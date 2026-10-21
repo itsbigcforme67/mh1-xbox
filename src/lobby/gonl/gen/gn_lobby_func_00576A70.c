@@ -3,23 +3,23 @@
  * tools/build_pc_mhg.sh). */
 #include "../gonl.h"
 
+s32 Lb_put_icon();
+s32 lobby_func_00559E20();
+void * lobby_func_00559EB0();
+s32 lobby_func_00559FF0();
+s32 lobby_func_005737C0();
+s32 lobby_func_005791D0();
 extern u8 g_main_2EFBC0;
 extern u8 g_main_2EFBC0;
 extern u8 tl_member_buff;
 s32 Lb_back_money();                             /* extern */
-s32 Lb_put_icon(); /* extern */
 s32 flfntLocate();                  /* extern */
 s32 flfntSetSize();             /* extern */
 s32 font_print();                      /* extern */
 s32 font_print_double(); /* extern */
 s32 font_set_palette();                      /* extern */
-s32 func_0012BDD0();                         /* extern */
+s32 func_0012BDD0();                      /* extern */
 s32 han2zen();              /* extern */
-s32 lobby_func_00559E20();                       /* extern */
-s32 lobby_func_00559EB0();                       /* extern */
-s32 lobby_func_00559FF0();              /* extern */
-s32 lobby_func_005737C0();                   /* extern */
-s32 lobby_func_005791D0();               /* extern */
 s32 sprintf();    /* extern */
 extern s32 lb_ibox_str;
 extern s32 g_lb_636B50;
@@ -41,15 +41,15 @@ void lobby_func_00576A70(void) {
     s64 temp_a2;
     s64 var_s4;
     u8 *temp_a1;
-    u8 *temp_v0;
     u8 temp_a0;
+    u8 *temp_v0;
 
     if ((*(u8 **)&g_main_2EFBC0) != NULL) {
         flfntSetSize(0x12, 0x12);
         lobby_func_005791D0(6);
         var_s4 = 0x78;
         if (*(*(u8 **)&g_main_2EFBC0) == 0) {
-            lobby_func_005737C0(g_lb_636B50);
+            lobby_func_005737C0((s64) g_lb_636B50);
         }
         var_s3 = 0;
         var_s5 = (*(s16 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x18))) + 0x1364)) * 7;
@@ -63,7 +63,7 @@ loop_4:
                 font_print_double(0x118, var_s4, 1, 4, g_lb_636DF8);
             }
         } else {
-            temp_s0 = lobby_func_00559FF0(temp_a1 + var_s2 + 4, temp_a1) & 0xFFFF;
+            temp_s0 = lobby_func_00559FF0(temp_a1 + var_s2 + 4) & 0xFFFF;
             flfntLocate(0xF4, var_s4);
             font_set_palette(lobby_func_00559E20(temp_s0));
             func_0012BDD0(lobby_func_00559EB0(temp_s0));
@@ -77,7 +77,7 @@ loop_4:
             han2zen(&sp130, &sp70);
             flfntLocate(0x202, var_s4);
             font_print(&sp70);
-            temp_v0 = &(*(u8 **)&g_main_2EFBC0)[var_s2];
+            temp_v0 = (*(u8 **)&g_main_2EFBC0) + var_s2;
             temp_s1 = (*(s16 *)((u8 *)(temp_v0) + 0xE));
             temp_s0_2 = (*(s16 *)((u8 *)(temp_v0) + 0xC));
             sprintf(&sp130, &g_lb_63E2B8, (s64) temp_s0_2, temp_s1);
@@ -89,8 +89,8 @@ loop_4:
                 font_set_palette(0);
             }
             font_print(&sp70);
-            if ((*(u8 *)((u8 *)(&(*(u8 **)&g_main_2EFBC0)[var_s2]) + 0x10)) != 0) {
-                Lb_put_icon(0xDC, var_s4, 0x2D, -1);
+            if ((*(u8 *)((u8 *)(((*(u8 **)&g_main_2EFBC0) + var_s2)) + 0x10)) != 0) {
+                Lb_put_icon(0xDC, (s32) var_s4, 0x2D, -1);
             }
             var_s3 += 1;
             var_s2 += 0x10;

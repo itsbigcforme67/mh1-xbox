@@ -3,20 +3,18 @@
  * tools/build_pc_mhg.sh). */
 #include "../gonl.h"
 
+s32 CallBackWaitInit();
+s32 CallBack_Result_Lobby_LobbyExit();
+s32 Check_CallBackWait();
 extern u8 cw;
-s32 CallBackWaitInit();                      /* extern */
-s32 Check_CallBackWait();                    /* extern */
-s32 cnLBS_LobbyExit();                 /* extern */
-extern u8 CallBack_Result_Lobby_LobbyExit;
+s32 cnLBS_LobbyExit();             /* extern */
 
 s32 Lbs_LobbyExit(void) {
-    s32 temp_a0;
     u8 temp_v1_2;
     u8 *temp_v1;
     u8 *temp_v1_3;
 
     temp_v1 = (*(void **)&cw);
-    temp_a0 = temp_v1 + 0xB9D;
     temp_v1_2 = (*(u8 *)((u8 *)(temp_v1) + 0xB9D));
     switch (temp_v1_2) {                            /* irregular */
     case 0x0:
@@ -25,14 +23,14 @@ s32 Lbs_LobbyExit(void) {
     case 0x1:
         temp_v1_3 = (*(void **)&cw);
         (*(u8 *)((u8 *)(temp_v1_3) + 0xB9D)) = (u8) ((*(u8 *)((u8 *)(temp_v1_3) + 0xB9D)) + 1);
-        CallBackWaitInit(temp_a0);
+        CallBackWaitInit();
         (*(s8 *)((u8 *)((*(void **)&cw)) + 0xBA9)) = 0x26;
-        cnLBS_LobbyExit(&CallBack_Result_Lobby_LobbyExit);
+        cnLBS_LobbyExit(CallBack_Result_Lobby_LobbyExit);
 block_15:
     default:
         return 2;
     case 0x2:
-        Check_CallBackWait(temp_a0);
+        Check_CallBackWait();
         goto block_15;
     case 0x3:
         (*(u8 *)((u8 *)(temp_v1) + 0xB9D)) = 0U;

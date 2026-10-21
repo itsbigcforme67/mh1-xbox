@@ -3,6 +3,13 @@
  * tools/build_pc_mhg.sh). */
 #include "../gonl.h"
 
+s32 CallBackWaitInit();
+s32 Check_CallBackWait();
+s32 Lbc_init_network_work();
+s32 Lbc_set_prim();
+s32 To_LogOut();
+s32 lobby_func_0058BAA0();
+s32 net_SetMenu_SelectHandleName();
 extern u8 g_main_2EF2A8;
 extern u8 CnetWork;
 extern u8 User_data;
@@ -11,13 +18,8 @@ extern u8 g_main_2EF2A8;
 extern u8 game_w;
 extern u8 lb_gbyte_2EF2A4;
 extern u8 pNet;
-s32 CallBackWaitInit();                         /* extern */
-s32 Check_CallBackWait();             /* extern */
 s32 Fade_busy_ck();                       /* extern */
-s32 Lbc_init_network_work();          /* extern */
-s32 Lbc_set_prim(); /* extern */
 s32 Set_userdata();                       /* extern */
-s32 To_LogOut();                 /* extern */
 s32 cnLBS_Send_LoginUserAccount(); /* extern */
 s32 cnWrap_IsBBConnect();                           /* extern */
 s32 cnetGet_Login_DecideUserHandle();     /* extern */
@@ -27,10 +29,8 @@ s32 cnetGet_Login_UserHandle();      /* extern */
 s32 cnetGet_Login_UserID();             /* extern */
 s32 cnetGet_Login_UserMiniData();    /* extern */
 s32 fade_set();                          /* extern */
-s32 lobby_func_0058BAA0();                /* extern */
 s32 memcpy();         /* extern */
 s32 memset();           /* extern */
-s32 net_SetMenu_SelectHandleName(); /* extern */
 extern u8 network_work;
 extern u8 player_work;
 
@@ -96,7 +96,7 @@ void lbc_login_id_select(void) {
         return;
     case 1:                                         /* switch 1 */
         (*(u8 *)((u8 *)(temp_v0) + 0xB9C)) = (u8) (temp_a0 + 1);
-        Lbc_init_network_work(temp_a0, temp_a1);
+        Lbc_init_network_work();
         (*(u8 *)((u8 *)((*(void **)&pNet)) + 0x27)) = (u8) (*(u8 *)((u8 *)((*(void **)&cw)) + 2));
         (*(u8 *)((u8 *)((*(void **)&pNet)) + 0x29)) = (u8) (*(u8 *)((u8 *)((*(void **)&cw)) + 1));
         return;
@@ -111,7 +111,7 @@ void lbc_login_id_select(void) {
         }
         break;
     case 3:                                         /* switch 1 */
-        temp_v0_2 = net_SetMenu_SelectHandleName(&network_work, temp_a1);
+        temp_v0_2 = net_SetMenu_SelectHandleName(&network_work);
         switch (temp_v0_2) {                        /* switch 2; irregular */
         case 0:                                     /* switch 2 */
             temp_a0_4 = (*(void **)&cw);
@@ -157,10 +157,10 @@ void lbc_login_id_select(void) {
         cnetGet_Login_DecideUserHandle((*(void **)&cw) + 0x1C8);
         return;
     case 6:                                         /* switch 1 */
-        Check_CallBackWait(temp_a0, temp_a1);
+        Check_CallBackWait();
         return;
     default:                                        /* switch 1 */
-        To_LogOut(4, temp_a1);
+        To_LogOut(4);
         break;
     }
 }

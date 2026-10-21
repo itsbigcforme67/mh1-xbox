@@ -3,25 +3,25 @@
  * tools/build_pc_mhg.sh). */
 #include "../gonl.h"
 
+s32 CallBackWaitInit();
+s32 CallBack_Result_LoginTopInformation();
+s32 Check_CallBackWait();
+s32 Lb_eat_to_bell();
+s32 Lbc_set_prim();
+s32 SetDialogData();
+s32 SetSceneTitle();
+s32 To_LogOut();
+s32 cnWrap_SoundRequest();
+s32 text_lobby_trans_ot0();
 extern u8 cw;
 extern u8 jtbl_850_0065E910;
 extern u8 pNet;
-s32 CallBackWaitInit();                         /* extern */
-s32 Check_CallBackWait(); /* extern */
 s32 Fade_busy_ck();    /* extern */
 s32 Get_sw2();                               /* extern */
-s32 Lb_eat_to_bell();                     /* extern */
-s32 Lbc_set_prim(); /* extern */
-s32 SetDialogData();                     /* extern */
-s32 SetSceneTitle();                     /* extern */
-s32 To_LogOut();     /* extern */
 s32 check_top_information_level(); /* extern */
 s32 cnLBS_Get_TopInformation(); /* extern */
-s32 cnLBS_Read_TopInformation();       /* extern */
-s32 cnWrap_SoundRequest();               /* extern */
+s32 cnLBS_Read_TopInformation();   /* extern */
 s32 fade_set();                          /* extern */
-extern u8 CallBack_Result_LoginTopInformation;
-extern u8 text_lobby_trans_ot0;
 
 void lbc_login_top_information(void) {
     s32 temp_s0;
@@ -41,13 +41,13 @@ void lbc_login_top_information(void) {
     switch (temp_a1) {
     case 0:
         (*(u8 *)((u8 *)(temp_a2) + 0xB9C)) = (u8) (temp_a1 + 1);
-        Lbc_set_prim(&text_lobby_trans_ot0, 0, 0, 0);
+        Lbc_set_prim((s32) text_lobby_trans_ot0, 0, 0, 0);
         SetSceneTitle(1);
         CallBackWaitInit();
-        cnLBS_Read_TopInformation(&CallBack_Result_LoginTopInformation);
+        cnLBS_Read_TopInformation(CallBack_Result_LoginTopInformation);
         break;
     case 1:
-        Check_CallBackWait(&jtbl_850_0065E910, temp_a1, temp_a2, temp_a3);
+        Check_CallBackWait();
         break;
     case 2:
         (*(u8 *)((u8 *)(temp_a2) + 0xB9C)) = (u8) (temp_a1 + 1);
@@ -66,7 +66,7 @@ void lbc_login_top_information(void) {
         if (Fade_busy_ck(&jtbl_850_0065E910, temp_a1, temp_a2, temp_a3) & 0xFF) {
             fade_set(2);
         }
-        Lb_eat_to_bell((*(void **)&cw) + 0x10A92);
+        Lb_eat_to_bell((s32) ((*(void **)&cw) + 0x10A92));
         (*(s32 *)((u8 *)((*(void **)&cw)) + 0xBB4)) = 0x1E;
         (*(s32 *)((u8 *)((*(void **)&cw)) + 0xBB8)) = 0x708;
         break;
@@ -89,7 +89,7 @@ void lbc_login_top_information(void) {
         }
         break;
     default:
-        To_LogOut(4, temp_a1, temp_a2, temp_a3);
+        To_LogOut(4);
         break;
     }
     (*(s8 *)((u8 *)((*(void **)&pNet)) + 0x2D)) = 1;

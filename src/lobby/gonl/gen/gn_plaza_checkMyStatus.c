@@ -3,11 +3,11 @@
  * tools/build_pc_mhg.sh). */
 #include "../gonl.h"
 
+s32 Eft25_set();
+s32 tl_exit_sub_menu();
 extern u8 pNet;
-s16 Eft25_set();                        /* extern */
 s32 Get_sw2();                               /* extern */
 s16 Get_sw_on2();                    /* extern */
-s32 tl_exit_sub_menu();                  /* extern */
 
 void plaza_checkMyStatus(void) {
     s32 temp_s0;
@@ -30,7 +30,7 @@ void plaza_checkMyStatus(void) {
             tl_exit_sub_menu(0);
             return;
         }
-        (*(s16 *)((u8 *)((*(void **)&pNet)) + 0x1C)) = Eft25_set((*(s16 *)((u8 *)((*(void **)&pNet)) + 0x1C)), 3);
+        (*(s16 *)((u8 *)((*(void **)&pNet)) + 0x1C)) = Eft25_set((s32) (*(s16 *)((u8 *)((*(void **)&pNet)) + 0x1C)), 3);
         return;
     }
 }

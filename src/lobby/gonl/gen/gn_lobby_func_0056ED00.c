@@ -3,10 +3,10 @@
  * tools/build_pc_mhg.sh). */
 #include "../gonl.h"
 
+s32 SetDialogData();
+s32 SetDialogYesNo();
 extern u8 pNet;
 extern u8 tl_member_buff;
-s32 SetDialogData();                     /* extern */
-s32 SetDialogYesNo();                    /* extern */
 s32 cnLBS_Get_ConditionSearchUser();   /* extern */
 s32 memset();        /* extern */
 extern s32 g_main_2EFBC4;

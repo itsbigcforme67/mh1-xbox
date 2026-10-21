@@ -3,17 +3,16 @@
  * tools/build_pc_mhg.sh). */
 #include "../gonl.h"
 
+s32 CallBackWaitInit();
+s32 Check_CallBackWait();
+s32 lobby_func_00580EC0();
+s32 lobby_func_005C05B0();
+s32 lobby_func_005C0620();
+s32 lobby_func_005C0740();
 extern u8 g_main_2EF390;
 extern u8 cw;
 extern u8 g_main_2EF390;
-s32 CallBackWaitInit();           /* extern */
-s32 Check_CallBackWait();         /* extern */
 s32 cnLBS_Get_ServerMessage();    /* extern */
-s32 lobby_func_005C05B0();             /* extern */
-s32 lobby_func_005C0620();         /* extern */
-s32 lobby_func_005C0740();    /* extern */
-extern u8 lobby_func_00580EC0;
-extern u8 lobby_func_00580F30;
 
 s32 lobby_func_00580FA0(void) {
     u8 g_frame[0x20] __attribute__((aligned(16)));   /* G's stack frame */
@@ -24,28 +23,26 @@ s32 lobby_func_00580FA0(void) {
     u8 temp_v1_3;
     u8 *temp_a0;
     u8 *temp_a0_2;
-    u8 *temp_a1;
     u8 *temp_v1_2;
 
     temp_a0 = (*(void **)&cw);
     sp1F = 0;
     temp_v1 = (*(u8 *)((u8 *)(temp_a0) + 0xB9D));
-    temp_a1 = temp_a0 + 0xB9D;
     switch (temp_v1) {                              /* switch 1; irregular */
     case 0x0:                                       /* switch 1 */
         (*(u8 *)((u8 *)(temp_a0) + 0xB9D)) = (u8) (temp_v1 + 1);
         (*(u8 *)((u8 *)((*(void **)&cw)) + 0x101A)) = 0U;
-        CallBackWaitInit(temp_a0, temp_a1);
+        CallBackWaitInit();
         (*(s8 *)((u8 *)((*(void **)&cw)) + 0xBA9)) = 0x1A;
-        lobby_func_005C05B0(&lobby_func_00580EC0);
+        lobby_func_005C05B0((s32) lobby_func_00580EC0);
 block_31:
     default:                                        /* switch 1 */
         return 2;
     case 0x1:                                       /* switch 1 */
-        Check_CallBackWait(temp_a0, temp_a1);
+        Check_CallBackWait();
         goto block_31;
     case 0x2:                                       /* switch 1 */
-        lobby_func_005C0620(&sp1F, 0);
+        lobby_func_005C0620(&sp1F, NULL);
         if (sp1F == 0) {
             (*(u8 *)((u8 *)((*(void **)&cw)) + 0xB9D)) = 0U;
             return 0;
@@ -57,7 +54,7 @@ block_31:
         goto block_31;
     case 0x3:                                       /* switch 1 */
         (*(u8 *)((u8 *)(temp_a0) + 0xB9D)) = (u8) (temp_v1 + 1);
-        CallBackWaitInit(temp_a0, temp_a1);
+        CallBackWaitInit();
         (*(s8 *)((u8 *)((*(void **)&cw)) + 0xBA9)) = 0x1B;
         temp_a0_2 = (*(void **)&cw);
         temp_v1_3 = (*(u8 *)((u8 *)(temp_a0_2) + 0xB9F));
@@ -66,7 +63,7 @@ block_31:
             var_a1 = (*(s32 *)&g_main_2EF390) + 0x23F4 + 0x20 + 0x9C8;
 block_24:
             (*(u8 *)((u8 *)(temp_a0_2) + 0x101A)) = (u8) ((*(u8 *)((u8 *)(temp_a0_2) + 0x101A)) + 1);
-            lobby_func_005C0740((*(u8 *)((u8 *)((*(void **)&cw)) + 0xB9F)), var_a1, &lobby_func_00580F30);
+            lobby_func_005C0740((s32) (*(u8 *)((u8 *)((*(void **)&cw)) + 0xB9F)), var_a1);
             goto block_31;
         case 1:                                     /* switch 2 */
             var_a1 = (*(s32 *)&g_main_2EF390) + 0x23F4 + 0x20 + 0x9C8 + 0x500;
@@ -82,7 +79,7 @@ block_24:
         }
         break;
     case 0x4:                                       /* switch 1 */
-        Check_CallBackWait(temp_a0, temp_a1);
+        Check_CallBackWait();
         goto block_31;
     case 0x5:                                       /* switch 1 */
         temp_v0 = (*(u8 *)((u8 *)(temp_a0) + 0xB9F)) + 1;
@@ -97,7 +94,7 @@ block_24:
         goto block_31;
     case 0x63:                                      /* switch 1 */
         (*(u8 *)((u8 *)(temp_a0) + 0xB9D)) = 0U;
-        cnLBS_Get_ServerMessage((*(void **)&cw) + 0xF75D, temp_a1);
+        cnLBS_Get_ServerMessage((*(void **)&cw) + 0xF75D, temp_a0 + 0xB9D);
         return 1;
     }
 }

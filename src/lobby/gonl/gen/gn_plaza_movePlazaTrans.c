@@ -3,16 +3,16 @@
  * tools/build_pc_mhg.sh). */
 #include "../gonl.h"
 
+s32 Put_page_num();
+s32 lobby_func_005791D0();
+s32 put_main_cursor();
 extern u8 ClassInfo;
 extern u8 pNet;
-s32 Put_page_num(); /* extern */
 s32 flfntLocate();                  /* extern */
 s32 flfntSetSize();             /* extern */
 s32 font_print();           /* extern */
 s32 font_print_double(); /* extern */
 s32 font_set_palette();                  /* extern */
-s32 lobby_func_005791D0();               /* extern */
-s32 put_main_cursor();                        /* extern */
 s32 sprintf();    /* extern */
 extern s32 g_lb_63E248;
 extern s32 g_lb_63E250;
@@ -29,7 +29,7 @@ void plaza_movePlazaTrans(void) {
     u8 *temp_v0;
     u8 *var_s0;
 
-    put_main_cursor((*(u8 *)((u8 *)((*(void **)&pNet)) + 0x2B)));
+    put_main_cursor((s32) (*(u8 *)((u8 *)((*(void **)&pNet)) + 0x2B)));
     flfntSetSize(0x12, 0x12);
     lobby_func_005791D0(1);
     var_s3 = 0x8E;
@@ -57,6 +57,6 @@ void plaza_movePlazaTrans(void) {
         var_s3 = ((s16) ((var_s3 + 0x16)));
     } while (var_s2 < 7);
     temp_v0 = (*(void **)&pNet);
-    Put_page_num(0x20E, var_s3, (*(s16 *)((u8 *)(temp_v0) + 0x1C)), (*(s16 *)((u8 *)(temp_v0) + 0x1E)), 0);
+    Put_page_num(0x20E, var_s3, (s64) (*(s16 *)((u8 *)(temp_v0) + 0x1C)), (s64) (*(s16 *)((u8 *)(temp_v0) + 0x1E)), 0);
 }
 

@@ -3,11 +3,10 @@
  * tools/build_pc_mhg.sh). */
 #include "../gonl.h"
 
-extern u8 Psw;
+s32 Plaza_chat_move();
 extern u8 pNet;
 s16 Get_sw();                                /* extern */
 s16 Get_sw_on2();            /* extern */
-s32 Plaza_chat_move();                           /* extern */
 
 void plaza_chatMain(void) {
     u8 temp_a0;
@@ -23,7 +22,7 @@ void plaza_chatMain(void) {
         /* fallthrough */
     case 1:
         (*(s16 *)((u8 *)((*(void **)&pNet)) + 0x20)) = Get_sw_on2(0, temp_a2 + 0x23, temp_a2);
-        if (Plaza_chat_move((*(u16 *)((u8 *)&Psw + 0x4))) == -1) {
+        if (Plaza_chat_move() == -1) {
             temp_a0_2 = (*(void **)&pNet);
             (*(u8 *)((u8 *)(temp_a0_2) + 0x23)) = (u8) ((*(u8 *)((u8 *)(temp_a0_2) + 0x23)) + 1);
             return;

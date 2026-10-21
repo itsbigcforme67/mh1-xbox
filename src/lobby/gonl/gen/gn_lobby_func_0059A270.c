@@ -3,12 +3,12 @@
  * tools/build_pc_mhg.sh). */
 #include "../gonl.h"
 
+s32 Lb_set_mini_data();
+s32 Lbc_init_network_work();
 extern u8 cw;
 extern u8 game_w;
 extern u8 lb_gbyte_2EF2A4;
 extern u8 pNet;
-s32 Lb_set_mini_data();            /* extern */
-s32 Lbc_init_network_work();                    /* extern */
 s32 flMemset();      /* extern */
 s32 init_set_work(); /* extern */
 extern u8 client_work;
@@ -23,7 +23,6 @@ void lobby_func_0059A270(void) {
     u8 *var_a1;   /* (s32 *) */
     u8 *var_a2;   /* (s32 *) */
     s32 var_a3;
-    u8 temp_a1;
     u8 *temp_v1;
 
     flMemset(&lb_sys, 0, 0x98);
@@ -54,9 +53,8 @@ void lobby_func_0059A270(void) {
     (*(u8 **)&cw) = &client_work;
     (*(u8 **)&pNet) = &network_work;
     Lbc_init_network_work();
-    temp_a1 = (*(u8 *)((u8 *)&game_w + 0x3A));
-    if ((*(s32 *)((u8 *)&player_work + (temp_a1 * 0xA00))) != 0) {
-        Lb_set_mini_data(&my_user_mini_data, temp_a1);
+    if ((*(s32 *)((u8 *)&player_work + ((*(u8 *)((u8 *)&game_w + 0x3A)) * 0xA00))) != 0) {
+        Lb_set_mini_data(&my_user_mini_data);
     }
     (*(s8 *)((u8 *)&game_w + 0x25)) = 0;
 }

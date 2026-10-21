@@ -3,18 +3,18 @@
  * tools/build_pc_mhg.sh). */
 #include "../gonl.h"
 
+s32 CallBackWaitInit();
+s32 Check_CallBackWait();
+s32 Lbs_load();
+s32 To_LogOut();
+s32 cnWrap_InitWork();
 extern u8 cw;
 extern u8 jtbl_575_0065E890;
 extern u8 network_work;
-s32 CallBackWaitInit(); /* extern */
-s32 Check_CallBackWait(); /* extern */
-s32 Lbs_load();    /* extern */
 s32 Net_trans_set();                     /* extern */
-s32 To_LogOut();     /* extern */
 s32 all_reset();                                /* extern */
 s32 cnLBS_Answer_PatchFinish();                 /* extern */
 s32 cnLBS_Get_PatchInformation(); /* extern */
-s32 cnWrap_InitWork();                          /* extern */
 s32 ms_net_patch_set(); /* extern */
 s32 ms_net_patch_set_init();                    /* extern */
 
@@ -56,29 +56,29 @@ void lbc_login_patch(void) {
         return;
     case 3:
         (*(u8 *)((u8 *)(temp_a2) + 0xB9C)) = (u8) (temp_a1 + 1);
-        Lbs_load(&jtbl_575_0065E890, temp_a1, temp_a2, temp_a3);
+        Lbs_load();
         (*(s8 *)((u8 *)&network_work + 0x31)) = 0;
         return;
     case 4:
         (*(u8 *)((u8 *)(temp_a2) + 0xB9C)) = (u8) (temp_a1 + 1);
         (*(s8 *)((u8 *)((*(void **)&cw)) + 0xB70)) = 1;
-        CallBackWaitInit(&jtbl_575_0065E890, temp_a1, temp_a2, temp_a3);
+        CallBackWaitInit();
         cnLBS_Answer_PatchFinish();
         return;
     case 5:
-        Check_CallBackWait(&jtbl_575_0065E890, temp_a1, temp_a2, temp_a3);
+        Check_CallBackWait();
         return;
     case 6:
         (*(u8 *)((u8 *)(temp_a2) + 0xB9C)) = (u8) (temp_a1 + 1);
-        Lbs_load(&jtbl_575_0065E890, temp_a1, temp_a2, temp_a3);
+        Lbs_load();
         (*(s8 *)((u8 *)&network_work + 0x31)) = 0;
         return;
     case 7:
         (*(s8 *)((u8 *)(temp_a2) + 0xB70)) = 1;
-        To_LogOut(1, temp_a1, temp_a2, temp_a3);
+        To_LogOut(1);
         return;
     default:
-        To_LogOut(4, temp_a1, temp_a2, temp_a3);
+        To_LogOut(4);
         return;
     }
 }

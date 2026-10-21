@@ -3,27 +3,27 @@
  * tools/build_pc_mhg.sh). */
 #include "../gonl.h"
 
+s32 lobby_func_00569D40();
+s32 lobby_func_0056B0C0();
+s32 lobby_func_0056B4E0();
+s32 lobby_func_0056B790();
+s32 lobby_func_0056C550();
+s32 lobby_func_0056ED50();
+s32 lobby_func_00570320();
+s32 lobby_func_00570E80();
+s32 plaza_ReibunEdit();
+s32 plaza_backToServer();
+s32 plaza_capcomPage();
+s32 plaza_chatMain();
+s32 plaza_checkChatLog();
+s32 plaza_checkFriend();
+s32 plaza_checkMyStatus();
+s32 plaza_logOut();
+s32 plaza_setMyComment();
+s32 tl_exit_sub_menu();
 extern u8 D_0035EFEB;
 extern u8 pNet;
 s32 Get_sw2();                               /* extern */
-s32 lobby_func_00569D40();                          /* extern */
-s32 lobby_func_0056B0C0();                      /* extern */
-s32 lobby_func_0056B4E0();                      /* extern */
-s32 lobby_func_0056B790();                          /* extern */
-s32 lobby_func_0056C550();                       /* extern */
-s32 lobby_func_0056ED50();                      /* extern */
-s32 lobby_func_00570320();                      /* extern */
-s32 lobby_func_00570E80();                          /* extern */
-s32 plaza_ReibunEdit();                         /* extern */
-s32 plaza_backToServer();                       /* extern */
-s32 plaza_capcomPage();                         /* extern */
-s32 plaza_chatMain();                           /* extern */
-s32 plaza_checkChatLog();                       /* extern */
-s32 plaza_checkFriend();                         /* extern */
-s32 plaza_checkMyStatus();                      /* extern */
-s32 plaza_logOut();                             /* extern */
-s32 plaza_setMyComment();                        /* extern */
-s32 tl_exit_sub_menu();                  /* extern */
 
 void plaza_moveMain(void) {
     u8 temp_v0;

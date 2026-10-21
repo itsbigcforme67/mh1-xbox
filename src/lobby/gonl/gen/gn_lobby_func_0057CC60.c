@@ -3,10 +3,10 @@
  * tools/build_pc_mhg.sh). */
 #include "../gonl.h"
 
+s32 SetDialogData();
 extern u8 cw;
 extern u8 pNet;
 s32 Init_InterruptFlag();                       /* extern */
-s32 SetDialogData();                     /* extern */
 
 void lobby_func_0057CC60(void) {
     (*(s8 *)((u8 *)((*(void **)&cw)) + 0xB99)) = 8;

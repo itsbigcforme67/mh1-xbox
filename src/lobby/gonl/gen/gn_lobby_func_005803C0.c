@@ -3,9 +3,9 @@
  * tools/build_pc_mhg.sh). */
 #include "../gonl.h"
 
+s32 lobby_func_005E6680();
 extern u8 cw;
 s32 cnLBS_Get_ServerMessage();            /* extern */
-s32 lobby_func_005E6680(); /* extern */
 extern s32 g_main_2EFBC0;
 
 void lobby_func_005803C0(s64 arg0) {
@@ -18,7 +18,7 @@ void lobby_func_005803C0(s64 arg0) {
     sp18 = arg0;
     if (((*(u8 *)((u8 *)(temp_a1) + 0xB99)) != 5) && ((*(u8 *)((u8 *)(temp_a1) + 0xBA9)) == 0x14)) {
         (*(u8 *)((u8 *)(temp_a1) + 0xBA9)) = 0U;
-        lobby_func_005E6680(&g_main_2EFBC0, temp_a1, temp_a1 + 0xBA9);
+        lobby_func_005E6680(&g_main_2EFBC0);
         if ((s8) sp18 == 0) {
             temp_a0 = (*(void **)&cw);
             (*(u8 *)((u8 *)(temp_a0) + 0xB9D)) = (u8) ((*(u8 *)((u8 *)(temp_a0) + 0xB9D)) + 1);

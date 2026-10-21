@@ -3,19 +3,19 @@
  * tools/build_pc_mhg.sh). */
 #include "../gonl.h"
 
+s32 Lb_eat_to_bell();
+s32 Lbc_init_network_work();
+s32 Lbc_set_prim();
+s32 To_ReadyBattle();
+s32 lobby_func_0055A140();
+s32 lobby_func_0057E3D0();
+s32 lobby_func_00582C70();
 extern u8 D_0035EFEB;
 extern u8 cw;
 extern u8 pNet;
 s32 Init_InterruptFlag();                       /* extern */
-s32 Lb_eat_to_bell();                     /* extern */
-s32 Lbc_init_network_work();                    /* extern */
-s32 Lbc_set_prim(); /* extern */
 s32 NPCZoomInCameraCancel();                    /* extern */
 s32 To_MatchingFailed();         /* extern */
-s32 To_ReadyBattle();                     /* extern */
-s32 lobby_func_0055A140();       /* extern */
-s32 lobby_func_0057E3D0();       /* extern */
-s32 lobby_func_00582C70();               /* extern */
 extern s32 lb_sys;
 
 s32 Check_InterruptFlag(void) {
@@ -27,13 +27,13 @@ s32 Check_InterruptFlag(void) {
     temp_a1 = (*(void **)&cw);
     if ((*(s8 *)((u8 *)(temp_a1) + 0xB70)) != 0) {
         if ((*(s8 *)((u8 *)(temp_a1) + 0xB74)) != 0) {
-            To_ReadyBattle(temp_a1);
+            To_ReadyBattle();
             return 1;
         }
         temp_v1 = (*(s8 *)((u8 *)(temp_a1) + 0xB75));
         if (temp_v1 == 1) {
             To_MatchingFailed(0, temp_a1);
-            Lb_eat_to_bell((*(void **)&cw) + 0xF75D);
+            Lb_eat_to_bell((s32) ((*(void **)&cw) + 0xF75D));
             return 1;
         }
         if (temp_v1 == 2) {
@@ -43,7 +43,7 @@ s32 Check_InterruptFlag(void) {
         temp_v1_2 = (*(u8 *)((u8 *)(temp_a1) + 0xB99));
         if (temp_v1_2 == 2) {
             if ((*(s8 *)((u8 *)(temp_a1) + 0xB71)) == 1) {
-                lobby_func_0057E3D0(1, temp_a1);
+                lobby_func_0057E3D0();
                 return 1;
             }
             goto block_24;
@@ -53,20 +53,20 @@ s32 Check_InterruptFlag(void) {
             if (temp_v1_3 == 0) {
                 if ((*(s8 *)((u8 *)(temp_a1) + 0xB72)) == 1) {
                     if ((temp_v1_3 != 0) && ((*(u8 *)((u8 *)(temp_a1) + 0xF751)) != 0)) {
-                        lobby_func_0055A140(1, temp_a1);
+                        lobby_func_0055A140(1);
                     }
-                    lobby_func_00582C70(1);
+                    lobby_func_00582C70();
                     return 1;
                 }
                 goto block_24;
             }
             if ((*(s8 *)((u8 *)(temp_a1) + 0xB73)) == 1) {
                 if ((*(u8 *)((u8 *)(temp_a1) + 0xF751)) != 0) {
-                    lobby_func_0055A140(1, temp_a1);
+                    lobby_func_0055A140(1);
                     (*(u8 *)((u8 *)((*(void **)&cw)) + 0xF751)) = 0U;
                 }
                 NPCZoomInCameraCancel();
-                Lb_eat_to_bell((*(void **)&cw) + 0xF75D);
+                Lb_eat_to_bell((s32) ((*(void **)&cw) + 0xF75D));
                 (*(s8 *)&D_0035EFEB) = 0;
                 lb_sys = 0x17;
                 (*(s32 *)((u8 *)&lb_sys + 0x8)) = 1;

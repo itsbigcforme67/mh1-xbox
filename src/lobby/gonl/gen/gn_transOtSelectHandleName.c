@@ -3,11 +3,11 @@
  * tools/build_pc_mhg.sh). */
 #include "../gonl.h"
 
+s32 DispNameAndIDonDialog();
 extern u8 User_data;
 extern u8 cw;
 extern u8 pNet;
 s32 DispDialogData();                           /* extern */
-s32 DispNameAndIDonDialog(); /* extern */
 s32 font_set_stack_no();                     /* extern */
 
 void transOtSelectHandleName(void *arg0) {

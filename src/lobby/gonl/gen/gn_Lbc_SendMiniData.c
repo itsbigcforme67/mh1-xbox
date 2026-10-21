@@ -3,12 +3,12 @@
  * tools/build_pc_mhg.sh). */
 #include "../gonl.h"
 
+s32 Lb_set_mini_data();
+s32 lobby_func_005E6B80();
 extern u8 cw;
 extern u8 game_w;
 extern u8 lb_sys;
-s32 Lb_set_mini_data();                /* extern */
 s32 cnLBS_Send_UserMiniData(); /* extern */
-s32 lobby_func_005E6B80();    /* extern */
 s32 memcmp();          /* extern */
 s32 memcpy();      /* extern */
 extern u8 CallBack_Result_SendUserMiniData;
@@ -31,7 +31,7 @@ s32 Lbc_SendMiniData(void) {
         } else {
             var_a0 = 3;
         }
-        lobby_func_005E6B80(var_a0, &CallBack_Result_SendUserMiniData);
+        lobby_func_005E6B80(var_a0, (s32) &CallBack_Result_SendUserMiniData);
     }
     memcpy((*(s32 *)&cw) + ((*(u8 *)((u8 *)&game_w + 0x3A)) * 0x5C) + 0x3A8, &sp10, 0x40);
     memcpy((*(s32 *)&cw) + 0x1DC, &sp10, 0x40);

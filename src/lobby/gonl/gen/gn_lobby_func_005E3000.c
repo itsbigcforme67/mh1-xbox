@@ -3,14 +3,14 @@
  * tools/build_pc_mhg.sh). */
 #include "../gonl.h"
 
+s32 lobby_func_005E3300();
+s32 lobby_func_005E33B0();
 s32 __cnetSub_Get_RestBgWork();                     /* extern */
-s32 lobby_func_005E33B0();             /* extern */
-extern u8 lobby_func_005E3300;
 
 void lobby_func_005E3000(void *arg0) {
     if (__cnetSub_Get_RestBgWork() > 0) {
         (*(u8 *)((u8 *)(arg0) + 0x22)) = (u8) ((*(u8 *)((u8 *)(arg0) + 0x22)) + 1);
-        lobby_func_005E33B0(&lobby_func_005E3300);
+        lobby_func_005E33B0((s32) lobby_func_005E3300);
     }
 }
 

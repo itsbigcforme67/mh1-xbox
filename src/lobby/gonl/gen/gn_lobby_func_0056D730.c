@@ -3,10 +3,9 @@
  * tools/build_pc_mhg.sh). */
 #include "../gonl.h"
 
+s32 SetDialogData();
+s32 SetDialogYesNo();
 extern u8 pNet;
-s32 SetDialogData();                     /* extern */
-s32 SetDialogYesNo();                    /* extern */
-
 void lobby_func_0056D730(void) {
     (*(s8 *)((u8 *)((*(void **)&pNet)) + 0x25)) = 0;
     (*(s8 *)((u8 *)((*(void **)&pNet)) + 0x2D)) = 1;

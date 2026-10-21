@@ -3,8 +3,8 @@
  * tools/build_pc_mhg.sh). */
 #include "../gonl.h"
 
-s32 Lb_send_data_to_myself(); /* extern */
-s32 lb_send_data();       /* extern */
+s32 Lb_send_data_to_myself();
+s32 lb_send_data();
 s32 memset();             /* extern */
 s32 strcpy();                     /* extern */
 
@@ -18,7 +18,7 @@ void Lb_send_chair_status(s32 arg0, s8 arg1, s8 arg2) {
     sp40 = arg1;
     sp41 = arg2;
     strcpy(&sp42, arg0);
-    lb_send_data(0xB, 5, &sp40);
-    Lb_send_data_to_myself(0xB, 5, &sp40);
+    lb_send_data(0xB, 5, (s32) &sp40);
+    Lb_send_data_to_myself(0xB, 5, (s32) &sp40);
 }
 

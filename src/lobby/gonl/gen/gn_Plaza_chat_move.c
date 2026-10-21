@@ -3,10 +3,10 @@
  * tools/build_pc_mhg.sh). */
 #include "../gonl.h"
 
+s32 Lb_send_chat();
 extern u8 Psw;
 extern u8 game_w;
 s32 ChatKinsoku_chk();                          /* extern */
-s32 Lb_send_chat();            /* extern */
 s32 Plaza_chatlog_i();                          /* extern */
 s32 SoftKeyboard_exit();                     /* extern */
 s64 SoftKeyboard_move();              /* extern */
@@ -32,7 +32,7 @@ s32 Plaza_chat_move(void) {
     }
     if (temp_v1_2 != 0) {
         if ((sp10 != 0) && (temp_v1_2 > 0) && (ChatKinsoku_chk(&sp10) != 0)) {
-            Lb_send_chat((*(u8 *)((u8 *)&game_w + 0x3A)), &sp10, 0);
+            Lb_send_chat((s32) (*(u8 *)((u8 *)&game_w + 0x3A)), (s32) &sp10);
         }
         SoftKeyboard_exit();
         Plaza_chatlog_i();

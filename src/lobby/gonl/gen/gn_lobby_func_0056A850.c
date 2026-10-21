@@ -3,16 +3,16 @@
  * tools/build_pc_mhg.sh). */
 #include "../gonl.h"
 
+s32 CallBack_Result_Plaza_ReadAllocation2();
+s32 Lb_eat_to_bell();
+s32 Lbs_LobbyExit();
+s32 SetDialogData();
+s32 cnWrap_SoundRequest();
+s64 lobby_func_00569390();
 extern u8 g_main_2EF390;
 extern u8 cw;
 extern u8 g_main_2EF390;
-s32 CallBack_Result_Plaza_ReadAllocation2();        /* extern */
 s32 Get_sw2();                               /* extern */
-s32 Lb_eat_to_bell();                        /* extern */
-s32 Lbs_LobbyExit();                                /* extern */
-s32 SetDialogData();                     /* extern */
-s32 cnWrap_SoundRequest(); /* extern */
-s32 lobby_func_00569390(); /* extern */
 extern u8 ClassInfo;
 extern s8 g_lb_5FBC10;
 extern s32 g_main_3064AF;
@@ -23,7 +23,6 @@ s32 lobby_func_0056A850(void *arg0) {
 #define sp2F (*(u8 *)(g_frame + 0x2F))
     s16 temp_v1_3;
     s16 temp_v1_4;
-    s32 temp_a1;
     s32 temp_a4;
     s32 temp_v0_2;
     s32 temp_v1_2;
@@ -60,13 +59,12 @@ s32 lobby_func_0056A850(void *arg0) {
                 return 0;
             }
             temp_a3 = (&g_lb_5FBC10)[temp_v1_3];
-            temp_a1 = ClassInfo * 0x15C;
-            if ((*(s8 *)((u8 *)(((*(s32 *)&g_main_2EF390) + 0x23F4 + 0x20 + ((((s8) (((*(s32 *)((u8 *)&g_main_3064AF + temp_a1)) - 0x31)))) * 0x10) + temp_a3)) + 0x22E)) != 0) {
+            if ((*(s8 *)((u8 *)(((*(s32 *)&g_main_2EF390) + 0x23F4 + 0x20 + ((((s8) (((*(s32 *)((u8 *)&g_main_3064AF + (ClassInfo * 0x15C))) - 0x31)))) * 0x10) + temp_a3)) + 0x22E)) != 0) {
                 (*(s16 *)((u8 *)(arg0) + 0)) = (s16) temp_a3;
                 (*(s16 *)((u8 *)(arg0) + 2)) = 0xF;
-                cnWrap_SoundRequest(6, temp_a1, ClassInfo, temp_a3, 0xF);
+                cnWrap_SoundRequest(6);
             } else {
-                cnWrap_SoundRequest(7, temp_a1, ClassInfo, temp_a3, 0xF);
+                cnWrap_SoundRequest(7);
             }
             goto block_41;
         }

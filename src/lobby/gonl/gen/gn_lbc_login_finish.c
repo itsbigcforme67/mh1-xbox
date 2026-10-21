@@ -3,6 +3,14 @@
  * tools/build_pc_mhg.sh). */
 #include "../gonl.h"
 
+s32 CallBackWaitInit();
+s32 CallBack_SendMiniData();
+s32 Check_CallBackWait();
+s32 Lb_make_quest_tbl();
+s32 Lb_set_mini_data();
+s32 To_LogOut();
+s32 lobby_func_0057B800();
+s32 lobby_func_0058BAA0();
 extern u8 g_main_2EF2A8;
 extern u8 g_main_2EF390;
 extern u8 BsLbsCount;
@@ -14,17 +22,9 @@ extern u8 game_w;
 extern u8 lb_sys;
 extern u8 pNet;
 extern u8 player_work;
-s32 CallBackWaitInit();                         /* extern */
-s32 Check_CallBackWait();                       /* extern */
-s32 Lb_make_quest_tbl();                        /* extern */
-s32 Lb_set_mini_data();            /* extern */
-s32 To_LogOut();                         /* extern */
 s32 cnLBS_Send_UserMiniData(); /* extern */
 s32 cnLbc_Init_NgServerId();                    /* extern */
-s32 lobby_func_0057B800();                          /* extern */
-s32 lobby_func_0058BAA0();             /* extern */
 s32 memset();              /* extern */
-extern u8 CallBack_SendMiniData;
 extern u8 my_user_mini_data;
 
 void lbc_login_finish(void) {
@@ -61,7 +61,7 @@ void lbc_login_finish(void) {
                 (*(s32 *)((u8 *)&(*(u8 *)((u8 *)&player_work + 0x736)) + ((*(u8 *)((u8 *)&game_w + 0x3A)) * 0xA00))) = 0x4D;
             }
             (*(s8 *)((u8 *)&game_w + 0x14)) = var_a1;
-            Lb_set_mini_data(&my_user_mini_data, var_a1);
+            Lb_set_mini_data(&my_user_mini_data);
             lobby_func_0058BAA0(&my_user_mini_data);
         }
         if ((*(u8 *)((u8 *)&CnetWork + 0x5)) != 3) {
@@ -83,7 +83,7 @@ block_20:
         (*(s8 *)((u8 *)(&my_user_mini_data) + 0x10)) = 0;
         (*(s8 *)((u8 *)((*(void **)&cw)) + 0xBA9)) = 2;
         lobby_func_0058BAA0(&my_user_mini_data);
-        cnLBS_Send_UserMiniData(&my_user_mini_data, 0x40, &CallBack_SendMiniData);
+        cnLBS_Send_UserMiniData(&my_user_mini_data, 0x40, CallBack_SendMiniData);
         var_a1_2 = 0;
         var_a0 = &(*(u8 *)((u8 *)&lb_sys + 0xA0));
         do {

@@ -3,8 +3,8 @@
  * tools/build_pc_mhg.sh). */
 #include "../gonl.h"
 
+s32 lobby_func_005AC580();
 s32 cnetGet_Room_LastRecvNumber();         /* extern */
-s32 lobby_func_005AC580();           /* extern */
 extern u8 LobbyInfo;
 
 void lobby_func_005872E0(void) {
@@ -12,6 +12,6 @@ void lobby_func_005872E0(void) {
 #define sp1E (*(u16 *)(g_frame + 0x1E))
 
     cnetGet_Room_LastRecvNumber(&sp1E);
-    lobby_func_005AC580(sp1E, (u8 *)&LobbyInfo + ((sp1E - 1) * 0x15C));
+    lobby_func_005AC580((s32) sp1E, (u8 *)&LobbyInfo + ((sp1E - 1) * 0x15C));
 }
 

@@ -3,9 +3,9 @@
  * tools/build_pc_mhg.sh). */
 #include "../gonl.h"
 
+s32 lobby_func_005AE360();
 extern u8 pFunc;
 s32 __cnetSub_Set_BgProcess(); /* extern */
-s16 lobby_func_005AE360();                       /* extern */
 
 s32 cnLBS_Read_RoomJoinUser(s32 arg0, s32 arg1) {
     s32 temp_v0;

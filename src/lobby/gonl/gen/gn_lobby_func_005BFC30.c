@@ -3,8 +3,8 @@
  * tools/build_pc_mhg.sh). */
 #include "../gonl.h"
 
+s32 lobby_func_005C0400();
 s32 __cnetSub_Get_RestBgWork();                     /* extern */
-s32 lobby_func_005C0400();         /* extern */
 extern u8 g_lb_731162;
 extern u8 _cnet_CallBack_Result_PersonalDataChange;
 
@@ -13,7 +13,7 @@ void lobby_func_005BFC30(void *arg0) {
 
     temp_s1 = (*(u8 *)((u8 *)(arg0) + 0xC));
     if (__cnetSub_Get_RestBgWork() > 0) {
-        lobby_func_005C0400(temp_s1, &_cnet_CallBack_Result_PersonalDataChange);
+        lobby_func_005C0400((s32) temp_s1, (s32) &_cnet_CallBack_Result_PersonalDataChange);
         (*(u8 *)((u8 *)(arg0) + 0xC)) = (s32) ((s32) (*(u8 *)((u8 *)(arg0) + 0xC)) + 1);
         if ((((temp_s1 & 0xFF) + 1) & 0xFF) >= (s32) g_lb_731162) {
             (*(u8 *)((u8 *)(arg0) + 0x22)) = (u8) ((*(u8 *)((u8 *)(arg0) + 0x22)) + 1);

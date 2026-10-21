@@ -3,10 +3,10 @@
  * tools/build_pc_mhg.sh). */
 #include "../gonl.h"
 
+s32 lobby_func_005E6B80();
 extern u8 g_main_2EF2A8;
 extern u8 g_main_2EF2A8;
 s32 cnLBS_Send_UserMiniData(); /* extern */
-s32 lobby_func_005E6B80();        /* extern */
 extern u8 CallBack_Result_SendUserMiniData;
 extern u8 my_user_mini_data;
 
@@ -30,7 +30,7 @@ s32 lobby_func_00570DA0(u8 arg0) {
         var_a0 = 3;
     }
     if ((var_a0 & 0xFF) != (var_v1 & 0xFF)) {
-        lobby_func_005E6B80(var_a0, &CallBack_Result_SendUserMiniData);
+        lobby_func_005E6B80(var_a0, (s32) &CallBack_Result_SendUserMiniData);
     }
     (*(u8 *)((u8 *)(&my_user_mini_data) + 2)) = arg0;
     (*(u8 *)&g_main_2EF2A8) = arg0;

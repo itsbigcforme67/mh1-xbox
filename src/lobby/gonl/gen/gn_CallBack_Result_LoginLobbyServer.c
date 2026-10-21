@@ -3,17 +3,17 @@
  * tools/build_pc_mhg.sh). */
 #include "../gonl.h"
 
+s32 CallBackWaitInit();
+s32 To_LogOut();
+s32 lobby_func_0058BAA0();
 extern u8 CnetWork;
 extern u8 cw;
-s32 CallBackWaitInit();              /* extern */
-s32 To_LogOut();                     /* extern */
 s32 cnLBS_Get_LoginWarningMessage();  /* extern */
 s32 cnLBS_Get_ServerMessage();        /* extern */
 s32 cnLBS_Send_LoginUserAccount(); /* extern */
 s32 cnetGet_Login_DecideUserHandle();     /* extern */
 s32 cnetGet_Login_DecideUserID();         /* extern */
 s32 fade_set();                      /* extern */
-s32 lobby_func_0058BAA0();             /* extern */
 s32 memcpy();         /* extern */
 s32 memset();        /* extern */
 extern u8 my_user_handle;
@@ -49,7 +49,7 @@ void CallBack_Result_LoginLobbyServer(s64 arg0) {
                 (*(s8 *)((u8 *)((*(void **)&cw)) + 0xB9B)) = 4;
                 (*(s8 *)((u8 *)((*(void **)&cw)) + 0xB9C)) = 6;
                 (*(s8 *)((u8 *)((*(void **)&cw)) + 0xB9D)) = 0;
-                CallBackWaitInit(4, (*(u8 *)((u8 *)&CnetWork + 0x5)));
+                CallBackWaitInit();
                 lobby_func_0058BAA0(&my_user_mini_data);
                 temp_v0 = (*(void **)&cw);
                 cnLBS_Send_LoginUserAccount(temp_v0 + 0x1C0, temp_v0 + 0x1C8, &my_user_mini_data);
@@ -58,7 +58,7 @@ void CallBack_Result_LoginLobbyServer(s64 arg0) {
                 (*(s8 *)((u8 *)((*(void **)&cw)) + 0xB9B)) = 4;
                 (*(s8 *)((u8 *)((*(void **)&cw)) + 0xB9C)) = 6;
                 (*(s8 *)((u8 *)((*(void **)&cw)) + 0xB9D)) = 0;
-                CallBackWaitInit(4, (*(u8 *)((u8 *)&CnetWork + 0x5)));
+                CallBackWaitInit();
                 lobby_func_0058BAA0(&my_user_mini_data);
                 cnLBS_Send_LoginUserAccount(&my_user_id, &my_user_handle, &my_user_mini_data);
                 return;
@@ -105,7 +105,7 @@ void CallBack_Result_LoginLobbyServer(s64 arg0) {
             cnLBS_Get_ServerMessage((*(void **)&cw) + 0xF75D, (((s8 *)&sp18)[1]));
             return;
         case 9:                                     /* switch 3 */
-            To_LogOut(4, (((s8 *)&sp18)[1]));
+            To_LogOut(4);
         default:                                    /* switch 1 */
             return;
         }

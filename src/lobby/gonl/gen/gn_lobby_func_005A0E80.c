@@ -3,20 +3,20 @@
  * tools/build_pc_mhg.sh). */
 #include "../gonl.h"
 
+s64 lobby_func_005935C0();
 extern u8 System_timer;
 extern u8 cw;
 extern u8 game_w;
 s32 flfntSetSize();             /* extern */
 s32 font_print_double(); /* extern */
 s32 font_set_palette();                  /* extern */
-s64 lobby_func_005935C0();          /* extern */
 
-void lobby_func_005A0E80(s32 arg0) {
+void lobby_func_005A0E80(s64 arg0) {
     s64 temp_s0;
     u8 *temp_v1;
 
     if (((s32) (*(u16 *)&System_timer) % 40) < 0x15) {
-        temp_s0 = ((s16) (lobby_func_005935C0(0x1A0, 0x12)));
+        temp_s0 = ((s16) (lobby_func_005935C0(arg0, 0x1A0)));
         flfntSetSize(0x14, 0x14);
         font_set_palette(0);
         temp_v1 = (*(void **)&cw);

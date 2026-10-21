@@ -3,6 +3,11 @@
  * tools/build_pc_mhg.sh). */
 #include "../gonl.h"
 
+s32 Lb_put_icon();
+s32 lobby_func_00559C30();
+s32 lobby_func_00559E20();
+void * lobby_func_00559EB0();
+s32 lobby_func_00559FF0();
 extern u8 g_main_2EFBC0;
 extern u8 g_main_2EFBC0;
 extern u8 lb_num_str;
@@ -12,18 +17,13 @@ extern u8 tl_member_buff;
 extern u8 tl_msg_tbl;
 s32 KinshiYogo_chk();                       /* extern */
 s32 Lb_back_money();                             /* extern */
-s32 Lb_put_icon(); /* extern */
 s32 Put_comment(); /* extern */
 s32 flfntLocate();                      /* extern */
 s32 flfntSetSize();             /* extern */
 s32 font_print();                 /* extern */
 s32 font_set_palette();                      /* extern */
-s32 func_0012BDD0();                         /* extern */
+s32 func_0012BDD0();                      /* extern */
 s32 han2zen();              /* extern */
-void *lobby_func_00559C30();                     /* extern */
-s16 lobby_func_00559E20();                       /* extern */
-s32 lobby_func_00559EB0();                       /* extern */
-s32 lobby_func_00559FF0();                       /* extern */
 s32 sprintf();    /* extern */
 extern s32 lb_ibox_str;
 extern s32 g_lb_63E2B8;
@@ -57,7 +57,8 @@ void lobby_func_00576F20(void) {
     flfntSetSize(0x12, 0x12);
     font_set_palette(0);
     temp_s0 = lobby_func_00559FF0((*(s32 *)&g_main_2EFBC0) + ((*(s16 *)((u8 *)&tl_member_buff + 0x1380)) * 0x10) + 4) & 0xFFFF;
-    temp_s4 = lobby_func_00559C30(temp_s0);
+    lobby_func_00559C30(temp_s0);
+    temp_s4 = M2C_ERROR(/* Read from unset register $v0 */);
     flfntLocate(0xE2, 0x82);
     font_print((*(s32 * *)((u8 *)&tl_msg_tbl + 0x28)));
     flfntLocate(0x15A, 0x82);
@@ -72,7 +73,7 @@ void lobby_func_00576F20(void) {
     func_0012BDD0(lobby_func_00559EB0(temp_s0));
     font_set_palette(0);
     if ((*(u8 *)((u8 *)((((*(s16 *)((u8 *)&tl_member_buff + 0x1380)) * 0x10) + (*(s32 *)&g_main_2EFBC0))) + 0x10)) != 0) {
-        Lb_put_icon(0x142, temp_s3, 0x2D, -1);
+        Lb_put_icon(0x142, (s32) temp_s3, 0x2D, -1);
     }
     temp_s3_2 = ((s16) ((temp_s3 + 0x16)));
     flfntLocate(0xE2, temp_s3_2);

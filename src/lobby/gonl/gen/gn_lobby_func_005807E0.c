@@ -3,6 +3,10 @@
  * tools/build_pc_mhg.sh). */
 #include "../gonl.h"
 
+s32 CallBackWaitInit();
+s32 Check_CallBackWait();
+s32 lobby_func_00580760();
+s32 lobby_func_005E6E30();
 extern u8 g_main_2EFBB8;
 extern u8 g_main_2EFBBA;
 extern u8 g_main_2EFBBC;
@@ -10,12 +14,8 @@ extern u8 cw;
 extern u8 g_main_2EFBB8;
 extern u8 g_main_2EFBBA;
 extern u8 g_main_2EFBBC;
-s32 CallBackWaitInit();                         /* extern */
-s32 Check_CallBackWait();                   /* extern */
 s16 Visual_main();                      /* extern */
 s32 cnLBS_Get_ServerMessage();      /* extern */
-s32 lobby_func_005E6E30();    /* extern */
-extern u8 lobby_func_00580760;
 
 s32 lobby_func_005807E0(s8 *arg0) {
     s8 *temp_a1;
@@ -39,13 +39,13 @@ s32 lobby_func_005807E0(s8 *arg0) {
             CallBackWaitInit();
             (*(s8 *)((u8 *)((*(void **)&cw)) + 0xBA9)) = 0x16;
             M2C_ERROR(/* unknown instruction: ldr $a0, -0x2fb8($gp) */);
-            lobby_func_005E6E30(M2C_ERROR(/* unknown instruction: ldl $a0, -0x2fb1($gp) */), &lobby_func_00580760);
+            lobby_func_005E6E30(M2C_ERROR(/* unknown instruction: ldl $a0, -0x2fb1($gp) */), (s32) lobby_func_00580760);
         }
 block_15:
     default:
         return 2;
     case 0x1:
-        Check_CallBackWait(temp_a1);
+        Check_CallBackWait();
         goto block_15;
     case 0x2:
         (*(u8 *)((u8 *)(temp_v1) + 0xB9D)) = 0U;

@@ -3,18 +3,18 @@
  * tools/build_pc_mhg.sh). */
 #include "../gonl.h"
 
+s32 Eft25_set();
+s32 Lb_cursorUD();
+s32 SetDialogData();
+s32 cnWrap_SoundRequest();
+s32 plaza_req_input();
 extern u8 pNet;
 extern u8 tl_member_buff;
-u8 Eft25_set();                          /* extern */
 s32 Get_sw();                                /* extern */
 s16 Get_sw_on2();                   /* extern */
-s8 Lb_cursorUD();                        /* extern */
-s32 SetDialogData();                /* extern */
 s8 Visual_main();                          /* extern */
-s32 cnWrap_SoundRequest();          /* extern */
 s32 memcpy();         /* extern */
 s32 memset();             /* extern */
-s32 plaza_req_input();            /* extern */
 s32 strcpy();                  /* extern */
 extern s32 g_lb_5FBC28;
 extern s32 g_lb_5FBC29;
@@ -25,10 +25,10 @@ extern s32 g_main_2EEE68;
 extern s8 seekStr;
 
 s32 lobby_func_0056DA50(void) {
-    s32 var_a1;
     s32 temp_a1;
     s32 temp_a1_2;
     s32 temp_s1;
+    s32 var_a1;
     s8 var_v0_2;
     u8 var_v0;
 
@@ -43,7 +43,7 @@ s32 lobby_func_0056DA50(void) {
                 goto block_13;
             }
             if ((*(s8 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x18))) + 0x1373)) == 1) {
-                SetDialogData(0x1E, temp_a1);
+                SetDialogData(0x1E);
                 cnWrap_SoundRequest(0);
                 (*(s8 *)((u8 *)((*(void **)&pNet)) + 0x2F)) = 1;
                 return 0;
@@ -59,7 +59,7 @@ block_13:
             return 3;
         }
         if (temp_a1 & 0xC00) {
-            (*(u8 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x18))) + 0x1370)) = Eft25_set((*(u8 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x18))) + 0x1370)), 3);
+            (*(u8 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x18))) + 0x1370)) = Eft25_set((s32) (*(u8 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x18))) + 0x1370)), 3);
             (*(s8 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x18))) + 0x1373)) = 0;
             memset(&g_lb_6B46D0, 0, 0x110);
         } else {
@@ -79,13 +79,13 @@ block_13:
                 var_a1 = 5;
                 break;
             }
-            (*(s8 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x18))) + 0x1373)) = Lb_cursorUD((*(s8 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x18))) + 0x1373)), var_a1);
+            (*(s8 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x18))) + 0x1373)) = Lb_cursorUD((s32) (*(s8 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x18))) + 0x1373)), var_a1);
         }
 block_51:
     default:                                        /* switch 1 */
         return 2;
     case 1:                                         /* switch 1 */
-        if (plaza_req_input(&g_lb_653A50, 1) == 1) {
+        if (plaza_req_input((s32) &g_lb_653A50, 1) == 1) {
             strcpy(&g_lb_6B46D0 + ((*(s8 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x18))) + 0x1373)) * 0x44) + 4, &g_lb_653A50);
             if (Visual_main(&g_lb_653A50) != 0) {
                 *(&g_lb_6B46D1 + ((*(s8 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x18))) + 0x1373)) * 0x44)) = Visual_main(&g_lb_653A50);
@@ -103,7 +103,7 @@ block_51:
         temp_a1_2 = temp_s1 & 0xFFFF;
         (*(s16 *)((u8 *)((*(void **)&pNet)) + 0x20)) = Get_sw_on2(0, 1);
         if (temp_a1_2 & 0x20) {
-            SetDialogData(0x1E, temp_a1_2);
+            SetDialogData(0x1E);
             cnWrap_SoundRequest(0);
             switch ((*(u8 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x18))) + 0x1370))) { /* switch 3; irregular */
             case 0:                                 /* switch 3 */
@@ -129,7 +129,7 @@ block_44:
         }
         if (temp_a1_2 & 0x40) {
             (*(u8 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x18))) + 0x136B)) = 0U;
-            cnWrap_SoundRequest(3, temp_a1_2);
+            cnWrap_SoundRequest(3);
         }
         goto block_51;
     case 3:                                         /* switch 1 */

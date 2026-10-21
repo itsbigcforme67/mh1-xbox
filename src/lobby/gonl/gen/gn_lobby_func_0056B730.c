@@ -3,11 +3,11 @@
  * tools/build_pc_mhg.sh). */
 #include "../gonl.h"
 
+s32 SetDialogData();
+s32 SetDialogYesNo();
+s32 SetHelpLineMsg();
 extern u8 pNet;
 extern u8 tl_member_buff;
-s32 SetDialogData();                     /* extern */
-s32 SetDialogYesNo();                    /* extern */
-s32 SetHelpLineMsg();                    /* extern */
 s32 memset();        /* extern */
 
 void lobby_func_0056B730(void) {

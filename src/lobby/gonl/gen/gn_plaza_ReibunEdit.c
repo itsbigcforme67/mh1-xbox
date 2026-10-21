@@ -3,12 +3,12 @@
  * tools/build_pc_mhg.sh). */
 #include "../gonl.h"
 
+s32 tl_exit_sub_menu();
 extern u8 pNet;
 s32 Get_sw2();                               /* extern */
 s16 Get_sw_on2();                            /* extern */
 s32 Plaza_ReibunEdit_i();                     /* extern */
 s32 Plaza_ReibunEdit_mv();                       /* extern */
-s32 tl_exit_sub_menu();                  /* extern */
 
 void plaza_ReibunEdit(void) {
     s32 temp_s0;

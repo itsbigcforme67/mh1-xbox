@@ -3,16 +3,16 @@
  * tools/build_pc_mhg.sh). */
 #include "../gonl.h"
 
+s32 Lb_clearChatList();
+s32 Lbc_init_network_work();
+s32 Lbc_set_prim();
+s32 Lbs_load();
+s32 SetDialogData();
 extern u8 ClassInfo;
 extern u8 cw;
 s32 Init_InterruptFlag();                       /* extern */
-s32 Lb_clearChatList();                         /* extern */
-s32 Lbc_init_network_work();                    /* extern */
-s32 Lbc_set_prim(); /* extern */
-s32 Lbs_load();                                 /* extern */
 s32 Pit_reset();                                /* extern */
 s32 Plaza_chat_clear();                         /* extern */
-s32 SetDialogData();                     /* extern */
 s32 all_reset();                                /* extern */
 s32 memset();        /* extern */
 extern u8 LobbyInfo;
@@ -37,7 +37,7 @@ void To_EnterPlaza2Lobby(s32 arg0) {
     Lbs_load();
     Plaza_chat_clear();
     Lb_clearChatList();
-    Lbc_set_prim(&put_back, 0, 0, 0);
+    Lbc_set_prim((s32) &put_back, 0, 0, 0);
     if (arg0 != 0) {
         SetDialogData(0xF);
     }

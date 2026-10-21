@@ -3,31 +3,29 @@
  * tools/build_pc_mhg.sh). */
 #include "../gonl.h"
 
+s32 CallBack_Result_Plaza_ReadLobbyAllocation();
+s32 Check_CallBackWait();
 extern u8 cw;
-s32 Check_CallBackWait();         /* extern */
 s32 cnLBS_Read_LobbyMemberList(); /* extern */
-extern u8 CallBack_Result_Plaza_ReadLobbyAllocation;
 
 s32 lobby_func_0057FD30(s64 arg0) {
     u8 temp_v1;
     u8 *temp_a1;
-    u8 *temp_a2;
     u8 *temp_v1_2;
 
     temp_a1 = (*(void **)&cw);
     temp_v1 = (*(u8 *)((u8 *)(temp_a1) + 0xB9D));
-    temp_a2 = temp_a1 + 0xB9D;
     switch (temp_v1) {                              /* irregular */
     case 0:
         (*(s8 *)((u8 *)(temp_a1) + 0xBA9)) = 0xE;
         temp_v1_2 = (*(void **)&cw);
         (*(u8 *)((u8 *)(temp_v1_2) + 0xB9D)) = (u8) ((*(u8 *)((u8 *)(temp_v1_2) + 0xB9D)) + 1);
-        cnLBS_Read_LobbyMemberList(((((s16) (arg0))) + 1) & 0xFFFF, &CallBack_Result_Plaza_ReadLobbyAllocation, temp_a2);
+        cnLBS_Read_LobbyMemberList(((((s16) (arg0))) + 1) & 0xFFFF, CallBack_Result_Plaza_ReadLobbyAllocation, temp_a1 + 0xB9D);
 block_9:
     default:
         return 0;
     case 1:
-        Check_CallBackWait(temp_a1, temp_a2);
+        Check_CallBackWait();
         goto block_9;
     case 2:
         (*(u8 *)((u8 *)(temp_a1) + 0xB9D)) = 0U;

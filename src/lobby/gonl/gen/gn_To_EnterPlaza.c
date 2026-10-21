@@ -3,13 +3,13 @@
  * tools/build_pc_mhg.sh). */
 #include "../gonl.h"
 
+s32 Lb_clearChatList();
+s32 Lbc_init_network_work();
+s32 SetDialogData();
 extern u8 ClassInfo;
 extern u8 cw;
 s32 Init_InterruptFlag();                       /* extern */
-s32 Lb_clearChatList();                         /* extern */
-s32 Lbc_init_network_work();                    /* extern */
 s32 Plaza_chat_clear();                         /* extern */
-s32 SetDialogData();                     /* extern */
 s32 memset();        /* extern */
 extern u8 LobbyInfo;
 

@@ -3,10 +3,10 @@
  * tools/build_pc_mhg.sh). */
 #include "../gonl.h"
 
+s32 SetDialogData();
 extern u8 D_0035EFEB;
 extern u8 cw;
 s32 SaveNetFile_init();                         /* extern */
-s32 SetDialogData();                     /* extern */
 s32 cpn_GetCNData();                            /* extern */
 s32 str_pause();                /* extern */
 s32 str_stop();                          /* extern */

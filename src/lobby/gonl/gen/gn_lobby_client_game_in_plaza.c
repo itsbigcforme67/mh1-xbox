@@ -3,29 +3,27 @@
  * tools/build_pc_mhg.sh). */
 #include "../gonl.h"
 
+s32 MH_lobbyClear();
 extern u8 cw;
-s32 MH_lobbyClear();          /* extern */
 s32 cnLBS_Get_ServerMessage(); /* extern */
 
 void lobby_client_game_in_plaza(s64 arg0) {
     u8 g_frame[0x20] __attribute__((aligned(16)));   /* G's stack frame */
 #define sp18 (*(s64 *)(g_frame + 0x18))
-    u8 temp_a0;
-    u8 *temp_a0_2;
+    u8 *temp_a0;
     u8 *temp_a1;
-    u8 *temp_a2;
 
     temp_a1 = (*(void **)&cw);
     sp18 = arg0;
-    if (((*(u8 *)((u8 *)(temp_a1) + 0xB99)) != 5) && (temp_a0 = (*(u8 *)((u8 *)(temp_a1) + 0xBA9)), temp_a2 = temp_a1 + 0xBA9, (temp_a0 == 7))) {
+    if (((*(u8 *)((u8 *)(temp_a1) + 0xB99)) != 5) && ((*(u8 *)((u8 *)(temp_a1) + 0xBA9)) == 7)) {
         (*(u8 *)((u8 *)(temp_a1) + 0xBA9)) = 0U;
         if ((s8) sp18 == 0) {
-            MH_lobbyClear(temp_a0, temp_a1, temp_a2);
-            temp_a0_2 = (*(void **)&cw);
-            (*(u8 *)((u8 *)(temp_a0_2) + 0xB9C)) = (u8) ((*(u8 *)((u8 *)(temp_a0_2) + 0xB9C)) + 1);
+            MH_lobbyClear();
+            temp_a0 = (*(void **)&cw);
+            (*(u8 *)((u8 *)(temp_a0) + 0xB9C)) = (u8) ((*(u8 *)((u8 *)(temp_a0) + 0xB9C)) + 1);
             return;
         }
-        cnLBS_Get_ServerMessage((*(void **)&cw) + 0xF75D, temp_a1, temp_a2);
+        cnLBS_Get_ServerMessage((*(void **)&cw) + 0xF75D, temp_a1, temp_a1 + 0xBA9);
         (*(u8 *)((u8 *)((*(void **)&cw)) + 0xB9C)) = 0x63U;
     }
 }

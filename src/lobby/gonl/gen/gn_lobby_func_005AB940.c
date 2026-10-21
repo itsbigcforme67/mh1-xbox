@@ -3,22 +3,22 @@
  * tools/build_pc_mhg.sh). */
 #include "../gonl.h"
 
+s32 _cnet_CallBack_Result_RoomRuleCaption();
+s32 lobby_func_005AB9C0();
+s32 lobby_func_005ABA60();
 extern u8 CnetSys_w;
-s32 _cnet_CallBack_Result_RoomRuleCaption(); /* extern */
-s32 lobby_func_005AB9C0();         /* extern */
-s32 lobby_func_005ABA60();         /* extern */
 
 void lobby_func_005AB940(void) {
     if ((*(u8 *)((u8 *)(&(*(u8 *)((u8 *)&CnetSys_w + 0xDE8))) + 0x20)) != 0) {
         switch ((*(u8 *)((u8 *)(&(*(u8 *)((u8 *)&CnetSys_w + 0xDE8))) + 0x21))) { /* irregular */
         case 0:
-            lobby_func_005AB9C0(&(*(u8 *)((u8 *)&CnetSys_w + 0xDE8)), (*(u8 *)((u8 *)(&(*(u8 *)((u8 *)&CnetSys_w + 0xDE8))) + 0x21)));
+            lobby_func_005AB9C0(&(*(u8 *)((u8 *)&CnetSys_w + 0xDE8)));
             return;
         case 1:
-            lobby_func_005ABA60(&(*(u8 *)((u8 *)&CnetSys_w + 0xDE8)), (*(u8 *)((u8 *)(&(*(u8 *)((u8 *)&CnetSys_w + 0xDE8))) + 0x21)));
+            lobby_func_005ABA60(&(*(u8 *)((u8 *)&CnetSys_w + 0xDE8)));
             return;
         case 2:
-            _cnet_CallBack_Result_RoomRuleCaption(&(*(u8 *)((u8 *)&CnetSys_w + 0xDE8)), (*(u8 *)((u8 *)(&(*(u8 *)((u8 *)&CnetSys_w + 0xDE8))) + 0x21)));
+            _cnet_CallBack_Result_RoomRuleCaption(&(*(u8 *)((u8 *)&CnetSys_w + 0xDE8)));
             break;
         }
     }

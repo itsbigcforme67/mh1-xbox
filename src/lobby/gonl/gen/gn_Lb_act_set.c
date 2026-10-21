@@ -3,13 +3,13 @@
  * tools/build_pc_mhg.sh). */
 #include "../gonl.h"
 
+s32 Lb_pl_to_normal();
+s32 check_sender0();
+s32 ck_pl_send();
+s32 lb_action_timer_calc();
 extern u8 game_w;
 extern u8 lb_sys;
 s64 Lb_act_ck();                                    /* extern */
-s32 Lb_pl_to_normal(); /* extern */
-s32 check_sender0();                      /* extern */
-s32 ck_pl_send();                             /* extern */
-s32 lb_action_timer_calc();      /* extern */
 s16 ran_suu();                               /* extern */
 
 void Lb_act_set(void *arg0, u8 arg1, u8 arg2) {
@@ -60,7 +60,7 @@ block_14:
             if (((*(u8 *)((u8 *)(arg0) + 0x15)) == 0x4D) && ((*(u8 *)((u8 *)&game_w + 0x14)) == 0x4D)) {
                 (*(u16 *)((u8 *)&lb_sys + 0x14)) &= ~(1 << *(*(u16 **)((u8 *)(arg0) + 0x878)));
             }
-            check_sender0(arg0);
+            check_sender0();
         }
     }
 }

@@ -3,21 +3,21 @@
  * tools/build_pc_mhg.sh). */
 #include "../gonl.h"
 
+s32 Lb_select();
+s32 SetDialogData();
+s32 SetDialogYesNo();
+s32 cnWrap_SoundRequest();
+s32 lobby_func_0056C350();
+s32 lobby_func_0056C3F0();
+s32 lobby_func_00571450();
 extern u8 D_0035EFEB;
 extern u8 cw;
 extern u8 lb_sys;
 extern u8 pNet;
 extern u8 tl_member_buff;
 s32 Get_sw2();                               /* extern */
-s32 Lb_select();    /* extern */
 s32 SaveNetFile_ForLobby(); /* extern */
-s32 SetDialogData();                     /* extern */
-s32 SetDialogYesNo();                    /* extern */
-s32 cnWrap_SoundRequest(); /* extern */
 s32 func_00235C80();                            /* extern */
-s64 lobby_func_0056C350();                          /* extern */
-s32 lobby_func_0056C3F0();               /* extern */
-s32 lobby_func_00571450();                      /* extern */
 s32 memcmp();                /* extern */
 s32 memcpy();               /* extern */
 s32 memset();           /* extern */
@@ -36,7 +36,6 @@ s32 Plaza_add_friend(void) {
     s32 var_s0;
     u8 temp_a0;
     u8 *temp_a2;
-    u8 *temp_a3;
     u8 *temp_s2;
     u8 *temp_s2_2;
     u8 *temp_v1;
@@ -46,11 +45,10 @@ s32 Plaza_add_friend(void) {
     (*(s8 *)((u8 *)((*(void **)&pNet)) + 0x2D)) = 1;
     temp_a2 = (*(void **)&pNet);
     temp_a0 = (*(u8 *)((u8 *)(temp_a2) + 0x25));
-    temp_a3 = temp_a2 + 0x25;
     switch (temp_a0) {                              /* switch 1 */
     case 0:                                         /* switch 1 */
         (*(s8 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x1398))) + 0x615)) = 1;
-        temp_v0 = Lb_select(temp_a0, 1, temp_a2, temp_a3, temp_a4);
+        temp_v0 = Lb_select();
         switch (temp_v0) {                          /* switch 2; irregular */
         case 0:                                     /* switch 2 */
             temp_v1 = (*(void **)&pNet);
@@ -82,7 +80,7 @@ s32 Plaza_add_friend(void) {
 block_49:
         return 2;
     case 1:                                         /* switch 1 */
-        temp_v0_2 = Lb_select(temp_a0, 1, temp_a2, temp_a3, temp_a4);
+        temp_v0_2 = Lb_select();
         switch (temp_v0_2) {                        /* switch 3; irregular */
         case 0:                                     /* switch 3 */
             var_s0 = net_Check_FriendData(&g_main_302CB0, 0x32, (*(s32 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x1398))) + 0x600)));
@@ -118,12 +116,12 @@ block_49:
     case 2:                                         /* switch 1 */
         temp_v0_3 = (*(s16 *)((u8 *)(temp_a2) + 0x1A));
         if (temp_v0_3 == 0) {
-            temp_v0_4 = SaveNetFile_ForLobby(temp_a0, 1, temp_a2, temp_a3, temp_a4);
+            temp_v0_4 = SaveNetFile_ForLobby(temp_a0, 1, temp_a2, temp_a2 + 0x25, temp_a4);
             if ((temp_v0_4 != 1) && (temp_v0_4 != -1)) {
                 (*(s8 *)((u8 *)((*(void **)&pNet)) + 0x2D)) = 1;
                 goto block_49;
             }
-            lobby_func_0056C3F0(1);
+            lobby_func_0056C3F0();
             (*(u8 *)((u8 *)((*(void **)&pNet)) + 0x25)) = 0U;
             return 0;
         }
@@ -136,7 +134,7 @@ block_49:
         if (temp_a4 & 0xFFFF & 0x20) {
             (*(u8 *)((u8 *)((*(void **)&pNet)) + 0x25)) = 0U;
             (*(s8 *)((u8 *)((*(void **)&pNet)) + 0x2D)) = 0;
-            cnWrap_SoundRequest(0, 1, temp_a2, temp_a3, temp_a4);
+            cnWrap_SoundRequest(0);
             (*(s8 *)((u8 *)((*(void **)&cw)) + 0xB70)) = 1;
             (*(s8 *)&D_0035EFEB) = 1;
             if ((*(u8 *)((u8 *)((*(void **)&cw)) + 0xFA61)) != 0) {
@@ -149,7 +147,7 @@ block_49:
         if (temp_a4 & 0xFFFF & 0x20) {
             (*(u8 *)((u8 *)(temp_a2) + 0x25)) = 0U;
             (*(s8 *)((u8 *)((*(void **)&pNet)) + 0x2D)) = 0;
-            cnWrap_SoundRequest(0, 1, temp_a2, temp_a3, temp_a4);
+            cnWrap_SoundRequest(0);
             (*(s8 *)((u8 *)((*(void **)&cw)) + 0xB70)) = 1;
             (*(u8 *)&D_0035EFEB) = 1;
             if ((*(u8 *)((u8 *)((*(void **)&cw)) + 0xFA61)) != 0) {

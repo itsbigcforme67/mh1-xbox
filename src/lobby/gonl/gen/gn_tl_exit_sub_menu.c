@@ -3,10 +3,9 @@
  * tools/build_pc_mhg.sh). */
 #include "../gonl.h"
 
+s32 SetHelpLineMsg();
+s32 cnWrap_SoundRequest();
 extern u8 pNet;
-s32 SetHelpLineMsg();                        /* extern */
-s32 cnWrap_SoundRequest();               /* extern */
-
 void tl_exit_sub_menu(s32 arg0) {
     u8 *temp_a2;
 

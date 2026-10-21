@@ -3,20 +3,19 @@
  * tools/build_pc_mhg.sh). */
 #include "../gonl.h"
 
+s32 CallBackWaitInit();
+s32 Check_CallBackWait();
+s32 Lb_eat_to_bell();
+s32 To_LogOut();
+s32 cnWrap_SoundRequest();
 extern u8 cw;
-extern u8 jtbl_548_0065E870;
 extern u8 lb_rule_member;
 extern u8 pNet;
-s32 CallBackWaitInit(); /* extern */
-s32 Check_CallBackWait(); /* extern */
 s32 Get_sw2();                               /* extern */
-s32 Lb_eat_to_bell(); /* extern */
-s32 To_LogOut(); /* extern */
 s32 check_warning_level(); /* extern */
 s32 cnLBS_Answer_LoginWarningMessage();  /* extern */
 s32 cnWrap_FontDisp(); /* extern */
 s32 cnWrap_SetFontColor();               /* extern */
-s32 cnWrap_SoundRequest(); /* extern */
 s32 flfntSetSize();             /* extern */
 s32 memcpy(); /* extern */
 
@@ -56,7 +55,7 @@ void lbc_login_warning_message(void) {
         temp_v1 = (*(void **)&cw);
         if ((*(u8 *)((u8 *)(temp_v1) + 0xFA8A)) != 0) {
             (*(s32 *)((u8 *)(temp_v1) + 0xBB8)) = 8;
-            Lb_eat_to_bell((*(void **)&cw) + 0xFA8E, temp_a1, temp_a2, temp_a3, temp_a4);
+            Lb_eat_to_bell((s32) ((*(void **)&cw) + 0xFA8E));
             return;
         }
         memcpy(temp_v1 + 0xF75D, temp_v1 + 0xFA8E, 0x300, temp_a3, temp_a4);
@@ -82,7 +81,7 @@ void lbc_login_warning_message(void) {
         }
         if (temp_a4 & 0xFFFF & 0x20) {
             (*(u8 *)((u8 *)(temp_a1_2) + 0xB9C)) = (u8) ((*(u8 *)((u8 *)(temp_a1_2) + 0xB9C)) + 1);
-            cnWrap_SoundRequest(0, temp_a1_2, temp_a2, temp_a3, temp_a4);
+            cnWrap_SoundRequest(0);
         }
         cnWrap_SetFontColor(5);
         flfntSetSize(0x14, 0x14);
@@ -90,14 +89,14 @@ void lbc_login_warning_message(void) {
         return;
     case 4:
         (*(u8 *)((u8 *)(temp_a2) + 0xB9C)) = (u8) (temp_a1 + 1);
-        CallBackWaitInit(&jtbl_548_0065E870, temp_a1, temp_a2, temp_a3, temp_a4);
+        CallBackWaitInit();
         cnLBS_Answer_LoginWarningMessage(1);
         return;
     case 5:
-        Check_CallBackWait(&jtbl_548_0065E870, temp_a1, temp_a2, temp_a3, temp_a4);
+        Check_CallBackWait();
         return;
     default:
-        To_LogOut(4, temp_a1, temp_a2, temp_a3, temp_a4);
+        To_LogOut(4);
         break;
     }
 }

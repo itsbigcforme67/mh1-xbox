@@ -3,15 +3,15 @@
  * tools/build_pc_mhg.sh). */
 #include "../gonl.h"
 
+s32 CallBackWaitInit();
+s32 CallBack_Result_Match_MatchInformation();
+s32 Check_CallBackWait();
 extern u8 USER_PL_ID;
 extern u8 cw;
-s32 CallBackWaitInit();       /* extern */
-s32 Check_CallBackWait();     /* extern */
 s32 cnLBS_Get_MatchInfomation(); /* extern */
-s32 cnLBS_Read_MatchInfomation();      /* extern */
+s32 cnLBS_Read_MatchInfomation();  /* extern */
 s32 memcpy();           /* extern */
 s32 memset();        /* extern */
-extern u8 CallBack_Result_Match_MatchInformation;
 extern s32 g_sub_541E30;
 extern u8 room_member_handle;
 extern u8 room_member_id;
@@ -30,13 +30,11 @@ void lbc_game_ready_00(void) {
     u8 *var_s5;
     u8 temp_a0;
     u8 *temp_a1;
-    u8 *temp_a2;
     u8 *temp_v1;
     u8 *temp_v1_2;
 
     temp_a1 = (*(void **)&cw);
     temp_a0 = (*(u8 *)((u8 *)(temp_a1) + 0xB9C));
-    temp_a2 = temp_a1 + 0xB9C;
     switch (temp_a0) {                              /* irregular */
     case 0:
         (*(u8 *)((u8 *)(temp_a1) + 0xB9C)) = (u8) (temp_a0 + 1);
@@ -48,17 +46,17 @@ void lbc_game_ready_00(void) {
     case 2:
         temp_v1_2 = (*(void **)&cw);
         (*(u8 *)((u8 *)(temp_v1_2) + 0xB9C)) = (u8) ((*(u8 *)((u8 *)(temp_v1_2) + 0xB9C)) + 1);
-        CallBackWaitInit(temp_a0, temp_a1, temp_a2);
+        CallBackWaitInit();
         (*(s8 *)((u8 *)((*(void **)&cw)) + 0xBA9)) = 0x30;
-        cnLBS_Read_MatchInfomation(&CallBack_Result_Match_MatchInformation);
+        cnLBS_Read_MatchInfomation(CallBack_Result_Match_MatchInformation);
         return;
     case 3:
-        Check_CallBackWait(temp_a0, temp_a1, temp_a2);
+        Check_CallBackWait();
         return;
     case 4:
         (*(u8 *)((u8 *)(temp_a1) + 0xB9B)) = (u8) ((*(u8 *)((u8 *)(temp_a1) + 0xB9B)) + 1);
         (*(u8 *)((u8 *)((*(void **)&cw)) + 0xB9C)) = 0U;
-        cnLBS_Get_MatchInfomation(&sp70, temp_a1, temp_a2);
+        cnLBS_Get_MatchInfomation(&sp70, temp_a1, temp_a1 + 0xB9C);
         (*(u8 *)((u8 *)((*(void **)&cw)) + 0xBB1)) = sp70;
         (*(u8 *)&USER_PL_ID) = sp71;
         memcpy((*(void **)&cw) + 0xFA6C, &sp72, 0x10);

@@ -3,6 +3,8 @@
  * tools/build_pc_mhg.sh). */
 #include "../gonl.h"
 
+s32 Lb_clearChatList();
+s32 MH_lobbyClear();
 extern u8 g_main_2EF390;
 extern u8 g_main_2EFBAC;
 extern u8 BsLbsErrNum;
@@ -13,8 +15,6 @@ extern u8 lb_sys;
 extern u8 pNet;
 extern u8 quest_price;
 extern u8 tl_member_buff;
-s32 Lb_clearChatList(); /* extern */
-s32 MH_lobbyClear();                            /* extern */
 s32 cnLBS_Init_LoginLobbyServer();              /* extern */
 s32 cnLbc_SetIspRestTime();               /* extern */
 s32 lobby_func_0059A1F0();                      /* extern */
@@ -98,7 +98,7 @@ loop_6:
         var_a4 += 2;
         var_a3 += 7;
     } while (var_a1_2 < 0xC);
-    Lb_clearChatList(0x24A, var_a1_2, temp_a2, var_a3, var_a4, var_a5);
+    Lb_clearChatList();
     lobby_func_0059A1F0();
 }
 

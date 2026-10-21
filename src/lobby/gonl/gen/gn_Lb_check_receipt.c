@@ -3,31 +3,31 @@
  * tools/build_pc_mhg.sh). */
 #include "../gonl.h"
 
+s32 Lb_pl_to_normal();
+s32 lb_check_chair();
+s32 lb_commer_message();
+s32 lb_send_my_status();
+s32 lb_set_chair();
+s32 lb_set_pl_pos();
+s32 lb_set_pl_stage();
+s32 lb_set_pl_status();
 extern u8 cw;
 extern u8 jtbl_218_0065ECA0;
 extern u8 lb_sys;
 s32 Lb_get_plID();                                  /* extern */
-s32 Lb_pl_to_normal(); /* extern */
 s32 Lbc_SendNetComment();         /* extern */
-s32 lb_check_chair();                /* extern */
 s32 lb_chidori_off();             /* extern */
-s32 lb_commer_message();             /* extern */
 s32 lb_recv_myChair();         /* extern */
-s32 lb_send_my_status();          /* extern */
-s32 lb_set_chair();                  /* extern */
-s32 lb_set_pl_pos();             /* extern */
-s32 lb_set_pl_stage();               /* extern */
-s32 lb_set_pl_status();              /* extern */
 s32 lb_trade_check();                /* extern */
 s32 lb_trade_result();         /* extern */
 s32 lb_trade_start();                /* extern */
 s32 memcpy();    /* extern */
 extern u8 player_work;
 
-void Lb_check_receipt(s64 arg0, void *arg1) {
+void Lb_check_receipt(s32 arg0, void *arg1) {
     s32 temp_a1;
-    s64 temp_s2;
-    s64 var_a0;
+    s32 temp_s2;
+    s32 var_a0;
     u32 temp_v1;
     u8 temp_s0;
     u8 *temp_a0;
@@ -53,14 +53,14 @@ block_8:
     temp_v1 = temp_s0 & 0xFF;
     switch (temp_v1) {
     case 0:
-        lb_set_pl_pos(var_a0, temp_s1, temp_s0);
+        lb_set_pl_pos(var_a0, (s32) temp_s1);
         return;
     case 1:
     case 10:
-        lb_set_pl_status(var_a0, temp_s1);
+        lb_set_pl_status(var_a0);
         return;
     case 2:
-        lb_set_pl_pos(var_a0, temp_s1, temp_s0);
+        lb_set_pl_pos(var_a0, (s32) temp_s1);
         return;
     case 3:
         lb_set_pl_stage(var_a0, temp_s1);
@@ -80,13 +80,13 @@ block_8:
     default:
         return;
     case 5:
-        lb_set_chair(((s8) (var_a0)), temp_s1);
+        lb_set_chair((void *) (((s8) ((s64) var_a0))));
         return;
     case 17:
         lb_recv_myChair(temp_s1, &jtbl_218_0065ECA0);
         return;
     case 6:
-        lb_chidori_off(((s8) (var_a0)), &jtbl_218_0065ECA0);
+        lb_chidori_off(((s8) ((s64) var_a0)), &jtbl_218_0065ECA0);
         return;
     case 7:
         Lbc_SendNetComment(temp_s2, &jtbl_218_0065ECA0);
@@ -102,7 +102,7 @@ block_8:
         memcpy((*(void **)&cw) + 0xAF8, temp_s1, 0x62);
         return;
     case 12:
-        lb_trade_start(((s8) (var_a0)), temp_s1);
+        lb_trade_start(((s8) ((s64) var_a0)), temp_s1);
         return;
     case 13:
         lb_trade_check(temp_s2, temp_s1);
@@ -111,10 +111,10 @@ block_8:
         lb_trade_result(temp_s1, &jtbl_218_0065ECA0);
         return;
     case 15:
-        lb_send_my_status(temp_s2, &jtbl_218_0065ECA0);
+        lb_send_my_status(temp_s2);
         return;
     case 16:
-        lb_commer_message(((s8) (var_a0)), temp_s1);
+        lb_commer_message(((s8) ((s64) var_a0)));
         break;
     }
 }

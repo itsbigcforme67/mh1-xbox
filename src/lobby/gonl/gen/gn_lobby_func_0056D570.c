@@ -3,6 +3,7 @@
  * tools/build_pc_mhg.sh). */
 #include "../gonl.h"
 
+s32 cnWrap_SoundRequest();
 extern u8 g_main_2EFBAC;
 extern u8 Psw;
 extern u8 g_main_2EFBAC;
@@ -11,7 +12,6 @@ s32 Get_sw();                                /* extern */
 s32 SoftKeyboard_exit();                     /* extern */
 s64 SoftKeyboard_move();               /* extern */
 s32 SoftKeyboard_pos_set();     /* extern */
-s32 cnWrap_SoundRequest();               /* extern */
 s32 func_00220F40(); /* extern */
 
 s32 lobby_func_0056D570(s32 arg0) {

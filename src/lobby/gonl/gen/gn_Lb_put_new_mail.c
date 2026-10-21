@@ -3,15 +3,15 @@
  * tools/build_pc_mhg.sh). */
 #include "../gonl.h"
 
+s32 Lb_put_icon();
 extern u8 pNet;
-s32 Lb_put_icon();        /* extern */
 s32 SetTextureStage();                   /* extern */
 s32 reload_tex();               /* extern */
 extern u8 RecvMailInfo;
 
 /* Warning: Gap in callee-saved word stack region.
  * Saved: [0x0, 0x10, 0x14, 0x18, 0x1c, 0x20, 0x24, 0x28, 0x2c, 0x30, 0x34], gap at: 0x8. */
-void Lb_put_new_mail(s64 arg0, s64 arg1) {
+void Lb_put_new_mail(s32 arg0, s64 arg1) {
     f32 var_f20;
     f32 var_v1;
     f32 var_v1_2;
@@ -39,7 +39,7 @@ loop_1:
             var_f20 = 36.42857f * (f32) ((*(s16 *)((u8 *)((*(void **)&pNet)) + 0x18)) & 7);
         }
         temp_s0 = ((s16) (arg1));
-        Lb_put_icon(arg0, ((s16) ((temp_s0 + 2))), 9, -1);
+        Lb_put_icon(arg0, (s32) (((s16) ((temp_s0 + 2)))), 9, -1);
         temp_v1_2 = (*(s16 *)((u8 *)((*(void **)&pNet)) + 0x18));
         if (temp_v1_2 & 0x10) {
             if (temp_v1_2 & 0x80) {
@@ -48,7 +48,7 @@ loop_1:
                 } else {
                     var_v1 = M2C_BITWISE(f32, (M2C_BITWISE(s32, (var_f20 - 2.1474836e9f)) | 0x80000000));
                 }
-                Lb_put_icon(((s16) (((((s16) (arg0))) - 0x10))), ((s16) ((temp_s0 - 6))), 0xC, (M2C_BITWISE(s32, var_v1) << 0x18) | 0xFFFFFF);
+                Lb_put_icon((s32) (((s16) (((((s16) ((s64) arg0))) - 0x10)))), (s32) (((s16) ((temp_s0 - 6)))), 0xC, (M2C_BITWISE(s32, var_v1) << 0x18) | 0xFFFFFF);
                 return;
             }
             if (!(var_f20 >= 2.1474836e9f)) {
@@ -56,7 +56,7 @@ loop_1:
             } else {
                 var_v1_2 = M2C_BITWISE(f32, (M2C_BITWISE(s32, (var_f20 - 2.1474836e9f)) | 0x80000000));
             }
-            Lb_put_icon(((s16) (((((s16) (arg0))) - 0x10))), ((s16) ((temp_s0 + 8))), 0xC, (M2C_BITWISE(s32, var_v1_2) << 0x18) | 0xFFFFFF);
+            Lb_put_icon((s32) (((s16) (((((s16) ((s64) arg0))) - 0x10)))), (s32) (((s16) ((temp_s0 + 8)))), 0xC, (M2C_BITWISE(s32, var_v1_2) << 0x18) | 0xFFFFFF);
             return;
         }
         if (temp_v1_2 & 0x80) {
@@ -65,7 +65,7 @@ loop_1:
             } else {
                 var_v1_3 = M2C_BITWISE(f32, (M2C_BITWISE(s32, (var_f20 - 2.1474836e9f)) | 0x80000000));
             }
-            Lb_put_icon(((s16) (((((s16) (arg0))) + 0xA))), ((s16) ((temp_s0 + 0xA))), 0xC, (M2C_BITWISE(s32, var_v1_3) << 0x18) | 0xFFFFFF);
+            Lb_put_icon((s32) (((s16) (((((s16) ((s64) arg0))) + 0xA)))), (s32) (((s16) ((temp_s0 + 0xA)))), 0xC, (M2C_BITWISE(s32, var_v1_3) << 0x18) | 0xFFFFFF);
             return;
         }
         if (!(var_f20 >= 2.1474836e9f)) {
@@ -73,7 +73,7 @@ loop_1:
         } else {
             var_v1_4 = M2C_BITWISE(f32, (M2C_BITWISE(s32, (var_f20 - 2.1474836e9f)) | 0x80000000));
         }
-        Lb_put_icon(((s16) (((((s16) (arg0))) + 0xA))), ((s16) ((temp_s0 - 8))), 0xC, (M2C_BITWISE(s32, var_v1_4) << 0x18) | 0xFFFFFF);
+        Lb_put_icon((s32) (((s16) (((((s16) ((s64) arg0))) + 0xA)))), (s32) (((s16) ((temp_s0 - 8)))), 0xC, (M2C_BITWISE(s32, var_v1_4) << 0x18) | 0xFFFFFF);
         return;
     }
     var_a1 = ((s8) ((var_a1 + 1)));

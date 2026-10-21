@@ -3,8 +3,8 @@
  * tools/build_pc_mhg.sh). */
 #include "../gonl.h"
 
+s32 cnWrap_SoundRequest();
 s32 Get_sw2();                               /* extern */
-s32 cnWrap_SoundRequest();               /* extern */
 
 s32 Lb_cursorUD(s32 arg0, s32 arg1) {
     s32 temp_v1;

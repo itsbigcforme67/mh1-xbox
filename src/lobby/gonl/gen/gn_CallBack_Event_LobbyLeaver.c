@@ -3,13 +3,13 @@
  * tools/build_pc_mhg.sh). */
 #include "../gonl.h"
 
+s32 Lb_put_chat();
+s32 lobby_func_00595530();
 extern u8 cw;
 extern u8 game_w;
 extern u8 lb_sys;
-s32 Lb_put_chat();               /* extern */
 s32 Lb_send_myChair();                          /* extern */
 s32 cnLBS_Get_RoomLeaveUser();         /* extern */
-s32 lobby_func_00595530();                    /* extern */
 s32 memcmp();          /* extern */
 s32 memcpy();            /* extern */
 s32 memset();           /* extern */
@@ -42,7 +42,7 @@ loop_1:
         if ((*(u8 *)((u8 *)(temp_v1) + 0xFA61)) != 0) {
             temp_v1_2 = temp_v1 + temp_s1;
             if ((temp_v1_2 + 0x38C) != NULL) {
-                Lb_put_chat(8, temp_v1_2 + 0x394);
+                Lb_put_chat(8, (s32) (temp_v1_2 + 0x394));
             }
         }
         temp_v1_3 = (u8 *)&player_work + (var_s0 * 0xA00);
@@ -55,7 +55,7 @@ loop_1:
         (*(s16 *)((u8 *)(temp_v1_3) + 0xE)) = 0;
         (*(s32 *)((u8 *)(temp_v1_3) + 0xA4)) = (s32) (0 & 0xFFFF);
         (*(s16 *)((u8 *)&lb_sys + 0x14)) = 0;
-        if ((lobby_func_00595530((*(u8 *)((u8 *)(temp_v1_3) + 0x14)), (*(u8 *)((u8 *)(temp_v1_3) + 0x15))) == 1) && ((*(u8 *)((u8 *)&game_w + 0x14)) == 0x4D)) {
+        if ((lobby_func_00595530((s32) (*(u8 *)((u8 *)(temp_v1_3) + 0x14)), (s32) (*(u8 *)((u8 *)(temp_v1_3) + 0x15))) == 1) && ((*(u8 *)((u8 *)&game_w + 0x14)) == 0x4D)) {
             Lb_send_myChair();
         }
     } else {

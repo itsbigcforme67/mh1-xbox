@@ -3,10 +3,10 @@
  * tools/build_pc_mhg.sh). */
 #include "../gonl.h"
 
+s32 Lb_eat_to_bell();
+s32 SetDialogData();
 extern u8 cw;
 extern u8 pNet;
-s32 Lb_eat_to_bell();                     /* extern */
-s32 SetDialogData();                     /* extern */
 s32 fade_set();                          /* extern */
 
 void lbc_matching_failed_01(void) {
@@ -21,7 +21,7 @@ void lbc_matching_failed_01(void) {
     if ((*(u8 *)((u8 *)(temp_v1) + 0xB9A)) == 0) {
         SetDialogData(0x58);
     } else {
-        Lb_eat_to_bell(temp_v1 + 0xF75D);
+        Lb_eat_to_bell((s32) (temp_v1 + 0xF75D));
     }
     (*(s32 *)((u8 *)((*(void **)&cw)) + 0xBB4)) = 0x14;
     fade_set(2);

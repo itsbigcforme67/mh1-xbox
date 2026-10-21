@@ -3,18 +3,18 @@
  * tools/build_pc_mhg.sh). */
 #include "../gonl.h"
 
+s32 Put_page_num();
+s32 lobby_func_005737C0();
+s32 lobby_func_005791D0();
+s32 put_main_cursor2();
 extern u8 cw;
 extern u8 tl_hr_tbl;
 extern u8 tl_member_buff;
-s32 Put_page_num();  /* extern */
 s32 flfntLocate();                      /* extern */
 s32 font_print(); /* extern */
 s32 font_print_double(); /* extern */
 s32 font_set_palette();       /* extern */
 s32 han2zen();                 /* extern */
-s32 lobby_func_005737C0();                   /* extern */
-s32 lobby_func_005791D0();               /* extern */
-s32 put_main_cursor2();                      /* extern */
 s32 sprintf(); /* extern */
 extern s32 g_lb_636B4C;
 extern s32 g_lb_63E2A8;
@@ -22,7 +22,7 @@ extern s16 g_lb_6B42B8;
 extern s32 g_main_302CB0;
 extern u8 lit_2316;
 
-void lobby_func_005775C0(s64 arg0, s32 arg1, s64 arg2, s64 arg3) {
+void lobby_func_005775C0(s64 arg0, s64 arg1, s64 arg2, s64 arg3) {
     u8 g_frame[0x140] __attribute__((aligned(16)));   /* G's stack frame */
 #define spA0 (*(s32 *)(g_frame + 0xA0))
 #define spB0 (*(s32 *)(g_frame + 0xB0))
@@ -41,10 +41,10 @@ void lobby_func_005775C0(s64 arg0, s32 arg1, s64 arg2, s64 arg3) {
     u8 *var_s3;
 
     if (g_lb_6B42B8 == 0) {
-        lobby_func_005737C0(g_lb_636B4C);
+        lobby_func_005737C0((s64) g_lb_636B4C);
         return;
     }
-    put_main_cursor2(((s8) (arg2)));
+    put_main_cursor2(arg0, arg1, (s32) (((s8) (arg2))));
     lobby_func_005791D0(3);
     spB0 = (s32) (((s8) (arg2)));
     temp_a0 = ((s16) (arg3));
@@ -90,6 +90,6 @@ void lobby_func_005775C0(s64 arg0, s32 arg1, s64 arg2, s64 arg3) {
         var_s5 = ((s16) ((var_s5 + 1)));
         var_s3 += 0x30;
     } while (var_s5 < 7);
-    Put_page_num(((s16) (((((s16) ((spA0 + 0xA)))) + 0x12C))), var_s4, arg3, (*(s16 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x1398))) + 0x606)), 0);
+    Put_page_num(((s16) (((((s16) ((spA0 + 0xA)))) + 0x12C))), var_s4, arg3, (s64) (*(s16 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x1398))) + 0x606)), 0);
 }
 

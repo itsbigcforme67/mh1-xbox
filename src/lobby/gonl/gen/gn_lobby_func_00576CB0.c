@@ -3,11 +3,11 @@
  * tools/build_pc_mhg.sh). */
 #include "../gonl.h"
 
+s32 Lb_put_icon_free();
+s32 Lb_put_msg_type2();
+s32 Put_page_num();
 extern u8 tl_member_buff;
 extern u8 tl_msg_tbl;
-s32 Lb_put_icon_free(); /* extern */
-s32 Lb_put_msg_type2();    /* extern */
-s32 Put_page_num(); /* extern */
 s32 flfntLocate();                  /* extern */
 s32 font_print();                 /* extern */
 s32 font_print_double(); /* extern */
@@ -44,7 +44,7 @@ void lobby_func_00576CB0(void) {
     }
     var_s3 = ((s16) (0x8E));
     font_set_palette(0);
-    Lb_put_msg_type2(0xE2, var_s3, 0x39);
+    Lb_put_msg_type2(0xE2);
     if (((*(u8 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x18))) + 0x1370)) != 2) && ((*(u8 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x18))) + 0x1370)) != 1)) {
         var_v0 = 7;
     } else {
@@ -76,7 +76,7 @@ void lobby_func_00576CB0(void) {
     } else {
         font_set_palette(0);
     }
-    Lb_put_msg_type2(0xE2, 0x128, 0x41);
-    Put_page_num(0x208, 0x78, (*(u8 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x18))) + 0x1370)), 5, 0);
+    Lb_put_msg_type2(0xE2);
+    Put_page_num(0x208, 0x78, (s64) (*(u8 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x18))) + 0x1370)), 5, 0);
 }
 

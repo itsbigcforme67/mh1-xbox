@@ -3,22 +3,22 @@
  * tools/build_pc_mhg.sh). */
 #include "../gonl.h"
 
+s32 CallBackWaitInit();
+s32 CallBack_Result_Plaza_PlazaEntry2();
+s32 Check_CallBackWait();
+s32 Lb_eat_to_bell();
+s32 Lb_put_inputMsgForHTML();
+s32 Lbc_init_network_work();
+s32 SetDialogData();
+s32 cnWrap_SoundRequest();
+s32 lobby_func_005E3AB0();
 extern u8 cw;
 extern u8 pNet;
-s32 CallBackWaitInit();                         /* extern */
-s32 Check_CallBackWait(); /* extern */
 s32 Get_sw();                                /* extern */
 s32 Init_InterruptFlag(); /* extern */
-s32 Lb_eat_to_bell();                     /* extern */
-s32 Lb_put_inputMsgForHTML();                 /* extern */
-s32 Lbc_init_network_work(); /* extern */
-s32 SetDialogData();                     /* extern */
-s32 cnWrap_SoundRequest();               /* extern */
 s32 font_print_double(); /* extern */
 s32 font_set_stack_no();                 /* extern */
-s32 lobby_func_005E3AB0();             /* extern */
 s32 sprintf();         /* extern */
-extern u8 CallBack_Result_Plaza_PlazaEntry2;
 extern s32 g_lb_63E538;
 
 void lobby_func_0057E990(void) {
@@ -31,7 +31,6 @@ void lobby_func_0057E990(void) {
     u8 *temp_a0_2;
     u8 *temp_a0_3;
     u8 *temp_a3;
-    u8 *temp_a4;
     u8 *temp_v1_2;
     u8 *temp_v1_3;
 
@@ -39,16 +38,15 @@ void lobby_func_0057E990(void) {
     (*(s8 *)((u8 *)((*(void **)&pNet)) + 0x2D)) = 1;
     temp_a3 = (*(void **)&cw);
     temp_a1 = (*(u8 *)((u8 *)(temp_a3) + 0xB9C));
-    temp_a4 = temp_a3 + 0xB9C;
     switch (temp_a1) {                              /* switch 1; irregular */
     case 0x0:                                       /* switch 1 */
         (*(u8 *)((u8 *)(temp_a3) + 0xB9C)) = (u8) (temp_a1 + 1);
-        Lbc_init_network_work(2, temp_a1, 1, temp_a3, temp_a4);
+        Lbc_init_network_work();
         (*(u32 *)((u8 *)((*(void **)&cw)) + 0xBB4)) = 0x12CU;
-        Lb_eat_to_bell((*(void **)&cw) + 0xF75D);
+        Lb_eat_to_bell((s32) ((*(void **)&cw) + 0xF75D));
         CallBackWaitInit();
         (*(s8 *)((u8 *)((*(void **)&cw)) + 0xBA9)) = 0xD;
-        lobby_func_005E3AB0(&CallBack_Result_Plaza_PlazaEntry2);
+        lobby_func_005E3AB0((s32) CallBack_Result_Plaza_PlazaEntry2);
     default:                                        /* switch 1 */
 block_13:
         temp_a0 = (*(u8 *)((u8 *)((*(void **)&pNet)) + 0x27));
@@ -68,7 +66,7 @@ block_13:
             font_print_double(0x1D6, 0x54, 1, 5, &sp20);
             return;
         case 1:                                     /* switch 2 */
-            Lb_put_inputMsgForHTML(temp_a0);
+            Lb_put_inputMsgForHTML();
             if (temp_s0 & 0xFFFF & 0x20) {
                 temp_v1_3 = (*(void **)&pNet);
                 (*(u8 *)((u8 *)(temp_v1_3) + 0x27)) = (u8) ((*(u8 *)((u8 *)(temp_v1_3) + 0x27)) + 1);
@@ -79,7 +77,7 @@ block_13:
         }
         break;
     case 0x1:                                       /* switch 1 */
-        Check_CallBackWait(2, temp_a1, 1, temp_a3, temp_a4);
+        Check_CallBackWait();
         goto block_13;
     case 0x2:                                       /* switch 1 */
         if ((*(u8 *)((u8 *)((*(void **)&pNet)) + 0x27)) == 2) {
@@ -87,7 +85,7 @@ block_13:
             (*(s8 *)((u8 *)((*(void **)&cw)) + 0xB9A)) = 0;
             (*(s8 *)((u8 *)((*(void **)&cw)) + 0xB9B)) = 0;
             (*(u8 *)((u8 *)((*(void **)&cw)) + 0xB9C)) = 0U;
-            Init_InterruptFlag(2, temp_a1, 1, temp_a3, temp_a4);
+            Init_InterruptFlag(2, temp_a1, 1, temp_a3, temp_a3 + 0xB9C);
             return;
         }
         goto block_13;

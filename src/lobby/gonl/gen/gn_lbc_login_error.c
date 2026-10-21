@@ -3,17 +3,17 @@
  * tools/build_pc_mhg.sh). */
 #include "../gonl.h"
 
+s32 Lb_eat_to_bell();
+s32 Lbc_init_network_work();
+s32 Lbc_set_prim();
+s32 To_LogOut();
+s32 cnWrap_SoundRequest();
+s32 text_lobby_trans_ot0();
 extern u8 cw;
 extern u8 pNet;
 s32 Fade_busy_ck();                  /* extern */
 s32 Get_sw2();                               /* extern */
-s32 Lb_eat_to_bell();                     /* extern */
-s32 Lbc_init_network_work();    /* extern */
-s32 Lbc_set_prim(); /* extern */
-s32 To_LogOut();                /* extern */
-s32 cnWrap_SoundRequest();  /* extern */
 s32 fade_set();             /* extern */
-extern u8 text_lobby_trans_ot0;
 
 void lbc_login_error(void) {
     s32 temp_a2;
@@ -29,13 +29,13 @@ void lbc_login_error(void) {
     temp_a2 = Get_sw2(0) & 0xFFFF;
     switch (temp_a1) {                              /* irregular */
     case 0:
-        Lbc_init_network_work(1, temp_a1, temp_a2);
-        Lbc_set_prim(&text_lobby_trans_ot0, 0, 0, 0);
+        Lbc_init_network_work();
+        Lbc_set_prim((s32) text_lobby_trans_ot0, 0, 0, 0);
         temp_v1 = (*(void **)&cw);
         (*(u8 *)((u8 *)(temp_v1) + 0xB9C)) = (u8) ((*(u8 *)((u8 *)(temp_v1) + 0xB9C)) + 1);
         fade_set(2);
         (*(s32 *)((u8 *)((*(void **)&cw)) + 0xBB4)) = 0x258;
-        Lb_eat_to_bell((*(void **)&cw) + 0xF75D);
+        Lb_eat_to_bell((s32) ((*(void **)&cw) + 0xF75D));
         return;
     case 1:
         (*(s8 *)((u8 *)((*(void **)&pNet)) + 0x2D)) = 1;
@@ -46,7 +46,7 @@ void lbc_login_error(void) {
         if (temp_v1_2 > 0) {
             if ((temp_v1_2 < 0x1E0) && (temp_a2 & 0xFFFF & 0x20)) {
                 (*(u8 *)((u8 *)(temp_a1_3) + 0xB9C)) = (u8) ((*(u8 *)((u8 *)(temp_a1_3) + 0xB9C)) + 1);
-                cnWrap_SoundRequest(0, temp_a1_3, temp_a2);
+                cnWrap_SoundRequest(0);
                 fade_set(1);
                 return;
             }
@@ -64,7 +64,7 @@ void lbc_login_error(void) {
         }
         break;
     default:
-        To_LogOut(4, temp_a1, temp_a2);
+        To_LogOut(4);
         break;
     }
 }

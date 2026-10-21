@@ -3,11 +3,11 @@
  * tools/build_pc_mhg.sh). */
 #include "../gonl.h"
 
+s32 cnWrap_SoundRequest();
 extern u8 g_main_2EFBAC;
 extern u8 g_main_2EFBAC;
 s32 KinshiYogo_chk();                  /* extern */
 s32 cnLBS_Get_RecvMessage();    /* extern */
-s32 cnWrap_SoundRequest();          /* extern */
 s32 memcmp();               /* extern */
 s32 memset();             /* extern */
 s32 strncpy();          /* extern */
@@ -75,7 +75,7 @@ loop_1:
                 var_a0 += 0x9A;
             } while (var_v1 < 8);
             if (var_a1 == 0) {
-                cnWrap_SoundRequest(5, var_a1);
+                cnWrap_SoundRequest(5);
             }
             var_a2 = &(*(u8 *)((u8 *)&RecvMailInfo + 0x39C));
             var_a1_2 = &(*(u8 *)((u8 *)&RecvMailInfo + 0x436));

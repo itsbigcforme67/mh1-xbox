@@ -3,22 +3,20 @@
  * tools/build_pc_mhg.sh). */
 #include "../gonl.h"
 
+s32 DispNameAndIDonDialog();
+s32 lobby_func_005790B0();
 extern u8 g_main_2EFBAC;
 extern u8 cw;
 extern u8 g_main_2EFBAC;
 extern u8 pNet;
 extern u8 tl_member_buff;
-s32 DispNameAndIDonDialog(); /* extern */
 s32 Online_ck();                                    /* extern */
-s32 lobby_func_005790B0();            /* extern */
 extern s32 g_main_302290;
 extern s32 g_main_302CB0;
 extern s32 lb_sys;
 
 void Lb_on_dialog(void) {
     u8 temp_a0;
-    u8 temp_a0_2;
-    u8 temp_a0_3;
     u8 *temp_a1;
     u8 *temp_a2;
     u8 *temp_a2_2;
@@ -43,9 +41,8 @@ void Lb_on_dialog(void) {
                 DispNameAndIDonDialog(0x98, temp_v0 + 0xEEF, temp_v0 + 0xEE7);
                 return;
             case 12:                                /* switch 2 */
-                temp_a0_2 = (*(u8 *)((u8 *)((*(void **)&g_main_2EFBAC)) + 0x233));
-                if (temp_a0_2 == 0xA) {
-                    lobby_func_005790B0(temp_a0_2, (void *)0xE);
+                if ((*(u8 *)((u8 *)((*(void **)&g_main_2EFBAC)) + 0x233)) == 0xA) {
+                    lobby_func_005790B0();
                     return;
                 }
                 break;
@@ -65,11 +62,8 @@ void Lb_on_dialog(void) {
             break;
         case 4:                                     /* switch 1 */
             temp_a1 = (*(void **)&g_main_2EFBAC);
-            if ((*(u8 *)((u8 *)(temp_a1) + 0x230)) == 2) {
-                temp_a0_3 = (*(u8 *)((u8 *)(temp_a1) + 0x233));
-                if (temp_a0_3 == 0xA) {
-                    lobby_func_005790B0(temp_a0_3, temp_a1);
-                }
+            if (((*(u8 *)((u8 *)(temp_a1) + 0x230)) == 2) && ((*(u8 *)((u8 *)(temp_a1) + 0x233)) == 0xA)) {
+                lobby_func_005790B0();
             }
             break;
         }

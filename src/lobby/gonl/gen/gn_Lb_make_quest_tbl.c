@@ -3,23 +3,22 @@
  * tools/build_pc_mhg.sh). */
 #include "../gonl.h"
 
+s32 lb_get_quest_level();
+s32 lb_guild_check_keyQuest();
+s32 lb_key_quest_ck();
+s32 lobby_func_0055EB40();
+s32 lobby_func_0055FA20();
 extern u8 g_main_2EFA68;
 extern u8 g_main_2EFA6C;
 extern u8 g_main_2EFA68;
 extern u8 g_main_2EFA6C;
 extern u8 guildStr;
-extern u8 jtbl_2350;
 s32 Quest_clear_bit_ck();                        /* extern */
 u16 get_flag_quest();                            /* extern */
 s32 get_new_quest();                    /* extern */
-s64 lb_get_quest_level();                    /* extern */
-s32 lb_guild_check_keyQuest();              /* extern */
-s32 lb_key_quest_ck();                           /* extern */
 s32 lobby_func_005434A0();                       /* extern */
 s32 lobby_func_00543520(); /* extern */
 s32 lobby_func_005438F0();                       /* extern */
-s32 lobby_func_0055EB40();                       /* extern */
-s32 lobby_func_0055FA20();                 /* extern */
 s32 memset();             /* extern */
 s32 ran_suu();                               /* extern */
 extern u16 lb_quest_all;
@@ -36,9 +35,8 @@ void Lb_make_quest_tbl(void) {
 #define sp100 (*(u8 * *)(g_frame + 0x100))
 #define sp110 (*(u16 *)(g_frame + 0x110))
 #define sp120 (*(s32 *)(g_frame + 0x120))
-#define sp130 (*(u32 *)(g_frame + 0x130))
+#define sp130 (*(s32 *)(g_frame + 0x130))
     s16 var_v1;
-    s32 temp_a1;
     s32 temp_s1;
     s32 var_a1;
     s32 var_s0_2;
@@ -76,7 +74,7 @@ void Lb_make_quest_tbl(void) {
     (*(s16 *)&g_main_2EFA68) = 0;
     sp110 = 0;
     memset(&(*(u8 *)((u8 *)&guildStr + 0x100)), 0, 0xA0);
-    sp130 = (u32) (((s8) (lb_get_quest_level(1))));
+    sp130 = (s32) (((s8) (lb_get_quest_level(1))));
     var_s6 = 0;
     var_fp = &quest_lv_tbl;
     spE0 = &(*(s8 *)((u8 *)&guildStr + 0x120));
@@ -161,8 +159,8 @@ loop_12:
         }
         if (sp130 == var_s6_2) {
             sp110 = get_flag_quest(sp130);
-            temp_a1 = lobby_func_0055EB40(sp130) & 0xFFFF;
-            if ((sp110 == 0) && (lb_guild_check_keyQuest(sp130, temp_a1) == 1) && !(M2C_ERROR(/* Read from unset register $a1 */) & 0xFFFF)) {
+            lobby_func_0055EB40(sp130);
+            if ((sp110 == 0) && (lb_guild_check_keyQuest(sp130) == 1) && !(M2C_ERROR(/* Read from unset register $a1 */) & 0xFFFF)) {
                 switch (sp130) {
                 case 0:
                     if (Quest_clear_bit_ck(0x27U) == 0) {
@@ -200,7 +198,7 @@ loop_12:
                     }
                     break;
                 case 7:
-                    if (lobby_func_0055FA20(&jtbl_2350) == 1) {
+                    if (lobby_func_0055FA20() == 1) {
                         (*(u16 *)&g_main_2EFA6C) = 0xBBCU;
                     } else {
                         (*(u16 *)&g_main_2EFA6C) = 0xBBBU;
@@ -283,7 +281,7 @@ loop_68:
                         temp_s1 = sp120 + temp_hi;
                         temp_v1_3 = var_s3_3[temp_s1];
                         if ((sp110 != temp_v1_3) && ((temp_s4 == 0) || (temp_s4 != temp_v1_3)) && ((temp_s1 != 0) || (temp_s4 == 0))) {
-                            if (lb_key_quest_ck((*(u16 *)var_s2_2)) != 0) {
+                            if (lb_key_quest_ck((s32) (*(u16 *)var_s2_2)) != 0) {
                                 if (Quest_clear_bit_ck((*(u16 *)var_s2_2)) == 1) {
                                     goto block_92;
                                 }

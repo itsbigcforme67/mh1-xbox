@@ -3,13 +3,13 @@
  * tools/build_pc_mhg.sh). */
 #include "../gonl.h"
 
+s32 cnWrap_SoundRequest();
+s32 tl_exit_sub_menu();
 extern u8 g_main_2EF390;
 extern u8 g_main_2EF390;
 extern u8 pNet;
 s32 Get_sw();                                /* extern */
 s32 SetDialogData_HTML();      /* extern */
-s32 cnWrap_SoundRequest();               /* extern */
-s32 tl_exit_sub_menu();    /* extern */
 
 void lobby_func_0056B4E0(void) {
     s16 temp_v0;
@@ -25,7 +25,7 @@ void lobby_func_0056B4E0(void) {
     temp_a2 = Get_sw(0) & 0xFFFF;
     (*(s8 *)((u8 *)((*(void **)&pNet)) + 0x2D)) = 1;
     if (temp_a2 & 0x40) {
-        tl_exit_sub_menu(0, 1, temp_a2);
+        tl_exit_sub_menu(0);
         (*(s8 *)((u8 *)((*(void **)&pNet)) + 0x2D)) = 0;
         return;
     }

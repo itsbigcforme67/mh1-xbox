@@ -3,10 +3,10 @@
  * tools/build_pc_mhg.sh). */
 #include "../gonl.h"
 
+s32 __cnet_SendSet_ChatMessageTU();
 extern u8 pFunc;
 s32 __cnetSub_Set_BgProcess(); /* extern */
 s32 __cnet_KeepEntryFloorInfo();    /* extern */
-s16 __cnet_SendSet_ChatMessageTU();    /* extern */
 
 s32 cnLBS_PlazaEntry(s32 arg0, s32 arg1, s32 arg2, s32 arg3) {
     s32 temp_v0;

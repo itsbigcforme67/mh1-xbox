@@ -3,17 +3,17 @@
  * tools/build_pc_mhg.sh). */
 #include "../gonl.h"
 
+s32 Lbc_init_network_work();
+s32 Lbc_set_prim();
+s32 SetSceneTitle();
+s32 lobby_func_0057D5D0();
 extern u8 cw;
 extern u8 game_w;
 extern u8 pNet;
-s32 Lbc_init_network_work();                 /* extern */
-s32 Lbc_set_prim(); /* extern */
-s32 SetSceneTitle();                     /* extern */
 s32 memset();        /* extern */
 s32 str_play_vol();    /* extern */
 extern s8 ClassInfo;
 extern u8 PlazaInfo;
-extern u8 lobby_func_0057D5D0;
 
 void lbc_top_menu_00(void) {
     u8 *var_v1;   /* (s32 *) */
@@ -43,10 +43,10 @@ void lbc_top_menu_00(void) {
     temp_v0 = (u8 *)&(*(u8 *)((u8 *)&PlazaInfo + 0x16)) + (var_a0 * 0x15C);
     (*(s8 *)((u8 *)(temp_v0) + 0)) = 0;
     (*(s8 *)((u8 *)(temp_v0) + 0x15C)) = 0;
-    Lbc_init_network_work(var_a0);
+    Lbc_init_network_work();
     (*(s8 *)((u8 *)((*(void **)&cw)) + 0xB70)) = 1;
     (*(s8 *)((u8 *)((*(void **)&pNet)) + 0x27)) = 0;
-    Lbc_set_prim(&lobby_func_0057D5D0, 0, 0, 0);
+    Lbc_set_prim((s32) lobby_func_0057D5D0, 0, 0, 0);
     SetSceneTitle(3);
     (*(s8 *)((u8 *)((*(void **)&cw)) + 0xBA1)) = 0;
 }

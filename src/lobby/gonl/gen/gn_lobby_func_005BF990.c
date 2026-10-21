@@ -3,11 +3,11 @@
  * tools/build_pc_mhg.sh). */
 #include "../gonl.h"
 
+s32 lobby_func_005BFA20();
 extern u8 CnetSys_w;
 s32 memset();        /* extern */
 extern s8 g_lb_731162;
 extern s32 g_lb_731170;
-extern u8 lobby_func_005BFA20;
 
 s32 lobby_func_005BF990(s32 arg0) {
     if ((*(u8 *)((u8 *)(&(*(u8 *)((u8 *)&CnetSys_w + 0xF78))) + 0x20)) == 0) {
@@ -16,7 +16,7 @@ s32 lobby_func_005BF990(s32 arg0) {
         memset(&g_lb_731170, 0, 0x100);
         (*(u8 *)((u8 *)(&(*(u8 *)((u8 *)&CnetSys_w + 0xF78))) + 0x20)) = 1U;
         (*(s32 *)((u8 *)(&(*(u8 *)((u8 *)&CnetSys_w + 0xF78))) + 4)) = arg0;
-        (*(s32 **)((u8 *)(&(*(u8 *)((u8 *)&CnetSys_w + 0xF78))) + 0)) = &lobby_func_005BFA20;
+        (*(void (**)())((u8 *)(&(*(u8 *)((u8 *)&CnetSys_w + 0xF78))) + 0)) = lobby_func_005BFA20;
         return 0;
     }
     return -1;
