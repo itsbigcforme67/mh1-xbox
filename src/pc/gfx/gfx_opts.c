@@ -3,7 +3,7 @@
  * themselves live in gfx_opt / pc_opt (gfx_gl.h); the backends read them.
  *
  * PC: the file mh1pc.ini sits next to the save folder (rt_mc_root()'s parent: ~/.local/share/mh1pc/mh1pc.ini, Windows
- * %APPDATA%\mh1pc\mh1pc.ini): "key = value" lines, '#' or ';' comments. Order of precedence: built-in defaults, then
+ * %APPDATA%\mh1pc\mh1pc.ini; G: mhgpc.ini in ~/.local/share/mhgpc or %APPDATA%\mhgpc): "key = value" lines, '#' or ';' comments. Order of precedence: built-in defaults, then
  * the file, then the command-line flags. A normal exit writes the file back (not --shot runs), so the window size and
  * position, and a fullscreen toggled with Alt+Enter, are remembered.
  * Xbox (docs/xbox.md "Settings menu on the Xbox"): settings.ini in the game folder (E:\Games\MH1, E:\Games\MHG), the
@@ -32,6 +32,12 @@ pc_options pc_opt;
 #ifdef XBOX
 gfx_options gfx_opt = { 0, 1 };     /* the PC defines it in gfx_gl.c; vsync is always on here */
 #endif
+/* the settings file next to the save folder: MH1 mh1pc.ini, G mhgpc.ini (each game in its own folder) */
+#ifdef VERSION_MHG
+#define INI_NAME "mhgpc.ini"
+#else
+#define INI_NAME "mh1pc.ini"
+#endif
 static char ini_path[1024];
 static int ini_off;
 
@@ -56,9 +62,21 @@ static void default_path(void)
     if (!s)
         s = strrchr(ini_path, '\\');
     if (s && s[1])
-        snprintf(s, sizeof ini_path - (size_t)(s - ini_path), "/mh1pc.ini");
+        snprintf(s, sizeof ini_path - (size_t)(s - ini_path), "/" INI_NAME);
     else
-        snprintf(ini_path, sizeof ini_path, "mh1pc.ini");
+        snprintf(ini_path, sizeof ini_path, INI_NAME);
+#ifdef VERSION_MHG
+    {   /* G's settings were called mh1pc.ini (in G's own folder) before 20 Oct 2026: take that file over once */
+        char old[1024];
+        FILE *f = fopen(ini_path, "r");
+        if (f)
+            fclose(f);
+        else if (s && s[1] && (size_t)(s - ini_path) < sizeof old - 16) {
+            snprintf(old, sizeof old, "%.*s/mh1pc.ini", (int)(s - ini_path), ini_path);
+            rename(old, ini_path);
+        }
+    }
+#endif
 #endif
 }
 
