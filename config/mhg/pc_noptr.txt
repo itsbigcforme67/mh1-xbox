@@ -4,6 +4,8 @@
 # sweep of 18 Oct 2026 (agent D; docs/RELEASE_G.md section 11): scan-only words next to small numbers in
 # objects whose MH1 twin has no relocation there. Addresses only, one module per section.
 [main]
+2EC490  # em_vital_tbl row of kind 12: s16 hit points (game 0x5499A0)
+2EC4AC  # em_vital_tbl row of kind 19: s16 hit points (the referee: 32648 instead of 40)
 254354  # push00 +0x154: s16 pairs
 25435C  # push00 +0x15C: s16 pairs
 254364  # push00 +0x164: s16 pairs
@@ -98,3 +100,7 @@ A0F030  # yn_spr_data +0x370: sprite coordinates (s16 x/y/w/h)
 A0F03C  # yn_spr_data +0x37C: sprite coordinates (s16 x/y/w/h)
 A0F048  # yn_spr_data +0x388: sprite coordinates (s16 x/y/w/h)
 A0F18C  # yn_spr_data +0x4CC: sprite coordinates (s16 x/y/w/h)
+[game]
+6D2700  # Item_get_tbl row 99 (pick chances / items, u16 pairs; the referee: a bug net gave item 0xF645)
+6D2720  # Item_get_tbl row 100
+6D29C0  # Item_get_tbl row 143

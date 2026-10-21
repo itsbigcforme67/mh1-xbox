@@ -1613,6 +1613,10 @@ static void em_slot_sync(int i, int draw, const fl_light *L)
     if (em[0x736] != (uint8_t)rt_game_stage())
         return;
     m = &em_mdl[kind];
+    {   /* mlCalcTransEM's neck turn (rt_em.c) */
+        int rt_em_neck(int no, int bones[4], float ry[4]);
+        m->skel.nextra = rt_em_neck(i, m->skel.extra_bone, m->skel.extra_ry);
+    }
     rt_monster_pose(i, &m->skel);
     memcpy(s, em + 0xB8, sizeof s);
     if (s[0] == 0.0f) s[0] = s[1] = s[2] = 1.0f;
@@ -2287,9 +2291,12 @@ int main(int argc, char **argv)
         else if (argv[i][0] != '-') disc = argv[i];
     }
 #if defined(VERSION_MHG) && !defined(XBOX)
-    /* G (docs/mhg.md section 5) is a work in progress run by agents: every run is hidden (no window, no real
-     * controller, no install dialog) unless MH1_SHOW=1 is set by hand; the screenshot ends the run */
-    if (!getenv("MH1_SHOW") && !shot) {
+    /* G (docs/mhg.md section 5) is a work in progress run by agents: a run from the build folder is hidden (no
+     * window, no real controller, no install dialog) unless MH1_SHOW=1 is set by hand; the screenshot ends the run.
+     * A player package (PLAYER.txt next to the program: ./mh1 linux|windows, tools/package_win.sh) shows its window,
+     * except when MH1_HIDDEN is set (agents set it in every shell, so their runs of a package stay hidden too) */
+    int g_show = getenv("MH1_SHOW") != NULL || (!getenv("MH1_HIDDEN") && install_player_package());
+    if (!g_show && !shot) {
         fprintf(stderr, "G runs are hidden: give --shot FILE --time S (with --input SCRIPT for pad input); MH1_SHOW=1 shows a window\n");
         return 1;
     }
@@ -2531,11 +2538,15 @@ int main(int argc, char **argv)
      * MH1_SHOW=1 shows one anyway for debugging by hand */
     int hide = shot != NULL || ((script != NULL || getenv("MH1_HIDDEN")) && !getenv("MH1_SHOW"));
 #if defined(VERSION_MHG) && !defined(XBOX)
-    if (!getenv("MH1_SHOW"))
+    if (!g_show)
         hide = 1;       /* G on the PC: always hidden (above). Not on the Xbox: the console is played by
                          * hand, and hide also turned off the controller there (owner, 14 Oct) */
 #endif
-    if (gfx_init(W, H, "MH1 PC viewer", hide) != 0) {
+#ifdef VERSION_MHG
+    if (gfx_init(W, H, "Monster Hunter G", hide) != 0) {
+#else
+    if (gfx_init(W, H, "Monster Hunter", hide) != 0) {
+#endif
         rt_warn("graphics start-up failed (no window / OpenGL context)");
         return 1;
     }

@@ -26,6 +26,17 @@ obvious workarounds.
 - **Dropped (G PC only):** set04_i / _m / _trans MH1 bodies for G (G's from the asm).
 - **To revert:** the commits "G quest lane: ..." on agent-A (20 Oct 2026).
 
+### G player packages show their window by themselves (20 Oct 2026, agent E)
+- **Dropped:** `MH1_SHOW=1` in the G play scripts (dist/linux/MHG/play.sh written by `./mh1`, tools/win/play_g.bat).
+  **Now:** a file PLAYER.txt next to the program (written by `./mh1 linux|windows` for both games and by
+  tools/package_win.sh) lets the G build open its window unless MH1_HIDDEN is set (viewer.c, install_player_package
+  in install.c). Build-folder runs stay hidden as before; MH1_SHOW=1 still forces a window (tools/play_g.sh).
+  **Why:** the README says to drag the .iso onto mhview_g.exe, which bypassed play.bat and so refused to start; and a
+  play script that set MH1_SHOW opened a window even for an agent with MH1_HIDDEN=1.
+- **Changed (G PC):** the settings file is G's own `mhgpc.ini` (was `mh1pc.ini`, already in G's folder); an old file
+  is renamed once at start (gfx_opts.c). Window title "Monster Hunter G" / "Monster Hunter" (was "MH1 PC viewer").
+- **To revert:** the commit "G player packages: PLAYER.txt ..." on agent-E.
+
 ### G release audit fixes (15 Oct 2026, agent A)
 - **Dropped:** the G stand-in for Lb_make_quest_tbl_local in lb_village_nm.c's G vs_square_init_init (and its G_STANDIN
   macro); **now** G's own builder (src/lobby/f/lb_guild_g.c) runs at village entry. **Why:** the elder's lists were empty.
@@ -887,3 +898,13 @@ Both games unless marked.
 - **Changed:** the hunter's game joints (sync_joints -> rt_player_parts) no longer include hunter_yoff (the drawn
   model keeps it). **Why:** 0.3 units below the PS2's (R-F17).
 - **To revert:** the commits "WIP referee: ..." / "referee round 3 ..." on agent-D.
+
+## Referee, fourth round (agent D, 20-21 Oct 2026)
+- **Dropped:** fl_model.c's Euler-angle lerp for blended bones; **now** flmatBlend's matrix blend per bone (rows x / y
+  mixed and re-orthonormalised); RT_EULER_BLEND=1 brings the old way back for comparison. **Why:** a blend bent joints
+  up to 18 units away from the PS2's (RELEASE_G R-F22).
+- **Added:** fl_skel extra Y turns (monster necks, rt_em.c rt_em_neck) applied in bone_world.
+- **Changed (G only):** em01_main / em15_main / em20_main needs blocks, small-monster size after their inits,
+  config/mhg/pc_noptr.txt entries (vital rows, Item_get rows).
+- **Added (referee):** 15 scenarios (g_*), the tick-0 sync of EMW+0x39A.
+- **To revert:** the commits "WIP referee G monsters ..." / "WIP referee: motion blends ..." on agent-D.

@@ -6157,15 +6157,7 @@ static void em_move06_00573FE0(EMW *em, EM01W *w) {
 }
 
 #ifdef VERSION_MHG
-/* G game 0x547C20: the hunger meter (x89C) drops by the kind's rate (+0xC, or +0x10 while x888 is set) */
-static void em01_hungry_down_g(EMW *em) {
-    s32 *t = (s32 *)em_hungry_tbl[em->kind];
-
-    em->hungry -= em->x888 == 0 ? t[3] : t[4];
-    if (em->hungry < 0) {
-        em->hungry = 0;
-    }
-}
+void game_func_00547C20(EMW *em);    /* G hunger countdown (em_core_nm.c, agent D) */
 #endif
 /* G em01_main (game 0x59E7C0, compared with an m2c draft of G's asm): kinds 37 / 42 (Rathian variants, a guess) count as
  * kind 1 (EM01_KIND1); the hunger/thirst/sleep checks are skipped while game_w.x2E is 8-10 and follow G's quest
@@ -6200,7 +6192,7 @@ void em01_main(EMW *em) {
                 em_hinshi_ck(em, rate);
                 em_egg_ck(em);
                 em_thirst_ck(em);
-                em01_hungry_down_g(em);
+                game_func_00547C20(em);
                 em_sleep_ck(em);
             } else {
                 em_egg_ck(em);
@@ -6218,7 +6210,7 @@ void em01_main(EMW *em) {
             } else {
                 em_thirst_ck(em);
             }
-            em01_hungry_down_g(em);
+            game_func_00547C20(em);
             break;
         case 0x40D:
         case 0x800:
@@ -6227,7 +6219,7 @@ void em01_main(EMW *em) {
             if (!EM01_KIND1(em)) {
                 em_thirst_ck(em);
             }
-            em01_hungry_down_g(em);
+            game_func_00547C20(em);
             break;
         default:
             em_hinshi_ck(em, rate);

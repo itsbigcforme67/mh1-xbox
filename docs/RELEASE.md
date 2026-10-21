@@ -156,6 +156,10 @@ it, the PS2's own sine / cosine / curve formulas and atan2f, the hunter's joints
 291 -> 365, Kut-Ku 319 -> 364; both now first differ in the red-health recovery tick (N-R9: a frame counter that also runs
 during PS2 area loads).
 
+**Fourth round (21 Oct 2026; RELEASE_G R-F21, R-F22, shared code):** monster necks turn on the host skeleton (Rathian,
+Rathalos, Lao-Shan) and motion blends mix matrices as flBlendMotionEx does; MH1 Rathian's later differences moved from
+~290 to 733 [verified: referee pc runs].
+
 **Left, ranked:** (1) float-step drifts after 200-300 ticks (RELEASE_G N-R7); (2) N-R9; (2) sound-layer random draws
 a tick late; (3) the quest clock while loading (owner, 18 Oct: left as is).
 

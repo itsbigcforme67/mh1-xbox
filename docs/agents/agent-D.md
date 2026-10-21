@@ -1501,3 +1501,13 @@ nearest); PS2 `run`s of a scenario are not always identical (another random star
 `referee.py pc` against one trace; `exact.py`-style per-field checks with a tiny tolerance find the first float-step
 divergence long before the report's tolerance does. Next: N-R7 (first float steps at root-motion starts, e.g. bowgun
 em0 tick 77: z one step apart after a blend start).
+
+## Referee round 4: G monsters, items, gathering (agent D, 20-21 Oct 2026)
+RELEASE_G section 11 R-F18..R-F22 and the scenario table there. Lessons: (1) byte-diff a monster's EMW between the two
+traces (offsets < 0x9F4; skip pointer words) to find the first field that differs: it found the hunger countdown, the
+size scale and act speed. (2) A garbage number (HP 32648, item 0xF645) in a G table read through a pointer list = a
+pc_ptrs.txt false pointer: look for the row's words in pc_ptrs and add them to config/mhg/pc_noptr.txt. (3) Joint
+differences that start on a blend tick = the blend method (REF_NODES). (4) The first actions of monsters are set
+during the area load, before the PC has the PS2's random state: the referee now copies EMW+0x39A at play tick 0.
+Open: N-R10 Gravios turn end, N-R11 kind 13 first act (G em16 act set), N-R12 village day not comparable (hook only in
+quests), g_plesioth / g_kind37 PS2 runs failed to start / stopped.

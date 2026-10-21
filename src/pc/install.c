@@ -125,6 +125,16 @@ int install_find_data(char *out, size_t n)
     return 0;
 }
 
+/* PLAYER.txt next to the program: this folder is a player package (./mh1 linux|windows, tools/package_win.sh), not a
+ * build folder. The G build opens its window only for a player package (or MH1_SHOW=1), docs/PLAYING.md. */
+int install_player_package(void)
+{
+    char e[900], d[1024];
+    exe_dir(e, sizeof e);
+    snprintf(d, sizeof d, "%s/PLAYER.txt", e);
+    return exists(d);
+}
+
 void install_default_dir(char *out, size_t n)
 {
 #ifdef MH1_WINDOWS

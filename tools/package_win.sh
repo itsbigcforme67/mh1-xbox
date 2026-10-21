@@ -64,6 +64,8 @@ Playing
   J item (square), I triangle, E guard, Q camera reset, Z/C L2/R2, T/F/G/H d-pad, Enter = Start (pause menu),
   Backspace = Select, Esc quits. Xbox-style controllers work. In menus B (circle) confirms, A cancels.
   Saves: %APPDATA%\mhgpc\memcard0 (separate from Monster Hunter 1; save in your house's bed, load with CONTINUE).
+  Settings: %APPDATA%\mhgpc\mhgpc.ini (F10 settings menu, window size). Debug logs: %APPDATA%\mhgpc\logs.
+  Keep PLAYER.txt next to mhview_g.exe: without it the G program runs hidden (that is for automated tests).
   Display options (Alt+Enter fullscreen, --size, --widescreen, --vsync ...) work as in the Monster Hunter 1
   build: put them after the name in play.bat's line, or set MH_ARGS=... before running play.bat.
 
@@ -150,6 +152,12 @@ Credits and legal
   game. See the licenses folder (libmpeg2 is GPL, SDL2 is zlib).
 EOT
 fi
+# PLAYER.txt marks a player package: the G program opens its window only next to this file (or with MH1_SHOW=1);
+# a run from the build folder stays hidden (agents' test runs, src/pc/viewer.c). Written for both games.
+cat > "$S/PLAYER.txt" <<'EOT'
+This folder is a player package of the Monster Hunter PC port. Keep this file next to the program:
+Monster Hunter G opens its game window only when it is here (test runs of the build are hidden).
+EOT
 # ---- guard: no home directory or user name in any file (build paths in debug info, scripts ...)
 ME=$(id -un)
 if grep -rl -a -e "$ME" "$S" >/dev/null 2>&1; then
