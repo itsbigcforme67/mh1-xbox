@@ -18,7 +18,7 @@ Objects located in the other build: US 457 of 689 string tables (graph 5009, cod
 
 ## Monster Hunter G by category
 
-Categories group the areas below (armour includes skills; NPC dialogue includes tutorials; menus and UI include the shop / guild screens and the unnamed 'other tables'; system is memory card, online, keyboard and code literals). *Text rules* are the G-only rules of tools/text_map.py (g_rules: whole descriptions, exact quest fields, layout, marks, buttons, numbers): whole description 42, buttons 29, exact 359, numbers 8, layout 29, marks 3; 1046 more by identical text elsewhere. *Ambiguous* means a rule found MH1 English but it was left out (MH1 name plus a G-rank suffix (naming left for Freedom) 19, the same Japanese has two different English texts 12, numbers: number changed to or from 1 (singular/plural) 10, the English names a button the Japanese does not 3, numbers: number not written as digits in the English 3, number not written as digits in the English 3). *Portable* is Monster Hunter Portable (PSP JP, disc/mhp), the Japanese of Monster Hunter Freedom: a G string whose Japanese is in Portable word for word (same normal form as the *marks* rule) is one Freedom should have an official English line for; only the uncompressed strings of its DATA.BIN were scanned (33463 texts), so it is a lower bound.
+Categories group the areas below (armour includes skills; NPC dialogue includes tutorials; menus and UI include the shop / guild screens and the unnamed 'other tables'; system is memory card, online, keyboard and code literals). *Text rules* are the G-only rules of tools/text_map.py (g_rules: whole descriptions, exact quest fields, layout, marks, buttons, numbers): whole description 42, buttons 29, exact 359, numbers 8, layout 29, marks 3; 1046 more by identical text elsewhere. *Ambiguous* means a rule found MH1 English but it was left out (MH1 name plus a G-rank suffix (naming left for Freedom) 19, the same Japanese has two different English texts 12, numbers: number changed to or from 1 (singular/plural) 10, the English names a button the Japanese does not 3, numbers: number not written as digits in the English 3, number not written as digits in the English 3). *Portable* is Monster Hunter Portable (PSP JP, disc/mhp), the Japanese of Monster Hunter Freedom: a G string whose Japanese is in Portable word for word (same normal form as the *marks* rule) is one Freedom should have an official English line for; all text entries of its DATA.BIN (string packs, record files, code overlays; none is compressed) and BOOT.BIN were read (10828 distinct texts).
 
 | category | G strings | official English | of which by the text rules | left | left, ambiguous for a rule | left, same Japanese in Portable | left, not in Portable |
 |---|---:|---:|---:|---:|---:|---:|---:|
@@ -29,9 +29,9 @@ Categories group the areas below (armour includes skills; NPC dialogue includes 
 | quests | 1199 | 1012 (84%) | 365 | 187 | 10 | 170 | 17 |
 | NPC dialogue and tutorials | 2498 | 1929 (77%) | 54 | 569 | 5 | 141 | 428 |
 | menus and UI | 1803 | 1158 (64%) | 3 | 645 | 11 | 460 | 185 |
-| system (memory card, online, keyboard, code literals) | 877 | 348 (39%) | 6 | 529 | 3 | 206 | 323 |
-| keyboard kana tables (not text) | 421 | 4 (0%) | 0 | 417 | 0 | 213 | 204 |
-| **total** | **13263** | **7064 (53%)** | 461 | 6199 | 48 | 4865 | 1334 |
+| system (memory card, online, keyboard, code literals) | 877 | 348 (39%) | 6 | 529 | 3 | 142 | 387 |
+| keyboard kana tables (not text) | 421 | 4 (0%) | 0 | 417 | 0 | 142 | 275 |
+| **total** | **13263** | **7064 (53%)** | 461 | 6199 | 48 | 4730 | 1469 |
 
 ## MH1 JP strings with official US English
 

@@ -18,17 +18,22 @@ or one line of a description, which G stores one pointer per line).
 | official English from MH1 US, first round | 6776 | 51% |
 | official English from MH1 US, second round | 6839 | 51.6% |
 | official English from MH1 US, now | 7064 | **53.3%** |
-| left, but the same Japanese is in Monster Hunter Portable (so Freedom should have it) | 4865 | 37% |
-| left, not in Portable either | 1334 | 10% |
+| left, but the same Japanese is in Monster Hunter Portable (so Freedom should have it) | 4730 | 36% |
+| left, not in Portable either | 1469 | 11% |
 
-Of the 1334 "neither", 204 are the software keyboard's romaji-to-kana tables and about 100 the online chat's
-bad-word filter (neither is text to translate), so about **1030 strings** would have to be written by us: mostly
+Of the 1469 "neither", 275 are the software keyboard's romaji-to-kana tables and about 100 the online chat's
+bad-word filter (neither is text to translate), so about **1090 strings** would have to be written by us: mostly
 town (online hub) NPC talk (~430), online-hub menus (~185), memory-card and system messages (~220) and weapon/armour
 lines (~170).
 
 421 of the 13263 are keyboard kana tables. Leaving them out, official English is 7060 of 12842 = 55%.
 
 MH1 JP's own table (the same tool) went from 6272 to 6629 strings with US English (81%) over the three rounds.
+
+**The day Freedom arrives** (section "Monster Hunter Freedom: what to give and what happens" below): put an ISO of
+the owner's own Freedom UMD in `disc/mhfr/` and run `python3 tools/text_map.py`. The step is written and tested
+(self-test on Portable: 4624 G strings would receive a line), so G should go from 53% to about 88-90% official
+English in that one run, if Freedom's DATA.BIN mirrors Portable's as expected.
 
 ## What MH1 US covers (by category)
 
@@ -41,9 +46,9 @@ MH1 JP's own table (the same tool) went from 6272 to 6629 strings with US Englis
 | quests | 1199 | 1012 (84%) | 365 | 187 | 170 | 17 |
 | NPC dialogue and tutorials | 2498 | 1929 (77%) | 54 | 569 | 141 | 428 |
 | menus and UI | 1803 | 1158 (64%) | 3 | 645 | 460 | 185 |
-| system (memory card, online, keyboard, code literals) | 877 | 348 (39%) | 6 | 529 | 206 | 323 |
-| keyboard kana tables (not text) | 421 | 4 | 0 | 417 | 213 | 204 |
-| **total** | **13263** | **7064 (53%)** | **461** | **6199** | **4865** | **1334** |
+| system (memory card, online, keyboard, code literals) | 877 | 348 (39%) | 6 | 529 | 142 | 387 |
+| keyboard kana tables (not text) | 421 | 4 | 0 | 417 | 142 | 275 |
+| **total** | **13263** | **7064 (53%)** | **461** | **6199** | **4730** | **1469** |
 
 How to read it: everything MH1 had and G kept word for word (or nearly) already has its US line: MH1's items,
 weapons, armour, monsters, skills, its quests and village talk. What is left is what G added or rewrote.
@@ -162,14 +167,13 @@ Listed with the reason in docs/survey/mhg_text_untranslated.txt (last column):
 
 ## What Freedom is expected to cover
 
-Monster Hunter Portable (PSP, JP, disc/mhp) is the PSP release of G and Monster Hunter Freedom is its US release.
-I scanned the uncompressed Shift-JIS strings of Portable's `PSP_GAME/USRDIR/DATA.BIN` (33463 texts; the text
-tables are plain, around offset 0x12C40000, the quest files around 0x1D750000) and counted G strings whose
-Japanese appears there word for word (same normal form as the *marks* rule; G's line-per-pointer descriptions
-are joined first, since Portable keeps each description as one string with the same line breaks). This is a
-lower bound (compressed data was not looked at).
+Monster Hunter Portable (PSP, JP, ULJM-05066, disc/mhp) is the PSP release of G and Monster Hunter Freedom
+(ULUS-10084) is its US release. The report now reads Portable's text by structure (next section), not by a raw
+byte scan: every text entry of DATA.BIN and BOOT.BIN, 10828 distinct Japanese texts. None of Portable's text is
+compressed. The earlier raw scan had counted some false hits (single kana inside audio files matching G's
+keyboard tables and one-character labels), so the estimate went down a little, not up:
 
-4865 of the 6199 G strings still without English are in Portable:
+4730 of the 6199 G strings still without English are in Portable:
 - items: 408 of 412 (new items, G-rank materials, new item help)
 - weapons: 759 of 870 (new weapons and their descriptions, dual swords)
 - armour and skills: 2493 of 2552 (nearly all new armour and its descriptions)
@@ -177,13 +181,82 @@ lower bound (compressed data was not looked at).
 - quests: 170 of 187 (new village and G-rank quests, training school)
 - NPC dialogue and tutorials: 141 of 569 (village talk; the town talk mostly is not in Portable)
 - menus and UI: 460 of 645
-- system: 206 of 529 (only the messages that are not about the PS2's memory card or network)
+- system: 142 of 529 (only the messages that are not about the PS2's memory card or network)
+- keyboard kana tables: 142 of 417 (single kana; not text that needs translating)
 
-So Freedom should take G from 53.3% to roughly 90% official English. Once the owner supplies Freedom, the way in is
-the same as MH1 JP -> MH1 US: Portable JP -> Freedom US by structure (same data file layout, same table order),
-then Portable text -> G text by the rules above (most are identical text).
+Without the kana tables that is 4588 real strings: G would go from 7060 of 12842 (55%) to about 11650 (91%), or
+88% counting the kana tables, if Freedom's layout mirrors Portable's everywhere. The self-test below gives the same
+figure from the actual pairing code (4624, a few line-count mismatches between G's and Portable's descriptions
+fewer).
 
-## What neither covers (truly G-only text): about 1330 strings
+## Portable's DATA.BIN (PSP_GAME/USRDIR/DATA.BIN, 700 MB)
+
+Checked on the owner's disc, 20 Oct 2026, with tools/text_map.py (PSPDisc, psp_slots, psp_text_entries).
+- **File table** at offset 0: little-endian u32 sector numbers (2048-byte sectors). Entry i spans sector w[i] to
+  w[i+1]; the list ends where the numbers stop rising, and the last number is the file's size (0x537D7 sectors =
+  700,364,800 bytes). 5821 entries. The game opens it as `disc0:/PSP_GAME/USRDIR/DATA.BIN` and reads by sector
+  (`disc0:/sce_lbn0x%x_size0x%x` in BOOT.BIN).
+- **Compression:** none for text. I tried the MH LZSS (tools/mwo_unpack.py, the PS2 G overlay scheme) on every
+  entry without a known header: no real hits. The code overlays (105 entries, 'MWo3', stage00.ovl ...) are
+  uncompressed on the PSP. Entry 0 (sectors 12 to 0x2580C, 300 MB) has uniform high-entropy bytes (7.95 bits per byte
+  from start to end) and no header: most likely UMD filler, possibly encrypted streams; not text either way
+  [guess]. Other non-text entries: RIFF audio (120), PSMF movies (15), .TMH textures (1574), PNG, 9 encrypted
+  modules ('~PSP').
+- **Text entries** (entry numbers are Portable's):
+  - entry 3 (0x12C40800): a string pack, u32 count (22), u32 8, then 22 block offsets; a block is u32 offsets to
+    NUL-ended strings, relative to the block, count = first offset / 4, 0xFFFFFFFF = empty. Blocks in order:
+    general and NPC messages (1174), item names (670) and descriptions (670), blade weapon names (440) and
+    descriptions (440), bowgun names (97) and descriptions (97), head, body, arm, waist, leg armour names and
+    descriptions (298/283/277/255/254 each), monster notes (32), save/load and system messages (44, 44, 69), and a
+    681-string block of short labels. Descriptions are one string with line breaks (G has one pointer per line).
+  - entries 4672 and 4673: string packs (tutorial and help titles, gallery unlock lines; 1089 UI words, the farm,
+    the in-game magazine pages).
+  - entries 4674-4913: the 240 quest files (header word 0 = 0x3C; text inline).
+  - entries 4914-4922: record files with inline text (quest-like records, fixed-size rows).
+  - entries 4958-4961: offset-list files of the village: guild counter talk, village NPC talk, farm and kitchen
+    Felynes.
+  - 7 code overlays with strings, and SYSDIR/BOOT.BIN (an unencrypted ELF, 121 strings; EBOOT.BIN is the
+    encrypted copy).
+- The ISO (`Monster Hunter Portable (Japan).iso`) and the extracted folder read the same (checked: same file table,
+  same entries, same BOOT.BIN), so either form works; UMD_DATA.BIN holds the game id (ULJM-05066).
+
+## Monster Hunter Freedom: what to give and what happens
+
+**What the owner gives:** an ISO image of their own Monster Hunter Freedom UMD, US release, game id **ULUS-10084**
+(dumped from their own disc with their own PSP, e.g. with a UMD dumping homebrew). Put it in **`disc/mhfr/`**
+(any file name ending in `.iso`; an extracted copy with `disc/mhfr/PSP_GAME/` works too). `disc/` is gitignored,
+so nothing of it can be committed. Then run:
+
+    python3 tools/text_map.py --report docs/text_coverage.md --ids docs/survey/mhg_text_untranslated.txt
+
+(or `--freedom PATH` to point elsewhere; an explicit path that does not exist stops with an error saying what is
+needed; without Freedom the step logs "Freedom: not found ... skipped" and the rest runs as before).
+
+**What the step does** (`run_freedom`, `freedom_pairs`, `freedom_for_g`):
+1. Reads Portable's and Freedom's DATA.BIN file tables and the same entry numbers on both sides.
+2. Pairs each text entry slot by slot: string packs and blocks by (block, index), the record and offset-list files
+   by the order of their text runs (only when both have the same number of runs). An entry is used only if it has
+   the same kind on both discs and at least 80% of its pairs look like translations (English, same printf
+   conversions); otherwise it is skipped whole and named in the log.
+3. Gives English to a G string that still has none (MH1 US English always comes first) when its Japanese equals a
+   Portable string (normal form of the *marks* rule) and every Portable slot with that text has the same Freedom
+   line. A G description (one pointer per line) takes Freedom's description split at its line breaks when the line
+   counts agree.
+
+**Tested without Freedom:** `--freedom-selftest` pairs Portable with itself: 784 of 784 text entries paired, 18677
+strings, 4624 G strings would receive a line (2625 description lines, the rest single strings). Pointing
+`--freedom` at the Portable ISO (Japanese on both sides) correctly uses nothing: every entry fails the "looks
+translated" check.
+
+**Assumptions to check on the day** (the log shows each one):
+- Freedom's DATA.BIN has the same entry numbering as Portable's. If the US build added or removed entries, the
+  paired-entry count in the log will be low; the fix is to map entries by content (names in the first strings)
+  instead of by number.
+- Freedom's string packs keep Portable's block and string counts (a localisation usually does).
+- Freedom's BOOT.BIN is unencrypted like Portable's (if not, its ~120 strings are skipped).
+- Only ULUS-10084 is expected; another id is tried but logged.
+
+## What neither covers (truly G-only text): about 1470 strings
 
 | kind | strings | notes |
 |---|---:|---|
@@ -192,11 +265,11 @@ then Portable text -> G text by the rules above (most are identical text).
 | memory card and yes/no dialogs | 120 | PS2 memory-card wording (Portable has Memory Stick wording instead); 68 are MH1 lines with no US message |
 | PS2 online messages | 134 | 99 are the chat's bad-word filter (not shown, not translated) |
 | weapon / armour lines and quest entry rules not found in Portable | 170 | partly PS2-only collaboration items, partly a matching gap (some lines may still be in Portable) |
-| code literals (HUD banners, debug, results) | 69 | |
+| code literals (HUD banners, debug, results) | 133 | 64 more than before: they had matched false hits of the old raw Portable scan |
 | items, monsters, quests | 24 | |
-| keyboard kana tables | 204 | not text: needs no translation |
+| keyboard kana tables | 275 | not text: needs no translation |
 
-This is what "our own translation in Freedom's style" would have to write once Freedom is in: about 1030 strings
+This is what "our own translation in Freedom's style" would have to write once Freedom is in: about 1090 strings
 (without the kana tables and the word filter).
 
 ## Known limits (worth a person's look later)

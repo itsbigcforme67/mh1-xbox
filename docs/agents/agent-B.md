@@ -1460,3 +1460,9 @@ Owner's request: one picture of the PS2, Xbox and PC hunters together in the sam
   ints skip the prose length check (meal results). Town NPC talk: MH1 US lobby has MH1's town talk and it is already
   paired; the G lines left are G's own (19 equal MH1 lines with no US line, ~70 numeric/trivial edits that the US
   wording can't take). MH1 JP 6379 -> 6629 (81%), G 6839 -> 7064 (53.3%).
+- Round 4 (Freedom readiness): Portable's DATA.BIN mapped (sector file table, string packs, record files; no compressed
+  text, entry 0 = 300 MB high-entropy filler [guess]); PSPDisc reads an extracted folder or an ISO (own ISO 9660 reader);
+  structured Portable index (10828 texts) replaces the raw scan (which had false hits: estimate 4865 -> 4730);
+  run_freedom / freedom_pairs / freedom_for_g pair Portable<->Freedom entry by entry and fill G after MH1 US;
+  --freedom-selftest (Portable with itself): 784 entries, 4624 G strings would get a line. Owner: ISO of ULUS-10084
+  in disc/mhfr/.
