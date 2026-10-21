@@ -535,9 +535,20 @@ em16 act set); N-R12 the village day (shops, box, forge) is not compared: the lo
   size at play tick 0.
 - Still open: N-R10 Gravios notices the hunter a tick early (its head joints 31-39 are up to 20 units from the PS2's
   although every motion layer, frame and blend agree: likely a node order or a head override on the PS2 side, not found);
-  N-R13 g_plesioth starts with the Plesioth elsewhere (tick 0: PS2 at its start, PC already moving); N-R14 small
-  monster kind 19 flies 8-13 units higher on the PC; N-R12 the reward screen is not compared yet (the lockstep only
-  runs in the quest and the village; the clear / result modes load files at their own pace).
+  N-R12 the reward screen is not compared yet (the lockstep only runs in the quest and the village; the clear / result
+  modes load files at their own pace).
+- R-F26 *G still on MH1 logic* (22 Oct): the forge's "equip it now?" starts on "yes" in G (G lobby 0x54CC8C; MH1 "no"):
+  g_vil_forge_ore's saved hunter now identical but the play time. N-R14 closed: above 1000 G pushes kind 19/24 fliers
+  down 20 a tick instead of stopping them, and em_fly05/09 have no ceiling (em19b.c; g_monoblos no difference,
+  g_basarios 106 -> 144). Kind 12's base scale is em12's own table value (G em12_init; g_gather no difference).
+  N-R13 closed: G's Em_direct_set gives kinds of em_tsuushin_tbl their quest stage before their init (sub_main
+  0x4B5714): the Plesioth's init took the hunter's stage for its own and left the water at once (g_plesioth 0 -> 436).
+- R-F27 *port glue, both games*: the area-exit check skips an area's first game tick, where the PS2's move_stage runs
+  stage_i (viewer.c): a hunter put on an exit left a tick early (g_kind49 33 -> 409).
+- Referee: the PC takes the PS2's frame counter (game_w+0x1E) each play tick with Rnd_w (the PS2 also counts its
+  area-load frames): red-health recovery and the frame-timed effects in step. g_kind37, g_diablos, mh1_kutku: no
+  difference left in 450 ticks. Still N-R7 class: g_rathalos 157, g_scene_rath 1151, g_items 297 (a monster with its
+  target almost straight behind turns the other way after a one-float-step drift).
   G's offline quests have no Kirin, Rathian / Rathalos subspecies other than kinds 37 / 44 / 49 (the quest dry runs).
 
 **Left, ranked by how much a player meets it:**

@@ -1522,13 +1522,6 @@ writes 0x9D9 writes x9E1 on the PC). (4) Village lockstep: scenario `village=Tru
 Open: N-R10 Gravios, N-R13 g_plesioth start, N-R14 kind 19 fly height, N-R12 reward screen; g_scene_rath's Velociprey
 turns the other way at tick 1151 (the hunter sits almost behind it: a 1-ulp position step decides the side, N-R7 class).
 
-### Where I stopped (22 Oct 2026, paused for memory)
-Committed on agent-D since the last full check (a8e9b5f0, full_check 35 ok): WIP 5c386d53 G forge "equip now?" starts on
-yes (g_vil_forge_ore User_data identical but play time); b8a35afa referee: PC takes the PS2's frame counter game_w+0x1E
-each play tick (g_kind37 / g_diablos / mh1_kutku without differences); em19b.c G fliers pushed down 20 above 1000
-(g_monoblos clean); f_em_nm.c G kind 12 base scale (g_gather clean); f_quest_nm.c G Em_direct_set em_tsuushin_tbl stage
-(g_plesioth 0 -> 436); viewer.c: no area-exit check on an area's first tick (move_stage's stage_i; g_kind49 33 -> 409).
-test_all_quests G 98/98 and MH1 38/38 pass with all of these. Next: full_check + VERSION=mhg rebuild + G Xbox build,
-docs (RELEASE_G fifth round: these fixes; N-R13/N-R14 closed), commit; then emulator work when memory allows
-(free > 2.5 GB, no xemu/pcsx2 running): g_vil_sell, mh1_vil_* scenarios, reward screen. Open: N-R7 class (1-ulp drifts
-deciding turn sides: g_rathalos 157, g_scene_rath 1151, g_items 297), N-R10 Gravios 48.
+### Round 5, second half (22 Oct 2026)
+RELEASE_G R-F26 / R-F27. Merged main (agent A's em01 / em16 G ports replace my scene parts there). Next round: emulator
+work when memory allows (g_vil_sell, mh1_vil_* scenarios, item box, combine, reward screen), N-R10 Gravios.

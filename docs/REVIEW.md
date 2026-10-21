@@ -922,5 +922,8 @@ Both games unless marked.
   kind list for G's new kinds; G's act 6 scene code (em04b.c, em09c.c, em15_nm.c, em16_nm.c, em19b.c, em20_ai_nm.c,
   all `VERSION_MHG`, matched files also `!__MWERKS__`). em04_nm.c's earlier edit was dropped: em04b.c's em04_main is the
   one built.
+- **Changed (G only, 22 Oct):** lb_by153.c forge question default, em19b.c fliers' ceiling (EM19_TOP), f_em_nm.c kind 12
+  base scale, f_quest_nm.c Em_direct_set stage (em_tsuushin_tbl). **Changed (both):** viewer.c skips the area-exit
+  check on an area's first tick. **Referee:** ps2_rnd.txt has a 4th column, the PS2's frame counter, set on the PC.
 - **Added (referee):** village lockstep scenarios (g_vil_*), g_carve / mh1_carve, the hook's lock mode word (CTL+0x1C).
 - **To revert:** the commits "WIP referee: G's story-scene ..." .. "WIP: Game_task's frame counter ..." on agent-D.

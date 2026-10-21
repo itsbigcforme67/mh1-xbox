@@ -189,7 +189,6 @@ void Lb_stage_load(int stage) {
 
 extern u8 ClassInfo[];
 unsigned short Get_sw2();
-signed char SoftKeyboard_alive_check();
 int Lbs_RoomExit();
 void Lbc_SendMiniData();
 void NPCZoomInCameraCancel();

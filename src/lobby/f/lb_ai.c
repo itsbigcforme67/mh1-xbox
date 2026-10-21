@@ -31,7 +31,6 @@ int strlen();
 int sprintf(char *, const char *, ...);
 int Online_ck();
 void Lb_put_new_mail();
-signed char SoftKeyboard_alive_check();
 int Lb_check_hotel();
 void Lb_put_gold();
 void lb_put_sprite();
