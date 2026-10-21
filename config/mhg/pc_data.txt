@@ -47,6 +47,16 @@ em_parts_num = 0x005207C0; // size:0x34       # motion layers per kind (Em_max_p
 em_dur_tbl = 0x005088C0; // size:0xD0
 em_dur_rows = 0x005084E0; // size:0x3E0 noptr     # em_dur_tbl's rows (9 part hit points + 1, s16): pairs like 0x78, 0x50 read as G
                                                   # addresses (0x500078) by the pointer scan and were relocated (kind 20's parts 4/5; lockstep referee)
+# shell08 (fireballs / beams) per-type tables: G has 14 types (MH1 12; G's Gravios/Basarios beams use 12 and 13).
+# At MH1's size the PC read past the copies for those types. Agent A, 20 Oct 2026. (shell08_data: 17 in both games)
+[game]
+shell08_num = 0x006C5D00; // size:0x1C noptr
+shell08_all_time = 0x006C5D40; // size:0x1C noptr
+shell08_index = 0x006C5D60; // size:0x1C noptr
+shell08_atk_no = 0x006C5DA0; // size:0x1C noptr
+shell08_rate_tbl = 0x006C5DC0; // size:0xA8 noptr
+shell08_rate_g_tbl = 0x006C5E70; // size:0xA8 noptr
+shell08_ofs_tbl = 0x006C5F20; // size:0xA8 noptr
 # em01's flight height curves (G em01_fly_adjy2_init has types 15 and 16; agent A, 20 Oct 2026)
 [game]
 fly_adjy2_hosei_tbl_00653E40 = 0x006955D0; // size:0x44    # 17 curve pointers per type (MH1 15)
