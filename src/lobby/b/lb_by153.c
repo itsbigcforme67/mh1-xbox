@@ -14,6 +14,13 @@ void lb_process_tag_decide01();
 void Lb_put_set01();
 void Lb_act_set();
 void cnWrap_SoundRequest();
+/* the "equip it now?" question's first answer: MH1 starts on "no", G on "yes" (G lobby 0x54CC8C / 0x54CD64 store 0;
+ * the PS2 G forge equips the new weapon with the same presses: referee g_vil_forge_ore, agent D 22 Oct 2026) */
+#if defined(VERSION_MHG) && !defined(__MWERKS__)
+#define EQ_ASK_FIRST 0
+#else
+#define EQ_ASK_FIRST 1
+#endif
 s32 shop_process_after(void) {
     struct { s8 x0; s8 id; s16 num; s32 x4; } st;
     PLW *pl;
@@ -61,7 +68,7 @@ s32 shop_process_after(void) {
                     lbShop.x78 = 1;
                 }
             }
-            lbShop.x78 = 1;
+            lbShop.x78 = EQ_ASK_FIRST;
             cnWrap_SoundRequest(0x11);
         } else {
             r_no_process++;
@@ -110,7 +117,7 @@ s32 shop_process_after(void) {
                     lbShop.help = shop_process2_help[8];
                 }
             }
-            lbShop.x78 = 1;
+            lbShop.x78 = EQ_ASK_FIRST;
         }
         break;
     case 3:
