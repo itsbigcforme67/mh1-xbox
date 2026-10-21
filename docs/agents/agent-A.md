@@ -1228,3 +1228,16 @@ check.py needs wibo, which this round could not run (PC-only round). Commits on 
 - **Xbox log** (both games): mh1log.txt and logs\*.log were only fflush'ed into the kernel's file cache, which a crash
   never writes out (the owner's log ended long before the crash). xbox_log_commit (xbox_log.c) does fflush +
   NtFlushBuffersFile: every rt_log line after 0.5 s, every warning / error at once, and stderr once a second.
+- **Follow-up (21 Oct, coordinator): the whole class fixed, both games.** tools/check_kr_returns.py --fix gave 906
+  declarations their definition's return type (plain C types, so no header needed); in byte-matching files (config/
+  c_files.txt, config/mhg/c_files.txt) and in every header the original line stays for MWCC under `#ifdef __MWERKS__`.
+  The checker knows those MWCC-only branches. A file that used the function before its declaration got the declaration
+  at the top. `--implicit CMDDIR` compiles every linked PC object's recorded command with gcc -fsyntax-only
+  -Wimplicit-function-declaration: 60 calls of char/short functions without any declaration got one. Both checks are
+  steps of tools/full_check.sh (kr_returns, kr_returns_g) and report 0. Not reported on purpose: a narrower or other
+  char/short declaration of a function (the caller converts the same way on both compilers) and int vs pointer (same
+  register and width on both 32-bit targets). int vs float was reported and fixed too (flSin declared int in the yn
+  files; flps0009 declared f32 but returning int: an x87 stack pop of nothing).
+  Checks: MH1 and G PC builds, MH1 and G Xbox builds, test_all_quests_g (98 + carts + dual), test_all_quests (38),
+  test_urgent, test_urgent_g. **The PS2 byte rebuild (5 OK / 7 OK) was not run** (free memory stayed under 1 GB): left
+  for the coordinator's check.
