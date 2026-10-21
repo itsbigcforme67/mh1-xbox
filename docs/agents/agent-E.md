@@ -1139,3 +1139,9 @@ refused, package without MH1_HIDDEN -> passes to graphics start-up, no PLAYER.tx
   in heavy scenes, so wall-clock videos drift). The first save-state load after PCSX2 starts can fail: retried.
 - **Lessons:** never edit a shell script while a background run of it is still reading it (sh reads as it goes; the
   run went on with a mix and kept polling a dead emulator while holding the emulator lock). Copy it first.
+- **Where I stopped (21 Oct 2026, paused for memory by the coordinator).** Committed: the gallery work and the merge of
+  main. Partial full_check (stopped at test_online_mcs): rebuild 5 OK, build_pc, build_pc_online, xbox_online,
+  build_pc_mhg and the tests up to test_online_guest all ok, test_gallery_g ok; the G Xbox nv2a build was OK before the
+  merge. Still to do: the rest of full_check; xemu run of one scene on the Xbox build (build/E/xg/run.sh, wrapped in
+  flock, only with > 2.5 GB free and no emulator running); PS2 references at scene ticks for scenes 0, 8, 12, 14 (the
+  first save-state load of a PCSX2 run failed for 0 and 8; tools/g_gallery_ref.sh now retries).
