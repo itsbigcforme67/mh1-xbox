@@ -169,17 +169,17 @@ Japanese appears there word for word (same normal form as the *marks* rule; G's 
 are joined first, since Portable keeps each description as one string with the same line breaks). This is a
 lower bound (compressed data was not looked at).
 
-4913 of the 6424 G strings still without English are in Portable:
+4865 of the 6199 G strings still without English are in Portable:
 - items: 408 of 412 (new items, G-rank materials, new item help)
 - weapons: 759 of 870 (new weapons and their descriptions, dual swords)
 - armour and skills: 2493 of 2552 (nearly all new armour and its descriptions)
 - monsters: 15 of 18 (subspecies, new monsters)
 - quests: 170 of 187 (new village and G-rank quests, training school)
-- NPC dialogue and tutorials: 165 of 596 (village talk; the town talk mostly is not in Portable)
-- menus and UI: 480 of 694
-- system: 210 of 678 (only the messages that are not about the PS2's memory card or network)
+- NPC dialogue and tutorials: 141 of 569 (village talk; the town talk mostly is not in Portable)
+- menus and UI: 460 of 645
+- system: 206 of 529 (only the messages that are not about the PS2's memory card or network)
 
-So Freedom should take G from 51.6% to roughly 88% official English. Once the owner supplies Freedom, the way in is
+So Freedom should take G from 53.3% to roughly 90% official English. Once the owner supplies Freedom, the way in is
 the same as MH1 JP -> MH1 US: Portable JP -> Freedom US by structure (same data file layout, same table order),
 then Portable text -> G text by the rules above (most are identical text).
 
