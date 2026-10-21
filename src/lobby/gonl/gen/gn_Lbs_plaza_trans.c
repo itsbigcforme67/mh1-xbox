@@ -67,7 +67,7 @@ void Lbs_plaza_trans(void *arg0) {
         font_print(&sp50);
     } else {
         font_set_palette(0);
-        Put_page_num(0x82, 0x56, (s64) (*(u8 *)((u8 *)((*(void **)&pNet)) + 0x29)), 2, 0);
+        Put_page_num(0x82, 0x56, (s32) (*(u8 *)((u8 *)((*(void **)&pNet)) + 0x29)), 2, 0);
     }
     spA8 = 0x30FFFFFF;
     spA0 = 0x16;

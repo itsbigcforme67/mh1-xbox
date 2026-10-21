@@ -8,7 +8,7 @@ extern u8 pNet;
 extern u8 lit_3397;
 extern u8 lit_3399;
 
-void put_main_cursor2(s64 arg0, s64 arg1, s32 arg2) {
+void put_main_cursor2(s32 arg0, s32 arg1, s32 arg2) {
     u8 g_frame[0x30] __attribute__((aligned(16)));   /* G's stack frame */
 #define sp10 (*(s16 *)(g_frame + 0x10))
 #define sp12 (*(s16 *)(g_frame + 0x12))
@@ -18,14 +18,14 @@ void put_main_cursor2(s64 arg0, s64 arg1, s32 arg2) {
 #define sp22 (*(s16 *)(g_frame + 0x22))
 #define sp24 (*(s16 *)(g_frame + 0x24))
 #define sp26 (*(s16 *)(g_frame + 0x26))
-    s64 temp_v1;
+    s32 temp_v1;
 
-    (*(s64 *)((u8 *)(&sp20) + 0)) = (s64) (*(s64 *)((u8 *)(&lit_3397) + 0));
+    (*(s64 *)((u8 *)(&sp20) + 0)) = (s32) (*(s64 *)((u8 *)(&lit_3397) + 0));
     temp_v1 = ((s16) (arg0));
     (*(f32 *)((u8 *)(&sp20) + 8)) = (f32) (*(f32 *)((u8 *)(&lit_3397) + 8));
     sp20 = temp_v1 + 4;
     sp24 = temp_v1 + 0x190;
-    (*(s64 *)((u8 *)(&sp10) + 0)) = (s64) (*(s64 *)((u8 *)(&lit_3399) + 0));
+    (*(s64 *)((u8 *)(&sp10) + 0)) = (s32) (*(s64 *)((u8 *)(&lit_3399) + 0));
     (*(f32 *)((u8 *)(&sp10) + 8)) = (f32) (*(f32 *)((u8 *)(&lit_3399) + 8));
     sp14 = temp_v1 + 0x193;
     sp10 = temp_v1 + 1;

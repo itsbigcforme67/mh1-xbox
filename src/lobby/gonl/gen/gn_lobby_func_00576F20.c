@@ -45,13 +45,13 @@ void lobby_func_00576F20(void) {
     s32 temp_s0;
     s32 temp_s4;
     s32 var_s1;
-    s64 temp_s2;
-    s64 temp_s3;
-    s64 temp_s3_2;
-    s64 temp_s3_3;
-    s64 temp_s3_4;
-    s64 temp_s3_5;
-    s64 var_s0;
+    s32 temp_s2;
+    s32 temp_s3;
+    s32 temp_s3_2;
+    s32 temp_s3_3;
+    s32 temp_s3_4;
+    s32 temp_s3_5;
+    s32 var_s0;
     u8 *temp_v0;
 
     flfntSetSize(0x12, 0x12);

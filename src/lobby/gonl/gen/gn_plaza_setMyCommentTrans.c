@@ -29,21 +29,21 @@ extern u8 lit_2316;
 extern u8 my_user_mini_data;
 extern u8 tl_job_tbl;
 
-void plaza_setMyCommentTrans(s64 arg0, s64 arg1, s64 arg2) {
+void plaza_setMyCommentTrans(s32 arg0, s32 arg1, s32 arg2) {
     u8 g_frame[0x100] __attribute__((aligned(16)));   /* G's stack frame */
 #define sp60 (*(s32 *)(g_frame + 0x60))
 #define spC0 (*(s32 *)(g_frame + 0xC0))
     u8 *var_s4;   /* (s32 *) */
-    s64 temp_s0;
-    s64 temp_s0_2;
-    s64 temp_s0_3;
-    s64 temp_s0_4;
-    s64 temp_s0_5;
-    s64 temp_s0_6;
-    s64 temp_s0_7;
-    s64 temp_s2;
-    s64 temp_s3;
-    s64 temp_v1;
+    s32 temp_s0;
+    s32 temp_s0_2;
+    s32 temp_s0_3;
+    s32 temp_s0_4;
+    s32 temp_s0_5;
+    s32 temp_s0_6;
+    s32 temp_s0_7;
+    s32 temp_s2;
+    s32 temp_s3;
+    s32 temp_v1;
     u8 temp_a2;
 
     if ((*(u8 *)((u8 *)((*(void **)&cw)) + 0xFA61)) != 0) {
@@ -104,7 +104,7 @@ void plaza_setMyCommentTrans(s64 arg0, s64 arg1, s64 arg2) {
     }
     memcpy((*(s32 *)((u8 *)&g_lb_636A00 + ((*(u8 *)((u8 *)(var_s4) + 2)) * 4))), &g_lb_63E128, 4);
     func_0012BDD0((*(s32 *)((u8 *)&g_lb_636A00 + ((*(u8 *)((u8 *)(var_s4) + 2)) * 4))));
-    Lb_put_status((s32) (((s16) ((temp_s2 + 0x40)))), (s32) temp_s0_6, 0x14, -1, (s64) (*(u8 *)((u8 *)(var_s4) + 2)));
+    Lb_put_status((s32) (((s16) ((temp_s2 + 0x40)))), (s32) temp_s0_6, 0x14, -1, (s32) (*(u8 *)((u8 *)(var_s4) + 2)));
     temp_s0_7 = ((s16) ((temp_s0_6 + 0x16)));
     flfntLocate((s32) arg0, (s32) temp_s0_7);
     font_print(&lit_2316, (*(s32 * *)((u8 *)&tl_mail_tbl + 0x24)));

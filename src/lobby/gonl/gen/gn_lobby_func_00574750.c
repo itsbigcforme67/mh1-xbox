@@ -13,12 +13,12 @@ s32 font_print();           /* extern */
 extern s8 g_main_302290;
 extern u8 lit_2316;
 
-void lobby_func_00574750(s64 arg0, s64 arg1, s64 arg2) {
+void lobby_func_00574750(s32 arg0, s32 arg1, s32 arg2) {
     u8 g_frame[0x80] __attribute__((aligned(16)));   /* G's stack frame */
 #define sp60 (*(s32 *)(g_frame + 0x60))
-    s64 temp_v1;
-    s64 var_s1;
-    s64 var_s3;
+    s32 temp_v1;
+    s32 var_s1;
+    s32 var_s3;
     s8 *var_s2;
 
     put_main_cursor2(arg0, arg1, (s32) (((s8) (arg2))));

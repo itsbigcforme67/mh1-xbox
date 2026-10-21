@@ -7,7 +7,7 @@ s32 CallBack_Result_Plaza_PlazaExit();
 s32 Check_CallBackWait();
 s32 lobby_func_005AEE00();
 extern u8 cw;
-s32 lobby_func_0057FBB0(s64 arg0) {
+s32 lobby_func_0057FBB0(s32 arg0) {
     u8 temp_v1_2;
     u8 *temp_v1;
 

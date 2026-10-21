@@ -11,8 +11,8 @@ extern u8 lit_226_0065C500;
 extern u8 lit_227_0065C508;
 
 void DispNameAndIDonDialog(s32 arg0, void *arg1, void *arg2) {
-    s64 temp_s0;
-    s64 temp_s1;
+    s32 temp_s0;
+    s32 temp_s1;
     u8 *temp_a0;
 
     temp_a0 = (*(void **)&cw);
@@ -22,7 +22,7 @@ void DispNameAndIDonDialog(s32 arg0, void *arg1, void *arg2) {
         } else if ((*(u8 *)((u8 *)(temp_a0) + 0xB99)) != 5) {
             flfntSetSize(0x1C, 0x14);
             font_print_double(0xEE, arg0, 1, 4, arg1);
-            temp_s1 = ((s16) ((s64) arg0));
+            temp_s1 = ((s16) ((s32) arg0));
             temp_s0 = temp_s1 + 0x1E;
             font_print_double(0xEE, (s32) (((s16) (temp_s0))), 1, 4, arg2);
             flfntSetSize(0x14, 0x14);

@@ -20,7 +20,7 @@ void CallBack_Event_MatchStart(void) {
     u8 *var_s1;   /* (s32 *) */
     u8 *var_s3;   /* (s32 *) */
     s32 var_s2;
-    s64 var_s4;
+    s32 var_s4;
 
     (*(s8 *)((u8 *)((*(void **)&cw)) + 0xB74)) = 1;
     Lbc_set_prim(0, 0, 0, 0);

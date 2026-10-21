@@ -3,10 +3,10 @@
  * tools/build_pc_mhg.sh). */
 #include "../gonl.h"
 
-s64 lobby_func_00569320(s64 arg0, s64 arg1) {
-    s64 temp_a0;
-    s64 temp_v1;
-    s64 var_v0;
+s64 lobby_func_00569320(s32 arg0, s32 arg1) {
+    s32 temp_a0;
+    s32 temp_v1;
+    s32 var_v0;
 
     temp_v1 = ((s16) (arg1));
     if (temp_v1 == 0) {
@@ -16,7 +16,7 @@ s64 lobby_func_00569320(s64 arg0, s64 arg1) {
     if (temp_v1 == 0) {
         M2C_BREAK(0);
     }
-    var_v0 = ((s16) ((s64) (temp_a0 / temp_v1)));
+    var_v0 = ((s16) ((s32) (temp_a0 / temp_v1)));
     if (temp_v1 == 0) {
         M2C_BREAK(0);
     }

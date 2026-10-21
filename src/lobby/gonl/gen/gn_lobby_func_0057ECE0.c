@@ -36,7 +36,7 @@ void lobby_func_0057ECE0(s64 arg0) {
                     gonl_Get_PlazaStatus(temp_v0 & 0xFFFF, var_s0 + 0x16);
                     gonl_Get_PlazaJoinUser((var_s1 + 1) & 0xFFFF, var_s0 + 6, var_s0 + 0x12);
                     cnLBS_Get_LobbyName((var_s1 + 1) & 0xFFFF, var_s0 + 0x1A);
-                    lobby_func_005E3900((var_s1 + 1) & 0xFFFF, (s32) (var_s0 + 0x5B));
+                    lobby_func_005E3900((var_s1 + 1) & 0xFFFF, var_s0 + 0x5B);
                     lobby_func_005E36A0((var_s1 + 1) & 0xFFFF, var_s0 + 8);
                     lobby_func_005E36D0((var_s1 + 1) & 0xFFFF, var_s0 + 0x14);
                     var_s1 += 1;

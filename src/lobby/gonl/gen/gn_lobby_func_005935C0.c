@@ -4,7 +4,7 @@
 #include "../gonl.h"
 
 s32 strlen_sp();
-s64 lobby_func_005935C0(void *arg0, s64 arg1, s64 arg2) {
+s64 lobby_func_005935C0(void *arg0, s32 arg1, s32 arg2) {
     s32 temp_v0;
     s32 var_v1;
 

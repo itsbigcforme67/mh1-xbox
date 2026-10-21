@@ -14,7 +14,7 @@ s32 sprintf();         /* extern */
 extern s32 g_lb_63E268;
 extern s32 g_lb_63E270;
 
-void lobby_func_00574CB0(s64 arg0, s64 arg1) {
+void lobby_func_00574CB0(s32 arg0, s32 arg1) {
     u8 g_frame[0xA0] __attribute__((aligned(16)));   /* G's stack frame */
 #define sp40 (*(s32 *)(g_frame + 0x40))
 #define sp80 (*(s32 *)(g_frame + 0x80))

@@ -7,9 +7,9 @@ s32 Lb_put_icon_free();
 s32 Lb_put_icon_free2();
 s32 SetTextureStage();
 s32 reload_tex();
-void Lb_put_job(s32 arg0, s32 arg1, s32 arg2, s32 arg3, s64 arg4, s64 arg5) {
-    s64 temp_v1;
-    s64 var_s0;
+void Lb_put_job(s32 arg0, s32 arg1, s32 arg2, s32 arg3, s32 arg4, s32 arg5) {
+    s32 temp_v1;
+    s32 var_s0;
 
     var_s0 = arg4;
     if ((((s8) (arg5))) != 0) {

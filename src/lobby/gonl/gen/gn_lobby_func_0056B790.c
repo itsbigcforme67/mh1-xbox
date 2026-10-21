@@ -31,8 +31,8 @@ extern u8 BsProxyUrlstr;
 extern u8 cw;
 extern u8 pNet;
 extern u8 tl_member_buff;
-extern s32 g_lb_636590;
-extern s32 g_lb_636594;
+extern void *g_lb_636590;
+extern void *g_lb_636594;
 extern s32 g_lb_653950;
 extern s8 g_lb_6B42BC;
 extern s32 g_main_302290;
@@ -68,7 +68,7 @@ s32 lobby_func_0056B790(void) {
                 (*(s8 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x1398))) + 0x60C)) = 1;
                 memset(&g_lb_653950, 0, 0x100);
                 (*(s16 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x1398))) + 0x608)) = Plaza_log_id_chk(&g_lb_653950);
-                (*(s16 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x1398))) + 0x606)) = lobby_func_00569320((s64) (*(s16 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x1398))) + 0x608)), 7);
+                (*(s16 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x1398))) + 0x606)) = lobby_func_00569320((s32) (*(s16 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x1398))) + 0x608)), 7);
                 (*(s16 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x1398))) + 0x604)) = 0;
                 var_s2 = 0;
                 var_s0 = &g_lb_653950;
@@ -103,7 +103,7 @@ loop_6:
             temp_s0_2 = (*(s8 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x1398))) + 0x60F));
             (*(s8 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x1398))) + 0x60F)) = Lb_cursorUD((s32) temp_s0_2, 2);
             SetDialogYesNo((s32) (u8) (*(s8 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x1398))) + 0x60F)));
-            if ((((s8) ((s64) temp_s0_2))) != (*(s8 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x1398))) + 0x60F))) {
+            if ((((s8) ((s32) temp_s0_2))) != (*(s8 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x1398))) + 0x60F))) {
                 SetHelpLineMsg((*(s8 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x1398))) + 0x60F)) + 0x27);
             }
         }
@@ -132,7 +132,7 @@ block_99:
             return 3;
         }
         if (temp_v1_2 & 0x20) {
-            temp_v0_2 = lobby_func_005C1560(&(*(u8 *)((u8 *)&BsProxyUrlstr + 0x110)), 8, (s32) ((u8 *)&(*(u8 *)((u8 *)&tl_member_buff + 0x1398)) + ((*(s16 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x1398))) + 0x60A)) * 0x18)));
+            temp_v0_2 = lobby_func_005C1560(&(*(u8 *)((u8 *)&BsProxyUrlstr + 0x110)), 8, (u8 *)&(*(u8 *)((u8 *)&tl_member_buff + 0x1398)) + ((*(s16 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x1398))) + 0x60A)) * 0x18));
             if (temp_v0_2 == -1) {
                 temp_v0_3 = lobby_func_005C1510(&(*(u8 *)((u8 *)&BsProxyUrlstr + 0x110)), 8);
                 if (temp_v0_3 == -1) {
@@ -153,7 +153,7 @@ block_99:
             lobby_func_0059F6E0(0xB0462000);
             cnWrap_SoundRequest(6);
         } else {
-            lobby_func_00569390((u8 *)&(*(u8 *)((u8 *)&tl_member_buff + 0x1398)) + 0x610, (u8 *)&(*(u8 *)((u8 *)&tl_member_buff + 0x1398)) + 0x604, 7, (s64) (*(s16 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x1398))) + 0x608)), temp_s0);
+            lobby_func_00569390((u8 *)&(*(u8 *)((u8 *)&tl_member_buff + 0x1398)) + 0x610, (u8 *)&(*(u8 *)((u8 *)&tl_member_buff + 0x1398)) + 0x604, 7, (s32) (*(s16 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x1398))) + 0x608)), temp_s0);
         }
         goto block_99;
     case 2:                                         /* switch 1 */

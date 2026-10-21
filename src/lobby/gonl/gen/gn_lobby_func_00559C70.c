@@ -7,7 +7,7 @@ extern u8 quest_title;
 
 void *lobby_func_00559C70(s32 arg0) {
     u8 *var_a1;   /* (s32 *) */
-    s64 var_a2;
+    s32 var_a2;
     u8 *temp_v0;
 
     var_a2 = 0;

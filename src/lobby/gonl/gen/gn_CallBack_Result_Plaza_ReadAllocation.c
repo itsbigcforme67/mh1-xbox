@@ -41,7 +41,7 @@ void CallBack_Result_Plaza_ReadAllocation(s64 arg0) {
                     gonl_Get_PlazaStatus(temp_s0 & 0xFFFF, var_s1 + 0x16);
                     gonl_Get_PlazaJoinUser(temp_s0 & 0xFFFF, var_s1 + 6, var_s1 + 0x12);
                     cnLBS_Get_LobbyName(temp_s0 & 0xFFFF, var_s1 + 0x1A);
-                    lobby_func_005E3900(temp_s0 & 0xFFFF, (s32) (var_s1 + 0x5B));
+                    lobby_func_005E3900(temp_s0 & 0xFFFF, var_s1 + 0x5B);
                     lobby_func_005E36A0(temp_s0 & 0xFFFF, var_s1 + 8);
                     lobby_func_005E36D0(temp_s0 & 0xFFFF, var_s1 + 0x14);
                     var_s2 = (var_s2 + 1) & 0xFFFF;

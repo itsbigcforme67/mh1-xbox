@@ -376,6 +376,7 @@ int rt_online_tick(void)
                 static u8 lobby_area[0x1C000];
                 extern u8 *g_main_2EF390;
                 g_main_2EF390 = lobby_area;
+                rt_main_lobby_patch_named();    /* G main data pointing into lobby.bin (the plaza menu's lists) */
             }
 #endif
             net_ToNetworkLobby();       /* cw = client_work, pNet = network_work, the client's state */

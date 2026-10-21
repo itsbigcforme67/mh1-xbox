@@ -6,7 +6,7 @@
 s32 flvecCalcDistance();
 void Lb_Pl_adj_calc(void *arg0, s16 arg1) {
     f32 temp_f2;
-    s64 temp_v1;
+    s32 temp_v1;
 
     if (!(M2C_BITWISE(f32, flvecCalcDistance()) < 800.0f)) {
         (*(s16 *)((u8 *)(arg0) + 0x818)) = 0;
@@ -16,7 +16,7 @@ void Lb_Pl_adj_calc(void *arg0, s16 arg1) {
         return;
     }
     (*(s16 *)((u8 *)(arg0) + 0x818)) = arg1;
-    temp_v1 = ((s16) ((s64) arg1));
+    temp_v1 = ((s16) ((s32) arg1));
     temp_f2 = (f32) arg1;
     (*(f32 *)((u8 *)(arg0) + 0x80C)) = (f32) (((*(f32 *)((u8 *)(arg0) + 0x800)) - (*(f32 *)((u8 *)(arg0) + 0xAC))) / temp_f2);
     (*(f32 *)((u8 *)(arg0) + 0x810)) = (f32) (((*(f32 *)((u8 *)(arg0) + 0x804)) - (*(f32 *)((u8 *)(arg0) + 0xB0))) / temp_f2);
@@ -25,6 +25,6 @@ void Lb_Pl_adj_calc(void *arg0, s16 arg1) {
     if (temp_v1 == 0) {
         M2C_BREAK(0);
     }
-    (*(s16 *)((u8 *)(arg0) + 0x90C)) = (s16) ((s64) (((s16) (((*(u16 *)((u8 *)(arg0) + 0xE)) - (*(s32 *)((u8 *)(arg0) + 0xA4)))))) / temp_v1);
+    (*(s16 *)((u8 *)(arg0) + 0x90C)) = (s16) ((s32) (((s16) (((*(u16 *)((u8 *)(arg0) + 0xE)) - (*(s32 *)((u8 *)(arg0) + 0xA4)))))) / temp_v1);
 }
 

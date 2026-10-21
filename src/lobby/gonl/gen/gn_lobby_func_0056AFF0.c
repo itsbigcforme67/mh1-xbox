@@ -19,6 +19,6 @@ void lobby_func_0056AFF0(s32 unused_a0, s32 unused_a1, s32 arg2, s32 arg3, s32 a
     lobby_func_0059F740((*(s32 *)&g_main_2EF390) + 0x23F4 + 0x20 + ((*(u8 *)((u8 *)((*(void **)&pNet)) + 0x27)) << 8) + 0x288, (s32) ClassInfo, arg2, arg3, arg4, arg5, arg6, arg7);
     (*(s16 *)((u8 *)((*(void **)&pNet)) + 0x1C)) = (s16) (((ClassInfo - 1) / 7) + (temp_s0 >> 0x1F));
     (*(s8 *)((u8 *)((*(void **)&pNet)) + 0x2B)) = (s8) ((s32) temp_s0 % 7);
-    (*(s16 *)((u8 *)((*(void **)&pNet)) + 0x1E)) = lobby_func_00569320((s64) (*(s16 *)((u8 *)&ClassInfo + 0x2)), 7);
+    (*(s16 *)((u8 *)((*(void **)&pNet)) + 0x1E)) = lobby_func_00569320((s32) (*(s16 *)((u8 *)&ClassInfo + 0x2)), 7);
 }
 

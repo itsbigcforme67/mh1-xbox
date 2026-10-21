@@ -4,7 +4,7 @@
 #include "../gonl.h"
 
 extern u8 cw;
-void lobby_func_00580F30(s64 arg0) {
+void lobby_func_00580F30(s32 arg0) {
     u8 g_frame[0x10] __attribute__((aligned(16)));   /* G's stack frame */
 #define sp8 (*(s64 *)(g_frame + 0x8))
     u8 *temp_a0;

@@ -7,7 +7,7 @@ extern u8 quest_title;
 
 void lobby_func_00559CE0(s32 arg0) {
     u8 *var_a1;   /* (s32 *) */
-    s64 var_v0;
+    s32 var_v0;
 
     var_v0 = 0;
     var_a1 = &(*(s32 *)((u8 *)&quest_title + 0x30));

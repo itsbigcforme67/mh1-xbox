@@ -6,7 +6,7 @@
 s32 flps0008();
 extern u8 lb_icon_tbl;
 
-void Lb_put_icon_free2(s32 arg0, s16 arg1, s16 arg2, s32 arg3, s64 arg4) {
+void Lb_put_icon_free2(s32 arg0, s16 arg1, s16 arg2, s32 arg3, s32 arg4) {
     u8 g_frame[0x30] __attribute__((aligned(16)));   /* G's stack frame */
 #define sp10 (*(s16 *)(g_frame + 0x10))
 #define sp12 (*(s16 *)(g_frame + 0x12))
@@ -15,7 +15,7 @@ void Lb_put_icon_free2(s32 arg0, s16 arg1, s16 arg2, s32 arg3, s64 arg4) {
 #define sp18 (*(s32 *)(g_frame + 0x18))
 #define sp1C (*(s32 *)(g_frame + 0x1C))
 #define sp20 (*(s32 *)(g_frame + 0x20))
-    s64 temp_a4;
+    s32 temp_a4;
     u8 *temp_a3;
 
     temp_a4 = ((s16) (arg4));

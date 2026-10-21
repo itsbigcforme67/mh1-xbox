@@ -17,15 +17,15 @@ extern u8 tl_member_buff;
 s32 font_print();           /* extern */
 extern u8 lit_2316;
 
-void lobby_func_005748B0(s64 arg0, s64 arg1, s64 arg2, s64 arg3) {
+void lobby_func_005748B0(s32 arg0, s32 arg1, s32 arg2, s32 arg3) {
     u8 g_frame[0xD0] __attribute__((aligned(16)));   /* G's stack frame */
 #define spA0 (*(u8 * *)(g_frame + 0xA0))
 #define spB0 (*(s32 *)(g_frame + 0xB0))
-    s64 temp_fp;
-    s64 temp_s0;
-    s64 temp_s1;
-    s64 var_s3;
-    s64 var_s5;
+    s32 temp_fp;
+    s32 temp_s0;
+    s32 temp_s1;
+    s32 var_s3;
+    s32 var_s5;
     s8 *var_s4;
 
     spA0 = &(*(u8 *)((u8 *)&tl_member_buff + 0x1398));
@@ -50,7 +50,7 @@ void lobby_func_005748B0(s64 arg0, s64 arg1, s64 arg2, s64 arg3) {
                 flfntLocate(0x1F4, (s32) var_s5);
                 font_print(&lit_2316, &spB0);
             }
-            if ((((s16) (lobby_func_005C1560(&(*(u8 *)((u8 *)&BsProxyUrlstr + 0x110)), 8, (s32) var_s4)))) != -1) {
+            if ((((s16) (lobby_func_005C1560(&(*(u8 *)((u8 *)&BsProxyUrlstr + 0x110)), 8, var_s4)))) != -1) {
                 Lb_put_icon((s32) (((s16) (temp_s1))), (s32) var_s5, 0x2C, -1);
             }
         }
@@ -58,6 +58,6 @@ void lobby_func_005748B0(s64 arg0, s64 arg1, s64 arg2, s64 arg3) {
         var_s3 = ((s16) ((var_s3 + 1)));
         var_s5 = ((s16) ((var_s5 + 0x16)));
     } while (var_s3 < 7);
-    Put_page_num((s32) (((s16) (((((s16) ((temp_fp + 0xA)))) + 0x12C)))), (s32) var_s5, arg3, (s64) (*(s16 *)((u8 *)(spA0) + 0x606)), 0);
+    Put_page_num((s32) (((s16) (((((s16) ((temp_fp + 0xA)))) + 0x12C)))), (s32) var_s5, arg3, (s32) (*(s16 *)((u8 *)(spA0) + 0x606)), 0);
 }
 

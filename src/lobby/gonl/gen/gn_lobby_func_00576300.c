@@ -47,11 +47,11 @@ void lobby_func_00576300(void) {
     s32 var_s2_2;
     s32 var_s3;
     s32 var_s4;
-    s64 temp_s2;
-    s64 temp_s2_2;
-    s64 temp_s3;
-    s64 var_v0;
-    s64 var_v0_2;
+    s32 temp_s2;
+    s32 temp_s2_2;
+    s32 temp_s3;
+    s32 var_v0;
+    s32 var_v0_2;
     s8 *var_s2;
     s8 *var_s4_2;
     s8 *var_s5;
@@ -67,7 +67,7 @@ void lobby_func_00576300(void) {
                 lobby_func_00575FB0();
                 return;
             }
-            lobby_func_005775C0(0xD8, 0x50, (s64) (*(s8 *)((u8 *)(&(*(s8 *)((u8 *)&tl_member_buff + 0x18))) + 0x1374)), (s64) (*(s16 *)((u8 *)(&(*(s8 *)((u8 *)&tl_member_buff + 0x18))) + 0x1364)));
+            lobby_func_005775C0(0xD8, 0x50, (s32) (*(s8 *)((u8 *)(&(*(s8 *)((u8 *)&tl_member_buff + 0x18))) + 0x1374)), (s32) (*(s16 *)((u8 *)(&(*(s8 *)((u8 *)&tl_member_buff + 0x18))) + 0x1364)));
             return;
         case 6:
             plaza_searchMemberTrans(0x144);
@@ -129,7 +129,7 @@ void lobby_func_00576300(void) {
                     var_s2 += 0x24A;
                     var_s5 += 0x28;
                 } while (var_s4 < 7);
-                Put_page_num(0x1FA, var_s0, (s64) (*(s16 *)((u8 *)(&(*(s8 *)((u8 *)&tl_member_buff + 0x18))) + 0x1364)), (s64) (*(s16 *)((u8 *)(&(*(s8 *)((u8 *)&tl_member_buff + 0x18))) + 0x1366)), 0);
+                Put_page_num(0x1FA, var_s0, (s32) (*(s16 *)((u8 *)(&(*(s8 *)((u8 *)&tl_member_buff + 0x18))) + 0x1364)), (s32) (*(s16 *)((u8 *)(&(*(s8 *)((u8 *)&tl_member_buff + 0x18))) + 0x1366)), 0);
                 return;
             }
             if ((*(u8 *)((u8 *)(&(*(s8 *)((u8 *)&tl_member_buff + 0x18))) + 0x1371)) == 3) {
@@ -203,7 +203,7 @@ void lobby_func_00576300(void) {
                 var_s2_2 += 1;
                 var_s0 = (s32) (((s16) ((var_s0 + 0x16))));
             } while (var_s2_2 < 7);
-            Put_page_num(0x1FA, var_s0, (s64) (*(s16 *)((u8 *)(&(*(s8 *)((u8 *)&tl_member_buff + 0x18))) + 0x1364)), (s64) (*(s16 *)((u8 *)(&(*(s8 *)((u8 *)&tl_member_buff + 0x18))) + 0x1366)), 0);
+            Put_page_num(0x1FA, var_s0, (s32) (*(s16 *)((u8 *)(&(*(s8 *)((u8 *)&tl_member_buff + 0x18))) + 0x1364)), (s32) (*(s16 *)((u8 *)(&(*(s8 *)((u8 *)&tl_member_buff + 0x18))) + 0x1366)), 0);
             return;
         case 11:
             if ((*(u8 *)((u8 *)(&(*(s8 *)((u8 *)&tl_member_buff + 0x18))) + 0x136F)) == 2) {
@@ -211,7 +211,7 @@ void lobby_func_00576300(void) {
             } else {
                 var_a2 = (*(s32 *)&g_main_2EFBC4) + ((*(s16 *)((u8 *)(&(*(s8 *)((u8 *)&tl_member_buff + 0x18))) + 0x1368)) * 0x5C) + 4;
             }
-            disp_status(0xD8, 0x50, var_a2, var_a2 + 8, var_a2 + 0x1C, (s64) (*(s8 *)((u8 *)(&(*(s8 *)((u8 *)&tl_member_buff + 0x18))) + 0x1375)), 3, (*(s32 *)&cw) + 0xAF8, (s32) 0x64);
+            disp_status(0xD8, 0x50, var_a2, var_a2 + 8, var_a2 + 0x1C, (s32) (*(s8 *)((u8 *)(&(*(s8 *)((u8 *)&tl_member_buff + 0x18))) + 0x1375)), 3, (*(s32 *)&cw) + 0xAF8, (s32) 0x64);
             break;
         }
     }

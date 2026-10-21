@@ -9,7 +9,7 @@ extern u8 RecvMailInfo;
 
 void lobby_func_00571A90(void) {
     u8 *var_a2;   /* (s32 *) */
-    s64 var_a3;
+    s32 var_a3;
     u8 *temp_a1;
 
     var_a3 = 0;

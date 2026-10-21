@@ -11,7 +11,7 @@ extern u8 System_timer;
 extern u8 cw;
 extern u8 game_w;
 void lobby_func_005A0E80(void *arg0) {
-    s64 temp_s0;
+    s32 temp_s0;
     u8 *temp_v1;
 
     if (((s32) (*(u16 *)&System_timer) % 40) < 0x15) {

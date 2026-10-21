@@ -9,7 +9,7 @@ extern u8 chatIDList;
 
 void Lb_clearChatList(void) {
     u8 *var_s0;   /* (s32 *) */
-    s64 var_s1;
+    s32 var_s1;
 
     var_s1 = 0;
     var_s0 = &chatIDList;

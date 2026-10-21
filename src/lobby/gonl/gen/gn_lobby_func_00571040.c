@@ -56,7 +56,7 @@ s32 lobby_func_00571040(void) {
             if (memcmp((*(void **)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x1398))) + 0x600)), &my_user_id, 8) == 0) {
                 (*(u8 *)((u8 *)((*(void **)&pNet)) + 0x25)) = 5U;
                 SetDialogData(0x24);
-            } else if (lobby_func_005C1560(&g_main_302290, 8, (s32) (*(void **)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x1398))) + 0x600))) == -1) {
+            } else if (lobby_func_005C1560(&g_main_302290, 8, (*(void **)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x1398))) + 0x600))) == -1) {
                 if (lobby_func_005C1510(&g_main_302290, 8) == -1) {
                     (*(u8 *)((u8 *)((*(void **)&pNet)) + 0x25)) = 5U;
                     SetDialogData(0x32);
@@ -82,7 +82,7 @@ block_49:
         temp_v0_2 = Lb_select();
         switch (temp_v0_2) {                        /* switch 3; irregular */
         case 0:                                     /* switch 3 */
-            var_v0 = lobby_func_005C1560(&g_main_302290, 8, (s32) (*(void **)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x1398))) + 0x600)));
+            var_v0 = lobby_func_005C1560(&g_main_302290, 8, (*(void **)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x1398))) + 0x600)));
             if (var_v0 == -1) {
                 var_v0 = lobby_func_005C1510(&g_main_302290, 8);
                 if (var_v0 == -1) {

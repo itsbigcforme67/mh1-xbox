@@ -16,10 +16,10 @@ s32 font_print();                 /* extern */
 s32 put_titles();          /* extern */
 extern u8 lit_2316;
 
-void lobby_func_005778B0(s64 arg0, s64 arg1) {
-    s64 temp_s0;
-    s64 temp_s0_2;
-    s64 temp_s1;
+void lobby_func_005778B0(s32 arg0, s32 arg1) {
+    s32 temp_s0;
+    s32 temp_s0_2;
+    s32 temp_s1;
     u8 temp_v1;
     u8 *temp_a3;
     u8 *temp_v1_2;
@@ -47,7 +47,7 @@ void lobby_func_005778B0(s64 arg0, s64 arg1) {
     case 2:
     case 3:
     case 4:
-        lobby_func_005775C0(arg0, arg1, (s64) (*(s8 *)((u8 *)(temp_a3) + 0x238)), (s64) (*(s16 *)((u8 *)(temp_a3) + 0x22E)));
+        lobby_func_005775C0(arg0, arg1, (s32) (*(s8 *)((u8 *)(temp_a3) + 0x238)), (s32) (*(s16 *)((u8 *)(temp_a3) + 0x22E)));
         /* fallthrough */
     default:
         return;

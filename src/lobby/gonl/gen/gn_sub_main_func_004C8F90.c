@@ -10,9 +10,9 @@ extern u8 User_data;
 
 s32 *sub_main_func_004C8F90(s32 arg0, s32 arg1) {
     u8 *var_v1;   /* (s32 *) */
-    s64 temp_v1;
-    s64 var_a0;
-    s64 var_a5;
+    s32 temp_v1;
+    s32 var_a0;
+    s32 var_a5;
     u8 *var_a4;
 
     temp_v1 = ((s16) (sub_main_func_004C9250(&User_data)));

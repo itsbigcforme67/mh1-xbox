@@ -27,7 +27,6 @@ s32 lobby_func_005782A0();
 s32 lobby_func_00578C40();
 s32 lobby_func_0059F6E0();
 s32 plaza_checkMyStatusTrans();
-s32 plaza_enterLobbyTrans();
 s32 plaza_mailBoxTrans();
 s32 plaza_movePlazaTrans();
 s32 plaza_setMyCommentTrans();
@@ -39,6 +38,7 @@ extern u8 tl_mail_tbl;
 s32 Plaza_disp_chat();                          /* extern */
 s32 Plaza_disp_chatlog();                       /* extern */
 s32 font_print();           /* extern */
+s32 plaza_enterLobbyTrans();    /* extern */
 s32 sprintf(); /* extern */
 extern u8 ClassInfo;
 extern s32 g_main_30645A;

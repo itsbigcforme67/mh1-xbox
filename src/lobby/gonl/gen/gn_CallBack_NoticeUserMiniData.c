@@ -13,7 +13,7 @@ void CallBack_NoticeUserMiniData(void) {
 #define sp40 (*(s32 *)(g_frame + 0x40))
 #define sp5C (*(s32 *)(g_frame + 0x5C))
     u8 *var_s0;   /* (s32 *) */
-    s64 var_s1;
+    s32 var_s1;
 
     cnLBS_Get_NoticeUserMiniData(&sp40);
     var_s1 = 0;

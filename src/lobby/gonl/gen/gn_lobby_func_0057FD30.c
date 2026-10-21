@@ -6,9 +6,9 @@
 s32 CallBack_Result_Plaza_ReadLobbyAllocation();
 s32 Check_CallBackWait();
 extern u8 cw;
-s32 cnLBS_Read_LobbyMemberList(); /* extern */
+s32 gonl_Read_LobbyAllocation(); /* extern */
 
-s32 lobby_func_0057FD30(s64 arg0) {
+s32 lobby_func_0057FD30(s32 arg0) {
     u8 temp_v1;
     u8 *temp_a1;
     u8 *temp_v1_2;
@@ -20,7 +20,7 @@ s32 lobby_func_0057FD30(s64 arg0) {
         (*(s8 *)((u8 *)(temp_a1) + 0xBA9)) = 0xE;
         temp_v1_2 = (*(void **)&cw);
         (*(u8 *)((u8 *)(temp_v1_2) + 0xB9D)) = (u8) ((*(u8 *)((u8 *)(temp_v1_2) + 0xB9D)) + 1);
-        cnLBS_Read_LobbyMemberList(((((s16) (arg0))) + 1) & 0xFFFF, CallBack_Result_Plaza_ReadLobbyAllocation, temp_a1 + 0xB9D);
+        gonl_Read_LobbyAllocation(((((s16) (arg0))) + 1) & 0xFFFF, CallBack_Result_Plaza_ReadLobbyAllocation, temp_a1 + 0xB9D);
 block_9:
     default:
         return 0;

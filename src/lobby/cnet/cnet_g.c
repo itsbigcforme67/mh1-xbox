@@ -91,6 +91,17 @@ void gnet_61A0_ans(void)
     _cnet_Return_CallBack(2);
 }
 
+/* 630D request (G 0x5AC5B0, under MH1's name __cnet_SendReq_RoomCreate in G's split): u16 lobby -> its attribute
+ * (the answer: gnet's 630D handler); G's cnLBS_Read_RoomProperty sends this one */
+int gnet_630D_req(int lobby)
+{
+    int cmd = SetSendCommand(&send_work, 106) & 0xFFFF;
+    SetSendData16(&send_work, lobby);
+    SetSendCommandLen(&send_work);
+    Write_Socket(&send_work);
+    return cmd;
+}
+
 /* 61A1 request (G 0x5B02C0), sent after the echo rounds with the first data */
 void __cnet_SendReq_ServerParam2(void)
 {

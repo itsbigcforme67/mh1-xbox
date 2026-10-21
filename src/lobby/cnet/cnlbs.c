@@ -1,5 +1,8 @@
 /* cnlbs, run 1: _cnet_RecvFromLbs_NoticeMailMessage .. _cnet_CallBack_Result_Plaza_PlazaStatus_005A6E60 (lobby.bin 0x005A2A20-0x005A6EC4): the matching functions of cnlbs_nm.c. */
 #include "lbnet_proto.h"
+#ifdef MHG_NET
+int gnet_630D_req(int);
+#endif
 #pragma readonly_strings on
 
 
@@ -1292,7 +1295,11 @@ int cnLBS_Read_RoomProperty(int arg0, int arg1) {
     int slot = __cnetSub_Set_BgProcess(1, 0, arg1);
 
     if (slot != -1) {
+#ifdef MHG_NET
+        CnetSys_w.bg[slot].cmd = gnet_630D_req(arg0);  /* G reads a lobby's attribute here (630D, G 0x5AC5B0), not 650A */
+#else
         CnetSys_w.bg[slot].cmd = __cnet_SendReq_RoomProperty(arg0);
+#endif
         return slot;
     }
     return -1;

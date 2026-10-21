@@ -7,7 +7,7 @@ s32 Lb_put_chat();
 extern u8 cw;
 extern u8 lbCommer;
 
-void lb_commer_message(s64 arg0) {
+void lb_commer_message(s32 arg0) {
     s32 temp_a1;
 
     if ((*(u8 *)((u8 *)((*(void **)&cw)) + 0xFA61)) != 0) {

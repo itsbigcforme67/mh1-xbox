@@ -7,7 +7,7 @@ s32 CallBack_Result_Plaza_LobbyMember();
 s32 Check_CallBackWait();
 s32 cnLbc_CheckInFloorOrder();
 extern u8 cw;
-s32 cnLBS_Read_LobbyMemberList(); /* extern */
+s32 gonl_Read_LobbyAllocation(); /* extern */
 
 s32 CallBack_Result_Plaza_LobbyEntry(void) {
     u8 temp_v1_2;
@@ -21,7 +21,7 @@ s32 CallBack_Result_Plaza_LobbyEntry(void) {
         (*(s32 *)((u8 *)((*(void **)&cw)) + 0xFA68)) = 0xE10;
         (*(s8 *)((u8 *)((*(void **)&cw)) + 0xFA65)) = 0;
         (*(s8 *)((u8 *)((*(void **)&cw)) + 0xBA9)) = 0xE;
-        cnLBS_Read_LobbyMemberList(cnLbc_CheckInFloorOrder(1) & 0xFFFF, CallBack_Result_Plaza_LobbyMember);
+        gonl_Read_LobbyAllocation(cnLbc_CheckInFloorOrder(1) & 0xFFFF, CallBack_Result_Plaza_LobbyMember);
 block_12:
         return 2;
     case 0x1:

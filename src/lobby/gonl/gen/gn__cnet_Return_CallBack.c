@@ -27,7 +27,7 @@ void _cnet_Return_CallBack(s32 arg0) {
             sp18 = -1;
             __cnet_Recv_ServerMessage();
         }
-        __cnetSub_Return_BgProcess((s64) sp18, 1, 0);
+        __cnetSub_Return_BgProcess(*(s64 *)&sp18, 1, 0);
         return;
     }
 }

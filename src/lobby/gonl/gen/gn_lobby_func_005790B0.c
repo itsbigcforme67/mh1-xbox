@@ -23,8 +23,8 @@ void lobby_func_005790B0(void) {
 #define spA0 (*(s32 *)(g_frame + 0xA0))
     s32 temp_a5;
     s32 var_s0;
-    s64 var_s1;
-    s64 var_s2;
+    s32 var_s1;
+    s32 var_s2;
     u8 *temp_a0;
 
     flfntSetSize(0x14, 0x14);

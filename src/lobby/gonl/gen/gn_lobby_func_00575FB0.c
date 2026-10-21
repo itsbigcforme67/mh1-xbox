@@ -64,7 +64,7 @@ void lobby_func_00575FB0(void) {
         flfntLocate(lobby_func_005935C0(&seekStr, 0x1B0, 0x12), 0xA4);
         font_print_uf(&seekStr);
     }
-    Put_page_num(0x208, 0x78, (s64) (*(u8 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x18))) + 0x1370)), 2, 0);
+    Put_page_num(0x208, 0x78, (s32) (*(u8 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x18))) + 0x1370)), 2, 0);
     if ((*(u8 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x18))) + 0x136B)) != 2) {
         font_set_palette(0xA);
         if ((*(u8 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x18))) + 0x1370)) != 0) {

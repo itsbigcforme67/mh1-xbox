@@ -58,7 +58,7 @@ s32 lobby_func_00569D40(void) {
     s32 temp_v0_9;
     s32 temp_v1_5;
     s32 var_a2;
-    s64 var_a1;
+    s32 var_a1;
     s8 *var_a0;
     u32 temp_a3;
     u32 temp_a3_2;
@@ -95,7 +95,7 @@ s32 lobby_func_00569D40(void) {
     case 0:                                         /* switch 1 */
         (*(u8 *)((u8 *)(temp_v0_2) + 0x23)) = (u8) (temp_a2 + 1);
         (*(u8 *)((u8 *)((*(void **)&pNet)) + 0x32)) = 0U;
-        (*(s16 *)((u8 *)((*(void **)&pNet)) + 0x1E)) = lobby_func_00569320((s64) (*(s16 *)((u8 *)&ClassInfo + 0x6)), 7);
+        (*(s16 *)((u8 *)((*(void **)&pNet)) + 0x1E)) = lobby_func_00569320((s32) (*(s16 *)((u8 *)&ClassInfo + 0x6)), 7);
         (*(s16 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x18))) + 0x1364)) = 0;
 block_128:
         return 2;
@@ -125,13 +125,13 @@ block_128:
             }
         } else {
             temp_v0_3 = (*(void **)&pNet);
-            lobby_func_00569390(temp_v0_3 + 0x2B, temp_v0_3 + 0x1C, 7, (s64) (*(s16 *)((u8 *)&ClassInfo + 0x6)), temp_s0);
+            lobby_func_00569390(temp_v0_3 + 0x2B, temp_v0_3 + 0x1C, 7, (s32) (*(s16 *)((u8 *)&ClassInfo + 0x6)), temp_s0);
         }
         goto block_128;
     case 2:                                         /* switch 1 */
         if ((*(u8 *)((u8 *)(temp_v0_2) + 0x32)) & 1) {
             (*(u8 *)((u8 *)(temp_v0_2) + 0x23)) = (u8) (temp_a2 + 1);
-        } else if (lobby_func_0057FD30(((s16) ((s64) temp_s1))) == 1) {
+        } else if (lobby_func_0057FD30(((s16) ((s32) temp_s1))) == 1) {
             temp_v1_3 = (*(void **)&pNet);
             var_a1 = 0;
             var_a2 = 0;
@@ -164,7 +164,7 @@ block_128:
                 (*(u8 *)((u8 *)((*(void **)&pNet)) + 0x23)) = lobby_func_00569C20(temp_s1);
             } else if (temp_v1_5 & 0x40) {
                 (*(u8 *)((u8 *)((*(void **)&pNet)) + 0x23)) = 1U;
-                (*(s16 *)((u8 *)((*(void **)&pNet)) + 0x1E)) = lobby_func_00569320((s64) (*(s16 *)((u8 *)&ClassInfo + 0x6)), 7);
+                (*(s16 *)((u8 *)((*(void **)&pNet)) + 0x1E)) = lobby_func_00569320((s32) (*(s16 *)((u8 *)&ClassInfo + 0x6)), 7);
                 temp_a3 = (*(u8 *)((u8 *)&ClassInfo + 0x4)) - 1;
                 (*(s16 *)((u8 *)((*(void **)&pNet)) + 0x1C)) = (s16) ((((*(u8 *)((u8 *)&ClassInfo + 0x4)) - 1) / 7) + (temp_a3 >> 0x1F));
                 (*(u8 *)((u8 *)((*(void **)&pNet)) + 0x2B)) = (u8) ((s32) temp_a3 % 7);
@@ -223,7 +223,7 @@ block_128:
                 (*(u8 *)((u8 *)((*(void **)&pNet)) + 0x23)) = lobby_func_00569C20(temp_s1);
             } else if (temp_a1_2 & 0x40) {
                 (*(u8 *)((u8 *)((*(void **)&pNet)) + 0x23)) = 1U;
-                (*(s16 *)((u8 *)((*(void **)&pNet)) + 0x1E)) = lobby_func_00569320((s64) (*(s16 *)((u8 *)&ClassInfo + 0x6)), 7);
+                (*(s16 *)((u8 *)((*(void **)&pNet)) + 0x1E)) = lobby_func_00569320((s32) (*(s16 *)((u8 *)&ClassInfo + 0x6)), 7);
                 temp_a3_2 = (*(u8 *)((u8 *)&ClassInfo + 0x4)) - 1;
                 (*(s16 *)((u8 *)((*(void **)&pNet)) + 0x1C)) = (s16) ((((*(u8 *)((u8 *)&ClassInfo + 0x4)) - 1) / 7) + (temp_a3_2 >> 0x1F));
                 (*(u8 *)((u8 *)((*(void **)&pNet)) + 0x2B)) = (u8) ((s32) temp_a3_2 % 7);
@@ -272,7 +272,7 @@ block_128:
         goto block_128;
     case 8:                                         /* switch 1 */
         (*(s8 *)((u8 *)(temp_v0_2) + 0x2D)) = 1;
-        temp_v0_7 = lobby_func_0057FBB0((s64) (*(s8 *)((u8 *)(((*(s32 *)&g_main_2EF390) + 0x23F4 + 0x20 + (*(s16 *)((u8 *)(&tl_member_buff) + 0)))) + 0x208)));
+        temp_v0_7 = lobby_func_0057FBB0((s32) (*(s8 *)((u8 *)(((*(s32 *)&g_main_2EF390) + 0x23F4 + 0x20 + (*(s16 *)((u8 *)(&tl_member_buff) + 0)))) + 0x208)));
         switch (temp_v0_7) {                        /* switch 5; irregular */
         case 0:                                     /* switch 5 */
             temp_v1_10 = (*(void **)&pNet);
@@ -288,7 +288,7 @@ block_128:
         goto block_128;
     case 9:                                         /* switch 1 */
         (*(s8 *)((u8 *)(temp_v0_2) + 0x2D)) = 1;
-        temp_v0_8 = lbc_in_plaza_03((s64) (*(s16 *)((u8 *)(&tl_member_buff) + 0)));
+        temp_v0_8 = lbc_in_plaza_03((s32) (*(s16 *)((u8 *)(&tl_member_buff) + 0)));
         switch (temp_v0_8) {                        /* switch 6; irregular */
         case 0:                                     /* switch 6 */
             temp_v1_11 = (*(void **)&pNet);

@@ -176,7 +176,7 @@ block_109:
                 (*(u8 *)((u8 *)(temp_v1_3) + 0x233)) = (u8) ((*(u8 *)((u8 *)(temp_v1_3) + 0x233)) + 1);
                 (*(s16 *)((u8 *)((*(void **)&g_main_2EFBAC)) + 0x22E)) = 0;
                 (*(s16 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x1398))) + 0x604)) = 0;
-                (*(s16 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x1398))) + 0x606)) = lobby_func_00569320((s64) (*(s16 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x1398))) + 0x608)), 7);
+                (*(s16 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x1398))) + 0x606)) = lobby_func_00569320((s32) (*(s16 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x1398))) + 0x608)), 7);
             } else {
                 (*(u8 *)((u8 *)(temp_v1_3) + 0x233)) = 5U;
             }
@@ -247,13 +247,13 @@ block_51:
             temp_v0_5 = (*(void **)&g_main_2EFBAC);
             temp_s0_3 = (*(s16 *)((u8 *)(temp_v0_5) + 0x22E));
             temp_s2 = (u8) (*(s8 *)((u8 *)(temp_v0_5) + 0x238));
-            lobby_func_00569390(temp_v0_5 + 0x238, temp_v0_5 + 0x22E, 7, (s64) (*(s16 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x1398))) + 0x608)), temp_s0);
+            lobby_func_00569390(temp_v0_5 + 0x238, temp_v0_5 + 0x22E, 7, (s32) (*(s16 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x1398))) + 0x608)), temp_s0);
             temp_v1_6 = (*(s8 *)((u8 *)((*(void **)&g_main_2EFBAC)) + 0x238));
             if ((temp_s2 & 0xFF) != temp_v1_6) {
                 (*(s8 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x1398))) + 0x60F)) = temp_v1_6;
             }
             temp_v1_7 = (*(s16 *)((u8 *)((*(void **)&g_main_2EFBAC)) + 0x22E));
-            if ((((s16) ((s64) temp_s0_3))) != temp_v1_7) {
+            if ((((s16) ((s32) temp_s0_3))) != temp_v1_7) {
                 (*(s16 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x1398))) + 0x604)) = temp_v1_7;
                 (*(s8 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x1398))) + 0x60F)) = 0;
                 (*(u8 *)((u8 *)((*(void **)&g_main_2EFBAC)) + 0x233)) = 2U;
@@ -321,7 +321,7 @@ block_71:
     case 6:                                         /* switch 1 */
         (*(s8 *)((u8 *)((*(void **)&pNet)) + 0x2D)) = 1;
         temp_a0_11 = (*(void **)&g_main_2EFBAC);
-        temp_v0_6 = lobby_func_0057FEA0((s32) (temp_a0_11 + ((*(s8 *)((u8 *)(temp_a0_11) + 0x237)) * 0x5C) + 0x9A));
+        temp_v0_6 = lobby_func_0057FEA0(temp_a0_11 + ((*(s8 *)((u8 *)(temp_a0_11) + 0x237)) * 0x5C) + 0x9A);
         if ((temp_v0_6 != 1) && (temp_v0_6 != 0)) {
 
         } else {

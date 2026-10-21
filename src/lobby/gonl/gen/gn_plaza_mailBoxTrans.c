@@ -28,23 +28,23 @@ extern u8 RecvMailInfo;
 extern u8 lb_num_str;
 extern u8 lit_2316;
 
-void plaza_mailBoxTrans(s64 arg0, s64 arg1, s64 arg2) {
+void plaza_mailBoxTrans(s32 arg0, s32 arg1, s32 arg2) {
     u8 g_frame[0xC0] __attribute__((aligned(16)));   /* G's stack frame */
 #define spA0 (*(s32 *)(g_frame + 0xA0))
     u8 *var_s0;   /* (s32 *) */
     u8 *var_s1;   /* (s32 *) */
     u8 *var_s3;   /* (s32 *) */
-    s64 temp_a2;
-    s64 temp_fp;
-    s64 temp_s0;
-    s64 temp_s1;
-    s64 temp_s2;
-    s64 temp_s5;
-    s64 temp_s6;
-    s64 temp_s7;
-    s64 temp_v1;
-    s64 var_s2;
-    s64 var_s4;
+    s32 temp_a2;
+    s32 temp_fp;
+    s32 temp_s0;
+    s32 temp_s1;
+    s32 temp_s2;
+    s32 temp_s5;
+    s32 temp_s6;
+    s32 temp_s7;
+    s32 temp_v1;
+    s32 var_s2;
+    s32 var_s4;
     u8 temp_a0;
     u8 *temp_a1;
 

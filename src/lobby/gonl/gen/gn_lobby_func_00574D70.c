@@ -21,9 +21,9 @@ extern void *g_lb_636B4C;
 extern void *g_lb_636B58;
 extern void *g_lb_636B5C;
 
-void lobby_func_00574D70(s64 arg0, s64 arg1, s64 arg2) {
-    s64 temp_s3;
-    s64 temp_v1;
+void lobby_func_00574D70(s32 arg0, s32 arg1, s32 arg2) {
+    s32 temp_s3;
+    s32 temp_v1;
 
     temp_v1 = ((s8) (arg2));
     switch (temp_v1) {                              /* switch 1; irregular */
@@ -52,7 +52,7 @@ void lobby_func_00574D70(s64 arg0, s64 arg1, s64 arg2) {
             lobby_func_005737C0(g_lb_636B4C);
             return;
         }
-        lobby_func_00574750(arg0, arg1, (s64) (*(s8 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x1398))) + 0x60A)));
+        lobby_func_00574750(arg0, arg1, (s32) (*(s8 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x1398))) + 0x60A)));
         return;
     case 1:                                         /* switch 2 */
         lobby_func_00574CB0(arg0, arg1);
@@ -61,7 +61,7 @@ void lobby_func_00574D70(s64 arg0, s64 arg1, s64 arg2) {
             lobby_func_005737C0(g_lb_636B58);
             return;
         }
-        lobby_func_005748B0(arg0, arg1, (s64) (*(s8 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x1398))) + 0x610)), (s64) (*(s16 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x1398))) + 0x604)));
+        lobby_func_005748B0(arg0, arg1, (s32) (*(s8 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x1398))) + 0x610)), (s32) (*(s16 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x1398))) + 0x604)));
         return;
     case 2:                                         /* switch 2 */
         lobby_func_00574CB0(arg0, arg1);
@@ -69,7 +69,7 @@ void lobby_func_00574D70(s64 arg0, s64 arg1, s64 arg2) {
             lobby_func_005737C0(g_lb_636B5C);
             return;
         }
-        lobby_func_00574AE0(arg0, arg1, (s64) (*(s8 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x1398))) + 0x611)));
+        lobby_func_00574AE0(arg0, arg1, (s32) (*(s8 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x1398))) + 0x611)));
         return;
     }
 }

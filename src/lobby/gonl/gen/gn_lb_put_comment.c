@@ -6,9 +6,9 @@
 s32 Draw_square();
 s32 KinshiYogo_chk();
 s32 func_0012DE30();
-void lb_put_comment(s64 arg0, s64 arg1, void *arg2, s64 arg3) {
-    s64 temp_s0;
-    s64 temp_s1;
+void lb_put_comment(s32 arg0, s32 arg1, void *arg2, s32 arg3) {
+    s32 temp_s0;
+    s32 temp_s1;
 
     if ((((s8) (arg3))) != 0) {
         temp_s1 = ((s16) (arg1));

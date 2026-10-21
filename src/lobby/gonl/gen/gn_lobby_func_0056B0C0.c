@@ -46,9 +46,9 @@ void lobby_func_0056B0C0(void) {
     case 0:                                         /* switch 1 */
         (*(s16 *)((u8 *)((*(void **)&pNet)) + 0x20)) = Get_sw_on2(0);
         temp_a1 = temp_s1 & 0xFFFF;
-        (*(s16 *)((u8 *)((*(void **)&pNet)) + 0x1E)) = lobby_func_00569320((s64) (*(s16 *)((u8 *)&ClassInfo + 0x2)), 7);
+        (*(s16 *)((u8 *)((*(void **)&pNet)) + 0x1E)) = lobby_func_00569320((s32) (*(s16 *)((u8 *)&ClassInfo + 0x2)), 7);
         if (temp_a1 & 0x20) {
-            if (lobby_func_0056AF20(temp_s0 + 1, 0, (s64) (*(s32 *)((u8 *)&(*(u8 *)((u8 *)&PlazaInfo + 0x5B)) + (temp_s0 * 0x15C)))) == 0) {
+            if (lobby_func_0056AF20(temp_s0 + 1, 0, (s32) (*(s32 *)((u8 *)&(*(u8 *)((u8 *)&PlazaInfo + 0x5B)) + (temp_s0 * 0x15C)))) == 0) {
                 (*(u8 *)((u8 *)((*(void **)&pNet)) + 0x23)) = 2U;
                 cnWrap_SoundRequest(7);
                 return;
@@ -70,7 +70,7 @@ void lobby_func_0056B0C0(void) {
             return;
         }
         temp_v0 = (*(void **)&pNet);
-        lobby_func_00569390(temp_v0 + 0x2B, temp_v0 + 0x1C, 7, (s64) (*(s16 *)((u8 *)&ClassInfo + 0x2)), temp_s1);
+        lobby_func_00569390(temp_v0 + 0x2B, temp_v0 + 0x1C, 7, (s32) (*(s16 *)((u8 *)&ClassInfo + 0x2)), temp_s1);
         temp_v1_2 = (*(void **)&pNet);
         temp_a3 = (*(s16 *)((u8 *)(temp_v1_2) + 0x1C));
         temp_a4_2 = (*(u8 *)((u8 *)(temp_v1_2) + 0x2B));

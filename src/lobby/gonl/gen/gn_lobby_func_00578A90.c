@@ -16,13 +16,13 @@ extern u8 tl_mail_tbl;
 s32 font_print();           /* extern */
 extern u8 lit_2316;
 
-void lobby_func_00578A90(s64 arg0, s32 arg1) {
+void lobby_func_00578A90(s32 arg0, s32 arg1) {
     u8 g_frame[0x100] __attribute__((aligned(16)));   /* G's stack frame */
 #define sp80 (*(s32 *)(g_frame + 0x80))
     s32 var_s2;
     s32 var_s3;
     s32 var_s4;
-    s64 temp_s6;
+    s32 temp_s6;
     u8 *temp_s0;
 
     var_s4 = arg1;
@@ -52,7 +52,7 @@ void lobby_func_00578A90(s64 arg0, s32 arg1) {
     font_set_palette(0);
     temp_s0 = (*(s32 *)&cw) + 0xF00;
     KinshiYogo_chk(temp_s0);
-    Put_comment((s32) (((s16) ((temp_s6 + 0x3C)))), (s32) (((s16) (((((s16) ((s64) var_s4))) - 0x16)))), 0x16, temp_s0);
+    Put_comment((s32) (((s16) ((temp_s6 + 0x3C)))), (s32) (((s16) (((((s16) ((s32) var_s4))) - 0x16)))), 0x16, temp_s0);
     font_set_palette(0);
 }
 

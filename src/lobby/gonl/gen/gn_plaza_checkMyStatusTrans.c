@@ -13,6 +13,6 @@ void plaza_checkMyStatusTrans(void) {
     s32 temp_v1;
 
     temp_v1 = (*(s32 *)&cw);
-    disp_status(0xD8, 0x50, temp_v1 + 0x1C0, temp_v1 + 0x1C8, &my_user_mini_data, (s64) (*(s8 *)((u8 *)((*(void **)&pNet)) + 0x1C)), 3, &(*(u8 *)((u8 *)&User_data + 0xC9C)), (s32) 0x64);
+    disp_status(0xD8, 0x50, temp_v1 + 0x1C0, temp_v1 + 0x1C8, &my_user_mini_data, (s32) (*(s8 *)((u8 *)((*(void **)&pNet)) + 0x1C)), 3, &(*(u8 *)((u8 *)&User_data + 0xC9C)), (s32) 0x64);
 }
 

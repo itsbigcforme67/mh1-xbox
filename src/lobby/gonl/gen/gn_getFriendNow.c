@@ -15,7 +15,7 @@ extern s16 g_lb_6B42B4;
 extern s8 g_lb_6B42BD;
 extern s32 g_main_302CB0;
 
-s32 getFriendNow(u8 arg0, s64 arg1) {
+s32 getFriendNow(u8 arg0, s32 arg1) {
     s32 temp_s0;
     s32 temp_v0_2;
     s32 temp_v0_3;

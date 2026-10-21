@@ -23,7 +23,7 @@ extern s8 seekStr;
 extern s32 tl_hr_tbl;
 extern u8 tl_job_tbl;
 
-void plaza_searchMemberTrans(s64 arg0) {
+void plaza_searchMemberTrans(s32 arg0) {
     u8 *var_s4_2;   /* (s32 *) */
     s32 var_s1;
     s32 var_s6;
@@ -45,7 +45,7 @@ void plaza_searchMemberTrans(s64 arg0) {
     }
     font_print_double(0xE2, 0x78, 1, 5, (*(s32 *)((u8 *)&(*(u8 *)((u8 *)&tl_msg_tbl + 0x40)) + ((*(u8 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x18))) + 0x1370)) * 4))));
     font_set_palette(0);
-    Lb_put_msg_type2(0xE2, 0xA4, ((s16) ((s64) (*(u8 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x18))) + 0x1370)))));
+    Lb_put_msg_type2(0xE2, 0xA4, ((s16) ((s32) (*(u8 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x18))) + 0x1370)))));
     var_s1 = 0xA4;
     switch ((*(u8 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x18))) + 0x1370))) { /* irregular */
     case 0:
@@ -70,7 +70,7 @@ void plaza_searchMemberTrans(s64 arg0) {
             }
             flfntLocate((s32) arg0, var_s1);
             font_print(&lit_2316, (*(s32 *)((u8 *)&tl_job_tbl + (*var_s4 * 4))));
-            Lb_put_icon((s32) (((s16) (((((s16) (arg0))) - 0x18)))), (s32) (((s16) (((((s16) ((s64) var_s1))) - 2)))), *var_s4 + 2, var_s6);
+            Lb_put_icon((s32) (((s16) (((((s16) (arg0))) - 0x18)))), (s32) (((s16) (((((s16) ((s32) var_s1))) - 2)))), *var_s4 + 2, var_s6);
             var_s5 += 1;
             var_s4 += 1;
             var_s1 = (s32) (((s16) ((var_s1 + 0x16))));
@@ -97,7 +97,7 @@ void plaza_searchMemberTrans(s64 arg0) {
         } while (var_s3 < 6U);
         break;
     }
-    Put_page_num(0x208, 0x78, (s64) (*(u8 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x18))) + 0x1370)), 3, 0);
+    Put_page_num(0x208, 0x78, (s32) (*(u8 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x18))) + 0x1370)), 3, 0);
     if ((*(u8 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x18))) + 0x136B)) != 2) {
         font_set_palette(0xA);
         if ((*(u8 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x18))) + 0x1370)) == 0) {

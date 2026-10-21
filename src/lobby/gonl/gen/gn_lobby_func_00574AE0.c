@@ -15,13 +15,13 @@ extern u8 BsProxyUrlstr;
 s32 font_print();                /* extern */
 extern u8 lit_2316;
 
-void lobby_func_00574AE0(s64 arg0, s64 arg1, s64 arg2) {
+void lobby_func_00574AE0(s32 arg0, s32 arg1, s32 arg2) {
     u8 g_frame[0xA0] __attribute__((aligned(16)));   /* G's stack frame */
 #define sp80 (*(s8 *)(g_frame + 0x80))
-    s64 temp_s0;
-    s64 temp_s1;
-    s64 var_s3;
-    s64 var_s5;
+    s32 temp_s0;
+    s32 temp_s1;
+    s32 var_s3;
+    s32 var_s5;
     s8 *var_s4;
 
     lobby_func_005799F0(arg0, arg1, (s32) (((s8) (arg2))), -0xC5D7E8, -0x418C);
@@ -44,7 +44,7 @@ void lobby_func_00574AE0(s64 arg0, s64 arg1, s64 arg2) {
                 flfntLocate(0x1F4, (s32) var_s5);
                 font_print(&lit_2316, &sp80);
             }
-            if ((((s16) (lobby_func_005C1560(&(*(s8 *)((u8 *)&BsProxyUrlstr + 0x110)), 8, (s32) var_s4)))) != -1) {
+            if ((((s16) (lobby_func_005C1560(&(*(s8 *)((u8 *)&BsProxyUrlstr + 0x110)), 8, var_s4)))) != -1) {
                 Lb_put_icon((s32) (((s16) (temp_s1))), (s32) var_s5, 0x2C, -1);
             }
         }

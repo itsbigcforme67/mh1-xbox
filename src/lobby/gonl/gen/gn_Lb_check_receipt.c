@@ -80,13 +80,13 @@ block_8:
     default:
         return;
     case 5:
-        lb_set_chair((s32) (((s8) ((s64) var_a0))), temp_s1);
+        lb_set_chair((s32) (((s8) ((s32) var_a0))), temp_s1);
         return;
     case 17:
         lb_recv_myChair(temp_s1, &jtbl_218_0065ECA0);
         return;
     case 6:
-        lb_chidori_off(((s8) ((s64) var_a0)), &jtbl_218_0065ECA0);
+        lb_chidori_off(((s8) ((s32) var_a0)), &jtbl_218_0065ECA0);
         return;
     case 7:
         Lbc_SendNetComment(temp_s2, &jtbl_218_0065ECA0);
@@ -102,7 +102,7 @@ block_8:
         memcpy((*(void **)&cw) + 0xAF8, temp_s1, 0x62);
         return;
     case 12:
-        lb_trade_start(((s8) ((s64) var_a0)), temp_s1);
+        lb_trade_start(((s8) ((s32) var_a0)), temp_s1);
         return;
     case 13:
         lb_trade_check(temp_s2, temp_s1);
@@ -114,7 +114,7 @@ block_8:
         lb_send_my_status(temp_s2);
         return;
     case 16:
-        lb_commer_message(((s8) ((s64) var_a0)));
+        lb_commer_message(((s8) ((s32) var_a0)));
         break;
     }
 }

@@ -4,9 +4,9 @@
 #include "../gonl.h"
 
 s32 Lb_put_icon_free();
-void Lb_put_status(s32 arg0, s32 arg1, s32 arg2, s32 arg3, s64 arg4) {
-    s64 temp_v1;
-    s64 var_a4;
+void Lb_put_status(s32 arg0, s32 arg1, s32 arg2, s32 arg3, s32 arg4) {
+    s32 temp_v1;
+    s32 var_a4;
 
     var_a4 = arg4;
     temp_v1 = ((s16) (var_a4));

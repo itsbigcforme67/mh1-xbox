@@ -40,7 +40,7 @@ void lobby_func_00577370(void) {
             } else {
                 font_print_double(0x220, var_s1, 1, 0, tl_mail_tbl);
             }
-            Lb_put_icon(0x1E0, (s32) (((s16) (((((s16) ((s64) var_s1))) - 2)))), (*(u8 *)((u8 *)(var_s2) + 0x19)) + 2, -1);
+            Lb_put_icon(0x1E0, (s32) (((s16) (((((s16) ((s32) var_s1))) - 2)))), (*(u8 *)((u8 *)(var_s2) + 0x19)) + 2, -1);
             var_s2 += 0x20;
             var_s0 = (var_s0 + 1) & 0xFFFF;
             var_s1 = (s32) (((s16) ((var_s1 + 0x16))));

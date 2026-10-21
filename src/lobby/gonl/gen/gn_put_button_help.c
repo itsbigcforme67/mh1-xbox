@@ -14,7 +14,7 @@ s32 font_print();                            /* extern */
 extern s32 g_lb_636EB0;
 extern u8 bh_pos;
 
-void put_button_help(s64 arg0, s64 arg1, s32 arg2, s32 arg3) {
+void put_button_help(s32 arg0, s32 arg1, s32 arg2, s32 arg3) {
     u8 g_frame[0xB0] __attribute__((aligned(16)));   /* G's stack frame */
 #define sp70 (*(s32 *)(g_frame + 0x70))
     s16 temp_s1;
@@ -22,8 +22,8 @@ void put_button_help(s64 arg0, s64 arg1, s32 arg2, s32 arg3) {
     s16 var_s1;
     s16 var_s2;
     s32 temp_s0;
-    s64 temp_a0;
-    s64 var_s3;
+    s32 temp_a0;
+    s32 var_s3;
     u8 *temp_v1;
     u8 *temp_v1_2;
 
@@ -44,7 +44,7 @@ void put_button_help(s64 arg0, s64 arg1, s32 arg2, s32 arg3) {
         flfntLocate((s32) (((s16) ((var_s2 + 3)))), (s32) (((s16) ((var_s1 + 6)))));
         font_print((*(s32 *)((u8 *)&lb_shop_msg + 0xC)));
     }
-    Lb_put_button((s64) var_s2, ((s16) (((((s16) ((s64) var_s1))) + (((s16) (var_s3)))))), arg2);
+    Lb_put_button((s32) var_s2, ((s16) (((((s16) ((s32) var_s1))) + (((s16) (var_s3)))))), arg2);
     temp_a0 = ((s8) (arg1));
     if (temp_a0 != 0x1B) {
         temp_s1 = (*(s32 *)((u8 *)&(*(u8 *)((u8 *)&bh_pos + 0x4)) + temp_s0));

@@ -189,6 +189,7 @@ def convert(src):
     src = struct_args(src)
     src = arg_positions(src)
     src = tail_jumps(src)
+    src = narrow_s64(src)
     src = function_tables(src)
     src = unprototype(src)
     # m2c's declarations of names that became NAME+offset are no declarations any more
@@ -205,6 +206,7 @@ def convert(src):
 # MH1 function of that name, so G's gets a name of its own in every generated file
 G_RENAME = {
     '_cnet_CallBack_Result_PersonalDataChange': 'gonl_cb_FileDownload',    # G 0x5BFD00: the file download burst's result
+    'cnLBS_Read_LobbyMemberList': 'gonl_Read_LobbyAllocation',  # G 0x5BAD20..: a plaza's lobbies (6303/6304/6302/630D)
     'cnLBS_Get_RoomStatus': 'gonl_Get_PlazaStatus',            # G 0x5E37C0: a plaza record's status (MH1: a room's)
     'cnLBS_Get_mhRoomJoinUser': 'gonl_Get_PlazaJoinUser',      # G 0x5E3660: a plaza record's two user counts
     '_cnet_RecvFromLbs_BothAnnexJoinUser': 'gnet_6205_both',    # G 0x5E3700: plaza / lobby join users (G's records)
@@ -406,10 +408,41 @@ def tail_jumps(src):
                   src, flags=re.M)
 
 
+CALLBACKS = set()      # functions G calls with an 8-byte result by value (set in main from the generated files)
+
+
+def find_callbacks():
+    """names used as values (a callback handed to the network layer) or named CallBack_*: their first parameter is the
+    8-byte result passed by value"""
+    gen = os.path.join(ROOT, 'src/lobby/gonl/gen')
+    for f in os.listdir(gen):
+        t = open(os.path.join(gen, f)).read()
+        CALLBACKS.update(re.findall(r'\(s32\) (\w+)\b(?!\s*\()', t))
+        CALLBACKS.update(re.findall(r'[(,]\s*&?((?:CallBack|lobby_func|gonl_cb|_cnet_CallBack)\w*)\s*[,)]', t))
+
+
+def narrow_s64(src):
+    """m2c's EE target types a register the code moves with 64-bit instructions as s64; on the PC an s64 argument takes
+    two words. Parameters, locals and casts become s32, except a callback's first parameter (the 8-byte result)"""
+    def sig(m):
+        head, params = m.group(1), m.group(2)
+        name = re.split(r'[\s*]', head)[-1]
+        ps = [p.strip() for p in params.split(',')] if params.strip() not in ('', 'void') else []
+        out = []
+        for i, p in enumerate(ps):
+            if re.match(r'[su]64 arg\d+$', p) and not (i == 0 and (name in CALLBACKS or name.startswith(('CallBack', '_cnet_CallBack', 'gonl_cb')))):
+                p = 's32' + p[3:]
+            out.append(p)
+        return '%s(%s) {' % (head, ', '.join(out) if out else 'void')
+    src = re.sub(r'^(\w[\w *]*?\b\w+)\(([^()]*)\) \{$', sig, src, flags=re.M)
+    src = re.sub(r'^    [su]64 ((?:var|temp)_\w+);', r'    s32 \1;', src, flags=re.M)
+    return re.sub(r'(?<![*\w])\([su]64\) ', '(s32) ', src)
+
+
 def struct_args(src):
     """a callback called with its 8-byte result by value and a pointer to it: `f((s64) sp18, &sp18)` passes the bytes
     at sp18, not sp18's value widened"""
-    return re.sub(r'\(s64\) (sp[0-9A-F]+), &\1\b', r'*(s64 *)&\1, &\1', src)
+    return re.sub(r'\(s64\) (sp[0-9A-F]+)\b', r'*(s64 *)&\1', src)     # (an 8-byte result in a frame slot)
 
 
 def sign_extends(src):
@@ -559,6 +592,7 @@ def main():
     os.makedirs(out, exist_ok=True)
     if '--no-ctx' not in sys.argv:
         write_context()
+    find_callbacks()
     bad = []
     names = [n for n in names if not (0x5C1800 <= gaddr(n) < 0x5E1000)]    # the in-game browser: not on the PC
     # the lobby-server receive handlers are src/lobby/cnet/cnet_g.c's (gnet_*, named per address in pc_names.txt);

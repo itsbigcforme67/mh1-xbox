@@ -198,15 +198,15 @@ block_192:
             }
         } else {
             temp_s1 = (*(s16 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x1398))) + 0x604));
-            lobby_func_00569390((u8 *)&(*(u8 *)((u8 *)&tl_member_buff + 0x1398)) + 0x60F, (u8 *)&(*(u8 *)((u8 *)&tl_member_buff + 0x1398)) + 0x604, 7, (s64) (*(s16 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x1398))) + 0x608)), var_s1);
-            if (((((s16) ((s64) temp_s1))) != (*(s16 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x1398))) + 0x604))) && ((*(s32 *)((u8 *)&(*(u8 *)((u8 *)&lb_sys + 0xA0)) + ((*(s16 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x1398))) + 0x604)) * 2))) == 0)) {
+            lobby_func_00569390((u8 *)&(*(u8 *)((u8 *)&tl_member_buff + 0x1398)) + 0x60F, (u8 *)&(*(u8 *)((u8 *)&tl_member_buff + 0x1398)) + 0x604, 7, (s32) (*(s16 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x1398))) + 0x608)), var_s1);
+            if (((((s16) ((s32) temp_s1))) != (*(s16 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x1398))) + 0x604))) && ((*(s32 *)((u8 *)&(*(u8 *)((u8 *)&lb_sys + 0xA0)) + ((*(s16 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x1398))) + 0x604)) * 2))) == 0)) {
                 (*(s8 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x1398))) + 0x60C)) = 1;
             }
         }
         goto block_192;
     case 3:                                         /* switch 1 */
         (*(s8 *)((u8 *)((*(void **)&pNet)) + 0x2D)) = 1;
-        temp_v0 = lobby_func_0057FEA0((s32) ((u8 *)&g_main_302CB0 + ((*(s16 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x1398))) + 0x60A)) * 0x30)));
+        temp_v0 = lobby_func_0057FEA0((u8 *)&g_main_302CB0 + ((*(s16 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x1398))) + 0x60A)) * 0x30));
         if ((temp_v0 != 1) && (temp_v0 != 0)) {
 
         } else {
@@ -225,7 +225,7 @@ block_192:
         goto block_192;
     case 4:                                         /* switch 1 */
         (*(s8 *)((u8 *)((*(void **)&pNet)) + 0x2D)) = 1;
-        temp_v0_2 = Lbs_SeekId((s64) (*(s16 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x1398))) + 0x60A)), (s32) ((u8 *)&g_main_302CB0 + ((*(s16 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x1398))) + 0x60A)) * 0x30)));
+        temp_v0_2 = Lbs_SeekId((s32) (*(s16 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x1398))) + 0x60A)), (s32) ((u8 *)&g_main_302CB0 + ((*(s16 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x1398))) + 0x60A)) * 0x30)));
         switch (temp_v0_2) {                        /* switch 2; irregular */
         case 0:                                     /* switch 2 */
             (*(s8 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x1398))) + 0x60C)) = (s8) ((*(s8 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x1398))) + 0x60C)) + 1);
@@ -316,7 +316,7 @@ block_192:
                 if ((*(u8 *)((u8 *)(temp_v1_4) + 0x1063)) != 3) {
                     goto block_87;
                 }
-                if (lobby_func_0056AF20((s32) temp_a0_3, (s32) (*(u16 *)((u8 *)(temp_v1_4) + 0x105E)), (s64) (*(s32 *)((u8 *)&g_main_3064AF + (temp_a0_3 * 0x15C)))) == 0) {
+                if (lobby_func_0056AF20((s32) temp_a0_3, (s32) (*(u16 *)((u8 *)(temp_v1_4) + 0x105E)), (s32) (*(s32 *)((u8 *)&g_main_3064AF + (temp_a0_3 * 0x15C)))) == 0) {
                     (*(s8 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x1398))) + 0x60C)) = 0xB;
                 } else {
                     (*(s8 *)((u8 *)((*(void **)&cw)) + 0xB9E)) = 0;

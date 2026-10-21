@@ -25,7 +25,7 @@ void CallBack_Result_Plaza_ReadLobbyAllocation2(s64 arg0) {
     sp38 = arg0;
     if ((*(u8 *)((u8 *)((*(void **)&cw)) + 0xB99)) != 5) {
         if ((s8) sp38 == 2) {
-            if ((((s8) ((s64) (((s8 *)&sp38)[1])))) != 0xB) {
+            if ((((s8) ((s32) (((s8 *)&sp38)[1])))) != 0xB) {
 
             }
         } else {

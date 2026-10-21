@@ -11,7 +11,7 @@ s32 cnLBS_Get_SerchUserPlace(); /* extern */
 s32 cnLBS_Get_SerchUserPlaceMessage();    /* extern */
 s32 cnLBS_SerchUserPlace(); /* extern */
 
-s32 Lbs_SeekId(s64 arg0, s32 arg1) {
+s32 Lbs_SeekId(s32 arg0, s32 arg1) {
     s32 temp_s0;
     u8 temp_v1_2;
     u8 *temp_v0;

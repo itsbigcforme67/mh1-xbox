@@ -15,7 +15,7 @@ s32 SoftKeyboard_pos_set();     /* extern */
 
 s32 my_comment_input(void *arg0) {
     s32 temp_s0;
-    s64 temp_v1_3;
+    s32 temp_v1_3;
     u8 temp_v1_2;
     u8 *temp_v1;
     u8 *temp_v1_4;

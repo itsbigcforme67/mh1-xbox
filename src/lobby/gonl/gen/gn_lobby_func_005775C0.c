@@ -22,7 +22,7 @@ extern s16 g_lb_6B42B8;
 extern s32 g_main_302CB0;
 extern u8 lit_2316;
 
-void lobby_func_005775C0(s64 arg0, s64 arg1, s64 arg2, s64 arg3) {
+void lobby_func_005775C0(s32 arg0, s32 arg1, s32 arg2, s32 arg3) {
     u8 g_frame[0x140] __attribute__((aligned(16)));   /* G's stack frame */
 #define spA0 (*(s32 *)(g_frame + 0xA0))
 #define spB0 (*(s32 *)(g_frame + 0xB0))
@@ -31,13 +31,13 @@ void lobby_func_005775C0(s64 arg0, s64 arg1, s64 arg2, s64 arg3) {
     s32 temp_a1;
     s32 var_s1;
     s32 var_s2;
-    s64 temp_a0;
-    s64 temp_s0;
-    s64 temp_s2;
-    s64 temp_s6;
-    s64 temp_v0;
-    s64 var_s4;
-    s64 var_s5;
+    s32 temp_a0;
+    s32 temp_s0;
+    s32 temp_s2;
+    s32 temp_s6;
+    s32 temp_v0;
+    s32 var_s4;
+    s32 var_s5;
     u8 *var_s3;
 
     if (g_lb_6B42B8 == 0) {
@@ -90,6 +90,6 @@ void lobby_func_005775C0(s64 arg0, s64 arg1, s64 arg2, s64 arg3) {
         var_s5 = ((s16) ((var_s5 + 1)));
         var_s3 += 0x30;
     } while (var_s5 < 7);
-    Put_page_num((s32) (((s16) (((((s16) ((spA0 + 0xA)))) + 0x12C)))), (s32) var_s4, arg3, (s64) (*(s16 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x1398))) + 0x606)), 0);
+    Put_page_num((s32) (((s16) (((((s16) ((spA0 + 0xA)))) + 0x12C)))), (s32) var_s4, arg3, (s32) (*(s16 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x1398))) + 0x606)), 0);
 }
 

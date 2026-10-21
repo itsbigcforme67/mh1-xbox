@@ -46,28 +46,28 @@ extern u8 hunter_appellation;
 extern u8 lit_2316;
 extern u8 tl_job_tbl;
 
-void disp_status(s64 arg0, s32 arg1, void *arg2, s32 *arg3, void *arg4, s64 arg5, s64 arg6, void *arg7, s16 arg_sp0) {
+void disp_status(s32 arg0, s32 arg1, void *arg2, s32 *arg3, void *arg4, s32 arg5, s32 arg6, void *arg7, s16 arg_sp0) {
     u8 g_frame[0xF0] __attribute__((aligned(16)));   /* G's stack frame */
 #define spA0 (*(s32 *)(g_frame + 0xA0))
-    s64 temp_s0;
-    s64 temp_s1;
-    s64 temp_s1_2;
-    s64 temp_s1_3;
-    s64 temp_s2;
-    s64 temp_s4;
-    s64 temp_s4_10;
-    s64 temp_s4_11;
-    s64 temp_s4_12;
-    s64 temp_s4_2;
-    s64 temp_s4_3;
-    s64 temp_s4_4;
-    s64 temp_s4_5;
-    s64 temp_s4_6;
-    s64 temp_s4_7;
-    s64 temp_s4_8;
-    s64 temp_s4_9;
-    s64 temp_s5;
-    s64 var_s4;
+    s32 temp_s0;
+    s32 temp_s1;
+    s32 temp_s1_2;
+    s32 temp_s1_3;
+    s32 temp_s2;
+    s32 temp_s4;
+    s32 temp_s4_10;
+    s32 temp_s4_11;
+    s32 temp_s4_12;
+    s32 temp_s4_2;
+    s32 temp_s4_3;
+    s32 temp_s4_4;
+    s32 temp_s4_5;
+    s32 temp_s4_6;
+    s32 temp_s4_7;
+    s32 temp_s4_8;
+    s32 temp_s4_9;
+    s32 temp_s5;
+    s32 var_s4;
     u8 temp_a2;
 
     var_s4 = ((s16) ((arg1 + 0x28)));
@@ -116,7 +116,7 @@ void disp_status(s64 arg0, s32 arg1, void *arg2, s32 *arg3, void *arg4, s64 arg5
         if (lobby_func_00575150() == 1) {
             memcpy((*(s32 *)((u8 *)&g_lb_636A00 + ((*(u8 *)((u8 *)(arg4) + 2)) * 4))), &g_lb_63E128, 4);
             func_0012BDD0((*(s32 *)((u8 *)&g_lb_636A00 + ((*(u8 *)((u8 *)(arg4) + 2)) * 4))));
-            Lb_put_status((s32) (((s16) ((temp_s2 + 0x49)))), (s32) var_s4, 0x14, -1, (s64) (*(u8 *)((u8 *)(arg4) + 2)));
+            Lb_put_status((s32) (((s16) ((temp_s2 + 0x49)))), (s32) var_s4, 0x14, -1, (s32) (*(u8 *)((u8 *)(arg4) + 2)));
         } else {
             font_print(&lit_2316, lb_ibox_str);
         }

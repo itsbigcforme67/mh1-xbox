@@ -5,7 +5,7 @@
 
 s32 Put_F();
 extern u8 pNet;
-void lobby_func_005799F0(s64 arg0, s64 arg1, s32 arg2, s32 arg3, s32 arg4) {
+void lobby_func_005799F0(s32 arg0, s32 arg1, s32 arg2, s32 arg3, s32 arg4) {
     u8 g_frame[0x30] __attribute__((aligned(16)));   /* G's stack frame */
 #define sp10 (*(s16 *)(g_frame + 0x10))
 #define sp12 (*(s16 *)(g_frame + 0x12))
@@ -21,7 +21,7 @@ void lobby_func_005799F0(s64 arg0, s64 arg1, s32 arg2, s32 arg3, s32 arg4) {
     u8 *var_a5;   /* (s16 *) */
     s32 var_v1;
     s32 var_v1_2;
-    s64 temp_a3;
+    s32 temp_a3;
 
     var_v1 = 0xC;
     var_a5 = &sp20;

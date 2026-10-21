@@ -22,13 +22,13 @@ extern u8 my_user_mini_data;
 void CallBack_Result_LoginLobbyServer(s64 arg0) {
     u8 g_frame[0x20] __attribute__((aligned(16)));   /* G's stack frame */
 #define sp18 (*(s64 *)(g_frame + 0x18))
-    s64 temp_a0;
-    s64 temp_v1;
+    s32 temp_a0;
+    s32 temp_v1;
     u8 *temp_v0;
 
     sp18 = arg0;
     if ((s8) sp18 != -1) {
-        temp_v1 = ((s8) ((s64) (((s8 *)&sp18)[1])));
+        temp_v1 = ((s8) ((s32) (((s8 *)&sp18)[1])));
         switch (temp_v1) {                          /* switch 1 */
         case 4:                                     /* switch 1 */
             (*(s8 *)((u8 *)((*(void **)&cw)) + 0xB9B)) = 2;
@@ -91,7 +91,7 @@ void CallBack_Result_LoginLobbyServer(s64 arg0) {
             return;
         }
     } else {
-        temp_a0 = ((s8) ((s64) (((s8 *)&sp18)[1])));
+        temp_a0 = ((s8) ((s32) (((s8 *)&sp18)[1])));
         switch (temp_a0) {                          /* switch 3; irregular */
         case 7:                                     /* switch 3 */
             (*(s8 *)((u8 *)((*(void **)&cw)) + 0xB9B)) = 6;

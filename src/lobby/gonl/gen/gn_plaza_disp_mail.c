@@ -17,14 +17,14 @@ extern u8 lit_2316;
 void plaza_disp_mail(s32 arg0, s32 arg1) {
     u8 g_frame[0xC0] __attribute__((aligned(16)));   /* G's stack frame */
 #define sp40 (*(s32 *)(g_frame + 0x40))
-    s64 temp_s0;
-    s64 temp_s1;
+    s32 temp_s0;
+    s32 temp_s1;
     u8 *temp_s2;
 
     font_set_palette(0);
     flfntLocate(arg0, arg1);
     font_print(&lit_2316, (*(s32 * *)((u8 *)&tl_mail_tbl + 0x8)));
-    temp_s0 = (((s16) ((s64) arg0))) + 0x3C;
+    temp_s0 = (((s16) ((s32) arg0))) + 0x3C;
     flfntLocate((s32) (((s16) (temp_s0))), arg1);
     flfntSetSize(0x16, 0x12);
     font_print(&lit_2316, (*(s32 *)&cw) + 0xEEF);

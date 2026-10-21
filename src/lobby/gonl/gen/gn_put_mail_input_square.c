@@ -10,7 +10,7 @@ extern u8 g_main_2EFBAC;
 extern u8 cw;
 extern u8 g_main_2EFBAC;
 extern u8 pNet;
-void put_mail_input_square(s64 arg0, s64 arg1) {
+void put_mail_input_square(s32 arg0, s32 arg1) {
     u8 g_frame[0xC0] __attribute__((aligned(16)));   /* G's stack frame */
 #define spA0 (*(s32 *)(g_frame + 0xA0))
 #define spB0 (*(s16 *)(g_frame + 0xB0))

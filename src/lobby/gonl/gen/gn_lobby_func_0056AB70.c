@@ -21,7 +21,7 @@ extern s32 g_lb_63E020;
 extern s32 g_main_3064AF;
 extern s16 tl_member_buff;
 
-void lobby_func_0056AB70(s64 arg0) {
+void lobby_func_0056AB70(s32 arg0) {
     u8 g_frame[0xF0] __attribute__((aligned(16)));   /* G's stack frame */
 #define spA0 (*(s32 *)(g_frame + 0xA0))
 #define spB0 (*(s16 *)(g_frame + 0xB0))
@@ -31,12 +31,12 @@ void lobby_func_0056AB70(s64 arg0) {
     s16 temp_a0;
     s16 temp_v1;
     s16 var_s4;
-    s64 temp_s0;
-    s64 temp_s0_2;
-    s64 temp_s1;
-    s64 var_a0;
-    s64 var_s3;
-    s64 var_s5;
+    s32 temp_s0;
+    s32 temp_s0_2;
+    s32 temp_s1;
+    s32 var_a0;
+    s32 var_s3;
+    s32 var_s5;
     s8 *var_s6;
     s8 *var_s7;
     s8 temp_v0;
@@ -74,13 +74,13 @@ loop_5:
         temp_a0 = (*(s16 *)((u8 *)(spC0) + 0));
         temp_v0 = *var_s6;
         if (temp_a0 == *var_s7) {
-            var_s2 = (*(s8 *)((u8 *)(((*(s32 *)&g_main_2EF390) + 0x23F4 + 0x20 + (((s16) ((s64) temp_v0))))) + 0x208));
+            var_s2 = (*(s8 *)((u8 *)(((*(s32 *)&g_main_2EF390) + 0x23F4 + 0x20 + (((s16) ((s32) temp_v0))))) + 0x208));
         } else if (temp_a0 == 0x10) {
-            var_s2 = (*(s8 *)((u8 *)(((*(s32 *)&g_main_2EF390) + 0x23F4 + 0x20 + (((s16) ((s64) temp_v0))))) + 0x208));
+            var_s2 = (*(s8 *)((u8 *)(((*(s32 *)&g_main_2EF390) + 0x23F4 + 0x20 + (((s16) ((s32) temp_v0))))) + 0x208));
         } else {
             var_s2 = 0xA;
         }
-        temp_s0_2 = ((s16) ((s64) temp_v0));
+        temp_s0_2 = ((s16) ((s32) temp_v0));
         if ((*(s8 *)((u8 *)((((((s16) (temp_s0))) * 0x10) + ((*(s32 *)&g_main_2EF390) + 0x23F4 + 0x20) + temp_s0_2)) + 0x22E)) == 0) {
             var_s2 = 0xA;
         }

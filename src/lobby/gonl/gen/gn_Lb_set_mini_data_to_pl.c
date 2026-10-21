@@ -8,7 +8,7 @@ void * memcpy();
 extern u8 Battle_type;
 extern u8 player_work;
 
-void Lb_set_mini_data_to_pl(s64 arg0, void *arg1) {
+void Lb_set_mini_data_to_pl(s32 arg0, void *arg1) {
     u8 g_frame[0x50] __attribute__((aligned(16)));   /* G's stack frame */
 #define sp30 (*(s32 *)(g_frame + 0x30))
 #define sp33 (*(s32 *)(g_frame + 0x33))

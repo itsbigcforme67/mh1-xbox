@@ -9,7 +9,7 @@ extern u8 g_main_2EF390;
 extern u8 ClassInfo;
 extern u8 my_user_mini_data;
 
-s32 lobby_func_0056AF20(s32 arg0, s32 arg1, s64 arg2) {
+s32 lobby_func_0056AF20(s32 arg0, s32 arg1, s32 arg2) {
     u8 *temp_a0;
 
     if ((arg0 != 0) && (arg0 == ClassInfo) && (arg1 == 0)) {

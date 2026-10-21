@@ -57,6 +57,6 @@ void plaza_movePlazaTrans(void) {
         var_s3 = (s32) (((s16) ((var_s3 + 0x16))));
     } while (var_s2 < 7);
     temp_v0 = (*(void **)&pNet);
-    Put_page_num(0x20E, var_s3, (s64) (*(s16 *)((u8 *)(temp_v0) + 0x1C)), (s64) (*(s16 *)((u8 *)(temp_v0) + 0x1E)), 0);
+    Put_page_num(0x20E, var_s3, (s32) (*(s16 *)((u8 *)(temp_v0) + 0x1C)), (s32) (*(s16 *)((u8 *)(temp_v0) + 0x1E)), 0);
 }
 

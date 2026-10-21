@@ -52,7 +52,7 @@ void net_ToNetworkLobby(void) {
     (*(s8 *)((u8 *)((*(u8 **)&cw)) + 0xBA0)) = 0;
     cnLbc_SetIspRestTime((*(u8 **)&cw) + 0xFA84);
     MH_lobbyClear();
-    lobby_func_0059F410();
+    lobby_func_0059F410(M2C_ERROR(/* Read from unset register $a0 */), M2C_ERROR(/* Read from unset register $a1 */), M2C_ERROR(/* Read from unset register $a2 */));
     (*(s32 *)((u8 *)((*(u8 **)&cw)) + 0xFA80)) = 0xE10;
     (*(s32 *)&quest_price) = 0;
     (*(s8 *)((u8 *)((*(u8 **)&cw)) + 0xB76)) = 0;

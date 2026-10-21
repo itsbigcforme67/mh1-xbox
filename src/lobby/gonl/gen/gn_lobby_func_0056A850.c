@@ -26,7 +26,7 @@ s32 lobby_func_0056A850(void *arg0) {
     s32 temp_a4;
     s32 temp_v0_2;
     s32 temp_v1_2;
-    s64 var_a1;
+    s32 var_a1;
     s8 *var_a0;
     s8 temp_a3;
     s8 temp_v1;

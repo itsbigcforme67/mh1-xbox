@@ -41,7 +41,7 @@ s32 lobby_func_0056D770(void) {
         case 0:                                     /* switch 2 */
             temp_a1_2 = (*(void **)&cw);
             temp_a0_2 = (*(u16 *)((u8 *)(temp_a1_2) + 0xF544));
-            if (lobby_func_0056AF20((s32) temp_a0_2, (s32) (*(u16 *)((u8 *)(temp_a1_2) + 0xF546)), (s64) (*(s32 *)((u8 *)&g_main_3064AF + (temp_a0_2 * 0x15C)))) == 0) {
+            if (lobby_func_0056AF20((s32) temp_a0_2, (s32) (*(u16 *)((u8 *)(temp_a1_2) + 0xF546)), (s32) (*(s32 *)((u8 *)&g_main_3064AF + (temp_a0_2 * 0x15C)))) == 0) {
                 (*(u8 *)((u8 *)((*(void **)&pNet)) + 0x25)) = 0U;
                 return 1;
             }

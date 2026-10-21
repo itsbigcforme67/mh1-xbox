@@ -18,8 +18,8 @@ void disp_string_id(s32 arg0, s32 arg1) {
     u8 g_frame[0x50] __attribute__((aligned(16)));   /* G's stack frame */
 #define sp30 (*(s32 *)(g_frame + 0x30))
     s32 temp_v1_2;
-    s64 temp_s0;
-    s64 var_v0;
+    s32 temp_s0;
+    s32 var_v0;
     u8 *temp_v1;
 
     memset(&sp30, 0, 0x1E);

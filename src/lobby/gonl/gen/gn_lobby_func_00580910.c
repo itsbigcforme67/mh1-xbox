@@ -33,7 +33,7 @@ s32 lobby_func_00580910(s8 *arg0) {
         (*(s32 *)((u8 *)((*(void **)&cw)) + 0xFA68)) = 0xE10;
         (*(s8 *)((u8 *)((*(void **)&cw)) + 0xFA65)) = 0;
         (*(s8 *)((u8 *)((*(void **)&cw)) + 0xBA9)) = 0xE;
-        lobby_func_005E69B0((s32) arg0, (s32) CallBack_Result_SearchUserPlace);
+        lobby_func_005E69B0(arg0, (s32) CallBack_Result_SearchUserPlace);
 block_17:
     default:
         return 2;

@@ -61,9 +61,9 @@ void lobby_func_0057D5D0(void *arg0) {
     s32 var_s4;
     s32 var_s7;
     s32 var_v1;
-    s64 temp_a2;
-    s64 temp_fp;
-    s64 temp_s0;
+    s32 temp_a2;
+    s32 temp_fp;
+    s32 temp_s0;
     void **var_s0;
 
     font_set_stack_no((*(s32 *)((u8 *)(arg0) + 0x18)));
@@ -84,7 +84,7 @@ void lobby_func_0057D5D0(void *arg0) {
         } else {
             var_s4 = 0;
         }
-        font_print_double((s32) (((s16) (lobby_func_005935C0(*var_s0, (s64) (*(s16 *)((u8 *)(var_s1) + 0)), 0x12)))), (s32) (*(s16 *)((u8 *)(var_s1) + 2)), 1, var_s4, *var_s0);
+        font_print_double((s32) (((s16) (lobby_func_005935C0(*var_s0, (s32) (*(s16 *)((u8 *)(var_s1) + 0)), 0x12)))), (s32) (*(s16 *)((u8 *)(var_s1) + 2)), 1, var_s4, *var_s0);
         var_s3 += 1;
         var_s2 += 0x14;
         var_s1 += 4;
@@ -144,7 +144,7 @@ void lobby_func_0057D5D0(void *arg0) {
         } else {
             var_a0_4 = M2C_BITWISE(f32, (M2C_BITWISE(s32, (var_f3 - 2.1474836e9f)) | 0x80000000));
         }
-        temp_fp = ((s16) ((((s16) ((s64) temp_v0)))));
+        temp_fp = ((s16) ((((s16) ((s32) temp_v0)))));
         spAC = (M2C_BITWISE(s32, var_a0_4) & 0xFF) + (((M2C_BITWISE(s32, var_a0_2) & 0xFF) << 0x10) + 0xFF000000 + ((M2C_BITWISE(s32, var_a0_3) & 0xFF) << 8));
         spB4 = spAC;
         Paint_square((s32) (((s16) ((temp_fp + 4)))), (s32) (((s16) ((temp_s0 + 3)))), 0x8C, 0xC, -0xFEFEFF);

@@ -38,8 +38,8 @@ void lobby_func_00576A70(void) {
     s32 var_s2;
     s32 var_s3;
     s32 var_s5;
-    s64 temp_a2;
-    s64 var_s4;
+    s32 temp_a2;
+    s32 var_s4;
     u8 *temp_a1;
     u8 temp_a0;
     u8 *temp_v0;
@@ -72,7 +72,7 @@ loop_4:
             if (temp_a2 != 0) {
                 sprintf(&sp130, &g_lb_63E268, temp_a2);
             } else {
-                sprintf(&sp130, &lit_2316, (s64) lb_ibox_str);
+                sprintf(&sp130, &lit_2316, (s32) lb_ibox_str);
             }
             han2zen(&sp130, &sp70);
             flfntLocate(0x202, (s32) var_s4);
@@ -80,7 +80,7 @@ loop_4:
             temp_v0 = (*(u8 **)&g_main_2EFBC0) + var_s2;
             temp_s1 = (*(s16 *)((u8 *)(temp_v0) + 0xE));
             temp_s0_2 = (*(s16 *)((u8 *)(temp_v0) + 0xC));
-            sprintf(&sp130, &g_lb_63E2B8, (s64) temp_s0_2, temp_s1);
+            sprintf(&sp130, &g_lb_63E2B8, (s32) temp_s0_2, temp_s1);
             han2zen(&sp130, &sp70);
             flfntLocate(0x226, (s32) var_s4);
             if (temp_s0_2 == temp_s1) {

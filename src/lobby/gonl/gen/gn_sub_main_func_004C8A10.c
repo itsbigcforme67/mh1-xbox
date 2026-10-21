@@ -7,9 +7,9 @@ s64 sub_main_func_004C9250();                       /* extern */
 extern s32 g_sub_4FF1D0;
 
 s32 sub_main_func_004C8A10(void *arg0, s32 arg1) {
-    s64 temp_a2;
-    s64 temp_a3;
-    s64 var_a5;
+    s32 temp_a2;
+    s32 temp_a3;
+    s32 var_a5;
     u8 *var_a4;   /* (u16 *) */
     u16 var_a1;
     u8 *var_a2;

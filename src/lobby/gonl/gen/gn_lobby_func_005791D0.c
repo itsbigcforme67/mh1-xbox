@@ -24,7 +24,7 @@ extern void *g_lb_636D28;
 extern void *g_lb_636D2C;
 
 void lobby_func_005791D0(u32 arg0) {
-    s64 temp_s0;
+    s32 temp_s0;
 
     temp_s0 = ((s16) ((((*(u8 *)((u8 *)((*(void **)&cw)) + 0xFA61)) != 0) ? 0x60 : 0x78)));
     switch (arg0) {

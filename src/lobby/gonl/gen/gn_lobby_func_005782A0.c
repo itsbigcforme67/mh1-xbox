@@ -19,8 +19,8 @@ extern s32 g_lb_63E2E8;
 void lobby_func_005782A0(void) {
     s32 var_a3;
     s32 var_s1;
-    s64 var_s2;
-    s64 var_s3;
+    s32 var_s2;
+    s32 var_s3;
     u8 temp_v1;
     void **var_s0;
     u8 *temp_a0;

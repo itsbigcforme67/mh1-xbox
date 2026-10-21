@@ -8,7 +8,7 @@ s32 flps0005();
 extern u8 System_timer;
 f32 flSin(f32);                                     /* extern */
 
-void lobby_func_005926C0(s64 arg0, s64 arg1, s64 arg2, s64 arg3, s64 arg4, s32 arg5) {
+void lobby_func_005926C0(s32 arg0, s32 arg1, s32 arg2, s32 arg3, s32 arg4, s32 arg5) {
     u8 g_frame[0x90] __attribute__((aligned(16)));   /* G's stack frame */
 #define sp70 (*(s16 *)(g_frame + 0x70))
 #define sp72 (*(s16 *)(g_frame + 0x72))
@@ -21,8 +21,8 @@ void lobby_func_005926C0(s64 arg0, s64 arg1, s64 arg2, s64 arg3, s64 arg4, s32 a
     f32 temp_f0;
     f32 var_f1;
     s32 temp_v0;
-    u64 temp_a1;
-    u64 temp_a1_2;
+    s32 temp_a1;
+    s32 temp_a1_2;
 
     temp_v0 = (((*(u16 *)&System_timer) & 0x3F) << 0xA) & 0xFFFF;
     if (temp_v0 >= 0) {
@@ -36,11 +36,11 @@ void lobby_func_005926C0(s64 arg0, s64 arg1, s64 arg2, s64 arg3, s64 arg4, s32 a
     sp74 = (((s16) (arg0))) + (((s16) (arg2)));
     sp76 = (((s16) (arg1))) + (((s16) (arg3)));
     if (!(arg5 & 0xFF)) {
-        temp_a1 = (u64) (arg4 << 0x28) >> 0x28;
+        temp_a1 = (s32) (arg4 << 0x28) >> 0x28;
         sp78 = temp_a1 | (((((s8) (M2C_BITWISE(s64, (48.0f * temp_f0))))) + 0x90) << 0x18);
         sp7C = (s32) temp_a1;
     } else {
-        temp_a1_2 = (u64) (arg4 << 0x28) >> 0x28;
+        temp_a1_2 = (s32) (arg4 << 0x28) >> 0x28;
         sp78 = (s32) temp_a1_2;
         sp7C = temp_a1_2 | (((((s8) (M2C_BITWISE(s64, (48.0f * temp_f0))))) + 0x90) << 0x18);
     }

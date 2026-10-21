@@ -19,10 +19,10 @@ extern u8 lit_2316;
 void lobby_func_00576CB0(void) {
     u8 *var_s1;   /* (s32 *) */
     s32 var_a3;
-    s64 temp_s0;
-    s64 var_s2;
-    s64 var_s3;
-    s64 var_v0;
+    s32 temp_s0;
+    s32 var_s2;
+    s32 var_s3;
+    s32 var_v0;
 
     font_print_double(0xE2, 0x78, 1, 5, (*(s32 *)((u8 *)&(*(u8 *)((u8 *)&tl_msg_tbl + 0x54)) + ((*(u8 *)((u8 *)&tl_member_buff + 0x1388)) * 4))));
     switch ((*(u8 *)((u8 *)&tl_member_buff + 0x1388))) {                           /* irregular */
@@ -77,6 +77,6 @@ void lobby_func_00576CB0(void) {
         font_set_palette(0);
     }
     Lb_put_msg_type2(0xE2, 0x128, 0x41);
-    Put_page_num(0x208, 0x78, (s64) (*(u8 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x18))) + 0x1370)), 5, 0);
+    Put_page_num(0x208, 0x78, (s32) (*(u8 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x18))) + 0x1370)), 5, 0);
 }
 

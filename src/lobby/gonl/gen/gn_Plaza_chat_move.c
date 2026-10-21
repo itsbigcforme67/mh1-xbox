@@ -14,15 +14,15 @@ s32 Plaza_chatlog_i();                          /* extern */
 s32 Plaza_chat_move(void) {
     u8 g_frame[0x50] __attribute__((aligned(16)));   /* G's stack frame */
 #define sp10 (*(s8 *)(g_frame + 0x10))
-    s64 temp_v1_2;
-    s64 var_a0;
+    s32 temp_v1_2;
+    s32 var_a0;
     u16 temp_v1;
 
     var_a0 = -1;
     temp_v1 = (*(u16 *)((u8 *)&Psw + 0x4));
     sp10 = 0;
     if (!(temp_v1 & 0x4000)) {
-        var_a0 = ((s8) (SoftKeyboard_move(&sp10, (s32) (*(s16 *)&Psw), (s32) (((s16) ((s64) temp_v1))))));
+        var_a0 = ((s8) (SoftKeyboard_move(&sp10, (s32) (*(s16 *)&Psw), (s32) (((s16) ((s32) temp_v1))))));
     }
     temp_v1_2 = ((s8) (var_a0));
     if (temp_v1_2 == -1) {
@@ -32,7 +32,7 @@ s32 Plaza_chat_move(void) {
     }
     if (temp_v1_2 != 0) {
         if ((sp10 != 0) && (temp_v1_2 > 0) && (ChatKinsoku_chk(&sp10) != 0)) {
-            Lb_send_chat((s32) (*(u8 *)((u8 *)&game_w + 0x3A)), (s32) &sp10, 0);
+            Lb_send_chat((s32) (*(u8 *)((u8 *)&game_w + 0x3A)), &sp10, 0);
         }
         SoftKeyboard_exit();
         Plaza_chatlog_i();

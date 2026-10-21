@@ -8,7 +8,7 @@ s32 memcmp();
 extern u8 cw;
 extern u8 lb_sys;
 
-void lb_check_chair(s32 arg0, u8 *arg1) {
+void lb_check_chair(void *arg0, u8 *arg1) {
     s32 temp_a0;
     s32 temp_v0;
     u8 temp_a2;

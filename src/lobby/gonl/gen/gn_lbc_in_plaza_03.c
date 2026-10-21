@@ -13,10 +13,10 @@ extern u8 cw;
 extern u8 g_main_2EF390;
 extern void *g_lb_636E08;
 
-s32 lbc_in_plaza_03(s64 arg0) {
+s32 lbc_in_plaza_03(s32 arg0) {
     u8 g_frame[0x170] __attribute__((aligned(16)));   /* G's stack frame */
 #define sp20 (*(s32 *)(g_frame + 0x20))
-    s64 temp_v1_3;
+    s32 temp_v1_3;
     u8 temp_v1_2;
     u8 *temp_v1;
 
