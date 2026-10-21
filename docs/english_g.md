@@ -1,6 +1,7 @@
 # English for Monster Hunter G: what official text covers, and what is left
 
-Agent B, 20 Oct 2026 (second round the same day: tutorial, dialogs, quest maps, talk checks). Input for the owner's decision on G's English (docs/DECISIONS.md: official sources first,
+Agent B, 20 Oct 2026 (second round: tutorial, dialogs, quest maps, talk checks; third round: hand-checked network
+messages and menus, town talk). Input for the owner's decision on G's English (docs/DECISIONS.md: official sources first,
 MH1 US now, Monster Hunter Freedom later, then our own translation in Freedom's style for the rest).
 
 All numbers come from `python3 tools/text_map.py --report docs/text_coverage.md --ids docs/survey/mhg_text_untranslated.txt`
@@ -15,17 +16,19 @@ or one line of a description, which G stores one pointer per line).
 | G text found (main, overlays, quest files) | 13263 | |
 | official English from MH1 US, before this work | 6363 | 47% |
 | official English from MH1 US, first round | 6776 | 51% |
-| official English from MH1 US, now | 6839 | **51.6%** |
-| left, but the same Japanese is in Monster Hunter Portable (so Freedom should have it) | 4913 | 37% |
-| left, not in Portable either | 1511 | 11% |
+| official English from MH1 US, second round | 6839 | 51.6% |
+| official English from MH1 US, now | 7064 | **53.3%** |
+| left, but the same Japanese is in Monster Hunter Portable (so Freedom should have it) | 4865 | 37% |
+| left, not in Portable either | 1334 | 10% |
 
-Of the 1511 "neither", 204 are the software keyboard's romaji-to-kana tables and about 110 the online chat's
-bad-word filter (neither is text to translate), so about **1200 strings** would have to be written by us: mostly town
-(online hub) NPC talk (~430), PS2 online, network and memory-card messages (~290), and online-hub menus (~215).
+Of the 1334 "neither", 204 are the software keyboard's romaji-to-kana tables and about 100 the online chat's
+bad-word filter (neither is text to translate), so about **1030 strings** would have to be written by us: mostly
+town (online hub) NPC talk (~430), online-hub menus (~185), memory-card and system messages (~220) and weapon/armour
+lines (~170).
 
-421 of the 13263 are keyboard kana tables. Leaving them out, official English is 6835 of 12842 = 53%.
+421 of the 13263 are keyboard kana tables. Leaving them out, official English is 7060 of 12842 = 55%.
 
-MH1 JP's own table (the same tool) went from 6272 to 6379 strings with US English (78%) in the second round.
+MH1 JP's own table (the same tool) went from 6272 to 6629 strings with US English (81%) over the three rounds.
 
 ## What MH1 US covers (by category)
 
@@ -36,11 +39,11 @@ MH1 JP's own table (the same tool) went from 6272 to 6379 strings with US Englis
 | armour and skills | 3615 | 1063 (29%) | 33 | 2552 | 2493 | 59 |
 | monsters | 74 | 56 (75%) | 0 | 18 | 15 | 3 |
 | quests | 1199 | 1012 (84%) | 365 | 187 | 170 | 17 |
-| NPC dialogue and tutorials | 2498 | 1902 (76%) | 53 | 596 | 165 | 431 |
-| menus and UI | 1803 | 1109 (61%) | 3 | 694 | 480 | 214 |
-| system (memory card, online, keyboard, code literals) | 877 | 199 (22%) | 7 | 678 | 210 | 468 |
+| NPC dialogue and tutorials | 2498 | 1929 (77%) | 54 | 569 | 141 | 428 |
+| menus and UI | 1803 | 1158 (64%) | 3 | 645 | 460 | 185 |
+| system (memory card, online, keyboard, code literals) | 877 | 348 (39%) | 6 | 529 | 206 | 323 |
 | keyboard kana tables (not text) | 421 | 4 | 0 | 417 | 213 | 204 |
-| **total** | **13263** | **6839 (51%)** | **461** | **6424** | **4913** | **1511** |
+| **total** | **13263** | **7064 (53%)** | **461** | **6199** | **4865** | **1334** |
 
 How to read it: everything MH1 had and G kept word for word (or nearly) already has its US line: MH1's items,
 weapons, armour, monsters, skills, its quests and village talk. What is left is what G added or rewrote.
@@ -112,6 +115,40 @@ Two fixes to what was already there:
   (`us_rewritten_talk`). Lines with no names or numbers in them cannot be checked this way; the rest of the 2145
   talk lines showed nothing wrong.
 
+### Third round: hand-checked pairs (tools/text_pairs_manual.txt)
+
+Pairs I made by reading both discs side by side, written as addresses only. A pair went in only when the US line
+says the same thing as the Japanese. The US calls the JP "server" a "land"; it pairs サーバー選択 with "Land
+Selection" itself, so I followed that.
+- **NET-file, network and error messages in main** (net_con_msg, ms_err_str): 81 messages, new kind `msg JP-table
+  US-first-line`. The tool re-flows the US message over the JP lines (as for the memory-card dialogs) and checks
+  the %s / %1 / ~A00 tokens and the numbers; 4 were refused that way (e.g. the JP names the slot twice). 262 line
+  slots. Left out on purpose: phone-fee and DNAS-text messages (the US has none), messages where the US left out a
+  line, error messages whose US version adds an ERROR CODE line.
+- **Lobby network dialogs** (netDialogMessage, one string each): 46 of 63. Left out: short-mail and ID messages the
+  US does not have, a line whose US version has a stray "C00~" typo, one whose US colour code differs.
+- **Plaza menu help** (plaza_main_msg, position pairing shifted): 21 lines that say the same; the short-mail and
+  "Capcom page" help are not in the US.
+- **Title, game and gallery menus, network menus, memory-card slot names, lobby button help, one quest timer line,
+  one town shop line**: 49 pairs.
+- **Tool fix:** the meal-result tables (eat_result_lv3-5) were thrown out by the prose length check although their
+  rows carry the same ingredient codes in both builds; a table whose small integer words agree (>= 90%) now skips
+  that check (`ints_agree`).
+- Checked and not on the US disc: the event-result lines that the US left in Japanese (fishing, item-received
+  messages in info_str), the game overlay's elder lines, the content-warning lines (the US splits them differently).
+
+### Town NPC talk and the MH1 US lobby
+
+The US disc's lobby.bin does hold MH1's town (online hub) NPC talk in English: those are the npc_dialog tables the
+tool already pairs (village/town talk is 97% English for MH1 JP), and every G town line whose Japanese equals an
+MH1 JP line gets it (part of the 4094 identical-text pairs). Of the 569 G NPC/tutorial lines still without English,
+I compared each with all MH1 JP text: 19 equal an MH1 line that has no US line either (labels like the HR range,
+plus 3 elder lines in the game overlay that the US build lacks), about 70 are close edits of MH1 lines (numbers
+changed: "the second time" became "the third time", "two kinds of tickets" became "three"; trailing "hic!" removed;
+the Friend List lines reused for G's new Black List), and the rest (about 480) share nothing with MH1. The edits
+cannot take the US line safely (the US writes those numbers as words), so the town talk really is G's own text:
+Freedom has some of it (141), the rest is for our own translation.
+
 ### Ambiguous (a rule found English but it was left out): 48 strings (first round 53)
 
 Listed with the reason in docs/survey/mhg_text_untranslated.txt (last column):
@@ -146,30 +183,28 @@ So Freedom should take G from 51.6% to roughly 88% official English. Once the ow
 the same as MH1 JP -> MH1 US: Portable JP -> Freedom US by structure (same data file layout, same table order),
 then Portable text -> G text by the rules above (most are identical text).
 
-## What neither covers (truly G-only text): about 1510 strings
+## What neither covers (truly G-only text): about 1330 strings
 
 | kind | strings | notes |
 |---|---:|---|
-| town (online hub) NPC talk, G rewrites of MH1 talk, a few tutorial lines | 431 | shopkeepers, the ticket and room-rank talk, plaza people (320 new, 95 rewritten from MH1, 12 MH1 lines with no US line, 4 tutorial) |
-| PS2 online and network messages | 268 | 237 are MH1 JP text with no paired US line, of which ~110 are the chat's bad-word filter (not shown, not translated); the rest are network messages the US build keeps elsewhere |
-| memory card and yes/no dialogs | 131 | PS2 memory-card wording (Portable has Memory Stick wording instead); 79 are MH1 lines with no paired US message |
-| online-hub menus, shop / guild screens, other G tables | 214 | room, ticket and gathering-hall screens |
+| town (online hub) NPC talk, G rewrites of MH1 talk, a few tutorial lines | 428 | 318 new, 95 rewritten from MH1, 11 MH1 lines with no US line, 4 tutorial |
+| online-hub menus, shop / guild screens, other G tables | 185 | room, ticket, black-list and gathering-hall screens |
+| memory card and yes/no dialogs | 120 | PS2 memory-card wording (Portable has Memory Stick wording instead); 68 are MH1 lines with no US message |
+| PS2 online messages | 134 | 99 are the chat's bad-word filter (not shown, not translated) |
 | weapon / armour lines and quest entry rules not found in Portable | 170 | partly PS2-only collaboration items, partly a matching gap (some lines may still be in Portable) |
 | code literals (HUD banners, debug, results) | 69 | |
 | items, monsters, quests | 24 | |
 | keyboard kana tables | 204 | not text: needs no translation |
 
-This is what "our own translation in Freedom's style" would have to write once Freedom is in: about 1200 strings
-(without the kana tables and the word filter), fewer if the remaining network messages get tied to the US disc by a
-person (the tool found no safe automatic tie for them).
+This is what "our own translation in Freedom's style" would have to write once Freedom is in: about 1030 strings
+(without the kana tables and the word filter).
 
 ## Known limits (worth a person's look later)
 
 - NPC talk lines without names or numbers can only be checked by a person reading both texts (the automatic check
   needs something to compare). The two US rewrites it found were both about Dual Swords.
-- Network and error messages in main (net_con_msg, ms_err_str) and the lobby's netDialogMessage: US twins exist
-  (e.g. the NET file messages at US 0x363480) but are not tied; a person-checked list (tools/text_pairs_manual.txt)
-  would bring them in.
+- The hand-checked pairs were read by me (agent B), not by a native speaker; they are conservative (left out when
+  in doubt) but a second reader would be good before release.
 - The US text of JP quest 19/69 says swamp while the JP says forest; both are swamp quests, so for MH1 the English
   is right and the JP text was the odd one.
 - disc/mhf is Monster Hunter Frontier (PC), not Freedom; Freedom (PSP US) is not on the machine yet.

@@ -1454,3 +1454,9 @@ Owner's request: one picture of the PS2, Xbox and PC hunters together in the sam
   US number changes in quest/talk text dropped (same_numbers), US Dual Swords rewrites in talk dropped
   (us_rewritten_talk). MH1 JP 6272 -> 6379 (78%), G 6776 -> 6839. Tried and dropped: tying the unlocated network
   messages (net_con_msg, ms_err_str) by content over all US messages - it paired wrong messages.
+- Round 3: tools/text_pairs_manual.txt gets hand-checked pairs (addresses only) for the NET-file / network / error
+  messages (new `msg` kind re-flowed by msg_pairs, 81 messages, 262 slots), lobby netDialogMessage (46), plaza menu help
+  (21), title/game/gallery/network menus, slot names, button help (49). ints_agree: record tables with identical small
+  ints skip the prose length check (meal results). Town NPC talk: MH1 US lobby has MH1's town talk and it is already
+  paired; the G lines left are G's own (19 equal MH1 lines with no US line, ~70 numeric/trivial edits that the US
+  wording can't take). MH1 JP 6379 -> 6629 (81%), G 6839 -> 7064 (53.3%).

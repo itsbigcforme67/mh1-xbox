@@ -265,7 +265,6 @@ lobby:0x5FF9E0	village NPC lines and talk [G table]	G only
 lobby:0x5FFDF0	village NPC lines and talk	edited in G
 lobby:0x5FFE60	village NPC lines and talk [G table]	G only
 lobby:0x5FFF40	village NPC lines and talk	edited in G
-lobby:0x5FFFD0	village NPC lines and talk	twin without US English
 lobby:0x600040	village NPC lines and talk	twin without US English
 lobby:0x600060	village NPC lines and talk	twin without US English
 lobby:0x6000C0	village NPC lines and talk [G table]	G only
@@ -682,36 +681,11 @@ lobby:0x6385A0	online, keyboard, word filter	twin without US English
 lobby:0x6385D0	online, keyboard, word filter	twin without US English
 lobby:0x638630	online, keyboard, word filter	twin without US English
 lobby:0x638690	online, keyboard, word filter	twin without US English
-lobby:0x6386C0	online, keyboard, word filter	twin without US English
 lobby:0x638700	online, keyboard, word filter	twin without US English
 lobby:0x638720	online, keyboard, word filter	twin without US English
 lobby:0x638760	online, keyboard, word filter [G table]	G only
 lobby:0x6387A0	online, keyboard, word filter [G table]	G only
 lobby:0x63AE80	code literals (lobby)	G only
-lobby:0x63D850	village NPC lines and talk	twin without US English	in Portable
-lobby:0x63D870	village NPC lines and talk	twin without US English	in Portable
-lobby:0x63D890	village NPC lines and talk	twin without US English	in Portable
-lobby:0x63D8B0	village NPC lines and talk	twin without US English	in Portable
-lobby:0x63D8F0	village NPC lines and talk	twin without US English	in Portable
-lobby:0x63D910	village NPC lines and talk	twin without US English	in Portable
-lobby:0x63D930	village NPC lines and talk	twin without US English	in Portable
-lobby:0x63D950	village NPC lines and talk	twin without US English	in Portable
-lobby:0x63D970	village NPC lines and talk	twin without US English	in Portable
-lobby:0x63D990	village NPC lines and talk	twin without US English	in Portable
-lobby:0x63D9B0	village NPC lines and talk	twin without US English	in Portable
-lobby:0x63D9D0	village NPC lines and talk	twin without US English	in Portable
-lobby:0x63D9F0	village NPC lines and talk	twin without US English	in Portable
-lobby:0x63DA10	village NPC lines and talk	twin without US English	in Portable
-lobby:0x63DA30	village NPC lines and talk	twin without US English	in Portable
-lobby:0x63DA50	village NPC lines and talk	twin without US English	in Portable
-lobby:0x63DA70	village NPC lines and talk	twin without US English	in Portable
-lobby:0x63DA90	village NPC lines and talk	twin without US English	in Portable
-lobby:0x63DAB0	village NPC lines and talk	twin without US English	in Portable
-lobby:0x63DAD0	village NPC lines and talk	twin without US English	in Portable
-lobby:0x63DAF0	village NPC lines and talk	twin without US English	in Portable
-lobby:0x63DB10	village NPC lines and talk	twin without US English	in Portable
-lobby:0x63DB30	village NPC lines and talk	twin without US English	in Portable
-lobby:0x63DB50	village NPC lines and talk	twin without US English	in Portable
 lobby:0x63E920	code literals (lobby)	G only
 lobby:0x63EB28	village / plaza / guild / shop UI [G table]	G only	in Portable
 lobby:0x63EB38	village / plaza / guild / shop UI [G table]	G only	in Portable
@@ -776,7 +750,6 @@ lobby:0x640330	quest board / quest text tables [G table]	G only
 lobby:0x640350	quest board / quest text tables [G table]	G only	ambiguous: numbers: number changed to or from 1 (singular/plural)
 lobby:0x640370	quest board / quest text tables [G table]	G only
 lobby:0x640390	quest board / quest text tables	edited in G	ambiguous: numbers: number changed to or from 1 (singular/plural)
-lobby:0x6405C0	village / plaza / guild / shop UI	twin without US English	in Portable
 lobby:0x640640	village / plaza / guild / shop UI	edited in G	in Portable
 lobby:0x640660	village / plaza / guild / shop UI	twin without US English	in Portable
 lobby:0x640720	village / plaza / guild / shop UI	twin without US English	in Portable
@@ -799,16 +772,11 @@ lobby:0x6415B0	village / plaza / guild / shop UI [G table]	G only
 lobby:0x641638	village / plaza / guild / shop UI	edited in G
 lobby:0x641650	other tables (select_id_msg)	twin without US English
 lobby:0x6416A0	other tables (select_id_msg)	twin without US English
-lobby:0x641720	village / plaza / guild / shop UI	twin without US English
-lobby:0x641750	village / plaza / guild / shop UI	twin without US English
-lobby:0x641780	village / plaza / guild / shop UI	twin without US English
 lobby:0x6417A0	village / plaza / guild / shop UI [G table]	G only
 lobby:0x641820	village / plaza / guild / shop UI	twin without US English	in Portable
-lobby:0x641850	village / plaza / guild / shop UI	twin without US English
+lobby:0x641850	village / plaza / guild / shop UI	edited in G
 lobby:0x641870	village / plaza / guild / shop UI	twin without US English
-lobby:0x6418B0	village / plaza / guild / shop UI	twin without US English	in Portable
 lobby:0x6418E0	village / plaza / guild / shop UI	twin without US English
-lobby:0x641960	village / plaza / guild / shop UI	twin without US English	in Portable
 lobby:0x6419A0	village / plaza / guild / shop UI [G table]	G only
 lobby:0x6419D0	village / plaza / guild / shop UI [G table]	G only
 lobby:0x641A00	village / plaza / guild / shop UI	twin without US English
@@ -817,10 +785,8 @@ lobby:0x641A80	village / plaza / guild / shop UI [G table]	G only
 lobby:0x641B30	village / plaza / guild / shop UI	twin without US English
 lobby:0x641BD0	village / plaza / guild / shop UI [G table]	G only
 lobby:0x641C60	village / plaza / guild / shop UI [G table]	G only
-lobby:0x641D00	village / plaza / guild / shop UI	twin without US English
-lobby:0x641D30	village / plaza / guild / shop UI	twin without US English
-lobby:0x641D70	village / plaza / guild / shop UI	twin without US English
-lobby:0x641D90	village / plaza / guild / shop UI	twin without US English
+lobby:0x641D00	village / plaza / guild / shop UI	edited in G
+lobby:0x641D90	village / plaza / guild / shop UI	edited in G
 lobby:0x641DE0	village / plaza / guild / shop UI [G table]	G only
 lobby:0x641E80	village / plaza / guild / shop UI [G table]	G only
 lobby:0x641F20	village / plaza / guild / shop UI [G table]	G only
@@ -844,7 +810,6 @@ lobby:0x642460	village / plaza / guild / shop UI [G table]	G only
 lobby:0x642478	village / plaza / guild / shop UI [G table]	G only
 lobby:0x642490	village / plaza / guild / shop UI [G table]	G only
 lobby:0x6424A8	village / plaza / guild / shop UI [G table]	G only	in Portable
-lobby:0x6424B0	village / plaza / guild / shop UI	twin without US English
 lobby:0x6424B8	village / plaza / guild / shop UI [G table]	G only
 lobby:0x6424C0	village / plaza / guild / shop UI [G table]	G only
 lobby:0x6424C8	village / plaza / guild / shop UI [G table]	G only
@@ -873,9 +838,6 @@ lobby:0x642680	village NPC lines and talk [G table]	G only
 lobby:0x6426A0	village NPC lines and talk [G table]	G only
 lobby:0x6426B0	village / plaza / guild / shop UI [G table]	G only
 lobby:0x6426C0	village / plaza / guild / shop UI [G table]	G only	in Portable
-lobby:0x6426D0	village / plaza / guild / shop UI	twin without US English
-lobby:0x6426E0	village / plaza / guild / shop UI	twin without US English
-lobby:0x6426F0	village / plaza / guild / shop UI	twin without US English
 lobby:0x642710	village / plaza / guild / shop UI [G table]	G only
 lobby:0x642730	village / plaza / guild / shop UI	twin without US English
 lobby:0x642750	village / plaza / guild / shop UI [G table]	G only
@@ -890,7 +852,6 @@ lobby:0x642818	village / plaza / guild / shop UI [G table]	G only
 lobby:0x642830	village / plaza / guild / shop UI [G table]	G only
 lobby:0x642850	village / plaza / guild / shop UI [G table]	G only
 lobby:0x642870	village / plaza / guild / shop UI [G table]	G only
-lobby:0x642888	village / plaza / guild / shop UI	twin without US English
 lobby:0x6428A0	village NPC lines and talk	twin without US English
 lobby:0x6428D0	village NPC lines and talk [G table]	G only
 lobby:0x6428F0	village NPC lines and talk [G table]	G only
@@ -914,64 +875,32 @@ lobby:0x642B10	village NPC lines and talk [G table]	G only	in Portable
 lobby:0x642B20	village NPC lines and talk [G table]	G only
 lobby:0x642B30	village NPC lines and talk [G table]	G only	in Portable
 lobby:0x642B60	village / plaza / guild / shop UI [G table]	G only
-lobby:0x642B70	village / plaza / guild / shop UI	twin without US English
 lobby:0x642B90	village / plaza / guild / shop UI	twin without US English
 lobby:0x642BA8	village / plaza / guild / shop UI [G table]	G only
 lobby:0x642BC8	village / plaza / guild / shop UI	twin without US English
-lobby:0x642BD8	village / plaza / guild / shop UI	twin without US English
-lobby:0x642BE8	village / plaza / guild / shop UI	twin without US English
-lobby:0x642BF8	village / plaza / guild / shop UI	twin without US English
 lobby:0x642C08	village / plaza / guild / shop UI	twin without US English
 lobby:0x642C18	village / plaza / guild / shop UI [G table]	G only
-lobby:0x642C28	village / plaza / guild / shop UI	twin without US English
 lobby:0x642C38	village NPC lines and talk	twin without US English
-lobby:0x642C48	village / plaza / guild / shop UI	twin without US English	in Portable
-lobby:0x642C50	village / plaza / guild / shop UI	twin without US English
 lobby:0x642C70	village / plaza / guild / shop UI [G table]	G only
 lobby:0x642C80	village / plaza / guild / shop UI [G table]	G only
 lobby:0x642C90	village / plaza / guild / shop UI [G table]	G only
 lobby:0x642CA0	village / plaza / guild / shop UI [G table]	G only
 lobby:0x642CB0	online, keyboard, word filter [G table]	G only
 lobby:0x642CD0	online, keyboard, word filter [G table]	G only
-lobby:0x642CE0	online, keyboard, word filter	twin without US English
-lobby:0x642D00	online, keyboard, word filter	twin without US English
-lobby:0x642D20	online, keyboard, word filter	twin without US English
-lobby:0x642D40	online, keyboard, word filter	twin without US English
-lobby:0x642D70	online, keyboard, word filter	twin without US English
 lobby:0x642DA0	online, keyboard, word filter	twin without US English
 lobby:0x642E30	online, keyboard, word filter	twin without US English
-lobby:0x642E70	online, keyboard, word filter	twin without US English
-lobby:0x642E90	online, keyboard, word filter	twin without US English
-lobby:0x642ED0	online, keyboard, word filter	twin without US English
-lobby:0x642F10	online, keyboard, word filter	twin without US English
 lobby:0x642F40	village NPC lines and talk [G table]	G only
-lobby:0x642F80	online, keyboard, word filter	twin without US English
 lobby:0x642FB0	online, keyboard, word filter	twin without US English
 lobby:0x642FD0	online, keyboard, word filter	twin without US English
-lobby:0x643010	online, keyboard, word filter	twin without US English
-lobby:0x643050	online, keyboard, word filter	twin without US English
-lobby:0x643070	online, keyboard, word filter	twin without US English
 lobby:0x6430C0	online, keyboard, word filter	twin without US English
-lobby:0x6430F0	online, keyboard, word filter	twin without US English
-lobby:0x643120	online, keyboard, word filter	twin without US English
-lobby:0x643150	online, keyboard, word filter	twin without US English
 lobby:0x643180	village NPC lines and talk [G table]	G only
 lobby:0x6431B0	village NPC lines and talk [G table]	G only
-lobby:0x6431E0	online, keyboard, word filter	twin without US English
-lobby:0x643200	online, keyboard, word filter	twin without US English
-lobby:0x6432A0	online, keyboard, word filter	twin without US English
+lobby:0x6432A0	online, keyboard, word filter	edited in G
 lobby:0x6432D0	village NPC lines and talk [G table]	G only
-lobby:0x6432F0	online, keyboard, word filter	twin without US English
 lobby:0x643310	online, keyboard, word filter	twin without US English
 lobby:0x643340	online, keyboard, word filter	twin without US English
-lobby:0x643370	online, keyboard, word filter	twin without US English
-lobby:0x6433B0	online, keyboard, word filter	twin without US English
-lobby:0x6433E0	online, keyboard, word filter	twin without US English
 lobby:0x643410	online, keyboard, word filter	twin without US English
 lobby:0x643440	online, keyboard, word filter	twin without US English
-lobby:0x643470	online, keyboard, word filter	twin without US English
-lobby:0x6434B0	online, keyboard, word filter	twin without US English
-lobby:0x6434F0	online, keyboard, word filter	twin without US English
 lobby:0x643560	online, keyboard, word filter	twin without US English
 lobby:0x6435A0	village NPC lines and talk [G table]	G only
 lobby:0x643600	village NPC lines and talk [G table]	G only
@@ -982,11 +911,8 @@ lobby:0x6436D0	village NPC lines and talk [G table]	G only
 lobby:0x643710	village NPC lines and talk [G table]	G only
 lobby:0x643780	village NPC lines and talk [G table]	G only
 lobby:0x6437C0	online, keyboard, word filter	twin without US English
-lobby:0x6437E0	online, keyboard, word filter	twin without US English
-lobby:0x643830	online, keyboard, word filter	twin without US English
 lobby:0x643860	online, keyboard, word filter	twin without US English
 lobby:0x6438A0	online, keyboard, word filter	twin without US English
-lobby:0x6438E0	online, keyboard, word filter	twin without US English
 lobby:0x643900	online, keyboard, word filter	twin without US English
 lobby:0x643920	online, keyboard, word filter	twin without US English
 lobby:0x643950	online, keyboard, word filter	twin without US English
@@ -1007,24 +933,12 @@ lobby:0x643CF0	village NPC lines and talk [G table]	G only
 lobby:0x643D50	village NPC lines and talk [G table]	G only
 lobby:0x643D80	village NPC lines and talk [G table]	G only
 lobby:0x643DB0	village NPC lines and talk [G table]	G only
-lobby:0x643E10	online, keyboard, word filter	twin without US English
-lobby:0x643E60	online, keyboard, word filter	twin without US English
+lobby:0x643E60	online, keyboard, word filter	edited in G
 lobby:0x643FD0	village NPC lines and talk [G table]	G only
 lobby:0x644060	village NPC lines and talk [G table]	G only
 lobby:0x644090	village NPC lines and talk [G table]	G only
 lobby:0x6440C0	village NPC lines and talk [G table]	G only
-lobby:0x644130	online, keyboard, word filter	twin without US English
-lobby:0x644150	online, keyboard, word filter	twin without US English
-lobby:0x6441A0	online, keyboard, word filter	twin without US English
-lobby:0x6441D0	online, keyboard, word filter	twin without US English
-lobby:0x644200	online, keyboard, word filter	twin without US English
-lobby:0x644220	online, keyboard, word filter	twin without US English
-lobby:0x644260	online, keyboard, word filter	twin without US English
-lobby:0x6442D0	online, keyboard, word filter	twin without US English
-lobby:0x644360	online, keyboard, word filter	twin without US English
-lobby:0x644400	village NPC lines and talk [G table]	G only
 lobby:0x644460	village NPC lines and talk [G table]	G only
-lobby:0x644520	village NPC lines and talk [G table]	G only
 lobby:0x6445B0	village NPC lines and talk [G table]	G only
 lobby:0x644680	village NPC lines and talk [G table]	G only
 lobby:0x644780	village NPC lines and talk [G table]	G only
@@ -1494,37 +1408,13 @@ main:0x2C09E0	code literals (main)	G only	in Portable
 main:0x2C0C10	code literals (main)	G only	in Portable	ambiguous: the same Japanese has two different English texts
 main:0x2C0C30	code literals (main)	G only
 main:0x2C1290	online, keyboard, word filter [G table]	G only
-main:0x2C12C0	online, keyboard, word filter	twin without US English
-main:0x2C12F0	online, keyboard, word filter	twin without US English
-main:0x2C1310	online, keyboard, word filter	twin without US English
-main:0x2C1360	online, keyboard, word filter	twin without US English
-main:0x2C13C0	online, keyboard, word filter	twin without US English	in Portable
-main:0x2C13E0	online, keyboard, word filter	twin without US English
-main:0x2C1410	online, keyboard, word filter	twin without US English
-main:0x2C1430	online, keyboard, word filter	twin without US English
-main:0x2C1450	online, keyboard, word filter	twin without US English
-main:0x2C1480	online, keyboard, word filter	twin without US English
-main:0x2C14B0	online, keyboard, word filter	twin without US English
-main:0x2C14D0	online, keyboard, word filter	twin without US English
-main:0x2C1500	online, keyboard, word filter	twin without US English
-main:0x2C1520	online, keyboard, word filter	twin without US English
-main:0x2C1540	online, keyboard, word filter	twin without US English
-main:0x2C1560	online, keyboard, word filter	twin without US English
+main:0x2C12C0	online, keyboard, word filter	edited in G
+main:0x2C12F0	online, keyboard, word filter	edited in G
 main:0x2C1590	online, keyboard, word filter [G table]	G only
-main:0x2C15B0	online, keyboard, word filter	twin without US English
-main:0x2C15D0	online, keyboard, word filter	twin without US English	in Portable
-main:0x2C1620	online, keyboard, word filter	twin without US English
-main:0x2C1640	online, keyboard, word filter	twin without US English
-main:0x2C1660	online, keyboard, word filter	twin without US English	in Portable
-main:0x2C1680	online, keyboard, word filter	twin without US English
 main:0x2C16D0	online, keyboard, word filter	twin without US English
-main:0x2C16F0	online, keyboard, word filter	twin without US English
-main:0x2C1710	online, keyboard, word filter	twin without US English
-main:0x2C1730	online, keyboard, word filter	twin without US English
 main:0x2C1750	online, keyboard, word filter	twin without US English
 main:0x2C1770	online, keyboard, word filter	twin without US English
 main:0x2C1780	online, keyboard, word filter	twin without US English
-main:0x2C17A0	online, keyboard, word filter	twin without US English
 main:0x2C17C0	online, keyboard, word filter	twin without US English
 main:0x2C17E0	online, keyboard, word filter	twin without US English
 main:0x2C1810	online, keyboard, word filter	twin without US English
@@ -1549,35 +1439,16 @@ main:0x2C1B40	online, keyboard, word filter	twin without US English
 main:0x2C1B58	online, keyboard, word filter	twin without US English
 main:0x2C1B80	online, keyboard, word filter	twin without US English
 main:0x2C1BA0	online, keyboard, word filter	twin without US English
-main:0x2C1BC0	online, keyboard, word filter	twin without US English
-main:0x2C1BE0	online, keyboard, word filter	twin without US English
 main:0x2C1C10	online, keyboard, word filter	twin without US English
-main:0x2C1C30	online, keyboard, word filter	twin without US English
-main:0x2C1C60	online, keyboard, word filter	twin without US English
 main:0x2C1C80	online, keyboard, word filter	twin without US English
 main:0x2C1C90	online, keyboard, word filter	twin without US English
-main:0x2C1CB0	online, keyboard, word filter	twin without US English
-main:0x2C1CE0	online, keyboard, word filter	twin without US English
-main:0x2C1D00	online, keyboard, word filter	twin without US English
-main:0x2C1D20	online, keyboard, word filter	twin without US English
-main:0x2C1D40	online, keyboard, word filter	twin without US English
-main:0x2C1D60	online, keyboard, word filter	twin without US English
-main:0x2C1D90	online, keyboard, word filter	twin without US English
-main:0x2C1DC0	online, keyboard, word filter	twin without US English
-main:0x2C1DF0	online, keyboard, word filter	twin without US English
-main:0x2C1E10	online, keyboard, word filter	twin without US English
-main:0x2C1E40	online, keyboard, word filter	twin without US English
-main:0x2C1E70	online, keyboard, word filter	twin without US English
 main:0x2C1E90	online, keyboard, word filter	twin without US English
 main:0x2C1EB0	online, keyboard, word filter	twin without US English
 main:0x2C1EE0	online, keyboard, word filter	twin without US English
 main:0x2C1F00	online, keyboard, word filter	twin without US English
-main:0x2C1F20	online, keyboard, word filter	twin without US English
-main:0x2C1F60	online, keyboard, word filter	twin without US English
 main:0x2C1F90	online, keyboard, word filter	twin without US English
 main:0x2C1FC0	online, keyboard, word filter	twin without US English
 main:0x2C2000	online, keyboard, word filter	twin without US English
-main:0x2C2030	online, keyboard, word filter	twin without US English
 main:0x2C2060	online, keyboard, word filter	twin without US English
 main:0x2C2090	online, keyboard, word filter	twin without US English
 main:0x2C20B0	online, keyboard, word filter	twin without US English
@@ -1585,75 +1456,19 @@ main:0x2C20D0	online, keyboard, word filter	twin without US English
 main:0x2C20F0	online, keyboard, word filter	twin without US English
 main:0x2C2110	online, keyboard, word filter	twin without US English
 main:0x2C2140	online, keyboard, word filter	twin without US English
-main:0x2C2170	online, keyboard, word filter	twin without US English
 main:0x2C2190	online, keyboard, word filter	twin without US English
-main:0x2C21C0	online, keyboard, word filter	twin without US English
-main:0x2C21F0	online, keyboard, word filter	twin without US English
-main:0x2C2220	online, keyboard, word filter	twin without US English
-main:0x2C2250	online, keyboard, word filter	twin without US English
 main:0x2C2260	online, keyboard, word filter	twin without US English
 main:0x2C2280	online, keyboard, word filter	twin without US English
 main:0x2C22A0	online, keyboard, word filter	twin without US English
-main:0x2C22D0	online, keyboard, word filter	twin without US English
-main:0x2C2300	online, keyboard, word filter	twin without US English
-main:0x2C2330	online, keyboard, word filter	twin without US English
 main:0x2C2350	online, keyboard, word filter	twin without US English
 main:0x2C2390	online, keyboard, word filter	twin without US English
 main:0x2C23B0	online, keyboard, word filter	twin without US English
 main:0x2C23E0	online, keyboard, word filter	twin without US English
 main:0x2C2410	online, keyboard, word filter	twin without US English
-main:0x2C2440	online, keyboard, word filter	twin without US English
-main:0x2C24C0	online, keyboard, word filter	twin without US English
-main:0x2C24E0	online, keyboard, word filter	twin without US English
-main:0x2C2500	online, keyboard, word filter	twin without US English
-main:0x2C2520	online, keyboard, word filter	twin without US English
-main:0x2C2550	online, keyboard, word filter	twin without US English
-main:0x2C2580	online, keyboard, word filter	twin without US English
-main:0x2C25A8	online, keyboard, word filter	twin without US English
-main:0x2C25D8	online, keyboard, word filter	twin without US English
-main:0x2C25F0	online, keyboard, word filter	twin without US English
-main:0x2C2620	online, keyboard, word filter	twin without US English
-main:0x2C2640	online, keyboard, word filter	twin without US English
-main:0x2C2650	online, keyboard, word filter	twin without US English
-main:0x2C26A0	online, keyboard, word filter	twin without US English
-main:0x2C26F0	online, keyboard, word filter	twin without US English
-main:0x2C2720	online, keyboard, word filter	twin without US English
-main:0x2C2750	online, keyboard, word filter	twin without US English
-main:0x2C2780	online, keyboard, word filter	twin without US English
-main:0x2C27A0	online, keyboard, word filter	twin without US English
-main:0x2C27D0	online, keyboard, word filter	twin without US English
-main:0x2C2800	online, keyboard, word filter	twin without US English
-main:0x2C2850	online, keyboard, word filter	twin without US English
-main:0x2C2880	online, keyboard, word filter	twin without US English
-main:0x2C28B0	online, keyboard, word filter	twin without US English
-main:0x2C28D0	online, keyboard, word filter	twin without US English
-main:0x2C2920	online, keyboard, word filter	twin without US English
-main:0x2C2960	online, keyboard, word filter	twin without US English
-main:0x2C2990	online, keyboard, word filter	twin without US English
-main:0x2C29C0	online, keyboard, word filter	twin without US English
-main:0x2C29F0	online, keyboard, word filter	twin without US English
-main:0x2C2A20	online, keyboard, word filter	twin without US English	in Portable
-main:0x2C2A40	online, keyboard, word filter	twin without US English
-main:0x2C2A80	online, keyboard, word filter	twin without US English
-main:0x2C2AD0	online, keyboard, word filter	twin without US English
-main:0x2C2B00	online, keyboard, word filter	twin without US English
 main:0x2C2B20	online, keyboard, word filter	twin without US English
 main:0x2C2B40	online, keyboard, word filter	twin without US English
-main:0x2C2B80	online, keyboard, word filter	twin without US English
-main:0x2C2BA0	online, keyboard, word filter	twin without US English
-main:0x2C2C00	online, keyboard, word filter	twin without US English
 main:0x2C2C20	online, keyboard, word filter	twin without US English
-main:0x2C2C80	online, keyboard, word filter	twin without US English
-main:0x2C2CB0	online, keyboard, word filter	twin without US English
-main:0x2C2CD0	online, keyboard, word filter	twin without US English
-main:0x2C2D00	online, keyboard, word filter	twin without US English
-main:0x2C2D30	online, keyboard, word filter	twin without US English
-main:0x2C2D60	online, keyboard, word filter	twin without US English
 main:0x2C2D90	online, keyboard, word filter	twin without US English
-main:0x2C2DC0	online, keyboard, word filter	twin without US English
-main:0x2C2E30	online, keyboard, word filter	twin without US English
-main:0x2C2E50	online, keyboard, word filter	twin without US English
-main:0x2C2E70	online, keyboard, word filter	twin without US English
 main:0x2C2EA0	online, keyboard, word filter	twin without US English
 main:0x2C2ED0	online, keyboard, word filter	twin without US English
 main:0x2C2EF0	online, keyboard, word filter	twin without US English	in Portable
@@ -1679,24 +1494,11 @@ main:0x2C31F0	online, keyboard, word filter [G table]	G only
 main:0x2C3220	online, keyboard, word filter [G table]	G only
 main:0x2C3250	online, keyboard, word filter [G table]	G only
 main:0x2C3280	online, keyboard, word filter [G table]	G only
-main:0x2C32B0	other tables (menu00_str_tbl)	twin without US English
 main:0x2C32D0	other tables (menu00_str_tbl)	twin without US English
-main:0x2C32E8	other tables (menu00_str_tbl)	twin without US English
-main:0x2C3320	other tables (menu01_str_tbl)	twin without US English
-main:0x2C3338	other tables (menu02_str_tbl)	twin without US English
-main:0x2C3350	other tables (menu02_str_tbl)	twin without US English
-main:0x2C3370	other tables (menu02_str_tbl)	twin without US English
 main:0x2C3390	other tables (menu02_str_tbl)	twin without US English
 main:0x2C33C0	other tables (menu05_str_tbl)	twin without US English
 main:0x2C33D0	other tables (menu05_str_tbl)	twin without US English
-main:0x2C33E0	other tables (menu06_str_tbl)	twin without US English
-main:0x2C33E8	other tables (menu08_str_tbl)	twin without US English
-main:0x2C33F8	other tables (menu08_str_tbl)	twin without US English
-main:0x2C3410	other tables (menu08_str_tbl)	twin without US English
 main:0x2C3430	other tables (menu09_str_tbl)	twin without US English	in Portable	ambiguous: the same Japanese has two different English texts
-main:0x2C3480	memory card and yes/no dialogs	twin without US English
-main:0x2C34A0	memory card and yes/no dialogs	twin without US English
-main:0x2C34E0	memory card and yes/no dialogs	twin without US English
 main:0x2C3510	memory card and yes/no dialogs	twin without US English
 main:0x2C3540	memory card and yes/no dialogs	twin without US English
 main:0x2C3580	memory card and yes/no dialogs	twin without US English
@@ -1722,21 +1524,13 @@ main:0x2C3860	memory card and yes/no dialogs	twin without US English
 main:0x2C3880	memory card and yes/no dialogs	twin without US English
 main:0x2C38B0	memory card and yes/no dialogs	twin without US English
 main:0x2C38D0	memory card and yes/no dialogs	twin without US English
-main:0x2C38F0	memory card and yes/no dialogs	twin without US English
 main:0x2C3920	memory card and yes/no dialogs	twin without US English
 main:0x2C3950	memory card and yes/no dialogs	twin without US English
 main:0x2C3980	memory card and yes/no dialogs	twin without US English
 main:0x2C39A0	memory card and yes/no dialogs	twin without US English
 main:0x2C39C0	memory card and yes/no dialogs	twin without US English
-main:0x2C39E0	memory card and yes/no dialogs	twin without US English
-main:0x2C3A10	memory card and yes/no dialogs	twin without US English
-main:0x2C3A30	memory card and yes/no dialogs	twin without US English
 main:0x2C3A50	memory card and yes/no dialogs	twin without US English
-main:0x2C3A68	memory card and yes/no dialogs	twin without US English
-main:0x2C3A80	memory card and yes/no dialogs	twin without US English
-main:0x2C3AA0	memory card and yes/no dialogs	twin without US English
-main:0x2C3AC0	memory card and yes/no dialogs	twin without US English
-main:0x2C3AF0	memory card and yes/no dialogs	twin without US English
+main:0x2C3B20	memory card and yes/no dialogs	twin without US English
 main:0x2C3B50	memory card and yes/no dialogs	twin without US English
 main:0x2C3B70	memory card and yes/no dialogs [G table]	G only
 main:0x2C3B90	online, keyboard, word filter [G table]	G only
@@ -5995,33 +5789,14 @@ sub_main:0x53A640	menus, options, HUD [G table]	G only	in Portable
 sub_main:0x53A670	other tables (edit_menu_msg) [G table]	G only	in Portable
 sub_main:0x53A690	other tables (edit_menu_msg) [G table]	G only	in Portable
 sub_main:0x53A6B0	menus, options, HUD [G table]	G only	in Portable
-sub_main:0x53A6E0	menus, options, HUD	twin without US English	in Portable
-sub_main:0x53A700	menus, options, HUD	twin without US English	in Portable
-sub_main:0x53A718	menus, options, HUD	twin without US English	in Portable
-sub_main:0x53A728	menus, options, HUD	twin without US English	in Portable
 sub_main:0x53A740	menus, options, HUD [G table]	G only
-sub_main:0x53A760	menus, options, HUD	twin without US English
-sub_main:0x53A770	menus, options, HUD [G table]	G only
-sub_main:0x53A780	menus, options, HUD [G table]	G only	in Portable
 sub_main:0x53A790	menus, options, HUD [G table]	G only
-sub_main:0x53A7A0	other tables (game_menu_msg)	twin without US English	in Portable
-sub_main:0x53A7D0	other tables (game_menu_msg)	twin without US English	in Portable
-sub_main:0x53A7F0	other tables (game_menu_msg)	twin without US English	in Portable
-sub_main:0x53A810	other tables (game_menu_msg)	twin without US English	in Portable
 sub_main:0x53A830	other tables (game_menu_msg) [G table]	G only	in Portable
 sub_main:0x53A870	other tables (game_menu_msg) [G table]	G only	in Portable
 sub_main:0x53A890	other tables (game_menu_msg) [G table]	G only	in Portable
 sub_main:0x53A8C0	menus, options, HUD [G table]	G only	in Portable
-sub_main:0x53A930	menus, options, HUD	twin without US English
-sub_main:0x53A950	menus, options, HUD	twin without US English	in Portable
-sub_main:0x53A970	menus, options, HUD	twin without US English	in Portable
-sub_main:0x53A990	menus, options, HUD	twin without US English	in Portable
-sub_main:0x53A9A8	menus, options, HUD	twin without US English	in Portable
-sub_main:0x53A9C0	menus, options, HUD	twin without US English	in Portable
-sub_main:0x53A9E0	menus, options, HUD	twin without US English	in Portable
-sub_main:0x53A9F8	menus, options, HUD	twin without US English
+sub_main:0x53A930	menus, options, HUD	edited in G
 sub_main:0x53AA10	menus, options, HUD [G table]	G only	in Portable
-sub_main:0x53AA20	menus, options, HUD [G table]	G only	in Portable
 sub_main:0x53AA30	menus, options, HUD [G table]	G only	in Portable
 sub_main:0x53AA50	menus, options, HUD [G table]	G only	in Portable
 sub_main:0x53AA60	menus, options, HUD [G table]	G only	in Portable
