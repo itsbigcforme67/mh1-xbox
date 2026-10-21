@@ -12,7 +12,8 @@ EMU_TESTS="test_pdtest test_ps2_online test_three_way test_ps2_hunt"
 step() {  # step NAME CMD...
     local n=$1; shift
     local cap=1500000
-    case $n in test_save) cap=unlimited ;; test_ps2_patch|test_ps2_online|test_pdtest) cap=3000000 ;; esac   # ASan; wibo (PS2 compiler)
+    case $n in test_save|test_coop) cap=unlimited ;;   # test_coop: its Windows joiner runs under Wine, which cannot start under ulimit -v
+    test_ps2_patch|test_ps2_online|test_pdtest) cap=3000000 ;; esac   # ASan; wibo (PS2 compiler)
     if (ulimit -v $cap; "$@") > "build/check/$n.log" 2>&1; then echo "ok   $n"; else echo "FAIL $n (build/check/$n.log)"; fail=1; fi
 }
 (ulimit -v 3000000; tools/rebuild.sh) > build/check/rebuild.log 2>&1

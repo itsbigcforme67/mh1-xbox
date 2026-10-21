@@ -7,6 +7,8 @@ int install_is_iso_name(const char *p);                 /* ends in .iso / .ISO *
 /* a folder that already holds the game's files (exe/data, exe/disc, the user data folder); 1 = found */
 int install_has_data(const char *dir);                /* dir holds AFS_DATA.AFS and SLPM_654.95 */
 int install_find_data(char *out, size_t n);
+/* 1 = PLAYER.txt is next to the program (a player package: the G build may open its window) */
+int install_player_package(void);
 /* where an install goes: next to the exe if writable (Windows), else the user data folder */
 void install_default_dir(char *out, size_t n);
 /* read the ISO9660 image, check it is the Japanese MH1 disc, copy the files into destdir with a progress

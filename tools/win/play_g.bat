@@ -11,8 +11,7 @@ rem Keyboard: W/A/S/D move, arrow keys attack, K roll (cross), L sheathe (circle
 rem E guard, Q camera reset, T/F/G/H d-pad, Enter start / pause. Xbox-style controllers work. Esc quits.
 setlocal
 cd /d "%~dp0"
-rem a player gets a window (the G build is hidden by default for automated test runs)
-set MH1_SHOW=1
+rem the window opens because PLAYER.txt is next to mhview_g.exe (without it the G build runs hidden, for tests)
 set "MODE="
 set "DISC="
 :args
