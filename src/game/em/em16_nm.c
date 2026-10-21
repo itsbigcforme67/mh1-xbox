@@ -2627,6 +2627,49 @@ void em16_main(EMW *em) {
             w->yobi_st = 0;
         }
     }
+#ifdef VERSION_MHG
+    /* G (game 0x602D00, written from the asm; agent D, 21 Oct 2026): the same story scenes at G's quest numbers
+     * (10006 / 10010 / 10041 for MH1's 0x88 / 0x8A / 0xAB) and a fourth one, quest 10035 on stage 54 (event flag 22,
+     * act 6/6). The PC compared G's u16 quest number with MH1's: the Velociprey-type monsters of quest 10041 skipped
+     * their scene (the lockstep referee, g_monoblos tick 33) */
+    switch (*(u16 *)((u8 *)&quest_w + 8)) {
+    case 10006:
+        if (em->stg == 0x23 && Event_flag_ck(0xA) == 0) {
+            if (game_w.info_stop == 1 && em->mode != 6) {
+                em16_act_set(em, 6, 3, 0);
+            }
+            break;
+        }
+        goto cmd;
+    case 10010:
+        if (em->stg == 0x28 && Event_flag_ck(0x13) == 0) {
+            if (game_w.info_stop == 1 && em->mode != 6) {
+                em16_act_set(em, 6, 4, 0);
+            }
+            break;
+        }
+        goto cmd;
+    case 10041:
+        if (em->stg == 0x35 && Event_flag_ck(0x12) == 0) {
+            if (game_w.info_stop == 1 && em->mode != 6) {
+                em16_act_set(em, 6, 5, 0);
+            }
+            break;
+        }
+        goto cmd;
+    case 10035:
+        if (em->stg == 0x36 && Event_flag_ck(0x16) == 0) {
+            if (game_w.info_stop == 1 && em->mode != 6) {
+                em16_act_set(em, 6, 6, 0);
+            }
+            break;
+        }
+        goto cmd;
+    default:
+        goto cmd;
+    }
+    if (0)
+#endif
     switch (quest_w.x08) {
     case 0x88:
         if (em->stg == 0x23 && Event_flag_ck(0xA) == 0) {

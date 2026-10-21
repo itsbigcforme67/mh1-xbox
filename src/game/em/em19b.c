@@ -1270,11 +1270,25 @@ void em19_main(EMW *em) {
         em->x839 = 0;
         break;
     }
-    if (quest_w.no == 0x8A && em->stg == 0x25 && Event_flag_ck(0xD) == 0) {
+#ifdef VERSION_MHG
+int rt_story_quest(void);
+#define STORYQ rt_story_quest()
+#else
+#define STORYQ quest_w.no
+#endif
+    if (STORYQ == 0x8A && em->stg == 0x25 && Event_flag_ck(0xD) == 0) {
         if (game_w.info_stop == 1 && em->mode != 6) {
             em19_act_set(em, 6, 0, 1);
         }
-    } else {
+    }
+#if defined(VERSION_MHG) && !defined(__MWERKS__)
+    else if (*(u16 *)((u8 *)&quest_w + 8) == 10046 && em->stg == 70 && Event_flag_ck(26) == 0) {
+        if (game_w.info_stop == 1 && em->mode != 6) {      /* G (game 0x617510) */
+            em19_act_set(em, 6, 1, 1);
+        }
+    }
+#endif
+    else {
         switch (em->x734) {
         case 3:
             if (em->x839 != 0) {

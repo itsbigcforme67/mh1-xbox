@@ -1790,7 +1790,13 @@ void em12_main(EMW *em) {
         em_escape_mind_set(em, 3, 0x90);
         em->x839 = 1;
     }
-    switch (quest_w.x08) {
+#ifdef VERSION_MHG
+int rt_story_quest(void);
+#define STORYQ rt_story_quest()
+#else
+#define STORYQ quest_w.x08
+#endif
+    switch (STORYQ) {
     case 0x8B:
         if (em->stg == 0x21 && Event_flag_ck(0xE) == 0) {
             if (game_w.info_stop == 1 && em->mode != 6) {

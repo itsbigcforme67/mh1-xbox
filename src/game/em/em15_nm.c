@@ -1,4 +1,5 @@
 /* em15 draft */
+int Event_flag_ck(int);
 #include "em.h"
 #include "game.h"
 #include "fl.h"
@@ -4648,6 +4649,13 @@ void em15_main(EMW *em) {
         }
         break;
     }
+#ifdef VERSION_MHG
+    /* G (game 0x5F7440, written from the asm; agent D, 21 Oct 2026): its scene in quest 10046 */
+    if (quest_w.no == 10046 && em->stg == 70 && Event_flag_ck(26) == 0) {
+        if (game_w.info_stop == 1 && em->mode != 6)
+            em15_act_set(em, 6, 0, 1);
+    } else
+#endif
     if (em->x839 != 0) {
         em_cmd_ck(em);
         em->x839 = 0;

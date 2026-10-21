@@ -5964,7 +5964,13 @@ void em01_main(EMW *em) {
         }
         break;
     }
-    switch (quest_w.x08) {
+#ifdef VERSION_MHG
+int rt_story_quest(void);
+#define STORYQ rt_story_quest()
+#else
+#define STORYQ quest_w.x08
+#endif
+    switch (STORYQ) {
     case 0x8A:
         if (em->stg == 0x25 && Event_flag_ck(0xD) == 0) {
             if (game_w.info_stop == 1 && em->mode != 6) {

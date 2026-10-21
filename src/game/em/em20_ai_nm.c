@@ -6105,11 +6105,25 @@ block_111:
         }
         break;
     }
-    if ((quest_w.no == 0x94) && (em->stg == 0x2E) && (Event_flag_ck(0x10) == 0)) {
+#ifdef VERSION_MHG
+int rt_story_quest(void);
+#define STORYQ rt_story_quest()
+#else
+#define STORYQ quest_w.no
+#endif
+    if ((STORYQ == 0x94) && (em->stg == 0x2E) && (Event_flag_ck(0x10) == 0)) {
         if ((*(u8 *)0x3F360F == 1) && (em->mode != 6)) {
             em20_act_set(em, 6, 0, 1);
         }
-    } else {
+    }
+#ifdef VERSION_MHG
+    else if (quest_w.no == 10028 && em->stg == 69 && Event_flag_ck(20) == 0) {
+        if (game_w.info_stop == 1 && em->mode != 6) {      /* G (game 0x624410) */
+            em20_act_set(em, 6, 1, 1);
+        }
+    }
+#endif
+    else {
         switch (em->x734) {
         case 3:
             if (em->x839 != 0) {
