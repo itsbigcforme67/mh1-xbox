@@ -2965,6 +2965,7 @@ int main(int argc, char **argv)
             }
             if (quest_no) {
                 { void rt_ref_tick(int); rt_ref_tick(ticks); }      /* the referee's record of the tick's start */
+                { void rt_game_task_tick(void); rt_game_task_tick(); }  /* Game_task: frame counter, play time */
                 /* outside game2 the host tick (sim_tick) does not run: the
                  * pad is still read every tick (result / reward screens) */
                 extern unsigned char game_w[];
