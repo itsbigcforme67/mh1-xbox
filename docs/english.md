@@ -382,6 +382,9 @@ a string the code takes the address of inside another string is not.
 
 ## 7. English from the player's own discs: tools/text_map.py (agent E, 13 Oct 2026)
 
+G's coverage by category, the G-only text rules (agent B, 20 Oct 2026: 47% -> 51%), and what Monster Hunter
+Freedom / Portable is expected to add: docs/english_g.md.
+
 Owner's decision (13 Oct): G is the main release and its English starts from the official US text. `tools/text_map.py`
 reads the three discs (disc/mh1, disc/mh1_us, disc/mhg: the executables, the overlays unpacked in memory, the quest
 files of AFS_DATA.AFS), ties each US string to its MH1 JP string and that one to its G string by structure, and writes
