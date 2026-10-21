@@ -20,7 +20,7 @@ extern u8 quest_price;
 extern u8 tl_member_buff;
 s32 cnLBS_Init_LoginLobbyServer();              /* extern */
 s32 cnLbc_SetIspRestTime();               /* extern */
-extern s32 g_lb_6B42D0;
+extern u8 g_lb_6B42D0;
 extern u8 client_work;
 extern u8 RecvMailInfo;
 extern u8 network_work;
@@ -51,14 +51,14 @@ void net_ToNetworkLobby(void) {
     (*(s8 *)((u8 *)((*(u8 **)&cw)) + 0xB9F)) = 0;
     (*(s8 *)((u8 *)((*(u8 **)&cw)) + 0xBA0)) = 0;
     cnLbc_SetIspRestTime((*(u8 **)&cw) + 0xFA84);
-    MH_lobbyClear();
-    lobby_func_0059F410(M2C_ERROR(/* Read from unset register $a0 */), M2C_ERROR(/* Read from unset register $a1 */), M2C_ERROR(/* Read from unset register $a2 */));
+    MH_lobbyClear(M2C_ERROR(/* Read from unset register $a0 */), M2C_ERROR(/* Read from unset register $a1 */), M2C_ERROR(/* Read from unset register $a2 */), M2C_ERROR(/* Read from unset register $a3 */));
+    lobby_func_0059F410(M2C_ERROR(/* Read from unset register $a0 */), M2C_ERROR(/* Read from unset register $a1 */), M2C_ERROR(/* Read from unset register $a2 */), M2C_ERROR(/* Read from unset register $a3 */));
     (*(s32 *)((u8 *)((*(u8 **)&cw)) + 0xFA80)) = 0xE10;
     (*(s32 *)&quest_price) = 0;
     (*(s8 *)((u8 *)((*(u8 **)&cw)) + 0xB76)) = 0;
     (*(s8 *)((u8 *)((*(u8 **)&cw)) + 0xBA8)) = 0;
     (*(s8 *)((u8 *)((*(u8 **)&cw)) + 0xFA61)) = 0;
-    Lb_clearChatList();
+    Lb_clearChatList(M2C_ERROR(/* Read from unset register $a0 */), M2C_ERROR(/* Read from unset register $a1 */), M2C_ERROR(/* Read from unset register $a2 */), M2C_ERROR(/* Read from unset register $a3 */));
     (*(s8 *)&BsLbsErrNum) = 0;
     cnLBS_Init_LoginLobbyServer();
     (*(u8 **)&g_main_2EFBAC) = &g_lb_6B42D0;
@@ -98,7 +98,7 @@ loop_6:
         var_a4 += 2;
         var_a3 += 7;
     } while (var_a1_2 < 0xC);
-    Lb_clearChatList();
-    lobby_func_0059A1F0();
+    Lb_clearChatList(0x24A, var_a1_2, temp_a2, var_a3);
+    lobby_func_0059A1F0(M2C_ERROR(/* Read from unset register $a0 */), M2C_ERROR(/* Read from unset register $a1 */), M2C_ERROR(/* Read from unset register $a2 */), M2C_ERROR(/* Read from unset register $a3 */));
 }
 

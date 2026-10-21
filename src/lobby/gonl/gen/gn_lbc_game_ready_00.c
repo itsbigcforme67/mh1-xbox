@@ -5,18 +5,18 @@
 
 s32 CallBack_Result_Match_MatchInformation();
 s32 Check_CallBackWait();
+s32 cnLBS_Get_MatchInfomation();
+s32 cnLBS_Read_MatchInfomation();
 void * memcpy();
 void * memset();
 extern u8 USER_PL_ID;
 extern u8 cw;
-s32 cnLBS_Get_MatchInfomation(); /* extern */
-s32 cnLBS_Read_MatchInfomation(); /* extern */
-extern s32 g_sub_541E30;
+extern u8 g_sub_541E30;
 extern u8 room_member_handle;
 extern u8 room_member_id;
 extern u8 room_member_mini_data;
 
-void lbc_game_ready_00(void) {
+void lbc_game_ready_00(s32 unused_a0, s32 unused_a1, s32 unused_a2, s32 arg3) {
     u8 g_frame[0x780] __attribute__((aligned(16)));   /* G's stack frame */
 #define sp70 (*(u8 *)(g_frame + 0x70))
 #define sp71 (*(u8 *)(g_frame + 0x71))
@@ -29,13 +29,11 @@ void lbc_game_ready_00(void) {
     u8 *var_s5;
     u8 temp_a0;
     u8 *temp_a1;
-    u8 *temp_a2;
     u8 *temp_v1;
     u8 *temp_v1_2;
 
     temp_a1 = (*(void **)&cw);
     temp_a0 = (*(u8 *)((u8 *)(temp_a1) + 0xB9C));
-    temp_a2 = temp_a1 + 0xB9C;
     switch (temp_a0) {                              /* irregular */
     case 0:
         (*(u8 *)((u8 *)(temp_a1) + 0xB9C)) = (u8) (temp_a0 + 1);
@@ -50,15 +48,15 @@ void lbc_game_ready_00(void) {
         (*(s32 *)((u8 *)((*(void **)&cw)) + 0xFA68)) = 0xE10;
         (*(s8 *)((u8 *)((*(void **)&cw)) + 0xFA65)) = 0;
         (*(s8 *)((u8 *)((*(void **)&cw)) + 0xBA9)) = 0x30;
-        cnLBS_Read_MatchInfomation(CallBack_Result_Match_MatchInformation, temp_a1, temp_a2);
+        cnLBS_Read_MatchInfomation((s32) CallBack_Result_Match_MatchInformation);
         return;
     case 3:
-        Check_CallBackWait();
+        Check_CallBackWait((s32) temp_a0, (s32) temp_a1, (s32) (temp_a1 + 0xB9C), arg3);
         return;
     case 4:
         (*(u8 *)((u8 *)(temp_a1) + 0xB9B)) = (u8) ((*(u8 *)((u8 *)(temp_a1) + 0xB9B)) + 1);
         (*(u8 *)((u8 *)((*(void **)&cw)) + 0xB9C)) = 0U;
-        cnLBS_Get_MatchInfomation(&sp70, temp_a1, temp_a2);
+        cnLBS_Get_MatchInfomation(&sp70);
         (*(u8 *)((u8 *)((*(void **)&cw)) + 0xBB1)) = sp70;
         (*(u8 *)&USER_PL_ID) = sp71;
         memcpy((*(void **)&cw) + 0xFA6C, &sp72, 0x10);

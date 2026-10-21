@@ -12,7 +12,7 @@ s32 font_set_palette();
 extern u8 tl_member_buff;
 extern u8 tl_msg_tbl;
 s32 font_print();                 /* extern */
-extern s32 g_lb_636CF0;
+extern u8 g_lb_636CF0;
 extern s32 lb_quest_color_tbl;
 extern u8 lit_2316;
 
@@ -24,7 +24,7 @@ void lobby_func_00576CB0(void) {
     s32 var_s3;
     s32 var_v0;
 
-    font_print_double(0xE2, 0x78, 1, 5, (*(s32 *)((u8 *)&(*(u8 *)((u8 *)&tl_msg_tbl + 0x54)) + ((*(u8 *)((u8 *)&tl_member_buff + 0x1388)) * 4))));
+    font_print_double(0xE2, 0x78, 1, 5, *(&(*(u8 *)((u8 *)&tl_msg_tbl + 0x54)) + ((*(u8 *)((u8 *)&tl_member_buff + 0x1388)) * 4)));
     switch ((*(u8 *)((u8 *)&tl_member_buff + 0x1388))) {                           /* irregular */
     case 0:
         var_a3 = lb_quest_color_tbl;
@@ -44,7 +44,7 @@ void lobby_func_00576CB0(void) {
     }
     var_s3 = ((s16) (0x8E));
     font_set_palette(0);
-    Lb_put_msg_type2(0xE2, (s32) var_s3, 0x39);
+    Lb_put_msg_type2(0xE2, (s32) var_s3, 0x39, M2C_ERROR(/* Read from unset register $a3 */));
     if (((*(u8 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x18))) + 0x1370)) != 2) && ((*(u8 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x18))) + 0x1370)) != 1)) {
         var_v0 = 7;
     } else {
@@ -76,7 +76,7 @@ void lobby_func_00576CB0(void) {
     } else {
         font_set_palette(0);
     }
-    Lb_put_msg_type2(0xE2, 0x128, 0x41);
+    Lb_put_msg_type2(0xE2, 0x128, 0x41, M2C_ERROR(/* Read from unset register $a3 */));
     Put_page_num(0x208, 0x78, (s32) (*(u8 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x18))) + 0x1370)), 5, 0);
 }
 

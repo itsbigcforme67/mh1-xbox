@@ -3,9 +3,9 @@
  * tools/build_pc_mhg.sh). */
 #include "../gonl.h"
 
+s32 __cnetSub_Get_RestBgWork();
 s32 cnLBS_Read_FileDownloadData();
 s32 lobby_func_005C00A0();
-s32 __cnetSub_Get_RestBgWork();                     /* extern */
 extern u8 g_lb_731163;
 extern u32 g_lb_731168;
 

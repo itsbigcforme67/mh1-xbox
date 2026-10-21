@@ -6,13 +6,14 @@
 s32 Check_CallBackWait();
 s32 cnLBS_Get_ServerMessage();
 s32 lobby_func_00580EC0();
+s32 lobby_func_00580F30();
 s32 lobby_func_005C05B0();
 s32 lobby_func_005C0620();
 s32 lobby_func_005C0740();
 extern u8 g_main_2EF390;
 extern u8 cw;
 extern u8 g_main_2EF390;
-s32 lobby_func_00580FA0(void) {
+s32 lobby_func_00580FA0(s32 unused_a0, s32 unused_a1, s32 arg2, s32 arg3) {
     u8 g_frame[0x20] __attribute__((aligned(16)));   /* G's stack frame */
 #define sp1F (*(u8 *)(g_frame + 0x1F))
     s32 var_a1;
@@ -21,11 +22,13 @@ s32 lobby_func_00580FA0(void) {
     u8 temp_v1_3;
     u8 *temp_a0;
     u8 *temp_a0_2;
+    u8 *temp_a1;
     u8 *temp_v1_2;
 
     temp_a0 = (*(void **)&cw);
     sp1F = 0;
     temp_v1 = (*(u8 *)((u8 *)(temp_a0) + 0xB9D));
+    temp_a1 = temp_a0 + 0xB9D;
     switch (temp_v1) {                              /* switch 1; irregular */
     case 0x0:                                       /* switch 1 */
         (*(u8 *)((u8 *)(temp_a0) + 0xB9D)) = (u8) (temp_v1 + 1);
@@ -33,15 +36,15 @@ s32 lobby_func_00580FA0(void) {
         (*(s32 *)((u8 *)((*(void **)&cw)) + 0xFA68)) = 0xE10;
         (*(s8 *)((u8 *)((*(void **)&cw)) + 0xFA65)) = 0;
         (*(s8 *)((u8 *)((*(void **)&cw)) + 0xBA9)) = 0x1A;
-        lobby_func_005C05B0((s32) lobby_func_00580EC0);
+        lobby_func_005C05B0((s32) lobby_func_00580EC0, (s32) temp_a1, arg2, arg3);
 block_31:
     default:                                        /* switch 1 */
         return 2;
     case 0x1:                                       /* switch 1 */
-        Check_CallBackWait();
+        Check_CallBackWait((s32) temp_a0, (s32) temp_a1, arg2, arg3);
         goto block_31;
     case 0x2:                                       /* switch 1 */
-        lobby_func_005C0620(&sp1F, NULL);
+        lobby_func_005C0620(&sp1F, NULL, arg2, arg3);
         if (sp1F == 0) {
             (*(u8 *)((u8 *)((*(void **)&cw)) + 0xB9D)) = 0U;
             return 0;
@@ -63,7 +66,7 @@ block_31:
             var_a1 = (*(s32 *)&g_main_2EF390) + 0x23F4 + 0x20 + 0x9C8;
 block_24:
             (*(u8 *)((u8 *)(temp_a0_2) + 0x101A)) = (u8) ((*(u8 *)((u8 *)(temp_a0_2) + 0x101A)) + 1);
-            lobby_func_005C0740((s32) (*(u8 *)((u8 *)((*(void **)&cw)) + 0xB9F)), var_a1);
+            lobby_func_005C0740((s32) (*(u8 *)((u8 *)((*(void **)&cw)) + 0xB9F)), var_a1, (s32) lobby_func_00580F30, arg3);
             goto block_31;
         case 1:                                     /* switch 2 */
             var_a1 = (*(s32 *)&g_main_2EF390) + 0x23F4 + 0x20 + 0x9C8 + 0x500;
@@ -79,7 +82,7 @@ block_24:
         }
         break;
     case 0x4:                                       /* switch 1 */
-        Check_CallBackWait();
+        Check_CallBackWait((s32) temp_a0, (s32) temp_a1, arg2, arg3);
         goto block_31;
     case 0x5:                                       /* switch 1 */
         temp_v0 = (*(u8 *)((u8 *)(temp_a0) + 0xB9F)) + 1;

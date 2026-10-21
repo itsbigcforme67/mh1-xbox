@@ -8,10 +8,10 @@ s32 cnLbc_CheckInFloorOrder();
 s32 lobby_func_0057F090();
 extern u8 cw;
 s32 cnLBS_Get_PlazaName();           /* extern */
-s32 cnLBS_Read_PlazaName();    /* extern */
+s32 cnLBS_Read_PlazaName(); /* extern */
 extern u8 LobbyInfo;
 
-s32 Lbs_request_enter_lobby2(void) {
+s32 Lbs_request_enter_lobby2(s32 unused_a0, s32 arg1, s32 arg2, s32 arg3) {
     s32 temp_v0;
     u8 temp_v1_2;
     u8 *temp_v1;
@@ -24,15 +24,15 @@ s32 Lbs_request_enter_lobby2(void) {
         (*(s32 *)((u8 *)((*(void **)&cw)) + 0xFA68)) = 0xE10;
         (*(s8 *)((u8 *)((*(void **)&cw)) + 0xFA65)) = 0;
         (*(s8 *)((u8 *)((*(void **)&cw)) + 0xBA9)) = 0xF;
-        cnLBS_Read_PlazaName(cnLbc_CheckInFloorOrder(1) & 0xFFFF, lobby_func_0057F090);
+        cnLBS_Read_PlazaName(cnLbc_CheckInFloorOrder(1, arg1, arg2, arg3) & 0xFFFF, lobby_func_0057F090);
 block_12:
         return 2;
     case 0x1:
-        Check_CallBackWait();
+        Check_CallBackWait(temp_v1 + 0xB9D, arg1, arg2, arg3);
         goto block_12;
     case 0x2:
-        temp_v0 = cnLbc_CheckInFloorOrder(1);
-        cnLBS_Get_PlazaName(temp_v0 & 0xFFFF, (u8 *)&LobbyInfo + ((temp_v0 - 1) * 0x15C) + 0x1A);
+        temp_v0 = cnLbc_CheckInFloorOrder(1, arg1, arg2, arg3);
+        cnLBS_Get_PlazaName(temp_v0 & 0xFFFF, &LobbyInfo + ((temp_v0 - 1) * 0x15C) + 0x1A);
         (*(u8 *)((u8 *)((*(void **)&cw)) + 0xB9D)) = 0U;
         return 0;
     default:

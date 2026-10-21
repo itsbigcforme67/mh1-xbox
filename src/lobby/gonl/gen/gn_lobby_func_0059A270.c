@@ -23,6 +23,7 @@ void lobby_func_0059A270(void) {
     u8 *var_a1;   /* (s32 *) */
     u8 *var_a2;   /* (s32 *) */
     s32 var_a3;
+    u8 temp_a1;
     u8 *temp_v1;
 
     flMemset(&lb_sys, 0, 0x98);
@@ -52,9 +53,10 @@ void lobby_func_0059A270(void) {
     init_set_work();
     (*(u8 **)&cw) = &client_work;
     (*(u8 **)&pNet) = &network_work;
-    Lbc_init_network_work();
-    if ((*(s32 *)((u8 *)&player_work + ((*(u8 *)((u8 *)&game_w + 0x3A)) * 0xA00))) != 0) {
-        Lb_set_mini_data(&my_user_mini_data);
+    Lbc_init_network_work(M2C_ERROR(/* Read from unset register $a0 */), M2C_ERROR(/* Read from unset register $a1 */), M2C_ERROR(/* Read from unset register $a2 */), M2C_ERROR(/* Read from unset register $a3 */));
+    temp_a1 = (*(u8 *)((u8 *)&game_w + 0x3A));
+    if (*(&player_work + (temp_a1 * 0xA00)) != 0) {
+        Lb_set_mini_data(&my_user_mini_data, (s32) temp_a1, M2C_ERROR(/* Read from unset register $a2 */), M2C_ERROR(/* Read from unset register $a3 */));
     }
     (*(s8 *)((u8 *)&game_w + 0x25)) = 0;
 }

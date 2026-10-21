@@ -13,7 +13,7 @@ extern u8 cw;
 extern u8 g_main_2EF390;
 extern void *g_lb_636E08;
 
-s32 lbc_in_plaza_03(s32 arg0) {
+s32 lbc_in_plaza_03(s32 arg0, s32 arg1, s32 arg2, s32 arg3) {
     u8 g_frame[0x170] __attribute__((aligned(16)));   /* G's stack frame */
 #define sp20 (*(s32 *)(g_frame + 0x20))
     s32 temp_v1_3;
@@ -35,12 +35,12 @@ s32 lbc_in_plaza_03(s32 arg0) {
         (*(s32 *)((u8 *)((*(void **)&cw)) + 0xFA68)) = 0xE10;
         (*(s8 *)((u8 *)((*(void **)&cw)) + 0xFA65)) = 0;
         (*(s8 *)((u8 *)((*(void **)&cw)) + 0xBA9)) = 0x12;
-        lobby_func_005AE500(&sp20, (s32) CallBack_Result_Plaza_LobbyMember2);
+        lobby_func_005AE500(&sp20, (s32) CallBack_Result_Plaza_LobbyMember2, M2C_ERROR(/* Read from unset register $a2 */), M2C_ERROR(/* Read from unset register $a3 */));
 block_16:
     default:
         return 2;
     case 0x1:
-        Check_CallBackWait();
+        Check_CallBackWait(temp_v1 + 0xB9D, arg1, arg2, arg3);
         goto block_16;
     case 0x2:
         (*(u8 *)((u8 *)(temp_v1) + 0xB9D)) = 0U;

@@ -50,8 +50,8 @@ void DispButtonHelp(void *arg0) {
         temp_v1 = (*(u8 *)((u8 *)(arg0) + 0x28));
         switch (temp_v1) {                          /* switch 1 */
         default:                                    /* switch 1 */
-            put_button_help(0, 0, 2, func_0012D000(0) & 0xFFFF & 0x100 & 0xFFFF);
-            put_button_help(1, 1, 3, func_0012D000(0) & 0xFFFF & 0x200 & 0xFFFF);
+            put_button_help(0, 0, 2, func_0012D000(0, M2C_ERROR(/* Read from unset register $a1 */), M2C_ERROR(/* Read from unset register $a2 */), M2C_ERROR(/* Read from unset register $a3 */)) & 0xFFFF & 0x100 & 0xFFFF);
+            put_button_help(1, 1, 3, func_0012D000(0, M2C_ERROR(/* Read from unset register $a1 */), M2C_ERROR(/* Read from unset register $a2 */), M2C_ERROR(/* Read from unset register $a3 */)) & 0xFFFF & 0x200 & 0xFFFF);
             return;
         case 0:                                     /* switch 1 */
             temp_a0 = (*(u8 *)((u8 *)(arg0) + 0x23));
@@ -71,7 +71,7 @@ void DispButtonHelp(void *arg0) {
                 return;
             case 2:                                 /* switch 2 */
             case 4:                                 /* switch 2 */
-                lobby_func_005A0E80(g_lb_636B54);
+                lobby_func_005A0E80(g_lb_636B54, M2C_ERROR(/* Read from unset register $a1 */), M2C_ERROR(/* Read from unset register $a2 */), M2C_ERROR(/* Read from unset register $a3 */));
                 return;
             }
             break;
@@ -105,7 +105,7 @@ void DispButtonHelp(void *arg0) {
             case 4:                                 /* switch 4 */
             case 3:                                 /* switch 4 */
             case 1:                                 /* switch 4 */
-                lobby_func_005A0E80(g_lb_636B54);
+                lobby_func_005A0E80(g_lb_636B54, M2C_ERROR(/* Read from unset register $a1 */), M2C_ERROR(/* Read from unset register $a2 */), M2C_ERROR(/* Read from unset register $a3 */));
                 return;
             case 2:                                 /* switch 4 */
                 temp_s0_8 = temp_s0 & 0xFFFF;

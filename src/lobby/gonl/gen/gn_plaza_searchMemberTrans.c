@@ -23,7 +23,7 @@ extern s8 seekStr;
 extern s32 tl_hr_tbl;
 extern u8 tl_job_tbl;
 
-void plaza_searchMemberTrans(s32 arg0) {
+void plaza_searchMemberTrans(s32 arg0, s32 arg1, s32 arg2, s32 arg3) {
     u8 *var_s4_2;   /* (s32 *) */
     s32 var_s1;
     s32 var_s6;
@@ -34,22 +34,22 @@ void plaza_searchMemberTrans(s32 arg0) {
     if ((*(u8 *)((u8 *)&tl_member_buff + 0x1388)) == 0) {
         lobby_func_005799F0(0xD8, 0x50, 1, -0xFAE0FB, -0xCDA9C4);
         if ((*(s8 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x18))) + 0x1373)) == 0) {
-            put_main_cursor(1);
+            put_main_cursor(1, M2C_ERROR(/* Read from unset register $a1 */), M2C_ERROR(/* Read from unset register $a2 */), M2C_ERROR(/* Read from unset register $a3 */));
         } else {
-            put_main_cursor(7);
+            put_main_cursor(7, M2C_ERROR(/* Read from unset register $a1 */), M2C_ERROR(/* Read from unset register $a2 */), M2C_ERROR(/* Read from unset register $a3 */));
         }
     } else if ((*(u8 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x18))) + 0x136B)) == 0) {
-        put_main_cursor((*(s8 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x18))) + 0x1373)) + 1);
+        put_main_cursor((*(s8 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x18))) + 0x1373)) + 1, arg1, arg2, arg3);
     } else if ((*(u8 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x18))) + 0x136B)) == 2) {
-        put_main_cursor(7);
+        put_main_cursor(7, arg1, arg2, arg3);
     }
-    font_print_double(0xE2, 0x78, 1, 5, (*(s32 *)((u8 *)&(*(u8 *)((u8 *)&tl_msg_tbl + 0x40)) + ((*(u8 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x18))) + 0x1370)) * 4))));
+    font_print_double(0xE2, 0x78, 1, 5, *(&(*(u8 *)((u8 *)&tl_msg_tbl + 0x40)) + ((*(u8 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x18))) + 0x1370)) * 4)));
     font_set_palette(0);
-    Lb_put_msg_type2(0xE2, 0xA4, ((s16) ((s32) (*(u8 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x18))) + 0x1370)))));
+    Lb_put_msg_type2(0xE2, 0xA4, (s32) (((s16) ((s32) (*(u8 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x18))) + 0x1370))))), M2C_ERROR(/* Read from unset register $a3 */));
     var_s1 = 0xA4;
     switch ((*(u8 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x18))) + 0x1370))) { /* irregular */
     case 0:
-        flfntLocate(lobby_func_005935C0(&seekStr, 0x1B0, 0x12), 0xA4);
+        flfntLocate(lobby_func_005935C0(&seekStr, 0x1B0, 0x12, M2C_ERROR(/* Read from unset register $a3 */)), 0xA4);
         font_print_uf(&seekStr);
         break;
     case 1:
@@ -69,7 +69,7 @@ void plaza_searchMemberTrans(s32 arg0) {
                 var_s6 = -1;
             }
             flfntLocate((s32) arg0, var_s1);
-            font_print(&lit_2316, (*(s32 *)((u8 *)&tl_job_tbl + (*var_s4 * 4))));
+            font_print(&lit_2316, *(&tl_job_tbl + (*var_s4 * 4)));
             Lb_put_icon((s32) (((s16) (((((s16) (arg0))) - 0x18)))), (s32) (((s16) (((((s16) ((s32) var_s1))) - 2)))), *var_s4 + 2, var_s6);
             var_s5 += 1;
             var_s4 += 1;
@@ -113,6 +113,6 @@ block_37:
     } else {
         font_set_palette(0);
     }
-    Lb_put_msg_type2(0xE2, 0x128, 0x41);
+    Lb_put_msg_type2(0xE2, 0x128, 0x41, M2C_ERROR(/* Read from unset register $a3 */));
 }
 

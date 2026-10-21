@@ -23,6 +23,7 @@ void plaza_capcomPage(void) {
     s32 temp_v0;
     u8 temp_a1;
     u8 *temp_a2;
+    u8 *temp_a3;
     u8 *temp_v1;
     u8 *temp_v1_2;
     u8 *temp_v1_3;
@@ -30,6 +31,7 @@ void plaza_capcomPage(void) {
     temp_a2 = (*(void **)&pNet);
     temp_a4 = Get_sw2(0) & 0xFFFF;
     temp_a1 = (*(u8 *)((u8 *)(temp_a2) + 0x23));
+    temp_a3 = temp_a2 + 0x23;
     switch (temp_a1) {                              /* switch 1 */
     case 0:                                         /* switch 1 */
         (*(u8 *)((u8 *)(temp_a2) + 0x23)) = (u8) (temp_a1 + 1);
@@ -62,13 +64,13 @@ void plaza_capcomPage(void) {
             }
             return;
         }
-        lobby_func_0057C7E0();
+        lobby_func_0057C7E0(2, (s32) temp_a1, (s32) temp_a2, (s32) temp_a3);
         return;
     case 3:                                         /* switch 1 */
-        tl_exit_sub_menu(1);
+        tl_exit_sub_menu(1, (s32) temp_a1, (s32) temp_a2, (s32) temp_a3);
         return;
     case 4:                                         /* switch 1 */
-        temp_v0 = Lbc_SendBrowserResult(&jtbl_2033, temp_a1, temp_a2, temp_a2 + 0x23, temp_a4);
+        temp_v0 = Lbc_SendBrowserResult(&jtbl_2033, temp_a1, temp_a2, temp_a3, temp_a4);
         switch (temp_v0) {                          /* switch 2; irregular */
         case 0:                                     /* switch 2 */
             (*(s8 *)((u8 *)((*(void **)&cw)) + 0xB70)) = 1;

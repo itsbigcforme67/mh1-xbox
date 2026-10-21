@@ -7,7 +7,7 @@ void * strchr();
 s32 strlen_sp();
 s32 set_dialog_square();                /* extern */
 extern u8 netDialogMessage;
-extern s32 g_lb_636F24;
+extern u8 g_lb_636F24;
 extern s32 dialogData;
 
 void SetDialogData(s32 arg0) {
@@ -22,8 +22,8 @@ void SetDialogData(s32 arg0) {
 
     dialogData = arg0;
     temp_a0 = arg0 * 8;
-    (*(s8 * *)((u8 *)&dialogData + 0xC)) = (*(s32 *)((u8 *)&g_lb_636F24 + temp_a0));
-    temp_v1 = (*(s32 *)((u8 *)&netDialogMessage + temp_a0));
+    (*(s8 * *)((u8 *)&dialogData + 0xC)) = *(&g_lb_636F24 + temp_a0);
+    temp_v1 = *(&netDialogMessage + temp_a0);
     var_s0 = 0;
     if (temp_v1 & 0x80) {
         (*(s8 *)((u8 *)&dialogData + 0x14)) = 0;

@@ -12,9 +12,9 @@ extern u8 cw;
 extern u8 game_w;
 extern u8 pNet;
 extern void *g_lb_636A00;
-extern s32 g_lb_63E128;
+extern u8 g_lb_63E128;
 
-s32 plaza_setMyComment(s32 arg0) {
+s32 plaza_setMyComment(s32 arg0, s32 unused_a1, s32 arg2, s32 arg3) {
     s32 temp_a0;
     s32 var_s1;
     u8 temp_v1_2;
@@ -42,9 +42,9 @@ block_14:
         temp_a0 = arg0 & 0xFFFF;
         if (temp_a0 & 0x20) {
             (*(u8 *)((u8 *)(temp_v1) + 0x23)) = (u8) (temp_v1_2 + 1);
-            cnWrap_SoundRequest(0);
+            cnWrap_SoundRequest(0, temp_v1 + 0x23, arg2, arg3);
         case 2:
-            if (my_comment_input((*(s32 *)&cw) + ((*(u8 *)((u8 *)&game_w + 0x3A)) * 0x62) + 0x724) == 1) {
+            if (my_comment_input((*(s32 *)&cw) + ((*(u8 *)((u8 *)&game_w + 0x3A)) * 0x62) + 0x724, M2C_ERROR(/* Read from unset register $a1 */), M2C_ERROR(/* Read from unset register $a2 */), M2C_ERROR(/* Read from unset register $a3 */)) == 1) {
                 KinshiYogo_chk((*(s32 *)&cw) + ((*(u8 *)((u8 *)&game_w + 0x3A)) * 0x62) + 0x724);
                 temp_v1_3 = (*(void **)&pNet);
                 (*(u8 *)((u8 *)(temp_v1_3) + 0x23)) = (u8) ((*(u8 *)((u8 *)(temp_v1_3) + 0x23)) - 1);

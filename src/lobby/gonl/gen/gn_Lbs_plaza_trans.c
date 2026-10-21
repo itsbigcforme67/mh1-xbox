@@ -21,8 +21,8 @@ s32 reload_tex();
 extern u8 pNet;
 s32 font_print();                      /* extern */
 s32 sprintf();         /* extern */
-extern s32 g_lb_63E1D8;
-extern s32 g_main_2EEE70;
+extern u8 g_lb_63E1D8;
+extern u8 g_main_2EEE70;
 extern u8 pfl_menu_2138;
 extern u8 textLobbyTbl;
 
@@ -39,12 +39,12 @@ void Lbs_plaza_trans(void *arg0) {
     u8 *var_s3;
     u8 *temp_v1;
 
-    var_s3 = (*(s32 *)((u8 *)&g_main_2EEE70 + ((*(u8 *)((u8 *)((*(void **)&pNet)) + 0x29)) * 4)));
+    var_s3 = *(&g_main_2EEE70 + ((*(u8 *)((u8 *)((*(void **)&pNet)) + 0x29)) * 4));
     (*(s8 *)((u8 *)&pfl_menu_2138 + 0x7)) = 0xC;
     font_set_stack_no((*(s32 *)((u8 *)(arg0) + 0x18)));
     flfntSetSize(0x12, 0x12);
     font_set_palette(0);
-    put_plaza_menu();
+    put_plaza_menu(M2C_ERROR(/* Read from unset register $a0 */), M2C_ERROR(/* Read from unset register $a1 */), M2C_ERROR(/* Read from unset register $a2 */), M2C_ERROR(/* Read from unset register $a3 */));
     reload_tex(1, 0x17B);
     SetTextureStage(0x17B);
     SetFilterMode(1);
@@ -52,7 +52,7 @@ void Lbs_plaza_trans(void *arg0) {
     Put_2TF(&textLobbyTbl);
     reload_tex(1, 0x180);
     SetTextureStage(0x180);
-    Lb_put_new_mail(0x186, 0x1C);
+    Lb_put_new_mail(0x186, 0x1C, M2C_ERROR(/* Read from unset register $a2 */), M2C_ERROR(/* Read from unset register $a3 */));
     temp_v1 = (*(void **)&pNet);
     if (((s32) (*(u8 *)((u8 *)(temp_v1) + 0x22)) < 2) && ((*(u8 *)((u8 *)(temp_v1) + 0x2D)) == 0)) {
         DispFrameListA(&pfl_menu_2138, NULL, (s32) (*(u8 *)((u8 *)(temp_v1) + 0x2A)), 0xFF);

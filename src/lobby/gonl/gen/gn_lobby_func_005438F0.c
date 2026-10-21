@@ -7,10 +7,10 @@ s32 Quest_clear_bit_ck();
 s32 lobby_func_005437F0();
 s32 get_questLevelNum();                     /* extern */
 
-s32 lobby_func_005438F0(s32 arg0) {
+s32 lobby_func_005438F0(s32 arg0, s32 arg1, s32 arg2, s32 arg3) {
     s32 temp_v0;
 
-    if (lobby_func_005437F0(arg0) == 1) {
+    if (lobby_func_005437F0(arg0, arg1, arg2, arg3) == 1) {
         return 1;
     }
     temp_v0 = arg0 & 0xFFFF;

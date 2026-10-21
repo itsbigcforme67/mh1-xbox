@@ -28,7 +28,7 @@ s32 Lb_put_button();   /* extern */
 s32 font_print();            /* extern */
 extern s32 g_lb_636EC0;
 extern s32 g_lb_636EC4;
-extern s32 g_lb_645018;
+extern u8 g_lb_645018;
 extern s128 lit_324_00617F70;
 extern s128 lit_326_00617F80;
 
@@ -37,6 +37,8 @@ void transSelectHandleName(void *arg0) {
 #define sp30 (*(s128 *)(g_frame + 0x30))
 #define sp40 (*(s128 *)(g_frame + 0x40))
 #define sp42 (*(s16 *)(g_frame + 0x42))
+    s32 temp_a1;
+    s32 temp_a1_2;
     s32 var_s1;
 
     Get_sw2(0);
@@ -60,12 +62,14 @@ void transSelectHandleName(void *arg0) {
     font_print_double(0x70, 0x90, 1, 0, &(*(u8 *)((u8 *)&User_data + 0x8)));
     var_s1 = 0;
     do {
-        disp_string_id((s32) (*(u8 *)((u8 *)(arg0) + 0x29)), var_s1 & 0xFF);
-        disp_string_handle((s32) (*(u8 *)((u8 *)(arg0) + 0x29)), var_s1 & 0xFF);
+        temp_a1 = var_s1 & 0xFF;
+        disp_string_id((s32) (*(u8 *)((u8 *)(arg0) + 0x29)), temp_a1, temp_a1, M2C_ERROR(/* Read from unset register $a3 */));
+        temp_a1_2 = var_s1 & 0xFF;
+        disp_string_handle((s32) (*(u8 *)((u8 *)(arg0) + 0x29)), temp_a1_2, temp_a1_2, M2C_ERROR(/* Read from unset register $a3 */));
         var_s1 += 1;
     } while (var_s1 < 3);
-    DispHelpLine();
-    DispSceneTitle();
+    DispHelpLine(M2C_ERROR(/* Read from unset register $a0 */), M2C_ERROR(/* Read from unset register $a1 */), M2C_ERROR(/* Read from unset register $a2 */), M2C_ERROR(/* Read from unset register $a3 */));
+    DispSceneTitle(M2C_ERROR(/* Read from unset register $a0 */), M2C_ERROR(/* Read from unset register $a1 */), M2C_ERROR(/* Read from unset register $a2 */), M2C_ERROR(/* Read from unset register $a3 */));
     lobby_func_005926C0(0x17C, 0x1C, 0x84, 0x30, 0x80006000, 1);
     Lb_put_button(0x216, 0x1C, 0);
     Lb_put_button(0x216, 0x34, 1);

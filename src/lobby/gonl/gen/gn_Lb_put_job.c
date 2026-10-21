@@ -15,7 +15,7 @@ void Lb_put_job(s32 arg0, s32 arg1, s32 arg2, s32 arg3, s32 arg4, s32 arg5) {
     if ((((s8) (arg5))) != 0) {
         reload_tex(1, 0x13F);
         SetTextureStage(0x13F);
-        Lb_put_icon_free2(arg0, arg1, arg2, arg3, ((s16) (((((s16) (var_s0))) + 0x19))));
+        Lb_put_icon_free2(arg0, arg1, arg2, arg3, (s32) (((s16) (((((s16) (var_s0))) + 0x19)))));
         reload_tex(1, 0x180);
         SetTextureStage(0x180);
         return;
@@ -29,6 +29,6 @@ void Lb_put_job(s32 arg0, s32 arg1, s32 arg2, s32 arg3, s32 arg4, s32 arg5) {
         var_s0 = 4;
         break;
     }
-    Lb_put_icon_free(arg0, arg1, arg2, arg3, ((s16) (((((s16) (var_s0))) + 2))));
+    Lb_put_icon_free(arg0, arg1, arg2, arg3, (s32) (((s16) (((((s16) (var_s0))) + 2)))));
 }
 

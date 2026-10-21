@@ -11,7 +11,7 @@ void * strncpy();
 extern u8 g_main_2EFBAC;
 extern u8 g_main_2EFBAC;
 s32 cnLBS_Get_RecvMessage(); /* extern */
-extern s32 g_main_302290;
+extern u8 g_main_302290;
 extern u8 RecvMailInfo;
 
 void CallBack_Event_RecvMail(void) {
@@ -75,7 +75,7 @@ loop_1:
                 var_a0 += 0x9A;
             } while (var_v1 < 8);
             if (var_a1 == 0) {
-                cnWrap_SoundRequest(5);
+                cnWrap_SoundRequest(5, var_a1, M2C_ERROR(/* Read from unset register $a2 */), M2C_ERROR(/* Read from unset register $a3 */));
             }
             var_a2 = &(*(u8 *)((u8 *)&RecvMailInfo + 0x39C));
             var_a1_2 = &(*(u8 *)((u8 *)&RecvMailInfo + 0x436));

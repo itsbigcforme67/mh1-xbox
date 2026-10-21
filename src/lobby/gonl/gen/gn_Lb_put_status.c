@@ -16,7 +16,7 @@ void Lb_put_status(s32 arg0, s32 arg1, s32 arg2, s32 arg3, s32 arg4) {
         var_a4 = 0x10;
     default:
 block_10:
-        Lb_put_icon_free(arg0, arg1, arg2, arg3, var_a4);
+        Lb_put_icon_free(arg0, arg1, arg2, arg3, (s32) var_a4);
         return;
     case 2:
         var_a4 = 0x11;

@@ -12,6 +12,6 @@ void lobby_func_00587260(void) {
 #define sp1E (*(u16 *)(g_frame + 0x1E))
 
     cnetGet_Room_LastRecvNumber(&sp1E);
-    cnLBS_Get_PlazaName(sp1E, (u8 *)&LobbyInfo + ((sp1E - 1) * 0x15C) + 0x1A);
+    cnLBS_Get_PlazaName(sp1E, &LobbyInfo + ((sp1E - 1) * 0x15C) + 0x1A);
 }
 

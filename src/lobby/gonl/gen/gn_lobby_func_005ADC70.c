@@ -3,10 +3,10 @@
  * tools/build_pc_mhg.sh). */
 #include "../gonl.h"
 
+s32 __cnetSub_Set_BgProcess();
 s32 __cnet_KeepEntryFloorInfo();
 s32 lobby_func_005ADCF0();
 extern u8 pFunc;
-s32 __cnetSub_Set_BgProcess(); /* extern */
 
 s32 lobby_func_005ADC70(s32 arg0, s32 arg1) {
     s32 temp_v0;
@@ -15,8 +15,8 @@ s32 lobby_func_005ADC70(s32 arg0, s32 arg1) {
     temp_v0 = __cnetSub_Set_BgProcess(1, 0, arg1);
     var_v0 = -1;
     if (temp_v0 != -1) {
-        __cnet_KeepEntryFloorInfo(1, arg0);
-        (*(s32 *)((u8 *)&(*(u8 *)((u8 *)&pFunc + 0xEE)) + (temp_v0 * 0x1C))) = lobby_func_005ADCF0(arg0);
+        __cnet_KeepEntryFloorInfo(1, arg0, M2C_ERROR(/* Read from unset register $a2 */), M2C_ERROR(/* Read from unset register $a3 */));
+        *(&(*(u8 *)((u8 *)&pFunc + 0xEE)) + (temp_v0 * 0x1C)) = lobby_func_005ADCF0(arg0, M2C_ERROR(/* Read from unset register $a1 */), M2C_ERROR(/* Read from unset register $a2 */), M2C_ERROR(/* Read from unset register $a3 */));
         var_v0 = temp_v0;
     }
     return var_v0;

@@ -13,9 +13,10 @@ extern u8 tl_member_buff;
 s32 cnLBS_Get_SerchUserPlace(); /* extern */
 extern s16 g_lb_6B42B4;
 extern s8 g_lb_6B42BD;
-extern s32 g_main_302CB0;
+extern u8 g_main_302CB0;
 
 s32 getFriendNow(u8 arg0, s32 arg1) {
+    s32 temp_a2;
     s32 temp_s0;
     s32 temp_v0_2;
     s32 temp_v0_3;
@@ -30,10 +31,11 @@ s32 getFriendNow(u8 arg0, s32 arg1) {
     u8 *temp_v0;
     u8 *temp_v1;
 
-    temp_v0 = (u8 *)&g_main_302CB0 + (g_lb_6B42B4 * 0x150);
+    temp_a2 = g_lb_6B42B4 * 0x150;
+    temp_v0 = &g_main_302CB0 + temp_a2;
     switch (g_lb_6B42BD) {                           /* switch 1; irregular */
     case 0:                                         /* switch 1 */
-        (*(s32 *)((u8 *)&(*(u8 *)((u8 *)&lb_sys + 0xA0)) + ((*(s16 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x1398))) + 0x604)) * 2))) = (*(u16 *)&g_main_2EFAD8);
+        *(&(*(u8 *)((u8 *)&lb_sys + 0xA0)) + ((*(s16 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x1398))) + 0x604)) * 2)) = (*(u16 *)&g_main_2EFAD8);
         (*(s8 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x1398))) + 0x60D)) = (s8) ((*(s8 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x1398))) + 0x60D)) + 1);
         (*(u8 *)((u8 *)((*(void **)&pNet)) + 0x27)) = arg0;
         /* fallthrough */
@@ -60,7 +62,7 @@ block_27:
     case 2:                                         /* switch 1 */
         temp_a1_2 = (*(u8 *)((u8 *)((*(void **)&pNet)) + 0x27));
         temp_s0 = temp_a1_2 + ((*(s16 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x1398))) + 0x604)) * 7);
-        temp_v0_2 = lobby_func_00580910(temp_v0 + (temp_a1_2 * 0x30));
+        temp_v0_2 = lobby_func_00580910(temp_v0 + (temp_a1_2 * 0x30), (s32) temp_a1_2, temp_a2, g_lb_6B42B4 * 7);
         switch (temp_v0_2) {                        /* switch 2; irregular */
         case 0:                                     /* switch 2 */
             temp_v1_3 = temp_s0 * 0x24A;

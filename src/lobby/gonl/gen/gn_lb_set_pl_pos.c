@@ -16,16 +16,16 @@ void lb_set_pl_pos(s32 arg0, void *arg1, s32 arg2) {
     s32 temp_a0;
     u8 *temp_s1;
 
-    temp_s1 = (u8 *)&player_work + ((arg0 & 0xFF) * 0xA00);
+    temp_s1 = &player_work + ((arg0 & 0xFF) * 0xA00);
     flMemcpy(&sp38, arg1, 5);
     temp_a0 = arg2 & 0xFF;
     if ((*(u8 *)((u8 *)(temp_s1) + 0x3E8)) != 0) {
         switch (temp_a0) {                          /* irregular */
         case 0:
-            if (lobby_func_00595530((s32) (*(u8 *)((u8 *)(temp_s1) + 0x14)), (s32) (*(u8 *)((u8 *)(temp_s1) + 0x15))) == 0) {
+            if (lobby_func_00595530((s32) (*(u8 *)((u8 *)(temp_s1) + 0x14)), (s32) (*(u8 *)((u8 *)(temp_s1) + 0x15)), M2C_ERROR(/* Read from unset register $a2 */), M2C_ERROR(/* Read from unset register $a3 */)) == 0) {
                 (*(f32 *)((u8 *)(temp_s1) + 0x800)) = (f32) (*(s16 *)((u8 *)(&sp38) + 0));
                 (*(f32 *)((u8 *)(temp_s1) + 0x808)) = (f32) (*(s16 *)((u8 *)(&sp38) + 2));
-                Lb_Pl_adj_calc(temp_s1, (s32) (*(s16 *)&g_main_2EFAE0));
+                Lb_Pl_adj_calc(temp_s1, (s32) (*(s16 *)&g_main_2EFAE0), M2C_ERROR(/* Read from unset register $a2 */), M2C_ERROR(/* Read from unset register $a3 */));
                 (*(u8 *)((u8 *)(temp_s1) + 0x736)) = (u8) (*(u8 *)((u8 *)(&sp38) + 4));
                 if ((*(u8 *)((u8 *)(temp_s1) + 0x736)) != 0x4D) {
                     (*(s8 *)((u8 *)(temp_s1) + 0x8EC)) = 0;

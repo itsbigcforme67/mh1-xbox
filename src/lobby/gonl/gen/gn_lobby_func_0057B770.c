@@ -5,7 +5,7 @@
 
 s32 lobby_func_005C0B90();
 extern u8 cw;
-void lobby_func_0057B770(s64 arg0) {
+void lobby_func_0057B770(s64 arg0, s32 unused_a1, s32 unused_a2, s32 arg3) {
     u8 g_frame[0x20] __attribute__((aligned(16)));   /* G's stack frame */
 #define sp18 (*(s64 *)(g_frame + 0x18))
     u8 temp_a0;
@@ -17,7 +17,7 @@ void lobby_func_0057B770(s64 arg0) {
     if (((*(u8 *)((u8 *)(temp_a1) + 0xB99)) != 5) && ((temp_a0 = (*(u8 *)((u8 *)(temp_a1) + 0xBA9)), (temp_a0 == 5)) || (temp_a0 == 6))) {
         (*(u8 *)((u8 *)(temp_a1) + 0xBA9)) = 0U;
         if ((s8) sp18 == 0) {
-            lobby_func_005C0B90(&(((s8 *)&sp18)[7]));
+            lobby_func_005C0B90(&(((s8 *)&sp18)[7]), (s32) temp_a1, (s32) (temp_a1 + 0xBA9), arg3);
             temp_a0_2 = (*(void **)&cw);
             (*(u8 *)((u8 *)(temp_a0_2) + 0xB9D)) = (u8) ((*(u8 *)((u8 *)(temp_a0_2) + 0xB9D)) + 1);
             (*(u8 *)((u8 *)((*(void **)&cw)) + 0xB9E)) = (((s8 *)&sp18)[7]);

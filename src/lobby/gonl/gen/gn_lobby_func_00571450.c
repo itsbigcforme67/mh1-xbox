@@ -10,11 +10,11 @@ extern u8 cw;
 extern u8 pNet;
 extern s8 g_lb_6B42C5;
 
-void lobby_func_00571450(void) {
+void lobby_func_00571450(s32 unused_a0, s32 arg1, s32 arg2, s32 arg3) {
     (*(s8 *)((u8 *)((*(void **)&pNet)) + 0x2D)) = 1;
     (*(s8 *)((u8 *)((*(void **)&pNet)) + 0x25)) = 0;
-    SetDialogData(0x23);
-    SetDialogYesNo(0);
+    SetDialogData(0x23, arg1, arg2, arg3);
+    SetDialogYesNo(0, M2C_ERROR(/* Read from unset register $a1 */), M2C_ERROR(/* Read from unset register $a2 */), M2C_ERROR(/* Read from unset register $a3 */));
     (*(s8 *)&D_0035EFEB) = 0;
     (*(s8 *)((u8 *)((*(void **)&cw)) + 0xB70)) = 0;
     g_lb_6B42C5 = 0;

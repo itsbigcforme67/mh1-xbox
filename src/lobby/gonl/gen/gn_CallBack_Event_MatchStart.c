@@ -21,12 +21,14 @@ void CallBack_Event_MatchStart(void) {
     u8 *var_s3;   /* (s32 *) */
     s32 var_s2;
     s32 var_s4;
+    u8 temp_a0;
 
     (*(s8 *)((u8 *)((*(void **)&cw)) + 0xB74)) = 1;
     Lbc_set_prim(0, 0, 0, 0);
-    lobby_func_0059ACD0(0);
-    (*(s32 *)((u8 *)&(*(u8 *)((u8 *)&player_work + 0x916)) + ((*(u8 *)((u8 *)&game_w + 0x3A)) * 0xA00))) = 0;
-    Lbc_SendMiniData();
+    lobby_func_0059ACD0(0, M2C_ERROR(/* Read from unset register $a1 */), M2C_ERROR(/* Read from unset register $a2 */), M2C_ERROR(/* Read from unset register $a3 */));
+    temp_a0 = (*(u8 *)((u8 *)&game_w + 0x3A));
+    *(&(*(u8 *)((u8 *)&player_work + 0x916)) + (temp_a0 * 0xA00)) = 0;
+    Lbc_SendMiniData((s32) temp_a0, M2C_ERROR(/* Read from unset register $a1 */), M2C_ERROR(/* Read from unset register $a2 */), M2C_ERROR(/* Read from unset register $a3 */));
     var_s4 = 0;
     var_s3 = &room_member_id;
     var_s2 = 0;

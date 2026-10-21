@@ -44,7 +44,7 @@ block_21:
                 temp_v1_4 = (*(void **)&pNet);
                 (*(u8 *)((u8 *)(temp_v1_4) + 0x25)) = (u8) ((*(u8 *)((u8 *)(temp_v1_4) + 0x25)) + 1);
                 (*(s8 *)((u8 *)((*(void **)&pNet)) + 0x27)) = 0;
-                cnWrap_SoundRequest(3);
+                cnWrap_SoundRequest(3, M2C_ERROR(/* Read from unset register $a1 */), M2C_ERROR(/* Read from unset register $a2 */), M2C_ERROR(/* Read from unset register $a3 */));
             }
             break;
         case 1:                                     /* switch 2 */

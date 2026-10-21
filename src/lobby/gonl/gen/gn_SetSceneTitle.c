@@ -4,9 +4,9 @@
 #include "../gonl.h"
 
 extern u8 subTitleCol;
-extern s32 g_lb_636BF0;
+extern u8 g_lb_636BF0;
 
 void SetSceneTitle(s32 arg0) {
-    (*(s32 *)&subTitleCol) = (s32) (*(s32 *)((u8 *)&g_lb_636BF0 + (arg0 * 4)));
+    (*(s32 *)&subTitleCol) = (s32) *(&g_lb_636BF0 + (arg0 * 4));
 }
 

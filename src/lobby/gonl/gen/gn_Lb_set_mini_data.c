@@ -26,7 +26,7 @@ void Lb_set_mini_data(void *arg0) {
     u8 var_v0;
     u8 *temp_s0;
 
-    temp_s0 = (u8 *)&player_work + ((*(u8 *)((u8 *)&game_w + 0x3A)) * 0xA00);
+    temp_s0 = &player_work + ((*(u8 *)((u8 *)&game_w + 0x3A)) * 0xA00);
     sp44 = (*(s32 *)((u8 *)(temp_s0) + 0x5FC));
     memcpy(&sp33, temp_s0 + 0x352, 6);
     sp49 = (*(u8 *)((u8 *)(temp_s0) + 0x11));

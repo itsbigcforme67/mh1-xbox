@@ -24,80 +24,80 @@ s32 plaza_setMyComment();
 s32 tl_exit_sub_menu();
 extern u8 D_0035EFEB;
 extern u8 pNet;
-void plaza_moveMain(void) {
+void plaza_moveMain(s32 arg0, s32 arg1, s32 arg2, s32 arg3) {
     u8 temp_v0;
 
     temp_v0 = (*(u8 *)((u8 *)((*(void **)&pNet)) + 0x28));
     switch (temp_v0) {
     case 0:
-        if (lobby_func_00569D40() != 3) {
+        if (lobby_func_00569D40(arg0, arg1, arg2, arg3) != 3) {
             return;
         }
-        tl_exit_sub_menu(0);
+        tl_exit_sub_menu(0, M2C_ERROR(/* Read from unset register $a1 */), M2C_ERROR(/* Read from unset register $a2 */), M2C_ERROR(/* Read from unset register $a3 */));
         return;
     case 1:
-        lobby_func_0056B0C0();
+        lobby_func_0056B0C0(arg0, arg1, arg2, arg3);
         return;
     case 2:
-        plaza_backToServer();
+        plaza_backToServer(arg0, arg1, arg2, arg3);
         return;
     case 3:
-        if (lobby_func_0056C550(Get_sw2(0)) != 3) {
+        if (lobby_func_0056C550(Get_sw2(0), M2C_ERROR(/* Read from unset register $a1 */), M2C_ERROR(/* Read from unset register $a2 */), M2C_ERROR(/* Read from unset register $a3 */)) != 3) {
             return;
         }
         (*(s8 *)&D_0035EFEB) = 1;
-        tl_exit_sub_menu(0);
+        tl_exit_sub_menu(0, M2C_ERROR(/* Read from unset register $a1 */), M2C_ERROR(/* Read from unset register $a2 */), M2C_ERROR(/* Read from unset register $a3 */));
         return;
     case 5:
-        lobby_func_0056ED50();
+        lobby_func_0056ED50(arg0, arg1, arg2, arg3);
         return;
     case 6:
-        lobby_func_00570320();
+        lobby_func_00570320(arg0, arg1, arg2, arg3);
         return;
     case 7:
-        plaza_checkMyStatus();
+        plaza_checkMyStatus(arg0, arg1, arg2, arg3);
         return;
     case 8:
-        if (plaza_setMyComment(Get_sw2(0)) != 3) {
+        if (plaza_setMyComment(Get_sw2(0), M2C_ERROR(/* Read from unset register $a1 */), M2C_ERROR(/* Read from unset register $a2 */), M2C_ERROR(/* Read from unset register $a3 */)) != 3) {
             return;
         }
-        tl_exit_sub_menu(0);
+        tl_exit_sub_menu(0, M2C_ERROR(/* Read from unset register $a1 */), M2C_ERROR(/* Read from unset register $a2 */), M2C_ERROR(/* Read from unset register $a3 */));
         return;
     case 4:
-        if (plaza_checkFriend(Get_sw2(0)) != 3) {
+        if (plaza_checkFriend(Get_sw2(0), M2C_ERROR(/* Read from unset register $a1 */), M2C_ERROR(/* Read from unset register $a2 */), M2C_ERROR(/* Read from unset register $a3 */)) != 3) {
             return;
         }
-        tl_exit_sub_menu(0);
+        tl_exit_sub_menu(0, M2C_ERROR(/* Read from unset register $a1 */), M2C_ERROR(/* Read from unset register $a2 */), M2C_ERROR(/* Read from unset register $a3 */));
         return;
     case 9:
-        if (lobby_func_00570E80() != 3) {
+        if (lobby_func_00570E80(arg0, arg1, arg2, arg3) != 3) {
             return;
         }
-        tl_exit_sub_menu(0);
+        tl_exit_sub_menu(0, M2C_ERROR(/* Read from unset register $a1 */), M2C_ERROR(/* Read from unset register $a2 */), M2C_ERROR(/* Read from unset register $a3 */));
         return;
     case 10:
-        plaza_ReibunEdit();
+        plaza_ReibunEdit(arg0, arg1, arg2, arg3);
         return;
     case 11:
-        plaza_checkChatLog();
+        plaza_checkChatLog(arg0, arg1, arg2, arg3);
         return;
     case 12:
-        plaza_capcomPage();
+        plaza_capcomPage(arg0, arg1, arg2, arg3);
         return;
     case 13:
-        plaza_logOut();
+        plaza_logOut(arg0, arg1, arg2, arg3);
         return;
     case 14:
-        if (lobby_func_0056B790() != 3) {
+        if (lobby_func_0056B790(arg0, arg1, arg2, arg3) != 3) {
             return;
         }
-        tl_exit_sub_menu(0);
+        tl_exit_sub_menu(0, M2C_ERROR(/* Read from unset register $a1 */), M2C_ERROR(/* Read from unset register $a2 */), M2C_ERROR(/* Read from unset register $a3 */));
         return;
     case 15:
-        lobby_func_0056B4E0();
+        lobby_func_0056B4E0(arg0, arg1, arg2, arg3);
         return;
     default:
-        plaza_chatMain();
+        plaza_chatMain(arg0, arg1, arg2, arg3);
         return;
     }
 }

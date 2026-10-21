@@ -4,7 +4,7 @@
 #include "../gonl.h"
 
 extern u8 g_lb_734DF4;
-extern s32 g_lb_734DFC;
+extern u8 g_lb_734DFC;
 
 s32 lobby_func_005C0620(u8 *arg0, s32 **arg1) {
     if (arg0 != NULL) {

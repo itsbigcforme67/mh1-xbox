@@ -8,8 +8,8 @@ extern u8 tl_member_buff;
 extern s16 g_lb_6B42B6;
 extern s16 g_lb_6B42B8;
 
-void lobby_func_0056D6E0(void) {
-    g_lb_6B42B6 = lobby_func_00569320((s32) g_lb_6B42B8, 7);
+void lobby_func_0056D6E0(s32 unused_a0, s32 unused_a1, s32 arg2, s32 arg3) {
+    g_lb_6B42B6 = lobby_func_00569320((s32) g_lb_6B42B8, 7, arg2, arg3);
     if (g_lb_6B42B6 == 0) {
         (*(s16 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x1398))) + 0x606)) = 1;
     }

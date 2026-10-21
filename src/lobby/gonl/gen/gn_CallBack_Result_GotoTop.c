@@ -5,7 +5,7 @@
 
 s32 To_LogOut();
 extern u8 cw;
-void CallBack_Result_GotoTop(s64 arg0) {
+void CallBack_Result_GotoTop(s64 arg0, s32 unused_a1, s32 unused_a2, s32 arg3) {
     u8 g_frame[0x20] __attribute__((aligned(16)));   /* G's stack frame */
 #define sp18 (*(s64 *)(g_frame + 0x18))
     u8 *temp_a1;
@@ -22,7 +22,7 @@ void CallBack_Result_GotoTop(s64 arg0) {
             (*(s8 *)((u8 *)((*(void **)&cw)) + 0xB9D)) = 0;
             return;
         }
-        To_LogOut(4);
+        To_LogOut(4, (s32) temp_a1, (s32) (temp_a1 + 0xBA9), arg3);
     }
 }
 

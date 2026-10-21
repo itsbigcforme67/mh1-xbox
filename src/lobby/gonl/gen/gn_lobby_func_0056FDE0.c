@@ -44,7 +44,7 @@ void lobby_func_0056FDE0(void) {
             var_s1 = &sp50;
             do {
                 var_s3 += 1;
-                *var_s1 = Lb_back_money((((s16) (lobby_func_00559FF0((*(u8 **)&g_main_2EFBC0) + var_s2 + 4)))) & 0xFFFF);
+                *var_s1 = Lb_back_money(((s32) (lobby_func_00559FF0((*(u8 **)&g_main_2EFBC0) + var_s2 + 4, M2C_ERROR(/* Read from unset register $a1 */), M2C_ERROR(/* Read from unset register $a2 */), M2C_ERROR(/* Read from unset register $a3 */)) << 0x30) >> 0x30) & 0xFFFF);
                 var_s2 += 0x10;
                 var_s1 += 1;
             } while (var_s3 < (s32) temp_s0);

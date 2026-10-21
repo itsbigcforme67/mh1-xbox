@@ -18,11 +18,11 @@ void lb_check_chair(void *arg0, u8 *arg1) {
         temp_a2 = *arg1;
         temp_a0 = 1 << temp_a2;
         if ((*(u16 *)((u8 *)&lb_sys + 0x14)) & temp_a0) {
-            Lb_send_chair_status(arg0, 0, (s32) temp_a2);
+            Lb_send_chair_status(arg0, 0, (s32) temp_a2, M2C_ERROR(/* Read from unset register $a3 */));
             return;
         }
         (*(u16 *)((u8 *)&lb_sys + 0x14)) |= temp_a0;
-        Lb_send_chair_status(arg0, 1, (s32) *arg1);
+        Lb_send_chair_status(arg0, 1, (s32) *arg1, M2C_ERROR(/* Read from unset register $a3 */));
     }
 }
 

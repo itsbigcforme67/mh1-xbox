@@ -4,7 +4,7 @@
 #include "../gonl.h"
 
 s32 func_0010D8E0();
-s32 lobby_func_00542A30(void) {
-    return (func_0010D8E0(1) & 0xFF) == 0x58;
+s32 lobby_func_00542A30(s32 unused_a0, s32 arg1, s32 arg2, s32 arg3) {
+    return (func_0010D8E0(1, arg1, arg2, arg3) & 0xFF) == 0x58;
 }
 

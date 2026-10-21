@@ -14,7 +14,7 @@ s32 sub_main_func_004C8600();
 s32 get_questLevelNum();                     /* extern */
 extern u8 User_data;
 
-s32 lobby_func_00542A60(s32 arg0) {
+s32 lobby_func_00542A60(s32 arg0, s32 unused_a1, s32 arg2, s32 arg3) {
     s32 temp_v0;
 
     temp_v0 = arg0 & 0xFF;
@@ -25,13 +25,13 @@ s32 lobby_func_00542A60(s32 arg0) {
         return Event_flag_ck(4);
     case 0x2:
         if ((s32) (*(u8 *)((u8 *)&User_data + 0xC23)) >= 4) {
-            return lobby_func_00542790(0, 0);
+            return lobby_func_00542790(0, 0, arg2, arg3);
         }
 block_127:
     default:
         return 0;
     case 0x3:
-        if ((Event_flag_ck(0x51) == 0) && (lobby_func_005426D0(0) != 0)) {
+        if ((Event_flag_ck(0x51) == 0) && (lobby_func_005426D0(0, M2C_ERROR(/* Read from unset register $a1 */), M2C_ERROR(/* Read from unset register $a2 */), M2C_ERROR(/* Read from unset register $a3 */)) != 0)) {
             return 1;
         }
         goto block_127;
@@ -39,32 +39,32 @@ block_127:
         return Quest_clear_bit_ck(0x27);
     case 0x5:
         if ((s32) (*(u8 *)((u8 *)&User_data + 0xC23)) >= 8) {
-            return lobby_func_00542790(0, 1);
+            return lobby_func_00542790(0, 1, arg2, arg3);
         }
         goto block_127;
     case 0x6:
         return Quest_clear_bit_ck(9);
     case 0x7:
         if ((s32) (*(u8 *)((u8 *)&User_data + 0xC23)) >= 0xC) {
-            return lobby_func_00542790(0, 2);
+            return lobby_func_00542790(0, 2, arg2, arg3);
         }
         goto block_127;
     case 0x8:
         return Quest_clear_bit_ck(0xBB9);
     case 0x9:
         if ((s32) (*(u8 *)((u8 *)&User_data + 0xC23)) >= 0x10) {
-            return lobby_func_00542790(0, 3);
+            return lobby_func_00542790(0, 3, arg2, arg3);
         }
         goto block_127;
     case 0xA:
         return Quest_clear_bit_ck(0x40B);
     case 0x2F:
-        return sub_main_func_004C8600((s32) &User_data, 0xB, 0x72);
+        return sub_main_func_004C8600((s32) &User_data, 0xB, 0x72, arg3);
     case 0x30:
-        return sub_main_func_004C8600((s32) &User_data, 1, 0x76);
+        return sub_main_func_004C8600((s32) &User_data, 1, 0x76, arg3);
     case 0xB:
         if ((s32) (*(u8 *)((u8 *)&User_data + 0xC23)) >= 0x14) {
-            return lobby_func_00542790(0, 4);
+            return lobby_func_00542790(0, 4, arg2, arg3);
         }
         goto block_127;
     case 0xC:
@@ -72,45 +72,45 @@ block_127:
     case 0xD:
         return Event_flag_ck(0x59);
     case 0xE:
-        return sub_main_func_004C8600((s32) &User_data, 6, 0x7A);
+        return sub_main_func_004C8600((s32) &User_data, 6, 0x7A, arg3);
     case 0xF:
-        return sub_main_func_004C8600((s32) &User_data, 0x14, 0x7D);
+        return sub_main_func_004C8600((s32) &User_data, 0x14, 0x7D, arg3);
     case 0x10:
-        return sub_main_func_004C8600((s32) &User_data, 8, 0x7A);
+        return sub_main_func_004C8600((s32) &User_data, 8, 0x7A, arg3);
     case 0x11:
         if ((s32) (*(u8 *)((u8 *)&User_data + 0xC23)) >= 0x17) {
-            return lobby_func_00542790(0, 5);
+            return lobby_func_00542790(0, 5, arg2, arg3);
         }
         goto block_127;
     case 0x12:
         return Quest_clear_bit_ck(0x7EC);
     case 0x13:
-        return sub_main_func_004C8600((s32) &User_data, 1, 0x81);
+        return sub_main_func_004C8600((s32) &User_data, 1, 0x81, arg3);
     case 0x14:
-        return sub_main_func_004C8600((s32) &User_data, 0xF, 0x87);
+        return sub_main_func_004C8600((s32) &User_data, 0xF, 0x87, arg3);
     case 0x15:
         if ((s32) (*(u8 *)((u8 *)&User_data + 0xC23)) >= 0x1A) {
-            return lobby_func_00542790(0, 6);
+            return lobby_func_00542790(0, 6, arg2, arg3);
         }
         goto block_127;
     case 0x16:
         return Quest_clear_bit_ck(0x802);
     case 0x17:
-        return sub_main_func_004C8600((s32) &User_data, 0xB, 0x7F);
+        return sub_main_func_004C8600((s32) &User_data, 0xB, 0x7F, arg3);
     case 0x18:
-        return sub_main_func_004C8600((s32) &User_data, 0x15, 0x86);
+        return sub_main_func_004C8600((s32) &User_data, 0x15, 0x86, arg3);
     case 0x19:
-        return sub_main_func_004C8600((s32) &User_data, 0xE, 0x8B);
+        return sub_main_func_004C8600((s32) &User_data, 0xE, 0x8B, arg3);
     case 0x1A:
-        return sub_main_func_004C8600((s32) &User_data, 0x11, 0x87);
+        return sub_main_func_004C8600((s32) &User_data, 0x11, 0x87, arg3);
     case 0x1B:
-        if ((get_questLevelNum(0xE) == 1) && (get_questLevelNum(0xF) == 1) && (get_questLevelNum(0x10) == 1) && (get_questLevelNum(0x13) == 1) && (get_questLevelNum(0x14) == 1) && (get_questLevelNum(0x17) == 1) && (get_questLevelNum(0x18) == 1) && (get_questLevelNum(0x19) == 1) && (get_questLevelNum(0x1A) == 1) && (sub_main_func_004C8600((s32) &User_data, 8, 0x7A) == 1) && (sub_main_func_004C8600((s32) &User_data, 0x16, 0x81) == 1) && (sub_main_func_004C8600((s32) &User_data, 0x1A, 0x7F) == 1)) {
+        if ((get_questLevelNum(0xE) == 1) && (get_questLevelNum(0xF) == 1) && (get_questLevelNum(0x10) == 1) && (get_questLevelNum(0x13) == 1) && (get_questLevelNum(0x14) == 1) && (get_questLevelNum(0x17) == 1) && (get_questLevelNum(0x18) == 1) && (get_questLevelNum(0x19) == 1) && (get_questLevelNum(0x1A) == 1) && (sub_main_func_004C8600((s32) &User_data, 8, 0x7A, M2C_ERROR(/* Read from unset register $a3 */)) == 1) && (sub_main_func_004C8600((s32) &User_data, 0x16, 0x81, M2C_ERROR(/* Read from unset register $a3 */)) == 1) && (sub_main_func_004C8600((s32) &User_data, 0x1A, 0x7F, M2C_ERROR(/* Read from unset register $a3 */)) == 1)) {
             return 1;
         }
         goto block_127;
     case 0x1C:
         if ((s32) (*(u8 *)((u8 *)&User_data + 0xC23)) >= 0x1C) {
-            return lobby_func_00542790(0, 7);
+            return lobby_func_00542790(0, 7, arg2, arg3);
         }
         goto block_127;
     case 0x1D:
@@ -130,19 +130,19 @@ block_127:
         goto block_127;
     case 0x21:
         if (Event_flag_ck(0x5D) == 0) {
-            return lobby_func_00542820();
+            return lobby_func_00542820(M2C_ERROR(/* Read from unset register $a0 */), M2C_ERROR(/* Read from unset register $a1 */), M2C_ERROR(/* Read from unset register $a2 */), M2C_ERROR(/* Read from unset register $a3 */));
         }
         goto block_127;
     case 0x22:
         return Quest_clear_bit_ck(0xBBB);
     case 0x3B:
         if (Event_flag_ck(0x5A) == 0) {
-            return lobby_func_005429A0();
+            return lobby_func_005429A0(M2C_ERROR(/* Read from unset register $a0 */), M2C_ERROR(/* Read from unset register $a1 */), M2C_ERROR(/* Read from unset register $a2 */), M2C_ERROR(/* Read from unset register $a3 */));
         }
         goto block_127;
     case 0x3C:
         if (Event_flag_ck(0x5B) == 0) {
-            return lobby_func_00542A30();
+            return lobby_func_00542A30(M2C_ERROR(/* Read from unset register $a0 */), M2C_ERROR(/* Read from unset register $a1 */), M2C_ERROR(/* Read from unset register $a2 */), M2C_ERROR(/* Read from unset register $a3 */));
         }
         goto block_127;
     }

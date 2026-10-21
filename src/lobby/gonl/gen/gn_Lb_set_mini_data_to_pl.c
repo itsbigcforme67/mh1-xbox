@@ -20,7 +20,7 @@ void Lb_set_mini_data_to_pl(s32 arg0, void *arg1) {
 #define sp4A (*(u8 *)(g_frame + 0x4A))
     u8 *temp_s1;
 
-    temp_s1 = (u8 *)&player_work + ((((s8) (arg0))) * 0xA00);
+    temp_s1 = &player_work + ((((s8) (arg0))) * 0xA00);
     memcpy(&sp30, arg1, 0x1C);
     (*(s32 *)((u8 *)(temp_s1) + 0x5FC)) = sp44;
     (*(u8 *)((u8 *)(temp_s1) + 0x11)) = sp49;
@@ -31,7 +31,7 @@ void Lb_set_mini_data_to_pl(s32 arg0, void *arg1) {
     (*(s16 *)((u8 *)(temp_s1) + 0x35E)) = (s16) (*(s16 *)((u8 *)(&sp3A) + 0));
     (*(s16 *)((u8 *)(temp_s1) + 0x360)) = (s16) (*(s16 *)((u8 *)(&sp3A) + 2));
     (*(s16 *)((u8 *)(temp_s1) + 0x362)) = (s16) (*(s16 *)((u8 *)(&sp3A) + 4));
-    (*(u8 *)((u8 *)(temp_s1) + 2)) = (u8) (*(s32 *)((u8 *)&Battle_type + (*(u8 *)((u8 *)(temp_s1) + 0x34C))));
+    (*(u8 *)((u8 *)(temp_s1) + 2)) = (u8) *(&Battle_type + (*(u8 *)((u8 *)(temp_s1) + 0x34C)));
     memcpy(temp_s1 + 0x352, &sp33, 6);
 }
 

@@ -13,13 +13,14 @@ void CallBack_Result_Plaza_PlazaExit2(s64 arg0) {
 #define sp1C (*(s32 *)(g_frame + 0x1C))
     u8 *temp_a0;
     u8 *temp_a2;
+    u8 *temp_a3;
 
     temp_a2 = (*(void **)&cw);
     sp10 = arg0;
-    if (((*(u8 *)((u8 *)(temp_a2) + 0xB99)) != 5) && ((*(u8 *)((u8 *)(temp_a2) + 0xBA9)) == 0x18)) {
+    if (((*(u8 *)((u8 *)(temp_a2) + 0xB99)) != 5) && (temp_a3 = temp_a2 + 0xBA9, ((*(u8 *)((u8 *)(temp_a2) + 0xBA9)) == 0x18))) {
         if ((s8) sp10 == 2) {
             if ((((s8) ((s32) (((s8 *)&sp10)[1])))) == 0xB) {
-                cnLBS_Get_AllocationProgressCount(&sp1C, (((s8 *)&sp10)[1]), temp_a2, temp_a2 + 0xBA9);
+                cnLBS_Get_AllocationProgressCount(&sp1C, (((s8 *)&sp10)[1]), temp_a2, temp_a3);
                 return;
             }
             return;
@@ -30,7 +31,7 @@ void CallBack_Result_Plaza_PlazaExit2(s64 arg0) {
             (*(u8 *)((u8 *)(temp_a0) + 0xB9D)) = (u8) ((*(u8 *)((u8 *)(temp_a0) + 0xB9D)) + 1);
             return;
         }
-        To_LogOut(4);
+        To_LogOut(4, (s32) (((s8 *)&sp10)[1]), (s32) temp_a2, (s32) temp_a3);
     }
 }
 

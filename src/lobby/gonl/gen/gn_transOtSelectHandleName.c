@@ -21,7 +21,7 @@ void transOtSelectHandleName(void *arg0) {
         if ((*(u8 *)((u8 *)(temp_a1) + 0x22)) == 2) {
             temp_a0 = ((*(u8 *)((u8 *)(temp_a1) + 0x29)) * 8) + (*(s32 *)&cw);
             if ((*(s8 *)((u8 *)(temp_a0) + 0xB)) != 0) {
-                DispNameAndIDonDialog(0x86, &(*(u8 *)((u8 *)&User_data + 0x8)), temp_a0 + 0xB);
+                DispNameAndIDonDialog(0x86, &(*(u8 *)((u8 *)&User_data + 0x8)), temp_a0 + 0xB, M2C_ERROR(/* Read from unset register $a3 */));
             }
         }
         (*(u8 *)((u8 *)((*(void **)&pNet)) + 0x2D)) = 0U;

@@ -12,11 +12,11 @@ s32 put_main_cursor();
 extern u8 pNet;
 s32 func_0012BDD0();                      /* extern */
 extern void *g_lb_636A00;
-extern s32 g_lb_63E128;
-extern s32 g_lb_63E2E0;
-extern s32 g_lb_63E2E8;
+extern u8 g_lb_63E128;
+extern u8 g_lb_63E2E0;
+extern u8 g_lb_63E2E8;
 
-void lobby_func_005782A0(void) {
+void lobby_func_005782A0(s32 unused_a0, s32 arg1, s32 arg2, s32 arg3) {
     s32 var_a3;
     s32 var_s1;
     s32 var_s2;
@@ -27,7 +27,7 @@ void lobby_func_005782A0(void) {
 
     temp_a0 = (*(void **)&pNet);
     if ((*(u8 *)((u8 *)(temp_a0) + 0x23)) != 0) {
-        put_main_cursor((s32) (*(u8 *)((u8 *)(temp_a0) + 0x2B)));
+        put_main_cursor((s32) (*(u8 *)((u8 *)(temp_a0) + 0x2B)), arg1, arg2, arg3);
         flfntSetSize(0x12, 0x12);
         var_s3 = 0x8E;
         var_s2 = 0;
@@ -47,7 +47,7 @@ void lobby_func_005782A0(void) {
                 var_s1 = 0xA;
                 var_a3 = -0x8F8F90;
             }
-            Lb_put_status(0xE2, (s32) (((s16) (((((s16) (var_s3))) - 2)))), 0x14, var_a3, var_s2);
+            Lb_put_status(0xE2, (s32) (((s16) (((((s16) (var_s3))) - 2)))), 0x14, var_a3, (s32) var_s2);
             flfntLocate(0xDE, (s32) var_s3);
             if ((((s16) (var_s2))) == (*(u8 *)((u8 *)((*(void **)&pNet)) + 0x2B))) {
                 font_print_double(0xDE, (s32) var_s3, 1, var_s1, *var_s0 + 4);

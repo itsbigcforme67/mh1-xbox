@@ -32,11 +32,11 @@ s32 sprintf(); /* extern */
 extern void *g_lb_636B48;
 extern void *g_lb_636DF8;
 extern u8 tl_etc;
-extern s32 g_lb_63E2A8;
+extern u8 g_lb_63E2A8;
 extern u8 lit_2316;
 extern u8 my_user_id;
 
-void lobby_func_00576300(void) {
+void lobby_func_00576300(s32 unused_a0, s32 unused_a1, s32 arg2, s32 arg3) {
     u8 g_frame[0x100] __attribute__((aligned(16)));   /* G's stack frame */
 #define sp80 (*(s32 *)(g_frame + 0x80))
 #define spA0 (*(s32 *)(g_frame + 0xA0))
@@ -64,23 +64,23 @@ void lobby_func_00576300(void) {
         switch ((*(u8 *)((u8 *)(&(*(s8 *)((u8 *)&tl_member_buff + 0x18))) + 0x136A))) { /* irregular */
         case 2:
             if (((*(u8 *)((u8 *)(&(*(s8 *)((u8 *)&tl_member_buff + 0x18))) + 0x136B)) != 4) && ((*(u8 *)((u8 *)(&(*(s8 *)((u8 *)&tl_member_buff + 0x18))) + 0x136B)) != 3) && ((*(u8 *)((u8 *)(&(*(s8 *)((u8 *)&tl_member_buff + 0x18))) + 0x136B)) != 2)) {
-                lobby_func_00575FB0();
+                lobby_func_00575FB0(0x144, 0, arg2, arg3);
                 return;
             }
             lobby_func_005775C0(0xD8, 0x50, (s32) (*(s8 *)((u8 *)(&(*(s8 *)((u8 *)&tl_member_buff + 0x18))) + 0x1374)), (s32) (*(s16 *)((u8 *)(&(*(s8 *)((u8 *)&tl_member_buff + 0x18))) + 0x1364)));
             return;
         case 6:
-            plaza_searchMemberTrans(0x144);
+            plaza_searchMemberTrans(0x144, 0, arg2, arg3);
             return;
         case 8:
             var_s0 = 0x90;
             if ((*(u8 *)((u8 *)(&(*(s8 *)((u8 *)&tl_member_buff + 0x18))) + 0x1371)) == 2) {
                 if ((*(u8 *)((u8 *)(&(*(s8 *)((u8 *)&tl_member_buff + 0x18))) + 0x136D)) == 0) {
-                    lobby_func_005737C0(g_lb_636B48);
+                    lobby_func_005737C0(g_lb_636B48, (s32) (*(u8 *)((u8 *)(&(*(s8 *)((u8 *)&tl_member_buff + 0x18))) + 0x136A)), arg2, arg3);
                     return;
                 }
-                lobby_func_005791D0(3);
-                put_main_cursor((s32) (*(s8 *)((u8 *)(&(*(s8 *)((u8 *)&tl_member_buff + 0x18))) + 0x1372)));
+                lobby_func_005791D0(3, (s32) (*(u8 *)((u8 *)(&(*(s8 *)((u8 *)&tl_member_buff + 0x18))) + 0x136A)), arg2, arg3);
+                put_main_cursor((s32) (*(s8 *)((u8 *)(&(*(s8 *)((u8 *)&tl_member_buff + 0x18))) + 0x1372)), M2C_ERROR(/* Read from unset register $a1 */), M2C_ERROR(/* Read from unset register $a2 */), M2C_ERROR(/* Read from unset register $a3 */));
                 var_s4 = 0;
                 var_s2 = &(*(s8 *)((u8 *)&tl_member_buff + 0x18));
                 var_s5 = (*(s32 *)&g_main_2EFBB0) + ((*(s16 *)((u8 *)(&(*(s8 *)((u8 *)&tl_member_buff + 0x18))) + 0x1364)) * 0x118) + 4;
@@ -134,11 +134,11 @@ void lobby_func_00576300(void) {
             }
             if ((*(u8 *)((u8 *)(&(*(s8 *)((u8 *)&tl_member_buff + 0x18))) + 0x1371)) == 3) {
                 if ((*(u8 *)((u8 *)(&(*(s8 *)((u8 *)&tl_member_buff + 0x18))) + 0x136D)) == 0) {
-                    lobby_func_005737C0(g_lb_636B48);
+                    lobby_func_005737C0(g_lb_636B48, (s32) (*(u8 *)((u8 *)(&(*(s8 *)((u8 *)&tl_member_buff + 0x18))) + 0x136A)), arg2, arg3);
                     return;
                 }
-                lobby_func_005791D0(8);
-                put_main_cursor((s32) (*(s8 *)((u8 *)(&(*(s8 *)((u8 *)&tl_member_buff + 0x18))) + 0x1372)));
+                lobby_func_005791D0(8, (s32) (*(u8 *)((u8 *)(&(*(s8 *)((u8 *)&tl_member_buff + 0x18))) + 0x136A)), arg2, arg3);
+                put_main_cursor((s32) (*(s8 *)((u8 *)(&(*(s8 *)((u8 *)&tl_member_buff + 0x18))) + 0x1372)), M2C_ERROR(/* Read from unset register $a1 */), M2C_ERROR(/* Read from unset register $a2 */), M2C_ERROR(/* Read from unset register $a3 */));
                 var_s3 = 0;
                 var_s5_2 = &(*(s8 *)((u8 *)&tl_member_buff + 0x18));
                 var_s4_2 = &(*(s8 *)((u8 *)&tl_member_buff + 0x18));
@@ -156,7 +156,7 @@ void lobby_func_00576300(void) {
                         temp_s2 = ((s16) (var_v0));
                         font_print_double(0xE2, var_s0, 1, (s32) temp_s2, &spA0);
                         if (*var_s5_2 != 0) {
-                            font_print_double(0x1F8, var_s0, 1, (s32) temp_s2, (*(void **)((u8 *)(((u8 *)&tl_etc + ((*(u8 *)((u8 *)(var_s4_2) + 0x35D)) * 4))) + 0x18)));
+                            font_print_double(0x1F8, var_s0, 1, (s32) temp_s2, (*(void **)((u8 *)((&tl_etc + ((*(u8 *)((u8 *)(var_s4_2) + 0x35D)) * 4))) + 0x18)));
                         } else {
                             font_print_double(0x1F8, var_s0, 1, (s32) temp_s2, (*(s32 * *)((u8 *)&tl_hr_tbl + 0x44)));
                         }
@@ -173,7 +173,7 @@ void lobby_func_00576300(void) {
                         temp_s2_2 = ((s16) (var_v0_2));
                         font_print_ex(0xE2, var_s0, temp_s2_2, &spA0);
                         if (*var_s5_2 != 0) {
-                            font_print_ex(0x1F8, var_s0, temp_s2_2, (*(s32 **)((u8 *)(((u8 *)&tl_etc + ((*(u8 *)((u8 *)(var_s4_2) + 0x35D)) * 4))) + 0x18)));
+                            font_print_ex(0x1F8, var_s0, temp_s2_2, (*(s32 **)((u8 *)((&tl_etc + ((*(u8 *)((u8 *)(var_s4_2) + 0x35D)) * 4))) + 0x18)));
                         } else {
                             font_print_ex(0x1F8, var_s0, temp_s2_2, (*(s32 * *)((u8 *)&tl_hr_tbl + 0x44)));
                         }
@@ -186,11 +186,11 @@ void lobby_func_00576300(void) {
                 return;
             }
             if ((*(u8 *)((u8 *)(&(*(s8 *)((u8 *)&tl_member_buff + 0x18))) + 0x136D)) == 0) {
-                lobby_func_005737C0(g_lb_636B48);
+                lobby_func_005737C0(g_lb_636B48, (s32) (*(u8 *)((u8 *)(&(*(s8 *)((u8 *)&tl_member_buff + 0x18))) + 0x136A)), arg2, arg3);
                 return;
             }
-            lobby_func_005791D0(0);
-            put_main_cursor((s32) (*(s8 *)((u8 *)(&(*(s8 *)((u8 *)&tl_member_buff + 0x18))) + 0x1372)));
+            lobby_func_005791D0(0, (s32) (*(u8 *)((u8 *)(&(*(s8 *)((u8 *)&tl_member_buff + 0x18))) + 0x136A)), arg2, arg3);
+            put_main_cursor((s32) (*(s8 *)((u8 *)(&(*(s8 *)((u8 *)&tl_member_buff + 0x18))) + 0x1372)), M2C_ERROR(/* Read from unset register $a1 */), M2C_ERROR(/* Read from unset register $a2 */), M2C_ERROR(/* Read from unset register $a3 */));
             var_s2_2 = 0;
             do {
                 temp_a1 = var_s2_2 + ((*(s16 *)((u8 *)(&(*(s8 *)((u8 *)&tl_member_buff + 0x18))) + 0x1364)) * 7);

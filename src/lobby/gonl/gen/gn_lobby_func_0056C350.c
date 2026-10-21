@@ -24,7 +24,7 @@ s32 lobby_func_0056C350(void) {
     }
     cpn_GetCNData();
     SaveNetFile_init();
-    SetDialogData(0x5F);
+    SetDialogData(0x5F, M2C_ERROR(/* Read from unset register $a1 */), M2C_ERROR(/* Read from unset register $a2 */), M2C_ERROR(/* Read from unset register $a3 */));
     return 3;
 }
 

@@ -14,12 +14,12 @@ extern u8 ClassInfo;
 extern u8 pNet;
 s32 font_print();           /* extern */
 s32 sprintf();    /* extern */
-extern s32 g_lb_63E248;
-extern s32 g_lb_63E250;
+extern u8 g_lb_63E248;
+extern u8 g_lb_63E250;
 extern u8 PlazaInfo;
 extern u8 lit_2316;
 
-void plaza_movePlazaTrans(void) {
+void plaza_movePlazaTrans(s32 unused_a0, s32 arg1, s32 arg2, s32 arg3) {
     u8 g_frame[0xB0] __attribute__((aligned(16)));   /* G's stack frame */
 #define sp50 (*(s32 *)(g_frame + 0x50))
 #define spA0 (*(s32 *)(g_frame + 0xA0))
@@ -29,13 +29,13 @@ void plaza_movePlazaTrans(void) {
     u8 *temp_v0;
     u8 *var_s0;
 
-    put_main_cursor((s32) (*(u8 *)((u8 *)((*(void **)&pNet)) + 0x2B)));
+    put_main_cursor((s32) (*(u8 *)((u8 *)((*(void **)&pNet)) + 0x2B)), arg1, arg2, arg3);
     flfntSetSize(0x12, 0x12);
-    lobby_func_005791D0(1);
+    lobby_func_005791D0(1, M2C_ERROR(/* Read from unset register $a1 */), M2C_ERROR(/* Read from unset register $a2 */), M2C_ERROR(/* Read from unset register $a3 */));
     var_s3 = 0x8E;
     var_s2 = 0;
     var_s1 = (*(s16 *)((u8 *)((*(void **)&pNet)) + 0x1C)) * 7;
-    var_s0 = (u8 *)&PlazaInfo + (var_s1 * 0x15C);
+    var_s0 = &PlazaInfo + (var_s1 * 0x15C);
     do {
         sprintf(&spA0, &g_lb_63E248, (*(u16 *)((u8 *)(var_s0) + 6)), (*(u16 *)((u8 *)(var_s0) + 8)));
         if (var_s1 < (s32) (*(u16 *)((u8 *)&ClassInfo + 0x2))) {

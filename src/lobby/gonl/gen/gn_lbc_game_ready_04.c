@@ -16,12 +16,14 @@ extern u8 COM_R_No_6;
 extern u8 CnetWork;
 extern u8 System_timer;
 extern u8 cw;
+extern u8 jtbl_2977;
 extern u8 net_game_invalid_flag;
 extern u8 netr_ret;
 s32 cnWrap_BgmFadeOut();     /* extern */
 
-void lbc_game_ready_04(void) {
+void lbc_game_ready_04(s32 unused_a0, s32 unused_a1, s32 unused_a2, s32 arg3) {
     u8 temp_a1;
+    u8 *temp_a2;
     u8 *temp_v1;
     u8 *temp_v1_2;
     u8 *temp_v1_3;
@@ -29,10 +31,11 @@ void lbc_game_ready_04(void) {
 
     temp_v1 = (*(void **)&cw);
     temp_a1 = (*(u8 *)((u8 *)(temp_v1) + 0xB9C));
+    temp_a2 = temp_v1 + 0xB9C;
     switch (temp_a1) {
     case 0:
         (*(u8 *)((u8 *)(temp_v1) + 0xB9C)) = (u8) (temp_a1 + 1);
-        cnWrap_BgmFadeOut(0xF, temp_a1, temp_v1 + 0xB9C);
+        cnWrap_BgmFadeOut(0xF, temp_a1, temp_a2);
         /* fallthrough */
     case 1:
         temp_v1_2 = (*(void **)&cw);
@@ -51,7 +54,7 @@ void lbc_game_ready_04(void) {
         cnLBS_LogoutLobbyServer((s32) CallBack_Result_Match_Logout);
         return;
     case 4:
-        Check_CallBackWait();
+        Check_CallBackWait((s32) &jtbl_2977, (s32) temp_a1, (s32) temp_a2, arg3);
         return;
     case 5:
         (*(s32 *)((u8 *)&CnetWork + 0x8)) = 0;

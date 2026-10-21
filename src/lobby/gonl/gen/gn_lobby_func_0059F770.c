@@ -51,7 +51,7 @@ void lobby_func_0059F770(void) {
     Put_2TF(&spE0);
     temp_v0 = ((s16) ((s32) temp_s5));
     spB0 = (s32) temp_v0;
-    temp_v0_2 = ((s16) ((s32) spE0));
+    temp_v0_2 = ((s16) (*(s64 *)&spE0));
     spA0 = (s32) temp_v0_2;
     var_s7 = 0;
     temp_v0_3 = (((s16) ((s32) temp_s2))) + temp_v0_2;

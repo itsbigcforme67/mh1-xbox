@@ -3,12 +3,12 @@
  * tools/build_pc_mhg.sh). */
 #include "../gonl.h"
 
+s32 __cnetSub_Get_RestBgWork();
 s32 lobby_func_005AE9D0();
 s32 lobby_func_005AEA10();
 s32 lobby_func_005AEA50();
 s32 strlen();
 extern u8 CnetSys_w;
-s32 __cnetSub_Get_RestBgWork();                     /* extern */
 s32 cnLBS_Read_RoomRuleCaption(); /* extern */
 s32 cnLBS_Read_RoomRuleChoiceCount(); /* extern */
 s32 cnLBS_SendMessage(); /* extern */

@@ -33,7 +33,7 @@ s32 cnetGet_Login_UserMiniData();    /* extern */
 extern u8 network_work;
 extern u8 player_work;
 
-void lbc_login_id_select(void) {
+void lbc_login_id_select(s32 unused_a0, s32 unused_a1, s32 arg2, s32 arg3) {
     s32 temp_s0;
     s32 temp_s0_2;
     s32 temp_s1_2;
@@ -48,6 +48,7 @@ void lbc_login_id_select(void) {
     u8 *temp_a0_2;
     u8 *temp_a0_3;
     u8 *temp_a0_4;
+    u8 *temp_a1;
     u8 *temp_v0;
     u8 *temp_v0_3;
     u8 *temp_v0_4;
@@ -57,6 +58,7 @@ void lbc_login_id_select(void) {
 
     temp_v0 = (*(void **)&cw);
     temp_a0 = (*(u8 *)((u8 *)(temp_v0) + 0xB9C));
+    temp_a1 = temp_v0 + 0xB9C;
     switch (temp_a0) {                              /* switch 1 */
     case 0:                                         /* switch 1 */
         (*(u8 *)((u8 *)(temp_v0) + 0xB9C)) = (u8) (temp_a0 + 1);
@@ -93,7 +95,7 @@ void lbc_login_id_select(void) {
         return;
     case 1:                                         /* switch 1 */
         (*(u8 *)((u8 *)(temp_v0) + 0xB9C)) = (u8) (temp_a0 + 1);
-        Lbc_init_network_work();
+        Lbc_init_network_work((s32) temp_a0, (s32) temp_a1, arg2, arg3);
         (*(u8 *)((u8 *)((*(void **)&pNet)) + 0x27)) = (u8) (*(u8 *)((u8 *)((*(void **)&cw)) + 2));
         (*(u8 *)((u8 *)((*(void **)&pNet)) + 0x29)) = (u8) (*(u8 *)((u8 *)((*(void **)&cw)) + 1));
         return;
@@ -108,7 +110,7 @@ void lbc_login_id_select(void) {
         }
         break;
     case 3:                                         /* switch 1 */
-        temp_v0_2 = net_SetMenu_SelectHandleName(&network_work);
+        temp_v0_2 = net_SetMenu_SelectHandleName(&network_work, (s32) temp_a1, arg2, arg3);
         switch (temp_v0_2) {                        /* switch 2; irregular */
         case 0:                                     /* switch 2 */
             temp_a0_4 = (*(void **)&cw);
@@ -117,7 +119,7 @@ void lbc_login_id_select(void) {
             (*(u8 *)((u8 *)(temp_a0_4) + 0xB9C)) = (u8) ((*(u8 *)((u8 *)(temp_a0_4) + 0xB9C)) + 1);
             return;
         case -2:                                    /* switch 2 */
-            To_LogOut(1);
+            To_LogOut(1, M2C_ERROR(/* Read from unset register $a1 */), M2C_ERROR(/* Read from unset register $a2 */), M2C_ERROR(/* Read from unset register $a3 */));
             return;
         }
         break;
@@ -135,19 +137,19 @@ void lbc_login_id_select(void) {
         (*(u8 *)((u8 *)((*(void **)&cw)) + 1)) = temp_s1;
         (*(s32 *)((u8 *)((*(void **)&cw)) + 0xFA68)) = 0xE10;
         (*(s8 *)((u8 *)((*(void **)&cw)) + 0xFA65)) = 0;
-        Set_userdata((u8 *)&player_work + ((*(u8 *)((u8 *)&game_w + 0x3A)) * 0xA00));
+        Set_userdata(&player_work + ((*(u8 *)((u8 *)&game_w + 0x3A)) * 0xA00));
         temp_s2 = temp_s1 * 0x11;
         memcpy((*(void **)&cw) + temp_s2 + 0x2B, &(*(u8 *)((u8 *)&User_data + 0x8)), 0x10);
         temp_v1_3 = (*(void **)&cw);
         temp_s0 = temp_s1 * 8;
         if ((*(s8 *)((u8 *)((temp_s0 + temp_v1_3)) + 0xB)) == 0) {
             temp_s0_2 = temp_s1 << 6;
-            lobby_func_0058BAA0(temp_v1_3 + temp_s0_2 + 0x6F);
+            lobby_func_0058BAA0(temp_v1_3 + temp_s0_2 + 0x6F, M2C_ERROR(/* Read from unset register $a1 */), M2C_ERROR(/* Read from unset register $a2 */), M2C_ERROR(/* Read from unset register $a3 */));
             temp_v0_3 = (*(void **)&cw);
             cnLBS_Send_LoginUserAccount(NULL, temp_v0_3 + temp_s2 + 0x2B, temp_v0_3 + temp_s0_2 + 0x6F);
         } else {
             temp_s1_2 = temp_s1 << 6;
-            lobby_func_0058BAA0(temp_v1_3 + temp_s1_2 + 0x6F);
+            lobby_func_0058BAA0(temp_v1_3 + temp_s1_2 + 0x6F, M2C_ERROR(/* Read from unset register $a1 */), M2C_ERROR(/* Read from unset register $a2 */), M2C_ERROR(/* Read from unset register $a3 */));
             temp_v0_4 = (*(void **)&cw);
             cnLBS_Send_LoginUserAccount(temp_v0_4 + temp_s0 + 0xB, temp_v0_4 + temp_s2 + 0x2B, temp_v0_4 + temp_s1_2 + 0x6F);
         }
@@ -155,10 +157,10 @@ void lbc_login_id_select(void) {
         cnetGet_Login_DecideUserHandle((*(void **)&cw) + 0x1C8);
         return;
     case 6:                                         /* switch 1 */
-        Check_CallBackWait();
+        Check_CallBackWait((s32) temp_a0, (s32) temp_a1, arg2, arg3);
         return;
     default:                                        /* switch 1 */
-        To_LogOut(4);
+        To_LogOut(4, (s32) temp_a1, arg2, arg3);
         break;
     }
 }

@@ -12,11 +12,11 @@ extern u8 cw;
 extern u8 pNet;
 extern u8 put_back;
 
-void lobby_client_game_in_lobby(void) {
+void lobby_client_game_in_lobby(s32 arg0, s32 arg1, s32 arg2, s32 arg3) {
     u8 temp_v1;
     u8 *temp_a0;
 
-    if (Check_InterruptFlag() != 0) {
+    if (Check_InterruptFlag(arg0, arg1, arg2, arg3) != 0) {
         temp_a0 = (*(void **)&cw);
         if (((*(u8 *)((u8 *)(temp_a0) + 0xB9B)) == 0) && ((*(u8 *)((u8 *)(temp_a0) + 0xB9C)) == 1)) {
             Lbc_set_prim(0, 0, (s32) &put_back, 0);
@@ -30,10 +30,10 @@ void lobby_client_game_in_lobby(void) {
         lobby_func_00580C70(M2C_ERROR(/* Read from unset register $a0 */), M2C_ERROR(/* Read from unset register $a1 */), M2C_ERROR(/* Read from unset register $a2 */), M2C_ERROR(/* Read from unset register $a3 */), M2C_ERROR(/* Read from unset register $a4 */), M2C_ERROR(/* Read from unset register $a5 */), M2C_ERROR(/* Read from unset register $a6 */), M2C_ERROR(/* Read from unset register $a7 */));
         return;
     case 1:
-        lobby_func_00582A20();
+        lobby_func_00582A20(M2C_ERROR(/* Read from unset register $a0 */), M2C_ERROR(/* Read from unset register $a1 */), M2C_ERROR(/* Read from unset register $a2 */), M2C_ERROR(/* Read from unset register $a3 */));
         return;
     default:
-        To_LogOut(4);
+        To_LogOut(4, M2C_ERROR(/* Read from unset register $a1 */), M2C_ERROR(/* Read from unset register $a2 */), M2C_ERROR(/* Read from unset register $a3 */));
         return;
     }
 }

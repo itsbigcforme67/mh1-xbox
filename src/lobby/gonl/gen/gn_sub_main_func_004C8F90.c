@@ -5,7 +5,7 @@
 
 extern u8 view_work;
 s64 sub_main_func_004C9250();              /* extern */
-extern s32 g_main_2FF154;
+extern u8 g_main_2FF154;
 extern u8 User_data;
 
 s32 *sub_main_func_004C8F90(s32 arg0, s32 arg1) {
@@ -21,16 +21,16 @@ s32 *sub_main_func_004C8F90(s32 arg0, s32 arg1) {
         var_a0 = 0;
         var_v1 = &g_main_2FF154;
         var_a5 = ((s16) ((arg1 * 0x64)));
-        var_a4 = (u8 *)&User_data + (var_a5 * 6);
+        var_a4 = &User_data + (var_a5 * 6);
         do {
             if ((((s16) (var_a5))) >= (((s16) (temp_v1)))) {
-                (*(s32 *)((u8 *)&g_main_2FF154 + (((s16) (var_a0))))) = 0xFF;
+                *(&g_main_2FF154 + (((s16) (var_a0)))) = 0xFF;
                 (*(u16 *)((u8 *)(var_v1) + 0x64)) = 0U;
             } else if ((*(u8 *)((u8 *)(var_a4) + 0x44)) != 0) {
-                (*(s32 *)((u8 *)&g_main_2FF154 + (((s16) (var_a0))))) = (*(u8 *)((u8 *)(var_a4) + 0x45));
+                *(&g_main_2FF154 + (((s16) (var_a0)))) = (*(u8 *)((u8 *)(var_a4) + 0x45));
                 (*(u16 *)((u8 *)(var_v1) + 0x64)) = (u16) (*(u16 *)((u8 *)(var_a4) + 0x46));
             } else {
-                (*(s32 *)((u8 *)&g_main_2FF154 + (((s16) (var_a0))))) = 0xFF;
+                *(&g_main_2FF154 + (((s16) (var_a0)))) = 0xFF;
                 (*(u16 *)((u8 *)(var_v1) + 0x64)) = 0U;
             }
             var_a0 = ((s16) ((var_a0 + 1)));

@@ -6,9 +6,9 @@
 s32 CallBack_Result_Lobby_LobbyExit();
 s32 Check_CallBackWait();
 extern u8 cw;
-s32 cnLBS_LobbyExit();              /* extern */
+s32 cnLBS_LobbyExit(); /* extern */
 
-s32 Lbs_LobbyExit(void) {
+s32 Lbs_LobbyExit(s32 unused_a0, s32 arg1, s32 arg2, s32 arg3) {
     u8 temp_v1_2;
     u8 *temp_v1;
     u8 *temp_v1_3;
@@ -30,7 +30,7 @@ block_15:
     default:
         return 2;
     case 0x2:
-        Check_CallBackWait();
+        Check_CallBackWait(temp_v1 + 0xB9D, arg1, arg2, arg3);
         goto block_15;
     case 0x3:
         (*(u8 *)((u8 *)(temp_v1) + 0xB9D)) = 0U;

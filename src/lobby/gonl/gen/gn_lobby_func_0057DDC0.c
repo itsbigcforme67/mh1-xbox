@@ -20,36 +20,40 @@ extern u8 PlazaInfo;
 
 s32 lobby_func_0057DDC0(void) {
     u8 *var_a2;   /* (s32 *) */
+    s32 temp_a1_2;
     s32 temp_a2;
     s32 var_a3;
     u8 temp_a0;
-    u8 temp_a1;
+    u8 temp_a1_3;
     u8 var_v0;
+    u8 *temp_a1;
     u8 *temp_v0;
     u8 *temp_v1;
 
     temp_v1 = (*(void **)&cw);
     temp_a2 = Get_sw(0) & 0xFFFF;
     temp_a0 = (*(u8 *)((u8 *)(temp_v1) + 0xBA1));
+    temp_a1 = temp_v1 + 0xBA1;
     if (temp_a2 & 0x20) {
-        if (lobby_func_0056AF20(0, 0, ((s8) (((temp_a0 & 0xFF) + 0x31)))) == 0) {
-            SetDialogData(0xD);
-            cnWrap_SoundRequest(7);
+        if (lobby_func_0056AF20(0, 0, (s32) (((s8) (((temp_a0 & 0xFF) + 0x31)))), M2C_ERROR(/* Read from unset register $a3 */)) == 0) {
+            SetDialogData(0xD, M2C_ERROR(/* Read from unset register $a1 */), M2C_ERROR(/* Read from unset register $a2 */), M2C_ERROR(/* Read from unset register $a3 */));
+            cnWrap_SoundRequest(7, M2C_ERROR(/* Read from unset register $a1 */), M2C_ERROR(/* Read from unset register $a2 */), M2C_ERROR(/* Read from unset register $a3 */));
             return 1;
         }
         var_a3 = 0;
         if ((s32) (*(u16 *)((u8 *)&ClassInfo + 0x2)) > 0) {
             var_a2 = &PlazaInfo;
+            temp_a1_2 = (*(u8 *)((u8 *)((*(void **)&cw)) + 0xBA1)) + 0x31;
 loop_5:
-            if ((((*(u8 *)((u8 *)((*(void **)&cw)) + 0xBA1)) + 0x31) == (*(s8 *)((u8 *)(var_a2) + 0x5B))) && ((*(u8 *)((u8 *)(var_a2) + 0x16)) == 3)) {
+            if ((temp_a1_2 == (*(s8 *)((u8 *)(var_a2) + 0x5B))) && ((*(u8 *)((u8 *)(var_a2) + 0x16)) == 3)) {
                 ClassInfo = var_a3 + 1;
                 goto block_14;
             }
             var_a3 += 1;
             var_a2 += 0x15C;
             if (var_a3 == (*(u16 *)((u8 *)&ClassInfo + 0x2))) {
-                SetDialogData(0x12);
-                cnWrap_SoundRequest(3);
+                SetDialogData(0x12, temp_a1_2, (s32) var_a2, var_a3);
+                cnWrap_SoundRequest(3, M2C_ERROR(/* Read from unset register $a1 */), M2C_ERROR(/* Read from unset register $a2 */), M2C_ERROR(/* Read from unset register $a3 */));
                 return 1;
             }
             if (var_a3 >= (s32) (*(u16 *)((u8 *)&ClassInfo + 0x2))) {
@@ -58,12 +62,12 @@ loop_5:
             goto loop_5;
         }
 block_14:
-        cnWrap_SoundRequest(6);
+        cnWrap_SoundRequest(6, M2C_ERROR(/* Read from unset register $a1 */), M2C_ERROR(/* Read from unset register $a2 */), var_a3);
         return 0;
     }
     if (temp_a2 & 0x40) {
         if ((s32) (*(u8 *)&BsLbsCount) >= 2) {
-            cnWrap_SoundRequest(3);
+            cnWrap_SoundRequest(3, (s32) temp_a1, temp_a2, M2C_ERROR(/* Read from unset register $a3 */));
             return 3;
         }
         goto block_39;
@@ -101,13 +105,13 @@ block_38:
 block_39:
     temp_v0 = (*(void **)&cw);
     if ((temp_a0 & 0xFF) != (*(u8 *)((u8 *)(temp_v0) + 0xBA1))) {
-        temp_a1 = (*(u8 *)((u8 *)(temp_v0) + 0xBA1));
-        (*(s32 *)((u8 *)&(*(u8 *)((u8 *)&textLobbyTbl + 0x58)) + (temp_a1 * 0x14))) = func_0012E1C0(1);
-        lobby_func_0059F740((*(s32 *)&g_main_2EF390) + 0x23F4 + 0x20 + ((*(u8 *)((u8 *)(temp_v0) + 0xBA1)) << 8) + 0x288, (s32) temp_a1, M2C_ERROR(/* Read from unset register $a2 */), M2C_ERROR(/* Read from unset register $a3 */), M2C_ERROR(/* Read from unset register $a4 */), M2C_ERROR(/* Read from unset register $a5 */), M2C_ERROR(/* Read from unset register $a6 */), M2C_ERROR(/* Read from unset register $a7 */));
-        lobby_func_0059F750(0xFA, 0x16A);
-        cnWrap_SoundRequest(1);
+        temp_a1_3 = (*(u8 *)((u8 *)(temp_v0) + 0xBA1));
+        *(&(*(u8 *)((u8 *)&textLobbyTbl + 0x58)) + (temp_a1_3 * 0x14)) = func_0012E1C0(1, (s32) temp_a1, temp_a2, M2C_ERROR(/* Read from unset register $a3 */));
+        lobby_func_0059F740((*(s32 *)&g_main_2EF390) + 0x23F4 + 0x20 + ((*(u8 *)((u8 *)(temp_v0) + 0xBA1)) << 8) + 0x288, (s32) temp_a1_3, M2C_ERROR(/* Read from unset register $a2 */), M2C_ERROR(/* Read from unset register $a3 */), M2C_ERROR(/* Read from unset register $a4 */), M2C_ERROR(/* Read from unset register $a5 */), M2C_ERROR(/* Read from unset register $a6 */), M2C_ERROR(/* Read from unset register $a7 */));
+        lobby_func_0059F750(0xFA, 0x16A, M2C_ERROR(/* Read from unset register $a2 */), M2C_ERROR(/* Read from unset register $a3 */));
+        cnWrap_SoundRequest(1, M2C_ERROR(/* Read from unset register $a1 */), M2C_ERROR(/* Read from unset register $a2 */), M2C_ERROR(/* Read from unset register $a3 */));
     } else {
-        (*(s32 *)((u8 *)&(*(u8 *)((u8 *)&textLobbyTbl + 0x58)) + ((*(u8 *)((u8 *)((*(void **)&cw)) + 0xBA1)) * 0x14))) = func_0012E1C0(0);
+        *(&(*(u8 *)((u8 *)&textLobbyTbl + 0x58)) + ((*(u8 *)((u8 *)((*(void **)&cw)) + 0xBA1)) * 0x14)) = func_0012E1C0(0, (s32) temp_a1, temp_a2, M2C_ERROR(/* Read from unset register $a3 */));
     }
     return 2;
 }

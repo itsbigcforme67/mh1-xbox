@@ -12,6 +12,7 @@ s64 lobby_func_00569390(u8 *arg0, s16 *arg1, s32 arg2, s32 arg3, s32 arg4) {
     s32 temp_a0;
     s32 temp_a1;
     s32 temp_a2;
+    s32 temp_a2_2;
     s32 temp_a3;
     s32 temp_a4;
     s32 var_a6;
@@ -77,7 +78,8 @@ s64 lobby_func_00569390(u8 *arg0, s16 *arg1, s32 arg2, s32 arg3, s32 arg4) {
         }
         temp_a4 = ((s16) ((s32) var_s1));
         temp_a3 = temp_a4 * temp_a2;
-        var_s0 = ((s16) (((var_s2 & 0xFF) + temp_a3)));
+        temp_a2_2 = (var_s2 & 0xFF) + temp_a3;
+        var_s0 = ((s16) (temp_a2_2));
         if (var_s0 >= temp_a0) {
             var_s2 = 0;
             var_s0 = ((s16) (temp_a3));
@@ -85,7 +87,7 @@ s64 lobby_func_00569390(u8 *arg0, s16 *arg1, s32 arg2, s32 arg3, s32 arg4) {
         if ((temp_v1 == (var_s2 & 0xFF)) && (temp_v0 == temp_a4)) {
             return ((s16) (temp_a1));
         }
-        cnWrap_SoundRequest(1);
+        cnWrap_SoundRequest(1, (s32) temp_a1, (s32) temp_a2_2, (s32) temp_a3);
         *arg1 = var_s1;
         *arg0 = var_s2;
         return ((s16) (var_s0));

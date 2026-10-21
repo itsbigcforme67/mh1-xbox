@@ -4,10 +4,10 @@
 #include "../gonl.h"
 
 s32 Online_ck();
+s32 cnLBS_Send_ChatBinary();
 s32 flMemcpy();
 extern u8 cw;
 s32 Lbs_CheckMatchingFlag();                     /* extern */
-s32 cnLBS_Send_ChatBinary();           /* extern */
 extern s8 sendDat;
 
 void lb_send_data(s32 arg0, s8 arg1, void *arg2) {
@@ -31,7 +31,7 @@ block_5:
             if (temp_a2 != 0) {
                 flMemcpy(&(*(u8 *)((u8 *)&sendDat + 0x1)), arg2, temp_a2);
             }
-            cnLBS_Send_ChatBinary(&sendDat, ((arg0 & 0xFF) + 1) & 0xFF);
+            cnLBS_Send_ChatBinary();
         }
     }
 }

@@ -18,7 +18,7 @@ extern u8 cw;
 extern u8 pNet;
 s32 Init_InterruptFlag(); /* extern */
 s32 sprintf();         /* extern */
-extern s32 g_lb_63E538;
+extern u8 g_lb_63E538;
 
 void lobby_func_0057E990(void) {
     u8 g_frame[0x30] __attribute__((aligned(16)));   /* G's stack frame */
@@ -40,13 +40,13 @@ void lobby_func_0057E990(void) {
     switch (temp_a1) {                              /* switch 1; irregular */
     case 0x0:                                       /* switch 1 */
         (*(u8 *)((u8 *)(temp_a3) + 0xB9C)) = (u8) (temp_a1 + 1);
-        Lbc_init_network_work();
+        Lbc_init_network_work(2, (s32) temp_a1, 1, (s32) temp_a3);
         (*(u32 *)((u8 *)((*(void **)&cw)) + 0xBB4)) = 0x12CU;
-        Lb_eat_to_bell((s32) ((*(void **)&cw) + 0xF75D));
+        Lb_eat_to_bell((s32) ((*(void **)&cw) + 0xF75D), M2C_ERROR(/* Read from unset register $a1 */), M2C_ERROR(/* Read from unset register $a2 */), M2C_ERROR(/* Read from unset register $a3 */));
         (*(s32 *)((u8 *)((*(void **)&cw)) + 0xFA68)) = 0xE10;
         (*(s8 *)((u8 *)((*(void **)&cw)) + 0xFA65)) = 0;
         (*(s8 *)((u8 *)((*(void **)&cw)) + 0xBA9)) = 0xD;
-        lobby_func_005E3AB0((s32) CallBack_Result_Plaza_PlazaEntry2);
+        lobby_func_005E3AB0((s32) CallBack_Result_Plaza_PlazaEntry2, M2C_ERROR(/* Read from unset register $a1 */), M2C_ERROR(/* Read from unset register $a2 */), M2C_ERROR(/* Read from unset register $a3 */));
     default:                                        /* switch 1 */
 block_13:
         temp_a0 = (*(u8 *)((u8 *)((*(void **)&pNet)) + 0x27));
@@ -66,18 +66,18 @@ block_13:
             font_print_double(0x1D6, 0x54, 1, 5, &sp20);
             return;
         case 1:                                     /* switch 2 */
-            Lb_put_inputMsgForHTML();
+            Lb_put_inputMsgForHTML((s32) temp_a0, M2C_ERROR(/* Read from unset register $a1 */), M2C_ERROR(/* Read from unset register $a2 */), M2C_ERROR(/* Read from unset register $a3 */));
             if (temp_s0 & 0xFFFF & 0x20) {
                 temp_v1_3 = (*(void **)&pNet);
                 (*(u8 *)((u8 *)(temp_v1_3) + 0x27)) = (u8) ((*(u8 *)((u8 *)(temp_v1_3) + 0x27)) + 1);
-                SetDialogData(0xF);
-                cnWrap_SoundRequest(0);
+                SetDialogData(0xF, M2C_ERROR(/* Read from unset register $a1 */), M2C_ERROR(/* Read from unset register $a2 */), M2C_ERROR(/* Read from unset register $a3 */));
+                cnWrap_SoundRequest(0, M2C_ERROR(/* Read from unset register $a1 */), M2C_ERROR(/* Read from unset register $a2 */), M2C_ERROR(/* Read from unset register $a3 */));
             }
             return;
         }
         break;
     case 0x1:                                       /* switch 1 */
-        Check_CallBackWait();
+        Check_CallBackWait(2, (s32) temp_a1, 1, (s32) temp_a3);
         goto block_13;
     case 0x2:                                       /* switch 1 */
         if ((*(u8 *)((u8 *)((*(void **)&pNet)) + 0x27)) == 2) {

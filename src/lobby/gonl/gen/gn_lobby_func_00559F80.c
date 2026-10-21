@@ -6,15 +6,17 @@
 s32 lobby_func_00559B40();
 void * lobby_func_00559C70();
 extern u8 cw;
-void *lobby_func_00559F80(s32 arg0) {
+void *lobby_func_00559F80(s32 arg0, s32 arg1, s32 arg2, s32 arg3) {
     s32 temp_s0;
+    s8 temp_a1;
     u8 *var_v0;
 
     temp_s0 = arg0 & 0xFFFF;
     var_v0 = NULL;
     if (temp_s0 >= 0xC350) {
-        if ((*(s8 *)((u8 *)((*(void **)&cw)) + 0xB97)) == 1) {
-            var_v0 = lobby_func_00559C70(arg0);
+        temp_a1 = (*(s8 *)((u8 *)((*(void **)&cw)) + 0xB97));
+        if (temp_a1 == 1) {
+            var_v0 = lobby_func_00559C70(arg0, (s32) temp_a1, arg2, arg3);
             if ((var_v0 != NULL) && ((*(u16 *)((u8 *)(var_v0) + 0x1E)) != temp_s0)) {
                 return NULL;
             }
@@ -22,7 +24,7 @@ void *lobby_func_00559F80(s32 arg0) {
         /* Duplicate return node #6. Try simplifying control flow for better match */
         return var_v0;
     }
-    var_v0 = lobby_func_00559B40(arg0);
+    var_v0 = lobby_func_00559B40(arg0, arg1, arg2, arg3);
     return var_v0;
 }
 

@@ -24,8 +24,8 @@ void To_EnterPlaza(void) {
     (*(s8 *)((u8 *)&ClassInfo + 0x8)) = 0;
     memset(&LobbyInfo, 0, 0x2F94);
     Plaza_chat_clear();
-    Lb_clearChatList();
-    Lbc_init_network_work();
-    SetDialogData(0xE);
+    Lb_clearChatList(M2C_ERROR(/* Read from unset register $a0 */), M2C_ERROR(/* Read from unset register $a1 */), M2C_ERROR(/* Read from unset register $a2 */), M2C_ERROR(/* Read from unset register $a3 */));
+    Lbc_init_network_work(M2C_ERROR(/* Read from unset register $a0 */), M2C_ERROR(/* Read from unset register $a1 */), M2C_ERROR(/* Read from unset register $a2 */), M2C_ERROR(/* Read from unset register $a3 */));
+    SetDialogData(0xE, M2C_ERROR(/* Read from unset register $a1 */), M2C_ERROR(/* Read from unset register $a2 */), M2C_ERROR(/* Read from unset register $a3 */));
 }
 

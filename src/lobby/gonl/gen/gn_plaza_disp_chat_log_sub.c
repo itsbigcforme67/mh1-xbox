@@ -42,7 +42,7 @@ void plaza_disp_chat_log_sub(s32 arg0, s32 arg1, s32 arg2) {
             if (var_s3 != 0) {
 loop_5:
                 temp_s4 = var_s4 & 0x3F;
-                temp_v1 = (u8 *)&PitMenu + (temp_s4 * 0x5F);
+                temp_v1 = &PitMenu + (temp_s4 * 0x5F);
                 temp_s5 = temp_v1 + 0x2A;
                 var_s2 = (*(u8 *)((u8 *)(temp_v1) + 0x6A)) - 1;
                 if (var_s2 >= 0) {
@@ -53,9 +53,9 @@ loop_7:
                     font_print_uf(var_s0);
                     if (var_s2 == 0) {
                         if (!(arg2 & 0xFF)) {
-                            lobby_func_0058EDD0((s32) &sp80, (s32) (temp_s5 + 0x4E));
+                            lobby_func_0058EDD0((s32) &sp80, (s32) (temp_s5 + 0x4E), M2C_ERROR(/* Read from unset register $a2 */), M2C_ERROR(/* Read from unset register $a3 */));
                         } else {
-                            lobby_func_0058EDD0((s32) &sp80, (s32) (temp_s5 + 0x46));
+                            lobby_func_0058EDD0((s32) &sp80, (s32) (temp_s5 + 0x46), M2C_ERROR(/* Read from unset register $a2 */), M2C_ERROR(/* Read from unset register $a3 */));
                         }
                         font_print_double2(0xD8, var_s1, 1, (s32) (*(u8 *)((u8 *)(temp_s5) + 0x44)), &sp80);
                     }
@@ -85,11 +85,11 @@ block_16:
             if (var_s4_2 != 0) {
 loop_21:
                 temp_s2 = var_s2_2 & 0x3F;
-                temp_s1 = (u8 *)&PitMenu + (temp_s2 * 0x5F) + 0x2A;
+                temp_s1 = &PitMenu + (temp_s2 * 0x5F) + 0x2A;
                 if (!(arg2 & 0xFF)) {
-                    lobby_func_0058EDD0((s32) &sp80, (s32) (temp_s1 + 0x4E));
+                    lobby_func_0058EDD0((s32) &sp80, (s32) (temp_s1 + 0x4E), M2C_ERROR(/* Read from unset register $a2 */), M2C_ERROR(/* Read from unset register $a3 */));
                 } else {
-                    lobby_func_0058EDD0((s32) &sp80, (s32) (temp_s1 + 0x46));
+                    lobby_func_0058EDD0((s32) &sp80, (s32) (temp_s1 + 0x46), M2C_ERROR(/* Read from unset register $a2 */), M2C_ERROR(/* Read from unset register $a3 */));
                 }
                 font_print_double2(0xD8, var_s3_2, 1, (s32) (*(u8 *)((u8 *)(temp_s1) + 0x44)), &sp80);
                 font_set_palette((s32) (*(u8 *)((u8 *)(temp_s1) + 0x45)));

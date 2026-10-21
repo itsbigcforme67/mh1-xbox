@@ -48,7 +48,7 @@ loop_7:
                 }
             }
             if (((*(u8 *)((u8 *)((*(void **)&cw)) + 0xFA61)) != 0) && (sp48 != 0)) {
-                Lb_put_chat(2, (s32) &sp48);
+                Lb_put_chat(2, (s32) &sp48, M2C_ERROR(/* Read from unset register $a2 */), M2C_ERROR(/* Read from unset register $a3 */));
             }
         } else {
             goto loop_4;

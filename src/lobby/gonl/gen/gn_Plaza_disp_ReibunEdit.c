@@ -17,12 +17,12 @@ void Plaza_disp_ReibunEdit(void) {
     s32 var_s1;
     u8 *var_s3;
 
-    Put_page_num(0x20E, 0x78, ((s16) ((((*(u8 *)((u8 *)&reibun_edit + 0x3)) / 6) + ((u8) (*(u8 *)((u8 *)&reibun_edit + 0x3)) >> 0x1F)))), 2, 0);
+    Put_page_num(0x20E, 0x78, (s32) (((s16) ((((*(u8 *)((u8 *)&reibun_edit + 0x3)) / 6) + ((u8) (*(u8 *)((u8 *)&reibun_edit + 0x3)) >> 0x1F))))), 2, 0);
     flfntSetSize(0x12, 0x12);
     font_set_palette(0);
     var_s1 = 6;
     var_s0 = 0xA4;
-    var_s3 = (u8 *)&str_tbl_reibun0 + ((((*(u8 *)((u8 *)&reibun_edit + 0x3)) / 6) + ((u8) (*(u8 *)((u8 *)&reibun_edit + 0x3)) >> 0x1F)) * 0x60);
+    var_s3 = &str_tbl_reibun0 + ((((*(u8 *)((u8 *)&reibun_edit + 0x3)) / 6) + ((u8) (*(u8 *)((u8 *)&reibun_edit + 0x3)) >> 0x1F)) * 0x60);
     do {
         flfntLocate(0xDA, var_s0);
         Reibun_print(0x2C, (*(void **)((u8 *)(var_s3) + 0xC)));
@@ -30,6 +30,6 @@ void Plaza_disp_ReibunEdit(void) {
         var_s3 += 0x10;
         var_s0 = (s32) (((s16) ((var_s0 + 0x16))));
     } while (var_s1 != 0);
-    put_main_cursor(((s32) (*(u8 *)((u8 *)(&reibun_edit) + 3)) % 6) + 1);
+    put_main_cursor(((s32) (*(u8 *)((u8 *)(&reibun_edit) + 3)) % 6) + 1, M2C_ERROR(/* Read from unset register $a1 */), M2C_ERROR(/* Read from unset register $a2 */), M2C_ERROR(/* Read from unset register $a3 */));
 }
 

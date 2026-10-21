@@ -7,7 +7,7 @@ s32 __cnet_Recv_PieceJoinUserMH();
 extern u8 CnetSys_w;
 extern u16 g_lb_72E07E;
 
-void _sub_ReceiveJoinUser(s32 arg0) {
+void _sub_ReceiveJoinUser(s32 arg0, s32 unused_a1, s32 unused_a2, s32 arg3) {
     u8 g_frame[0x30] __attribute__((aligned(16)));   /* G's stack frame */
 #define sp20 (*(u16 *)(g_frame + 0x20))
 #define sp22 (*(u8 *)(g_frame + 0x22))
@@ -17,7 +17,7 @@ void _sub_ReceiveJoinUser(s32 arg0) {
     u8 *temp_s0;
 
     if ((*(s8 *)((u8 *)&CnetSys_w + 0xFEC)) == 0) {
-        __cnet_Recv_PieceJoinUserMH(&sp2E, 4, &sp20);
+        __cnet_Recv_PieceJoinUserMH(&sp2E, 4, &sp20, arg3);
         temp_s0 = arg0 + ((sp2E - 1) * 0x164);
         (*(u16 *)((u8 *)(temp_s0) + 8)) = sp2E;
         (*(u16 *)((u8 *)(temp_s0) + 0xA)) = sp20;

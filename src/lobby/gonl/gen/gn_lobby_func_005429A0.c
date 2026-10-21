@@ -17,7 +17,7 @@ s32 lobby_func_005429A0(void) {
     (*(f32 *)((u8 *)(var_s0) + 8)) = (f32) (*(f32 *)((u8 *)(&D_005E7800) + 8));
     if (sp20 != 0) {
 loop_2:
-        if (sub_main_func_004C85C0((s32) &User_data, (s32) *var_s0, 0x14) == 0) {
+        if (sub_main_func_004C85C0((s32) &User_data, (s32) *var_s0, 0x14, M2C_ERROR(/* Read from unset register $a3 */)) == 0) {
             return 0;
         }
         var_s0 += 1;

@@ -26,7 +26,7 @@ s32 cnLBS_Send_UserMiniData(); /* extern */
 s32 cnLbc_Init_NgServerId();                    /* extern */
 extern u8 my_user_mini_data;
 
-void lbc_login_finish(void) {
+void lbc_login_finish(s32 arg0, s32 arg1, s32 arg2, s32 arg3) {
     u8 *var_a0;   /* (s32 *) */
     s32 temp_v0;
     s32 var_a1_2;
@@ -38,14 +38,14 @@ void lbc_login_finish(void) {
     temp_v1 = (*(u8 *)((u8 *)((*(void **)&cw)) + 0xB9C));
     switch (temp_v1) {                              /* switch 1; irregular */
     case 0:                                         /* switch 1 */
-        temp_v0 = lobby_func_0057B800();
+        temp_v0 = lobby_func_0057B800(arg0, arg1, arg2, arg3);
         switch (temp_v0) {                          /* switch 2; irregular */
         case 0:                                     /* switch 2 */
             temp_a0 = (*(void **)&cw);
             (*(u8 *)((u8 *)(temp_a0) + 0xB9C)) = (u8) ((*(u8 *)((u8 *)(temp_a0) + 0xB9C)) + 1);
             break;
         case 1:                                     /* switch 2 */
-            To_LogOut(4);
+            To_LogOut(4, M2C_ERROR(/* Read from unset register $a1 */), M2C_ERROR(/* Read from unset register $a2 */), M2C_ERROR(/* Read from unset register $a3 */));
             break;
         }
         break;
@@ -55,14 +55,14 @@ void lbc_login_finish(void) {
         if ((*(u8 *)((u8 *)&CnetWork + 0x5)) == 0) {
             if ((*(u8 *)((u8 *)((*(void **)&cw)) + 0xFA5E)) == 0) {
                 var_a1 = 0x4C;
-                (*(s32 *)((u8 *)&(*(u8 *)((u8 *)&player_work + 0x736)) + ((*(u8 *)((u8 *)&game_w + 0x3A)) * 0xA00))) = 0x4C;
+                *(&(*(u8 *)((u8 *)&player_work + 0x736)) + ((*(u8 *)((u8 *)&game_w + 0x3A)) * 0xA00)) = 0x4C;
             } else {
                 var_a1 = 0x4D;
-                (*(s32 *)((u8 *)&(*(u8 *)((u8 *)&player_work + 0x736)) + ((*(u8 *)((u8 *)&game_w + 0x3A)) * 0xA00))) = 0x4D;
+                *(&(*(u8 *)((u8 *)&player_work + 0x736)) + ((*(u8 *)((u8 *)&game_w + 0x3A)) * 0xA00)) = 0x4D;
             }
             (*(s8 *)((u8 *)&game_w + 0x14)) = var_a1;
-            Lb_set_mini_data(&my_user_mini_data);
-            lobby_func_0058BAA0(&my_user_mini_data);
+            Lb_set_mini_data(&my_user_mini_data, (s32) var_a1, arg2, arg3);
+            lobby_func_0058BAA0(&my_user_mini_data, M2C_ERROR(/* Read from unset register $a1 */), M2C_ERROR(/* Read from unset register $a2 */), M2C_ERROR(/* Read from unset register $a3 */));
         }
         if ((*(u8 *)((u8 *)&CnetWork + 0x5)) != 3) {
             if ((*(u8 *)((u8 *)&CnetWork + 0x5)) == 0) {
@@ -76,13 +76,13 @@ block_20:
             (*(s8 *)((u8 *)&game_w + 0x1F3)) = 0;
             (*(s8 *)((u8 *)&game_w + 0x1F4)) = 0;
             (*(s16 *)((u8 *)&game_w + 0xF8)) = 0;
-            Lb_make_quest_tbl();
+            Lb_make_quest_tbl(M2C_ERROR(/* Read from unset register $a0 */), M2C_ERROR(/* Read from unset register $a1 */), M2C_ERROR(/* Read from unset register $a2 */), M2C_ERROR(/* Read from unset register $a3 */));
         }
         memset((*(s32 *)&g_main_2EF390) + 0x23F4, 0, 0x20);
         (*(u8 *)((u8 *)(&my_user_mini_data) + 2)) = (u8) (*(u8 *)&g_main_2EF2A8);
         (*(s8 *)((u8 *)(&my_user_mini_data) + 0x10)) = 0;
         (*(s8 *)((u8 *)((*(void **)&cw)) + 0xBA9)) = 2;
-        lobby_func_0058BAA0(&my_user_mini_data);
+        lobby_func_0058BAA0(&my_user_mini_data, M2C_ERROR(/* Read from unset register $a1 */), M2C_ERROR(/* Read from unset register $a2 */), M2C_ERROR(/* Read from unset register $a3 */));
         cnLBS_Send_UserMiniData(&my_user_mini_data, 0x40, CallBack_SendMiniData);
         var_a1_2 = 0;
         var_a0 = &(*(u8 *)((u8 *)&lb_sys + 0xA0));
@@ -100,7 +100,7 @@ block_20:
         (*(u8 *)((u8 *)(temp_a0_2) + 0xB9C)) = (u8) ((*(u8 *)((u8 *)(temp_a0_2) + 0xB9C)) + 1);
         break;
     case 2:                                         /* switch 1 */
-        Check_CallBackWait();
+        Check_CallBackWait(arg0, arg1, arg2, arg3);
         break;
     case 3:                                         /* switch 1 */
         cnLbc_Init_NgServerId();
@@ -109,14 +109,14 @@ block_20:
         }
         if ((*(u8 *)((u8 *)&CnetWork + 0x5)) == 0) {
             (*(u8 *)((u8 *)&CnetWork + 0x5)) = 1;
-            To_LogOut(0);
+            To_LogOut(0, M2C_ERROR(/* Read from unset register $a1 */), M2C_ERROR(/* Read from unset register $a2 */), M2C_ERROR(/* Read from unset register $a3 */));
         } else {
             (*(s8 *)((u8 *)((*(void **)&cw)) + 0xB9B)) = 8;
             (*(u8 *)((u8 *)((*(void **)&cw)) + 0xB9C)) = 0U;
         }
         break;
     default:                                        /* switch 1 */
-        To_LogOut(4);
+        To_LogOut(4, arg1, arg2, arg3);
         break;
     }
     (*(s8 *)((u8 *)((*(void **)&pNet)) + 0x2D)) = 1;

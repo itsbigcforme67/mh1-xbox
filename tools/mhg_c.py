@@ -100,8 +100,10 @@ def fix(src):
             if m.group(4):
                 arrays.add(m.group(3))
 
-    # m2c counts `*(&D_X + k)` / `&D_X + k` in bytes: keep that before D_X gets its typed name
+    # m2c counts `*(&D_X + k)` / `&D_X + k` in bytes: keep that before D_X gets its typed name (data of unknown type
+    # first becomes bytes: an `sb` through `*(&D_X + k)` must stay a byte store)
     import mhg_gonl
+    src = re.sub(r'^extern M2C_UNK (\w+);', r'extern u8 \1;', src, flags=re.M)
     src = mhg_gonl.byte_globals(src)
 
     def dn(m):

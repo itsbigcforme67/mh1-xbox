@@ -7,12 +7,12 @@ s32 lobby_func_00559C30();
 s32 Lb_get_quest_type();                         /* extern */
 extern u8 lb_quest_font_color;
 
-s16 lobby_func_00559E20(s32 arg0) {
+s16 lobby_func_00559E20(s32 arg0, s32 arg1, s32 arg2, s32 arg3) {
     s32 temp_a0;
     s32 temp_v0;
     s32 var_v0;
 
-    temp_v0 = lobby_func_00559C30(arg0);
+    temp_v0 = lobby_func_00559C30(arg0, arg1, arg2, arg3);
     temp_a0 = arg0 & 0xFFFF;
     if (temp_a0 >= 0xC350) {
         if (temp_v0 == 0) {
@@ -26,6 +26,6 @@ s16 lobby_func_00559E20(s32 arg0) {
     }
     var_v0 = Lb_get_quest_type(temp_v0);
 block_8:
-    return (*(s32 *)((u8 *)&lb_quest_font_color + (var_v0 * 2)));
+    return *(&lb_quest_font_color + (var_v0 * 2));
 }
 

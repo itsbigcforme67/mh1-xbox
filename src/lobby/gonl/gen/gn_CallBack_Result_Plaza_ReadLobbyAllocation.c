@@ -9,7 +9,7 @@ extern u8 cw;
 extern u8 lb_quest_all;
 s32 cnLBS_Get_LobbyMemberList(); /* extern */
 
-void CallBack_Result_Plaza_ReadLobbyAllocation(s64 arg0) {
+void CallBack_Result_Plaza_ReadLobbyAllocation(s64 arg0, s32 unused_a1, s32 unused_a2, s32 arg3) {
     u8 g_frame[0x40] __attribute__((aligned(16)));   /* G's stack frame */
 #define sp38 (*(s64 *)(g_frame + 0x38))
     u8 *var_s0;   /* (s32 *) */
@@ -26,12 +26,12 @@ void CallBack_Result_Plaza_ReadLobbyAllocation(s64 arg0) {
             var_s0 = &(*(u8 *)((u8 *)&lb_quest_all + 0xA0));
             do {
                 cnLBS_Get_LobbyMemberList(var_s1 & 0xFFFF, var_s0, var_s0 + 8, var_s0 + 0x1C);
-                lobby_func_0058BAA0(var_s0 + 0x1C);
+                lobby_func_0058BAA0(var_s0 + 0x1C, M2C_ERROR(/* Read from unset register $a1 */), M2C_ERROR(/* Read from unset register $a2 */), M2C_ERROR(/* Read from unset register $a3 */));
                 var_s1 += 1;
                 var_s0 += 0x5C;
             } while (var_s1 < 0xA);
         } else {
-            To_LogOut(4);
+            To_LogOut(4, (s32) temp_a1, (s32) (temp_a1 + 0xBA9), arg3);
         }
         temp_a0 = (*(void **)&cw);
         (*(u8 *)((u8 *)(temp_a0) + 0xB9D)) = (u8) ((*(u8 *)((u8 *)(temp_a0) + 0xB9D)) + 1);

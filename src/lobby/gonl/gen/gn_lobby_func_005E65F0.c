@@ -3,9 +3,9 @@
  * tools/build_pc_mhg.sh). */
 #include "../gonl.h"
 
+s32 __cnetSub_Set_BgProcess();
 s32 lobby_func_005E66A0();
 extern u8 pFunc;
-s32 __cnetSub_Set_BgProcess(); /* extern */
 
 s32 lobby_func_005E65F0(void *arg0, s32 arg1) {
     u8 g_frame[0x50] __attribute__((aligned(16)));   /* G's stack frame */
@@ -28,10 +28,10 @@ s32 lobby_func_005E65F0(void *arg0, s32 arg1) {
         (*(s16 *)((u8 *)(var_a3) + 2)) = temp_v0;
         var_a3 += 4;
     } while (var_a1 > 0);
-    temp_v0_2 = __cnetSub_Set_BgProcess(1, 0, arg1, var_a3);
+    temp_v0_2 = __cnetSub_Set_BgProcess(1, 0, arg1);
     var_v0 = -1;
     if (temp_v0_2 != -1) {
-        (*(s32 *)((u8 *)&(*(u8 *)((u8 *)&pFunc + 0xEE)) + (temp_v0_2 * 0x1C))) = lobby_func_005E66A0(&sp20);
+        *(&(*(u8 *)((u8 *)&pFunc + 0xEE)) + (temp_v0_2 * 0x1C)) = lobby_func_005E66A0(&sp20, M2C_ERROR(/* Read from unset register $a1 */), M2C_ERROR(/* Read from unset register $a2 */), M2C_ERROR(/* Read from unset register $a3 */));
         var_v0 = temp_v0_2;
     }
     return var_v0;

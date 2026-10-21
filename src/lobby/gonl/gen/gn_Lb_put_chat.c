@@ -10,7 +10,7 @@ void * strcpy();
 extern u8 cw;
 extern u8 lb_rule_member;
 s32 sprintf();               /* extern */
-extern s32 g_lb_636BC0;
+extern u8 g_lb_636BC0;
 
 void Lb_put_chat(s32 arg0, s32 arg1) {
     u8 g_frame[0x150] __attribute__((aligned(16)));   /* G's stack frame */
@@ -25,9 +25,9 @@ void Lb_put_chat(s32 arg0, s32 arg1) {
     strcpy(&sp30, (*(void * *)((u8 *)&lb_rule_member + 0x14)));
     strcpy(&sp38, (*(void * *)((u8 *)&lb_rule_member + 0x14)));
     if (arg1 == 0) {
-        strcpy(&sp4C, (*(s32 *)((u8 *)&g_lb_636BC0 + (arg0 * 4))));
+        strcpy(&sp4C, *(&g_lb_636BC0 + (arg0 * 4)));
     } else {
-        sprintf(&sp4C, (*(s32 *)((u8 *)&g_lb_636BC0 + (arg0 * 4))), arg1);
+        sprintf(&sp4C, *(&g_lb_636BC0 + (arg0 * 4)), arg1);
     }
     sp14E = 6;
     sp14D = 6;

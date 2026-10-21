@@ -37,15 +37,15 @@ void CallBack_Event_LobbyLeaver(void) {
 loop_1:
     if (memcmp(var_s1, &sp40, 8) == 0) {
         temp_s1 = var_s0 * 0x5C;
-        memset((u8 *)&lbCommer + temp_s1, 0, 0x5C);
+        memset(&lbCommer + temp_s1, 0, 0x5C);
         temp_v1 = (*(void **)&cw);
         if ((*(u8 *)((u8 *)(temp_v1) + 0xFA61)) != 0) {
             temp_v1_2 = temp_v1 + temp_s1;
             if ((temp_v1_2 + 0x38C) != NULL) {
-                Lb_put_chat(8, (s32) (temp_v1_2 + 0x394));
+                Lb_put_chat(8, (s32) (temp_v1_2 + 0x394), M2C_ERROR(/* Read from unset register $a2 */), M2C_ERROR(/* Read from unset register $a3 */));
             }
         }
-        temp_v1_3 = (u8 *)&player_work + (var_s0 * 0xA00);
+        temp_v1_3 = &player_work + (var_s0 * 0xA00);
         (*(s32 *)((u8 *)(temp_v1_3) + 0xB4)) = 0;
         (*(s32 *)((u8 *)(temp_v1_3) + 0xB0)) = 0;
         (*(s32 *)((u8 *)(temp_v1_3) + 0xAC)) = 0;
@@ -55,7 +55,7 @@ loop_1:
         (*(s16 *)((u8 *)(temp_v1_3) + 0xE)) = 0;
         (*(s32 *)((u8 *)(temp_v1_3) + 0xA4)) = (s32) (0 & 0xFFFF);
         (*(s16 *)((u8 *)&lb_sys + 0x14)) = 0;
-        if ((lobby_func_00595530((s32) (*(u8 *)((u8 *)(temp_v1_3) + 0x14)), (s32) (*(u8 *)((u8 *)(temp_v1_3) + 0x15))) == 1) && ((*(u8 *)((u8 *)&game_w + 0x14)) == 0x4D)) {
+        if ((lobby_func_00595530((s32) (*(u8 *)((u8 *)(temp_v1_3) + 0x14)), (s32) (*(u8 *)((u8 *)(temp_v1_3) + 0x15)), M2C_ERROR(/* Read from unset register $a2 */), M2C_ERROR(/* Read from unset register $a3 */)) == 1) && ((*(u8 *)((u8 *)&game_w + 0x14)) == 0x4D)) {
             Lb_send_myChair();
         }
     } else {

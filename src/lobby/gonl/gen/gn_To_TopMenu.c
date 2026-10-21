@@ -15,7 +15,7 @@ void To_TopMenu(void) {
     (*(s8 *)((u8 *)((*(void **)&cw)) + 0xB9C)) = 0;
     (*(s8 *)((u8 *)((*(void **)&cw)) + 0xB9D)) = 0;
     Init_InterruptFlag();
-    SetDialogData(0x19);
+    SetDialogData(0x19, M2C_ERROR(/* Read from unset register $a1 */), M2C_ERROR(/* Read from unset register $a2 */), M2C_ERROR(/* Read from unset register $a3 */));
     (*(s8 *)((u8 *)((*(void **)&pNet)) + 0x2D)) = 1;
 }
 

@@ -4,7 +4,7 @@
 #include "../gonl.h"
 
 s64 sub_main_func_004C9250();                       /* extern */
-extern s32 g_sub_4FF1D0;
+extern u8 g_sub_4FF1D0;
 
 s32 sub_main_func_004C8A10(void *arg0, s32 arg1) {
     s32 temp_a2;
@@ -17,7 +17,7 @@ s32 sub_main_func_004C8A10(void *arg0, s32 arg1) {
     if ((arg1 & 0xFF) >= 4) {
         return 0;
     }
-    var_a4 = (*(s32 *)((u8 *)&g_sub_4FF1D0 + ((arg1 & 0xFF) * 4)));
+    var_a4 = *(&g_sub_4FF1D0 + ((arg1 & 0xFF) * 4));
     var_a1 = (*(u16 *)var_a4);
     temp_a2 = ((s16) (sub_main_func_004C9250()));
     if (var_a1 != 0xFF) {

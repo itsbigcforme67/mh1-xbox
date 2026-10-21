@@ -22,7 +22,7 @@ void Lb_put_icon_free2(s32 arg0, s16 arg1, s16 arg2, s32 arg3, s32 arg4) {
     if (temp_a4 != 0x30) {
         sp12 = arg1;
         sp18 = arg3;
-        temp_a3 = (u8 *)&lb_icon_tbl + (temp_a4 * 8);
+        temp_a3 = &lb_icon_tbl + (temp_a4 * 8);
         sp14 = arg2;
         sp16 = arg2;
         sp10 = M2C_BITWISE(s16, (0.8f * (f32) arg0));

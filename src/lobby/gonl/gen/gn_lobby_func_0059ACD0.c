@@ -4,11 +4,11 @@
 #include "../gonl.h"
 
 s32 lb_send_data();
-void lobby_func_0059ACD0(s32 arg0) {
+void lobby_func_0059ACD0(s32 arg0, s32 unused_a1, s32 unused_a2, s32 arg3) {
     u8 g_frame[0x20] __attribute__((aligned(16)));   /* G's stack frame */
 #define sp1E (*(s16 *)(g_frame + 0x1E))
 
     sp1E = arg0 & 0xFF;
-    lb_send_data(2, 3, &sp1E);
+    lb_send_data(2, 3, &sp1E, arg3);
 }
 

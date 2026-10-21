@@ -19,8 +19,8 @@ void Lb_set_player(s32 arg0, void *arg1, void *arg2) {
     u8 *temp_s0;
 
     temp_a3 = arg0 & 0xFF;
-    temp_s1 = (u8 *)&lb_player + (temp_a3 * 0x38);
-    temp_s0 = (u8 *)&player_work + (temp_a3 * 0xA00);
+    temp_s1 = &lb_player + (temp_a3 * 0x38);
+    temp_s0 = &player_work + (temp_a3 * 0xA00);
     *temp_s1 = temp_s0;
     (*(s8 *)((u8 *)(temp_s0) + 0)) = 1;
     (*(u16 *)((u8 *)(temp_s0) + 0xC)) = temp_a3;

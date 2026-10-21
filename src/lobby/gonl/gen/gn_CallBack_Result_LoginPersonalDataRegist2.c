@@ -20,7 +20,7 @@ void CallBack_Result_LoginPersonalDataRegist2(s64 arg0) {
         }
         (*(u8 *)((u8 *)(temp_a1) + 0xB9D)) = 3U;
         cnLBS_Get_ServerMessage((*(void **)&cw) + 0xF75D);
-        Lb_eat_to_bell((s32) ((*(void **)&cw) + 0xF75D));
+        Lb_eat_to_bell((s32) ((*(void **)&cw) + 0xF75D), M2C_ERROR(/* Read from unset register $a1 */), M2C_ERROR(/* Read from unset register $a2 */), M2C_ERROR(/* Read from unset register $a3 */));
     }
 }
 

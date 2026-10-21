@@ -27,18 +27,18 @@ s32 lobby_func_005690D0(void *arg0) {
     temp_v1 = (*(u8 *)((u8 *)(arg0) + 0x22));
     switch (temp_v1) {                              /* irregular */
     case 0:
-        SetSceneSubTitleColor((u8 *)&PlazaInfo + ((ClassInfo - 1) * 0x15C) + 0x1A);
-        SetHelpLineMsg(2);
+        SetSceneSubTitleColor(&PlazaInfo + ((ClassInfo - 1) * 0x15C) + 0x1A);
+        SetHelpLineMsg(2, M2C_ERROR(/* Read from unset register $a1 */), M2C_ERROR(/* Read from unset register $a2 */), M2C_ERROR(/* Read from unset register $a3 */));
         Lbc_set_prim((s32) Lbs_plaza_trans, (s32) plaza_trans_ot0, (s32) plaza_trans_ot1, 0);
         lobby_bgm_set2(0x4B);
         (*(s8 *)((u8 *)(arg0) + 0x2A)) = 2;
         (*(u8 *)((u8 *)(arg0) + 0x22)) = (u8) ((*(u8 *)((u8 *)(arg0) + 0x22)) + 1);
         /* fallthrough */
     case 1:
-        lobby_func_00569610();
+        lobby_func_00569610(M2C_ERROR(/* Read from unset register $a0 */), M2C_ERROR(/* Read from unset register $a1 */), M2C_ERROR(/* Read from unset register $a2 */), M2C_ERROR(/* Read from unset register $a3 */));
         break;
     case 2:
-        plaza_moveMain();
+        plaza_moveMain(M2C_ERROR(/* Read from unset register $a0 */), M2C_ERROR(/* Read from unset register $a1 */), M2C_ERROR(/* Read from unset register $a2 */), M2C_ERROR(/* Read from unset register $a3 */));
         break;
     default:
         (*(u8 *)((u8 *)(arg0) + 0x22)) = 0U;

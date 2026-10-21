@@ -26,7 +26,7 @@ void plaza_ReibunEdit(void) {
     case 1:
         (*(s16 *)((u8 *)((*(void **)&pNet)) + 0x20)) = Get_sw_on2(0);
         if (Plaza_ReibunEdit_mv(temp_s0) & 0xFFFF & 0x40) {
-            tl_exit_sub_menu(0);
+            tl_exit_sub_menu(0, M2C_ERROR(/* Read from unset register $a1 */), M2C_ERROR(/* Read from unset register $a2 */), M2C_ERROR(/* Read from unset register $a3 */));
         }
         return;
     }

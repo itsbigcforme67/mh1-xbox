@@ -21,7 +21,7 @@ void plaza_trans_ot1(void *arg0) {
     temp_a0 = (*(u8 *)((u8 *)((*(void **)&pNet)) + 0x2D));
     if (temp_a0 == 1) {
         DispDialogData(temp_a0);
-        Lb_on_dialog();
+        Lb_on_dialog(M2C_ERROR(/* Read from unset register $a0 */), M2C_ERROR(/* Read from unset register $a1 */), M2C_ERROR(/* Read from unset register $a2 */), M2C_ERROR(/* Read from unset register $a3 */));
         (*(u8 *)((u8 *)((*(void **)&pNet)) + 0x2D)) = 0U;
     }
 }

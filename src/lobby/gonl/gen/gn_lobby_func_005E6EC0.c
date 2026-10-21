@@ -3,7 +3,7 @@
  * tools/build_pc_mhg.sh). */
 #include "../gonl.h"
 
-extern s32 g_lb_733E3A;
+extern u8 g_lb_733E3A;
 
 s32 lobby_func_005E6EC0(s32 **arg0) {
     *arg0 = &g_lb_733E3A;

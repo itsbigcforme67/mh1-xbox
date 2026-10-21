@@ -3,9 +3,9 @@
  * tools/build_pc_mhg.sh). */
 #include "../gonl.h"
 
+s32 __cnetSub_Get_RestBgWork();
 s32 _cnet_CallBack_Result_RoomSetFinish();
-s32 __cnetSub_Get_RestBgWork();                     /* extern */
-s32 cnLBS_Read_PlazaCount();        /* extern */
+s32 cnLBS_Read_PlazaCount(); /* extern */
 
 void lobby_func_005ABB50(void *arg0) {
     if (__cnetSub_Get_RestBgWork() > 0) {

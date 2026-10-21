@@ -35,7 +35,7 @@ void lbc_admin_message_00(void) {
         (*(s16 *)((u8 *)((*(void **)&cw)) + 0xEDC)) = 0x12C;
         Info_Initialization();
         (*(s8 *)((u8 *)((*(void **)&cw)) + 0xBC4)) = 2;
-        *(s32 (**)())0x355944 = lobby_func_00584E10;
+        *(s32 (**)(s32, s32, s32, s32))0x355944 = lobby_func_00584E10;
         /* fallthrough */
     case 1:
         temp_v1 = (*(void **)&cw);

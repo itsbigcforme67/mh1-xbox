@@ -5,12 +5,12 @@
 
 s32 SetDialogData();
 extern u8 cw;
-void To_GoToTop(void) {
+void To_GoToTop(s32 unused_a0, s32 arg1, s32 arg2, s32 arg3) {
     (*(s8 *)((u8 *)((*(void **)&cw)) + 0xB99)) = 7;
     (*(s8 *)((u8 *)((*(void **)&cw)) + 0xB9A)) = 0;
     (*(s8 *)((u8 *)((*(void **)&cw)) + 0xB9B)) = 0;
     (*(s8 *)((u8 *)((*(void **)&cw)) + 0xB9C)) = 0;
     (*(s8 *)((u8 *)((*(void **)&cw)) + 0xB9D)) = 0;
-    SetDialogData(0x19);
+    SetDialogData(0x19, arg1, arg2, arg3);
 }
 

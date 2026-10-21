@@ -6,10 +6,10 @@
 s32 flfntSetSize();
 s32 font_print_double();
 s64 lobby_func_005935C0();
-void lobby_func_005737C0(void *arg0) {
+void lobby_func_005737C0(void *arg0, s32 unused_a1, s32 unused_a2, s32 arg3) {
     s32 temp_s0;
 
-    temp_s0 = ((s16) (lobby_func_005935C0(arg0, 0x1A6, 0x14)));
+    temp_s0 = ((s16) (lobby_func_005935C0(arg0, 0x1A6, 0x14, arg3)));
     flfntSetSize(0x14, 0x14);
     font_print_double((s32) temp_s0, 0xBC, 1, 4, arg0);
 }

@@ -17,7 +17,7 @@ void lobby_func_00584E10(void) {
     nwDispStr_Html((*(void **)&cw) + 0xBD6, 0x42C80000, 0x42700000);
     temp_a0 = (*(void **)&cw);
     if (((*(u8 *)((u8 *)(temp_a0) + 0xBC4)) == 0) && ((*(s8 *)((u8 *)(temp_a0) + 0xB71)) == 0) && ((*(s8 *)((u8 *)(temp_a0) + 0xB72)) == 0) && ((*(s8 *)((u8 *)(temp_a0) + 0xB73)) == 0)) {
-        Lb_put_inputMsgForHTML();
+        Lb_put_inputMsgForHTML((s32) temp_a0, M2C_ERROR(/* Read from unset register $a1 */), M2C_ERROR(/* Read from unset register $a2 */), M2C_ERROR(/* Read from unset register $a3 */));
     }
 }
 

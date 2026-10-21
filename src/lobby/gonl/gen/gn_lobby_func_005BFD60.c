@@ -20,7 +20,7 @@ s32 lobby_func_005BFD60(s8 arg0, s32 arg1, s32 arg2, s32 arg3) {
         g_lb_73116C = 0;
         (*(u8 *)((u8 *)(&(*(u8 *)((u8 *)&CnetSys_w + 0xFA0))) + 0x20)) = 1U;
         (*(s32 *)((u8 *)(&(*(u8 *)((u8 *)&CnetSys_w + 0xFA0))) + 4)) = arg3;
-        (*(s32 (**)())((u8 *)(&(*(u8 *)((u8 *)&CnetSys_w + 0xFA0))) + 0)) = lobby_func_005BFE20;
+        (*(s32 (**)(s32, s32, s32, s32))((u8 *)(&(*(u8 *)((u8 *)&CnetSys_w + 0xFA0))) + 0)) = lobby_func_005BFE20;
         return 0;
     }
     return -1;

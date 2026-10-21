@@ -12,7 +12,7 @@ s32 lobby_func_005426D0(s32 arg0) {
     u16 temp_a0;
     u16 temp_a0_2;
 
-    var_s0 = (*(s32 *)((u8 *)&quest_lv_tbl + ((arg0 & 0xFF) * 4)));
+    var_s0 = *(&quest_lv_tbl + ((arg0 & 0xFF) * 4));
     if ((*(u16 *)var_s0) != 0) {
 loop_1:
         if (Online_ck() == 1) {

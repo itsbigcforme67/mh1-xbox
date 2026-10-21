@@ -21,10 +21,10 @@ void id_select_02(void *arg0) {
     switch (temp_a0) {                              /* switch 1; irregular */
     case 0:                                         /* switch 1 */
         (*(u8 *)((u8 *)(arg0) + 0x23)) = (u8) (temp_a0 + 1);
-        SetDialogYesNo(0);
+        SetDialogYesNo(0, 1, M2C_ERROR(/* Read from unset register $a2 */), M2C_ERROR(/* Read from unset register $a3 */));
         return;
     case 1:                                         /* switch 1 */
-        temp_v0 = Lb_select();
+        temp_v0 = Lb_select((s32) temp_a0, 1, M2C_ERROR(/* Read from unset register $a2 */), M2C_ERROR(/* Read from unset register $a3 */));
         switch (temp_v0) {                          /* switch 2; irregular */
         case 0:                                     /* switch 2 */
             fade_set(1);
@@ -33,8 +33,8 @@ void id_select_02(void *arg0) {
         case 3:                                     /* switch 2 */
             (*(s8 *)((u8 *)(arg0) + 0x22)) = 1;
             (*(u8 *)((u8 *)(arg0) + 0x23)) = 0U;
-            SetSceneTitle(4);
-            SetHelpLineMsg(1);
+            SetSceneTitle(4, M2C_ERROR(/* Read from unset register $a1 */), M2C_ERROR(/* Read from unset register $a2 */), M2C_ERROR(/* Read from unset register $a3 */));
+            SetHelpLineMsg(1, M2C_ERROR(/* Read from unset register $a1 */), M2C_ERROR(/* Read from unset register $a2 */), M2C_ERROR(/* Read from unset register $a3 */));
             return;
         }
         break;

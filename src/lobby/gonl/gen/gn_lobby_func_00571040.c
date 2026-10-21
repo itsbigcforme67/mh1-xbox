@@ -23,7 +23,7 @@ extern u8 cw;
 extern u8 lb_sys;
 extern u8 pNet;
 extern u8 tl_member_buff;
-extern s32 g_main_302290;
+extern u8 g_main_302290;
 extern u8 my_user_id;
 
 s32 lobby_func_00571040(void) {
@@ -35,6 +35,7 @@ s32 lobby_func_00571040(void) {
     s32 var_v0;
     u8 temp_a0;
     u8 *temp_a2;
+    u8 *temp_a3;
     u8 *temp_s1;
     u8 *temp_s1_2;
     u8 *temp_v1;
@@ -44,10 +45,11 @@ s32 lobby_func_00571040(void) {
     (*(s8 *)((u8 *)((*(void **)&pNet)) + 0x2D)) = 1;
     temp_a2 = (*(void **)&pNet);
     temp_a0 = (*(u8 *)((u8 *)(temp_a2) + 0x25));
+    temp_a3 = temp_a2 + 0x25;
     switch (temp_a0) {                              /* switch 1 */
     case 0:                                         /* switch 1 */
         (*(s8 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x1398))) + 0x615)) = 1;
-        temp_v0 = Lb_select();
+        temp_v0 = Lb_select((s32) temp_a0, 1, (s32) temp_a2, (s32) temp_a3);
         switch (temp_v0) {                          /* switch 2; irregular */
         case 0:                                     /* switch 2 */
             temp_v1 = (*(void **)&pNet);
@@ -55,23 +57,23 @@ s32 lobby_func_00571040(void) {
             (*(s8 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x1398))) + 0x615)) = 0;
             if (memcmp((*(void **)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x1398))) + 0x600)), &my_user_id, 8) == 0) {
                 (*(u8 *)((u8 *)((*(void **)&pNet)) + 0x25)) = 5U;
-                SetDialogData(0x24);
-            } else if (lobby_func_005C1560(&g_main_302290, 8, (*(void **)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x1398))) + 0x600))) == -1) {
-                if (lobby_func_005C1510(&g_main_302290, 8) == -1) {
+                SetDialogData(0x24, M2C_ERROR(/* Read from unset register $a1 */), M2C_ERROR(/* Read from unset register $a2 */), M2C_ERROR(/* Read from unset register $a3 */));
+            } else if (lobby_func_005C1560(&g_main_302290, 8, (*(void **)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x1398))) + 0x600)), M2C_ERROR(/* Read from unset register $a3 */)) == -1) {
+                if (lobby_func_005C1510(&g_main_302290, 8, M2C_ERROR(/* Read from unset register $a2 */), M2C_ERROR(/* Read from unset register $a3 */)) == -1) {
                     (*(u8 *)((u8 *)((*(void **)&pNet)) + 0x25)) = 5U;
-                    SetDialogData(0x32);
+                    SetDialogData(0x32, M2C_ERROR(/* Read from unset register $a1 */), M2C_ERROR(/* Read from unset register $a2 */), M2C_ERROR(/* Read from unset register $a3 */));
                 } else {
-                    SetDialogData(0x31);
-                    SetDialogYesNo(0);
+                    SetDialogData(0x31, M2C_ERROR(/* Read from unset register $a1 */), M2C_ERROR(/* Read from unset register $a2 */), M2C_ERROR(/* Read from unset register $a3 */));
+                    SetDialogYesNo(0, M2C_ERROR(/* Read from unset register $a1 */), M2C_ERROR(/* Read from unset register $a2 */), M2C_ERROR(/* Read from unset register $a3 */));
                 }
             } else {
-                SetDialogData(0x30);
-                SetDialogYesNo(0);
+                SetDialogData(0x30, M2C_ERROR(/* Read from unset register $a1 */), M2C_ERROR(/* Read from unset register $a2 */), M2C_ERROR(/* Read from unset register $a3 */));
+                SetDialogYesNo(0, M2C_ERROR(/* Read from unset register $a1 */), M2C_ERROR(/* Read from unset register $a2 */), M2C_ERROR(/* Read from unset register $a3 */));
             }
             break;
         case 3:                                     /* switch 2 */
             (*(u8 *)((u8 *)((*(void **)&pNet)) + 0x25)) = 5U;
-            SetDialogData(0x2D);
+            SetDialogData(0x2D, M2C_ERROR(/* Read from unset register $a1 */), M2C_ERROR(/* Read from unset register $a2 */), M2C_ERROR(/* Read from unset register $a3 */));
             (*(s8 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x1398))) + 0x615)) = 0;
             break;
         }
@@ -79,12 +81,12 @@ s32 lobby_func_00571040(void) {
 block_49:
         return 2;
     case 1:                                         /* switch 1 */
-        temp_v0_2 = Lb_select();
+        temp_v0_2 = Lb_select((s32) temp_a0, 1, (s32) temp_a2, (s32) temp_a3);
         switch (temp_v0_2) {                        /* switch 3; irregular */
         case 0:                                     /* switch 3 */
-            var_v0 = lobby_func_005C1560(&g_main_302290, 8, (*(void **)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x1398))) + 0x600)));
+            var_v0 = lobby_func_005C1560(&g_main_302290, 8, (*(void **)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x1398))) + 0x600)), M2C_ERROR(/* Read from unset register $a3 */));
             if (var_v0 == -1) {
-                var_v0 = lobby_func_005C1510(&g_main_302290, 8);
+                var_v0 = lobby_func_005C1510(&g_main_302290, 8, M2C_ERROR(/* Read from unset register $a2 */), M2C_ERROR(/* Read from unset register $a3 */));
                 if (var_v0 == -1) {
                     var_v0 = 0;
                 }
@@ -92,19 +94,19 @@ block_49:
             } else {
                 (*(s8 *)((u8 *)((*(void **)&pNet)) + 0x2E)) = 1;
             }
-            temp_s1 = (u8 *)&g_main_302290 + (var_v0 * 0x18);
+            temp_s1 = &g_main_302290 + (var_v0 * 0x18);
             memset(temp_s1, 0, 8);
             memcpy(temp_s1, (*(void **)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x1398))) + 0x600)), 8);
             temp_s1_2 = temp_s1 + 8;
             memset(temp_s1_2, 0, 0x10);
             memcpy(temp_s1_2, (*(void **)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x1398))) + 0x600)) + 8, 0x10);
-            (*(s16 *)((u8 *)((*(void **)&pNet)) + 0x1A)) = (s16) (((s8) (lobby_func_0056C350())));
+            (*(s16 *)((u8 *)((*(void **)&pNet)) + 0x1A)) = (s16) ((s32) (lobby_func_0056C350(M2C_ERROR(/* Read from unset register $a0 */), M2C_ERROR(/* Read from unset register $a1 */), M2C_ERROR(/* Read from unset register $a2 */), M2C_ERROR(/* Read from unset register $a3 */)) << 0x38) >> 0x38);
             temp_v1_2 = (*(void **)&pNet);
             (*(u8 *)((u8 *)(temp_v1_2) + 0x25)) = (u8) ((*(u8 *)((u8 *)(temp_v1_2) + 0x25)) + 1);
-            func_00235C80();
+            func_00235C80(M2C_ERROR(/* Read from unset register $a0 */), M2C_ERROR(/* Read from unset register $a1 */), M2C_ERROR(/* Read from unset register $a2 */), M2C_ERROR(/* Read from unset register $a3 */));
             break;
         case 3:                                     /* switch 3 */
-            lobby_func_00570FF0();
+            lobby_func_00570FF0(M2C_ERROR(/* Read from unset register $a0 */), M2C_ERROR(/* Read from unset register $a1 */), M2C_ERROR(/* Read from unset register $a2 */), M2C_ERROR(/* Read from unset register $a3 */));
             (*(u8 *)((u8 *)((*(void **)&pNet)) + 0x25)) = 0U;
             break;
         }
@@ -117,7 +119,7 @@ block_49:
                 (*(s8 *)((u8 *)((*(void **)&pNet)) + 0x2D)) = 1;
                 goto block_49;
             }
-            lobby_func_0056C3F0();
+            lobby_func_0056C3F0(1, M2C_ERROR(/* Read from unset register $a1 */), M2C_ERROR(/* Read from unset register $a2 */), M2C_ERROR(/* Read from unset register $a3 */));
             (*(u8 *)((u8 *)((*(void **)&pNet)) + 0x25)) = 0U;
             return 0;
         }
@@ -130,7 +132,7 @@ block_49:
         if (temp_a4 & 0xFFFF & 0x20) {
             (*(u8 *)((u8 *)((*(void **)&pNet)) + 0x25)) = 0U;
             (*(s8 *)((u8 *)((*(void **)&pNet)) + 0x2D)) = 0;
-            cnWrap_SoundRequest(0);
+            cnWrap_SoundRequest(0, 1, (s32) temp_a2, (s32) temp_a3);
             (*(s8 *)((u8 *)((*(void **)&cw)) + 0xB70)) = 1;
             (*(s8 *)&D_0035EFEB) = 1;
             if ((*(u8 *)((u8 *)((*(void **)&cw)) + 0xFA61)) != 0) {
@@ -143,7 +145,7 @@ block_49:
         if (temp_a4 & 0xFFFF & 0x20) {
             (*(u8 *)((u8 *)(temp_a2) + 0x25)) = 0U;
             (*(s8 *)((u8 *)((*(void **)&pNet)) + 0x2D)) = 0;
-            cnWrap_SoundRequest(0);
+            cnWrap_SoundRequest(0, 1, (s32) temp_a2, (s32) temp_a3);
             (*(s8 *)((u8 *)((*(void **)&cw)) + 0xB70)) = 1;
             (*(u8 *)&D_0035EFEB) = 1;
             if ((*(u8 *)((u8 *)((*(void **)&cw)) + 0xFA61)) != 0) {

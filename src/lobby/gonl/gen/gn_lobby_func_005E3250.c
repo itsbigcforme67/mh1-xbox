@@ -3,8 +3,8 @@
  * tools/build_pc_mhg.sh). */
 #include "../gonl.h"
 
+s32 cnLBS_Init_LobbyBgProcess();
 extern u8 CnetSys_w;
-s32 cnLBS_Init_LobbyBgProcess(); /* extern */
 extern u8 CnetSys_g;
 
 void lobby_func_005E3250(void *arg0) {
@@ -13,7 +13,6 @@ void lobby_func_005E3250(void *arg0) {
     s32 var_a6;
     u32 var_a4;
     u32 var_a5;
-    u8 temp_a1_2;
 
     var_a6 = 1;
     var_a4 = 0;
@@ -33,10 +32,9 @@ loop_1:
             }
         }
     }
-    temp_a1_2 = (*(u8 *)((u8 *)(arg0) + 0x23));
-    if (temp_a1_2 == 2) {
+    if ((*(u8 *)((u8 *)(arg0) + 0x23)) == 2) {
         (*(s8 *)((u8 *)(arg0) + 0x21)) = 2;
-        cnLBS_Init_LobbyBgProcess(temp_a1_2, (*(u16 *)((u8 *)&CnetSys_w + 0x43B4)), var_a3, var_a4, var_a5, var_a6);
+        cnLBS_Init_LobbyBgProcess();
         return;
     }
     if (var_a6 != 0) {

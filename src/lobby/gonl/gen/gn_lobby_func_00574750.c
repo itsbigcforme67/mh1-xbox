@@ -13,7 +13,7 @@ s32 font_print();           /* extern */
 extern s8 g_main_302290;
 extern u8 lit_2316;
 
-void lobby_func_00574750(s32 arg0, s32 arg1, s32 arg2) {
+void lobby_func_00574750(s32 arg0, s32 arg1, s32 arg2, s32 arg3) {
     u8 g_frame[0x80] __attribute__((aligned(16)));   /* G's stack frame */
 #define sp60 (*(s32 *)(g_frame + 0x60))
     s32 temp_v1;
@@ -21,8 +21,8 @@ void lobby_func_00574750(s32 arg0, s32 arg1, s32 arg2) {
     s32 var_s3;
     s8 *var_s2;
 
-    put_main_cursor2(arg0, arg1, (s32) (((s8) (arg2))));
-    lobby_func_005791D0(4);
+    put_main_cursor2(arg0, arg1, (s32) (((s8) (arg2))), arg3);
+    lobby_func_005791D0(4, M2C_ERROR(/* Read from unset register $a1 */), M2C_ERROR(/* Read from unset register $a2 */), M2C_ERROR(/* Read from unset register $a3 */));
     var_s1 = 0;
     var_s3 = ((s16) ((arg1 + 0x3E)));
     var_s2 = &g_main_302290;

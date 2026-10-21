@@ -12,9 +12,9 @@ s32 lobby_func_00542790(s32 arg0, s32 arg1) {
     u16 temp_a0;
 
     if (!(arg0 & 0xFF)) {
-        var_s0 = (*(s32 *)((u8 *)&flag_quest_tbl + ((arg1 & 0xFF) * 4)));
+        var_s0 = *(&flag_quest_tbl + ((arg1 & 0xFF) * 4));
     } else {
-        var_s0 = (*(s32 *)((u8 *)&flag_quest_tbl_local + ((arg1 & 0xFF) * 4)));
+        var_s0 = *(&flag_quest_tbl_local + ((arg1 & 0xFF) * 4));
     }
 loop_7:
     temp_a0 = (*(u16 *)var_s0);

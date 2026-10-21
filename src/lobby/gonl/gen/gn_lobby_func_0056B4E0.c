@@ -25,7 +25,7 @@ void lobby_func_0056B4E0(void) {
     temp_a2 = Get_sw(0) & 0xFFFF;
     (*(s8 *)((u8 *)((*(void **)&pNet)) + 0x2D)) = 1;
     if (temp_a2 & 0x40) {
-        tl_exit_sub_menu(0);
+        tl_exit_sub_menu(0, 1, temp_a2, M2C_ERROR(/* Read from unset register $a3 */));
         (*(s8 *)((u8 *)((*(void **)&pNet)) + 0x2D)) = 0;
         return;
     }
@@ -53,7 +53,7 @@ void lobby_func_0056B4E0(void) {
                 SetDialogData_HTML((*(s32 *)&g_main_2EF390) + 0x23F4 + 0x20 + 0x9C8, 1, temp_a2);
                 break;
             }
-            cnWrap_SoundRequest(1);
+            cnWrap_SoundRequest(1, M2C_ERROR(/* Read from unset register $a1 */), M2C_ERROR(/* Read from unset register $a2 */), M2C_ERROR(/* Read from unset register $a3 */));
         }
     } else if (temp_a2 & 0x400) {
         temp_a0_2 = (*(void **)&pNet);
@@ -79,7 +79,7 @@ void lobby_func_0056B4E0(void) {
                 SetDialogData_HTML((*(s32 *)&g_main_2EF390) + 0x23F4 + 0x20 + 0x9C8, 1, temp_a2);
                 break;
             }
-            cnWrap_SoundRequest(1);
+            cnWrap_SoundRequest(1, M2C_ERROR(/* Read from unset register $a1 */), M2C_ERROR(/* Read from unset register $a2 */), M2C_ERROR(/* Read from unset register $a3 */));
         }
     }
 }

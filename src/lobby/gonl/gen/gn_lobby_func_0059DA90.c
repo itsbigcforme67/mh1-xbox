@@ -4,7 +4,7 @@
 #include "../gonl.h"
 
 s32 func_001D5970();
-void lobby_func_0059DA90(void *arg0) {
-    func_001D5970(arg0);
+void lobby_func_0059DA90(void *arg0, s32 arg1, s32 arg2, s32 arg3) {
+    func_001D5970(arg0, arg1, arg2, arg3);
 }
 

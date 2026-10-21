@@ -29,10 +29,10 @@ void plaza_checkChatLog(void) {
         (*(s16 *)((u8 *)(temp_a0_3) + 0x20)) = Get_sw_on2(0);
         if (temp_s0 & 0xFFFF & 0x40) {
             Plaza_chatlog_i((u8) temp_a0_3);
-            tl_exit_sub_menu(0);
+            tl_exit_sub_menu(0, M2C_ERROR(/* Read from unset register $a1 */), M2C_ERROR(/* Read from unset register $a2 */), M2C_ERROR(/* Read from unset register $a3 */));
             return;
         }
-        Plaza_chatlog_mv(temp_s0);
+        Plaza_chatlog_mv(temp_s0, M2C_ERROR(/* Read from unset register $a1 */), M2C_ERROR(/* Read from unset register $a2 */), M2C_ERROR(/* Read from unset register $a3 */));
         return;
     }
 }

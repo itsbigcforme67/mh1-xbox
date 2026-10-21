@@ -7,18 +7,18 @@ s32 CallBack_Result_SendChatMessageTU();
 s32 Online_ck();
 s32 Plaza_chat_log_add();
 s32 cnLBS_Send_ChatBinaryTU();
+s32 cnLBS_Send_ChatMessage();
 void * memcpy();
 void * strcpy();
 extern u8 cw;
 s32 Lb_chat_receipt();                 /* extern */
-s32 Visual_main();                            /* extern */
-s32 cnLBS_Send_ChatMessage();        /* extern */
+s32 Visual_main();                               /* extern */
 extern s8 chatIDList;
 extern u8 chat_cnfg_font_color;
 extern u8 my_user_handle;
 extern u8 my_user_id;
 
-void Lb_send_chat(s32 unused_a0, void *arg1, s32 arg2) {
+void Lb_send_chat(s32 unused_a0, s32 arg1, s32 arg2) {
     u8 g_frame[0x190] __attribute__((aligned(16)));   /* G's stack frame */
 #define sp70 (*(s32 *)(g_frame + 0x70))
 #define sp78 (*(s32 *)(g_frame + 0x78))
@@ -39,17 +39,17 @@ void Lb_send_chat(s32 unused_a0, void *arg1, s32 arg2) {
         var_s0 = &chatIDList;
         do {
             if (*var_s0 != 0) {
-                cnLBS_Send_ChatBinaryTU(arg2 & 0xFF, var_s0, arg1, temp_v0 & 0xFFFF, (s32) CallBack_Result_SendChatMessageTU);
+                cnLBS_Send_ChatBinaryTU(arg2 & 0xFF, var_s0, (void *) arg1, temp_v0 & 0xFFFF, (s32) CallBack_Result_SendChatMessageTU);
             }
             var_s2 += 1;
             var_s0 += 8;
         } while (var_s2 < 7);
         memcpy(&sp70, &my_user_id, 8);
         memcpy(&sp78, &my_user_handle, 0x10);
-        strcpy(&sp8C, arg1);
+        strcpy(&sp8C, (void *) arg1);
         sp18E = 0;
         sp18D = 0;
-        sp18F = (*(s32 *)((u8 *)&chat_cnfg_font_color + (arg2 & 0xFF)));
+        sp18F = *(&chat_cnfg_font_color + (arg2 & 0xFF));
         if ((*(u8 *)((u8 *)((*(void **)&cw)) + 0xFA61)) != 0) {
             Lb_chat_receipt(&sp70);
             return;

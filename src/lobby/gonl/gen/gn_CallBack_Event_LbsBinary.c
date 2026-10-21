@@ -4,9 +4,8 @@
 #include "../gonl.h"
 
 s32 Lb_check_receipt();
+s32 cnLBS_Get_ChatBinary();
 extern u8 cw;
-s32 cnLBS_Get_ChatBinary();    /* extern */
-
 void CallBack_Event_LbsBinary(void) {
     u8 g_frame[0x330] __attribute__((aligned(16)));   /* G's stack frame */
 #define sp20 (*(s32 *)(g_frame + 0x20))
@@ -20,8 +19,8 @@ void CallBack_Event_LbsBinary(void) {
         if ((temp_a0 == 4) || ((*(s8 *)((u8 *)(temp_a1) + 0xB74)) != 0)) {
             return;
         }
-        cnLBS_Get_ChatBinary(&sp20, temp_a1);
-        Lb_check_receipt((s32) &sp20, &sp28);
+        cnLBS_Get_ChatBinary(&sp20);
+        Lb_check_receipt((s32) &sp20, &sp28, M2C_ERROR(/* Read from unset register $a2 */), M2C_ERROR(/* Read from unset register $a3 */));
     }
 }
 

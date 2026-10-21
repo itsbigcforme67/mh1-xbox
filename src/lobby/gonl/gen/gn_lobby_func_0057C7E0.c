@@ -25,7 +25,7 @@ extern u8 FirstURL;
 extern u8 first_url;
 extern s128 tmpPersonalData;
 
-void lobby_func_0057C7E0(void) {
+void lobby_func_0057C7E0(s32 unused_a0, s32 arg1, s32 unused_a2, s32 arg3) {
     u8 *var_a0;   /* (s128 *) */
     u8 *var_a1;   /* (s128 *) */
     s32 temp_v0_2;
@@ -33,11 +33,13 @@ void lobby_func_0057C7E0(void) {
     u8 temp_a0;
     u8 *temp_a0_2;
     u8 *temp_a0_3;
+    u8 *temp_a2;
     u8 *temp_v0;
     u8 *temp_v1;
 
     temp_v0 = (*(void **)&cw);
     temp_a0 = (*(u8 *)((u8 *)(temp_v0) + 0xBA7));
+    temp_a2 = temp_v0 + 0xBA7;
     switch (temp_a0) {                              /* switch 1 */
     case 0:                                         /* switch 1 */
         (*(u8 *)((u8 *)(temp_v0) + 0xBA7)) = (u8) (temp_a0 + 1);
@@ -48,14 +50,14 @@ void lobby_func_0057C7E0(void) {
         temp_v1 = (*(void **)&cw);
         (*(u8 *)((u8 *)(temp_v1) + 0xBA7)) = (u8) ((*(u8 *)((u8 *)(temp_v1) + 0xBA7)) + 1);
         all_reset();
-        cnWrap_InitWork();
-        Lbs_load();
+        cnWrap_InitWork(M2C_ERROR(/* Read from unset register $a0 */), M2C_ERROR(/* Read from unset register $a1 */), M2C_ERROR(/* Read from unset register $a2 */), M2C_ERROR(/* Read from unset register $a3 */));
+        Lbs_load(M2C_ERROR(/* Read from unset register $a0 */), M2C_ERROR(/* Read from unset register $a1 */), M2C_ERROR(/* Read from unset register $a2 */), M2C_ERROR(/* Read from unset register $a3 */));
         (*(s8 *)&net_char_change) = 1;
         return;
     case 2:                                         /* switch 1 */
         (*(u8 *)((u8 *)(temp_v0) + 0xBA7)) = (u8) (temp_a0 + 1);
         (*(s8 *)&BS_MODE_R_NO) = 0;
-        FlushCache(0, temp_v0 + 0xBA7);
+        FlushCache(0, temp_a2);
         MainBsInitialize(1);
         memset(&FirstURL, 0, 0x100);
         strcpy(&FirstURL, &first_url);
@@ -74,7 +76,7 @@ void lobby_func_0057C7E0(void) {
         fade_set(2);
         return;
     case 4:                                         /* switch 1 */
-        temp_v0_2 = lbc_browser_04();
+        temp_v0_2 = lbc_browser_04((s32) temp_a0, arg1, (s32) temp_a2, arg3);
         switch (temp_v0_2) {                        /* switch 2; irregular */
         case 0:                                     /* switch 2 */
             temp_a0_2 = (*(void **)&cw);
@@ -90,7 +92,7 @@ void lobby_func_0057C7E0(void) {
         if ((Fade_busy_ck() & 0xFF) != 1) {
             (*(u8 *)((u8 *)((*(void **)&cw)) + 0xBA7)) = 0U;
             all_reset();
-            Lbs_load();
+            Lbs_load(M2C_ERROR(/* Read from unset register $a0 */), M2C_ERROR(/* Read from unset register $a1 */), M2C_ERROR(/* Read from unset register $a2 */), M2C_ERROR(/* Read from unset register $a3 */));
             (*(s8 *)&net_char_change) = 0;
             (*(s8 *)((u8 *)((*(void **)&cw)) + 0xB70)) = 1;
             (*(s8 *)((u8 *)((*(void **)&cw)) + 0xBA8)) = 2;
@@ -107,13 +109,13 @@ void lobby_func_0057C7E0(void) {
             (*(s8 *)((u8 *)((*(void **)&cw)) + 0xB70)) = 1;
             (*(s8 *)((u8 *)((*(void **)&cw)) + 0xBA8)) = 2;
             (*(s8 *)((u8 *)((*(void **)&pNet)) + 0x31)) = 0;
-            lobby_func_005A1E30();
+            lobby_func_005A1E30(1, M2C_ERROR(/* Read from unset register $a1 */), M2C_ERROR(/* Read from unset register $a2 */), M2C_ERROR(/* Read from unset register $a3 */));
             (*(s8 *)&BsLbsErrNum) = 0;
             return;
         }
         break;
     default:                                        /* switch 1 */
-        To_LogOut(4);
+        To_LogOut(4, arg1, (s32) temp_a2, arg3);
         break;
     }
 }

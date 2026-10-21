@@ -15,7 +15,7 @@ s32 gonl_Get_PlazaStatus();          /* extern */
 s32 gonl_Get_PlazaJoinUser(); /* extern */
 extern u8 PlazaInfo;
 
-void lobby_func_0057ECE0(s64 arg0) {
+void lobby_func_0057ECE0(s64 arg0, s32 arg1, s32 arg2, s32 arg3) {
     u8 g_frame[0x40] __attribute__((aligned(16)));   /* G's stack frame */
 #define sp38 (*(s64 *)(g_frame + 0x38))
     u8 *var_s0;   /* (s32 *) */
@@ -26,7 +26,7 @@ void lobby_func_0057ECE0(s64 arg0) {
     sp38 = arg0;
     if (((*(u8 *)((u8 *)((*(void **)&cw)) + 0xB99)) != 5) && ((s8) sp38 != 2)) {
         if ((s8) sp38 == 0) {
-            lobby_func_005E3420(&(*(u16 *)((u8 *)&ClassInfo + 0x2)));
+            lobby_func_005E3420(&(*(u16 *)((u8 *)&ClassInfo + 0x2)), arg1, arg2, arg3);
             var_s1 = 0;
             if ((s32) (*(u16 *)((u8 *)&ClassInfo + 0x2)) > 0) {
                 var_s0 = &PlazaInfo;
@@ -36,9 +36,9 @@ void lobby_func_0057ECE0(s64 arg0) {
                     gonl_Get_PlazaStatus(temp_v0 & 0xFFFF, var_s0 + 0x16);
                     gonl_Get_PlazaJoinUser((var_s1 + 1) & 0xFFFF, var_s0 + 6, var_s0 + 0x12);
                     cnLBS_Get_LobbyName((var_s1 + 1) & 0xFFFF, var_s0 + 0x1A);
-                    lobby_func_005E3900((var_s1 + 1) & 0xFFFF, var_s0 + 0x5B);
-                    lobby_func_005E36A0((var_s1 + 1) & 0xFFFF, var_s0 + 8);
-                    lobby_func_005E36D0((var_s1 + 1) & 0xFFFF, var_s0 + 0x14);
+                    lobby_func_005E3900((var_s1 + 1) & 0xFFFF, var_s0 + 0x5B, M2C_ERROR(/* Read from unset register $a2 */), M2C_ERROR(/* Read from unset register $a3 */));
+                    lobby_func_005E36A0((var_s1 + 1) & 0xFFFF, var_s0 + 8, M2C_ERROR(/* Read from unset register $a2 */), M2C_ERROR(/* Read from unset register $a3 */));
+                    lobby_func_005E36D0((var_s1 + 1) & 0xFFFF, var_s0 + 0x14, M2C_ERROR(/* Read from unset register $a2 */), M2C_ERROR(/* Read from unset register $a3 */));
                     var_s1 += 1;
                     var_s0 += 0x15C;
                 } while (var_s1 < (s32) (*(u16 *)((u8 *)&ClassInfo + 0x2)));
@@ -47,7 +47,7 @@ void lobby_func_0057ECE0(s64 arg0) {
             (*(u8 *)((u8 *)(temp_a0) + 0xB9D)) = (u8) ((*(u8 *)((u8 *)(temp_a0) + 0xB9D)) + 1);
             return;
         }
-        To_LogOut(4);
+        To_LogOut(4, arg1, arg2, arg3);
     }
 }
 

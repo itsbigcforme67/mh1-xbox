@@ -16,9 +16,9 @@ void lobby_func_0057CC60(void) {
     (*(s8 *)((u8 *)((*(void **)&cw)) + 0xB9D)) = 0;
     Init_InterruptFlag();
     if ((*(u8 *)((u8 *)((*(void **)&cw)) + 0xFA5E)) == 1) {
-        SetDialogData(3);
+        SetDialogData(3, M2C_ERROR(/* Read from unset register $a1 */), M2C_ERROR(/* Read from unset register $a2 */), M2C_ERROR(/* Read from unset register $a3 */));
     } else {
-        SetDialogData(0x19);
+        SetDialogData(0x19, M2C_ERROR(/* Read from unset register $a1 */), M2C_ERROR(/* Read from unset register $a2 */), M2C_ERROR(/* Read from unset register $a3 */));
     }
     (*(s8 *)((u8 *)((*(void **)&pNet)) + 0x2D)) = 1;
 }

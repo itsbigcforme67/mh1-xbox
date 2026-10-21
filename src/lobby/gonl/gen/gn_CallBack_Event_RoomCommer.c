@@ -39,7 +39,7 @@ loop_1:
         }
     }
     if (((*(u8 *)((u8 *)((*(void **)&cw)) + 0xFA61)) != 0) && (sp38 != 0)) {
-        Lb_put_chat(4, (s32) &sp38);
+        Lb_put_chat(4, (s32) &sp38, M2C_ERROR(/* Read from unset register $a2 */), M2C_ERROR(/* Read from unset register $a3 */));
     }
 }
 

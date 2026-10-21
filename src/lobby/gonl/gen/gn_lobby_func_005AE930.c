@@ -3,14 +3,13 @@
  * tools/build_pc_mhg.sh). */
 #include "../gonl.h"
 
+s32 __cnetSub_Get_RestBgWork();
 s32 cnLBS_PlazaExit();
 s32 lobby_func_005AEA90();
-s32 __cnetSub_Get_RestBgWork();                     /* extern */
-
 void lobby_func_005AE930(void *arg0) {
     if (__cnetSub_Get_RestBgWork() > 0) {
         (*(u8 *)((u8 *)(arg0) + 0x22)) = (u8) ((*(u8 *)((u8 *)(arg0) + 0x22)) + 1);
-        cnLBS_PlazaExit((s32) lobby_func_005AEA90);
+        cnLBS_PlazaExit((s32) lobby_func_005AEA90, M2C_ERROR(/* Read from unset register $a1 */), M2C_ERROR(/* Read from unset register $a2 */), M2C_ERROR(/* Read from unset register $a3 */));
     }
 }
 

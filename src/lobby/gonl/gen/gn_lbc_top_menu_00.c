@@ -40,14 +40,14 @@ void lbc_top_menu_00(void) {
         (*(s8 *)((u8 *)(var_v1) + 0x99A)) = 0;
         var_v1 += 0xAE0;
     } while (var_a0 < 0x12);
-    temp_v0 = (u8 *)&(*(u8 *)((u8 *)&PlazaInfo + 0x16)) + (var_a0 * 0x15C);
+    temp_v0 = &(*(u8 *)((u8 *)&PlazaInfo + 0x16)) + (var_a0 * 0x15C);
     (*(s8 *)((u8 *)(temp_v0) + 0)) = 0;
     (*(s8 *)((u8 *)(temp_v0) + 0x15C)) = 0;
-    Lbc_init_network_work();
+    Lbc_init_network_work(var_a0, M2C_ERROR(/* Read from unset register $a1 */), M2C_ERROR(/* Read from unset register $a2 */), M2C_ERROR(/* Read from unset register $a3 */));
     (*(s8 *)((u8 *)((*(void **)&cw)) + 0xB70)) = 1;
     (*(s8 *)((u8 *)((*(void **)&pNet)) + 0x27)) = 0;
     Lbc_set_prim((s32) lobby_func_0057D5D0, 0, 0, 0);
-    SetSceneTitle(3);
+    SetSceneTitle(3, M2C_ERROR(/* Read from unset register $a1 */), M2C_ERROR(/* Read from unset register $a2 */), M2C_ERROR(/* Read from unset register $a3 */));
     (*(s8 *)((u8 *)((*(void **)&cw)) + 0xBA1)) = 0;
 }
 

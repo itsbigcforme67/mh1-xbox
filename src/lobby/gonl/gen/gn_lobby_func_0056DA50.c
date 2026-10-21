@@ -16,12 +16,12 @@ void * strcpy();
 extern u8 pNet;
 extern u8 tl_member_buff;
 s8 Visual_main();                          /* extern */
-extern s32 g_lb_5FBC28;
-extern s32 g_lb_5FBC29;
-extern s32 g_lb_653A50;
+extern u8 g_lb_5FBC28;
+extern u8 g_lb_5FBC29;
+extern u8 g_lb_653A50;
 extern s8 g_lb_6B46D0;
 extern s8 g_lb_6B46D1;
-extern s32 g_main_2EEE68;
+extern u8 g_main_2EEE68;
 extern s8 seekStr;
 
 s32 lobby_func_0056DA50(void) {
@@ -43,8 +43,8 @@ s32 lobby_func_0056DA50(void) {
                 goto block_13;
             }
             if ((*(s8 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x18))) + 0x1373)) == 1) {
-                SetDialogData(0x1E);
-                cnWrap_SoundRequest(0);
+                SetDialogData(0x1E, temp_a1, M2C_ERROR(/* Read from unset register $a2 */), M2C_ERROR(/* Read from unset register $a3 */));
+                cnWrap_SoundRequest(0, M2C_ERROR(/* Read from unset register $a1 */), M2C_ERROR(/* Read from unset register $a2 */), M2C_ERROR(/* Read from unset register $a3 */));
                 (*(s8 *)((u8 *)((*(void **)&pNet)) + 0x2F)) = 1;
                 return 0;
             }
@@ -52,14 +52,14 @@ s32 lobby_func_0056DA50(void) {
             var_v0 = (*(u8 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x18))) + 0x136B)) + 1;
 block_13:
             (*(u8 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x18))) + 0x136B)) = var_v0;
-            cnWrap_SoundRequest(0);
+            cnWrap_SoundRequest(0, M2C_ERROR(/* Read from unset register $a1 */), M2C_ERROR(/* Read from unset register $a2 */), M2C_ERROR(/* Read from unset register $a3 */));
             goto block_51;
         }
         if (temp_a1 & 0x40) {
             return 3;
         }
         if (temp_a1 & 0xC00) {
-            (*(u8 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x18))) + 0x1370)) = Eft25_set((s32) (*(u8 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x18))) + 0x1370)), 3);
+            (*(u8 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x18))) + 0x1370)) = Eft25_set((s32) (*(u8 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x18))) + 0x1370)), 3, M2C_ERROR(/* Read from unset register $a2 */), M2C_ERROR(/* Read from unset register $a3 */));
             (*(s8 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x18))) + 0x1373)) = 0;
             memset(&g_lb_6B46D0, 0, 0x110);
         } else {
@@ -79,13 +79,13 @@ block_13:
                 var_a1 = 5;
                 break;
             }
-            (*(s8 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x18))) + 0x1373)) = Lb_cursorUD((s32) (*(s8 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x18))) + 0x1373)), var_a1);
+            (*(s8 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x18))) + 0x1373)) = Lb_cursorUD((s32) (*(s8 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x18))) + 0x1373)), var_a1, M2C_ERROR(/* Read from unset register $a2 */), M2C_ERROR(/* Read from unset register $a3 */));
         }
 block_51:
     default:                                        /* switch 1 */
         return 2;
     case 1:                                         /* switch 1 */
-        if (plaza_req_input(&g_lb_653A50, 1) == 1) {
+        if (plaza_req_input(&g_lb_653A50, 1, M2C_ERROR(/* Read from unset register $a2 */), M2C_ERROR(/* Read from unset register $a3 */)) == 1) {
             strcpy(&g_lb_6B46D0 + ((*(s8 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x18))) + 0x1373)) * 0x44) + 4, &g_lb_653A50);
             if (Visual_main(&g_lb_653A50) != 0) {
                 *(&g_lb_6B46D1 + ((*(s8 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x18))) + 0x1373)) * 0x44)) = Visual_main(&g_lb_653A50);
@@ -103,8 +103,8 @@ block_51:
         temp_a1_2 = temp_s1 & 0xFFFF;
         (*(s16 *)((u8 *)((*(void **)&pNet)) + 0x20)) = Get_sw_on2(0);
         if (temp_a1_2 & 0x20) {
-            SetDialogData(0x1E);
-            cnWrap_SoundRequest(0);
+            SetDialogData(0x1E, temp_a1_2, M2C_ERROR(/* Read from unset register $a2 */), M2C_ERROR(/* Read from unset register $a3 */));
+            cnWrap_SoundRequest(0, M2C_ERROR(/* Read from unset register $a1 */), M2C_ERROR(/* Read from unset register $a2 */), M2C_ERROR(/* Read from unset register $a3 */));
             switch ((*(u8 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x18))) + 0x1370))) { /* switch 3; irregular */
             case 0:                                 /* switch 3 */
                 (*(s8 *)((u8 *)((*(void **)&pNet)) + 0x2F)) = 1;
@@ -112,7 +112,7 @@ block_51:
             case 1:                                 /* switch 3 */
                 var_v0_2 = 3;
                 (*(s8 *)((u8 *)((*(void **)&pNet)) + 0x2F)) = 1;
-                seekStr = (s8) (*(s32 *)((u8 *)&g_main_2EEE68 + (*(s8 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x18))) + 0x1373))));
+                seekStr = (s8) *(&g_main_2EEE68 + (*(s8 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x18))) + 0x1373)));
                 g_lb_6B46D1 = 1;
 block_44:
                 g_lb_6B46D0 = var_v0_2;
@@ -120,8 +120,8 @@ block_44:
             case 2:                                 /* switch 3 */
                 var_v0_2 = 6;
                 (*(s8 *)((u8 *)((*(void **)&pNet)) + 0x2F)) = 1;
-                seekStr = (s8) (*(s32 *)((u8 *)&g_lb_5FBC28 + ((*(s8 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x18))) + 0x1373)) * 2)));
-                (*(u8 *)((u8 *)&seekStr + 0x1)) = (*(s32 *)((u8 *)&g_lb_5FBC29 + ((*(s8 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x18))) + 0x1373)) * 2)));
+                seekStr = (s8) *(&g_lb_5FBC28 + ((*(s8 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x18))) + 0x1373)) * 2));
+                (*(u8 *)((u8 *)&seekStr + 0x1)) = *(&g_lb_5FBC29 + ((*(s8 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x18))) + 0x1373)) * 2));
                 g_lb_6B46D1 = 1;
                 goto block_44;
             }
@@ -129,7 +129,7 @@ block_44:
         }
         if (temp_a1_2 & 0x40) {
             (*(u8 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x18))) + 0x136B)) = 0U;
-            cnWrap_SoundRequest(3);
+            cnWrap_SoundRequest(3, temp_a1_2, M2C_ERROR(/* Read from unset register $a2 */), M2C_ERROR(/* Read from unset register $a3 */));
         }
         goto block_51;
     case 3:                                         /* switch 1 */

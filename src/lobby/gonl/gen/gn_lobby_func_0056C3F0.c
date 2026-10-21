@@ -16,7 +16,7 @@ void lobby_func_0056C3F0(void) {
     str_pause(0, 0);
     str_pause(1, 0);
     if ((*(u8 *)((u8 *)((*(void **)&cw)) + 0xFA61)) != 0) {
-        str_fadein_vol(0, 0x1E, (s32) (*(s32 *)((u8 *)&(*(u8 *)((u8 *)&Snd_bgm_tbl + 0x1)) + ((*(u8 *)((u8 *)&game_w + 0x14)) * 2))));
+        str_fadein_vol(0, 0x1E, (s32) *(&(*(u8 *)((u8 *)&Snd_bgm_tbl + 0x1)) + ((*(u8 *)((u8 *)&game_w + 0x14)) * 2)));
         (*(s8 *)((u8 *)&lb_sys + 0x94)) = 1;
     }
     (*(s8 *)((u8 *)((*(void **)&pNet)) + 0x2D)) = 0;

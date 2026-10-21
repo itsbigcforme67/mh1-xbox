@@ -3,14 +3,14 @@
  * tools/build_pc_mhg.sh). */
 #include "../gonl.h"
 
+s32 __cnetSub_Get_RestBgWork();
+s32 cnLBS_Init_LobbyBgProcess();
 s32 lobby_func_005E3340();
 s32 lobby_func_005E3480();
 s32 lobby_func_005E35E0();
 s32 lobby_func_005E3740();
 s32 lobby_func_005E3880();
 extern u8 CnetSys_w;
-s32 __cnetSub_Get_RestBgWork();                     /* extern */
-s32 cnLBS_Init_LobbyBgProcess();                /* extern */
 
 void lobby_func_005E3120(void *arg0) {
     s32 temp_s0;
@@ -25,16 +25,16 @@ void lobby_func_005E3120(void *arg0) {
     temp_s0 = (*(s32 *)((u8 *)(arg0) + 0xC));
     if (__cnetSub_Get_RestBgWork() >= (s32) (*(u8 *)((u8 *)(arg0) + 0x24))) {
         if ((*(s32 *)((u8 *)(arg0) + 0x18)) & 1) {
-            lobby_func_005E35E0(temp_s0 & 0xFFFF, (s32) lobby_func_005E3340);
+            lobby_func_005E35E0(temp_s0 & 0xFFFF, (s32) lobby_func_005E3340, M2C_ERROR(/* Read from unset register $a2 */), M2C_ERROR(/* Read from unset register $a3 */));
         }
         if ((*(s32 *)((u8 *)(arg0) + 0x18)) & 2) {
-            lobby_func_005E3740(temp_s0 & 0xFFFF, (s32) lobby_func_005E3340);
+            lobby_func_005E3740(temp_s0 & 0xFFFF, (s32) lobby_func_005E3340, M2C_ERROR(/* Read from unset register $a2 */), M2C_ERROR(/* Read from unset register $a3 */));
         }
         if ((*(s32 *)((u8 *)(arg0) + 0x18)) & 4) {
-            lobby_func_005E3480(temp_s0 & 0xFFFF, (s32) lobby_func_005E3340);
+            lobby_func_005E3480(temp_s0 & 0xFFFF, (s32) lobby_func_005E3340, M2C_ERROR(/* Read from unset register $a2 */), M2C_ERROR(/* Read from unset register $a3 */));
         }
         if ((*(s32 *)((u8 *)(arg0) + 0x18)) & 8) {
-            lobby_func_005E3880(temp_s0 & 0xFFFF, (s32) lobby_func_005E3340);
+            lobby_func_005E3880(temp_s0 & 0xFFFF, (s32) lobby_func_005E3340, M2C_ERROR(/* Read from unset register $a2 */), M2C_ERROR(/* Read from unset register $a3 */));
         }
         temp_a0 = temp_s0 + 1;
         (*(s32 *)((u8 *)(arg0) + 0xC)) = (s32) ((*(s32 *)((u8 *)(arg0) + 0xC)) + 1);

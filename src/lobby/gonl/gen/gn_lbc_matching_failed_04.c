@@ -13,11 +13,11 @@ s32 cnWrap_BgmRequest();                 /* extern */
 
 void lbc_matching_failed_04(void) {
     all_reset();
-    Lbs_load();
+    Lbs_load(M2C_ERROR(/* Read from unset register $a0 */), M2C_ERROR(/* Read from unset register $a1 */), M2C_ERROR(/* Read from unset register $a2 */), M2C_ERROR(/* Read from unset register $a3 */));
     (*(s8 *)((u8 *)((*(void **)&pNet)) + 0x31)) = 1;
     (*(s8 *)((u8 *)((*(void **)&cw)) + 0xB70)) = 1;
-    To_GoToTop();
+    To_GoToTop(M2C_ERROR(/* Read from unset register $a0 */), M2C_ERROR(/* Read from unset register $a1 */), M2C_ERROR(/* Read from unset register $a2 */), M2C_ERROR(/* Read from unset register $a3 */));
     cnWrap_BgmRequest(0);
-    lobby_func_0055A140(1);
+    lobby_func_0055A140(1, M2C_ERROR(/* Read from unset register $a1 */), M2C_ERROR(/* Read from unset register $a2 */), M2C_ERROR(/* Read from unset register $a3 */));
 }
 

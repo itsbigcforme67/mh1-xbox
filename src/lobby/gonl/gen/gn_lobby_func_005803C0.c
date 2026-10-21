@@ -6,9 +6,9 @@
 s32 cnLBS_Get_ServerMessage();
 s32 lobby_func_005E6680();
 extern u8 cw;
-extern s32 g_main_2EFBC0;
+extern u8 g_main_2EFBC0;
 
-void lobby_func_005803C0(s64 arg0) {
+void lobby_func_005803C0(s64 arg0, s32 unused_a1, s32 unused_a2, s32 arg3) {
     u8 g_frame[0x20] __attribute__((aligned(16)));   /* G's stack frame */
 #define sp18 (*(s64 *)(g_frame + 0x18))
     u8 *temp_a0;
@@ -18,7 +18,7 @@ void lobby_func_005803C0(s64 arg0) {
     sp18 = arg0;
     if (((*(u8 *)((u8 *)(temp_a1) + 0xB99)) != 5) && ((*(u8 *)((u8 *)(temp_a1) + 0xBA9)) == 0x14)) {
         (*(u8 *)((u8 *)(temp_a1) + 0xBA9)) = 0U;
-        lobby_func_005E6680(&g_main_2EFBC0);
+        lobby_func_005E6680(&g_main_2EFBC0, (s32) temp_a1, (s32) (temp_a1 + 0xBA9), arg3);
         if ((s8) sp18 == 0) {
             temp_a0 = (*(void **)&cw);
             (*(u8 *)((u8 *)(temp_a0) + 0xB9D)) = (u8) ((*(u8 *)((u8 *)(temp_a0) + 0xB9D)) + 1);

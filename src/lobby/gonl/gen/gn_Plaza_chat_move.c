@@ -32,7 +32,7 @@ s32 Plaza_chat_move(void) {
     }
     if (temp_v1_2 != 0) {
         if ((sp10 != 0) && (temp_v1_2 > 0) && (ChatKinsoku_chk(&sp10) != 0)) {
-            Lb_send_chat((s32) (*(u8 *)((u8 *)&game_w + 0x3A)), &sp10, 0);
+            Lb_send_chat((s32) (*(u8 *)((u8 *)&game_w + 0x3A)), &sp10, 0, M2C_ERROR(/* Read from unset register $a3 */));
         }
         SoftKeyboard_exit();
         Plaza_chatlog_i();

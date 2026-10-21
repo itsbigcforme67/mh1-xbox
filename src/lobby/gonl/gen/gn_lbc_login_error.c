@@ -26,13 +26,13 @@ void lbc_login_error(void) {
     temp_a2 = Get_sw2(0) & 0xFFFF;
     switch (temp_a1) {                              /* irregular */
     case 0:
-        Lbc_init_network_work();
+        Lbc_init_network_work(1, (s32) temp_a1, temp_a2, M2C_ERROR(/* Read from unset register $a3 */));
         Lbc_set_prim((s32) text_lobby_trans_ot0, 0, 0, 0);
         temp_v1 = (*(void **)&cw);
         (*(u8 *)((u8 *)(temp_v1) + 0xB9C)) = (u8) ((*(u8 *)((u8 *)(temp_v1) + 0xB9C)) + 1);
         fade_set(2);
         (*(s32 *)((u8 *)((*(void **)&cw)) + 0xBB4)) = 0x258;
-        Lb_eat_to_bell((s32) ((*(void **)&cw) + 0xF75D));
+        Lb_eat_to_bell((s32) ((*(void **)&cw) + 0xF75D), M2C_ERROR(/* Read from unset register $a1 */), M2C_ERROR(/* Read from unset register $a2 */), M2C_ERROR(/* Read from unset register $a3 */));
         return;
     case 1:
         (*(s8 *)((u8 *)((*(void **)&pNet)) + 0x2D)) = 1;
@@ -43,7 +43,7 @@ void lbc_login_error(void) {
         if (temp_v1_2 > 0) {
             if ((temp_v1_2 < 0x1E0) && (temp_a2 & 0xFFFF & 0x20)) {
                 (*(u8 *)((u8 *)(temp_a1_3) + 0xB9C)) = (u8) ((*(u8 *)((u8 *)(temp_a1_3) + 0xB9C)) + 1);
-                cnWrap_SoundRequest(0);
+                cnWrap_SoundRequest(0, (s32) temp_a1_3, temp_a2, M2C_ERROR(/* Read from unset register $a3 */));
                 fade_set(1);
                 return;
             }
@@ -61,7 +61,7 @@ void lbc_login_error(void) {
         }
         break;
     default:
-        To_LogOut(4);
+        To_LogOut(4, (s32) temp_a1, temp_a2, M2C_ERROR(/* Read from unset register $a3 */));
         break;
     }
 }

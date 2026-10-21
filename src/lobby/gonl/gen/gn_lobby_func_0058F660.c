@@ -34,7 +34,7 @@ u8 lobby_func_0058F660(s32 arg0, u8 arg1) {
 block_9:
             sp2F = var_v0;
         }
-        cnWrap_SoundRequest(1);
+        cnWrap_SoundRequest(1, M2C_ERROR(/* Read from unset register $a1 */), M2C_ERROR(/* Read from unset register $a2 */), M2C_ERROR(/* Read from unset register $a3 */));
     }
     return sp2F;
 }

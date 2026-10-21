@@ -11,11 +11,13 @@ s32 lobby_func_00580B20();
 extern u8 cw;
 extern s8 ClassInfo;
 
-s32 lobby_func_00580A40(s8 arg0, s8 arg1) {
+s32 lobby_func_00580A40(s32 arg0, s32 arg1, s32 unused_a2, s32 arg3) {
+    s32 temp_a0;
     u8 temp_v1_2;
     u8 *temp_v1;
 
     temp_v1 = (*(void **)&cw);
+    temp_a0 = temp_v1 + 0xB9D;
     temp_v1_2 = (*(u8 *)((u8 *)(temp_v1) + 0xB9D));
     switch (temp_v1_2) {                            /* irregular */
     case 0x0:
@@ -27,16 +29,16 @@ s32 lobby_func_00580A40(s8 arg0, s8 arg1) {
 block_10:
         return 2;
     case 0x1:
-        Check_CallBackWait();
+        Check_CallBackWait(temp_a0, arg1, arg0, arg3);
         goto block_10;
     case 0x2:
         (*(u8 *)((u8 *)(temp_v1) + 0xB9D)) = 0U;
-        ClassInfo = arg0;
-        (*(s8 *)((u8 *)&ClassInfo + 0x4)) = arg1;
-        MH_lobbyClear();
+        ClassInfo = (s8) arg0;
+        (*(s8 *)((u8 *)&ClassInfo + 0x4)) = (s8) arg1;
+        MH_lobbyClear(temp_a0, arg1, arg0, arg3);
         return 0;
     default:
-        To_LogOut(4);
+        To_LogOut(4, arg1, arg0, arg3);
         /* fallthrough */
     case 0x63:
         (*(u8 *)((u8 *)((*(void **)&cw)) + 0xB9D)) = 0U;

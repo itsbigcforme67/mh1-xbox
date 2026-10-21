@@ -21,8 +21,8 @@ s32 font_print();           /* extern */
 s32 func_0012BDD0();                         /* extern */
 s32 put_titles();                  /* extern */
 s32 sprintf();           /* extern */
-extern s32 g_lb_636A00;
-extern s32 g_lb_63E128;
+extern u8 g_lb_636A00;
+extern u8 g_lb_63E128;
 extern u8 hunter_appellation;
 extern u8 lbCommer;
 extern u8 lit_2316;
@@ -47,7 +47,7 @@ void plaza_setMyCommentTrans(s32 arg0, s32 arg1, s32 arg2) {
     u8 temp_a2;
 
     if ((*(u8 *)((u8 *)((*(void **)&cw)) + 0xFA61)) != 0) {
-        var_s4 = (u8 *)&lbCommer + ((*(u8 *)((u8 *)&game_w + 0x3A)) * 0x5C) + 0x1C;
+        var_s4 = &lbCommer + ((*(u8 *)((u8 *)&game_w + 0x3A)) * 0x5C) + 0x1C;
     } else {
         var_s4 = &my_user_mini_data;
     }
@@ -55,59 +55,59 @@ void plaza_setMyCommentTrans(s32 arg0, s32 arg1, s32 arg2) {
     temp_v1 = ((s8) (arg2));
     switch (temp_v1) {                              /* irregular */
     case 0:
-        put_mainWindow(arg0, arg1);
+        put_mainWindow(arg0, arg1, M2C_ERROR(/* Read from unset register $a2 */), M2C_ERROR(/* Read from unset register $a3 */));
         break;
     case 1:
-        put_mainWindowTex(arg0, arg1);
+        put_mainWindowTex(arg0, arg1, M2C_ERROR(/* Read from unset register $a2 */), M2C_ERROR(/* Read from unset register $a3 */));
         break;
     }
     temp_s0 = ((s16) ((arg1 + 0x28)));
     put_titles(arg0, temp_s0, (*(s32 *)((u8 *)&tl_mail_tbl + 0x28)));
     font_set_palette(0);
     temp_s0_2 = ((s16) ((temp_s0 + 0x16)));
-    flfntLocate((s32) arg0, (s32) temp_s0_2);
+    flfntLocate(arg0, (s32) temp_s0_2);
     font_print(&lit_2316, (*(s32 * *)((u8 *)&tl_mail_tbl + 0x8)));
-    temp_s2 = ((s16) (arg0));
+    temp_s2 = ((s16) ((s32) arg0));
     temp_s3 = temp_s2 + 0x36;
     flfntLocate((s32) (((s16) (temp_s3))), (s32) temp_s0_2);
     font_print(&lit_2316, (*(void **)&cw) + 0x1C8);
     temp_s0_3 = ((s16) ((temp_s0_2 + 0x16)));
-    flfntLocate((s32) arg0, (s32) temp_s0_3);
+    flfntLocate(arg0, (s32) temp_s0_3);
     font_print(&lit_2316, (*(s32 * *)((u8 *)&tl_mail_tbl + 0xC)));
     flfntLocate((s32) (((s16) (temp_s3))), (s32) temp_s0_3);
     memcpy(&spC0, (*(void **)&cw) + 0x1C0, 8);
     han2zen(&spC0, &sp60);
     font_print(&lit_2316, &sp60);
     temp_s0_4 = ((s16) ((temp_s0_3 + 0x16)));
-    flfntLocate((s32) arg0, (s32) temp_s0_4);
+    flfntLocate(arg0, (s32) temp_s0_4);
     font_print(&lit_2316, (*(s32 * *)((u8 *)&tl_mail_tbl + 0x18)));
     flfntLocate((s32) (((s16) (temp_s3))), (s32) temp_s0_4);
-    font_print(&lit_2316, (*(s32 *)((u8 *)&tl_job_tbl + ((*(u8 *)((u8 *)(var_s4) + 0)) * 4))));
+    font_print(&lit_2316, *(&tl_job_tbl + ((*(u8 *)((u8 *)(var_s4) + 0)) * 4)));
     temp_s0_5 = ((s16) ((temp_s0_4 + 0x16)));
-    flfntLocate((s32) arg0, (s32) temp_s0_5);
+    flfntLocate(arg0, (s32) temp_s0_5);
     font_print(&lit_2316, (*(s32 * *)((u8 *)&tl_mail_tbl + 0x1C)));
     temp_a2 = (*(u8 *)((u8 *)&User_data + 0xC23));
     if (temp_a2 != 0) {
-        sprintf(&spC0, (*(s32 *)((u8 *)&net_etc_mes_tbl + 0x1C)), temp_a2, (*(s32 *)((u8 *)&hunter_appellation + (temp_a2 * 4))));
+        sprintf(&spC0, (*(s32 *)((u8 *)&net_etc_mes_tbl + 0x1C)), temp_a2, *(&hunter_appellation + (temp_a2 * 4)));
     } else {
         sprintf(&spC0, (*(s32 *)((u8 *)&net_etc_mes_tbl + 0x20)), temp_a2);
     }
     flfntLocate((s32) (((s16) (temp_s3))), (s32) temp_s0_5);
     font_print(&lit_2316, &spC0);
     temp_s0_6 = ((s16) ((temp_s0_5 + 0x16)));
-    flfntLocate((s32) arg0, (s32) temp_s0_6);
+    flfntLocate(arg0, (s32) temp_s0_6);
     font_print(&lit_2316, (*(s32 * *)((u8 *)&tl_mail_tbl + 0x2C)));
     if ((*(u8 *)((u8 *)(var_s4) + 2)) == 0) {
         flfntLocate((s32) (((s16) ((temp_s2 + 0x1C)))), (s32) temp_s0_6);
     } else {
         flfntLocate((s32) (((s16) ((temp_s2 + 0x40)))), (s32) temp_s0_6);
     }
-    memcpy((*(s32 *)((u8 *)&g_lb_636A00 + ((*(u8 *)((u8 *)(var_s4) + 2)) * 4))), &g_lb_63E128, 4);
-    func_0012BDD0((*(s32 *)((u8 *)&g_lb_636A00 + ((*(u8 *)((u8 *)(var_s4) + 2)) * 4))));
+    memcpy(*(&g_lb_636A00 + ((*(u8 *)((u8 *)(var_s4) + 2)) * 4)), &g_lb_63E128, 4);
+    func_0012BDD0(*(&g_lb_636A00 + ((*(u8 *)((u8 *)(var_s4) + 2)) * 4)));
     Lb_put_status((s32) (((s16) ((temp_s2 + 0x40)))), (s32) temp_s0_6, 0x14, -1, (s32) (*(u8 *)((u8 *)(var_s4) + 2)));
     temp_s0_7 = ((s16) ((temp_s0_6 + 0x16)));
-    flfntLocate((s32) arg0, (s32) temp_s0_7);
+    flfntLocate(arg0, (s32) temp_s0_7);
     font_print(&lit_2316, (*(s32 * *)((u8 *)&tl_mail_tbl + 0x24)));
-    lb_put_comment(((s16) ((temp_s2 + 0x5E))), ((s16) (((((s16) (temp_s0_7))) - 2))), (*(void **)&cw) + ((*(u8 *)((u8 *)&game_w + 0x3A)) * 0x62) + 0x724, 1);
+    lb_put_comment((s32) (((s16) ((temp_s2 + 0x5E)))), (s32) (((s16) (((((s16) (temp_s0_7))) - 2)))), (*(void **)&cw) + ((*(u8 *)((u8 *)&game_w + 0x3A)) * 0x62) + 0x724, 1);
 }
 

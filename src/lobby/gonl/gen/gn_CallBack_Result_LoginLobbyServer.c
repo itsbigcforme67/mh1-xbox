@@ -19,7 +19,7 @@ extern u8 my_user_handle;
 extern u8 my_user_id;
 extern u8 my_user_mini_data;
 
-void CallBack_Result_LoginLobbyServer(s64 arg0) {
+void CallBack_Result_LoginLobbyServer(s64 arg0, s32 unused_a1, s32 arg2, s32 arg3) {
     u8 g_frame[0x20] __attribute__((aligned(16)));   /* G's stack frame */
 #define sp18 (*(s64 *)(g_frame + 0x18))
     s32 temp_a0;
@@ -50,7 +50,7 @@ void CallBack_Result_LoginLobbyServer(s64 arg0) {
                 (*(s8 *)((u8 *)((*(void **)&cw)) + 0xB9D)) = 0;
                 (*(s32 *)((u8 *)((*(void **)&cw)) + 0xFA68)) = 0xE10;
                 (*(s8 *)((u8 *)((*(void **)&cw)) + 0xFA65)) = 0;
-                lobby_func_0058BAA0(&my_user_mini_data);
+                lobby_func_0058BAA0(&my_user_mini_data, (s32) (*(u8 *)((u8 *)&CnetWork + 0x5)), arg2, arg3);
                 temp_v0 = (*(void **)&cw);
                 cnLBS_Send_LoginUserAccount(temp_v0 + 0x1C0, temp_v0 + 0x1C8, &my_user_mini_data);
                 return;
@@ -60,7 +60,7 @@ void CallBack_Result_LoginLobbyServer(s64 arg0) {
                 (*(s8 *)((u8 *)((*(void **)&cw)) + 0xB9D)) = 0;
                 (*(s32 *)((u8 *)((*(void **)&cw)) + 0xFA68)) = 0xE10;
                 (*(s8 *)((u8 *)((*(void **)&cw)) + 0xFA65)) = 0;
-                lobby_func_0058BAA0(&my_user_mini_data);
+                lobby_func_0058BAA0(&my_user_mini_data, (s32) (*(u8 *)((u8 *)&CnetWork + 0x5)), arg2, arg3);
                 cnLBS_Send_LoginUserAccount(&my_user_id, &my_user_handle, &my_user_mini_data);
                 return;
             }
@@ -107,7 +107,7 @@ void CallBack_Result_LoginLobbyServer(s64 arg0) {
             cnLBS_Get_ServerMessage((*(void **)&cw) + 0xF75D);
             return;
         case 9:                                     /* switch 3 */
-            To_LogOut(4);
+            To_LogOut(4, (s32) (((s8 *)&sp18)[1]), arg2, arg3);
         default:                                    /* switch 1 */
             return;
         }

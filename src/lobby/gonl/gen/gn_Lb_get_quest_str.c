@@ -7,12 +7,12 @@ s32 lobby_func_00559C30();
 s32 lobby_func_00559CE0();
 extern u8 quest_title;
 
-void *Lb_get_quest_str(s32 arg0, s32 arg1) {
+void *Lb_get_quest_str(s32 arg0, s32 arg1, s32 arg2, s32 arg3) {
     s32 temp_s0;
     u8 *temp_a1;
 
-    temp_s0 = lobby_func_00559C30(arg0);
-    temp_a1 = (u8 *)&(*(u8 *)((u8 *)&quest_title + 0x30)) + ((((s8) (lobby_func_00559CE0(arg0)))) << 9);
+    temp_s0 = lobby_func_00559C30(arg0, arg1, arg2, arg3);
+    temp_a1 = &(*(u8 *)((u8 *)&quest_title + 0x30)) + (((s32) (lobby_func_00559CE0(arg0, M2C_ERROR(/* Read from unset register $a1 */), M2C_ERROR(/* Read from unset register $a2 */), M2C_ERROR(/* Read from unset register $a3 */)) << 0x38) >> 0x38) << 9);
     return *((*(s32 *)((u8 *)(temp_s0) + 0x18)) + temp_a1 + (arg1 * 4)) + temp_a1;
 }
 

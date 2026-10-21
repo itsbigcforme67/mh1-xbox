@@ -8,11 +8,11 @@ s32 lobby_func_00559C30();
 extern u8 cw;
 extern void *g_lb_636814;
 
-void *lobby_func_00559EB0(s32 arg0) {
+void *lobby_func_00559EB0(s32 arg0, s32 arg1, s32 arg2, s32 arg3) {
     s32 temp_a0;
     s32 temp_v0;
 
-    temp_v0 = lobby_func_00559C30(arg0);
+    temp_v0 = lobby_func_00559C30(arg0, arg1, arg2, arg3);
     temp_a0 = arg0 & 0xFFFF;
     if (temp_a0 >= 0xC350) {
         if (temp_v0 == 0) {
@@ -22,7 +22,7 @@ void *lobby_func_00559EB0(s32 arg0) {
             if ((*(s8 *)((u8 *)((*(void **)&cw)) + 0xB97)) == 0) {
                 goto block_6;
             }
-            return Lb_get_quest_str(arg0, 0);
+            return Lb_get_quest_str(arg0, 0, M2C_ERROR(/* Read from unset register $a2 */), M2C_ERROR(/* Read from unset register $a3 */));
         }
 block_6:
         return g_lb_636814;

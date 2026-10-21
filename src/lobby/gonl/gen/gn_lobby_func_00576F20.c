@@ -26,12 +26,12 @@ s32 font_print();                 /* extern */
 s32 func_0012BDD0();                      /* extern */
 s32 sprintf();    /* extern */
 extern s32 lb_ibox_str;
-extern s32 g_lb_63E2B8;
+extern u8 g_lb_63E2B8;
 extern u16 g_lb_6B4510;
 extern s8 g_lb_6B451C;
 extern u8 g_lb_6B451D;
 extern u8 g_lb_6B451E;
-extern s32 g_main_3034B4;
+extern u8 g_main_3034B4;
 extern u8 D_00528A80;
 extern u8 LobbyInfo;
 extern u8 lit_2316;
@@ -56,20 +56,20 @@ void lobby_func_00576F20(void) {
 
     flfntSetSize(0x12, 0x12);
     font_set_palette(0);
-    temp_s0 = lobby_func_00559FF0((*(s32 *)&g_main_2EFBC0) + ((*(s16 *)((u8 *)&tl_member_buff + 0x1380)) * 0x10) + 4) & 0xFFFF;
-    temp_s4 = lobby_func_00559C30(temp_s0);
+    temp_s0 = lobby_func_00559FF0((*(s32 *)&g_main_2EFBC0) + ((*(s16 *)((u8 *)&tl_member_buff + 0x1380)) * 0x10) + 4, M2C_ERROR(/* Read from unset register $a1 */), M2C_ERROR(/* Read from unset register $a2 */), M2C_ERROR(/* Read from unset register $a3 */)) & 0xFFFF;
+    temp_s4 = lobby_func_00559C30(temp_s0, M2C_ERROR(/* Read from unset register $a1 */), M2C_ERROR(/* Read from unset register $a2 */), M2C_ERROR(/* Read from unset register $a3 */));
     flfntLocate(0xE2, 0x82);
     font_print((*(s32 * *)((u8 *)&tl_msg_tbl + 0x28)));
     flfntLocate(0x15A, 0x82);
-    font_set_palette((s32) (*(s32 *)((u8 *)&g_main_3034B4 + (g_lb_6B4510 * 0x15C))));
-    font_print((u8 *)&LobbyInfo + ((g_lb_6B4510 - 1) * 0x15C) + 0x1A);
+    font_set_palette((s32) *(&g_main_3034B4 + (g_lb_6B4510 * 0x15C)));
+    font_print(&LobbyInfo + ((g_lb_6B4510 - 1) * 0x15C) + 0x1A);
     font_set_palette(0);
     temp_s3 = ((s16) (0x98));
     flfntLocate(0xE2, (s32) temp_s3);
     font_print(&lit_2316, (*(s32 *)((u8 *)&tl_msg_tbl + 0x2C)));
     flfntLocate(0x15A, (s32) temp_s3);
-    font_set_palette(lobby_func_00559E20(temp_s0));
-    func_0012BDD0(lobby_func_00559EB0(temp_s0));
+    font_set_palette(lobby_func_00559E20(temp_s0, M2C_ERROR(/* Read from unset register $a1 */), M2C_ERROR(/* Read from unset register $a2 */), M2C_ERROR(/* Read from unset register $a3 */)));
+    func_0012BDD0(lobby_func_00559EB0(temp_s0, M2C_ERROR(/* Read from unset register $a1 */), M2C_ERROR(/* Read from unset register $a2 */), M2C_ERROR(/* Read from unset register $a3 */)));
     font_set_palette(0);
     if ((*(u8 *)((u8 *)((((*(s16 *)((u8 *)&tl_member_buff + 0x1380)) * 0x10) + (*(s32 *)&g_main_2EFBC0))) + 0x10)) != 0) {
         Lb_put_icon(0x142, (s32) temp_s3, 0x2D, -1);
@@ -114,7 +114,7 @@ void lobby_func_00576F20(void) {
     font_print(&lit_2316, (*(s32 *)((u8 *)&tl_msg_tbl + 0x38)));
     flfntLocate(0x15A, (s32) temp_s3_4);
     if (temp_s4 != 0) {
-        font_print(&lit_2316, (*(s32 *)((u8 *)&D_00528A80 + ((*(u8 *)((u8 *)(temp_s4) + 0x1C)) * 4))));
+        font_print(&lit_2316, *(&D_00528A80 + ((*(u8 *)((u8 *)(temp_s4) + 0x1C)) * 4)));
     } else {
         font_print(&lit_2316, (*(s32 *)((u8 *)&shop_process2_help + 0x1C)));
     }

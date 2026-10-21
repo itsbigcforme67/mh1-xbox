@@ -4,7 +4,7 @@
 #include "../gonl.h"
 
 void * strcpy();
-extern s32 g_lb_654E00;
+extern u8 g_lb_654E00;
 
 void lobby_func_0059F6C0(void *arg0) {
     strcpy(&g_lb_654E00, arg0);

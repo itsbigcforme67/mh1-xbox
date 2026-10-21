@@ -5,7 +5,7 @@
 
 s32 To_LogOut();
 extern u8 cw;
-s32 Check_CallBackWait(void) {
+s32 Check_CallBackWait(s32 unused_a0, s32 arg1, s32 arg2, s32 arg3) {
     u8 *temp_v1;
     u8 *temp_v1_2;
 
@@ -14,7 +14,7 @@ s32 Check_CallBackWait(void) {
     temp_v1_2 = (*(void **)&cw);
     if ((*(s32 *)((u8 *)(temp_v1_2) + 0xFA68)) < 0) {
         (*(s8 *)((u8 *)(temp_v1_2) + 0xFA65)) = 1;
-        To_LogOut(4);
+        To_LogOut(4, arg1, arg2, arg3);
         return 1;
     }
     return 0;

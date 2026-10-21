@@ -17,9 +17,9 @@ extern u8 tl_member_buff;
 s32 font_print(); /* extern */
 s32 sprintf(); /* extern */
 extern void *g_lb_636B4C;
-extern s32 g_lb_63E2A8;
+extern u8 g_lb_63E2A8;
 extern s16 g_lb_6B42B8;
-extern s32 g_main_302CB0;
+extern u8 g_main_302CB0;
 extern u8 lit_2316;
 
 void lobby_func_005775C0(s32 arg0, s32 arg1, s32 arg2, s32 arg3) {
@@ -41,24 +41,24 @@ void lobby_func_005775C0(s32 arg0, s32 arg1, s32 arg2, s32 arg3) {
     u8 *var_s3;
 
     if (g_lb_6B42B8 == 0) {
-        lobby_func_005737C0(g_lb_636B4C);
+        lobby_func_005737C0(g_lb_636B4C, arg1, arg2, arg3);
         return;
     }
-    put_main_cursor2(arg0, arg1, (s32) (((s8) (arg2))));
-    lobby_func_005791D0(3);
-    spB0 = (s32) (((s8) (arg2)));
-    temp_a0 = ((s16) (arg3));
-    temp_v0 = ((s16) (arg0));
+    put_main_cursor2(arg0, arg1, (s32) (((s8) ((s32) arg2))), arg3);
+    lobby_func_005791D0(3, M2C_ERROR(/* Read from unset register $a1 */), M2C_ERROR(/* Read from unset register $a2 */), M2C_ERROR(/* Read from unset register $a3 */));
+    spB0 = (s32) (((s8) ((s32) arg2)));
+    temp_a0 = ((s16) ((s32) arg3));
+    temp_v0 = ((s16) ((s32) arg0));
     var_s5 = 0;
     spA0 = (s32) temp_v0;
     var_s4 = ((s16) ((arg1 + 0x3E)));
     var_s1 = temp_a0 * 7;
     temp_s0 = temp_v0 + 0xA;
-    var_s3 = (u8 *)&g_main_302CB0 + (temp_a0 * 0x150);
+    var_s3 = &g_main_302CB0 + (temp_a0 * 0x150);
     do {
         temp_s2 = ((s16) (var_s5));
         temp_s6 = temp_s2 != spB0;
-        if ((var_s1 < 0x32) && ((*(s32 *)((u8 *)&g_main_302CB0 + (var_s1 * 0x30))) != 0)) {
+        if ((var_s1 < 0x32) && (*(&g_main_302CB0 + (var_s1 * 0x30)) != 0)) {
             han2zen(var_s3, &spC0);
             flfntLocate((s32) (((s16) (temp_s0))), (s32) var_s4);
             temp_a1 = (*(s32 *)&cw);

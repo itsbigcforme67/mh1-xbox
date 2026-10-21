@@ -19,7 +19,7 @@ void lb_set_pl_status(s32 arg0, void *arg1) {
     u8 temp_v1_2;
     u8 *temp_s1;
 
-    temp_s1 = (u8 *)&player_work + ((arg0 & 0xFF) * 0xA00);
+    temp_s1 = &player_work + ((arg0 & 0xFF) * 0xA00);
     flMemcpy(&sp30, arg1, 0xA);
     if (((*(u8 *)((u8 *)(&sp30) + 8)) == 0) || ((*(u8 *)((u8 *)(temp_s1) + 0x736)) == 0x4D)) {
         (*(s8 *)((u8 *)(temp_s1) + 0x3E8)) = 1;
@@ -33,8 +33,8 @@ void lb_set_pl_status(s32 arg0, void *arg1) {
         (*(f32 *)((u8 *)(temp_s1) + 0x800)) = (f32) (*(s16 *)((u8 *)(&sp30) + 0));
         (*(f32 *)((u8 *)(temp_s1) + 0x808)) = (f32) (*(s16 *)((u8 *)(&sp30) + 2));
         (*(u8 *)((u8 *)(temp_s1) + 0x8EC)) = (u8) (*(u8 *)((u8 *)(&sp30) + 8));
-        Lb_Pl_adj_calc(temp_s1, 0xA);
-        if (lobby_func_00595530((s32) (*(u8 *)((u8 *)(&sp30) + 6)), (s32) (*(u8 *)((u8 *)(&sp30) + 7))) == 1) {
+        Lb_Pl_adj_calc(temp_s1, 0xA, M2C_ERROR(/* Read from unset register $a2 */), M2C_ERROR(/* Read from unset register $a3 */));
+        if (lobby_func_00595530((s32) (*(u8 *)((u8 *)(&sp30) + 6)), (s32) (*(u8 *)((u8 *)(&sp30) + 7)), M2C_ERROR(/* Read from unset register $a2 */), M2C_ERROR(/* Read from unset register $a3 */)) == 1) {
             temp_v1_2 = (*(u8 *)((u8 *)(&sp30) + 5));
             if (((s32) temp_v1_2 > 0) && ((s32) temp_v1_2 < 0xB)) {
                 (*(u16 *)((u8 *)&lb_sys + 0x14)) |= 1 << temp_v1_2;
@@ -53,7 +53,7 @@ void lb_set_pl_status(s32 arg0, void *arg1) {
             }
         } else {
 block_22:
-            Lb_act_set(temp_s1, (s32) (*(u8 *)((u8 *)(&sp30) + 6)), temp_a3 & 0xFF);
+            Lb_act_set(temp_s1, (s32) (*(u8 *)((u8 *)(&sp30) + 6)), temp_a3 & 0xFF, (s32) temp_a3);
         }
     }
 }

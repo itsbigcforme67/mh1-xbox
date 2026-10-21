@@ -25,8 +25,8 @@ void lobby_func_00574AE0(s32 arg0, s32 arg1, s32 arg2) {
     s8 *var_s4;
 
     lobby_func_005799F0(arg0, arg1, (s32) (((s8) (arg2))), -0xC5D7E8, -0x418C);
-    lobby_func_005791D0(4);
-    temp_s1 = (((s16) (arg0))) + 0xA;
+    lobby_func_005791D0(4, M2C_ERROR(/* Read from unset register $a1 */), M2C_ERROR(/* Read from unset register $a2 */), M2C_ERROR(/* Read from unset register $a3 */));
+    temp_s1 = (((s16) ((s32) arg0))) + 0xA;
     var_s3 = 0;
     var_s4 = &(*(s8 *)((u8 *)&BsProxyUrlstr + 0x110));
     var_s5 = ((s16) ((arg1 + 0x3E)));
@@ -44,7 +44,7 @@ void lobby_func_00574AE0(s32 arg0, s32 arg1, s32 arg2) {
                 flfntLocate(0x1F4, (s32) var_s5);
                 font_print(&lit_2316, &sp80);
             }
-            if ((((s16) (lobby_func_005C1560(&(*(s8 *)((u8 *)&BsProxyUrlstr + 0x110)), 8, var_s4)))) != -1) {
+            if (((s32) (lobby_func_005C1560(&(*(s8 *)((u8 *)&BsProxyUrlstr + 0x110)), 8, var_s4, M2C_ERROR(/* Read from unset register $a3 */)) << 0x30) >> 0x30) != -1) {
                 Lb_put_icon((s32) (((s16) (temp_s1))), (s32) var_s5, 0x2C, -1);
             }
         }

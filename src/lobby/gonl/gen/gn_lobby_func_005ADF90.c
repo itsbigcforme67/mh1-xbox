@@ -5,7 +5,7 @@
 
 void * memset();
 extern u8 CnetSys_w;
-extern s32 g_lb_72E068;
+extern u8 g_lb_72E068;
 
 void lobby_func_005ADF90(void *arg0) {
     (*(u8 *)((u8 *)(arg0) + 0x22)) = (u8) ((*(u8 *)((u8 *)(arg0) + 0x22)) + 1);

@@ -17,8 +17,8 @@ void id_select_00(void *arg0) {
 
     Lbc_set_prim(0, 0, (s32) transOtSelectHandleName, 0);
     (*(u8 *)((u8 *)(arg0) + 0x22)) = (u8) ((*(u8 *)((u8 *)(arg0) + 0x22)) + 1);
-    SetSceneTitle(4);
-    SetHelpLineMsg(1);
+    SetSceneTitle(4, M2C_ERROR(/* Read from unset register $a1 */), M2C_ERROR(/* Read from unset register $a2 */), M2C_ERROR(/* Read from unset register $a3 */));
+    SetHelpLineMsg(1, M2C_ERROR(/* Read from unset register $a1 */), M2C_ERROR(/* Read from unset register $a2 */), M2C_ERROR(/* Read from unset register $a3 */));
     (*(s8 *)((u8 *)(arg0) + 0x29)) = 0;
     var_s2 = 0;
     var_s1 = 0;

@@ -24,8 +24,8 @@ s32 sprintf();    /* extern */
 extern s32 lb_ibox_str;
 extern void *g_lb_636B50;
 extern void *g_lb_636DF8;
-extern s32 g_lb_63E268;
-extern s32 g_lb_63E2B8;
+extern u8 g_lb_63E268;
+extern u8 g_lb_63E2B8;
 extern u8 lit_2316;
 
 void lobby_func_00576A70(void) {
@@ -46,10 +46,10 @@ void lobby_func_00576A70(void) {
 
     if ((*(u8 **)&g_main_2EFBC0) != NULL) {
         flfntSetSize(0x12, 0x12);
-        lobby_func_005791D0(6);
+        lobby_func_005791D0(6, M2C_ERROR(/* Read from unset register $a1 */), M2C_ERROR(/* Read from unset register $a2 */), M2C_ERROR(/* Read from unset register $a3 */));
         var_s4 = 0x78;
         if (*(*(u8 **)&g_main_2EFBC0) == 0) {
-            lobby_func_005737C0(g_lb_636B50);
+            lobby_func_005737C0(g_lb_636B50, M2C_ERROR(/* Read from unset register $a1 */), M2C_ERROR(/* Read from unset register $a2 */), M2C_ERROR(/* Read from unset register $a3 */));
         }
         var_s3 = 0;
         var_s5 = (*(s16 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x18))) + 0x1364)) * 7;
@@ -63,10 +63,10 @@ loop_4:
                 font_print_double(0x118, (s32) var_s4, 1, 4, g_lb_636DF8);
             }
         } else {
-            temp_s0 = lobby_func_00559FF0(temp_a1 + var_s2 + 4) & 0xFFFF;
+            temp_s0 = lobby_func_00559FF0(temp_a1 + var_s2 + 4, (s32) temp_a1, M2C_ERROR(/* Read from unset register $a2 */), M2C_ERROR(/* Read from unset register $a3 */)) & 0xFFFF;
             flfntLocate(0xF4, (s32) var_s4);
-            font_set_palette(lobby_func_00559E20(temp_s0));
-            func_0012BDD0(lobby_func_00559EB0(temp_s0));
+            font_set_palette(lobby_func_00559E20(temp_s0, M2C_ERROR(/* Read from unset register $a1 */), M2C_ERROR(/* Read from unset register $a2 */), M2C_ERROR(/* Read from unset register $a3 */)));
+            func_0012BDD0(lobby_func_00559EB0(temp_s0, M2C_ERROR(/* Read from unset register $a1 */), M2C_ERROR(/* Read from unset register $a2 */), M2C_ERROR(/* Read from unset register $a3 */)));
             font_set_palette(0);
             temp_a2 = ((s16) ((Lb_back_money(temp_s0) & 0xFF)));
             if (temp_a2 != 0) {

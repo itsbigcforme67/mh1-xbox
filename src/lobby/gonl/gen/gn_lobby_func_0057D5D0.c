@@ -28,9 +28,9 @@ extern u8 textLobbyTbl;
 s32 Lb_put_button();   /* extern */
 s32 font_print();            /* extern */
 s32 func_0012A800();                       /* extern */
-extern s32 g_lb_5FBBF0;
+extern u8 g_lb_5FBBF0;
 extern void *g_lb_636CD0;
-extern s32 g_lb_63E530;
+extern u8 g_lb_63E530;
 extern u8 PlazaInfo;
 
 void lobby_func_0057D5D0(void *arg0) {
@@ -67,7 +67,7 @@ void lobby_func_0057D5D0(void *arg0) {
     void **var_s0;
 
     font_set_stack_no((*(s32 *)((u8 *)(arg0) + 0x18)));
-    lobby_func_005936B0();
+    lobby_func_005936B0(M2C_ERROR(/* Read from unset register $a0 */), M2C_ERROR(/* Read from unset register $a1 */), M2C_ERROR(/* Read from unset register $a2 */), M2C_ERROR(/* Read from unset register $a3 */));
     reload_tex(1, 0x17B);
     SetTextureStage(0x17B);
     flfntSetSize(0x12, 0x12);
@@ -84,7 +84,7 @@ void lobby_func_0057D5D0(void *arg0) {
         } else {
             var_s4 = 0;
         }
-        font_print_double((s32) (((s16) (lobby_func_005935C0(*var_s0, (s32) (*(s16 *)((u8 *)(var_s1) + 0)), 0x12)))), (s32) (*(s16 *)((u8 *)(var_s1) + 2)), 1, var_s4, *var_s0);
+        font_print_double((s32) ((s32) (lobby_func_005935C0(*var_s0, (s32) (*(s16 *)((u8 *)(var_s1) + 0)), 0x12, M2C_ERROR(/* Read from unset register $a3 */)) << 0x30) >> 0x30), (s32) (*(s16 *)((u8 *)(var_s1) + 2)), 1, var_s4, *var_s0);
         var_s3 += 1;
         var_s2 += 0x14;
         var_s1 += 4;
@@ -153,9 +153,9 @@ void lobby_func_0057D5D0(void *arg0) {
         var_s7 += 1;
         var_s4_2 += 4;
     } while (var_s7 < 5);
-    DispSceneTitle();
+    DispSceneTitle(M2C_ERROR(/* Read from unset register $a0 */), M2C_ERROR(/* Read from unset register $a1 */), M2C_ERROR(/* Read from unset register $a2 */), M2C_ERROR(/* Read from unset register $a3 */));
     if ((s32) (*(u8 *)((u8 *)((*(void **)&cw)) + 0xB9A)) >= 2) {
-        DispHelpLine();
+        DispHelpLine(M2C_ERROR(/* Read from unset register $a0 */), M2C_ERROR(/* Read from unset register $a1 */), M2C_ERROR(/* Read from unset register $a2 */), M2C_ERROR(/* Read from unset register $a3 */));
     }
     if ((s32) (*(u8 *)&BsLbsCount) >= 2) {
         lobby_func_005926C0(0, 0x54, 0xC8, 0x1A, 0x80006000, 0);

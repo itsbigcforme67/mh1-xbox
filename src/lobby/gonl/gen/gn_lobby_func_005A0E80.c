@@ -10,12 +10,12 @@ s64 lobby_func_005935C0();
 extern u8 System_timer;
 extern u8 cw;
 extern u8 game_w;
-void lobby_func_005A0E80(void *arg0) {
+void lobby_func_005A0E80(void *arg0, s32 unused_a1, s32 unused_a2, s32 arg3) {
     s32 temp_s0;
     u8 *temp_v1;
 
     if (((s32) (*(u16 *)&System_timer) % 40) < 0x15) {
-        temp_s0 = ((s16) (lobby_func_005935C0(arg0, 0x1A0, 0x12)));
+        temp_s0 = ((s16) (lobby_func_005935C0(arg0, 0x1A0, 0x12, arg3)));
         flfntSetSize(0x14, 0x14);
         font_set_palette(0);
         temp_v1 = (*(void **)&cw);

@@ -34,8 +34,8 @@ void lobby_func_005778B0(s32 arg0, s32 arg1) {
         temp_s1 = ((s16) (arg0));
         put_titles(((s16) ((temp_s1 + 0xA))), ((s16) ((temp_s0 + 0x28))), (*(s32 *)((u8 *)&tl_msg_tbl + 0x10)), temp_a3);
         temp_s0_2 = ((s16) ((temp_s0 + 0x28)));
-        lobby_func_00578A90(((s16) ((temp_s1 + 0xA))), (s32) (((s16) ((temp_s0_2 + 0x16)))));
-        put_mail_input_square(((s16) ((temp_s1 + 0xA))), ((s16) ((temp_s0_2 - 0x16))));
+        lobby_func_00578A90((s32) (((s16) ((temp_s1 + 0xA)))), (s32) (((s16) ((temp_s0_2 + 0x16)))), M2C_ERROR(/* Read from unset register $a2 */), M2C_ERROR(/* Read from unset register $a3 */));
+        put_mail_input_square((s32) (((s16) ((temp_s1 + 0xA)))), (s32) (((s16) ((temp_s0_2 - 0x16)))), M2C_ERROR(/* Read from unset register $a2 */), M2C_ERROR(/* Read from unset register $a3 */));
         if (((*(s8 *)((u8 *)((*(void **)&cw)) + 0xF00)) != 0) && (temp_v1_2 = (*(void **)&g_main_2EFBAC), (((*(u8 *)((u8 *)(temp_v1_2) + 0x23E)) + ((*(u8 *)((u8 *)(temp_v1_2) + 0x23C)) + (*(u8 *)((u8 *)(temp_v1_2) + 0x23D)))) != 3))) {
             font_set_palette(0);
         } else {
@@ -47,7 +47,7 @@ void lobby_func_005778B0(s32 arg0, s32 arg1) {
     case 2:
     case 3:
     case 4:
-        lobby_func_005775C0(arg0, arg1, (s32) (*(s8 *)((u8 *)(temp_a3) + 0x238)), (s32) (*(s16 *)((u8 *)(temp_a3) + 0x22E)));
+        lobby_func_005775C0((s32) arg0, (s32) arg1, (s32) (*(s8 *)((u8 *)(temp_a3) + 0x238)), (s32) (*(s16 *)((u8 *)(temp_a3) + 0x22E)));
         /* fallthrough */
     default:
         return;

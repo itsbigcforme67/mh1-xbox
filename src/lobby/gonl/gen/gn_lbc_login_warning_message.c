@@ -11,6 +11,7 @@ s32 cnWrap_SoundRequest();
 s32 flfntSetSize();
 void * memcpy();
 extern u8 cw;
+extern u8 jtbl_548_0065E870;
 extern u8 lb_rule_member;
 extern u8 pNet;
 s32 check_warning_level(); /* extern */
@@ -55,11 +56,11 @@ void lbc_login_warning_message(void) {
         temp_v1 = (*(void **)&cw);
         if ((*(u8 *)((u8 *)(temp_v1) + 0xFA8A)) != 0) {
             (*(s32 *)((u8 *)(temp_v1) + 0xBB8)) = 8;
-            Lb_eat_to_bell((s32) ((*(void **)&cw) + 0xFA8E));
+            Lb_eat_to_bell((s32) ((*(void **)&cw) + 0xFA8E), (s32) temp_a1, (s32) temp_a2, (s32) temp_a3);
             return;
         }
         memcpy(temp_v1 + 0xF75D, temp_v1 + 0xFA8E, 0x300);
-        To_LogOut(5);
+        To_LogOut(5, M2C_ERROR(/* Read from unset register $a1 */), M2C_ERROR(/* Read from unset register $a2 */), M2C_ERROR(/* Read from unset register $a3 */));
         return;
     case 3:
         (*(s8 *)((u8 *)((*(void **)&pNet)) + 0x2D)) = 1;
@@ -81,7 +82,7 @@ void lbc_login_warning_message(void) {
         }
         if (temp_a4 & 0xFFFF & 0x20) {
             (*(u8 *)((u8 *)(temp_a1_2) + 0xB9C)) = (u8) ((*(u8 *)((u8 *)(temp_a1_2) + 0xB9C)) + 1);
-            cnWrap_SoundRequest(0);
+            cnWrap_SoundRequest(0, (s32) temp_a1_2, (s32) temp_a2, (s32) temp_a3);
         }
         cnWrap_SetFontColor(5);
         flfntSetSize(0x14, 0x14);
@@ -94,10 +95,10 @@ void lbc_login_warning_message(void) {
         cnLBS_Answer_LoginWarningMessage(1, temp_a1, temp_a2, temp_a3, temp_a4);
         return;
     case 5:
-        Check_CallBackWait();
+        Check_CallBackWait((s32) &jtbl_548_0065E870, (s32) temp_a1, (s32) temp_a2, (s32) temp_a3);
         return;
     default:
-        To_LogOut(4);
+        To_LogOut(4, (s32) temp_a1, (s32) temp_a2, (s32) temp_a3);
         break;
     }
 }

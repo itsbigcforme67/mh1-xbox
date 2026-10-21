@@ -16,7 +16,7 @@ void _cnet_RecvFromLbs_NoticeMailMessage(void) {
     temp_v1 = (*(void **)&cw);
     (*(u8 *)((u8 *)(temp_v1) + 0xB9B)) = (u8) ((*(u8 *)((u8 *)(temp_v1) + 0xB9B)) + 1);
     cnWrap_BgmVolume(0);
-    Lbc_init_network_work();
+    Lbc_init_network_work(M2C_ERROR(/* Read from unset register $a0 */), M2C_ERROR(/* Read from unset register $a1 */), M2C_ERROR(/* Read from unset register $a2 */), M2C_ERROR(/* Read from unset register $a3 */));
     Lbc_set_prim((s32) &put_back, 0, 0, 0);
     fade_set(0xA);
 }

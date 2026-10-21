@@ -12,7 +12,7 @@ s32 lobby_func_005AB8B0(s32 unused_a0, s32 arg1, s32 arg2) {
         memset(&(*(u8 *)((u8 *)&CnetSys_w + 0xDE8)), 0, 0x28);
         (*(u8 *)((u8 *)(&(*(u8 *)((u8 *)&CnetSys_w + 0xDE8))) + 0x20)) = 1U;
         (*(s32 *)((u8 *)(&(*(u8 *)((u8 *)&CnetSys_w + 0xDE8))) + 4)) = arg2;
-        (*(s32 (**)())((u8 *)(&(*(u8 *)((u8 *)&CnetSys_w + 0xDE8))) + 0)) = lobby_func_005AB940;
+        (*(s32 (**)(s32, s32, s32, s32))((u8 *)(&(*(u8 *)((u8 *)&CnetSys_w + 0xDE8))) + 0)) = lobby_func_005AB940;
         (*(s32 *)((u8 *)(&(*(u8 *)((u8 *)&CnetSys_w + 0xDE8))) + 0x18)) = (s32) (arg1 & 0x8F);
         return 0;
     }

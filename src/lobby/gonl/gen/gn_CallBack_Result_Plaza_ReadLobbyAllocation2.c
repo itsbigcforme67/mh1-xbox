@@ -10,11 +10,11 @@ extern u8 ClassInfo;
 extern u8 cw;
 s32 cnLBS_Get_PlazaCount();            /* extern */
 s32 cnLBS_Get_PlazaName();           /* extern */
-s32 cnLBS_Get_PlazaStatus();         /* extern */
-s32 cnLBS_Get_mhPlazaJoinUser(); /* extern */
+s32 gonl_Get_LobbyStatus();         /* extern */
+s32 gonl_Get_LobbyJoinUser(); /* extern */
 extern u8 LobbyInfo;
 
-void CallBack_Result_Plaza_ReadLobbyAllocation2(s64 arg0) {
+void CallBack_Result_Plaza_ReadLobbyAllocation2(s64 arg0, s32 unused_a1, s32 arg2, s32 arg3) {
     u8 g_frame[0x40] __attribute__((aligned(16)));   /* G's stack frame */
 #define sp38 (*(s64 *)(g_frame + 0x38))
     u8 *var_s0;   /* (s32 *) */
@@ -37,11 +37,11 @@ void CallBack_Result_Plaza_ReadLobbyAllocation2(s64 arg0) {
                     do {
                         temp_v0 = var_s1 + 1;
                         (*(s16 *)((u8 *)(var_s0) + 4)) = temp_v0;
-                        cnLBS_Get_PlazaStatus(temp_v0 & 0xFFFF, var_s0 + 0x16);
-                        lobby_func_005AC580((var_s1 + 1) & 0xFFFF, var_s0);
-                        cnLBS_Get_mhPlazaJoinUser((var_s1 + 1) & 0xFFFF, var_s0 + 6, var_s0 + 0x12);
+                        gonl_Get_LobbyStatus(temp_v0 & 0xFFFF, var_s0 + 0x16);
+                        lobby_func_005AC580((var_s1 + 1) & 0xFFFF, var_s0, M2C_ERROR(/* Read from unset register $a2 */), M2C_ERROR(/* Read from unset register $a3 */));
+                        gonl_Get_LobbyJoinUser((var_s1 + 1) & 0xFFFF, var_s0 + 6, var_s0 + 0x12);
                         cnLBS_Get_PlazaName((var_s1 + 1) & 0xFFFF, var_s0 + 0x1A);
-                        lobby_func_005AC230((var_s1 + 1) & 0xFFFF, var_s0 + 8);
+                        lobby_func_005AC230((var_s1 + 1) & 0xFFFF, var_s0 + 8, M2C_ERROR(/* Read from unset register $a2 */), M2C_ERROR(/* Read from unset register $a3 */));
                         var_s1 += 1;
                         var_s0 += 0x15C;
                     } while (var_s1 < (s32) (*(u16 *)((u8 *)&ClassInfo + 0x6)));
@@ -50,7 +50,7 @@ void CallBack_Result_Plaza_ReadLobbyAllocation2(s64 arg0) {
                 (*(u8 *)((u8 *)(temp_a0) + 0xB9D)) = (u8) ((*(u8 *)((u8 *)(temp_a0) + 0xB9D)) + 1);
                 return;
             }
-            To_LogOut(4);
+            To_LogOut(4, (s32) (((s8 *)&sp38)[1]), arg2, arg3);
         }
     }
 }

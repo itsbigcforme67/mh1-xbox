@@ -6,7 +6,7 @@
 s32 Quest_clear_bit_ck();
 s32 ran_suu();
 extern u16 D_005E7810;
-extern s32 g_lb_5E7812;
+extern u8 g_lb_5E7812;
 
 s32 lobby_func_005437F0(s32 arg0) {
     s32 temp_a3;
@@ -30,7 +30,7 @@ loop_2:
             return Quest_clear_bit_ck((s32) temp_a0) != 1;
         }
         if (temp_a3 == (*(u16 *)((u8 *)(temp_a2) + 4))) {
-            if ((Quest_clear_bit_ck((s32) temp_a0) == 1) && (Quest_clear_bit_ck((s32) (*(s32 *)((u8 *)&g_lb_5E7812 + (var_a5 * 2)))) == 1)) {
+            if ((Quest_clear_bit_ck((s32) temp_a0) == 1) && (Quest_clear_bit_ck((s32) *(&g_lb_5E7812 + (var_a5 * 2))) == 1)) {
                 return 0;
             }
             return 1;

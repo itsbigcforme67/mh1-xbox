@@ -7,7 +7,7 @@ s32 CallBack_Result_Plaza_ReadAllocation();
 s32 Check_CallBackWait();
 s32 cnLBS_Read_PlazaAllocation();
 extern u8 cw;
-s32 Lbs_ExitAndEnterPlaza(void) {
+s32 Lbs_ExitAndEnterPlaza(s32 unused_a0, s32 arg1, s32 arg2, s32 arg3) {
     u8 temp_v1_2;
     u8 *temp_v1;
 
@@ -19,12 +19,12 @@ s32 Lbs_ExitAndEnterPlaza(void) {
         (*(s32 *)((u8 *)((*(void **)&cw)) + 0xFA68)) = 0xE10;
         (*(s8 *)((u8 *)((*(void **)&cw)) + 0xFA65)) = 0;
         (*(s8 *)((u8 *)((*(void **)&cw)) + 0xBA9)) = 9;
-        cnLBS_Read_PlazaAllocation(0, 0xF, (s32) CallBack_Result_Plaza_ReadAllocation);
+        cnLBS_Read_PlazaAllocation(0, 0xF, (s32) CallBack_Result_Plaza_ReadAllocation, arg3);
 block_13:
     default:
         return 2;
     case 0x1:
-        Check_CallBackWait();
+        Check_CallBackWait(temp_v1 + 0xB9C, arg1, arg2, arg3);
         goto block_13;
     case 0x2:
         (*(u8 *)((u8 *)(temp_v1) + 0xB9C)) = 0U;

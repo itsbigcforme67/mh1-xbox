@@ -6,6 +6,6 @@
 extern u8 Psw;
 
 u16 func_0012D000(s32 arg0) {
-    return (*(s32 *)((u8 *)&(*(u8 *)((u8 *)&Psw + 0x4)) + (arg0 * 0x22)));
+    return *(&(*(u8 *)((u8 *)&Psw + 0x4)) + (arg0 * 0x22));
 }
 

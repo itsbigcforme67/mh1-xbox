@@ -3,15 +3,15 @@
  * tools/build_pc_mhg.sh). */
 #include "../gonl.h"
 
+s32 __cnetSub_Get_RestBgWork();
+s32 cnLBS_Init_LobbyBgProcess();
 s32 lobby_func_005ABED0();
 s32 lobby_func_005AC6B0();
 extern u8 CnetSys_w;
-s32 __cnetSub_Get_RestBgWork();                     /* extern */
-s32 cnLBS_Init_LobbyBgProcess();                /* extern */
 s32 cnLBS_Read_PlazaExplain(); /* extern */
 s32 cnLBS_Read_PlazaJoinUser(); /* extern */
-s32 cnLBS_Read_PlazaName();    /* extern */
-s32 cnLBS_Read_PlazaStatus();  /* extern */
+s32 cnLBS_Read_PlazaName(); /* extern */
+s32 cnLBS_Read_PlazaStatus(); /* extern */
 s32 cnLBS_Read_RoomProperty(); /* extern */
 
 void lobby_func_005ABC70(void *arg0) {
@@ -38,7 +38,7 @@ void lobby_func_005ABC70(void *arg0) {
             cnLBS_Read_PlazaExplain(temp_s0 & 0xFFFF, lobby_func_005ABED0);
         }
         if ((*(s32 *)((u8 *)(arg0) + 0x18)) & 0x10) {
-            lobby_func_005AC6B0(temp_s0 & 0xFFFF, (s32) lobby_func_005ABED0);
+            lobby_func_005AC6B0(temp_s0 & 0xFFFF, (s32) lobby_func_005ABED0, M2C_ERROR(/* Read from unset register $a2 */), M2C_ERROR(/* Read from unset register $a3 */));
         }
         if ((*(s32 *)((u8 *)(arg0) + 0x18)) & 0x80) {
             cnLBS_Read_RoomProperty(temp_s0 & 0xFFFF, lobby_func_005ABED0);

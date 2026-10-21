@@ -17,7 +17,7 @@ void Lb_send_item_result(s32 arg0, s8 arg1) {
 #define sp4C (*(s8 *)(g_frame + 0x4C))
     u8 *temp_s0;
 
-    temp_s0 = (u8 *)&player_work + ((*(u8 *)((u8 *)&game_w + 0x3A)) * 0xA00);
+    temp_s0 = &player_work + ((*(u8 *)((u8 *)&game_w + 0x3A)) * 0xA00);
     memcpy(&sp44, (*(s32 *)&cw) + ((*(u8 *)((u8 *)(temp_s0) + 0x909)) * 0x5C) + 0x38C, 8);
     sp40 = (*(u16 *)((u8 *)(temp_s0) + 0x904));
     sp42 = (*(s16 *)((u8 *)(temp_s0) + 0x906));

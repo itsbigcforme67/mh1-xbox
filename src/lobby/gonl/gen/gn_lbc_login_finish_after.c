@@ -27,6 +27,7 @@ s32 cnLBS_Send_UserMiniData(); /* extern */
 extern u8 my_user_mini_data;
 
 void lbc_login_finish_after(void) {
+    s32 temp_a0_4;
     s32 temp_v0;
     s32 temp_v0_2;
     s32 temp_v0_3;
@@ -36,10 +37,12 @@ void lbc_login_finish_after(void) {
     u8 *temp_a0_2;
     u8 *temp_a0_3;
     u8 *temp_a2;
+    u8 *temp_a3;
     u8 *temp_v1_2;
 
     temp_a2 = (*(void **)&cw);
     temp_a1 = (*(u8 *)((u8 *)(temp_a2) + 0xB9C));
+    temp_a3 = temp_a2 + 0xB9C;
     switch (temp_a1) {
     case 0:
         if ((*(u8 *)((u8 *)&CnetWork + 0x5)) == 3) {
@@ -54,7 +57,7 @@ void lbc_login_finish_after(void) {
             (*(s8 *)((u8 *)((*(void **)&cw)) + 0xB97)) = 0;
         } else {
             (*(s8 *)((u8 *)(temp_a2) + 0xB97)) = 0;
-            cnLBS_Send_LoginFinish(&jtbl_0063E490, temp_a1, temp_a2, temp_a2 + 0xB9C);
+            cnLBS_Send_LoginFinish(&jtbl_0063E490, temp_a1, temp_a2, temp_a3);
             (*(u8 *)((u8 *)((*(void **)&cw)) + 0xB9C)) = 2U;
             (*(s8 *)((u8 *)((*(void **)&cw)) + 0xB9D)) = 0;
             (*(s8 *)((u8 *)((*(void **)&cw)) + 0xB70)) = 1;
@@ -71,7 +74,7 @@ block_39:
                 temp_v1_2 = (*(void **)&cw);
                 (*(u8 *)((u8 *)(temp_v1_2) + 0xB9C)) = (u8) ((*(u8 *)((u8 *)(temp_v1_2) + 0xB9C)) + 1);
                 cnLBS_Send_LoginFinish();
-                SetDialogData(0x19);
+                SetDialogData(0x19, M2C_ERROR(/* Read from unset register $a1 */), M2C_ERROR(/* Read from unset register $a2 */), M2C_ERROR(/* Read from unset register $a3 */));
                 (*(s8 *)((u8 *)((*(void **)&pNet)) + 0x2D)) = 0;
                 (*(s8 *)((u8 *)((*(void **)&cw)) + 0xB70)) = 1;
                 return;
@@ -82,7 +85,7 @@ block_39:
         goto block_39;
     case 2:
         (*(s8 *)((u8 *)((*(void **)&pNet)) + 0x2D)) = 1;
-        temp_v0 = lobby_func_00581210();
+        temp_v0 = lobby_func_00581210((s32) &jtbl_0063E490, (s32) temp_a1, (s32) temp_a2, (s32) temp_a3);
         if ((temp_v0 != 0) && (temp_v0 != 1)) {
             goto block_39;
         }
@@ -91,7 +94,7 @@ block_39:
         return;
     case 3:
         (*(s8 *)((u8 *)((*(void **)&pNet)) + 0x2D)) = 1;
-        temp_v0_2 = lobby_func_00580FA0();
+        temp_v0_2 = lobby_func_00580FA0((s32) &jtbl_0063E490, (s32) temp_a1, (s32) temp_a2, (s32) temp_a3);
         if ((temp_v0_2 != 0) && (temp_v0_2 != 1)) {
             goto block_39;
         }
@@ -103,15 +106,15 @@ block_39:
         (*(s32 *)((u8 *)((*(void **)&cw)) + 0xFA68)) = 0xE10;
         (*(s8 *)((u8 *)((*(void **)&cw)) + 0xFA65)) = 0;
         (*(s8 *)((u8 *)((*(void **)&cw)) + 0xBA9)) = 2;
-        lobby_func_0058BAA0(&my_user_mini_data);
+        lobby_func_0058BAA0(&my_user_mini_data, (s32) temp_a1, (s32) temp_a2, (s32) temp_a3);
         cnLBS_Send_UserMiniData(&my_user_mini_data, 0x40, CallBack_SendMiniData);
         goto block_39;
     case 5:
-        Check_CallBackWait();
+        Check_CallBackWait((s32) &jtbl_0063E490, (s32) temp_a1, (s32) temp_a2, (s32) temp_a3);
         goto block_39;
     case 6:
         (*(s8 *)((u8 *)((*(void **)&pNet)) + 0x2D)) = 1;
-        temp_v0_3 = lobby_func_0057C0B0();
+        temp_v0_3 = lobby_func_0057C0B0((s32) &jtbl_0063E490, (s32) temp_a1, (s32) temp_a2, (s32) temp_a3);
         if ((temp_v0_3 != 0) && (temp_v0_3 != 1)) {
 
         } else {
@@ -121,12 +124,13 @@ block_39:
         goto block_39;
     case 7:
         (*(s8 *)((u8 *)((*(void **)&pNet)) + 0x2D)) = 1;
-        if ((Fade_busy_ck() & 0xFF) != 1) {
+        temp_a0_4 = Fade_busy_ck() & 0xFF;
+        if (temp_a0_4 != 1) {
             if ((*(u8 *)((u8 *)&CnetWork + 0x5)) == 3) {
-                lobby_func_0057CC60();
+                lobby_func_0057CC60(temp_a0_4, M2C_ERROR(/* Read from unset register $a1 */), M2C_ERROR(/* Read from unset register $a2 */), M2C_ERROR(/* Read from unset register $a3 */));
                 (*(s8 *)((u8 *)((*(void **)&cw)) + 0xFA5E)) = 1;
             } else {
-                lobby_func_0057CC60();
+                lobby_func_0057CC60(temp_a0_4, M2C_ERROR(/* Read from unset register $a1 */), M2C_ERROR(/* Read from unset register $a2 */), M2C_ERROR(/* Read from unset register $a3 */));
                 (*(s8 *)((u8 *)((*(void **)&cw)) + 0xFA5E)) = 0;
             }
             (*(u8 *)((u8 *)&CnetWork + 0x5)) = 2;
@@ -134,7 +138,7 @@ block_39:
         }
         goto block_39;
     default:
-        To_LogOut(4);
+        To_LogOut(4, (s32) temp_a1, (s32) temp_a2, (s32) temp_a3);
         goto block_39;
     }
 }

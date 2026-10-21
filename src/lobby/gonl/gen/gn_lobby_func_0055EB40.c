@@ -25,9 +25,9 @@ u16 lobby_func_0055EB40(s32 arg0) {
         return 0U;
     }
     if (Online_ck() == 1) {
-        var_v0 = (u8 *)&flag_quest_tbl + (arg0 * 4);
+        var_v0 = &flag_quest_tbl + (arg0 * 4);
     } else {
-        var_v0 = (u8 *)&flag_quest_tbl_local + (arg0 * 4);
+        var_v0 = &flag_quest_tbl_local + (arg0 * 4);
     }
     temp_s3 = (*(u16 **)var_v0);
     var_v1 = 0;

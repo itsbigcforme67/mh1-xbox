@@ -7,11 +7,11 @@ s32 SetDialogData();
 s32 SetDialogYesNo();
 extern u8 g_main_2EFAD4;
 extern u8 g_main_2EFAD4;
-void lobby_func_0056A810(void *arg0) {
+void lobby_func_0056A810(void *arg0, s32 arg1, s32 arg2, s32 arg3) {
     (*(s16 *)((u8 *)(arg0) + 2)) = 0;
     (*(s16 *)((u8 *)(arg0) + 0)) = 0x10;
     (*(u16 *)((u8 *)(arg0) + 4)) = (u16) (*(u16 *)&g_main_2EFAD4);
-    SetDialogData(0x42);
-    SetDialogYesNo(1);
+    SetDialogData(0x42, arg1, arg2, arg3);
+    SetDialogYesNo(1, M2C_ERROR(/* Read from unset register $a1 */), M2C_ERROR(/* Read from unset register $a2 */), M2C_ERROR(/* Read from unset register $a3 */));
 }
 

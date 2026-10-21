@@ -6,19 +6,19 @@
 s32 lobby_func_005ADF90();
 s32 lobby_func_005ADFF0();
 s32 lobby_func_005AE060();
-void lobby_func_005ADEB0(void *arg0) {
+void lobby_func_005ADEB0(void *arg0, s32 unused_a1, s32 arg2, s32 arg3) {
     u8 temp_a1;
 
     temp_a1 = (*(u8 *)((u8 *)(arg0) + 0x22));
     switch (temp_a1) {                              /* irregular */
     case 0:
-        lobby_func_005ADF90(arg0);
+        lobby_func_005ADF90(arg0, (s32) temp_a1, arg2, arg3);
         return;
     case 1:
-        lobby_func_005ADFF0(arg0);
+        lobby_func_005ADFF0(arg0, (s32) temp_a1, arg2, arg3);
         return;
     case 2:
-        lobby_func_005AE060(arg0);
+        lobby_func_005AE060(arg0, (s32) temp_a1, arg2, arg3);
         return;
     }
 }

@@ -21,7 +21,7 @@ extern void *g_lb_636B4C;
 extern void *g_lb_636B58;
 extern void *g_lb_636B5C;
 
-void lobby_func_00574D70(s32 arg0, s32 arg1, s32 arg2) {
+void lobby_func_00574D70(s32 arg0, s32 arg1, s32 arg2, s32 arg3) {
     s32 temp_s3;
     s32 temp_v1;
 
@@ -34,11 +34,11 @@ void lobby_func_00574D70(s32 arg0, s32 arg1, s32 arg2) {
             Draw_square((s32) arg0, (s32) (((s16) ((temp_s3 + 0x26)))), 0x192, 1, -0x71A3D4);
             Draw_square((s32) arg0, (s32) (((s16) ((temp_s3 + 0xEC)))), 0x192, 1, -0x71A3D4);
         } else {
-            put_mainWindow(arg0, arg1);
+            put_mainWindow((s32) arg0, (s32) arg1, (s32) arg2, arg3);
         }
         break;
     case 1:                                         /* switch 1 */
-        put_mainWindowTex(arg0, arg1);
+        put_mainWindowTex((s32) arg0, (s32) arg1, (s32) arg2, arg3);
         break;
     }
     if (((*(u8 *)((u8 *)((*(void **)&pNet)) + 0x2D)) != 0) || ((*(s8 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x1398))) + 0x60C)) == 0xF)) {
@@ -49,27 +49,27 @@ void lobby_func_00574D70(s32 arg0, s32 arg1, s32 arg2) {
     case 3:                                         /* switch 2 */
         if ((*(s16 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x1398))) + 0x608)) == 0) {
             flfntSetSize(0x14, 0x14);
-            lobby_func_005737C0(g_lb_636B4C);
+            lobby_func_005737C0(g_lb_636B4C, M2C_ERROR(/* Read from unset register $a1 */), M2C_ERROR(/* Read from unset register $a2 */), M2C_ERROR(/* Read from unset register $a3 */));
             return;
         }
-        lobby_func_00574750(arg0, arg1, (s32) (*(s8 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x1398))) + 0x60A)));
+        lobby_func_00574750((s32) arg0, (s32) arg1, (s32) (*(s8 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x1398))) + 0x60A)), M2C_ERROR(/* Read from unset register $a3 */));
         return;
     case 1:                                         /* switch 2 */
-        lobby_func_00574CB0(arg0, arg1);
+        lobby_func_00574CB0((s32) arg0, (s32) arg1, M2C_ERROR(/* Read from unset register $a2 */), M2C_ERROR(/* Read from unset register $a3 */));
         if ((*(s16 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x1398))) + 0x608)) == 0) {
             flfntSetSize(0x14, 0x14);
-            lobby_func_005737C0(g_lb_636B58);
+            lobby_func_005737C0(g_lb_636B58, M2C_ERROR(/* Read from unset register $a1 */), M2C_ERROR(/* Read from unset register $a2 */), M2C_ERROR(/* Read from unset register $a3 */));
             return;
         }
-        lobby_func_005748B0(arg0, arg1, (s32) (*(s8 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x1398))) + 0x610)), (s32) (*(s16 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x1398))) + 0x604)));
+        lobby_func_005748B0((s32) arg0, (s32) arg1, (s32) (*(s8 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x1398))) + 0x610)), (s32) (*(s16 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x1398))) + 0x604)));
         return;
     case 2:                                         /* switch 2 */
-        lobby_func_00574CB0(arg0, arg1);
-        if (lobby_func_005C14D0(&(*(u8 *)((u8 *)&BsProxyUrlstr + 0x110)), 8) == 0) {
-            lobby_func_005737C0(g_lb_636B5C);
+        lobby_func_00574CB0((s32) arg0, (s32) arg1, M2C_ERROR(/* Read from unset register $a2 */), M2C_ERROR(/* Read from unset register $a3 */));
+        if (lobby_func_005C14D0(&(*(u8 *)((u8 *)&BsProxyUrlstr + 0x110)), 8, M2C_ERROR(/* Read from unset register $a2 */), M2C_ERROR(/* Read from unset register $a3 */)) == 0) {
+            lobby_func_005737C0(g_lb_636B5C, M2C_ERROR(/* Read from unset register $a1 */), M2C_ERROR(/* Read from unset register $a2 */), M2C_ERROR(/* Read from unset register $a3 */));
             return;
         }
-        lobby_func_00574AE0(arg0, arg1, (s32) (*(s8 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x1398))) + 0x611)));
+        lobby_func_00574AE0((s32) arg0, (s32) arg1, (s32) (*(s8 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x1398))) + 0x611)), M2C_ERROR(/* Read from unset register $a3 */));
         return;
     }
 }

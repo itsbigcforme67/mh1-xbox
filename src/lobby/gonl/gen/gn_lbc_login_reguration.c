@@ -13,12 +13,14 @@ s32 To_BootUpBrowser();                         /* extern */
 extern u8 first_url;
 extern u8 lit_452_0065E820;
 
-void lbc_login_reguration(void) {
+void lbc_login_reguration(s32 arg0, s32 unused_a1, s32 unused_a2, s32 arg3) {
     u8 temp_a1;
+    u8 *temp_a2;
     u8 *temp_v1;
 
     temp_v1 = (*(void **)&cw);
     temp_a1 = (*(u8 *)((u8 *)(temp_v1) + 0xB9C));
+    temp_a2 = temp_v1 + 0xB9C;
     switch (temp_a1) {                              /* irregular */
     case 0:
         (*(u8 *)((u8 *)(temp_v1) + 0xB9C)) = (u8) (temp_a1 + 1);
@@ -33,13 +35,13 @@ void lbc_login_reguration(void) {
             fade_set(1);
             return;
         }
-        lobby_func_0057C7E0();
+        lobby_func_0057C7E0(1, (s32) temp_a1, (s32) temp_a2, arg3);
         return;
     case 3:
-        Check_CallBackWait();
+        Check_CallBackWait(arg0, (s32) temp_a1, (s32) temp_a2, arg3);
         return;
     default:
-        To_LogOut(4);
+        To_LogOut(4, (s32) temp_a1, (s32) temp_a2, arg3);
         return;
     }
 }

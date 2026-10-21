@@ -18,7 +18,7 @@ extern u8 tl_mail_tbl;
 s32 font_print();           /* extern */
 s32 sprintf(); /* extern */
 extern u8 ClassInfo;
-extern s32 g_main_306468;
+extern u8 g_main_306468;
 extern u8 lit_2316;
 extern u8 lit_3241;
 
@@ -42,7 +42,7 @@ void lobby_func_00578C40(s16 arg0) {
     Put_2TF(&sp90);
     flfntSetSize(0x12, 0x12);
     font_set_palette(0);
-    sprintf(&sp70, &lit_3241, (*(s32 *)((u8 *)&tl_mail_tbl + 0x34)), (*(s32 *)((u8 *)&g_main_306468 + (ClassInfo * 0x15C))), (*(s32 *)((u8 *)&lb_shop_msg + 0x8)));
+    sprintf(&sp70, &lit_3241, (*(s32 *)((u8 *)&tl_mail_tbl + 0x34)), *(&g_main_306468 + (ClassInfo * 0x15C)), (*(s32 *)((u8 *)&lb_shop_msg + 0x8)));
     han2zen(&sp70, &sp30);
     flfntLocate((s32) (((s16) ((sp90 + 0xA)))), (s32) (((s16) ((sp92 + 3)))));
     font_print(&lit_2316, &sp30);

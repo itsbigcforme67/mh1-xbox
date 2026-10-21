@@ -30,7 +30,7 @@ void Lb_pl_to_chair(void) {
     var_s0 = 0;
     temp_a3 = (*(u8 *)((u8 *)&game_w + 0x3A));
     temp_a2 = temp_a3 * 0xA00;
-    temp_s1 = (u8 *)&player_work + temp_a2;
+    temp_s1 = &player_work + temp_a2;
     if ((*(u8 *)((u8 *)&game_w + 0x14)) == 0x4D) {
         if (lb_sys != 0x1A) {
             (*(s32 *)((u8 *)&lb_sys + 0x8)) = 0;
@@ -51,7 +51,7 @@ loop_13:
                 goto block_9;
             }
 block_15:
-            Lb_send_pl_warp(temp_s1);
+            Lb_send_pl_warp(temp_s1, (s32) (*(u8 *)((u8 *)&lb_sys + 0x7A)), var_a2, (s32) temp_a3);
             goto block_16;
         }
 block_9:
@@ -79,7 +79,7 @@ block_16:
         }
     }
     flvecCopy(temp_s1 + 0x800, &sp40);
-    Lb_Pl_adj_calc(temp_s1, 0x14);
+    Lb_Pl_adj_calc(temp_s1, 0x14, M2C_ERROR(/* Read from unset register $a2 */), M2C_ERROR(/* Read from unset register $a3 */));
     (*(u16 *)((u8 *)(temp_s1) + 0xE)) = var_s0;
     Lb_Pl_act_set2(temp_s1, 0, 0x4C, 0);
 }

@@ -6,13 +6,13 @@
 s32 SetHelpLineMsg();
 s32 cnWrap_SoundRequest();
 extern u8 pNet;
-void tl_exit_sub_menu(s32 arg0) {
+void tl_exit_sub_menu(s32 arg0, s32 arg1, s32 arg2, s32 arg3) {
     u8 *temp_a2;
 
     if (!(arg0 & 0xFF)) {
-        cnWrap_SoundRequest(3);
+        cnWrap_SoundRequest(3, arg1, arg2, arg3);
     }
-    SetHelpLineMsg((*(u8 *)((u8 *)((*(void **)&pNet)) + 0x28)) + 2);
+    SetHelpLineMsg((*(u8 *)((u8 *)((*(void **)&pNet)) + 0x28)) + 2, M2C_ERROR(/* Read from unset register $a1 */), M2C_ERROR(/* Read from unset register $a2 */), M2C_ERROR(/* Read from unset register $a3 */));
     temp_a2 = (*(void **)&pNet);
     (*(u8 *)((u8 *)(temp_a2) + 0x22)) = (u8) ((*(u8 *)((u8 *)(temp_a2) + 0x22)) - 1);
     (*(s8 *)((u8 *)((*(void **)&pNet)) + 0x23)) = 0;

@@ -28,18 +28,18 @@ void To_EnterPlaza2Lobby(s32 arg0) {
     (*(s8 *)((u8 *)((*(void **)&cw)) + 0xB9F)) = 0;
     (*(s8 *)((u8 *)((*(void **)&cw)) + 0xBA0)) = 0;
     Init_InterruptFlag();
-    Lbc_init_network_work();
+    Lbc_init_network_work(M2C_ERROR(/* Read from unset register $a0 */), M2C_ERROR(/* Read from unset register $a1 */), M2C_ERROR(/* Read from unset register $a2 */), M2C_ERROR(/* Read from unset register $a3 */));
     (*(s8 *)((u8 *)&ClassInfo + 0x4)) = 0;
     (*(s8 *)((u8 *)&ClassInfo + 0x8)) = 0;
     memset(&LobbyInfo, 0, 0x2F94);
     Pit_reset();
     all_reset();
-    Lbs_load();
+    Lbs_load(M2C_ERROR(/* Read from unset register $a0 */), M2C_ERROR(/* Read from unset register $a1 */), M2C_ERROR(/* Read from unset register $a2 */), M2C_ERROR(/* Read from unset register $a3 */));
     Plaza_chat_clear();
-    Lb_clearChatList();
+    Lb_clearChatList(M2C_ERROR(/* Read from unset register $a0 */), M2C_ERROR(/* Read from unset register $a1 */), M2C_ERROR(/* Read from unset register $a2 */), M2C_ERROR(/* Read from unset register $a3 */));
     Lbc_set_prim((s32) &put_back, 0, 0, 0);
     if (arg0 != 0) {
-        SetDialogData(0xF);
+        SetDialogData(0xF, M2C_ERROR(/* Read from unset register $a1 */), M2C_ERROR(/* Read from unset register $a2 */), M2C_ERROR(/* Read from unset register $a3 */));
     }
 }
 

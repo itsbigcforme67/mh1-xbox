@@ -14,7 +14,7 @@ extern u8 cw;
 extern u8 pNet;
 extern u8 network_work;
 
-s32 getHandleFromID(void) {
+s32 getHandleFromID(s32 unused_a0, s32 unused_a1, s32 arg2, s32 arg3) {
     s32 temp_v0;
     s32 temp_v0_2;
     u8 temp_a0;
@@ -33,7 +33,7 @@ s32 getHandleFromID(void) {
             temp_v1 = (*(void **)&cw);
             (*(u8 *)((u8 *)(temp_v1) + 0xB9C)) = (u8) ((*(u8 *)((u8 *)(temp_v1) + 0xB9C)) + 1);
             (*(s8 *)((u8 *)((*(void **)&cw)) + 0xB9D)) = 0;
-            Lbc_init_network_work();
+            Lbc_init_network_work(M2C_ERROR(/* Read from unset register $a0 */), M2C_ERROR(/* Read from unset register $a1 */), M2C_ERROR(/* Read from unset register $a2 */), M2C_ERROR(/* Read from unset register $a3 */));
             fade_set(0xC);
         }
         (*(s8 *)((u8 *)((*(void **)&pNet)) + 0x2D)) = 1;
@@ -42,7 +42,7 @@ block_21:
         return 2;
     case 1:
         (*(s8 *)((u8 *)((*(void **)&pNet)) + 0x2D)) = 1;
-        temp_v0 = lobby_func_00581210();
+        temp_v0 = lobby_func_00581210((s32) temp_a0, (s32) temp_a1, arg2, arg3);
         if ((temp_v0 != 0) && (temp_v0 != 1)) {
 
         } else {
@@ -52,7 +52,7 @@ block_21:
         goto block_21;
     case 2:
         (*(s8 *)((u8 *)((*(void **)&pNet)) + 0x2D)) = 1;
-        temp_v0_2 = lobby_func_00580FA0();
+        temp_v0_2 = lobby_func_00580FA0((s32) temp_a0, (s32) temp_a1, arg2, arg3);
         if ((temp_v0_2 != 0) && (temp_v0_2 != 1)) {
 
         } else {
@@ -62,7 +62,7 @@ block_21:
         }
         goto block_21;
     case 3:
-        return lobby_func_005690D0(&network_work);
+        return lobby_func_005690D0(&network_work, (s32) temp_a1, arg2, arg3);
     }
 }
 

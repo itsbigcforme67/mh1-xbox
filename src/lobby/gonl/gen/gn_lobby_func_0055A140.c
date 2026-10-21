@@ -9,7 +9,7 @@ extern u8 quest_price;
 void lobby_func_0055A140(s32 arg0) {
     Gold_add((*(s32 *)&quest_price));
     if (!(arg0 & 0xFF) && ((*(s32 *)&quest_price) != 0)) {
-        cnWrap_SoundRequest(8);
+        cnWrap_SoundRequest(8, M2C_ERROR(/* Read from unset register $a1 */), M2C_ERROR(/* Read from unset register $a2 */), M2C_ERROR(/* Read from unset register $a3 */));
     }
     (*(s32 *)&quest_price) = 0;
 }

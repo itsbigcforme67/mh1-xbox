@@ -10,29 +10,31 @@ extern u8 ClassInfo;
 extern u8 LobbyInfo;
 extern u8 pNet;
 
-u8 lobby_func_00569C20(s32 arg0) {
+u8 lobby_func_00569C20(s32 arg0, s32 unused_a1, s32 arg2, s32 arg3) {
+    u8 temp_a1;
     u8 temp_v1;
     u8 *temp_a2;
 
-    temp_v1 = (*(s32 *)((u8 *)&(*(u8 *)((u8 *)&LobbyInfo + 0x16)) + (arg0 * 0x15C)));
+    temp_v1 = *(&(*(u8 *)((u8 *)&LobbyInfo + 0x16)) + (arg0 * 0x15C));
     switch (temp_v1) {                              /* irregular */
     case 1:
         (*(s8 *)((u8 *)((*(void **)&pNet)) + 0x2D)) = 1;
         (*(s8 *)((u8 *)&ClassInfo + 0x4)) = arg0 + 1;
-        SetDialogData(0x41);
-        cnWrap_SoundRequest(0);
+        SetDialogData(0x41, 1, arg2, arg3);
+        cnWrap_SoundRequest(0, M2C_ERROR(/* Read from unset register $a1 */), M2C_ERROR(/* Read from unset register $a2 */), M2C_ERROR(/* Read from unset register $a3 */));
         return 6U;
     case 3:
         temp_a2 = (*(void **)&pNet);
-        (*(u8 *)((u8 *)(temp_a2) + 0x26)) = (u8) (*(u8 *)((u8 *)(temp_a2) + 0x23));
+        temp_a1 = (*(u8 *)((u8 *)(temp_a2) + 0x23));
+        (*(u8 *)((u8 *)(temp_a2) + 0x26)) = temp_a1;
         (*(s8 *)((u8 *)&ClassInfo + 0x4)) = arg0 + 1;
         (*(s8 *)((u8 *)((*(void **)&pNet)) + 0x2D)) = 1;
-        SetDialogData(0x3F);
-        SetDialogYesNo(1);
-        cnWrap_SoundRequest(0);
+        SetDialogData(0x3F, (s32) temp_a1, (s32) temp_a2, arg3);
+        SetDialogYesNo(1, M2C_ERROR(/* Read from unset register $a1 */), M2C_ERROR(/* Read from unset register $a2 */), M2C_ERROR(/* Read from unset register $a3 */));
+        cnWrap_SoundRequest(0, M2C_ERROR(/* Read from unset register $a1 */), M2C_ERROR(/* Read from unset register $a2 */), M2C_ERROR(/* Read from unset register $a3 */));
         return 0xBU;
     default:
-        cnWrap_SoundRequest(7);
+        cnWrap_SoundRequest(7, 1, arg2, arg3);
         return (*(u8 *)((u8 *)((*(void **)&pNet)) + 0x23));
     }
 }

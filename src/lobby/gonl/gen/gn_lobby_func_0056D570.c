@@ -39,7 +39,7 @@ block_16:
             if ((temp_s0 & 0xFFFF) == 0x4000) {
                 temp_v1_4 = (*(void **)&g_main_2EFBAC);
                 (*(u8 *)((u8 *)(temp_v1_4) + 0x232)) = (u8) ((*(u8 *)((u8 *)(temp_v1_4) + 0x232)) + 1);
-                cnWrap_SoundRequest(3);
+                cnWrap_SoundRequest(3, M2C_ERROR(/* Read from unset register $a1 */), M2C_ERROR(/* Read from unset register $a2 */), M2C_ERROR(/* Read from unset register $a3 */));
             }
         } else {
             temp_v1_5 = (*(void **)&g_main_2EFBAC);

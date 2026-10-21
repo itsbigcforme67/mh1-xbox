@@ -11,7 +11,7 @@ extern u8 lb_sys;
 extern u8 pNet;
 extern u8 tl_member_buff;
 s16 net_Check_FriendSuu();        /* extern */
-extern s32 g_main_302CB0;
+extern u8 g_main_302CB0;
 
 void lobby_func_0056C480(void) {
     s32 temp_v0;
@@ -41,7 +41,7 @@ void lobby_func_0056C480(void) {
     memset(&(*(u8 *)((u8 *)&tl_member_buff + 0x1398)), 0, 0x618);
     (*(s8 *)((u8 *)((*(void **)&pNet)) + 0x2E)) = 1;
     (*(s16 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x1398))) + 0x608)) = net_Check_FriendSuu(&g_main_302CB0, 0x32);
-    lobby_func_0056D6E0();
-    lobby_func_00571AF0();
+    lobby_func_0056D6E0(M2C_ERROR(/* Read from unset register $a0 */), M2C_ERROR(/* Read from unset register $a1 */), M2C_ERROR(/* Read from unset register $a2 */), M2C_ERROR(/* Read from unset register $a3 */));
+    lobby_func_00571AF0(M2C_ERROR(/* Read from unset register $a0 */), M2C_ERROR(/* Read from unset register $a1 */), M2C_ERROR(/* Read from unset register $a2 */), M2C_ERROR(/* Read from unset register $a3 */));
 }
 

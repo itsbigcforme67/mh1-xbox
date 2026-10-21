@@ -8,7 +8,7 @@ s32 plaza_log_id_chk_sub();
 s32 strcmp();
 extern u8 PitMenu;
 extern u8 lb_rule_member;
-extern s32 g_lb_63E918;
+extern u8 g_lb_63E918;
 extern u8 my_user_id;
 
 u32 Plaza_log_id_chk(s32 **arg0) {
@@ -27,7 +27,7 @@ u32 Plaza_log_id_chk(s32 **arg0) {
     if (var_s2 != 0) {
         var_s0 = arg0;
         do {
-            if ((strcmp(var_s3 + 0x46, &my_user_id) != 0) && (strcmp(var_s3 + 0x46, (*(void * *)((u8 *)&lb_rule_member + 0x14))) != 0) && (memcmp(var_s3 + 0x46, &g_lb_63E918, 5) != 0) && (plaza_log_id_chk_sub(var_s3 + 0x46, arg0, var_s1) == 1)) {
+            if ((strcmp(var_s3 + 0x46, &my_user_id) != 0) && (strcmp(var_s3 + 0x46, (*(void * *)((u8 *)&lb_rule_member + 0x14))) != 0) && (memcmp(var_s3 + 0x46, &g_lb_63E918, 5) != 0) && (plaza_log_id_chk_sub(var_s3 + 0x46, arg0, var_s1, M2C_ERROR(/* Read from unset register $a3 */)) == 1)) {
                 (*(s32 **)var_s0) = var_s3;
                 var_s1 += 1;
                 var_s0 += 4;

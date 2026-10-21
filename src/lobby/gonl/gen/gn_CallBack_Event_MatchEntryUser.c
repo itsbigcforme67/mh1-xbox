@@ -27,8 +27,8 @@ void CallBack_Event_MatchEntryUser(void) {
     if ((lb_sys != 8) && (lb_sys != 9) && ((mhRule + 1) >= 2)) {
         temp_a1 = (*(void **)&cw);
         if (((*(u16 *)((u8 *)(temp_a1) + 0xF752)) == mhRule) && ((*(u8 *)((u8 *)(temp_a1) + 0xF751)) != 0)) {
-            Lb_put_chat(0, 0);
-            cnWrap_SoundRequest(0x12);
+            Lb_put_chat(0, 0, M2C_ERROR(/* Read from unset register $a2 */), M2C_ERROR(/* Read from unset register $a3 */));
+            cnWrap_SoundRequest(0x12, M2C_ERROR(/* Read from unset register $a1 */), M2C_ERROR(/* Read from unset register $a2 */), M2C_ERROR(/* Read from unset register $a3 */));
         }
     }
     if (var_s0 == 1) {
@@ -36,7 +36,7 @@ void CallBack_Event_MatchEntryUser(void) {
         if (temp_a2_2 >= 2) {
             temp_a1_2 = (*(void **)&cw);
             if ((((*(u16 *)((u8 *)(temp_a1_2) + 0xF752)) + 1) < temp_a2_2) && ((*(u8 *)((u8 *)(temp_a1_2) + 0xF751)) != 0)) {
-                Lb_put_chat(1, 0);
+                Lb_put_chat(1, 0, temp_a2_2, M2C_ERROR(/* Read from unset register $a3 */));
             }
         }
     }

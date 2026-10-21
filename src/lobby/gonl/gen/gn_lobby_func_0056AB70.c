@@ -11,14 +11,14 @@ extern u8 g_main_2EF390;
 extern u8 g_main_2EF390;
 s32 sprintf();         /* extern */
 extern u8 ClassInfo;
-extern s32 g_lb_5FBC10;
+extern u8 g_lb_5FBC10;
 extern void *g_lb_636E00;
 extern void *g_lb_636E04;
 extern void *g_lb_636E08;
 extern void *g_lb_636EC0;
 extern void *g_lb_636EC4;
-extern s32 g_lb_63E020;
-extern s32 g_main_3064AF;
+extern u8 g_lb_63E020;
+extern u8 g_main_3064AF;
 extern s16 tl_member_buff;
 
 void lobby_func_0056AB70(s32 arg0) {
@@ -44,7 +44,7 @@ void lobby_func_0056AB70(s32 arg0) {
 
     spC0 = &tl_member_buff;
     spDE = (s16) arg0;
-    temp_s0 = ((s16) (((*(s32 *)((u8 *)&g_main_3064AF + (ClassInfo * 0x15C))) - 0x31)));
+    temp_s0 = ((s16) ((*(&g_main_3064AF + (ClassInfo * 0x15C)) - 0x31)));
     flfntLocate(0xB4, (s32) (((s16) (((((s16) (arg0))) - 0x32)))));
     flfntSetSize(0x16, 0x16);
     font_set_palette(0);
@@ -68,8 +68,8 @@ void lobby_func_0056AB70(s32 arg0) {
         temp_s1 = (((s16) (var_a0))) + 0x18;
         var_s3 = 0;
         var_s4 = spDE;
-        var_s6 = (u8 *)&g_lb_5FBC10 + (((s16) (var_s5)));
-        var_s7 = (u8 *)&g_lb_5FBC10 + spA0;
+        var_s6 = &g_lb_5FBC10 + (((s16) (var_s5)));
+        var_s7 = &g_lb_5FBC10 + spA0;
 loop_5:
         temp_a0 = (*(s16 *)((u8 *)(spC0) + 0));
         temp_v0 = *var_s6;

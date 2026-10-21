@@ -88,12 +88,16 @@ def write_context():
             r = 's32' if ret == 'void' else (ctx_type(ret) or None)     # (void as s32: G code reads a v0 its callee left)
             if r is None:
                 continue
+            # a G function can hand $a1-$a3 on to its own callee without naming them (cnLBS_LobbyEntry passes the
+            # callback in $a2 to __cnetSub_Set_BgProcess): its callers pass all four argument registers
+            while '/gonl/gen/' in f and len(ps) < 4:
+                ps.append('s32')
             sigs[name] = (r, ps)
     # then the PC's own C of the library functions G code calls (main's C, the cnet packet helpers): ANSI and K&R
     # definitions. Not MH1's lobby / cnet request C: G changed some of those signatures (cnLBS_Send_UserMiniData takes a
     # callback in G), and a call must keep what the G code passes.
     import glob
-    pcsrc = [os.path.join(ROOT, 'src/lobby/cnet/cnlbsh.c')]
+    pcsrc = [os.path.join(ROOT, 'src/lobby/cnet/cnlbsh.c'), os.path.join(ROOT, 'src/lobby/cnet/cnlbsg.c')]   # (+ the bg process core)
     for d in ('src/main', 'src/pc/rt'):
         pcsrc += sorted(glob.glob(os.path.join(ROOT, d, '**', '*.c'), recursive=True))
     for f in pcsrc:
@@ -207,6 +211,8 @@ def convert(src):
 G_RENAME = {
     '_cnet_CallBack_Result_PersonalDataChange': 'gonl_cb_FileDownload',    # G 0x5BFD00: the file download burst's result
     'cnLBS_Read_LobbyMemberList': 'gonl_Read_LobbyAllocation',  # G 0x5BAD20..: a plaza's lobbies (6303/6304/6302/630D)
+    'cnLBS_Get_PlazaStatus': 'gonl_Get_LobbyStatus',           # G 0x5AC320: a lobby (town) record's status
+    'cnLBS_Get_mhPlazaJoinUser': 'gonl_Get_LobbyJoinUser',     # G 0x5AC1F0: a lobby record's two user counts
     'cnLBS_Get_RoomStatus': 'gonl_Get_PlazaStatus',            # G 0x5E37C0: a plaza record's status (MH1: a room's)
     'cnLBS_Get_mhRoomJoinUser': 'gonl_Get_PlazaJoinUser',      # G 0x5E3660: a plaza record's two user counts
     '_cnet_RecvFromLbs_BothAnnexJoinUser': 'gnet_6205_both',    # G 0x5E3700: plaza / lobby join users (G's records)

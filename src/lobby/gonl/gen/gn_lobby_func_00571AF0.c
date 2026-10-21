@@ -20,6 +20,6 @@ void lobby_func_00571AF0(void) {
     (*(s8 *)((u8 *)((*(void **)&g_main_2EFBAC)) + 0x23E)) = 1;
     (*(s8 *)((u8 *)((*(void **)&g_main_2EFBAC)) + 0x23D)) = 1;
     (*(s8 *)((u8 *)((*(void **)&g_main_2EFBAC)) + 0x23C)) = 1;
-    lobby_func_00571A90();
+    lobby_func_00571A90(1, M2C_ERROR(/* Read from unset register $a1 */), M2C_ERROR(/* Read from unset register $a2 */), M2C_ERROR(/* Read from unset register $a3 */));
 }
 

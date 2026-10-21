@@ -37,7 +37,7 @@ void text_lobby_trans_ot0(void *arg0) {
         } else if (((u32) (temp_v1 - 5) < 2U) || (temp_v1 == 3)) {
             Disp_back();
         } else {
-            lobby_func_005936B0();
+            lobby_func_005936B0(1, M2C_ERROR(/* Read from unset register $a1 */), M2C_ERROR(/* Read from unset register $a2 */), M2C_ERROR(/* Read from unset register $a3 */));
         }
     } else {
         reload_tex(1, 0x140);
@@ -52,8 +52,8 @@ void text_lobby_trans_ot0(void *arg0) {
     if ((*(u8 *)((u8 *)(temp_a1) + 0xB99)) != 5) {
         temp_a0 = (*(u8 *)((u8 *)(temp_a1) + 0xB9B));
         if ((temp_a0 == 4) && (temp_a0 == 3)) {
-            DispSceneTitle();
-            DispHelpLine();
+            DispSceneTitle((s32) temp_a0, (s32) temp_a1, M2C_ERROR(/* Read from unset register $a2 */), M2C_ERROR(/* Read from unset register $a3 */));
+            DispHelpLine(M2C_ERROR(/* Read from unset register $a0 */), M2C_ERROR(/* Read from unset register $a1 */), M2C_ERROR(/* Read from unset register $a2 */), M2C_ERROR(/* Read from unset register $a3 */));
         }
     }
 }

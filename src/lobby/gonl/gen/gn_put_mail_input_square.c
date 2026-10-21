@@ -111,19 +111,19 @@ void put_mail_input_square(s32 arg0, s32 arg1) {
             temp_a1_2 = (*(void **)&g_main_2EFBAC);
             if ((*(u8 *)((u8 *)(temp_a1_2) + 0x230)) != 2) {
                 if ((*(s8 *)((u8 *)(temp_a1_2) + 0x236)) == 1) {
-                    put_main_cursor2(0xD8, 0x38, 7);
+                    put_main_cursor2(0xD8, 0x38, 7, M2C_ERROR(/* Read from unset register $a3 */));
                 }
             } else if ((*(s8 *)((u8 *)(temp_a1_2) + 0x237)) == 4) {
-                put_main_cursor2(0xD8, 0x38, 7);
+                put_main_cursor2(0xD8, 0x38, 7, M2C_ERROR(/* Read from unset register $a3 */));
             }
         } else {
             temp_a1_3 = (*(void **)&g_main_2EFBAC);
             if ((*(u8 *)((u8 *)(temp_a1_3) + 0x230)) != 2) {
                 if ((*(s8 *)((u8 *)(temp_a1_3) + 0x236)) == 1) {
-                    put_main_cursor(7);
+                    put_main_cursor(7, (s32) temp_a1_3, M2C_ERROR(/* Read from unset register $a2 */), M2C_ERROR(/* Read from unset register $a3 */));
                 }
             } else if ((*(s8 *)((u8 *)(temp_a1_3) + 0x237)) == 4) {
-                put_main_cursor(7);
+                put_main_cursor(7, (s32) temp_a1_3, M2C_ERROR(/* Read from unset register $a2 */), M2C_ERROR(/* Read from unset register $a3 */));
             }
         }
     }

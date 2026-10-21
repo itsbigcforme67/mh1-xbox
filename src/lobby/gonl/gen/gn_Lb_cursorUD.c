@@ -13,7 +13,7 @@ s32 Lb_cursorUD(s32 arg0, s32 arg1) {
     temp_v1 = Get_sw2(0) & 0xFFFF;
     if (temp_v1 & 0x2000) {
         if (arg1 >= 2) {
-            cnWrap_SoundRequest(1);
+            cnWrap_SoundRequest(1, M2C_ERROR(/* Read from unset register $a1 */), M2C_ERROR(/* Read from unset register $a2 */), M2C_ERROR(/* Read from unset register $a3 */));
         }
         if (var_s1 == 0) {
             var_s1 = arg1 - 1;
@@ -22,7 +22,7 @@ s32 Lb_cursorUD(s32 arg0, s32 arg1) {
         }
     } else if (temp_v1 & 0x1000) {
         if (arg1 >= 2) {
-            cnWrap_SoundRequest(1);
+            cnWrap_SoundRequest(1, M2C_ERROR(/* Read from unset register $a1 */), M2C_ERROR(/* Read from unset register $a2 */), M2C_ERROR(/* Read from unset register $a3 */));
         }
         var_s1 += 1;
         if (var_s1 >= arg1) {

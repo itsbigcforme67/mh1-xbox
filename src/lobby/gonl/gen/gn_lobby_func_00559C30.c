@@ -5,11 +5,11 @@
 
 s32 lobby_func_00559B40();
 void * lobby_func_00559C70();
-void lobby_func_00559C30(s32 arg0) {
+void lobby_func_00559C30(s32 arg0, s32 arg1, s32 arg2, s32 arg3) {
     if ((arg0 & 0xFFFF) >= 0xC350) {
-        lobby_func_00559C70(arg0);
+        lobby_func_00559C70(arg0, arg1, arg2, arg3);
         return;
     }
-    lobby_func_00559B40(arg0);
+    lobby_func_00559B40(arg0, arg1, arg2, arg3);
 }
 

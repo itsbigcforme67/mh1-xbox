@@ -6,7 +6,7 @@
 extern u8 CnetSys_w;
 
 s32 gonl_Get_PlazaStatus(s32 arg0, u8 *arg1) {
-    *arg1 = (*(s32 *)((u8 *)&(*(u8 *)((u8 *)&CnetSys_w + 0x4282)) + ((arg0 & 0xFFFF) * 0x164)));
+    *arg1 = *(&(*(u8 *)((u8 *)&CnetSys_w + 0x4282)) + ((arg0 & 0xFFFF) * 0x164));
     return 0;
 }
 

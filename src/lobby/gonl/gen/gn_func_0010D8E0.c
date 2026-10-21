@@ -18,7 +18,7 @@ void func_0010D8E0(s32 arg0) {
     var_a0 = arg0;
     if (!(var_a0 & 0xFF)) {
         var_a0 = 1 & 0xFF;
-        if (func_0010DD20((u8 *)&player_work + ((*(u8 *)((u8 *)&game_w + 0x3A)) * 0xA00), NULL) != 1) {
+        if (func_0010DD20(&player_work + ((*(u8 *)((u8 *)&game_w + 0x3A)) * 0xA00), NULL) != 1) {
 
         } else {
             var_a0 = 2;
@@ -28,7 +28,7 @@ void func_0010D8E0(s32 arg0) {
     var_a3 = 0x6C;
     do {
         temp_v1 = (*(s8 *)((u8 *)(var_a4) + 6));
-        if ((*(u8 *)((u8 *)(((u8 *)&User_data + (temp_v1 >> 3))) + 0xC80)) & (1 << (temp_v1 & 7))) {
+        if ((*(u8 *)((u8 *)((&User_data + (temp_v1 >> 3))) + 0xC80)) & (1 << (temp_v1 & 7))) {
             if ((var_a0 & 0xFF) == 1) {
                 if (!((*(u8 *)((u8 *)(var_a4) + 7)) & 1)) {
 
