@@ -3,7 +3,7 @@
 # (build/mhg/pc/mhview_g_online --online, VERSION=mhg ONLINE=1) against tools/mh1_testserver.py on 127.0.0.1 (never any
 # other host) go through G's own lobby screens: login (61A0 / 61A1), Capcom ID select (a new ID), the info file (6881 /
 # 6883 / 6882), the plaza class menu, the plaza (G Plaza 1), its town list (6303 / 6304 / 6302 / 630D per town), and
-# town 1 (6305). TWO=1: a second client (BOB) does the same while the first is there.
+# town 1 (6305 / 630A), standing in the town (stage 0x4C). TWO=1: a second client (BOB) does the same while the first is there.
 # Screenshots in build/show/g_online_pc (never committed). Build first: ONLINE=1 tools/build_pc_mhg.sh
 cd "$(dirname "$0")/.."
 BIN=${BIN:-build/mhg/pc/mhview_g_online}
@@ -45,10 +45,16 @@ fi
 kill $SP 2>/dev/null; SP=""
 for nm in $NAMES; do
     grep -q "handle '$nm'" $OUT/server.log || fail "$nm did not log in"
+    grep -aq "town step 4" $OUT/$nm.log || fail "$nm did not reach the town"
+    grep -aq "slot [0-9] (me) \"$nm\" stage 76 pos [1-9]" $OUT/$nm.log || fail "$nm is not standing in the town (stage 0x4C)"
 done
+if [ -n "$TWO" ]; then
+    grep -aq 'slot [0-9] "BOB" stage 76' $OUT/ANNA.log || fail "ANNA does not see BOB in the town"
+    grep -aq 'slot [0-9] "ANNA" stage 76' $OUT/BOB.log || fail "BOB does not see ANNA in the town"
+fi
 grep -q "game: Monster Hunter G" $OUT/server.log || fail "the server did not take the client for G (61A0)"
 grep -q "cmd 6882" $OUT/server.log || fail "no info file download (6882)"
 grep -q "cmd 6207" $OUT/server.log || fail "no plaza entry (6207)"
 grep -q "cmd 630D" $OUT/server.log || fail "no town list (630D)"
 grep -q "cmd 6305" $OUT/server.log || fail "no town entry (6305)"
-echo "G online PC test: OK ($NAMES: G's login, Capcom ID, info file, plaza, town list, town entry; server 127.0.0.1:$PORT)"
+echo "G online PC test: OK ($NAMES: G's login, Capcom ID, info file, plaza, town list, in the town${TWO:+, each sees the other}; server 127.0.0.1:$PORT)"
