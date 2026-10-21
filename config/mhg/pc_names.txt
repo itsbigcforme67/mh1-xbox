@@ -242,3 +242,9 @@ lobby g_lb_734DFD 0x734DFD  # tools/mhg_gonl.py: a G address the G online code u
 lobby g_lb_734DFE 0x734DFE  # tools/mhg_gonl.py: a G address the G online code uses, no name yet
 lobby g_lb_734DFF 0x734DFF  # tools/mhg_gonl.py: a G address the G online code uses, no name yet
 lobby g_lb_734E34 0x734E34  # tools/mhg_gonl.py: a G address the G online code uses, no name yet
+lobby g_lb_5FC59C 0x5FC59C  # tools/mhg_gonl.py: a G address the G online code uses, no name yet
+lobby g_lb_63682C 0x63682C  # tools/mhg_gonl.py: a G address the G online code uses, no name yet
+lobby g_lb_636830 0x636830  # tools/mhg_gonl.py: a G address the G online code uses, no name yet
+lobby g_lb_636864 0x636864  # tools/mhg_gonl.py: a G address the G online code uses, no name yet
+lobby g_lb_636868 0x636868  # tools/mhg_gonl.py: a G address the G online code uses, no name yet
+lobby g_lb_6DDFCA 0x6DDFCA  # tools/mhg_gonl.py: a G address the G online code uses, no name yet
