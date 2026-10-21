@@ -255,7 +255,89 @@ f32 flArcCos(f32 x) { return acosf(x < -1.0f ? -1.0f : x > 1.0f ? 1.0f : x); }
 /* ------------------------------------------------------------ more helpers (set09) */
 f32 flSin(f32 a) { return sinf(a); }     /* flPS2SinFast (ps2_sincos above) */
 f32 flCos(f32 a) { return cosf(a); }
-f32 flArcTan2(f32 y, f32 x) { return atan2f(y, x); }   /* j atan2f */
+/* flArcTan2 (0x1735E0) jumps to the PS2 C library's atan2f (newlib's single-precision __ieee754_atan2f 0x1ABB80 and
+ * atanf 0x1AEF50, FPU code [read: asm]); written out here with its own constants and the tables from the player's disc
+ * (atanhi / atanlo / aT, src/pc/rt/tables.txt), under the game's float rounding, so monster facings come out as on
+ * the PS2 (libm's atan2f was one unit of angle off now and then: the lockstep referee). This library's pi and pi/2 end
+ * in ..FDA, its pi_lo is +1.5099580e-07, and large quotients (k > 60) give pi/2 without a correction. */
+extern unsigned char atanhi_0035E598[], atanlo_0035E5A8[], aT_0035E5B8[];
+static f32 bits_f(uint32_t b) { union { uint32_t i; f32 f; } u; u.i = b; return u.f; }
+static uint32_t f_bits(f32 f) { union { uint32_t i; f32 f; } u; u.f = f; return u.i; }
+static f32 ps2_atanf(f32 x)
+{
+    const f32 *hi = (const f32 *)atanhi_0035E598, *lo = (const f32 *)atanlo_0035E5A8, *aT = (const f32 *)aT_0035E5B8;
+    int32_t hx = (int32_t)f_bits(x), ix = hx & 0x7FFFFFFF, id;
+    f32 z, w, s1, s2;
+    if (ix > 0x507FFFFF)
+        return hx > 0 ? hi[3] + lo[3] : -hi[3] - lo[3];
+    if (ix <= 0x3EDFFFFF) {
+        if (ix <= 0x30FFFFFF && bits_f(0x7149F2C9) + x > 1.0f)
+            return x;
+        id = -1;
+    } else {
+        x = fabsf(x);
+        if (ix <= 0x3F97FFFF) {
+            if (ix <= 0x3F2FFFFF) {
+                id = 0;
+                x = ((x + x) - 1.0f) / (x + 2.0f);
+            } else {
+                id = 1;
+                x = (x - 1.0f) / (x + 1.0f);
+            }
+        } else if (ix > 0x401BFFFF) {
+            id = 3;
+            x = -1.0f / x;
+        } else {
+            id = 2;
+            x = (x - 1.5f) / (x * 1.5f + 1.0f);
+        }
+    }
+    z = x * x;
+    w = z * z;
+    s1 = z * (aT[0] + w * (aT[2] + w * (aT[4] + w * (aT[6] + w * (aT[8] + w * aT[10])))));
+    s2 = w * (aT[1] + w * (aT[3] + w * (aT[5] + w * (aT[7] + w * aT[9]))));
+    if (id < 0)
+        return x - x * (s1 + s2);
+    z = hi[id] - ((x * (s1 + s2) - lo[id]) - x);
+    return hx < 0 ? -z : z;
+}
+f32 flArcTan2(f32 y, f32 x)
+{
+    int32_t hx = (int32_t)f_bits(x), hy = (int32_t)f_bits(y), ix = hx & 0x7FFFFFFF, iy = hy & 0x7FFFFFFF, m, k;
+    const f32 pi = bits_f(0x40490FDA), pi_o_2 = bits_f(0x3FC90FDA), pi_lo = bits_f(0x34222168);
+    f32 z;
+    if (((const f32 *)aT_0035E5B8)[0] == 0.0f)
+        return atan2f(y, x);            /* no disc tables (tools) */
+    if (hx == 0x3F800000)
+        return ps2_atanf(y);
+    m = (int32_t)(((uint32_t)hy >> 31) | ((hx >> 30) & 2));
+    if (iy <= 0x7FFFFF) {               /* y zero (or denormal) */
+        if (m == 2)
+            return pi;
+        if (m == 3)
+            return -pi;
+        return y;
+    }
+    if (ix <= 0x7FFFFF)                 /* x zero */
+        return hy < 0 ? -pi_o_2 : pi_o_2;
+    k = (iy - ix) >> 23;
+    if (k > 60)
+        z = pi_o_2;
+    else if (hx < 0 && k < -60)
+        z = 0.0f;
+    else
+        z = ps2_atanf(fabsf(y / x));
+    switch (m) {
+    case 0:
+        return z;
+    case 1:
+        return bits_f(f_bits(z) ^ 0x80000000u);
+    case 2:
+        return pi - (z - pi_lo);
+    default:
+        return (z - pi_lo) - pi;
+    }
+}
 
 void flmatGetTrans(f32 *v, FLMAT *m)
 {

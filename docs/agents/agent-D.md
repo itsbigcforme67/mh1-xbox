@@ -1492,3 +1492,12 @@ Owner decisions of 18 Oct. Details and numbers: docs/RELEASE_G.md section 11 R-F
   (pc_nodes.txt, RT_REF_NODES) joint matrices of one monster; `tools/referee.py nodes DIR` compares them.
 - Note: rt_log's "quest N START" prints the quest as a byte: G's 10001 shows as 17.
 Next: N-R7 (Kut-Ku body push) with REF_NODES, then N-R8 (Velociprey drift) and the MH1 fights.
+
+## Referee round 3 (agent D, 20 Oct 2026)
+R-F13..R-F17 in docs/RELEASE_G.md section 11 (wall pass, CameraMove order, VU0 sin/cos/curves + rt_vu.h nearest
+rounding, newlib atan2f, hunter joints without hunter_yoff). Lessons: the PS2 side is PCSX2, where VU0 results round to
+nearest and FPU results toward zero (the sideways drift of a hunter walking at facing 1 needs cos(~0) = 1 + 1 ulp, i.e.
+nearest); PS2 `run`s of a scenario are not always identical (another random start), so compare PC changes with
+`referee.py pc` against one trace; `exact.py`-style per-field checks with a tiny tolerance find the first float-step
+divergence long before the report's tolerance does. Next: N-R7 (first float steps at root-motion starts, e.g. bowgun
+em0 tick 77: z one step apart after a blend start).

@@ -448,16 +448,37 @@ it the runs drift apart as expected (another hit lands, another knockback).
   pc_ptrs.txt. Found as scan-only words next to small numbers in objects whose MH1 twin has no relocation there.
   MH1 is not affected (its ELF has real relocations).
 
+**Third round (agent D, 20 Oct 2026; same method, both games):**
+- R-F13 *port glue, both games*: move()'s wall pass after body_hit (HitWallPlayer(.., 1) for every hunter in an online
+  game or with PLW+0x7EC set, and every monster with +0x7EC set) was missing in the host's tick: a hunter pushed into
+  a wall by a monster stayed in it for a tick and the next push started from there (viewer.c). Kut-Ku 622 -> 656.
+- R-F14 *port glue, both games*: CameraMove ran right after the player; move() runs it after body_hit, the wall pass
+  and player_mk, so the camera (and the stick's direction for the next tick) was a tick behind after a push. Kut-Ku
+  656 -> 780 / 804.
+- R-F15 *platform, both games*: the PS2's VU0 library code is now written out as the PS2 does it: flPS2SinFast /
+  CosFast (range reduction + polynomial, sine as +-sqrt(|1 - cos^2|), constants at_tbl / SS5432 from the disc), the
+  motion curves' Hermite and linear formulas (flFCVFcurveInterpolate*, flFCVGetValue2's "unknown interpolation gives
+  0"), and VU0 operations round to nearest (rt_vu.h) while the game's FPU code rounds toward zero; the fl maths, the
+  motion player and the curve reader are built with SSE math like the game C. Measured: the hunter walking at facing
+  1 now drifts sideways as on the PS2 (libm's sine gave none), small monsters' facings stay identical ~20 ticks longer.
+- R-F16 *platform, both games*: flArcTan2 is the PS2 C library's single-precision atan2f / atanf (newlib's, read from
+  the asm: its own pi / pi_lo constants, tables from the disc), not libm's.
+- R-F17 *port glue, both games*: the hunter's joint matrices for the game (body_hit, hit check, effects) carried the
+  host's drawing offset that puts the model's feet on the ground (0.3 units low; REF_NODES -1 showed it).
+Rathian 245 -> 286; MH1 Rathian 291 -> 365.
+
 **Left, ranked by how much a player meets it:**
-1. N-R7 (both games): in the Kut-Ku fights the push between the hunter and a small monster (kind 23 / 19) comes out
-   2-4 units different at tick 369 (G) / 319 (MH1); the monster's matrix, motion frame and the hunter's blend agree.
-   Likely the joints the host skeleton gives for that kind against flCalcTransSI's [inferred, not traced further].
-2. N-R8 (G): Rathian scenario: a Velociprey drifts 2 units in 40 ticks (its facing one unit apart from early on).
+1. N-R7 (both games): position differences of one float step (0.001 units at 10000) appear on the first tick of some
+   root motions (a monster starting to walk); they grow into 1-2 unit drifts after 200-300 ticks and change a push or
+   a facing later. Not traced further; the PS2 side is PCSX2's emulation, whose last-bit rounding the referee cannot
+   tell from the real console's.
+2. N-R9 (both games): the hunter's red-health recovery ticks on game_w+0x1E, a frame counter that on the PS2 also runs
+   while an area loads (dozens of ticks, one on the PC), so the recovery comes 1-60 ticks apart: the same cause as the
+   quest clock (owner, 18 Oct: left as is).
 3. N-R5 (both) *sound layer*: the PC's sound requests draw their random number one tick later than G's flSndRequest /
    flSndChange (channel 1 only; sound pitch variation; no gameplay effect).
 4. N-R6 (both) *referee path only*: `--quest` runs show a default hunter (armour, no name in the HUD) instead of the
    save's look; the real village -> quest path uses the save. Not a player bug; it makes the referee's pictures differ.
-5. Quest timer: the PS2's clock also runs while an area loads; the PC loads in one tick (owner, 18 Oct: left as is).
 (N-R1..N-R4 of the first round are fixed: R-F9, R-F8, R-F10, R-F11.)
 
 ## 12. Cross-game audit (agent A, 18 Oct 2026; docs/audit_cross_game.md)

@@ -860,3 +860,16 @@ Both games unless marked.
 - **Changed:** tools/test_activities.py trader: seeds 1 5 6 8 27 (TRADER_SEEDS overrides); with PS2 rounding seed 6
   no longer offers the trade.
 - **To revert:** the commits "WIP: PS2 float rounding ..." / "referee round 2 ..." on agent-D.
+
+## Referee, third round (agent D, 20 Oct 2026)
+- **Added:** move()'s wall pass after body_hit in sim_tick (viewer.c). **Why:** pushed hunters stayed in walls a tick.
+- **Changed:** CameraMove from right after the player to after body_hit / the wall pass / player_mk (viewer.c).
+- **Dropped:** libm sinf / cosf / atan2f in rt_flmat.c (flSin, flCos, the flmatRot*, flArcTan2) and the textbook curve
+  formulas in fmt/aan.c; **now** the PS2's own algorithms (VU0 sine / cosine polynomial and Hermite / linear forms,
+  rounded to nearest through rt_vu.h; the C library's atan2f / atanf) with their constants read from the disc.
+  rt_flmat.c, rt_motion.c, rt_main.c and fmt/aan.c (now built as its own object, build/pc/fmt_aan.o; not in the Xbox
+  FRONT list any more) are compiled with the game's SSE float flags. **Why:** the referee: facings and root motion a
+  float step apart, growing into drifts (RELEASE_G R-F15, R-F16).
+- **Changed:** the hunter's game joints (sync_joints -> rt_player_parts) no longer include hunter_yoff (the drawn
+  model keeps it). **Why:** 0.3 units below the PS2's (R-F17).
+- **To revert:** the commits "WIP referee: ..." / "referee round 3 ..." on agent-D.

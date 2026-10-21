@@ -1089,3 +1089,7 @@ soncho_no_oshie_00389C54
 # flPS2SinFast / CosFast's range and polynomial constants (rt_flmat.c ps2_sincos)
 at_tbl
 SS5432
+# the PS2 C library atanf / atan2f tables (rt_flmat.c flArcTan2)
+atanhi_0035E598
+atanlo_0035E5A8
+aT_0035E5B8

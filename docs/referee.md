@@ -123,3 +123,22 @@ traces:
 | mh1_rathian (quest 10) | MH1 | 1100 | 291 (was 241) |
 | mh1_kutku (quest 4) | MH1 | 1100 | 319 (was 318): a body push, as kutku |
 
+
+20 Oct 2026, third round (agent D; RELEASE_G section 11 R-F13..R-F17: the wall pass after body_hit, CameraMove's place,
+the PS2's VU0 sine / cosine / curve formulas and rounding, the C library's atan2f, the hunter's joints without the
+drawing offset):
+
+| scenario | game | play ticks | first gameplay difference |
+|---|---|---|---|
+| walk, sns, gs, ds, hammer, lance, bowgun | G | 400-600 | none |
+| rathian (quest 10) | G | 1100 | 286: a Velociprey 2 units off after slow drift (was 245) |
+| kutku (quest 2) | G | 1100 | 804: the hunter 1 unit off after a push (the PS2 run of 20 Oct; was 622 on that run) |
+| mh1_walk, mh1_sns, mh1_gs | MH1 | 400-600 | none |
+| mh1_rathian (quest 10) | MH1 | 1100 | 365: red-health recovery a few ticks apart (N-R9, load-time frame counter; was 291) |
+| mh1_kutku (quest 4) | MH1 | 1100 | 364: the same (was 319) |
+
+The PS2's own runs are not always identical: a new `run` of the same scenario can start with another random state and
+play differently (kutku: first difference 478 in one run, 622 in the next); compare PC changes with `referee.py pc`
+against one PS2 trace. Debug aid: `REF_NODES=SLOT:COUNT:FIRST-LAST tools/referee.py run S` also records the joint
+matrices of monster SLOT (-1: the hunter) on both sides; `tools/referee.py nodes DIR` lists per tick how far apart
+they are (the hunter's 0.3-unit offset of R-F17 was found this way).

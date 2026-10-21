@@ -151,7 +151,12 @@ rounding is the default (RT_FPU_PS2=0 turns it off); joints built in move() as e
 241 -> 291, Kut-Ku 318 -> 319); the Elder's tutorial ("△ PUSH", lessons, pages, buttons blocked while open) ported
 [verified: MH1 quest 131 screenshots]. G's Dual Swords and pc_noptr fixes are G-only.
 
-**Left, ranked:** (1) a body push 2-4 units off in the Kut-Ku fight (RELEASE_G N-R7); (2) sound-layer random draws
+**Third round (20 Oct 2026; RELEASE_G R-F13..R-F17, all shared code):** the wall pass after body_hit, CameraMove after
+it, the PS2's own sine / cosine / curve formulas and atan2f, the hunter's joints without the drawing offset. Rathian
+291 -> 365, Kut-Ku 319 -> 364; both now first differ in the red-health recovery tick (N-R9: a frame counter that also runs
+during PS2 area loads).
+
+**Left, ranked:** (1) float-step drifts after 200-300 ticks (RELEASE_G N-R7); (2) N-R9; (2) sound-layer random draws
 a tick late; (3) the quest clock while loading (owner, 18 Oct: left as is).
 
 ## 7. Cross-game audit (agent A, 18 Oct 2026; docs/audit_cross_game.md)
