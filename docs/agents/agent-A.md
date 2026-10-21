@@ -1248,3 +1248,12 @@ check.py needs wibo, which this round could not run (PC-only round). Commits on 
   and, for G, VERSION_MHG defined; #define renames skipped) and reports a function declared with two return types.
   Checked: it reports the lb_ac.c case when that line is put back, and 0 on main for both versions. full_check's
   kr_returns / kr_returns_g steps run it.
+
+## Owner's Xbox report: saving, shop icons (21 Oct 2026)
+- Save round trip reproduced as the owner did it on PC G (tools/test_save_g.sh): works; Xbox-only cause still unknown.
+  mc_xbox.c now logs saves/loads/failures. G's CONTINUE path: power-on autoloads the card ("loaded" right after the
+  reset), the GAME MENU cursor starts on CONTINUE, CardConld03 says "no character data" (msg 26) when every slot's byte
+  0 is 0 (save_data_sub(0, 15) == 7).
+- Weapon shop icons: G Lb_put_job (0x593100) uses e + 0x19 and remaps 5/6 -> 1/4 in the small sheet; lb_ag01.c.
+- G texture slots: menu slots are MH1 + 0x27 (0x118 -> 0x13F, 0x119 -> 0x140, 0x11A -> 0x141, 0x157 -> 0x180); the PC
+  keeps MH1's (GSLOT in include/g_alias.h).

@@ -631,3 +631,20 @@ checked by hand; "real" = G's asm differs in behaviour, not only in registers / 
   (type 16385), the quest sheet used it as an index into its string table. Fixed (G and the MH1 callers); verified in the
   XBE's code, xemu re-run pending. New: tools/test_urgent_g.sh (board -> depart -> clear -> star level 0) in the full
   check; tools/check_kr_returns.py lists the other declarations with the same hazard (to be gone through).
+
+## 15. Owner's Xbox report, G build 2305c47e: saving, shop icons (agent A, 21 Oct 2026)
+- **Saving "does nothing"** (bought armour + weapon, equipped, bed save in the house, debug menu "Title screen (soft
+  reset)"): NOT reproduced on the PC. The same sequence on PC G (equip blade 2 from the box, bed save on a new card,
+  debug menu +2000z (not saved), soft reset, CONTINUE -> slot 1 -> hunter -> village) brings back blade 2 and the saved
+  0z: the save is written and CONTINUE reads it (not a stale copy). New tools/test_save_g.sh runs it (full check).
+  The owner's log cannot tell what happened: the Xbox card layer (mc_xbox.c) logged nothing, and after the reset the log
+  never reaches "load finished" (about 80 s in the title / load screens, then the log ends). mc_xbox.c now logs every
+  file saved or loaded ("memory card: saved/loaded NAME, N bytes", as the PC), a failed open / short write / failed
+  close, folder creation and deletes; the next owner log will show whether the bed save reached the disk. Untested on
+  hardware and in xemu (no memory / xemu in use by another session). Found on the way: a G save of an RT_VILLAGE_START
+  test hunter loaded as "no character data" (slot byte 0, set at character creation, was 0); rt_village.c sets it.
+- **Shop list icons**: the weapon shop's list showed the neighbouring icon (a sword as a block shape) until the
+  detail view, which draws its own. G's icon sheet has one more cell before the weapon icons: Lb_put_job draws e + 0x19
+  in G (MH1 + 0x18), and its small-sheet branch maps jobs 5 / 6 to 1 / 4 (G 0x593100). Fixed in lb_ag01.c; checked on a
+  PC G screenshot (great sword, hammer, lance, sword-and-shield icons). The item shop's icons were already the same as
+  MH1's. PC texture slots stay MH1's (0x118 / 0x157: the PC's load_pit loads them; G's 0x13F / 0x180 are the PS2's).
