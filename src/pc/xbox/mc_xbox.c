@@ -25,6 +25,7 @@
 #include <windows.h>
 
 #include "xbox_title.h"
+#include "../rt/rt_log.h"
 
 #define CARD_KB 8000
 #define ROOT "E:\\UDATA"
@@ -33,6 +34,16 @@ static int pending, last_cmd, last_res;
 static int new_card = 1;
 static FILE *fds[8];
 static char title_dir[64], save_dir[96];
+static char fd_name[8][48];       /* for the debug log, as rt_mc.c: card file name, bytes moved, written or read */
+static long fd_bytes[8];
+static int fd_wrote[8];
+
+/* one log line per file the game saved or loaded (rt_mc.c's wording; the owner's logs had none on the Xbox) */
+static void log_close(int i)
+{
+    if (fd_bytes[i] || fd_wrote[i])
+        rt_log("memory card: %s %s, %ld bytes", fd_wrote[i] ? "saved" : "loaded", fd_name[i], fd_bytes[i]);
+}
 
 /* RT_MC_TRACE=1 (env.txt on the Xbox, xbox_env.c): every command's result, as rt_mc.c */
 static int trace(void)
@@ -278,11 +289,16 @@ int sceMcOpen(int port, int slot, const char *name, int mode)
     else
         m = "r+b";
     if (!(fds[fd] = fopen(path, m))) {
-        if (trace())
-            fprintf(stderr, "mc_xbox: cannot open %s (%s)\n", path, m);
+        if ((mode & 3) != 1)
+            rt_warn("memory card: cannot open %s for writing (%s, mode %X): save failed?", path, m, mode);
+        else
+            rt_log("memory card: %s not found (mode %X)", name, mode);
         done(3, -4);
         return 0;
     }
+    snprintf(fd_name[fd], sizeof fd_name[fd], "%s", name);
+    fd_bytes[fd] = 0;
+    fd_wrote[fd] = 0;
     done(3, fd);
     return 0;
 }
@@ -293,13 +309,16 @@ int sceMcClose(int fd)
     if (fd < 0 || fd >= 8 || !fds[fd]) {      /* see rt_mc.c: mc_create_file closes an fd it never set */
         for (i = 0; i < 8; i++)
             if (fds[i]) {
+                log_close(i);
                 fclose(fds[i]);
                 fds[i] = NULL;
             }
         done(4, 0);
         return 0;
     }
-    fclose(fds[fd]);
+    log_close(fd);
+    if (fclose(fds[fd]) != 0)
+        rt_warn("memory card: closing %s failed: the save may be incomplete", fd_name[fd]);
     fds[fd] = NULL;
     done(4, 0);
     return 0;
@@ -307,17 +326,23 @@ int sceMcClose(int fd)
 
 int sceMcRead(int fd, void *buf, int size)
 {
+    int n;
     if (fd < 0 || fd >= 8 || !fds[fd]) {
         done(5, -5);
         return 0;
     }
     fseek(fds[fd], 0, SEEK_CUR);        /* see sceMcWrite */
-    done(5, (int)fread(buf, 1, (size_t)size, fds[fd]));
+    n = (int)fread(buf, 1, (size_t)size, fds[fd]);
+    fd_bytes[fd] += n;
+    if (n != size)
+        rt_log("memory card: read of %s returned %d of %d bytes", fd_name[fd], n, size);
+    done(5, n);
     return 0;
 }
 
 int sceMcWrite(int fd, const void *buf, int size)
 {
+    int n;
     if (fd < 0 || fd >= 8 || !fds[fd]) {
         done(6, -5);
         return 0;
@@ -326,9 +351,12 @@ int sceMcWrite(int fd, const void *buf, int size)
      * pdclib's "r+" stream starts in read mode and refuses writes until one (every save
      * file stayed empty in xemu, 12 Oct 2026) */
     fseek(fds[fd], 0, SEEK_CUR);
-    size = (int)fwrite(buf, 1, (size_t)size, fds[fd]);
-    fflush(fds[fd]);
-    done(6, size);
+    n = (int)fwrite(buf, 1, (size_t)size, fds[fd]);
+    if (fflush(fds[fd]) != 0 || n != size)
+        rt_warn("memory card: write to %s stored %d of %d bytes (disk full?)", fd_name[fd], n, size);
+    fd_bytes[fd] += n;
+    fd_wrote[fd] = 1;
+    done(6, n);
     return 0;
 }
 
@@ -346,11 +374,13 @@ int sceMcMkdir(int port, int slot, const char *name)
         return 0;
     }
     if (!CreateDirectoryA(path, NULL)) {
+        rt_warn("memory card: cannot create folder %s (error %lu)", path, (unsigned long)GetLastError());
         done(0xB, -5);
         return 0;
     }
     if (!strcmp(path, save_dir))
         write_save_meta();                    /* the dashboard lists the save from this */
+    rt_log("memory card: created folder %s", name);
     done(0xB, 0);
     return 0;
 }
@@ -372,6 +402,7 @@ int sceMcDelete(int port, int slot, const char *name)
         return 0;
     }
     host_path(path, sizeof path, name);
+    rt_log("memory card: delete %s", name);
     a = GetFileAttributesA(path);
     if (a == INVALID_FILE_ATTRIBUTES) {
         done(0xD, -4);
