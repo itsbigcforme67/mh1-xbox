@@ -15,7 +15,7 @@ or one line of a description, which G stores one pointer per line).
 | G text found (main, overlays, quest files) | 13263 | |
 | official English from MH1 US, before this work | 6363 | 47% |
 | official English from MH1 US, first round | 6776 | 51% |
-| official English from MH1 US, now | 6839 | **52%** |
+| official English from MH1 US, now | 6839 | **51.6%** |
 | left, but the same Japanese is in Monster Hunter Portable (so Freedom should have it) | 4913 | 37% |
 | left, not in Portable either | 1511 | 11% |
 
@@ -142,7 +142,7 @@ lower bound (compressed data was not looked at).
 - menus and UI: 480 of 694
 - system: 210 of 678 (only the messages that are not about the PS2's memory card or network)
 
-So Freedom should take G from 52% to roughly 88% official English. Once the owner supplies Freedom, the way in is
+So Freedom should take G from 51.6% to roughly 88% official English. Once the owner supplies Freedom, the way in is
 the same as MH1 JP -> MH1 US: Portable JP -> Freedom US by structure (same data file layout, same table order),
 then Portable text -> G text by the rules above (most are identical text).
 
