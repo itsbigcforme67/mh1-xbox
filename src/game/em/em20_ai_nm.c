@@ -5834,6 +5834,45 @@ void em20_main(EMW *em) {
 
     em_mode_timer_sub(em);
     em_no_floor_ck(em);
+#ifdef VERSION_MHG
+    /* G (game 0x623A80, written from the asm; agent D, 20 Oct 2026): game_func_0062A2C0 keeps the flag off in two
+     * Gypceros moves (kinds 20 / 39, mode 3 sub 4 or 9); the needs per difficulty: 2 as MH1's 2, 4 with G's new kind 39
+     * and the countdown-only hunger, 9 / 10 none, any other the countdown-only hunger (MH1: only 2 and 4) */
+    if (em->mode != 5) {
+        if ((em->kind == 20 || em->kind == 39) && em->mode == 3 && (em->x15 == 4 || em->x15 == 9)) {
+            w->x08 = 0;
+        } else if (em->x8B6 != 0) {
+            w->x08 ^= 1;
+        } else {
+            w->x08 = 0;
+        }
+    } else {
+        w->x08 = 0;
+    }
+    if ((em->x8C2 != 1) && (em->x8B6 == 0)) {
+        void game_func_00547C20(EMW *em);
+        switch (game_w.x2E) {
+        case 2:
+            em_hinshi_ck(em, 0.200000003f);
+            em_thirst_ck(em);
+            em_hungry_ck(em);
+            break;
+        case 4:
+            if (em->kind == 20 || em->kind == 39) {
+                em_egg_ck(em);
+            }
+            em_thirst_ck(em);
+            game_func_00547C20(em);
+            break;
+        case 9:
+        case 10:
+            break;
+        default:
+            game_func_00547C20(em);
+            break;
+        }
+    }
+#else
     if (em->mode != 5) {
         if (em->x8B6 != 0) {
             w->x08 ^= 1;
@@ -5856,6 +5895,7 @@ void em20_main(EMW *em) {
             em_hungry_ck(em);
         }
     }
+#endif
     temp_v0 = w->x06;
     if (temp_v0 != 0) {
         w->x06 = (s16) (temp_v0 - 1);

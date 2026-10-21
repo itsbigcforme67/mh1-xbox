@@ -2423,6 +2423,19 @@ void em_hungry_ck(EMW *em) {
     }
 }
 
+#if defined(VERSION_MHG) && !defined(__MWERKS__)
+/* G only (game 0x547C20, written from the asm for the PC): em_hungry_ck's countdown without its "hungry now" switch;
+ * G's em01_main / em15_main / em20_main call it in place of em_hungry_ck on many quests (agent D, 20 Oct 2026: the
+ * lockstep referee saw a Gypceros's hunger counting down on the PS2 and not on the PC) */
+void game_func_00547C20(EMW *em) {
+    EM_HUNGRY *t = em_hungry_tbl[em->kind];
+    em->hungry -= em->x888 == 0 ? t->dec : t->dec2;
+    if (em->hungry < 0) {
+        em->hungry = 0;
+    }
+}
+#endif
+
 void em_thirst_ck(EMW *em) {
     EM_NEED *t = em_thirst_tbl[em->kind];
     s32 d;

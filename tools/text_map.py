@@ -1773,6 +1773,58 @@ def manual_pairs(path=MANUAL):
     return jpm, gm, gf, drop
 
 
+def manual_msgs(path=MANUAL):
+    """Hand-checked message pairs `msg SPACE:0xJPTABLE SPACE:0xUSGROUP`: a JP message table (a zero-ended run of line
+    pointers) and the first US line pointer of the same message; the English is re-flowed over the JP lines (reflow)."""
+    out = []
+    if os.path.exists(path):
+        for line in open(path):
+            f = line.split("#")[0].split()
+            if len(f) == 3 and f[0] == "msg":
+                out.append((x_key(f[1]), x_key(f[2])))
+    return out
+
+
+def msg_pairs(jp, us, om, cells, msgs):
+    """[(table key, slot index, JP key, English)] for the hand-checked messages; a pair whose ~A00 / %s tokens or
+    numbers disagree, or whose US text does not fit the JP lines, is skipped and counted"""
+    by_addr = {om.info[k][0]: k for k in cells}
+    out, bad = [], 0
+    for (jsp, ja), (usp, ua) in msgs:
+        key = by_addr.get(ja)
+        if key is None:
+            bad += 1
+            continue
+        base, b = jp.mod[jsp]
+        slots = []
+        while True:
+            v, = struct.unpack_from("<I", b, ja - base + 4 * len(slots))
+            if v == 0:
+                break
+            slots.append(v)
+        keymap = {off // 4: jk for off, jk in cells[key][1]}
+        jslots = [keymap.get(i) for i in range(len(slots))]
+        texts = [jp.cstr(jsp, v) or b"" for v in slots]
+        g = mc_groups(us, usp, ua, 64)
+        if not g or g[0][0] != ua:
+            bad += 1
+            continue
+        ul = g[0][1]
+        if sorted(MC_TOKEN.findall(b"\n".join(texts))) != sorted(MC_TOKEN.findall(b"\n".join(ul))) \
+                or not same_numbers(b"".join(texts), b" ".join(ul)):
+            bad += 1
+            continue
+        asg = reflow(jslots, texts, ul)
+        if not asg:
+            bad += 1
+            continue
+        for idx, txt in asg.items():
+            out.append((key, idx, jslots[idx], txt))
+    if bad:
+        log("hand-checked messages: %d skipped (tokens, numbers or length)" % bad)
+    return out
+
+
 def x_key(t):
     sp, a = t.split(":")
     return (sp, int(a, 16))
@@ -1879,7 +1931,7 @@ def run_us(jp, us, funcs, objs, S, cells, cache):
         for jk, c in ex.items():
             out[jk] = c
         rows = [r for r in rows if r[0] != ("main", exp)] + [row]
-    bad = length_check(jp, us, cells, out)
+    bad = {k for k in length_check(jp, us, cells, out) if not ints_agree(om, k)}
     for key in bad:
         for off, jk in cells[key][1]:
             out.pop(jk, None)
@@ -2373,7 +2425,9 @@ def main():
     lsp = linesplit_pairs(jp, us, omu, cells)
     gsp = group_pairs(jp, us, omu, cells, en_jp, owner)
     log("other line-split dialogs: %d slots from the US groups" % len(gsp))
-    lsp += gsp
+    msp = msg_pairs(jp, us, omu, cells, manual_msgs())
+    log("hand-checked messages: %d slots" % len(msp))
+    lsp += gsp + msp
     slot_jp, slot_cov = {}, set()
     for key, idx, jk, xb in lsp:
         slot_jp[("slot", omu.info[key][0] + 4 * idx)] = xb
@@ -2836,6 +2890,28 @@ def exp_pairs(om, cells, exp, masters):
 # a prose-length correlation says nothing about them (English names are not as long as Japanese ones)
 RECORD_ALIGNED = {"Ken_data", "Gun_data", "Armor_Head_Data", "Armor_Body_Data", "Armor_Arm_Data", "Armor_Waist_Data",
                   "Armor_Leg_Data", "monster_data"}
+
+
+def ints_agree(om, key, need=0.9):
+    """the object's small integer words (not pointers) are the same in both builds at the located shift (>= need, at
+    least 4 such words): a record table whose rows carry their own numbers, so the row pairing needs no length check
+    (the meal-result tables: one-line results with ingredient codes)"""
+    if key not in om.found:
+        return False
+    xs, d, _h = om.found[key]
+    a, sz = om.info[key]
+    jb, jbuf = om.jp.mod[key[0]]
+    xb, xbuf = om.o.mod[xs]
+    n = same = 0
+    for o in range(0, sz - 3, 4):
+        if not (0 <= a + o - jb <= len(jbuf) - 4 and 0 <= a + d + o - xb <= len(xbuf) - 4):
+            return False
+        v, = struct.unpack_from("<I", jbuf, a + o - jb)
+        w, = struct.unpack_from("<I", xbuf, a + d + o - xb)
+        if v < 0x100000:
+            n += 1
+            same += v == w
+    return n >= 4 and same >= need * n
 
 
 def length_check(jp, us, cells, out, minmean=14, minpairs=8, rmin=0.3):

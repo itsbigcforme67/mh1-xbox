@@ -1613,6 +1613,10 @@ static void em_slot_sync(int i, int draw, const fl_light *L)
     if (em[0x736] != (uint8_t)rt_game_stage())
         return;
     m = &em_mdl[kind];
+    {   /* mlCalcTransEM's neck turn (rt_em.c) */
+        int rt_em_neck(int no, int bones[4], float ry[4]);
+        m->skel.nextra = rt_em_neck(i, m->skel.extra_bone, m->skel.extra_ry);
+    }
     rt_monster_pose(i, &m->skel);
     memcpy(s, em + 0xB8, sizeof s);
     if (s[0] == 0.0f) s[0] = s[1] = s[2] = 1.0f;
