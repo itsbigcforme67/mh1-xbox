@@ -4,8 +4,8 @@
 #include "../gonl.h"
 
 s32 cnLBS_Get_ServerMessage();
+void * memcpy();
 extern u8 cw;
-s32 memcpy();         /* extern */
 extern u8 my_user_mini_data;
 
 void CallBack_SendMiniData(s64 arg0) {

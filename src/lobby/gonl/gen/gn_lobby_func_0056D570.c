@@ -8,11 +8,11 @@ s32 Get_sw();
 s32 SoftKeyboard_exit();
 s32 SoftKeyboard_move();
 s32 cnWrap_SoundRequest();
+s32 func_00220F40();
 extern u8 g_main_2EFBAC;
 extern u8 Psw;
 extern u8 g_main_2EFBAC;
 s32 SoftKeyboard_pos_set();     /* extern */
-s32 func_00220F40(); /* extern */
 
 s32 lobby_func_0056D570(void *arg0) {
     s32 temp_s0;

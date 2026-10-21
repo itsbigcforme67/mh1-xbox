@@ -4,9 +4,9 @@
 #include "../gonl.h"
 
 s32 lobby_func_005E6EE0();
+void * memset();
 extern u8 pFunc;
 s16 __cnetSub_Set_BgProcess(); /* extern */
-s32 memset();        /* extern */
 extern s16 g_lb_733664;
 extern s32 g_lb_733E3A;
 

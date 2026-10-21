@@ -7,31 +7,31 @@ s32 Lb_set_mini_data_to_pl();
 s32 Lb_set_player();
 s32 To_LogOut();
 s32 lobby_func_0058BAA0();
+s32 memcmp();
+void * memcpy();
+void * memset();
 extern u8 cw;
 extern u8 game_w;
 extern u8 lb_sys;
 s32 cnLBS_Get_LobbyMemberList(); /* extern */
-s32 memcmp();                    /* extern */
-s32 memcpy();                /* extern */
-s32 memset();             /* extern */
 extern s8 lbCommer;
-extern s8 my_user_id;
+extern u8 my_user_id;
 
 void CallBack_Result_Plaza_LobbyMember(s64 arg0) {
     u8 g_frame[0xE0] __attribute__((aligned(16)));   /* G's stack frame */
 #define sp78 (*(s64 *)(g_frame + 0x78))
 #define sp80 (*(s8 *)(g_frame + 0x80))
-#define sp88 (*(s8 *)(g_frame + 0x88))
-#define sp9C (*(s8 *)(g_frame + 0x9C))
+#define sp88 (*(s32 *)(g_frame + 0x88))
+#define sp9C (*(s32 *)(g_frame + 0x9C))
     s32 temp_s3;
     s32 var_s2;
-    s8 *temp_s4;
     s8 *var_s3;
     s8 *var_v1;
     s8 var_s1;
     s8 var_s4;
     u8 *temp_a0;
     u8 *temp_a1;
+    u8 *temp_s4;
     u8 *temp_v0;
     u8 *temp_v1;
     u8 *temp_v1_2;

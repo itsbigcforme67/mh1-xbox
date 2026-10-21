@@ -7,9 +7,9 @@ s32 CallBack_Result_SearchUserPlace();
 s32 Check_CallBackWait();
 s32 cnLBS_Get_ServerMessage();
 s32 lobby_func_005E69B0();
+s32 memcmp();
 extern u8 cw;
 s32 Visual_main();                               /* extern */
-s32 memcmp();               /* extern */
 extern u8 my_user_id;
 
 s32 lobby_func_00580910(s8 *arg0) {

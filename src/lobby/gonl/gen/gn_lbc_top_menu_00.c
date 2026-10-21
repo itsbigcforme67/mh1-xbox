@@ -7,11 +7,11 @@ s32 Lbc_init_network_work();
 s32 Lbc_set_prim();
 s32 SetSceneTitle();
 s32 lobby_func_0057D5D0();
+void * memset();
 s32 str_play_vol();
 extern u8 cw;
 extern u8 game_w;
 extern u8 pNet;
-s32 memset();        /* extern */
 extern s8 ClassInfo;
 extern u8 PlazaInfo;
 

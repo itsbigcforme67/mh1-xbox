@@ -11,8 +11,8 @@ s32 lobby_func_005E3900();
 extern u8 ClassInfo;
 extern u8 cw;
 s32 cnLBS_Get_LobbyName();           /* extern */
-s32 cnLBS_Get_RoomStatus();          /* extern */
-s32 cnLBS_Get_mhRoomJoinUser(); /* extern */
+s32 gonl_Get_PlazaStatus();          /* extern */
+s32 gonl_Get_PlazaJoinUser(); /* extern */
 extern u8 PlazaInfo;
 
 void CallBack_Result_Plaza_ReadAllocation(s64 arg0) {
@@ -38,8 +38,8 @@ void CallBack_Result_Plaza_ReadAllocation(s64 arg0) {
                 do {
                     temp_s0 = (var_s2 & 0xFFFF) + 1;
                     (*(s16 *)((u8 *)(var_s1) + 4)) = temp_s0;
-                    cnLBS_Get_RoomStatus(temp_s0 & 0xFFFF, var_s1 + 0x16);
-                    cnLBS_Get_mhRoomJoinUser(temp_s0 & 0xFFFF, var_s1 + 6, var_s1 + 0x12);
+                    gonl_Get_PlazaStatus(temp_s0 & 0xFFFF, var_s1 + 0x16);
+                    gonl_Get_PlazaJoinUser(temp_s0 & 0xFFFF, var_s1 + 6, var_s1 + 0x12);
                     cnLBS_Get_LobbyName(temp_s0 & 0xFFFF, var_s1 + 0x1A);
                     lobby_func_005E3900(temp_s0 & 0xFFFF, (s32) (var_s1 + 0x5B));
                     lobby_func_005E36A0(temp_s0 & 0xFFFF, var_s1 + 8);

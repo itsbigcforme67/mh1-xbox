@@ -8,13 +8,13 @@ s32 Get_sw2();
 s32 fade_set();
 s32 lobby_bgm_set2();
 s32 lobby_func_0057C7E0();
+void * strcpy();
 s32 tl_exit_sub_menu();
 extern u8 cw;
 extern u8 jtbl_2033;
 extern u8 pNet;
 s32 Lbc_SendBrowserResult(); /* extern */
 s32 To_BootUpBrowser();                         /* extern */
-s32 strcpy();      /* extern */
 extern u8 first_url;
 extern u8 lit_2032_0065DD40;
 
@@ -41,7 +41,7 @@ void plaza_capcomPage(void) {
             temp_v1 = (*(void **)&pNet);
             (*(u8 *)((u8 *)(temp_v1) + 0x23)) = (u8) ((*(u8 *)((u8 *)(temp_v1) + 0x23)) + 1);
             (*(s8 *)((u8 *)((*(void **)&pNet)) + 0x31)) = 1;
-            strcpy(&first_url, &lit_2032_0065DD40, 1);
+            strcpy(&first_url, &lit_2032_0065DD40);
             To_BootUpBrowser();
             fade_set(2);
             return;

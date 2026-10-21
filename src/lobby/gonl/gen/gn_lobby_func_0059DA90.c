@@ -3,9 +3,8 @@
  * tools/build_pc_mhg.sh). */
 #include "../gonl.h"
 
-s32 func_001D5970();                            /* extern */
-
-void lobby_func_0059DA90(void) {
-    func_001D5970();
+s32 func_001D5970();
+void lobby_func_0059DA90(void *arg0) {
+    func_001D5970(arg0);
 }
 

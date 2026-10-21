@@ -4,8 +4,8 @@
 #include "../gonl.h"
 
 s32 lobby_func_005AB940();
+void * memset();
 extern u8 CnetSys_w;
-s32 memset();        /* extern */
 
 s32 lobby_func_005AB8B0(s32 unused_a0, s32 arg1, s32 arg2) {
     if ((*(u8 *)((u8 *)(&(*(u8 *)((u8 *)&CnetSys_w + 0xDE8))) + 0x20)) == 0) {

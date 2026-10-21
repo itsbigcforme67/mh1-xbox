@@ -6,14 +6,14 @@
 s32 flfntLocate();
 s32 flfntSetSize();
 s32 font_print_double();
+void * memset();
+void * strcpy();
 extern u8 cw;
 extern u8 net_etc_mes_tbl;
 extern u8 tl_mail_tbl;
 s32 cnWrap_SetFontSize();                /* extern */
 s32 font_print();                            /* extern */
-s32 memset();        /* extern */
 s32 sprintf();                    /* extern */
-s32 strcpy();                  /* extern */
 
 void disp_string_handle(s32 arg0, s32 arg1) {
     u8 g_frame[0x50] __attribute__((aligned(16)));   /* G's stack frame */

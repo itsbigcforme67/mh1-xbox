@@ -6,10 +6,10 @@
 s32 Lbc_set_prim();
 s32 SetHelpLineMsg();
 s32 SetSceneTitle();
+s32 memcmp();
 s32 transOtSelectHandleName();
 extern u8 User_data;
 extern u8 cw;
-s32 memcmp();                /* extern */
 
 void id_select_00(void *arg0) {
     s32 var_s1;

@@ -6,12 +6,12 @@
 s32 CallBack_Result_Plaza_LobbyMember2();
 s32 Check_CallBackWait();
 s32 lobby_func_005AE500();
+void * memset();
+void * strcpy();
 extern u8 g_main_2EF390;
 extern u8 cw;
 extern u8 g_main_2EF390;
-s32 memset();        /* extern */
-s32 strcpy();                     /* extern */
-extern s32 g_lb_636E08;
+extern void *g_lb_636E08;
 
 s32 lbc_in_plaza_03(s64 arg0) {
     u8 g_frame[0x170] __attribute__((aligned(16)));   /* G's stack frame */

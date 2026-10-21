@@ -6,11 +6,11 @@
 s32 Lbc_SendMiniData();
 s32 Lbc_set_prim();
 s32 lobby_func_0059ACD0();
+void * memcpy();
+void * memset();
 extern u8 cw;
 extern u8 game_w;
 extern u8 player_work;
-s32 memcpy();         /* extern */
-s32 memset();        /* extern */
 extern u8 room_member_handle;
 extern u8 room_member_id;
 extern u8 room_member_mini_data;

@@ -4,11 +4,11 @@
 #include "../gonl.h"
 
 s32 Lb_put_chat();
+s32 memcmp();
+void * memcpy();
+void * memset();
 extern u8 cw;
 s32 cnLBS_Get_RoomLeaveUser();         /* extern */
-s32 memcmp();               /* extern */
-s32 memcpy();         /* extern */
-s32 memset();        /* extern */
 extern s8 lbCommer;
 
 void CallBack_Event_LobbyCommer(void) {

@@ -4,11 +4,11 @@
 #include "../gonl.h"
 
 s32 Lb_clearChatList();
+void * memset();
 extern u8 BsProxyUrlstr;
 extern u8 cw;
 extern u8 lb_gbyte_2EF2A4;
 extern u8 lb_sys;
-s32 memset();        /* extern */
 extern u8 lbCommer;
 
 void MH_lobbyClear(void) {

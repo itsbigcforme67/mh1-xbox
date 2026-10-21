@@ -6,9 +6,9 @@
 s32 SetDialogData();
 s32 SetDialogYesNo();
 s32 SetHelpLineMsg();
+void * memset();
 extern u8 pNet;
 extern u8 tl_member_buff;
-s32 memset();        /* extern */
 
 void lobby_func_0056B730(void) {
     memset(&(*(u8 *)((u8 *)&tl_member_buff + 0x1398)), 0, 0x618);

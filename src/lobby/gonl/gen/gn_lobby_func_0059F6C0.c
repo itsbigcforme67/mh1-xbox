@@ -3,10 +3,10 @@
  * tools/build_pc_mhg.sh). */
 #include "../gonl.h"
 
-s32 strcpy();                     /* extern */
+void * strcpy();
 extern s32 g_lb_654E00;
 
-void lobby_func_0059F6C0(s32 arg0) {
+void lobby_func_0059F6C0(void *arg0) {
     strcpy(&g_lb_654E00, arg0);
 }
 

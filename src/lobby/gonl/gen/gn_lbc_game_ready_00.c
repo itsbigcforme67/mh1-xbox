@@ -5,12 +5,12 @@
 
 s32 CallBack_Result_Match_MatchInformation();
 s32 Check_CallBackWait();
+void * memcpy();
+void * memset();
 extern u8 USER_PL_ID;
 extern u8 cw;
 s32 cnLBS_Get_MatchInfomation(); /* extern */
 s32 cnLBS_Read_MatchInfomation(); /* extern */
-s32 memcpy();           /* extern */
-s32 memset();        /* extern */
 extern s32 g_sub_541E30;
 extern u8 room_member_handle;
 extern u8 room_member_id;
@@ -20,7 +20,7 @@ void lbc_game_ready_00(void) {
     u8 g_frame[0x780] __attribute__((aligned(16)));   /* G's stack frame */
 #define sp70 (*(u8 *)(g_frame + 0x70))
 #define sp71 (*(u8 *)(g_frame + 0x71))
-#define sp72 (*(u8 *)(g_frame + 0x72))
+#define sp72 (*(s32 *)(g_frame + 0x72))
     u8 *var_s2;   /* (s32 *) */
     u8 *var_s3;   /* (s32 *) */
     u8 *var_s4;   /* (s32 *) */

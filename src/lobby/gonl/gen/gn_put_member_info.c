@@ -10,10 +10,10 @@ s32 font_print_double();
 s32 font_print_uf();
 s32 font_set_palette();
 s32 han2zen();
+s32 memcmp();
 extern u8 pNet;
 extern u8 tl_msg_tbl;
 s32 font_print();              /* extern */
-s32 memcmp();               /* extern */
 s32 sprintf(); /* extern */
 extern s32 g_lb_63E288;
 extern u8 lb_num_str;

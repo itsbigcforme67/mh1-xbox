@@ -1,4 +1,4 @@
-/* G online (PC): DispHelpLine, written from Monster Hunter G's code at lobby 0x5A1890 by tools/mhg_gonl.py (an m2c draft with
+/* HAND-FIXED (font_print_sp). G online (PC): DispHelpLine, written from Monster Hunter G's code at lobby 0x5A1890 by tools/mhg_gonl.py (an m2c draft with
  * G's names; docs/network.md 3.12). Not compared with anything; the G online PC build links it (ONLINE=1
  * tools/build_pc_mhg.sh). */
 #include "../gonl.h"
@@ -58,7 +58,7 @@ void DispHelpLine(void) {
     font_set_palette(0);
     if (helpLineStr != 0) {
         flfntLocate((s32) g_lb_654CFC, (s32) g_lb_654CFE);
-        font_print_sp((s16) (*(s32 *)((u8 *)&helpLineStr + 0x4)), helpLineStr);
+        font_print_sp(helpLineStr);   /* HAND-FIXED: G's font_print_sp (main 0x12BE70) takes a first argument (here the line's width) the PC's MH1 one has not */
     }
 }
 

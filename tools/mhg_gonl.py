@@ -21,7 +21,7 @@ ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, os.path.join(ROOT, 'tools'))
 import mhg_c  # noqa: E402
 
-MODS = [('main', 0x100000, 0x2F0000 + 0x1B1A80), ('sub_main', 0x4C0000, 0x542600), ('lobby', 0x542600, 0x762600)]
+MODS = [('main', 0x100000, 0x4A0C80), ('sub_main', 0x4A0C80, 0x542600), ('lobby', 0x542600, 0x762600)]   # (G vram: config/mhg/*.yaml)
 
 
 def module_of(a):
@@ -128,6 +128,14 @@ def write_context():
     os.makedirs(os.path.dirname(CTX_PATH), exist_ok=True)
     with open(CTX_PATH, 'w') as f:
         f.write('typedef int s32; typedef unsigned int u32; typedef long long s64;\n')
+        # the C library G calls (a length set in a tail jump's delay slot is kept only when m2c knows the count)
+        LIBC = {'memcpy': ('void *', ['void *', 'void *', 's32']), 'memset': ('void *', ['void *', 's32', 's32']),
+                'memcmp': ('s32', ['void *', 'void *', 's32']), 'strncpy': ('void *', ['void *', 'void *', 's32']),
+                'strcpy': ('void *', ['void *', 'void *']), 'strcmp': ('s32', ['void *', 'void *']),
+                'strncmp': ('s32', ['void *', 'void *', 's32']), 'strlen': ('s32', ['void *']),
+                'strcat': ('void *', ['void *', 'void *']), 'strchr': ('void *', ['void *', 's32'])}
+        for n, (r, ps) in LIBC.items():
+            sigs[n] = (r, ps)
         for n, (r, ps) in sorted(sigs.items()):
             f.write('%s %s(%s);\n' % (r, n, ', '.join(ps) or 'void'))
     CTX.clear()
@@ -151,7 +159,7 @@ def draft(name):
         with open(own, 'w') as f:
             f.writelines(l for l in open(CTX_PATH) if not re.search(r'\b%s\(' % name, l))
         env['DRAFT_CTX'] = own
-    p = subprocess.run([sys.executable, os.path.join(ROOT, 'tools/draft.py'), 'mhg/lobby', name],
+    p = subprocess.run([sys.executable, os.path.join(ROOT, 'tools/draft.py'), 'mhg/' + (module_of(gaddr(name)) or 'lobby'), name],
                        capture_output=True, text=True, env=env)
     return p.stdout
 
@@ -180,6 +188,7 @@ def convert(src):
     src = sign_extends(src)
     src = struct_args(src)
     src = arg_positions(src)
+    src = tail_jumps(src)
     src = function_tables(src)
     src = unprototype(src)
     # m2c's declarations of names that became NAME+offset are no declarations any more
@@ -196,6 +205,8 @@ def convert(src):
 # MH1 function of that name, so G's gets a name of its own in every generated file
 G_RENAME = {
     '_cnet_CallBack_Result_PersonalDataChange': 'gonl_cb_FileDownload',    # G 0x5BFD00: the file download burst's result
+    'cnLBS_Get_RoomStatus': 'gonl_Get_PlazaStatus',            # G 0x5E37C0: a plaza record's status (MH1: a room's)
+    'cnLBS_Get_mhRoomJoinUser': 'gonl_Get_PlazaJoinUser',      # G 0x5E3660: a plaza record's two user counts
     '_cnet_RecvFromLbs_BothAnnexJoinUser': 'gnet_6205_both',    # G 0x5E3700: plaza / lobby join users (G's records)
     '_cnet_RecvFromLbs_AnswerLobbyExplain': 'gnet_620A_ans',    # G 0x5E3940: plaza / lobby explanation (G's records)
 }
@@ -294,9 +305,11 @@ def function_tables(src):
 def frame_size(addr):
     """the G function's stack frame (its first `addiu sp, sp, -N`), 0 for a leaf without one"""
     import struct
-    d = open(os.path.join(ROOT, 'build/mhg/split/lobby.bin'), 'rb').read()
+    mod = module_of(addr) or 'lobby'
+    base = dict((m, lo) for m, lo, hi in MODS)[mod]
+    d = open(os.path.join(ROOT, 'build/mhg/split/%s.bin' % mod), 'rb').read()
     for k in range(4):
-        w = struct.unpack_from('<I', d, addr - 0x542600 + 4 * k)[0]
+        w = struct.unpack_from('<I', d, addr - base + 4 * k)[0]
         if w >> 16 == 0x27BD and w & 0x8000:
             return 0x10000 - (w & 0xFFFF)
     return 0
@@ -381,6 +394,16 @@ def arg_positions(src):
             out.append(p)
         return '%s(%s) {' % (m.group(1), ', '.join(out) if out else 'void')
     return re.sub(r'^(\w[\w *]*?\b\w+)\(([^()]*)\) \{$', one, src, flags=re.M)
+
+
+def tail_jumps(src):
+    """a G function that is only a jump to another (`j f`, arguments untouched) comes out of m2c as `void g(void) { f(); }`:
+    pass eight argument words on (extra ones are harmless in the PC's calling convention) and the result back"""
+    A = ', '.join('a%d' % i for i in range(8))
+    return re.sub(r'^\w[\w *]*?\b(\w+)\(void\) \{\n    (\w+)\(\);\n\}$',
+                  lambda m: 's32 %s(%s) {   /* a jump to %s */\n    return (s32) %s(%s);\n}' % (
+                      m.group(1), ', '.join('s32 a%d' % i for i in range(8)), m.group(2), m.group(2), A),
+                  src, flags=re.M)
 
 
 def struct_args(src):
@@ -510,12 +533,18 @@ HEADER = '''/* G online (PC): %s, written from Monster Hunter G's code at lobby 
 '''
 
 
+GADDR = {}
+
+
 def gaddr(name):
-    for ln in open(os.path.join(ROOT, 'config/mhg/symbols/lobby.txt')):
-        m = re.match(r'(\S+) = 0x([0-9A-Fa-f]+);', ln)
-        if m and m[1] == name:
-            return int(m[2], 16)
-    return 0
+    """a G function's address: the lobby's names first, then main's and sub_main's (G code the lobby calls)"""
+    if not GADDR:
+        for f in ('sub_main', 'main', 'lobby'):
+            for ln in open(os.path.join(ROOT, 'config/mhg/symbols/%s.txt' % f)):
+                m = re.match(r'(\S+) = 0x([0-9A-Fa-f]+);', ln)
+                if m:
+                    GADDR[m[1]] = int(m[2], 16)
+    return GADDR.get(name, 0)
 
 
 def main():

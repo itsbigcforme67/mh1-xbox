@@ -10,8 +10,8 @@ s32 lobby_func_00542790();
 s32 lobby_func_00542820();
 s32 lobby_func_005429A0();
 s32 lobby_func_00542A30();
+s32 sub_main_func_004C8600();
 s32 get_questLevelNum();                     /* extern */
-s32 sub_main_func_004C8600(); /* extern */
 extern u8 User_data;
 
 s32 lobby_func_00542A60(s32 arg0) {
@@ -59,9 +59,9 @@ block_127:
     case 0xA:
         return Quest_clear_bit_ck(0x40B);
     case 0x2F:
-        return sub_main_func_004C8600(&User_data, 0xB, 0x72);
+        return sub_main_func_004C8600((s32) &User_data, 0xB, 0x72);
     case 0x30:
-        return sub_main_func_004C8600(&User_data, 1, 0x76);
+        return sub_main_func_004C8600((s32) &User_data, 1, 0x76);
     case 0xB:
         if ((s32) (*(u8 *)((u8 *)&User_data + 0xC23)) >= 0x14) {
             return lobby_func_00542790(0, 4);
@@ -72,11 +72,11 @@ block_127:
     case 0xD:
         return Event_flag_ck(0x59);
     case 0xE:
-        return sub_main_func_004C8600(&User_data, 6, 0x7A);
+        return sub_main_func_004C8600((s32) &User_data, 6, 0x7A);
     case 0xF:
-        return sub_main_func_004C8600(&User_data, 0x14, 0x7D);
+        return sub_main_func_004C8600((s32) &User_data, 0x14, 0x7D);
     case 0x10:
-        return sub_main_func_004C8600(&User_data, 8, 0x7A);
+        return sub_main_func_004C8600((s32) &User_data, 8, 0x7A);
     case 0x11:
         if ((s32) (*(u8 *)((u8 *)&User_data + 0xC23)) >= 0x17) {
             return lobby_func_00542790(0, 5);
@@ -85,9 +85,9 @@ block_127:
     case 0x12:
         return Quest_clear_bit_ck(0x7EC);
     case 0x13:
-        return sub_main_func_004C8600(&User_data, 1, 0x81);
+        return sub_main_func_004C8600((s32) &User_data, 1, 0x81);
     case 0x14:
-        return sub_main_func_004C8600(&User_data, 0xF, 0x87);
+        return sub_main_func_004C8600((s32) &User_data, 0xF, 0x87);
     case 0x15:
         if ((s32) (*(u8 *)((u8 *)&User_data + 0xC23)) >= 0x1A) {
             return lobby_func_00542790(0, 6);
@@ -96,15 +96,15 @@ block_127:
     case 0x16:
         return Quest_clear_bit_ck(0x802);
     case 0x17:
-        return sub_main_func_004C8600(&User_data, 0xB, 0x7F);
+        return sub_main_func_004C8600((s32) &User_data, 0xB, 0x7F);
     case 0x18:
-        return sub_main_func_004C8600(&User_data, 0x15, 0x86);
+        return sub_main_func_004C8600((s32) &User_data, 0x15, 0x86);
     case 0x19:
-        return sub_main_func_004C8600(&User_data, 0xE, 0x8B);
+        return sub_main_func_004C8600((s32) &User_data, 0xE, 0x8B);
     case 0x1A:
-        return sub_main_func_004C8600(&User_data, 0x11, 0x87);
+        return sub_main_func_004C8600((s32) &User_data, 0x11, 0x87);
     case 0x1B:
-        if ((get_questLevelNum(0xE) == 1) && (get_questLevelNum(0xF) == 1) && (get_questLevelNum(0x10) == 1) && (get_questLevelNum(0x13) == 1) && (get_questLevelNum(0x14) == 1) && (get_questLevelNum(0x17) == 1) && (get_questLevelNum(0x18) == 1) && (get_questLevelNum(0x19) == 1) && (get_questLevelNum(0x1A) == 1) && (sub_main_func_004C8600(&User_data, 8, 0x7A) == 1) && (sub_main_func_004C8600(&User_data, 0x16, 0x81) == 1) && (sub_main_func_004C8600(&User_data, 0x1A, 0x7F) == 1)) {
+        if ((get_questLevelNum(0xE) == 1) && (get_questLevelNum(0xF) == 1) && (get_questLevelNum(0x10) == 1) && (get_questLevelNum(0x13) == 1) && (get_questLevelNum(0x14) == 1) && (get_questLevelNum(0x17) == 1) && (get_questLevelNum(0x18) == 1) && (get_questLevelNum(0x19) == 1) && (get_questLevelNum(0x1A) == 1) && (sub_main_func_004C8600((s32) &User_data, 8, 0x7A) == 1) && (sub_main_func_004C8600((s32) &User_data, 0x16, 0x81) == 1) && (sub_main_func_004C8600((s32) &User_data, 0x1A, 0x7F) == 1)) {
             return 1;
         }
         goto block_127;

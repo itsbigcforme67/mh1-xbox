@@ -7,6 +7,7 @@ s32 CallBack_Result_Lobby_JoinUser();
 s32 Lb_clearChatList();
 s32 cnLbc_CheckInFloorOrder();
 s32 fade_set();
+void * memset();
 extern u8 ClassInfo;
 extern u8 D_0035EFEB;
 extern u8 cw;
@@ -14,7 +15,6 @@ extern u8 lb_sys;
 s32 Init_InterruptFlag();                       /* extern */
 s32 Plaza_chat_clear();                         /* extern */
 s32 cnLBS_Read_PlazaJoinUser(); /* extern */
-s32 memset();        /* extern */
 extern s32 g_lb_6DE120;
 
 void To_EnterLobby(void) {

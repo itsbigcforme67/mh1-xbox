@@ -10,6 +10,7 @@ s32 Lb_set_mini_data();
 s32 To_LogOut();
 s32 lobby_func_0057B800();
 s32 lobby_func_0058BAA0();
+void * memset();
 extern u8 g_main_2EF2A8;
 extern u8 g_main_2EF390;
 extern u8 BsLbsCount;
@@ -23,7 +24,6 @@ extern u8 pNet;
 extern u8 player_work;
 s32 cnLBS_Send_UserMiniData(); /* extern */
 s32 cnLbc_Init_NgServerId();                    /* extern */
-s32 memset();              /* extern */
 extern u8 my_user_mini_data;
 
 void lbc_login_finish(void) {

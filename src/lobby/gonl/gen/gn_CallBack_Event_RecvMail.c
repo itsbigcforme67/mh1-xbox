@@ -5,20 +5,20 @@
 
 s32 KinshiYogo_chk();
 s32 cnWrap_SoundRequest();
+s32 memcmp();
+void * memset();
+void * strncpy();
 extern u8 g_main_2EFBAC;
 extern u8 g_main_2EFBAC;
-s32 cnLBS_Get_RecvMessage();    /* extern */
-s32 memcmp();               /* extern */
-s32 memset();             /* extern */
-s32 strncpy();          /* extern */
+s32 cnLBS_Get_RecvMessage(); /* extern */
 extern s32 g_main_302290;
 extern u8 RecvMailInfo;
 
 void CallBack_Event_RecvMail(void) {
     u8 g_frame[0xE0] __attribute__((aligned(16)));   /* G's stack frame */
-#define sp40 (*(u8 *)(g_frame + 0x40))
-#define sp48 (*(u8 *)(g_frame + 0x48))
-#define sp5C (*(u8 *)(g_frame + 0x5C))
+#define sp40 (*(s32 *)(g_frame + 0x40))
+#define sp48 (*(s32 *)(g_frame + 0x48))
+#define sp5C (*(s32 *)(g_frame + 0x5C))
     u8 *var_a1_2;   /* (s32 *) */
     u8 *var_a1_3;   /* (s32 *) */
     u8 *var_a1_4;   /* (s32 *) */

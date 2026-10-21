@@ -23,7 +23,7 @@ extern u8 tl_mail_tbl;
 extern u8 tl_msg_tbl;
 s32 font_print();           /* extern */
 s32 put_titles();                  /* extern */
-extern s32 g_lb_636B44;
+extern void *g_lb_636B44;
 extern u8 RecvMailInfo;
 extern u8 lb_num_str;
 extern u8 lit_2316;

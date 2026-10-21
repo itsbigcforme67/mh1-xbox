@@ -3,9 +3,9 @@
  * tools/build_pc_mhg.sh). */
 #include "../gonl.h"
 
+s32 memcmp();
+void * memcpy();
 s32 cnLBS_Get_NoticeUserMiniData();    /* extern */
-s32 memcmp();          /* extern */
-s32 memcpy();         /* extern */
 extern u8 lbCommer;
 
 void CallBack_NoticeUserMiniData(void) {

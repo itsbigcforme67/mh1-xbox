@@ -4,16 +4,16 @@
 #include "../gonl.h"
 
 s32 Lb_put_chat();
+void * memcpy();
+void * memset();
 extern u8 cw;
-s32 cnLBS_Get_RoomLeaveUser();              /* extern */
-s32 memcpy();              /* extern */
-s32 memset();        /* extern */
+s32 cnLBS_Get_RoomLeaveUser();         /* extern */
 
 void CallBack_Event_RoomCommer(void) {
     u8 g_frame[0x90] __attribute__((aligned(16)));   /* G's stack frame */
-#define sp30 (*(s8 *)(g_frame + 0x30))
+#define sp30 (*(s32 *)(g_frame + 0x30))
 #define sp38 (*(s8 *)(g_frame + 0x38))
-#define sp4C (*(s8 *)(g_frame + 0x4C))
+#define sp4C (*(s32 *)(g_frame + 0x4C))
     s32 temp_s0;
     s32 var_a3;
     u8 *temp_a0;
@@ -27,7 +27,7 @@ void CallBack_Event_RoomCommer(void) {
 loop_1:
     if ((*(s8 *)((u8 *)(var_a1) + 0x21C)) == 0) {
         temp_s0 = var_a3 * 0x5C;
-        memset(temp_a0 + temp_s0 + 0x21C, 0, 0x5C, var_a3);
+        memset(temp_a0 + temp_s0 + 0x21C, 0, 0x5C);
         memcpy((*(void **)&cw) + temp_s0 + 0x21C, &sp30, 8);
         memcpy((*(void **)&cw) + temp_s0 + 0x224, &sp38, 0x10);
         memcpy((*(void **)&cw) + temp_s0 + 0x238, &sp4C, 0x40);

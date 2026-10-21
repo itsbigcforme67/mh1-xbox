@@ -9,12 +9,12 @@ s32 Get_sw2();
 s32 Lb_eat_to_bell();
 s32 To_LogOut();
 s32 lobby_func_0057C7E0();
+s32 memcmp();
+void * strcpy();
 extern u8 cw;
 extern u8 pNet;
 s32 To_BootUpBrowser();                         /* extern */
 s32 cnLBS_RegistPersonalData(); /* extern */
-s32 memcmp();   /* extern */
-s32 strcpy(); /* extern */
 extern s128 BrPersonalData;
 extern u8 first_url;
 extern u8 lit_707_0065E8D0;
@@ -32,12 +32,10 @@ void lbc_login_users_personal_data(void) {
     u8 *temp_a2;
     u8 *temp_a2_2;
     u8 *temp_a2_3;
-    u8 *temp_a3;
 
     temp_a2 = (*(void **)&cw);
     temp_a4 = Get_sw2(0) & 0xFFFF;
     temp_a1 = (*(u8 *)((u8 *)(temp_a2) + 0xB9C));
-    temp_a3 = temp_a2 + 0xB9C;
     switch (temp_a1) {
     case 0:
         (*(u8 *)((u8 *)(temp_a2) + 0xB9C)) = (u8) (temp_a1 + 1);
@@ -54,7 +52,7 @@ void lbc_login_users_personal_data(void) {
             var_a1 += 0x10;
             var_a0 += 0x10;
         } while (var_v1 > 0);
-        strcpy(&first_url, &lit_707_0065E8D0, temp_a2_2, temp_a3, temp_a4);
+        strcpy(&first_url, &lit_707_0065E8D0);
         To_BootUpBrowser();
         return;
     case 2:
@@ -66,7 +64,7 @@ void lbc_login_users_personal_data(void) {
         lobby_func_0057C7E0();
         return;
     case 3:
-        if (memcmp(&tmpPersonalData, &BrPersonalData, 0x1D0, temp_a3, temp_a4) != 0) {
+        if (memcmp(&tmpPersonalData, &BrPersonalData, 0x1D0) != 0) {
             (*(s32 *)((u8 *)((*(void **)&cw)) + 0xFA68)) = 0xE10;
             (*(s8 *)((u8 *)((*(void **)&cw)) + 0xFA65)) = 0;
             temp_a2_3 = (*(void **)&cw);

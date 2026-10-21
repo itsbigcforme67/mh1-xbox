@@ -7,12 +7,12 @@ s32 Lb_pl_to_normal();
 s32 Lb_trans_pl();
 s32 get_prim();
 void * get_prim_ptr();
-s32 memcpy();          /* extern */
+void * memcpy();
 extern u8 lb_player;
 extern u8 pl01_adr_tbl;
 extern u8 player_work;
 
-void Lb_set_player(s32 arg0, s32 arg1, s32 arg2) {
+void Lb_set_player(s32 arg0, void *arg1, void *arg2) {
     s16 temp_a0;
     u16 temp_a3;
     void **temp_s1;
@@ -24,7 +24,7 @@ void Lb_set_player(s32 arg0, s32 arg1, s32 arg2) {
     *temp_s1 = temp_s0;
     (*(s8 *)((u8 *)(temp_s0) + 0)) = 1;
     (*(u16 *)((u8 *)(temp_s0) + 0xC)) = temp_a3;
-    memcpy(temp_s1 + 4, arg2, 0x11, temp_a3);
+    memcpy(temp_s1 + 4, arg2, 0x11);
     memcpy(temp_s1 + 0x24, arg1, 8);
     memcpy(temp_s0 + 0x8D4, arg2, 0x11);
     (*(s32 *)((u8 *)(temp_s0) + 0xC0)) = 0x3F800000;

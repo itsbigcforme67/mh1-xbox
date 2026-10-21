@@ -28,6 +28,9 @@ s32 lobby_func_0057FEA0();
 s32 lobby_func_005807E0();
 s32 lobby_func_00580910();
 s32 lobby_func_0059F6C0();
+s32 memcmp();
+void * memcpy();
+void * memset();
 s32 tl_exit_sub_menu();
 extern u8 g_main_2EF390;
 extern u8 g_main_2EFA74;
@@ -44,9 +47,6 @@ extern u8 pNet;
 extern u8 tl_member_buff;
 s32 Visual_main();                            /* extern */
 s32 cnLBS_Get_SerchUserPlace(); /* extern */
-s32 memcmp();               /* extern */
-s32 memcpy();                /* extern */
-s32 memset();        /* extern */
 extern s32 g_lb_636E10;
 extern s8 g_lb_6B46D0;
 extern u8 my_user_id;
@@ -368,7 +368,7 @@ block_94:
                     (*(u8 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x18))) + 0x136E)) = (u8) (*(u8 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x18))) + 0x136A));
                     (*(u8 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x18))) + 0x136A)) = 0xCU;
                     lobby_func_00571450();
-                    (*(u8 **)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x1398))) + 0x600)) = (u8 *) ((*(u8 **)&g_main_2EFBC4) + ((*(s16 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x18))) + 0x1368)) * 0x5C) + 4);
+                    (*(void **)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x1398))) + 0x600)) = (void *) ((*(u8 **)&g_main_2EFBC4) + ((*(s16 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x18))) + 0x1368)) * 0x5C) + 4);
                     cnWrap_SoundRequest(6);
                     return;
                 }
@@ -448,9 +448,9 @@ block_94:
             (*(u8 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x18))) + 0x136A)) = 0xCU;
             lobby_func_00571450();
             if ((*(u8 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x18))) + 0x136F)) != 2) {
-                (*(u8 **)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x1398))) + 0x600)) = (u8 *) ((*(u8 **)&g_main_2EFBC4) + ((*(s16 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x18))) + 0x1368)) * 0x5C) + 4);
+                (*(void **)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x1398))) + 0x600)) = (void *) ((*(u8 **)&g_main_2EFBC4) + ((*(s16 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x18))) + 0x1368)) * 0x5C) + 4);
             } else {
-                (*(u8 **)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x1398))) + 0x600)) = (u8 *) ((*(u8 **)&g_main_2EFBC4) + 4);
+                (*(void **)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x1398))) + 0x600)) = (void *) ((*(u8 **)&g_main_2EFBC4) + 4);
             }
             cnWrap_SoundRequest(6);
             return;

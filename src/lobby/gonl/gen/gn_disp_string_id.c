@@ -7,12 +7,12 @@ s32 flfntLocate();
 s32 flfntSetSize();
 s32 font_print_double();
 s32 han2zen();
+void * memset();
+void * strcpy();
 extern u8 cw;
 extern u8 net_etc_mes_tbl;
 extern u8 tl_mail_tbl;
 s32 font_print();                            /* extern */
-s32 memset();        /* extern */
-s32 strcpy();                     /* extern */
 
 void disp_string_id(s32 arg0, s32 arg1) {
     u8 g_frame[0x50] __attribute__((aligned(16)));   /* G's stack frame */
@@ -25,7 +25,7 @@ void disp_string_id(s32 arg0, s32 arg1) {
     memset(&sp30, 0, 0x1E);
     temp_v1 = ((arg1 & 0xFF) * 8) + (*(s32 *)&cw);
     if ((*(s8 *)((u8 *)(temp_v1) + 0xB)) == 0) {
-        strcpy(&sp30, (*(s32 *)((u8 *)&net_etc_mes_tbl + 0x20)));
+        strcpy(&sp30, (*(void * *)((u8 *)&net_etc_mes_tbl + 0x20)));
     } else {
         han2zen(temp_v1 + 0xB, &sp30);
     }

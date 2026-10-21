@@ -14,7 +14,7 @@ s32 lobby_func_0059A270();
 s32 lobby_func_0059E270();
 s32 str_stop();
 extern u8 cw;
-void lobby_func_00580C70(void) {
+void lobby_func_00580C70(s32 unused_a0, s32 arg1, s32 arg2, s32 arg3, s32 arg4, s32 arg5, s32 arg6, s32 arg7) {
     u8 temp_v0;
     u8 *temp_a0;
 
@@ -39,7 +39,7 @@ void lobby_func_00580C70(void) {
         }
         return;
     case 1:
-        lobby_func_0059E270();
+        lobby_func_0059E270(1, arg1, arg2, arg3, arg4, arg5, arg6, arg7);
         return;
     default:
         To_LogOut(4);

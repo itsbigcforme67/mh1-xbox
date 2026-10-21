@@ -4,11 +4,11 @@
 #include "../gonl.h"
 
 s32 Plaza_chat_log_add();
+void * strcpy();
 extern u8 cw;
 extern u8 lb_rule_member;
 s32 Lb_chat_receipt();                 /* extern */
 s32 sprintf();                    /* extern */
-s32 strcpy();                     /* extern */
 extern s32 g_lb_636BD8;
 
 void CallBack_Result_SendChatMessageTU(s64 arg0) {
@@ -24,8 +24,8 @@ void CallBack_Result_SendChatMessageTU(s64 arg0) {
     sp18 = arg0;
     if ((s8) sp18 == -1) {
         sprintf(&sp3C, g_lb_636BD8);
-        strcpy(&sp20, (*(s32 *)((u8 *)&lb_rule_member + 0x14)));
-        strcpy(&sp28, (*(s32 *)((u8 *)&lb_rule_member + 0x14)));
+        strcpy(&sp20, (*(void * *)((u8 *)&lb_rule_member + 0x14)));
+        strcpy(&sp28, (*(void * *)((u8 *)&lb_rule_member + 0x14)));
         sp13F = 6;
         sp13E = 6;
         sp13D = 6;

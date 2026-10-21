@@ -21,7 +21,7 @@ void CallBack_Event_LbsBinary(void) {
             return;
         }
         cnLBS_Get_ChatBinary(&sp20, temp_a1);
-        Lb_check_receipt(&sp20, &sp28);
+        Lb_check_receipt((s32) &sp20, &sp28);
     }
 }
 

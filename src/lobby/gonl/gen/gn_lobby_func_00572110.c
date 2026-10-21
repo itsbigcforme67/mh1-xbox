@@ -17,7 +17,11 @@ s64 lobby_func_00569320();
 s64 lobby_func_00569390();
 s32 lobby_func_0056D570();
 s32 lobby_func_0057FEA0();
+s32 memcmp();
+void * memcpy();
+void * memset();
 s32 plaza_req_input();
+void * strcpy();
 extern u8 g_main_2EFAD8;
 extern u8 g_main_2EFBAC;
 extern u8 g_main_2EFBC4;
@@ -30,14 +34,10 @@ extern u8 lb_sys;
 extern u8 pNet;
 extern u8 tl_member_buff;
 s32 Visual_main();                              /* extern */
-s32 memcmp();                    /* extern */
-s32 memcpy();                /* extern */
-s32 memset();           /* extern */
 s16 net_Check_FriendSuu();        /* extern */
-s32 strcpy();                     /* extern */
 extern s8 g_lb_653A50;
 extern s32 g_main_302CB0;
-extern s8 my_user_id;
+extern u8 my_user_id;
 
 s32 lobby_func_00572110(void) {
     s16 temp_s0_3;
@@ -50,7 +50,6 @@ s32 lobby_func_00572110(void) {
     s32 temp_v0_7;
     s32 temp_v0_8;
     s32 var_a0;
-    s8 *temp_s0_2;
     s8 temp_v0_3;
     s8 temp_v1;
     s8 temp_v1_6;
@@ -81,6 +80,7 @@ s32 lobby_func_00572110(void) {
     u8 *temp_a2;
     u8 *temp_a2_2;
     u8 *temp_a3;
+    u8 *temp_s0_2;
     u8 *temp_v0;
     u8 *temp_v0_2;
     u8 *temp_v0_4;

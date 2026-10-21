@@ -3,8 +3,8 @@
  * tools/build_pc_mhg.sh). */
 #include "../gonl.h"
 
+void * memset();
 extern u8 cw;
-s32 memset();        /* extern */
 extern u8 chatIDList;
 
 void Lb_clearChatList(void) {

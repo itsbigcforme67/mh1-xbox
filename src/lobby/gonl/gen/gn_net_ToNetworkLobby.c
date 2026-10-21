@@ -7,6 +7,7 @@ s32 Lb_clearChatList();
 s32 MH_lobbyClear();
 s32 lobby_func_0059A1F0();
 s32 lobby_func_0059F410();
+void * memset();
 extern u8 g_main_2EF390;
 extern u8 g_main_2EFBAC;
 extern u8 BsLbsErrNum;
@@ -19,7 +20,6 @@ extern u8 quest_price;
 extern u8 tl_member_buff;
 s32 cnLBS_Init_LoginLobbyServer();              /* extern */
 s32 cnLbc_SetIspRestTime();               /* extern */
-s32 memset();        /* extern */
 extern s32 g_lb_6B42D0;
 extern u8 client_work;
 extern u8 RecvMailInfo;
@@ -36,10 +36,10 @@ void net_ToNetworkLobby(void) {
     s32 var_a3;
     s32 var_a5;
 
-    memset((*(u8 **)&g_main_2EF390), 0, 0x23F4);
-    memset((*(u8 **)&g_main_2EF390) + 0x23F4, 0, 0x20);
-    memset((*(u8 **)&g_main_2EF390) + 0x23F4 + 0x20, 0, 0x9C8);
-    memset((*(u8 **)&g_main_2EF390) + 0x23F4 + 0x20 + 0x9C8, 0, 0xF00);
+    memset((*(void **)&g_main_2EF390), 0, 0x23F4);
+    memset((*(void **)&g_main_2EF390) + 0x23F4, 0, 0x20);
+    memset((*(void **)&g_main_2EF390) + 0x23F4 + 0x20, 0, 0x9C8);
+    memset((*(void **)&g_main_2EF390) + 0x23F4 + 0x20 + 0x9C8, 0, 0xF00);
     (*(u8 **)&cw) = &client_work;
     (*(u8 **)&pNet) = &network_work;
     (*(s8 *)((u8 *)((*(u8 **)&cw)) + 0xB99)) = 0;

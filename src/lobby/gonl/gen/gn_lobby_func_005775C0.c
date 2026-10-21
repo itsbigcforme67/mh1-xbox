@@ -16,7 +16,7 @@ extern u8 tl_hr_tbl;
 extern u8 tl_member_buff;
 s32 font_print(); /* extern */
 s32 sprintf(); /* extern */
-extern s32 g_lb_636B4C;
+extern void *g_lb_636B4C;
 extern s32 g_lb_63E2A8;
 extern s16 g_lb_6B42B8;
 extern s32 g_main_302CB0;

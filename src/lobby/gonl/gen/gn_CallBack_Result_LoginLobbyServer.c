@@ -7,14 +7,14 @@ s32 To_LogOut();
 s32 cnLBS_Get_ServerMessage();
 s32 fade_set();
 s32 lobby_func_0058BAA0();
+void * memcpy();
+void * memset();
 extern u8 CnetWork;
 extern u8 cw;
 s32 cnLBS_Get_LoginWarningMessage();  /* extern */
 s32 cnLBS_Send_LoginUserAccount(); /* extern */
 s32 cnetGet_Login_DecideUserHandle();     /* extern */
 s32 cnetGet_Login_DecideUserID();         /* extern */
-s32 memcpy();         /* extern */
-s32 memset();        /* extern */
 extern u8 my_user_handle;
 extern u8 my_user_id;
 extern u8 my_user_mini_data;

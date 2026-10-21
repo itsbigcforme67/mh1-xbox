@@ -24,6 +24,7 @@ s32 lobby_func_0057FD30();
 s32 lobby_func_005802F0();
 s32 lobby_func_00580FA0();
 s32 lobby_func_00581210();
+void * memset();
 extern u8 g_main_2EF390;
 extern u8 ClassInfo;
 extern u8 LobbyInfo;
@@ -31,7 +32,6 @@ extern u8 cw;
 extern u8 g_main_2EF390;
 extern u8 lb_quest_all;
 extern u8 pNet;
-s32 memset();             /* extern */
 extern s8 g_lb_6B46A0;
 extern s8 g_lb_6B46A1;
 extern s16 g_lb_6B46A2;

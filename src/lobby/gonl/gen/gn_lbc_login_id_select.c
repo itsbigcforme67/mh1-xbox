@@ -11,6 +11,8 @@ s32 Set_userdata();
 s32 To_LogOut();
 s32 fade_set();
 s32 lobby_func_0058BAA0();
+void * memcpy();
+void * memset();
 s32 net_SetMenu_SelectHandleName();
 extern u8 g_main_2EF2A8;
 extern u8 CnetWork;
@@ -28,8 +30,6 @@ u8 cnetGet_Login_NoOfUserAccount();                 /* extern */
 s32 cnetGet_Login_UserHandle();      /* extern */
 s32 cnetGet_Login_UserID();             /* extern */
 s32 cnetGet_Login_UserMiniData();    /* extern */
-s32 memcpy();         /* extern */
-s32 memset();           /* extern */
 extern u8 network_work;
 extern u8 player_work;
 

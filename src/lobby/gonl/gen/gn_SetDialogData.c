@@ -3,9 +3,9 @@
  * tools/build_pc_mhg.sh). */
 #include "../gonl.h"
 
+void * strchr();
 s32 strlen_sp();
 s32 set_dialog_square();                /* extern */
-s8 *strchr();                          /* extern */
 extern u8 netDialogMessage;
 extern s32 g_lb_636F24;
 extern s32 dialogData;

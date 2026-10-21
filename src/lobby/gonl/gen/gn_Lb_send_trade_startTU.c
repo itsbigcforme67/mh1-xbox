@@ -3,9 +3,9 @@
  * tools/build_pc_mhg.sh). */
 #include "../gonl.h"
 
+void * memcpy();
 extern u8 cw;
 s32 lb_send_dataTU(); /* extern */
-s32 memcpy();            /* extern */
 
 void Lb_send_trade_startTU(void *arg0, s32 arg1) {
     u8 g_frame[0x40] __attribute__((aligned(16)));   /* G's stack frame */

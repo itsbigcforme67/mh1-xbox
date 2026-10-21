@@ -60,7 +60,7 @@ block_14:
             if (((*(u8 *)((u8 *)(arg0) + 0x15)) == 0x4D) && ((*(u8 *)((u8 *)&game_w + 0x14)) == 0x4D)) {
                 (*(u16 *)((u8 *)&lb_sys + 0x14)) &= ~(1 << *(*(u16 **)((u8 *)(arg0) + 0x878)));
             }
-            check_sender0(arg0);
+            check_sender0((s32) arg0, M2C_ERROR(/* Read from unset register $a1 */), M2C_ERROR(/* Read from unset register $a2 */), M2C_ERROR(/* Read from unset register $a3 */), M2C_ERROR(/* Read from unset register $a4 */), M2C_ERROR(/* Read from unset register $a5 */), M2C_ERROR(/* Read from unset register $a6 */), M2C_ERROR(/* Read from unset register $a7 */));
         }
     }
 }

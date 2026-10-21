@@ -13,9 +13,11 @@ s32 lobby_func_005737C0();
 s32 lobby_func_00575FB0();
 s32 lobby_func_005775C0();
 s32 lobby_func_005791D0();
+s32 memcmp();
 s32 plaza_searchMemberTrans();
 s32 put_main_cursor();
 s32 put_member_info();
+void * strcpy();
 extern u8 g_main_2EFBB0;
 extern u8 g_main_2EFBC4;
 extern u8 cw;
@@ -26,10 +28,8 @@ extern u8 tl_hr_tbl;
 extern u8 tl_member_buff;
 s32 font_print();           /* extern */
 s32 font_print_ex(); /* extern */
-s32 memcmp();               /* extern */
 s32 sprintf(); /* extern */
-s32 strcpy();                     /* extern */
-extern s32 g_lb_636B48;
+extern void *g_lb_636B48;
 extern void *g_lb_636DF8;
 extern u8 tl_etc;
 extern s32 g_lb_63E2A8;
@@ -147,7 +147,7 @@ void lobby_func_00576300(void) {
                         if (*var_s5_2 != 0) {
                             han2zen(var_s5_2, &spA0);
                         } else {
-                            strcpy(&spA0, (*(s32 *)((u8 *)&tl_hr_tbl + 0x48)));
+                            strcpy(&spA0, (*(void * *)((u8 *)&tl_hr_tbl + 0x48)));
                         }
                         var_v0 = 4;
                         if ((*(u8 *)((u8 *)(var_s4_2) + 0x35D)) == 2) {
@@ -164,7 +164,7 @@ void lobby_func_00576300(void) {
                         if (*var_s5_2 != 0) {
                             han2zen(var_s5_2, &spA0);
                         } else {
-                            strcpy(&spA0, (*(s32 *)((u8 *)&tl_hr_tbl + 0x48)));
+                            strcpy(&spA0, (*(void * *)((u8 *)&tl_hr_tbl + 0x48)));
                         }
                         var_v0_2 = 0;
                         if ((*(u8 *)((u8 *)(var_s4_2) + 0x35D)) == 2) {

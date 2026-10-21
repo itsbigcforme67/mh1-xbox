@@ -14,7 +14,7 @@ extern u8 cw;
 extern u8 pNet;
 extern u8 tl_member_buff;
 s32 net_Check_FriendSuu();        /* extern */
-extern s32 g_lb_636B4C;
+extern void *g_lb_636B4C;
 extern s32 g_main_302CB0;
 
 void lobby_func_00574FC0(s64 arg0, s64 arg1, s64 arg2) {

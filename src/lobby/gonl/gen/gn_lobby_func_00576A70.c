@@ -22,7 +22,7 @@ s32 font_print();                      /* extern */
 s32 func_0012BDD0();                      /* extern */
 s32 sprintf();    /* extern */
 extern s32 lb_ibox_str;
-extern s32 g_lb_636B50;
+extern void *g_lb_636B50;
 extern void *g_lb_636DF8;
 extern s32 g_lb_63E268;
 extern s32 g_lb_63E2B8;

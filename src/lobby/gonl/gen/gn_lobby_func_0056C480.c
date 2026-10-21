@@ -5,11 +5,11 @@
 
 s32 lobby_func_0056D6E0();
 s32 lobby_func_00571AF0();
+void * memset();
 extern u8 cw;
 extern u8 lb_sys;
 extern u8 pNet;
 extern u8 tl_member_buff;
-s32 memset(); /* extern */
 s16 net_Check_FriendSuu();        /* extern */
 extern s32 g_main_302CB0;
 
@@ -38,7 +38,7 @@ void lobby_func_0056C480(void) {
         var_a3 += 2;
         var_a2 += 7;
     } while (var_a5 < 0xC);
-    memset(&(*(u8 *)((u8 *)&tl_member_buff + 0x1398)), 0, 0x618, var_a3, var_a4, var_a5);
+    memset(&(*(u8 *)((u8 *)&tl_member_buff + 0x1398)), 0, 0x618);
     (*(s8 *)((u8 *)((*(void **)&pNet)) + 0x2E)) = 1;
     (*(s16 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x1398))) + 0x608)) = net_Check_FriendSuu(&g_main_302CB0, 0x32);
     lobby_func_0056D6E0();

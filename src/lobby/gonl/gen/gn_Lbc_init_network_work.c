@@ -4,9 +4,9 @@
 #include "../gonl.h"
 
 s32 Online_ck();
+void * memset();
 extern u8 cw;
 extern u8 pNet;
-s32 memset();           /* extern */
 extern u8 lb_prim;
 extern u8 text_lobby_trans_ot3;
 

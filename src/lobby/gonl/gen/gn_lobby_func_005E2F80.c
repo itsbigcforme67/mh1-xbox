@@ -3,8 +3,8 @@
  * tools/build_pc_mhg.sh). */
 #include "../gonl.h"
 
+void * memset();
 extern u8 CnetSys_w;
-s32 memset();        /* extern */
 
 void lobby_func_005E2F80(void *arg0) {
     u32 var_a1;

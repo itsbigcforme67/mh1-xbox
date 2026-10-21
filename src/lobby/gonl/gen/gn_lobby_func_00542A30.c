@@ -3,8 +3,7 @@
  * tools/build_pc_mhg.sh). */
 #include "../gonl.h"
 
-s32 func_0010D8E0();                         /* extern */
-
+s32 func_0010D8E0();
 s32 lobby_func_00542A30(void) {
     return (func_0010D8E0(1) & 0xFF) == 0x58;
 }

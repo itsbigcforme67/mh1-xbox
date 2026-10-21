@@ -13,6 +13,7 @@ s32 SetDialogData();
 s32 SetDialogYesNo();
 s32 SetHelpLineMsg();
 s32 cnWrap_SoundRequest();
+s32 func_00235C80();
 s64 lobby_func_00569320();
 s64 lobby_func_00569390();
 s32 lobby_func_0056C350();
@@ -23,14 +24,13 @@ s32 lobby_func_005C14D0();
 s32 lobby_func_005C1510();
 s32 lobby_func_005C1560();
 s32 lobby_func_005C15F0();
+void * memcpy();
+void * memset();
 s32 tl_exit_sub_menu();
 extern u8 BsProxyUrlstr;
 extern u8 cw;
 extern u8 pNet;
 extern u8 tl_member_buff;
-s32 func_00235C80();                            /* extern */
-s32 memcpy();         /* extern */
-s32 memset();            /* extern */
 extern s32 g_lb_636590;
 extern s32 g_lb_636594;
 extern s32 g_lb_653950;

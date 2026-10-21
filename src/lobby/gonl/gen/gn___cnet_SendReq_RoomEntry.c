@@ -8,7 +8,7 @@ s32 SetSendCommandLen();
 s32 SetSendData16();
 s32 SetSendStringData2();
 s32 Write_Socket();
-s32 strlen();                                 /* extern */
+s32 strlen();
 extern s32 g_lb_644C58;
 extern u8 send_work;
 

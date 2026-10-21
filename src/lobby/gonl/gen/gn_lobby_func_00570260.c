@@ -3,10 +3,10 @@
  * tools/build_pc_mhg.sh). */
 #include "../gonl.h"
 
+s32 memcmp();
 extern u8 g_main_2EFBC0;
 extern u8 g_main_2EFBC0;
 extern u8 tl_member_buff;
-s32 memcmp();             /* extern */
 extern s32 g_lb_6B4514;
 extern u16 g_lb_6B4518;
 extern u16 g_lb_6B451A;

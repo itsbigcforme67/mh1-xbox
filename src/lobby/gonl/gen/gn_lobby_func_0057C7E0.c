@@ -12,14 +12,14 @@ s32 cnWrap_InitWork();
 s32 fade_set();
 s32 lbc_browser_04();
 s32 lobby_func_005A1E30();
+void * memset();
+void * strcpy();
 extern u8 BS_MODE_R_NO;
 extern u8 BsLbsErrNum;
 extern u8 cw;
 extern u8 net_char_change;
 extern u8 pNet;
 s32 FlushCache();                /* extern */
-s32 memset();        /* extern */
-s32 strcpy();               /* extern */
 extern s128 BrPersonalData;
 extern u8 FirstURL;
 extern u8 first_url;

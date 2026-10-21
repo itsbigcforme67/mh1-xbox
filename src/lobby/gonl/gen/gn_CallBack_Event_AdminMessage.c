@@ -3,9 +3,9 @@
  * tools/build_pc_mhg.sh). */
 #include "../gonl.h"
 
+void * memset();
 extern u8 cw;
 s32 cnLBS_Get_RecvMessage(); /* extern */
-s32 memset();              /* extern */
 
 void CallBack_Event_AdminMessage(void) {
     u8 g_frame[0x40] __attribute__((aligned(16)));   /* G's stack frame */

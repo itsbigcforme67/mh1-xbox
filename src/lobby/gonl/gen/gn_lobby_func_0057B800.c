@@ -7,19 +7,19 @@ s32 Check_CallBackWait();
 s32 lobby_func_0057B770();
 s32 lobby_func_005C08B0();
 s32 lobby_func_005C09F0();
+s32 sub_main_func_004C8F50();
+void * sub_main_func_004C8F90();
 extern u8 CnetWork;
 extern u8 cw;
-s32 sub_main_func_004C8F50(); /* extern */
-s32 sub_main_func_004C8F90();           /* extern */
 
 s32 lobby_func_0057B800(void) {
-    s32 var_s1;
-    s32 temp_a2;
     s32 temp_s0;
     s32 var_s0;
+    s32 var_s1;
     u8 temp_a0;
     u8 temp_a0_2;
     u8 *temp_a1;
+    u8 *temp_a2;
 
     temp_a1 = (*(void **)&cw);
     temp_a0 = (*(u8 *)((u8 *)(temp_a1) + 0xB9D));
@@ -48,7 +48,7 @@ block_26:
             var_s0 = temp_a0_2 - 1;
             var_s1 = 2;
 block_21:
-            temp_s0 = sub_main_func_004C8F50(var_s1, temp_a1, temp_a1 + 0xB9D);
+            temp_s0 = sub_main_func_004C8F50(var_s1);
             temp_a2 = sub_main_func_004C8F90(var_s1, var_s0);
             (*(s32 *)((u8 *)((*(void **)&cw)) + 0xFA68)) = 0xE10;
             (*(s8 *)((u8 *)((*(void **)&cw)) + 0xFA65)) = 0;

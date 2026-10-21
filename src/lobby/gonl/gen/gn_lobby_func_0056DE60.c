@@ -13,19 +13,19 @@ s32 cnWrap_SoundRequest();
 s32 getFriendNow();
 s64 lobby_func_00569320();
 s64 lobby_func_00569390();
+s32 memcmp();
+void * memcpy();
+void * memset();
 s32 plaza_req_input();
+void * strcpy();
 extern u8 g_main_2EFAD8;
 extern u8 g_main_2EFAD8;
 extern u8 lb_sys;
 extern u8 pNet;
 extern u8 tl_member_buff;
 s8 Visual_main();                           /* extern */
-s32 memcmp();               /* extern */
-s32 memcpy();                /* extern */
-s32 memset();    /* extern */
-s32 strcpy();                       /* extern */
 extern s8 g_lb_653A50;
-extern s8 g_lb_6B46D0;
+extern s32 g_lb_6B46D0;
 extern u8 g_lb_6B46D1;
 extern u8 g_lb_6B4759;
 extern s32 g_main_302CB0;
@@ -84,7 +84,7 @@ block_16:
                 (*(s8 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x18))) + 0x1374)) = 0;
                 (*(s8 *)((u8 *)((*(void **)&pNet)) + 0x2D)) = 1;
                 memset(&g_lb_653A50, 0, 0x40);
-                memcpy(&g_lb_653A50, &g_lb_6B46D0 + ((*(s8 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x18))) + 0x1373)) * 0x44) + 4, 7);
+                memcpy(&g_lb_653A50, (u8 *)&g_lb_6B46D0 + ((*(s8 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x18))) + 0x1373)) * 0x44) + 4, 7);
                 var_v0 = (*(u8 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x18))) + 0x136B)) + 1;
                 goto block_16;
             }
@@ -198,22 +198,22 @@ block_46:
                 return 2;
             }
 block_69:
-            if ((memcmp(var_s1, &g_lb_6B46D0 + (((s32) ((*(s8 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x18))) + 0x1373)) + 1) % 3) * 0x44) + 4, 8) == 0) || (memcmp(var_s1, &g_lb_6B46D0 + (((s32) ((*(s8 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x18))) + 0x1373)) + 2) % 3) * 0x44) + 4, 8) == 0)) {
+            if ((memcmp(var_s1, (u8 *)&g_lb_6B46D0 + (((s32) ((*(s8 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x18))) + 0x1373)) + 1) % 3) * 0x44) + 4, 8) == 0) || (memcmp(var_s1, (u8 *)&g_lb_6B46D0 + (((s32) ((*(s8 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x18))) + 0x1373)) + 2) % 3) * 0x44) + 4, 8) == 0)) {
                 SetDialogData(0x3D);
                 (*(s8 *)((u8 *)((*(void **)&pNet)) + 0x2D)) = 1;
                 (*(u8 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x18))) + 0x136E)) = 0U;
                 (*(u8 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x18))) + 0x136B)) = 7U;
-                memset(&g_lb_6B46D0 + ((*(s8 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x18))) + 0x1373)) * 0x44) + 4, 0, 4, 1);
+                memset((u8 *)&g_lb_6B46D0 + ((*(s8 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x18))) + 0x1373)) * 0x44) + 4, 0, 4);
             } else {
                 if ((*(u8 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x18))) + 0x1370)) == 1) {
-                    memcpy(&g_lb_6B46D0 + ((*(s8 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x18))) + 0x1373)) * 0x44) + 4, var_s0, 8);
+                    memcpy((u8 *)&g_lb_6B46D0 + ((*(s8 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x18))) + 0x1373)) * 0x44) + 4, var_s0, 8);
                     *(&g_lb_6B46D1 + ((*(s8 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x18))) + 0x1373)) * 0x44)) = Visual_main(var_s0);
-                    *(&g_lb_6B46D0 + ((*(s8 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x18))) + 0x1373)) * 0x44)) = 1;
+                    (*(s32 *)((u8 *)&g_lb_6B46D0 + ((*(s8 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x18))) + 0x1373)) * 0x44))) = 1;
                 } else {
                     temp_s0_2 = var_s0 + 8;
-                    memcpy(&g_lb_6B46D0 + ((*(s8 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x18))) + 0x1373)) * 0x44) + 4, temp_s0_2, 0x10);
+                    memcpy((u8 *)&g_lb_6B46D0 + ((*(s8 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x18))) + 0x1373)) * 0x44) + 4, temp_s0_2, 0x10);
                     *(&g_lb_6B46D1 + ((*(s8 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x18))) + 0x1373)) * 0x44)) = Visual_main(temp_s0_2);
-                    *(&g_lb_6B46D0 + ((*(s8 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x18))) + 0x1373)) * 0x44)) = 2;
+                    (*(s32 *)((u8 *)&g_lb_6B46D0 + ((*(s8 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x18))) + 0x1373)) * 0x44))) = 2;
                 }
                 (*(u8 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x18))) + 0x136B)) = 0U;
             }
@@ -229,27 +229,27 @@ block_69:
         goto block_113;
     case 5:                                         /* switch 1 */
         if (plaza_req_input(&g_lb_653A50, (*(u8 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x18))) + 0x1370)) != 1) == 1) {
-            if ((g_lb_653A50 != 0) && ((memcmp(&g_lb_653A50, &g_lb_6B46D0 + (((s32) ((*(s8 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x18))) + 0x1373)) + 1) % 3) * 0x44) + 4, 8) == 0) || (memcmp(&g_lb_653A50, &g_lb_6B46D0 + (((s32) ((*(s8 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x18))) + 0x1373)) + 2) % 3) * 0x44) + 4, 8) == 0))) {
+            if ((g_lb_653A50 != 0) && ((memcmp(&g_lb_653A50, (u8 *)&g_lb_6B46D0 + (((s32) ((*(s8 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x18))) + 0x1373)) + 1) % 3) * 0x44) + 4, 8) == 0) || (memcmp(&g_lb_653A50, (u8 *)&g_lb_6B46D0 + (((s32) ((*(s8 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x18))) + 0x1373)) + 2) % 3) * 0x44) + 4, 8) == 0))) {
                 SetDialogData(0x3D);
                 (*(s8 *)((u8 *)((*(void **)&pNet)) + 0x2D)) = 1;
                 (*(u8 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x18))) + 0x136E)) = 0U;
                 (*(u8 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x18))) + 0x136B)) = 7U;
-                memset(&g_lb_6B46D0 + ((*(s8 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x18))) + 0x1373)) * 0x44) + 4, 0, 4, 1);
+                memset((u8 *)&g_lb_6B46D0 + ((*(s8 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x18))) + 0x1373)) * 0x44) + 4, 0, 4);
             } else if (((*(u8 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x18))) + 0x1370)) != 0) && (memcmp(&g_lb_653A50, &my_user_id, 8) == 0)) {
                 SetDialogData(0x47);
                 (*(s8 *)((u8 *)((*(void **)&pNet)) + 0x2D)) = 1;
                 (*(u8 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x18))) + 0x136E)) = 0U;
                 (*(u8 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x18))) + 0x136B)) = 7U;
-                memset(&g_lb_6B46D0 + ((*(s8 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x18))) + 0x1373)) * 0x44) + 4, 0, 4, 1);
+                memset((u8 *)&g_lb_6B46D0 + ((*(s8 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x18))) + 0x1373)) * 0x44) + 4, 0, 4);
             } else {
-                strcpy(&g_lb_6B46D0 + ((*(s8 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x18))) + 0x1373)) * 0x44) + 4, &g_lb_653A50);
+                strcpy((u8 *)&g_lb_6B46D0 + ((*(s8 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x18))) + 0x1373)) * 0x44) + 4, &g_lb_653A50);
                 if (Visual_main(&g_lb_653A50) != 0) {
                     *(&g_lb_6B46D1 + ((*(s8 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x18))) + 0x1373)) * 0x44)) = Visual_main(&g_lb_653A50);
                     if ((*(u8 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x18))) + 0x1370)) == 0) {
-                        *(&g_lb_6B46D0 + ((*(s8 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x18))) + 0x1373)) * 0x44)) = 2;
+                        (*(s32 *)((u8 *)&g_lb_6B46D0 + ((*(s8 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x18))) + 0x1373)) * 0x44))) = 2;
                         (*(u8 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x18))) + 0x136B)) = 0U;
                     } else if ((*(u8 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x18))) + 0x1370)) == 1) {
-                        *(&g_lb_6B46D0 + ((*(s8 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x18))) + 0x1373)) * 0x44)) = 1;
+                        (*(s32 *)((u8 *)&g_lb_6B46D0 + ((*(s8 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x18))) + 0x1373)) * 0x44))) = 1;
                         if ((s32) *(&g_lb_6B46D1 + ((*(s8 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x18))) + 0x1373)) * 0x44)) < 6) {
                             SetDialogData(0x21);
                             (*(u8 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x18))) + 0x136B)) = 7U;

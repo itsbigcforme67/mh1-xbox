@@ -5,10 +5,10 @@
 
 s32 MainBrowser();
 s32 fade_set();
+s32 memcmp();
 extern u8 cw;
 extern u8 pNet;
 s32 MainBsDispose();                            /* extern */
-s32 memcmp();          /* extern */
 extern u8 BrPersonalData;
 extern u8 tmpPersonalData;
 

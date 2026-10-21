@@ -5,10 +5,10 @@
 
 s32 SetDialogData();
 s32 SetDialogYesNo();
+void * memset();
 extern u8 pNet;
 extern u8 tl_member_buff;
 s32 cnLBS_Get_ConditionSearchUser();   /* extern */
-s32 memset();        /* extern */
 extern s32 g_main_2EFBC4;
 
 void lobby_func_0056ED00(void) {

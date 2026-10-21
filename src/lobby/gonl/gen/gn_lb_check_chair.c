@@ -4,9 +4,9 @@
 #include "../gonl.h"
 
 s32 Lb_send_chair_status();
+s32 memcmp();
 extern u8 cw;
 extern u8 lb_sys;
-s32 memcmp();                      /* extern */
 
 void lb_check_chair(s32 arg0, u8 *arg1) {
     s32 temp_a0;

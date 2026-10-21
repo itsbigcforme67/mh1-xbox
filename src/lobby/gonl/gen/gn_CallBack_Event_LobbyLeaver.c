@@ -5,14 +5,14 @@
 
 s32 Lb_put_chat();
 s32 lobby_func_00595530();
+s32 memcmp();
+void * memcpy();
+void * memset();
 extern u8 cw;
 extern u8 game_w;
 extern u8 lb_sys;
 s32 Lb_send_myChair();                          /* extern */
 s32 cnLBS_Get_RoomLeaveUser();         /* extern */
-s32 memcmp();          /* extern */
-s32 memcpy();            /* extern */
-s32 memset();           /* extern */
 extern u8 lbCommer;
 extern u8 player_work;
 

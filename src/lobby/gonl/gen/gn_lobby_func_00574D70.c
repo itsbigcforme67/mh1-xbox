@@ -17,9 +17,9 @@ extern u8 BsProxyUrlstr;
 extern u8 pNet;
 extern u8 tl_member_buff;
 s32 Draw_menu_square(); /* extern */
-extern s32 g_lb_636B4C;
-extern s32 g_lb_636B58;
-extern s32 g_lb_636B5C;
+extern void *g_lb_636B4C;
+extern void *g_lb_636B58;
+extern void *g_lb_636B5C;
 
 void lobby_func_00574D70(s64 arg0, s64 arg1, s64 arg2) {
     s64 temp_s3;

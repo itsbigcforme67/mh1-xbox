@@ -7,9 +7,9 @@ s32 Check_CallBackWait();
 s32 To_LogOut();
 s32 fade_set();
 s32 lobby_func_0057C7E0();
+void * strcpy();
 extern u8 cw;
 s32 To_BootUpBrowser();                         /* extern */
-s32 strcpy();               /* extern */
 extern u8 first_url;
 extern u8 lit_452_0065E820;
 

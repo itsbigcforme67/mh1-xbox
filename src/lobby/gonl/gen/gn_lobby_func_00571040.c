@@ -9,20 +9,20 @@ s32 SaveNetFile_ForLobby();
 s32 SetDialogData();
 s32 SetDialogYesNo();
 s32 cnWrap_SoundRequest();
+s32 func_00235C80();
 s32 lobby_func_0056C350();
 s32 lobby_func_0056C3F0();
 s32 lobby_func_00570FF0();
 s32 lobby_func_005C1510();
 s32 lobby_func_005C1560();
+s32 memcmp();
+void * memcpy();
+void * memset();
 extern u8 D_0035EFEB;
 extern u8 cw;
 extern u8 lb_sys;
 extern u8 pNet;
 extern u8 tl_member_buff;
-s32 func_00235C80();                            /* extern */
-s32 memcmp();                /* extern */
-s32 memcpy();               /* extern */
-s32 memset();           /* extern */
 extern s32 g_main_302290;
 extern u8 my_user_id;
 
@@ -53,10 +53,10 @@ s32 lobby_func_00571040(void) {
             temp_v1 = (*(void **)&pNet);
             (*(u8 *)((u8 *)(temp_v1) + 0x25)) = (u8) ((*(u8 *)((u8 *)(temp_v1) + 0x25)) + 1);
             (*(s8 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x1398))) + 0x615)) = 0;
-            if (memcmp((*(s32 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x1398))) + 0x600)), &my_user_id, 8) == 0) {
+            if (memcmp((*(void **)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x1398))) + 0x600)), &my_user_id, 8) == 0) {
                 (*(u8 *)((u8 *)((*(void **)&pNet)) + 0x25)) = 5U;
                 SetDialogData(0x24);
-            } else if (lobby_func_005C1560(&g_main_302290, 8, (*(s32 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x1398))) + 0x600))) == -1) {
+            } else if (lobby_func_005C1560(&g_main_302290, 8, (s32) (*(void **)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x1398))) + 0x600))) == -1) {
                 if (lobby_func_005C1510(&g_main_302290, 8) == -1) {
                     (*(u8 *)((u8 *)((*(void **)&pNet)) + 0x25)) = 5U;
                     SetDialogData(0x32);
@@ -82,7 +82,7 @@ block_49:
         temp_v0_2 = Lb_select();
         switch (temp_v0_2) {                        /* switch 3; irregular */
         case 0:                                     /* switch 3 */
-            var_v0 = lobby_func_005C1560(&g_main_302290, 8, (*(s32 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x1398))) + 0x600)));
+            var_v0 = lobby_func_005C1560(&g_main_302290, 8, (s32) (*(void **)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x1398))) + 0x600)));
             if (var_v0 == -1) {
                 var_v0 = lobby_func_005C1510(&g_main_302290, 8);
                 if (var_v0 == -1) {
@@ -94,10 +94,10 @@ block_49:
             }
             temp_s1 = (u8 *)&g_main_302290 + (var_v0 * 0x18);
             memset(temp_s1, 0, 8);
-            memcpy(temp_s1, (*(s32 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x1398))) + 0x600)), 8);
+            memcpy(temp_s1, (*(void **)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x1398))) + 0x600)), 8);
             temp_s1_2 = temp_s1 + 8;
             memset(temp_s1_2, 0, 0x10);
-            memcpy(temp_s1_2, (*(s32 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x1398))) + 0x600)) + 8, 0x10);
+            memcpy(temp_s1_2, (*(void **)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x1398))) + 0x600)) + 8, 0x10);
             (*(s16 *)((u8 *)((*(void **)&pNet)) + 0x1A)) = (s16) (((s8) (lobby_func_0056C350())));
             temp_v1_2 = (*(void **)&pNet);
             (*(u8 *)((u8 *)(temp_v1_2) + 0x25)) = (u8) ((*(u8 *)((u8 *)(temp_v1_2) + 0x25)) + 1);

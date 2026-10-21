@@ -5,12 +5,12 @@
 
 s32 Lb_set_mini_data();
 s32 lobby_func_005E6B80();
+s32 memcmp();
+void * memcpy();
 extern u8 cw;
 extern u8 game_w;
 extern u8 lb_sys;
 s32 cnLBS_Send_UserMiniData(); /* extern */
-s32 memcmp();          /* extern */
-s32 memcpy();      /* extern */
 extern u8 CallBack_Result_SendUserMiniData;
 extern u8 lbCommer;
 extern u8 my_user_mini_data;

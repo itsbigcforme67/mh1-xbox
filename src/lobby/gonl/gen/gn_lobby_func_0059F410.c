@@ -3,10 +3,10 @@
  * tools/build_pc_mhg.sh). */
 #include "../gonl.h"
 
-s32 memset();                 /* extern */
+void * memset();
 extern u8 dialogData;
 
-void lobby_func_0059F410(void) {
-    memset(&dialogData, 0);
+void lobby_func_0059F410(s32 unused_a0, s32 unused_a1, s32 arg2) {
+    memset(&dialogData, 0, arg2);
 }
 

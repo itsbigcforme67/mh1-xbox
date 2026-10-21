@@ -19,8 +19,10 @@ s32 lobby_func_0059F740();
 s32 lobby_func_0059F750();
 s32 str_fadeout();
 s32 str_stop();
+extern u8 g_main_2EF390;
 extern u8 Psw;
 extern u8 cw;
+extern u8 g_main_2EF390;
 extern u8 pNet;
 void lobby_func_0057D2E0(void) {
     s32 temp_v0;
@@ -45,7 +47,7 @@ void lobby_func_0057D2E0(void) {
         case 0:                                     /* switch 2 */
             temp_v1_2 = (*(void **)&cw);
             (*(u8 *)((u8 *)(temp_v1_2) + 0xB9A)) = (u8) ((*(u8 *)((u8 *)(temp_v1_2) + 0xB9A)) + 1);
-            lobby_func_0059F740();
+            lobby_func_0059F740((*(s32 *)&g_main_2EF390) + 0x23F4 + 0x20 + 0x288, M2C_ERROR(/* Read from unset register $a1 */), M2C_ERROR(/* Read from unset register $a2 */), M2C_ERROR(/* Read from unset register $a3 */), M2C_ERROR(/* Read from unset register $a4 */), M2C_ERROR(/* Read from unset register $a5 */), M2C_ERROR(/* Read from unset register $a6 */), M2C_ERROR(/* Read from unset register $a7 */));
             lobby_func_0059F750(0xFA, 0x16A);
             break;
         case 1:                                     /* switch 2 */

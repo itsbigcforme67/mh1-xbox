@@ -12,15 +12,15 @@ s32 lobby_func_00571040();
 s32 lobby_func_00571450();
 s32 lobby_func_00571A90();
 s32 lobby_func_00572110();
+void * memcpy();
+void * memset();
+void * strcpy();
 extern u8 g_main_2EFBAC;
 extern u8 D_0035EFEB;
 extern u8 cw;
 extern u8 g_main_2EFBAC;
 extern u8 pNet;
 extern u8 tl_member_buff;
-s32 memcpy();            /* extern */
-s32 memset();  /* extern */
-s32 strcpy();       /* extern */
 extern s8 g_lb_653A50;
 extern u8 RecvMailInfo;
 
@@ -89,7 +89,7 @@ s32 plaza_checkFriend(s16 arg0) {
             (*(s8 *)&D_0035EFEB) = 0;
             (*(s8 *)((u8 *)((*(void **)&g_main_2EFBAC)) + 0x237)) = 0;
             g_lb_653A50 = 0;
-            memset((*(void **)&g_main_2EFBAC) + 0x9A, 0, 0x114, 2);
+            memset((*(void **)&g_main_2EFBAC) + 0x9A, 0, 0x114);
             memset((*(void **)&g_main_2EFBAC) + 0x23C, 1, 3);
             (*(s8 *)((u8 *)((*(void **)&cw)) + 0xF00)) = 0;
             cnWrap_SoundRequest(6);
@@ -127,7 +127,7 @@ block_54:
             cnWrap_SoundRequest(3);
         } else if (temp_a2 & 0x80) {
             (*(s8 *)((u8 *)((*(void **)&cw)) + 0xF00)) = 0;
-            strcpy((*(void **)&g_main_2EFBAC) + 0x9A, (*(void **)&cw) + 0xEE7, temp_a2, 2);
+            strcpy((*(void **)&g_main_2EFBAC) + 0x9A, (*(void **)&cw) + 0xEE7);
             strcpy((*(void **)&g_main_2EFBAC) + 0xA2, (*(void **)&cw) + 0xEEF);
             memset((*(void **)&g_main_2EFBAC) + 0xF6, 0, 0x5C);
             memset((*(void **)&g_main_2EFBAC) + 0x152, 0, 0x5C);

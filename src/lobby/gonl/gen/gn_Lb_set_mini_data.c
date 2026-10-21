@@ -4,14 +4,14 @@
 #include "../gonl.h"
 
 s32 Get_weapon_job();
+void * memcpy();
 extern u8 g_main_2EF2A8;
 extern u8 User_data;
 extern u8 g_main_2EF2A8;
 extern u8 game_w;
-s32 memcpy();           /* extern */
 extern u8 player_work;
 
-void Lb_set_mini_data(s32 *arg0) {
+void Lb_set_mini_data(void *arg0) {
     u8 g_frame[0x50] __attribute__((aligned(16)));   /* G's stack frame */
 #define sp30 (*(u8 *)(g_frame + 0x30))
 #define sp31 (*(u8 *)(g_frame + 0x31))

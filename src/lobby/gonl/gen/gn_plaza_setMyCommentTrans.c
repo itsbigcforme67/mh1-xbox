@@ -9,6 +9,7 @@ s32 flfntSetSize();
 s32 font_set_palette();
 s32 han2zen();
 s32 lb_put_comment();
+void * memcpy();
 s32 put_mainWindow();
 s32 put_mainWindowTex();
 extern u8 User_data;
@@ -18,7 +19,6 @@ extern u8 net_etc_mes_tbl;
 extern u8 tl_mail_tbl;
 s32 font_print();           /* extern */
 s32 func_0012BDD0();                         /* extern */
-s32 memcpy();      /* extern */
 s32 put_titles();                  /* extern */
 s32 sprintf();           /* extern */
 extern s32 g_lb_636A00;

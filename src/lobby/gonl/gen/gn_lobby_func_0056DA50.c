@@ -9,13 +9,13 @@ s32 Get_sw_on2();
 s32 Lb_cursorUD();
 s32 SetDialogData();
 s32 cnWrap_SoundRequest();
+void * memcpy();
+void * memset();
 s32 plaza_req_input();
+void * strcpy();
 extern u8 pNet;
 extern u8 tl_member_buff;
 s8 Visual_main();                          /* extern */
-s32 memcpy();         /* extern */
-s32 memset();             /* extern */
-s32 strcpy();                  /* extern */
 extern s32 g_lb_5FBC28;
 extern s32 g_lb_5FBC29;
 extern s32 g_lb_653A50;

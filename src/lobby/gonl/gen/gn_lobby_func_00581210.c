@@ -11,13 +11,13 @@ s32 lobby_func_005817C0();
 s32 lobby_func_0059A210();
 s32 lobby_func_005BF990();
 s32 lobby_func_005BFD60();
+void * memcpy();
+void * memset();
 extern u8 g_main_2EF390;
 extern u8 cw;
 extern u8 g_main_2EF390;
 extern u8 quest_title;
 extern u8 sp38;
-s32 memcpy();               /* extern */
-s32 memset();           /* extern */
 
 s32 lobby_func_00581210(void) {
     u8 g_frame[0x40] __attribute__((aligned(16)));   /* G's stack frame */

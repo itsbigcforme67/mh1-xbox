@@ -3,9 +3,8 @@
  * tools/build_pc_mhg.sh). */
 #include "../gonl.h"
 
-s32 strcmp();                               /* extern */
-
-s32 plaza_log_id_chk_sub(s32 arg0, s32 *arg1, s32 arg2) {
+s32 strcmp();
+s32 plaza_log_id_chk_sub(void *arg0, s32 *arg1, s32 arg2) {
     u8 *var_s1;   /* (s32 *) */
     s32 var_s0;
 

@@ -17,11 +17,11 @@ s32 lobby_func_0057ECE0();
 s32 lobby_func_00580FA0();
 s32 lobby_func_00581210();
 s32 lobby_func_005AB8B0();
+void * memset();
 extern u8 cw;
 extern u8 game_w;
 extern u8 pNet;
 s32 cnLBS_Read_CurrentPlace();      /* extern */
-s32 memset();        /* extern */
 extern u8 player_work;
 
 void lobby_return_to_lobby(void) {

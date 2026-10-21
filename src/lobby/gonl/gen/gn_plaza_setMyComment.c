@@ -5,20 +5,20 @@
 
 s32 KinshiYogo_chk();
 s32 cnWrap_SoundRequest();
+void * memcpy();
 s32 my_comment_input();
 extern u8 User_data;
 extern u8 cw;
 extern u8 game_w;
 extern u8 pNet;
-s32 memcpy();      /* extern */
-extern s32 *g_lb_636A00;
+extern void *g_lb_636A00;
 extern s32 g_lb_63E128;
 
 s32 plaza_setMyComment(s32 arg0) {
-    u8 *var_s0;   /* (s32 **) */
     s32 temp_a0;
     s32 var_s1;
     u8 temp_v1_2;
+    void **var_s0;
     u8 *temp_v1;
     u8 *temp_v1_3;
 
@@ -31,7 +31,7 @@ s32 plaza_setMyComment(s32 arg0) {
         var_s1 = 0;
         var_s0 = &g_lb_636A00;
         do {
-            memcpy((*(s32 **)var_s0), &g_lb_63E128, 4);
+            memcpy(*var_s0, &g_lb_63E128, 4);
             var_s1 = (var_s1 + 1) & 0xFFFF;
             var_s0 += 4;
         } while (var_s1 < 7);

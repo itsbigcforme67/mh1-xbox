@@ -6,13 +6,15 @@
 s32 Get_sw();
 s32 SetDialogData();
 s32 cnWrap_SoundRequest();
+s32 func_0012E1C0();
 s32 lobby_func_0056AF20();
 s32 lobby_func_0059F740();
 s32 lobby_func_0059F750();
+extern u8 g_main_2EF390;
 extern u8 BsLbsCount;
 extern u8 cw;
+extern u8 g_main_2EF390;
 extern u8 textLobbyTbl;
-s32 func_0012E1C0();            /* extern */
 extern s8 ClassInfo;
 extern u8 PlazaInfo;
 
@@ -21,15 +23,14 @@ s32 lobby_func_0057DDC0(void) {
     s32 temp_a2;
     s32 var_a3;
     u8 temp_a0;
+    u8 temp_a1;
     u8 var_v0;
-    u8 *temp_a1;
     u8 *temp_v0;
     u8 *temp_v1;
 
     temp_v1 = (*(void **)&cw);
     temp_a2 = Get_sw(0) & 0xFFFF;
     temp_a0 = (*(u8 *)((u8 *)(temp_v1) + 0xBA1));
-    temp_a1 = temp_v1 + 0xBA1;
     if (temp_a2 & 0x20) {
         if (lobby_func_0056AF20(0, 0, ((s8) (((temp_a0 & 0xFF) + 0x31)))) == 0) {
             SetDialogData(0xD);
@@ -100,12 +101,13 @@ block_38:
 block_39:
     temp_v0 = (*(void **)&cw);
     if ((temp_a0 & 0xFF) != (*(u8 *)((u8 *)(temp_v0) + 0xBA1))) {
-        (*(s32 *)((u8 *)&(*(u8 *)((u8 *)&textLobbyTbl + 0x58)) + ((*(u8 *)((u8 *)(temp_v0) + 0xBA1)) * 0x14))) = func_0012E1C0(1, temp_a1, temp_a2);
-        lobby_func_0059F740();
+        temp_a1 = (*(u8 *)((u8 *)(temp_v0) + 0xBA1));
+        (*(s32 *)((u8 *)&(*(u8 *)((u8 *)&textLobbyTbl + 0x58)) + (temp_a1 * 0x14))) = func_0012E1C0(1);
+        lobby_func_0059F740((*(s32 *)&g_main_2EF390) + 0x23F4 + 0x20 + ((*(u8 *)((u8 *)(temp_v0) + 0xBA1)) << 8) + 0x288, (s32) temp_a1, M2C_ERROR(/* Read from unset register $a2 */), M2C_ERROR(/* Read from unset register $a3 */), M2C_ERROR(/* Read from unset register $a4 */), M2C_ERROR(/* Read from unset register $a5 */), M2C_ERROR(/* Read from unset register $a6 */), M2C_ERROR(/* Read from unset register $a7 */));
         lobby_func_0059F750(0xFA, 0x16A);
         cnWrap_SoundRequest(1);
     } else {
-        (*(s32 *)((u8 *)&(*(u8 *)((u8 *)&textLobbyTbl + 0x58)) + ((*(u8 *)((u8 *)((*(void **)&cw)) + 0xBA1)) * 0x14))) = func_0012E1C0(0, temp_a1, temp_a2);
+        (*(s32 *)((u8 *)&(*(u8 *)((u8 *)&textLobbyTbl + 0x58)) + ((*(u8 *)((u8 *)((*(void **)&cw)) + 0xBA1)) * 0x14))) = func_0012E1C0(0);
     }
     return 2;
 }

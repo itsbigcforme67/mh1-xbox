@@ -5,7 +5,7 @@
 
 s32 BsWorkTrans();                              /* extern */
 
-void lobby_func_005B16E0(void) {
-    BsWorkTrans();
+s32 lobby_func_005B16E0(s32 a0, s32 a1, s32 a2, s32 a3, s32 a4, s32 a5, s32 a6, s32 a7) {   /* a jump to BsWorkTrans */
+    return (s32) BsWorkTrans(a0, a1, a2, a3, a4, a5, a6, a7);
 }
 

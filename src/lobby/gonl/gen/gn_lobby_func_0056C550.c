@@ -15,6 +15,7 @@ s32 SetDialogData();
 s32 SetDialogYesNo();
 s32 SoftKeyboard_alive_check();
 s32 cnWrap_SoundRequest();
+s32 func_00235C80();
 s32 getFriendNow();
 s64 lobby_func_00569390();
 s32 lobby_func_0056AF20();
@@ -26,6 +27,9 @@ s32 lobby_func_00572110();
 s32 lobby_func_0057FEA0();
 s32 lobby_func_00580A40();
 s32 lobby_func_00581210();
+void * memcpy();
+void * memset();
+void * strcpy();
 extern u8 g_main_2EFBAC;
 extern u8 g_main_2EFBC4;
 extern u8 D_0035EFEB;
@@ -36,12 +40,8 @@ extern u8 lb_sys;
 extern u8 pNet;
 extern u8 tl_member_buff;
 s32 Lbc_RequestNetComment();              /* extern */
-s32 func_00235C80();                            /* extern */
-s32 memcpy();            /* extern */
-s32 memset();      /* extern */
 s16 net_Check_FriendSuu();        /* extern */
 s32 net_Delete_FriendData(); /* extern */
-s32 strcpy();                     /* extern */
 extern s32 g_main_302CB0;
 extern s32 g_main_3064AF;
 
@@ -165,7 +165,7 @@ block_192:
                 (*(s8 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x1398))) + 0x60C)) = (s8) ((*(s8 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x1398))) + 0x60C)) + 1);
                 (*(s8 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x1398))) + 0x614)) = 0;
                 (*(u8 *)&D_0035EFEB) = 0;
-                memset((*(void **)&cw) + 0xAF8, 0, 0x62, (*(s16 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x1398))) + 0x608)));
+                memset((*(void **)&cw) + 0xAF8, 0, 0x62);
                 (*(s8 *)((u8 *)((*(void **)&cw)) + 0xF00)) = 0;
                 SetDialogData(0x1E);
                 (*(s8 *)((u8 *)((*(void **)&pNet)) + 0x2D)) = 1;
@@ -186,7 +186,7 @@ block_192:
                 lobby_func_00571AF0();
                 (*(s8 *)((u8 *)((*(void **)&g_main_2EFBAC)) + 0x230)) = 2;
                 temp_s0 = (u8 *)&g_main_302CB0 + ((*(s16 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x1398))) + 0x60A)) * 0x30);
-                memset((*(void **)&g_main_2EFBAC) + 0x9A, 0, 0x114, (*(s16 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x1398))) + 0x60A)) * 3);
+                memset((*(void **)&g_main_2EFBAC) + 0x9A, 0, 0x114);
                 strcpy((*(void **)&g_main_2EFBAC) + 0x9A, temp_s0);
                 strcpy((*(void **)&g_main_2EFBAC) + 0xA2, temp_s0 + 8);
                 memset((*(void **)&g_main_2EFBAC) + 0x23C, 1, 3);
@@ -289,7 +289,7 @@ block_192:
                 lobby_func_00571AF0();
                 (*(s8 *)((u8 *)((*(void **)&g_main_2EFBAC)) + 0x230)) = 2;
                 temp_s0_2 = (u8 *)&g_main_302CB0 + ((*(s16 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x1398))) + 0x60A)) * 0x30);
-                memset((*(void **)&g_main_2EFBAC) + 0x9A, 0, 0x114, (*(s16 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x1398))) + 0x60A)) * 3);
+                memset((*(void **)&g_main_2EFBAC) + 0x9A, 0, 0x114);
                 strcpy((*(void **)&g_main_2EFBAC) + 0x9A, temp_s0_2);
                 strcpy((*(void **)&g_main_2EFBAC) + 0xA2, temp_s0_2 + 8);
                 memset((*(void **)&g_main_2EFBAC) + 0x23C, 1, 3);

@@ -11,8 +11,8 @@ s32 lobby_func_005E3900();
 extern u8 ClassInfo;
 extern u8 cw;
 s32 cnLBS_Get_LobbyName();           /* extern */
-s32 cnLBS_Get_RoomStatus();          /* extern */
-s32 cnLBS_Get_mhRoomJoinUser(); /* extern */
+s32 gonl_Get_PlazaStatus();          /* extern */
+s32 gonl_Get_PlazaJoinUser(); /* extern */
 extern u8 PlazaInfo;
 
 void lobby_func_0057ECE0(s64 arg0) {
@@ -33,8 +33,8 @@ void lobby_func_0057ECE0(s64 arg0) {
                 do {
                     temp_v0 = var_s1 + 1;
                     (*(s16 *)((u8 *)(var_s0) + 4)) = temp_v0;
-                    cnLBS_Get_RoomStatus(temp_v0 & 0xFFFF, var_s0 + 0x16);
-                    cnLBS_Get_mhRoomJoinUser((var_s1 + 1) & 0xFFFF, var_s0 + 6, var_s0 + 0x12);
+                    gonl_Get_PlazaStatus(temp_v0 & 0xFFFF, var_s0 + 0x16);
+                    gonl_Get_PlazaJoinUser((var_s1 + 1) & 0xFFFF, var_s0 + 6, var_s0 + 0x12);
                     cnLBS_Get_LobbyName((var_s1 + 1) & 0xFFFF, var_s0 + 0x1A);
                     lobby_func_005E3900((var_s1 + 1) & 0xFFFF, (s32) (var_s0 + 0x5B));
                     lobby_func_005E36A0((var_s1 + 1) & 0xFFFF, var_s0 + 8);

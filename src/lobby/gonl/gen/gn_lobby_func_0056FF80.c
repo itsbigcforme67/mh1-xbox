@@ -6,9 +6,9 @@
 s32 SetDialogData();
 s32 SetDialogYesNo();
 s32 SetHelpLineMsg();
+void * memset();
 extern u8 pNet;
 extern u8 tl_member_buff;
-s32 memset();        /* extern */
 extern s8 g_lb_6B46A0;
 extern s8 g_lb_6B46A1;
 extern s16 g_lb_6B46A2;

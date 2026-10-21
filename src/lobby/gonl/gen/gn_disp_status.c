@@ -17,6 +17,7 @@ s32 flfntSetSize();
 s32 han2zen();
 s32 lb_put_comment();
 s32 lobby_func_00575150();
+void * memcpy();
 s32 reload_tex();
 extern u8 Armor_Head_Data;
 extern u8 Armor_Leg_Data;
@@ -30,7 +31,6 @@ extern u8 tl_mail_tbl;
 s32 *Get_ServerName();                          /* extern */
 s32 font_print(); /* extern */
 s32 func_0012BDD0();                         /* extern */
-s32 memcpy();            /* extern */
 s32 nwDispStr_Html(s32, s32, f32);          /* extern */
 s32 put_titles();                  /* extern */
 s32 sprintf();           /* extern */

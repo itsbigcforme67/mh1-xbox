@@ -8,6 +8,8 @@ quest_w = 0x0032D010; // size:0x290            # G grew it (Quest_init memsets 0
 select_w = 0x0035EC30; // size:0xF0            # quest number at +0xD0 (MH1 +0xAC)
 start_area_lists = 0x002EECF0; // size:0x88           # start-area lists {weight, stage}.., 0xFF and their pointer lists (Quest_pl_stage_init)
 gsave_fmt = 0x002EA6B0; // size:0x58 noptr                # save slot screen formats (NO DATA, slot:name, TIME, MONEY / HR, MONEY), G disp_savesel_moji
+fade_data = 0x00253F70; // size:0x188 noptr          # 14 fades (MH1 10: G's online screens use 11-14, e.g. fade_set(12) entering a plaza)
+fade_rgb_110 = 0x00254100; // size:0x30 noptr         # the fades' colours (G 12, MH1 10)
 [sub_main]
 quest_size_lim_def = 0x004FD8D0; // size:0xA            # monster size limits per class {min, max} x5, copied to quest_size_lim (Quest_start)
 quest_bonus_tbl = 0x004FDB40; // size:0x20           # reward-level bonus by random number (Quest_start, quest_w.x14E)
@@ -450,9 +452,15 @@ eft13_index = 0x00504DF0; // size:0x50 noptr
 eft13_param = 0x00504E40; // size:0x50 noptr
 eft13_water_flag = 0x00504E90; // size:0x50 noptr
 [main]
+g_main_25F250 = 0x0025F250; // size:0x30   # tools/mhg_gonl.py: G data the G online code uses (size: up to the next name)
+[main]
 g_main_2EEE68 = 0x002EEE68; // size:0x10   # tools/mhg_gonl.py: G data the G online code uses (size: up to the next name)
 [main]
 g_main_2EEE70 = 0x002EEE70; // size:0x8   # tools/mhg_gonl.py: G data the G online code uses (size: up to the next name)
+[main]
+g_main_2EF264 = 0x002EF264; // size:0x20   # tools/mhg_gonl.py: G data the G online code uses (size: up to the next name)
+[main]
+g_main_2EF268 = 0x002EF268; // size:0x1C   # tools/mhg_gonl.py: G data the G online code uses (size: up to the next name)
 [main]
 g_main_2EF2A8 = 0x002EF2A8; // size:0x4   # tools/mhg_gonl.py: G data the G online code uses (size: up to the next name)
 [main]
@@ -490,6 +498,8 @@ g_main_2EFBC0 = 0x002EFBC0; // size:0x8   # tools/mhg_gonl.py: G data the G onli
 [main]
 g_main_2EFBC4 = 0x002EFBC4; // size:0x4   # tools/mhg_gonl.py: G data the G online code uses (size: up to the next name)
 [main]
+g_main_2FF154 = 0x002FF154; // size:0x100   # tools/mhg_gonl.py: G data the G online code uses (size: up to the next name)
+[main]
 g_main_302290 = 0x00302290; // size:0x100   # tools/mhg_gonl.py: G data the G online code uses (size: up to the next name)
 [main]
 g_main_302CB0 = 0x00302CB0; // size:0x100   # tools/mhg_gonl.py: G data the G online code uses (size: up to the next name)
@@ -503,6 +513,8 @@ g_main_30645A = 0x0030645A; // size:0x100   # tools/mhg_gonl.py: G data the G on
 g_main_306468 = 0x00306468; // size:0x100   # tools/mhg_gonl.py: G data the G online code uses (size: up to the next name)
 [main]
 g_main_3064AF = 0x003064AF; // size:0x100   # tools/mhg_gonl.py: G data the G online code uses (size: up to the next name)
+[sub_main]
+g_sub_4FF1D0 = 0x004FF1D0; // size:0x10   # tools/mhg_gonl.py: G data the G online code uses (size: up to the next name)
 [sub_main]
 g_sub_51B9B0 = 0x0051B9B0; // size:0x100   # tools/mhg_gonl.py: G data the G online code uses (size: up to the next name)
 [sub_main]

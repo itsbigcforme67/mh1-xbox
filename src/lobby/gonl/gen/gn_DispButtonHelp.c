@@ -5,6 +5,7 @@
 
 s32 SetTextureStage();
 s32 flfntSetSize();
+s32 func_0012D000();
 s32 lobby_func_005A0E80();
 s32 put_button_help();
 s32 reload_tex();
@@ -12,8 +13,7 @@ extern u8 g_main_2EFBAC;
 extern u8 cw;
 extern u8 g_main_2EFBAC;
 extern u8 tl_member_buff;
-s32 func_0012D000();                         /* extern */
-extern s32 g_lb_636B54;
+extern void *g_lb_636B54;
 
 void DispButtonHelp(void *arg0) {
     s32 temp_s0_10;

@@ -4,8 +4,8 @@
 #include "../gonl.h"
 
 s32 lobby_func_005AE5D0();
+void * memset();
 extern u8 CnetSys_w;
-s32 memset();        /* extern */
 
 s32 lobby_func_005AE500(s8 *arg0, s32 arg1) {
     u8 g_frame[0x180] __attribute__((aligned(16)));   /* G's stack frame */

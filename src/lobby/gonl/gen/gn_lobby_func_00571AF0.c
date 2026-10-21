@@ -4,9 +4,9 @@
 #include "../gonl.h"
 
 s32 lobby_func_00571A90();
+void * memset();
 extern u8 g_main_2EFBAC;
-s32 memset();           /* extern */
-
+extern u8 g_main_2EFBAC;
 void lobby_func_00571AF0(void) {
     (*(s8 *)((u8 *)((*(void **)&g_main_2EFBAC)) + 0x231)) = 0;
     (*(s8 *)((u8 *)((*(void **)&g_main_2EFBAC)) + 0x230)) = 0;

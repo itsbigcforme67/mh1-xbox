@@ -5,7 +5,7 @@
 
 s32 Lb_send_pl_status();                        /* extern */
 
-void check_sender0(void) {
-    Lb_send_pl_status();
+s32 check_sender0(s32 a0, s32 a1, s32 a2, s32 a3, s32 a4, s32 a5, s32 a6, s32 a7) {   /* a jump to Lb_send_pl_status */
+    return (s32) Lb_send_pl_status(a0, a1, a2, a3, a4, a5, a6, a7);
 }
 

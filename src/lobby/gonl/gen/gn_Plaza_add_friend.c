@@ -9,19 +9,19 @@ s32 SaveNetFile_ForLobby();
 s32 SetDialogData();
 s32 SetDialogYesNo();
 s32 cnWrap_SoundRequest();
+s32 func_00235C80();
 s32 lobby_func_0056C350();
 s32 lobby_func_0056C3F0();
 s32 lobby_func_00571450();
+s32 memcmp();
+void * memcpy();
+void * memset();
 extern u8 D_0035EFEB;
 extern u8 cw;
 extern u8 lb_sys;
 extern u8 pNet;
 extern u8 tl_member_buff;
-s32 func_00235C80();                            /* extern */
-s32 memcmp();                /* extern */
-s32 memcpy();               /* extern */
-s32 memset();           /* extern */
-s32 net_Check_FriendData();  /* extern */
+s32 net_Check_FriendData(); /* extern */
 s32 net_Check_FriendFree();       /* extern */
 extern s32 g_main_302CB0;
 extern u8 my_user_id;
@@ -54,10 +54,10 @@ s32 Plaza_add_friend(void) {
             temp_v1 = (*(void **)&pNet);
             (*(u8 *)((u8 *)(temp_v1) + 0x25)) = (u8) ((*(u8 *)((u8 *)(temp_v1) + 0x25)) + 1);
             (*(s8 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x1398))) + 0x615)) = 0;
-            if (memcmp((*(s32 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x1398))) + 0x600)), &my_user_id, 8) == 0) {
+            if (memcmp((*(void **)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x1398))) + 0x600)), &my_user_id, 8) == 0) {
                 (*(u8 *)((u8 *)((*(void **)&pNet)) + 0x25)) = 5U;
                 SetDialogData(0x24);
-            } else if (net_Check_FriendData(&g_main_302CB0, 0x32, (*(s32 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x1398))) + 0x600))) == -1) {
+            } else if (net_Check_FriendData(&g_main_302CB0, 0x32, (*(void **)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x1398))) + 0x600))) == -1) {
                 if (net_Check_FriendFree(&g_main_302CB0, 0x32) == -1) {
                     (*(u8 *)((u8 *)((*(void **)&pNet)) + 0x25)) = 5U;
                     SetDialogData(0x2A);
@@ -83,7 +83,7 @@ block_49:
         temp_v0_2 = Lb_select();
         switch (temp_v0_2) {                        /* switch 3; irregular */
         case 0:                                     /* switch 3 */
-            var_s0 = net_Check_FriendData(&g_main_302CB0, 0x32, (*(s32 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x1398))) + 0x600)));
+            var_s0 = net_Check_FriendData(&g_main_302CB0, 0x32, (*(void **)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x1398))) + 0x600)));
             if (var_s0 == -1) {
                 var_s0 = net_Check_FriendFree(&g_main_302CB0, 0x32);
                 if (var_s0 == -1) {
@@ -95,10 +95,10 @@ block_49:
             }
             temp_s2 = (u8 *)&g_main_302CB0 + (var_s0 * 0x30);
             memset(temp_s2, 0, 8);
-            memcpy(temp_s2, (*(s32 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x1398))) + 0x600)), 8);
+            memcpy(temp_s2, (*(void **)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x1398))) + 0x600)), 8);
             temp_s2_2 = temp_s2 + 8;
             memset(temp_s2_2, 0, 0x10);
-            memcpy(temp_s2_2, (*(s32 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x1398))) + 0x600)) + 8, 0x10);
+            memcpy(temp_s2_2, (*(void **)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x1398))) + 0x600)) + 8, 0x10);
             temp_v1_2 = var_s0 * 0x24A;
             (*(s8 *)((u8 *)((temp_v1_2 + (*(void **)&cw))) + 0x1265)) = 0;
             (*(s8 *)((u8 *)((temp_v1_2 + (*(void **)&cw))) + 0x1064)) = 0;

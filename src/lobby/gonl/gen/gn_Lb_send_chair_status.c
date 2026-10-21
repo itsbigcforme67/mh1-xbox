@@ -5,10 +5,9 @@
 
 s32 Lb_send_data_to_myself();
 s32 lb_send_data();
-s32 memset();             /* extern */
-s32 strcpy();                     /* extern */
-
-void Lb_send_chair_status(s32 arg0, s8 arg1, s8 arg2) {
+void * memset();
+void * strcpy();
+void Lb_send_chair_status(void *arg0, s8 arg1, s8 arg2) {
     u8 g_frame[0x50] __attribute__((aligned(16)));   /* G's stack frame */
 #define sp40 (*(s8 *)(g_frame + 0x40))
 #define sp41 (*(s8 *)(g_frame + 0x41))

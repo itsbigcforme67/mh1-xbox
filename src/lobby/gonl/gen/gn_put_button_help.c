@@ -5,12 +5,12 @@
 
 s32 flfntLocate();
 s32 font_print_double();
+void * strcpy();
 extern u8 cw;
 extern u8 game_w;
 extern u8 lb_shop_msg;
 s32 Lb_put_button();               /* extern */
 s32 font_print();                            /* extern */
-s32 strcpy();                     /* extern */
 extern s32 g_lb_636EB0;
 extern u8 bh_pos;
 

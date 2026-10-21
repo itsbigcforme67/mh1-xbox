@@ -11,6 +11,7 @@ s32 lb_set_chair();
 s32 lb_set_pl_pos();
 s32 lb_set_pl_stage();
 s32 lb_set_pl_status();
+void * memcpy();
 extern u8 cw;
 extern u8 jtbl_218_0065ECA0;
 extern u8 lb_sys;
@@ -21,7 +22,6 @@ s32 lb_recv_myChair();         /* extern */
 s32 lb_trade_check();                /* extern */
 s32 lb_trade_result();         /* extern */
 s32 lb_trade_start();                /* extern */
-s32 memcpy();    /* extern */
 extern u8 player_work;
 
 void Lb_check_receipt(s32 arg0, void *arg1) {
@@ -94,11 +94,11 @@ block_8:
     case 8:
         temp_a3 = (*(void **)&cw);
         if ((*(u8 *)((u8 *)(temp_a3) + 0xFA61)) != 0) {
-            memcpy(temp_a3 + ((var_a0 & 0xFF) * 0x62) + 0x724, temp_s1, 0x62, temp_a3);
+            memcpy(temp_a3 + ((var_a0 & 0xFF) * 0x62) + 0x724, temp_s1, 0x62);
             memcpy((*(void **)&cw) + 0xAF8, temp_s1, 0x62);
             return;
         }
-        memcpy(temp_a3 + 0x724, temp_s1, 0x62, temp_a3);
+        memcpy(temp_a3 + 0x724, temp_s1, 0x62);
         memcpy((*(void **)&cw) + 0xAF8, temp_s1, 0x62);
         return;
     case 12:

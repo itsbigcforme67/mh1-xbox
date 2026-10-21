@@ -4,8 +4,8 @@
 #include "../gonl.h"
 
 s32 lobby_func_005BFE20();
+void * memset();
 extern u8 CnetSys_w;
-s32 memset();        /* extern */
 extern s8 g_lb_731163;
 extern s32 g_lb_731164;
 extern s32 g_lb_731168;

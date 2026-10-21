@@ -106,6 +106,10 @@ lobby gnet_6145_ans 0x5E27C0  # G command table row (docs/network.md 3.12)
 lobby gnet_6146_ans 0x5E27D0  # G command table row (docs/network.md 3.12)
 lobby gnet_660B_ans 0x5BCA70  # G command table row (docs/network.md 3.12)
 lobby CnetSys_g 0x6FA760  # the start of G's lobby-server client work as the G C sees it (config/mhg/g_names.txt PROVIDE, include/lbnet.h)
+lobby gnet_6205_both 0x5E3700  # G command table row (docs/network.md 3.12), G's own code (the G_RENAME list of the generator)
+lobby gnet_620A_ans 0x5E3940  # G command table row (docs/network.md 3.12), G's own code (the G_RENAME list of the generator)
+lobby g_lb_731170 0x731170  # G's file download records (CnetSys_w+0x36968: u32 size, u32 version per file), read by cnLBS_Get_FileDownloadInfo (src/main/net/cnlbs01.c)
+lobby g_lb_731162 0x731162  # G's file download count (CnetSys_w+0x3695A), read by cnLBS_Get_FileDownloadInfo (src/main/net/cnlbs01.c)
 lobby g_lb_5E7812 0x5E7812  # tools/mhg_gonl.py: a G address the G online code uses, no name yet
 lobby g_lb_5E7814 0x5E7814  # tools/mhg_gonl.py: a G address the G online code uses, no name yet
 lobby g_lb_5FBBF0 0x5FBBF0  # tools/mhg_gonl.py: a G address the G online code uses, no name yet
@@ -221,12 +225,10 @@ lobby g_lb_72E068 0x72E068  # tools/mhg_gonl.py: a G address the G online code u
 lobby g_lb_72E069 0x72E069  # tools/mhg_gonl.py: a G address the G online code uses, no name yet
 lobby g_lb_72E06A 0x72E06A  # tools/mhg_gonl.py: a G address the G online code uses, no name yet
 lobby g_lb_72E07E 0x72E07E  # tools/mhg_gonl.py: a G address the G online code uses, no name yet
-lobby g_lb_731162 0x731162  # tools/mhg_gonl.py: a G address the G online code uses, no name yet
 lobby g_lb_731163 0x731163  # tools/mhg_gonl.py: a G address the G online code uses, no name yet
 lobby g_lb_731164 0x731164  # tools/mhg_gonl.py: a G address the G online code uses, no name yet
 lobby g_lb_731168 0x731168  # tools/mhg_gonl.py: a G address the G online code uses, no name yet
 lobby g_lb_73116C 0x73116C  # tools/mhg_gonl.py: a G address the G online code uses, no name yet
-lobby g_lb_731170 0x731170  # tools/mhg_gonl.py: a G address the G online code uses, no name yet
 lobby g_lb_731270 0x731270  # tools/mhg_gonl.py: a G address the G online code uses, no name yet
 lobby g_lb_733664 0x733664  # tools/mhg_gonl.py: a G address the G online code uses, no name yet
 lobby g_lb_733666 0x733666  # tools/mhg_gonl.py: a G address the G online code uses, no name yet

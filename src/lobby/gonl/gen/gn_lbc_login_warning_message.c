@@ -9,6 +9,7 @@ s32 Lb_eat_to_bell();
 s32 To_LogOut();
 s32 cnWrap_SoundRequest();
 s32 flfntSetSize();
+void * memcpy();
 extern u8 cw;
 extern u8 lb_rule_member;
 extern u8 pNet;
@@ -16,7 +17,6 @@ s32 check_warning_level(); /* extern */
 s32 cnLBS_Answer_LoginWarningMessage(); /* extern */
 s32 cnWrap_FontDisp(); /* extern */
 s32 cnWrap_SetFontColor();               /* extern */
-s32 memcpy(); /* extern */
 
 void lbc_login_warning_message(void) {
     s32 temp_a4;
@@ -58,7 +58,7 @@ void lbc_login_warning_message(void) {
             Lb_eat_to_bell((s32) ((*(void **)&cw) + 0xFA8E));
             return;
         }
-        memcpy(temp_v1 + 0xF75D, temp_v1 + 0xFA8E, 0x300, temp_a3, temp_a4);
+        memcpy(temp_v1 + 0xF75D, temp_v1 + 0xFA8E, 0x300);
         To_LogOut(5);
         return;
     case 3:

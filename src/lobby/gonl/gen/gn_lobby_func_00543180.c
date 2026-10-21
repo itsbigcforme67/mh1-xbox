@@ -9,10 +9,10 @@ s32 lobby_func_00542790();
 s32 lobby_func_005428F0();
 s32 lobby_func_005429A0();
 s32 lobby_func_00542A30();
+s32 sub_main_func_004C8600();
+s32 sub_main_func_004C8A10();
+s32 sub_main_func_004C9410();
 s32 get_questLevelNum();                     /* extern */
-s32 sub_main_func_004C8600(); /* extern */
-s32 sub_main_func_004C8A10();     /* extern */
-s32 sub_main_func_004C9410();                       /* extern */
 extern u8 User_data;
 
 s32 lobby_func_00543180(s32 arg0) {
@@ -45,15 +45,15 @@ s32 lobby_func_00543180(s32 arg0) {
     case 0x2E:
         return Event_flag_ck(1);
     case 0x2F:
-        return sub_main_func_004C8600(&User_data, 0xB, 0x72);
+        return sub_main_func_004C8600((s32) &User_data, 0xB, 0x72);
     case 0x30:
-        return sub_main_func_004C8600(&User_data, 1, 0x76);
+        return sub_main_func_004C8600((s32) &User_data, 1, 0x76);
     case 0x31:
         return lobby_func_00542790(1, 4);
     case 0x32:
         return Quest_clear_bit_ck(0x2739);
     case 0x33:
-        return sub_main_func_004C8600(&User_data, 0x1A, 0x74);
+        return sub_main_func_004C8600((s32) &User_data, 0x1A, 0x74);
     case 0x34:
         if (get_questLevelNum(0x32) == 1) {
             return sub_main_func_004C8A10(&User_data, 0);
