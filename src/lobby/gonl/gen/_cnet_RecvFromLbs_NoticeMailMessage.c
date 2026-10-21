@@ -1,0 +1,23 @@
+/* G online (PC): _cnet_RecvFromLbs_NoticeMailMessage, written from Monster Hunter G's code at lobby 0x5840B0 by tools/mhg_gonl.py (an m2c draft with
+ * G's names; docs/network.md 3.12). Not compared with anything; the G online PC build links it (ONLINE=1
+ * tools/build_pc_mhg.sh). */
+#include "../gonl.h"
+
+extern u8 cw;
+s32 Lbc_init_network_work();                    /* extern */
+s32 Lbc_set_prim(); /* extern */
+s32 cnWrap_BgmVolume();                  /* extern */
+s32 fade_set();                          /* extern */
+extern u8 put_back;
+
+void _cnet_RecvFromLbs_NoticeMailMessage(void) {
+    u8 *temp_v1;
+
+    temp_v1 = (*(void **)&cw);
+    (*(u8 *)((u8 *)(temp_v1) + 0xB9B)) = (u8) ((*(u8 *)((u8 *)(temp_v1) + 0xB9B)) + 1);
+    cnWrap_BgmVolume(0);
+    Lbc_init_network_work();
+    Lbc_set_prim(&put_back, 0, 0, 0);
+    fade_set(0xA);
+}
+

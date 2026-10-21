@@ -272,6 +272,12 @@ if [ -n "$ONLINE" ]; then
     GAME="$GAME $NETMAIN $NETLB src/lobby/b/lb_cmcs01.c src/main/boot/boot02.c src/main/plsel/plsel_nm.c"
     # G: its lobby-server receive handlers that differ from MH1's (named per table address in config/mhg/pc_names.txt)
     [ "$VERSION" = mhg ] && GAME="$GAME src/lobby/cnet/cnet_g.c"
+    # G: its lobby client, plaza and town functions that differ from MH1's or are G's own (src/lobby/gonl/gen,
+    # tools/mhg_gonl.py): they win over MH1's copies of the same names (BMATCH)
+    if [ "$VERSION" = mhg ]; then
+        GONL="$(ls src/lobby/gonl/gen/*.c src/lobby/gonl/*.c 2>/dev/null | tr '\n' ' ')"
+        GAME="$GAME $GONL"; BMATCH="$BMATCH $GONL"
+    fi
     WEAK="$WEAK lb__cnlbs_nm lb__lbui_nm"   # lbui_nm: the plaza TUs lb_plz2/3 (matched C) win
     # main's cnLBS file-download C calls the lobby's cnet helpers by address
     NETALIASES="func_5AD280=__cnetSub_Set_BgProcess func_5AD1B0=_cnet_Return_CallBack func_5ADB60=GetRecvData8 \

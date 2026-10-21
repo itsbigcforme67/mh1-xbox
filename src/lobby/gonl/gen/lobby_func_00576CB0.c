@@ -1,0 +1,81 @@
+/* G online (PC): lobby_func_00576CB0, written from Monster Hunter G's code at lobby 0x576CB0 by tools/mhg_gonl.py (an m2c draft with
+ * G's names; docs/network.md 3.12). Not compared with anything; the G online PC build links it (ONLINE=1
+ * tools/build_pc_mhg.sh). */
+#include "../gonl.h"
+
+extern u8 tl_member_buff;
+s32 Lb_put_icon_free(); /* extern */
+s32 Lb_put_msg_type2();    /* extern */
+s32 Put_page_num(); /* extern */
+s32 flfntLocate();                  /* extern */
+s32 font_print();                 /* extern */
+s32 font_print_double(); /* extern */
+s32 font_set_palette();                  /* extern */
+extern u8 g_lb_636CF0;
+extern u8 lb_quest_color_tbl;
+extern u8 lit_2316;
+
+void lobby_func_00576CB0(void) {
+    s32 *var_s1;
+    s32 var_a3;
+    s64 temp_s0;
+    s64 var_s2;
+    s64 var_s3;
+    s64 var_v0;
+
+    font_print_double(0xE2, 0x78, 1, 5);
+    switch ((*(u8 *)((u8 *)&tl_member_buff + 0x1388))) {                           /* irregular */
+    case 0:
+        var_a3 = lb_quest_color_tbl;
+        break;
+    case 1:
+        var_a3 = (*(u8 *)((u8 *)&lb_quest_color_tbl + 0x4));
+        break;
+    case 2:
+        var_a3 = (*(u8 *)((u8 *)&lb_quest_color_tbl + 0x8));
+        break;
+    default:
+        var_a3 = 0;
+        break;
+    }
+    if (var_a3 != 0) {
+        Lb_put_icon_free(0x13E, 0x76, 0x14, var_a3 & (&lb_quest_color_tbl)[(*(u8 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x18))) + 0x1370))]);
+    }
+    var_s3 = (s64) (0x8E << 0x30) >> 0x30;
+    font_set_palette(0);
+    Lb_put_msg_type2(0xE2, var_s3, 0x39);
+    if (((*(u8 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x18))) + 0x1370)) != 2) && ((*(u8 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x18))) + 0x1370)) != 1)) {
+        var_v0 = 7;
+    } else {
+        var_v0 = 4;
+    }
+    temp_s0 = (s64) (var_v0 << 0x30) >> 0x30;
+    var_s2 = 0;
+    if (temp_s0 > 0) {
+        var_s1 = &g_lb_636CF0;
+        do {
+            if ((*(u8 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x18))) + 0x136B)) == 1) {
+                if ((*(s8 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x18))) + 0x1373)) == ((s64) (var_s2 << 0x30) >> 0x30)) {
+                    font_set_palette(4);
+                } else {
+                    font_set_palette(0xA);
+                }
+            } else {
+                font_set_palette(0);
+            }
+            flfntLocate(0x186, var_s3);
+            font_print(&lit_2316, (*(s32 *)((u8 *)(var_s1) + 0xE8)));
+            var_s1 += 4;
+            var_s2 = (s64) ((var_s2 + 1) << 0x30) >> 0x30;
+            var_s3 = (s64) ((var_s3 + 0x16) << 0x30) >> 0x30;
+        } while (var_s2 < temp_s0);
+    }
+    if ((*(u8 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x18))) + 0x136B)) != 1) {
+        font_set_palette(0xA);
+    } else {
+        font_set_palette(0);
+    }
+    Lb_put_msg_type2(0xE2, 0x128, 0x41);
+    Put_page_num(0x208, 0x78, (*(u8 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x18))) + 0x1370)), 5);
+}
+

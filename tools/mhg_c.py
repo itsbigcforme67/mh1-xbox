@@ -20,15 +20,39 @@ GP = 0x2F2B70
 
 def load_names():
     names = {}
-    for f in os.listdir(os.path.join(ROOT, 'config/mhg/symbols')):
+    # main, sub_main and the lobby (+ nethttp) only: game.bin and select.bin share the lobby's addresses, and their names
+    # there would send the PC to the wrong overlay's memory
+    for f in ('main.txt', 'sub_main.txt', 'lobby.txt', 'nethttp.txt'):
         for ln in open(os.path.join(ROOT, 'config/mhg/symbols', f)):
             m = re.match(r'(\S+) = 0x([0-9A-Fa-f]+);(?:.*size:0x([0-9A-Fa-f]+))?', ln)
             if m and not m[1].startswith(('D_', 'lit_', 'jtbl_', 'func_', 'lobby_func_', 'sub_main_func_')):
                 names.setdefault(int(m[2], 16), (m[1], int(m[3], 16) if m[3] else 0))
+    # sizes from the G PC build's symbol list (tools/mhg_pcmeta.py), which knows more of them
+    pcs = os.path.join(ROOT, 'build/mhg/pc/symbols')
+    if os.path.isdir(pcs):
+        for f in ('main.txt', 'sub_main.txt', 'lobby.txt', 'nethttp.txt'):
+            if not os.path.exists(os.path.join(pcs, f)):
+                continue
+            for ln in open(os.path.join(pcs, f)):
+                m = re.match(r'(\S+) = 0x([0-9A-Fa-f]+);.*size:0x([0-9A-Fa-f]+)', ln)
+                if m and int(m[2], 16) in names and names[int(m[2], 16)][0] == m[1]:
+                    names[int(m[2], 16)] = (m[1], max(names[int(m[2], 16)][1], int(m[3], 16)))
+    # and MH1's size of the same name (G's objects keep or grow MH1's size; G's own list often has none)
+    mh1 = {}
+    for f in ('main.txt', 'lobby.txt'):
+        for ln in open(os.path.join(ROOT, 'config/symbols', f)):
+            m = re.match(r'(\S+) = 0x[0-9A-Fa-f]+;.*size:0x([0-9A-Fa-f]+)', ln)
+            if m:
+                mh1[m[1]] = int(m[2], 16)
+    for a, (n, sz) in list(names.items()):
+        if n in mh1 and mh1[n] > sz:
+            names[a] = (n, mh1[n])
     p = os.path.join(ROOT, 'config/mhg/pc_names.txt')
     for ln in open(p):
+        if 'tools/mhg_gonl.py' in ln:      # (made by the generator itself: a better name may be found now)
+            continue
         f = ln.split('#', 1)[0].split()
-        if len(f) >= 3:
+        if len(f) >= 3 and f[0] in ('main', 'sub_main', 'lobby', 'nethttp'):
             names[int(f[2], 16)] = (f[1], 0)
     return names
 
@@ -41,10 +65,13 @@ def name_of(a):
     if a in NAMES:
         return NAMES[a][0]
     i = bisect.bisect_right(KEYS, a) - 1
-    if i >= 0:
+    while i >= 0 and a - KEYS[i] < 0x10000:        # the nearest sized object below that holds the address
         n, sz = NAMES[KEYS[i]]
-        if sz and a - KEYS[i] < sz:
-            return '%s+0x%X' % (n, a - KEYS[i])
+        if sz:
+            if a - KEYS[i] < (sz + 0x40 if sz >= 0x10 else sz):     # (G structs often outgrew MH1's size)
+                return '%s+0x%X' % (n, a - KEYS[i])
+            return None
+        i -= 1
     return None
 
 

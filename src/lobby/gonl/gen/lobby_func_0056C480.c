@@ -1,0 +1,47 @@
+/* G online (PC): lobby_func_0056C480, written from Monster Hunter G's code at lobby 0x56C480 by tools/mhg_gonl.py (an m2c draft with
+ * G's names; docs/network.md 3.12). Not compared with anything; the G online PC build links it (ONLINE=1
+ * tools/build_pc_mhg.sh). */
+#include "../gonl.h"
+
+extern u8 cw;
+extern u8 lb_sys;
+extern u8 pNet;
+extern u8 tl_member_buff;
+s32 lobby_func_0056D6E0();                      /* extern */
+s32 lobby_func_00571AF0();                      /* extern */
+s32 memset(); /* extern */
+s16 net_Check_FriendSuu();        /* extern */
+extern u8 g_main_302CB0;
+
+void lobby_func_0056C480(void) {
+    s32 temp_v0;
+    s32 var_a2;
+    s32 var_t0;
+    s32 var_t1;
+    u16 *var_a3;
+
+    var_t1 = 0;
+    var_a3 = &(*(u8 *)((u8 *)&lb_sys + 0xA0));
+    var_a2 = 0;
+    do {
+        var_t0 = 0;
+        if (*var_a3 == 0) {
+            do {
+                temp_v0 = var_t0 + var_a2;
+                if (temp_v0 < 0x65) {
+                    (*(s8 *)((u8 *)(((*(s32 *)&cw) + (temp_v0 * 0x24A))) + 0x1265)) = 2;
+                }
+                var_t0 += 1;
+            } while (var_t0 < 7);
+        }
+        var_t1 += 1;
+        var_a3 += 2;
+        var_a2 += 7;
+    } while (var_t1 < 0xC);
+    memset(&(*(u8 *)((u8 *)&tl_member_buff + 0x1398)), 0, 0x618, var_a3);
+    (*(s8 *)((u8 *)((*(void **)&pNet)) + 0x2E)) = 1;
+    (*(s16 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x1398))) + 0x608)) = net_Check_FriendSuu(&g_main_302CB0, 0x32);
+    lobby_func_0056D6E0();
+    lobby_func_00571AF0();
+}
+
