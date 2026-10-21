@@ -1437,9 +1437,11 @@ main:0x2C1AE0	online, keyboard, word filter	twin without US English
 main:0x2C1B10	online, keyboard, word filter	twin without US English
 main:0x2C1B40	online, keyboard, word filter	twin without US English
 main:0x2C1B58	online, keyboard, word filter	twin without US English
+main:0x2C1B68	online, keyboard, word filter	twin without US English
 main:0x2C1B80	online, keyboard, word filter	twin without US English
 main:0x2C1BA0	online, keyboard, word filter	twin without US English
 main:0x2C1C10	online, keyboard, word filter	twin without US English
+main:0x2C1C60	online, keyboard, word filter	edited in G
 main:0x2C1C80	online, keyboard, word filter	twin without US English
 main:0x2C1C90	online, keyboard, word filter	twin without US English
 main:0x2C1E90	online, keyboard, word filter	twin without US English
@@ -1465,6 +1467,8 @@ main:0x2C2390	online, keyboard, word filter	twin without US English
 main:0x2C23B0	online, keyboard, word filter	twin without US English
 main:0x2C23E0	online, keyboard, word filter	twin without US English
 main:0x2C2410	online, keyboard, word filter	twin without US English
+main:0x2C2440	online, keyboard, word filter	edited in G
+main:0x2C25A8	online, keyboard, word filter	edited in G
 main:0x2C2B20	online, keyboard, word filter	twin without US English
 main:0x2C2B40	online, keyboard, word filter	twin without US English
 main:0x2C2C20	online, keyboard, word filter	twin without US English
@@ -5762,11 +5766,6 @@ sub_main:0x53A130	menus, options, HUD [G table]	G only	in Portable
 sub_main:0x53A150	menus, options, HUD [G table]	G only	in Portable
 sub_main:0x53A170	menus, options, HUD [G table]	G only	in Portable
 sub_main:0x53A190	menus, options, HUD [G table]	G only	in Portable
-sub_main:0x53A1E0	menus, options, HUD	edited in G	in Portable
-sub_main:0x53A230	menus, options, HUD	edited in G
-sub_main:0x53A2D0	menus, options, HUD	edited in G	in Portable
-sub_main:0x53A310	menus, options, HUD	edited in G
-sub_main:0x53A360	menus, options, HUD	edited in G	in Portable
 sub_main:0x53A380	menus, options, HUD [G table]	G only	in Portable
 sub_main:0x53A3F0	other tables (yes_or_no_str) [G table]	G only	in Portable
 sub_main:0x53A400	other tables (yes_or_no_str) [G table]	G only	in Portable
@@ -6170,6 +6169,7 @@ yn:0xA10CC0	memory card and yes/no dialogs	twin without US English
 yn:0xA10CF0	memory card and yes/no dialogs	twin without US English
 yn:0xA10D20	memory card and yes/no dialogs	twin without US English
 yn:0xA10DC0	memory card and yes/no dialogs	twin without US English
+yn:0xA10DE0	memory card and yes/no dialogs	edited in G
 yn:0xA10E00	code literals (yn)	G only
 yn:0xA10E10	memory card and yes/no dialogs	twin without US English
 yn:0xA10E30	memory card and yes/no dialogs	twin without US English

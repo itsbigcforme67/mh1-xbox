@@ -1466,3 +1466,7 @@ Owner's request: one picture of the PS2, Xbox and PC hunters together in the sam
   run_freedom / freedom_pairs / freedom_for_g pair Portable<->Freedom entry by entry and fill G after MH1 US;
   --freedom-selftest (Portable with itself): 784 entries, 4624 G strings would get a line. Owner: ISO of ULUS-10084
   in disc/mhfr/.
+- Round 5 (in game): tools/g_eng_tour.py (14 hidden scenes, HTML contact sheets in build/B/eng/). Fixed in the pipeline:
+  talk_layout (Disp_NPC_message rows of 11 two-byte chars: odd-length English lines overlapped), re-flowed card lines no
+  longer given string-wide (a fragment showed alone), the *button labels* rule (G's ~Bnn label rows). Ranked list in
+  docs/english_g.md "In game".

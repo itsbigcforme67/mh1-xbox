@@ -281,3 +281,54 @@ This is what "our own translation in Freedom's style" would have to write once F
 - The US text of JP quest 19/69 says swamp while the JP says forest; both are swamp quests, so for MH1 the English
   is right and the JP text was the odd one.
 - disc/mhf is Monster Hunter Frontier (PC), not Freedom; Freedom (PSP US) is not on the machine yet.
+
+## In game (agent B, 20 Oct 2026)
+
+How it was looked at: `python3 tools/g_eng_tour.py` runs the G PC build hidden with `RT_TEXT_TABLE=build/text/en_mhg.txt`
+(1.5 GB cap, about 1 minute for all 14 scenes) and writes pictures and an HTML contact sheet per screen to
+`build/B/eng/<scene>.html` (index: `build/B/eng/index.html`; not committed). Scenes: newgame (title, game menu,
+character creation, card dialogs), net_options, gallery, options, network (continue / card dialogs), item_shop,
+weapon_shop, armour_shop, forge, item_box, elder_talk, pause (village pause menu, status, equipment), quest_info (pause
+menu in a quest), reward (quest 4 cleared with the test aids: banner, quest score, monster record). With
+`G_ENG_TABLE=/dev/null G_ENG_SUFFIX=_jp` the same scene runs without the table, to tell our text from the port's own
+drawing. The binary was the main checkout's current `build/mhg/pc/mhview_g` (copied, not rebuilt). In the menus, n
+presses of ddown in a script move n+1 rows (noted in the tool).
+
+### Found, ranked (worst first)
+
+1. **NPC talk rows overlapped: fixed.** Every talk line whose English had a line of odd length was drawn on top of the
+   next one ("bu" + "t here's a little" on one row). Cause: the talk window (chat_nm.c Disp_NPC_message, the same code
+   in MH1 and G) cuts the typed text into rows of 11 two-byte characters and only sees a line feed where a two-byte
+   character would start. The US build drew 22 one-byte columns instead. Fix in the text pipeline
+   (`talk_layout` in tools/text_map.py, applied when the tables are written, to the strings of the talk tables:
+   npc_*, talk_*, tl_* and G's lines next to them): lines longer than 22 are cut at 22 as the US window did, each line
+   is padded to an even length, and a full 22-byte line ends without a line feed. 1722 G lines and 2089 MH1 lines.
+   Checked in G (elder_talk): rows clean, the long story pages fit (7 rows). MH1 uses the same window and the same
+   table rule; not run in MH1.
+2. **A memory-card line in the wrong place: fixed.** "inserted in MEMORY CARD slots 1 and 2." stood alone in a one-line
+   dialog. Lines of the re-flowed memory-card messages had been given to their Japanese string everywhere; the string is
+   also used alone. They now go only to their own message slot (the `0xTABLE[i]` ids), not to the string or to
+   same-text copies. Cost: 7 G strings, 4 MH1 strings (fragments that were only right in one place).
+3. **Japanese next to English on the same screen** (no English on the US disc; Freedom or our own translation):
+   the talk window title 会話イベント (MH1 JP has it, the US build has no line for it), the NETWORK OPTIONS page (all
+   rows and help), the gallery (G's movie name, the L1 / play labels), the character-save and welcome dialogs, the
+   combine window's 素材A label, the element label "Dragon属性" in the equipment details (English element name +
+   Japanese suffix), G-only item names in lists (調合書①入門編), the monster record window after a quest (G only).
+4. **Labels G drew with icons: fixed for 5 rows.** G wrote MH1's "　選択　　　キャンセル" rows with ~Bnn icons in front
+   of each word; a new text rule (*button labels*) gives them the US words with G's icons ("○Enter Data ✕Cancel" in
+   character creation). 11 other icon lines have no US line ("~B00ボタンを押して下さい" ...).
+5. **English that does not fit G's layout** (text content, not the pipeline): the side tabs of the forge and the
+   shops ("Improve Wpn", "Weapons") run past the right edge of the screen; the armour stats "Thunder Res:" /
+   "Dragon Res" touch their values; in the game menu help "○ Confirm ✕ Cancel" the ✕ icon (at a fixed place)
+   covers the end of "Confirm"; 22-character talk rows touch the window's right border. Shorter wording (Freedom's,
+   or ours) is the fix.
+6. **The table has English, the screen shows Japanese** (the game draws another copy of the text; a gap in the text
+   hooks, not in the table): the window titles 装備詳細確認 (table: "Equip Details") and クエスト状況確認 ("View Quest
+   Details"), the "あと１分で村に戻ります" banner after a clear (table: "Returning to village in 1 min.").
+7. **Not ours:** the item shop's owned-count line "所持数×~C00C02( 0)" is garbled the same way without the table (a
+   PC port drawing bug of the ~C code in that line).
+8. **Font:** nothing wrong seen in the narrow ASCII set (proportional widths, quotes and apostrophes draw); no
+   character fell back to a missing glyph in these screens.
+
+Not reached by the scripts this time: the quest board / counter list, the quest info pages inside a quest (the pause
+menu script opened the monster list), the town (network mode stops at the card dialog in a hidden run).

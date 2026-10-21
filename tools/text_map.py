@@ -1345,14 +1345,14 @@ def _one_english(c):
     return sorted(c, key=lambda x: (-c[x], len(x), x))[0]
 
 
-def propagate_same_text(jp, S, owner, en_jp, minlen=4):
+def propagate_same_text(jp, S, owner, en_jp, minlen=4, skip=()):
     """A JP string no table paired (its US table was not located, or the US code no longer uses it) takes the
     English of the same Japanese text (blanks at the ends ignored) when every paired occurrence of that text has
     the same English: a menu label shown by two windows, one of which the US build rewired. Strings of the line-split
     dialogs are left out."""
     eng = collections.defaultdict(collections.Counter)
     for jk, xb in en_jp.items():
-        if jk[0] == "quest":
+        if jk[0] == "quest" or jk in skip:
             continue
         eng[_norm_jp(jp.cstr(*jk))][xb] += 1
     n = 0
@@ -1374,7 +1374,7 @@ def propagate_same_text(jp, S, owner, en_jp, minlen=4):
     return n
 
 
-def propagate_same_text_g(jp, g, GS, en_jp, en_g, owner, minlen=4):
+def propagate_same_text_g(jp, g, GS, en_jp, en_g, owner, minlen=4, skip=()):
     """A G string no table paired takes the English of the same Japanese text (blanks at the ends ignored) from
     the JP build or from G itself when every paired occurrence has the same English: the G-only label tables
     (menu words, shop commands) repeat MH1 words whose US twin was paired in another table. Lines of the item
@@ -1382,7 +1382,7 @@ def propagate_same_text_g(jp, g, GS, en_jp, en_g, owner, minlen=4):
     and its US line need not say the same thing (g_rules pairs whole descriptions instead)."""
     eng = collections.defaultdict(collections.Counter)
     for jk, xb in en_jp.items():
-        if jk[0] != "quest" and not _fragment(owner, jk):
+        if jk[0] != "quest" and not _fragment(owner, jk) and jk not in skip:
             eng[_norm_jp(jp.cstr(*jk))][xb] += 1
     for gk, xb in en_g.items():
         if gk[0] not in ("quest", "slot") and gk in GS:
@@ -1409,6 +1409,8 @@ def propagate_same_text_g(jp, g, GS, en_jp, en_g, owner, minlen=4):
 #   marks     + kanji digits written as digits, punctuation and quote brackets (。、！？・…「」≪≫【】)
 #   buttons   + G wrote a pad symbol (○ □ △ ×) as a ~Bnn icon code: the English's US icon code is re-pointed to G's code
 #               for the same symbol (US code -> symbol table learned from the MH1 pairs)
+#   button labels  a row of labels G wrote with ~Bnn icons in front ('~B00決定　　~B01キャンセル') whose words equal an MH1
+#               row ('　決定　　　キャンセル') with US English ('  Confirm    Cancel'): the US words get G's icons in front
 #   numbers   + G changed a number: the number is replaced in the English when it occurs there exactly once and neither
 #               the old nor the new number is 1 (singular / plural would change: listed as ambiguous instead)
 # Sources are whole messages only: lines of the description tables and of the line-split dialogs are not, so descriptions
@@ -1455,6 +1457,17 @@ def _btn_key(t):
 
 def _btn_tokens(t):
     return re.findall(r"~B\d\d|[%s]" % BTN_SYMS, t)
+
+
+def _label_segs(b):
+    """the words of a row of button labels ('　決定　　　キャンセル'): Japanese segments between blanks, or None"""
+    t = _u(b).replace("\u3000", " ")
+    if any(c in BTN_SYMS for c in t) or "~" in t or "\n" in t:
+        return None
+    segs = t.split()
+    if not segs or not re.search(r" {2,}|^ ", t) and len(segs) > 1:
+        return None
+    return segs if all(is_japanese(x.encode("cp932", "replace")) or len(x) <= 4 for x in segs) else None
 
 
 def us_button_table(jp, en_jp, owner):
@@ -1599,7 +1612,7 @@ def g_rules(jp, g, GS, owner, cells, en_jp, en_g, Jq, Gq, skip=()):
 
     # ---- whole messages: index the JP sources by each normal form
     us_btn = us_button_table(jp, en_jp, owner)
-    idx = {n: collections.defaultdict(list) for n in ("exact", "layout", "marks", "buttons", "numbers")}
+    idx = {n: collections.defaultdict(list) for n in ("exact", "layout", "marks", "buttons", "numbers", "labels")}
     for jk, xb in en_jp.items():
         if jk[0] == "slot" or _fragment(owner, jk) or jk in skip:
             continue
@@ -1612,6 +1625,9 @@ def g_rules(jp, g, GS, owner, cells, en_jp, en_g, Jq, Gq, skip=()):
         if any(c in BTN_SYMS for c in m) and "~B" not in m:
             idx["buttons"][_btn_key(m)].append(e)
         idx["numbers"][re.sub(r"\d+", "#", m)].append(e)
+        segs = _label_segs(b)
+        if segs and len(segs) >= 2:
+            idx["labels"][tuple(segs)].append(e)
 
     def same_place(lst, gk):
         """a G quest field takes English from quest text of a JP quest on another map only when neither the Japanese
@@ -1656,6 +1672,17 @@ def g_rules(jp, g, GS, owner, cells, en_jp, en_g, Jq, Gq, skip=()):
             break
         if done:
             continue
+        if "~B" in m and gk[0] != "quest":
+            parts = re.findall(r"(~B\d\d)?([^~\s\u3000]+)", _u(gb).replace("\u3000", " "))
+            if parts and all(c for c, _t in parts) and re.fullmatch(r"(?:~B\d\d[^~\s\u3000]+[\s\u3000]*)+", _u(gb).replace("\u3000", " ")):
+                outs = set()
+                for b, xb, _jk in idx["labels"].get(tuple(t for _c, t in parts), ()):
+                    ex = [x for x in re.split(r" {2,}", xb.decode("latin-1").strip()) if x]
+                    if len(ex) == len(parts):
+                        outs.add("   ".join(c + x for (c, _t), x in zip(parts, ex)).encode("latin-1"))
+                if len(outs) == 1:
+                    take(gk, outs.pop(), "button labels")
+                    continue
         if "~B" in m:
             lst = same_place(idx["buttons"].get(_btn_key(m)) or [], gk)
             outs, reason = set(), ""
@@ -2683,7 +2710,7 @@ def main():
             en_jp[jk] = xb
             slot_cov.add(jk)
     log("memory-card messages: %d slots re-flowed from the US groups" % len(lsp))
-    nprop = propagate_same_text(jp, S, owner, en_jp)
+    nprop = propagate_same_text(jp, S, owner, en_jp, skip=slot_cov)
     log("same Japanese text elsewhere: %d more JP strings" % nprop)
     for kind, k in man_drop:
         if kind == "jp":
@@ -2691,8 +2718,9 @@ def main():
     log("US: %d JP strings with English (%d quest fields); dropped %s; %.0fs" % (len(en_jp), nq, dict(drop), time.time() - t0))
     hdr = ["English text table for MH1 JP, made by tools/text_map.py from your own discs. Do not share.",
            "ids are the Japanese build's (rt_text.c); source: the US disc"]
+    talk_jp = {jk for jk in en_jp if owner.get(jk) and TALK_TABLES.match(owner[jk][1])}
     write_table(os.path.join(args.out, "en_mh1.txt"),
-                merged(en_jp, slot_cov, slot_jp), hdr)
+                {k: (talk_layout(v) if k in talk_jp else v) for k, v in merged(en_jp, slot_cov, slot_jp).items()}, hdr)
 
     # ---- G
     omg, outg, rowsg = run_g(jp, g, funcs, objs, S, cells, GS, cache)
@@ -2708,7 +2736,7 @@ def main():
     gstat = collections.Counter()
     for jk, lst in gmap.items():
         for gk, same in lst:
-            if jk not in en_jp:
+            if jk not in en_jp or jk in slot_cov:      # a line of a re-flowed message: right only in its own slot
                 gstat["no US English for the JP string"] += 1
                 continue
             if same:
@@ -2747,7 +2775,7 @@ def main():
         xb = us.cstr(*xk)
         if xb and not is_japanese(xb):
             en_g[gk] = xb
-    same_g = propagate_same_text_g(jp, g, GS, en_jp, en_g, owner)
+    same_g = propagate_same_text_g(jp, g, GS, en_jp, en_g, owner, skip=slot_cov)
     en_g.update(same_g)
     rule_g, gstat_rules, amb_g = g_rules(jp, g, GS, owner, cells, en_jp, en_g, Jq, Gq, slot_cov)
     en_g.update(rule_g)
@@ -2763,7 +2791,11 @@ def main():
            "ids are G's (main incl. sub_main, game, lobby, select, yn addresses; quest:N:offset of mNNNNN.mib); source: the US disc via MH1 JP"]
     # G's resident sub_main (0x4A0C80..) lies below the overlay load address and above main: the PC text layer
     # (rt_data.c: v < LB_VRAM -> main space) already treats it as part of main, so its ids are written as main:
-    write_table(os.path.join(args.out, "en_mhg.txt"), {(("main",) + k[1:]) if k[0] == "sub_main" else k: v
+    g_owner = g_area_fn(g, gmap, owner)[1].owner
+    talk_g = {gk for gk in en_g if gk[0] not in ("quest", "slot") and TALK_TABLES.match(g_owner(gk) or "")}
+    log("talk window layout: %d MH1 lines, %d G lines" % (len(talk_jp), len(talk_g)))
+    write_table(os.path.join(args.out, "en_mhg.txt"), {(("main",) + k[1:]) if k[0] == "sub_main" else k:
+                                                      (talk_layout(v) if k in talk_g else v)
                                                       for k, v in merged(en_g, gk_slot, slot_g).items()}, hdr)
 
     summary = dict(jp_strings=len(S), jp_en=len(en_jp), g_strings=len(GS), g_en=len(en_g), gstat=gstat, drop=drop)
@@ -2827,8 +2859,9 @@ def g_data_symbols():
     return out
 
 
-def write_report(args, jp, us, g, S, GS, cells, owner, omu, rowsu, omg, rowsg, en_jp, en_g, gmap, gstat, drop,
-                 Jq, Uq, Gq, qm, gqmatch, funcs, objs, n_same=0, gstat_rules=None, amb_g=(), rule_keys=(), cache=None):
+def g_area_fn(g, gmap, owner):
+    """(G key -> (JP twin key, same text?), area function): the area of a G string is its MH1 twin's table, else the
+    table of the nearest pointer (same run) that leads to an MH1 twin, else the nearest MH1 name at G addresses"""
     gtwin = {}
     for jk, lst in gmap.items():
         for gk, same in lst:
@@ -2877,6 +2910,90 @@ def write_report(args, jp, us, g, S, GS, cells, owner, omu, rowsu, omg, rowsg, e
                 return area_of_name(lst[k][1]) + (" [G table]" if gk not in gtwin else "")
             return "unnamed G tables (%s)" % c[0]
         return "code literals (%s)" % gk[0]
+
+    def twin_name(gk):
+        if gk in gtwin and gtwin[gk][0][0] != "quest":
+            jo = owner.get(gtwin[gk][0])
+            return jo[1] if jo else None
+        return None
+
+    def g_owner(gk):
+        """the MH1 table name of the G string's twin, or of the nearest twin in its run of pointers"""
+        n = twin_name(gk)
+        if n or gk[0] == "quest":
+            return n
+        c = gcell.get(gk)
+        if not c:
+            return None
+        for d in range(1, 65):
+            for pos in (c[1] - 4 * d, c[1] + 4 * d):
+                t = gptr.get((c[0], pos))
+                n = twin_name(t) if t else None
+                if n:
+                    return n
+            if (c[0], c[1] - 4 * d) not in gptr and (c[0], c[1] + 4 * d) not in gptr:
+                return None
+        return None
+    g_area.owner = g_owner
+    return gtwin, g_area
+
+
+# ---------------------------------------------------------------- the NPC talk window (Disp_NPC_message)
+# The village talk window (chat_nm.c Disp_NPC_message, MH1 and G alike) cuts the typed message into rows of at most 11
+# characters of 2 bytes each, and checks for a line feed only where a 2-byte character would start. Japanese text has
+# only 2-byte characters; an English line of odd length puts its line feed in the middle of a pair, the row runs on into
+# the next line and the rows overlap (seen in G, 20 Oct 2026: "bu" + "t here's a little" on one row). The US build drew
+# its talk with 22 one-byte columns and broke long lines itself. talk_layout re-lays the US lines for the JP window:
+# lines longer than 22 bytes are cut at 22 as the US window did, each line is padded with a blank to an even length (a
+# 2-byte character or a ~Cnn code never starts at an odd offset), and a line of 22 bytes ends without a line feed
+# (the window starts a new row by itself; a line feed there would give an empty row).
+TALK_TABLES = re.compile(r"^(npc_|talk_|tl_)")
+TALK_ROW = 22
+
+
+def talk_layout(xb):
+    out = []
+    rows = []
+    for line in xb.split(b"\n"):
+        while len(line) > TALK_ROW:
+            cut = TALK_ROW
+            if 0x81 <= line[cut - 1] <= 0xFC and _sjis_at(line, cut - 1):
+                cut -= 1
+            rows.append(line[:cut])
+            line = line[cut:]
+        rows.append(line)
+    for i, r in enumerate(rows):
+        b = bytearray()
+        k = 0
+        while k < len(r):
+            if r[k:k + 1] == b"~" and len(r) >= k + 4:
+                if len(b) % 2:
+                    b += b" "
+                b += r[k:k + 4]
+                k += 4
+            elif _sjis_at(r, k):
+                if len(b) % 2:
+                    b += b" "
+                b += r[k:k + 2]
+                k += 2
+            else:
+                b += r[k:k + 1]
+                k += 1
+        if len(b) % 2:
+            b += b" "
+        out.append(bytes(b))
+        if i + 1 < len(rows) and len(b) < TALK_ROW:
+            out.append(b"\n")
+    return b"".join(out)
+
+
+def _sjis_at(b, k):
+    return k + 1 < len(b) and ((0x81 <= b[k] <= 0x9F) or (0xE0 <= b[k] <= 0xFC)) and 0x40 <= b[k + 1] <= 0xFC
+
+
+def write_report(args, jp, us, g, S, GS, cells, owner, omu, rowsu, omg, rowsg, en_jp, en_g, gmap, gstat, drop,
+                 Jq, Uq, Gq, qm, gqmatch, funcs, objs, n_same=0, gstat_rules=None, amb_g=(), rule_keys=(), cache=None):
+    gtwin, g_area = g_area_fn(g, gmap, owner)
 
     # all G strings: scanned ones plus quest fields
     gall = {}
