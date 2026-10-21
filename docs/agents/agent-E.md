@@ -1098,3 +1098,16 @@ Lessons:
   the class driver's sources into the program (patched copy for the on-screen debug messages).
 - A pointer moved by the script: handle the A press before the frame's move, or a box starts one step late.
 - Frozen state with scripts: a --shot run must wait for the reporter only while the script still has steps (as dbgmenu).
+
+## G player packages for the PC (20 Oct 2026)
+`./mh1 linux|windows DISC` already built G (agent D, 15 Oct); what was missing for players: the G PC build refused to
+run without MH1_SHOW=1, so dragging the .iso onto mhview_g.exe (what the README says) or starting mhview_g directly
+failed. Now PLAYER.txt next to the program (./mh1, tools/package_win.sh) lets it show its window, unless MH1_HIDDEN
+is set; build-folder runs stay hidden. G's settings file is mhgpc.ini. Checked: both packages built from the G ISO;
+Linux package boot shot from the package folder; Windows exe under Wine (boot shot, %APPDATA%\mhgpc\memcard0,
+mhgpc.ini, logs); show/hide decisions with SDL_VIDEODRIVER=dummy (no window possible): MH1_HIDDEN in a package ->
+refused, package without MH1_HIDDEN -> passes to graphics start-up, no PLAYER.txt -> refused, MH1_SHOW -> passes.
+- Wine segfaults (and "could not exec wineserver") under `ulimit -v` 1.5 GB and 3 GB: its preloader reserves large
+  address ranges. Run wine uncapped (the game itself stays small), with a scratch WINEPREFIX.
+- A --shot run does not look for data next to the program (`&& !shot` in viewer.c): give the data folder.
+- Icon: neither game has a window / exe icon yet (no .ico, no SDL_SetWindowIcon); nothing to match.
