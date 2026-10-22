@@ -25,6 +25,10 @@ loader installed before 16 Oct 2026, MH1 only) count as MH1.
                         report.json, log_tail.txt, input.txt as the PC writes them; read them with
                         tools/show_report.py DIR). Body: "MH1REPORTS <n>", per report "R <name>", per file
                         "F <size> <name>" + bytes, "E".
+  POST /save?game=G     the game's save, sent by the loader with the log: E:\\UDATA\\<title id>\\<save id>\\ (the PS2 save
+                        files byte for byte, mc_xbox.c, plus SaveMeta.xbx) -> build/xbox/saves/<time>-<game>/. Body:
+                        "MH1SAVE <save id> <n>", per file "F <size> <name>" + bytes, "E". Load it on the PC with
+                        tools/xbox_save_to_pc.py DIR (it makes the PC card folder; then MH1_SAVE_DIR=that folder).
 Only these paths are served; nothing else in the repo is reachable.
 
 --data DIR (may be given twice, once per game): install a game folder (./mh1 xbox's dist/xbox/MHG or
@@ -51,6 +55,7 @@ RERUN = os.path.join(ROOT, 'rerun.txt')
 LOGS = os.path.join(ROOT, 'logs')
 DUMPS = os.path.join(ROOT, 'dump')
 REPORTS = os.path.normpath(os.path.join(ROOT, 'reports'))
+SAVES = os.path.normpath(os.path.join(ROOT, 'saves'))
 TEST = {'input': None, 'env': None, 'game': None}
 CHUNK = 4 << 20          # the loader checks and writes the data in pieces of this size
 FOLDER = {'mh1': 'MH1', 'mhg': 'MHG'}
@@ -270,6 +275,13 @@ class Handler(http.server.BaseHTTPRequestHandler):
                     pass
                 print('== Xbox %s bug report -> %s  note: %s  (python3 tools/show_report.py %s)'
                       % (FOLDER[game], d, note, os.path.relpath(d, os.getcwd())))
+        elif path == '/save' and game:
+            d = save_save(body, game)
+            if d is None:
+                self.send_error(400)
+                return
+            print('== Xbox %s save -> %s  (on the PC: python3 tools/xbox_save_to_pc.py %s)'
+                  % (FOLDER[game], d, os.path.relpath(d, os.getcwd())))
         elif path == '/note':
             print('== Xbox: %s' % body.decode('utf-8', 'replace'))
         else:
@@ -280,6 +292,31 @@ class Handler(http.server.BaseHTTPRequestHandler):
     def log_message(self, fmt, *args):
         print('%s %s' % (time.strftime('%H:%M:%S'), fmt % args))
         sys.stdout.flush()
+
+
+def save_save(body, game):
+    """a /save body -> build/xbox/saves/<time>-<game>/<files>; returns the folder, or None when the body is malformed"""
+    head, _, rest = body.partition(b'\n')
+    m = re.fullmatch(rb'MH1SAVE ([0-9A-F]{16}) (\d+)', head)
+    if not m:
+        return None
+    files = []
+    for _ in range(int(m.group(2))):
+        line, _, rest = rest.partition(b'\n')
+        f = re.fullmatch(rb'F (\d+) ([A-Za-z0-9._-]{1,63})', line)
+        if not f or int(f.group(1)) > len(rest):
+            return None
+        n = int(f.group(1))
+        files.append((f.group(2).decode('ascii'), rest[:n]))
+        rest = rest[n:]
+    if not rest.startswith(b'E'):
+        return None
+    d = os.path.join(SAVES, time.strftime('%Y%m%d-%H%M%S') + '-%s' % game)
+    os.makedirs(d, exist_ok=True)
+    for name, data in files:
+        open(os.path.join(d, name), 'wb').write(data)
+    open(os.path.join(d, 'save_id.txt'), 'w').write(m.group(1).decode('ascii') + '\n')
+    return d
 
 
 def main():

@@ -177,6 +177,59 @@ static void fetch_test(void)
     free(b);
 }
 
+/* The game's save, sent with its log (tools/xbox_serve.py POST /save?game=G -> build/xbox/saves/<time>-<game>/), so the
+ * owner's exact save can be loaded on the PC (tools/xbox_save_to_pc.py). The save directory the game writes (mc_xbox.c):
+ * E:\UDATA\<title id>\<save id>\ (the PS2 save files byte for byte, plus SaveMeta.xbx). Body: "MH1SAVE <dir> <n>", per
+ * file "F <size> <name>" + bytes, "E". Returns 1 sent, 0 no save, -1 failed. Agent E, 21 Oct 2026. */
+static int send_save(void)
+{
+    const char *tid = strcmp(GAMEID, "mhg") ? "4D480001" : "4D480002";      /* xbox_title.h */
+    char dir[96], pat[112], path[200], head[160], *body = NULL, *r;
+    int len = 0, cap = 0, nf = 0, i, n;
+    WIN32_FIND_DATAA fd;
+    HANDLE h;
+    struct { char name[64]; char *data; int n; } f[8];
+
+    snprintf(dir, sizeof dir, "E:\\UDATA\\%s\\%s00000001", tid, tid);
+    snprintf(pat, sizeof pat, "%s\\*", dir);
+    if ((h = FindFirstFileA(pat, &fd)) == INVALID_HANDLE_VALUE)
+        return 0;
+    do {
+        if ((fd.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) || nf >= 8 || strlen(fd.cFileName) >= sizeof f[0].name)
+            continue;
+        snprintf(path, sizeof path, "%s\\%s", dir, fd.cFileName);
+        if ((f[nf].data = read_file(path, &f[nf].n)) == NULL)
+            continue;
+        snprintf(f[nf].name, sizeof f[nf].name, "%s", fd.cFileName);
+        cap += f[nf].n + 96;
+        nf++;
+    } while (FindNextFileA(h, &fd));
+    FindClose(h);
+    if (nf == 0)
+        return 0;
+    cap += 64;
+    if ((body = malloc((size_t)cap)) != NULL) {
+        len = snprintf(body, (size_t)cap, "MH1SAVE %s00000001 %d\n", tid, nf);
+        for (i = 0; i < nf; i++) {
+            n = snprintf(head, sizeof head, "F %d %s\n", f[i].n, f[i].name);
+            memcpy(body + len, head, (size_t)n);
+            len += n;
+            memcpy(body + len, f[i].data, (size_t)f[i].n);
+            len += f[i].n;
+        }
+        memcpy(body + len, "E\n", 2);
+        len += 2;
+    }
+    for (i = 0; i < nf; i++)
+        free(f[i].data);
+    if (!body)
+        return -1;
+    r = xh_http("POST", url("/save"), body, len, &n);
+    free(body);
+    free(r);
+    return r ? 1 : -1;
+}
+
 int main(void)
 {
     unsigned long ldt;
@@ -208,6 +261,8 @@ int main(void)
             remove(GAME_LOG);
         free(r);
         free(log);
+        if ((n = send_save()) != 0)
+            debugPrint(n > 0 ? "Sent the save.\n" : "Could not send the save.\n");
     }
     if ((n = xbox_report_send_pending(REPORTS, GAMEID)) != 0)       /* one POST for all of them */
         debugPrint(n > 0 ? "Sent %d bug report(s).\n" : "Could not send the bug reports (kept for the next start).\n", n);

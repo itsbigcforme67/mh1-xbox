@@ -696,7 +696,10 @@ folder it was started from (XeImageFileName, src/pc/xbox/xbox_path.h), else the 
 1. gets an address by DHCP (nxdk lwIP), reads the laptop address from its folder's
    `loader.txt`;
 2. POSTs the last game log (`mh1log.txt` in its folder, the game's stderr) to the laptop
-   (`/log?game=mhg`) and deletes it;
+   (`/log?game=mhg`) and deletes it; with it the game's save (`E:\UDATA\<title id>\<save id>\`, POST
+   `/save?game=G`, since 21 Oct 2026), which xbox_serve.py keeps in `build/xbox/saves/<time>-<game>/`;
+   `python3 tools/xbox_save_to_pc.py build/xbox/saves/<that folder>` makes the PC card folder from it
+   (`<folder>/pc_card/BISLPM-...`) and prints the `MH1_SAVE_DIR=... mhview ...` line that plays it on the PC;
 3. compares `GET /version?game=G` with `mh1.ver` / `mhg.ver`; when different downloads
    `GET /mh1.xbe` / `/mhg.xbe` to `mh1.xbe` / `mhg.xbe` in its folder;
 4. starts that game (D: is then the loader's folder, so the game finds D:\data).
