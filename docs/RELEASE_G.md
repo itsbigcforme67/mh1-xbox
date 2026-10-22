@@ -663,3 +663,12 @@ checked by hand; "real" = G's asm differs in behaviour, not only in registers / 
   now also starts a new process and CONTINUEs (blade 2, pouch, play time > 0), which failed before the fix.
   Open: edit_nm.c (G's character creation / select on the PC) still writes option_w[0xFCE] (MH1's "last slot" byte)
   and sets a new hunter's fields at MH1 offsets; G's own locations not checked.
+- **Reward screen "no way to skip"**: G's reward screen opens on a two-line menu (receive the reward items / end
+  receiving); ending it is how the 120 s wait is cut short. The menu was never seen: the G import took its frame's
+  first word (s16 x, y = 0x20, 0x28) for a pointer and relocated it, so it was drawn far off screen. Now in
+  config/mhg/pc_noptr.txt; checked on a PC G screenshot (menu and cursor shown). A scan of the other relocated words
+  for the same frame layout found none.
+- **New hunter fields / last slot (edit_nm.c)**: G's user_data_copy (select 0x544870) puts the fields at G's places
+  (0xC7F, 0xD00-0xD08 = -1, 0xC95, 0x1C, 0xC23, 0xD0A); the last-chosen-slot byte is option_w+0x2C50 in G (MH1's
+  0xFCE lay inside G's slot 1). test_save_g.sh passes; a G new-game run was not done.
+- **Supply box cursor**: not reproduced; a scripted run did not get the camp box (stage 21, 9500,9500) to open.
