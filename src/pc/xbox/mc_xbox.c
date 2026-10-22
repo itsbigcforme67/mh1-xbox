@@ -27,7 +27,9 @@
 #include "xbox_title.h"
 #include "xbox_watch.h"
 #include "../rt/rt_log.h"
+#ifdef NXDK
 #include <xboxkrnl/xboxkrnl.h>
+#endif
 
 #define CARD_KB 8000
 #define ROOT "E:\\UDATA"
@@ -61,10 +63,14 @@ static uint32_t fnv(uint32_t h, const void *p, int n)
  * save). NtFlushBuffersFile writes the file through (as xbox_log_commit). pdclib's FILE starts with the OS handle. */
 static void commit(FILE *f)
 {
-    IO_STATUS_BLOCK io;
     fflush(f);
-    if (!NT_SUCCESS(NtFlushBuffersFile(*(HANDLE *)f, &io)))
-        rt_warn("memory card: flushing a save file to the disk failed");
+#ifdef NXDK     /* the host test (tools/test_mc_xbox.sh) builds this file on Linux: fflush is all it has */
+    {
+        IO_STATUS_BLOCK io;
+        if (!NT_SUCCESS(NtFlushBuffersFile(*(HANDLE *)f, &io)))
+            rt_warn("memory card: flushing a save file to the disk failed");
+    }
+#endif
 }
 
 /* every open card file through to the disk (xbox_log.c, before the game leaves) */
