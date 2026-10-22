@@ -655,3 +655,11 @@ checked by hand; "real" = G's asm differs in behaviour, not only in registers / 
   before leaving. The save / load log lines now carry a check value (FNV-1a of the bytes moved: the next load must show
   the save's value) and, for a save, the money and wielded weapon of the hunter in play. Both games; builds only,
   not run on hardware or xemu.
+- **Follow-up 2 (owner, 20261021-200621): worn equipment and play time lost.** The save copied only MH1's 0x480 bytes
+  per hunter slot, at MH1's slot stride (src/main/ud/udmisc_nm.c Load_userdata / Save_userdata, the PC's copy of
+  f_ud): money, item box and equipment box (all below 0x480) came back, the pouch (+0xC24), the worn set (+0xC75..) and
+  the play time (+0xC1C) did not. Now UD_SLOT (0xE00 in G). Same stride fix in the character select's slot checks
+  (src/select/edit_nm.c). The soft-reset test had passed only because the old hunter was still in memory; test_save_g.sh
+  now also starts a new process and CONTINUEs (blade 2, pouch, play time > 0), which failed before the fix.
+  Open: edit_nm.c (G's character creation / select on the PC) still writes option_w[0xFCE] (MH1's "last slot" byte)
+  and sets a new hunter's fields at MH1 offsets; G's own locations not checked.

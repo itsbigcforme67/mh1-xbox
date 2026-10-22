@@ -22,12 +22,15 @@ u8 Get_weapon_id();
 #define UDB(p, o) (*(u8 *)((u8 *)(p) + (o)))
 #define UDH(p, o) (*(s16 *)((u8 *)(p) + (o)))
 
+/* UD_SLOT (ud.h): 0x480 in MH1, 0xE00 in G. With MH1's 0x480 hard-coded the G build saved only the first 0x480 bytes
+ * of the hunter, at the wrong slot stride: money, the item box and the equipment box came back, the worn equipment
+ * (G +0xC75), the pouch (+0xC24) and the play time did not (owner, Xbox, 21 Oct 2026; tools/test_save_g.sh) */
 void Load_userdata(int slot) {
-    memcpy(User_data, option_w + (slot & 0xFF) * 0x480 + 0x10, 0x480);
+    memcpy(User_data, option_w + (slot & 0xFF) * UD_SLOT + 0x10, UD_SLOT);
 }
 
 void Save_userdata(int slot) {
-    memcpy(option_w + (slot & 0xFF) * 0x480 + 0x10, User_data, 0x480);
+    memcpy(option_w + (slot & 0xFF) * UD_SLOT + 0x10, User_data, UD_SLOT);
 }
 
 /* the fields Set_equip_data touches, as overlays on the player work and the saved data */

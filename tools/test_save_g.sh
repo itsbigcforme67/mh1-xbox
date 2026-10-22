@@ -45,4 +45,18 @@ last=$(grep -a "rt_village: tick [0-9]* ud" $L | tail -1)
 echo "$last" | grep -q "wear: w6/2/" || fail "reloaded hunter does not wield blade 2: $last"
 echo "$last" | grep -q "ud money 0 " || fail "reloaded money is not the saved 0z: $last"
 grep -aq "EXIT 0" $L || fail "the run did not end cleanly"
-echo "save G OK: blade 2 equipped -> bed save -> soft reset -> CONTINUE: blade 2 and the saved 0z came back"
+# 2. a new start (power-on, the card auto-loaded, CONTINUE), as after the owner's Back + Start: the whole hunter must come
+# back, also what G keeps past MH1's 0x480 bytes (pouch +0xC24, worn equipment +0xC75, play time +0xC1C): the save
+# copied only 0x480 bytes per slot (udmisc_nm.c), so the owner's worn armour / weapon and play time were lost (21 Oct 2026)
+C="idle*80,circle*2,idle*600,start*2,idle*80,circle*2,idle*100,circle*2,idle*100,circle*2,idle*100,circle*2,idle*100,circle*2,idle*250,ddown*2,idle*20,circle*2,idle*100,circle*2,idle*100,circle*2,idle*400"
+L2=build/D/g/save_g2.log
+( ulimit -v 3000000 2>/dev/null
+  MH1_SAVE_DIR="$PWD/build/D/g/card" RT_NOMOVIE=1 RT_QUEST_TRACE=1 timeout 300 build/mhg/pc/mhview_g disc/mhg --boot --input "$C" \
+      --shot build/D/g/save_g2.png --time 75 > $L2 2>&1 )
+first=$(grep -a "rt_village: tick [0-9]* ud" $L2 | head -1)
+[ -n "$first" ] || fail "new start: CONTINUE did not reach the village (see $L2)"
+echo "$first" | grep -q "wear: w6/2/" || fail "new start: worn weapon not restored: $first"
+echo "$first" | grep -q "pouch: 129:5 " || fail "new start: pouch not restored: $first"
+t=$(echo "$first" | sed 's/.*| time \([0-9]*\).*/\1/')
+[ "${t:-0}" -gt 0 ] 2>/dev/null || fail "new start: play time 0: $first"
+echo "save G OK: blade 2 equipped -> bed save -> soft reset -> CONTINUE: blade 2 and the saved 0z came back; new start + CONTINUE: blade 2, pouch, play time $t"

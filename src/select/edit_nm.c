@@ -51,9 +51,9 @@ void user_data_copy(UDC_SRC *src, u8 slot) {
     if (slot == 0xFF) {
         dst = (UDC_DST *)User_data;
     } else {
-        dst = (UDC_DST *)(option_w + slot * 0x480 + 0x10);
+        dst = (UDC_DST *)(option_w + slot * UD_SLOT + 0x10);
     }
-    flMemset(dst, 0, 0x480);
+    flMemset(dst, 0, UD_SLOT);
     B8(dst, 0) = 1;
     B8(dst, 1) = B8(src, 4);
     B8(dst, 2) = B8(src, 5);
@@ -267,7 +267,7 @@ int NG_name_chk(u8 *s) {
 }
 
 void user_load(void *unused, PLW *pl, s16 n) {
-    u8 *u = option_w + n * 0x480 + 0x10;
+    u8 *u = option_w + n * UD_SLOT + 0x10;
     if (*u != 0) {
         Set_equip_data(pl, u);
         if (pl->work011 == 0) {
@@ -1776,7 +1776,7 @@ void Cont_task(STASK *t) {
                 return;
             }
             e->x0[1] = 0xFF;
-            for (i = 0, op = option_w; i < 3; i++, op += 0x480, pl++) {
+            for (i = 0, op = option_w; i < 3; i++, op += UD_SLOT, pl++) {
                 if (op[0x10] == 0) {
                     pl->be_flag = 0;
                 } else {
@@ -1788,7 +1788,7 @@ void Cont_task(STASK *t) {
                     pl->x01 = 0;
                 }
             }
-            if (option_w[option_w[0xFCE] * 0x480 + 0x10] != 0) {
+            if (option_w[option_w[0xFCE] * UD_SLOT + 0x10] != 0) {
                 e->x0[1] = option_w[0xFCE];
             }
             ed_view_set(&player_work[e->x0[1]], 0, 0);
@@ -1832,7 +1832,7 @@ void Cont_task(STASK *t) {
                         e->x0[1]--;
                     }
                     cur = e->x0[1];
-                } while (option_w[cur * 0x480 + 0x10] == 0);
+                } while (option_w[cur * UD_SLOT + 0x10] == 0);
                 if (old != cur) {
                     cursor_se();
                     *(u32 *)&((PLW *)((u8 *)player_work + 0x578))[e->x0[1]] = 0x01000000;
@@ -1850,7 +1850,7 @@ void Cont_task(STASK *t) {
                         e->x0[1]++;
                     }
                     cur = e->x0[1];
-                } while (option_w[cur * 0x480 + 0x10] == 0);
+                } while (option_w[cur * UD_SLOT + 0x10] == 0);
                 if (old != cur) {
                     cursor_se();
                     *(u32 *)&((PLW *)((u8 *)player_work + 0x578))[e->x0[1]] = 0x01000000;
