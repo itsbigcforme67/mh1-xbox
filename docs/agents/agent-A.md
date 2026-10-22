@@ -1257,3 +1257,10 @@ check.py needs wibo, which this round could not run (PC-only round). Commits on 
 - Weapon shop icons: G Lb_put_job (0x593100) uses e + 0x19 and remaps 5/6 -> 1/4 in the small sheet; lb_ag01.c.
 - G texture slots: menu slots are MH1 + 0x27 (0x118 -> 0x13F, 0x119 -> 0x140, 0x11A -> 0x141, 0x157 -> 0x180); the PC
   keeps MH1's (GSLOT in include/g_alias.h).
+- Save slot cut at 0x480 (udmisc_nm.c Load/Save_userdata): fixed (UD_SLOT); the select screen's TIME reads slot +0xC1C
+  (hours'minutes", so under a minute shows 0'00"). test_save_g.sh has a new-process CONTINUE leg.
+- G sharpness level (Pl_slash_lv_ck): six levels, 12-byte rows (G 0x4CCAB0); the HUD showed a full blade as red.
+- Xbox boot steps logged + committed at once (rt_log_commit); AC97 init: PI/MC bus masters reset, GIE off, GPI/resume
+  status cleared, ISR clears them too. Waiting for the owner's log of a hung second start.
+- Open: quest supply box cursor (camp box at stage 21 spot kind 3, 9500,9500: RT_PL_WARP's angle did not turn the
+  hunter, box not opened in a scripted run yet); reward screen stuck on its timer (not looked at).
