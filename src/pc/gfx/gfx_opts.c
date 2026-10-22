@@ -107,6 +107,7 @@ static void set_key(const char *k, const char *v)
     else if (!strcmp(k, "online_login")) snprintf(pc_opt.online_login, sizeof pc_opt.online_login, "%s", v);
     else if (!strcmp(k, "online_password")) snprintf(pc_opt.online_password, sizeof pc_opt.online_password, "%s", v);
     else if (!strcmp(k, "debug_menu")) pc_opt.debug_menu = truth(v) ? 1 : 2;
+    else if (!strcmp(k, "skip_intros")) pc_opt.skip_intros = truth(v);
     else if (!strcmp(k, "rumble")) pad_rumble_off = !truth(v);
     else if (!strcmp(k, "window_x")) gfx_opt.win_x = atoi(v);
     else if (!strcmp(k, "window_y")) gfx_opt.win_y = atoi(v);
@@ -243,6 +244,8 @@ void gfx_opts_save(void)
     if (pc_opt.debug_menu)
         fprintf(f, "# debug_menu: 1 = the testers' debug menu (F9, Back + R3 on a controller; docs/PLAYING.md), 0 = off\ndebug_menu = %d\n",
                 pc_opt.debug_menu == 1);
+    note(f, "skip_intros: 1 = power-on goes straight to the title screen (no logos, warnings or opening movie; for testing)");
+    fprintf(f, "skip_intros = %d\n", pc_opt.skip_intros);
     note(f, "hud: original, or prototype gunner (the unused early HUD mock-up cockpit2, for bowgun users; docs/pc.md)");
     fprintf(f, "hud = %s\n", rt_hud_style ? "prototype gunner" : "original");
     /* (the Xbox too: the settings menu rewrites settings.ini, and the player's online lines must survive that) */
