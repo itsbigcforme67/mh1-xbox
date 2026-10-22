@@ -25,6 +25,7 @@
 #include <windows.h>
 
 #include "xbox_title.h"
+#include "xbox_watch.h"
 #include "../rt/rt_log.h"
 #include <xboxkrnl/xboxkrnl.h>
 
@@ -299,6 +300,7 @@ int sceMcGetDir(int port, int slot, const char *name, unsigned mode, int maxent,
 
 int sceMcOpen(int port, int slot, const char *name, int mode)
 {
+    xbox_watch_mark("card: open");
     char path[300];
     const char *m;
     int fd;
@@ -371,6 +373,7 @@ int sceMcClose(int fd)
 
 int sceMcRead(int fd, void *buf, int size)
 {
+    xbox_watch_mark("card: read");
     int n;
     if (fd < 0 || fd >= 8 || !fds[fd]) {
         done(5, -5);
@@ -389,6 +392,7 @@ int sceMcRead(int fd, void *buf, int size)
 
 int sceMcWrite(int fd, const void *buf, int size)
 {
+    xbox_watch_mark("card: write");
     int n;
     if (fd < 0 || fd >= 8 || !fds[fd]) {
         done(6, -5);

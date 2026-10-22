@@ -29,6 +29,7 @@
 #include "install.h"
 #include "rt/rt_save.h"
 #endif
+#include "xbox/xbox_watch.h"
 #include <stdio.h>
 #include "rt/rt_memstat.h"
 #include "rt/rt_prof.h"
@@ -2411,6 +2412,7 @@ int main(int argc, char **argv)
     }
 #endif
 #ifdef XBOX
+    xbox_seh_reg xseh;      /* the crash catcher's SEH record: on main's stack for the whole run (xbox_watch.c) */
     nxMountDrive('E', "\\Device\\Harddisk0\\Partition1\\");
     xbox_env_load();        /* before any switch is read (xbox_env.c) */
     if (getenv("RT_ARGS")) {
@@ -2533,6 +2535,7 @@ int main(int argc, char **argv)
             }
         }
         xbox_log_start();
+        xbox_watch_start(&xseh);    /* freeze watchdog + crash catcher (xbox_watch.c), once the log is open */
         {
             char m[160];
             snprintf(m, sizeof m, "%s", disc ? disc : "");
@@ -3176,6 +3179,7 @@ int main(int argc, char **argv)
 #endif
             if (booting) {      /* ACRMain: pad, then the task scheduler */
                 pad_state ps;
+                xbox_watch_mark("boot screens tick (rt_boot_tick)");
                 read_pad(&ps);
                 rt_pad_set(ps.bits, ps.lx, ps.ly, ps.rx, ps.ry);
                 rt_pad_tick();
@@ -3216,11 +3220,13 @@ int main(int argc, char **argv)
                         rt_pad_tick();
                 }
                 { void rt_sys_frame_start(void); rt_sys_frame_start(); }  /* the Scheduler's ran_suu(1) (rt_boot.c) */
+                xbox_watch_mark("game tick (rt_flow_tick)");
                 rt_flow_tick();         /* game2 / game3 / game5 (f_game.c): game_core = sim_tick */
                 rt_sys_tick();          /* Fade_task (the scheduler's system tasks) */
             }
             else
                 sim_tick();
+            xbox_watch_mark("sound (rt_snd_tick)");
             if (snd == 0) {             /* Snd_server: ACRMain runs it every frame, in every game mode
                                          * (the village had no music on the PC without it) */
                 rt_snd_tick();
@@ -3257,6 +3263,7 @@ int main(int argc, char **argv)
             rt_prof_tick();
         }
         rt_prof_begin(RTP_DRAW);
+        xbox_watch_mark("drawing the frame");
         if (pick_frozen()) {            /* the bug reporter: the frozen frame, no scene */
             pick_frozen_frame();
             goto frame_done;
@@ -3494,6 +3501,7 @@ int main(int argc, char **argv)
         }
         pick_ring_frame();              /* the bug report's clip of the last seconds */
         rt_prof_begin(RTP_GFX);
+        xbox_watch_mark("frame end (gfx_end_frame)");
         gfx_end_frame();
         rt_prof_end(RTP_GFX);
 #ifndef XBOX

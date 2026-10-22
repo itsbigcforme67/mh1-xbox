@@ -6,6 +6,13 @@
 #include "rt_prof.h"
 #include "rt_plat.h"
 #include "rt_log.h"
+#ifdef MH1_XBOX
+void xbox_watch_alive(void);            /* the freeze watchdog (src/pc/xbox/xbox_watch.c): load progress counts as alive */
+void xbox_watch_long(int on);           /* and a known long operation gets the longer limit */
+#else
+#define xbox_watch_alive() ((void)0)
+#define xbox_watch_long(on) ((void)0)
+#endif
 #include "../fmt/fmt.h"
 #include <stdarg.h>
 #include <stdio.h>
@@ -225,6 +232,7 @@ void rt_lt_span_begin(const char *name)
 {
     int z;
     double t = wall_ms();
+    xbox_watch_long(1);
     flush_open(t);
     if (nsp >= SPANS) {
         nsp++;
@@ -247,6 +255,8 @@ void rt_lt_span_end(void)
     long cnt[RTL_N], bytes[RTL_N];
     int z, n;
     double t = wall_ms();
+    if (nsp)
+        xbox_watch_long(0);
     if (!nsp || --nsp >= SPANS)
         return;
     flush_open(t);
@@ -281,6 +291,7 @@ void rt_lt_end(int z)
     ldepth--;
     lt_last = t;
     lcount[z]++;
+    xbox_watch_alive();
 }
 
 /* called after each disc read / decompression / texture decode: the PS2's load_bin waits a vsync at a time and

@@ -30,7 +30,7 @@ FRONT = ['src/pc/viewer.c', 'src/pc/dbgmenu.c', 'src/pc/menu.c', 'src/pc/font5x7
          'src/pc/fmt/amo.c', 'src/pc/fmt/apx.c', 'src/pc/fmt/ahi.c', 'src/pc/fmt/hits.c',
          'src/pc/pad/pad_sdl.c', 'src/pc/fmt/snd.c', 'src/pc/movie/sfd.c', 'src/pc/audio/audio_mix.c', 'src/pc/audio/audio_sdl.c',
          'src/pc/gfx/gfx_rec.c', 'src/pc/gfx/gfx_pal.c', 'src/pc/gfx/gfx_skin.c', 'src/pc/rt/rt_mem.c', 'src/pc/xbox/mc_xbox.c', 'src/pc/xbox/xbox_libc.c',
-         'src/pc/xbox/xbox_log.c', 'src/pc/xbox/xbox_env.c', 'src/pc/xbox/xbox_ac97.c',
+         'src/pc/xbox/xbox_log.c', 'src/pc/xbox/xbox_env.c', 'src/pc/xbox/xbox_ac97.c', 'src/pc/xbox/xbox_watch.c',
          'src/pc/xbox/xbox_scanf.c', 'src/pc/pick.c', 'src/pc/xbox/kbm_xbox.c', 'src/pc/xbox/xbox_report.c']
 # nxdk's USB HID class driver (lib/usb, not in its nxdk_usb.lib): compiled into the game for a USB keyboard / mouse
 # (kbm_xbox.c), with its debug messages (sysprintf onto the screen) switched off in a patched copy
