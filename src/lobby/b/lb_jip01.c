@@ -1,5 +1,9 @@
 /* lb_jip01 - agent C 0x005B08F0-0x005B0A7C: join_input_password (guild room password entry; inner switch with shared exit block via goto). */
 #include "lobby_b.h"
+#ifndef __MWERKS__
+unsigned char Get_kb_input();   /* its real return type: was implicitly int (tools/check_kr_returns.py) */
+signed char SoftKeyboard_move();   /* its real return type: was implicitly int (tools/check_kr_returns.py) */
+#endif
 extern void SoftKeyboard_pos_set(f32, int);
 s32 join_input_password(s32 arg0) {
     s8 sx1;

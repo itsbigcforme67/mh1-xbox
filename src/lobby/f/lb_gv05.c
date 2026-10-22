@@ -1,12 +1,29 @@
 /* lb_gv05 - mutation fixes 0x005C9910-0x005C9A50: guild_trans_ot0. Whole file in lb_village_nm.c. */
 #include "lbsys_g.h"
 #include "types.h"
+#ifndef __MWERKS__
+signed char DemoCameraCheck();   /* (declared before its first use) */
+signed char Lb_get_quest_type();   /* (declared before its first use) */
+signed char SoftKeyboard_alive_check();   /* (declared before its first use) */
+signed char load_busy_ck();   /* (declared before its first use) */
+unsigned char Get_weapon_job();   /* (declared before its first use) */
+unsigned char Lb_stick_pow_get();   /* (declared before its first use) */
+unsigned char McCardOperation();   /* (declared before its first use) */
+unsigned char Warehouse_equip_stack();   /* (declared before its first use) */
+unsigned char Warehouse_search_space();   /* (declared before its first use) */
+unsigned short Get_sw2();   /* (declared before its first use) */
+unsigned short calc_vec_ang2();   /* (declared before its first use) */
+#endif
 #define M2C_FIELD(ptr, type, off) (*(type)((u8 *)(ptr) + (off)))
 typedef double f64;
 #define NULL ((void *)0)
 
 int CameraInit();
+#ifdef __MWERKS__
 int DemoCameraCheck();
+#else
+signed char DemoCameraCheck();   /* the real return type (tools/check_kr_returns.py) */
+#endif
 int DemoCameraRequest();
 int Disp_NowLoading();
 int Eft25_set();
@@ -16,8 +33,16 @@ int Ex_quest_ck();
 int Fade_busy_ck();
 int FlushCache();
 int GetGroundHitStatusAreaEm();
+#ifdef __MWERKS__
 int Get_sw2();
+#else
+unsigned short Get_sw2();   /* the real return type (tools/check_kr_returns.py) */
+#endif
+#ifdef __MWERKS__
 int Get_weapon_job();
+#else
+unsigned char Get_weapon_job();   /* the real return type (tools/check_kr_returns.py) */
+#endif
 int Gold_add();
 int Gunner_wasure_ck();
 int InitRenderState();
@@ -51,7 +76,11 @@ int Lb_get_angle();
 int Lb_get_cursor_col();
 int Lb_get_pl_stat2();
 int Lb_get_quest_str();
+#ifdef __MWERKS__
 int Lb_get_quest_type();
+#else
+signed char Lb_get_quest_type();   /* the real return type (tools/check_kr_returns.py) */
+#endif
 int Lb_gh_board();
 int Lb_guild_check_requireF();
 int Lb_hit_stop_calc();
@@ -99,7 +128,11 @@ int Lb_send_trade_start();
 int Lb_shop();
 int Lb_shop_init();
 int Lb_stick_dir_set();
+#ifdef __MWERKS__
 int Lb_stick_pow_get();
+#else
+unsigned char Lb_stick_pow_get();   /* the real return type (tools/check_kr_returns.py) */
+#endif
 int Lb_talk();
 int Lbc_SendMiniData();
 int Lbc_connect();
@@ -114,7 +147,11 @@ int Lbs_MatchEntry();
 int Lbs_MatchEntryCancel();
 int Lbs_RoomExit();
 int LegendSwordCameraRequest();
+#ifdef __MWERKS__
 int McCardOperation();
+#else
+unsigned char McCardOperation();   /* the real return type (tools/check_kr_returns.py) */
+#endif
 int McOperationSet();
 int NPCZoomInCameraCancel();
 int NPCZoomInCameraRequest();
@@ -136,16 +173,32 @@ int SetFilterMode();
 int SetTextureStage();
 void SetVector(void *, f32, f32, f32);
 int Set_userdata();
+#ifdef __MWERKS__
 int SoftKeyboard_alive_check();
+#else
+signed char SoftKeyboard_alive_check();   /* the real return type (tools/check_kr_returns.py) */
+#endif
 int SoftKeyboard_exit();
 int Stage_unique_data_get();
 int To_EnterPlaza2Lobby();
+#ifdef __MWERKS__
 int Warehouse_equip_stack();
+#else
+unsigned char Warehouse_equip_stack();   /* the real return type (tools/check_kr_returns.py) */
+#endif
+#ifdef __MWERKS__
 int Warehouse_search_space();
+#else
+unsigned char Warehouse_search_space();   /* the real return type (tools/check_kr_returns.py) */
+#endif
 int add_prim();
 int adx_se_set();
 int all_reset();
+#ifdef __MWERKS__
 int calc_vec_ang2();
+#else
+unsigned short calc_vec_ang2();   /* the real return type (tools/check_kr_returns.py) */
+#endif
 int clay_attr_reset();
 int clay_attr_set();
 int cnWrap_SoundRequest();
@@ -212,7 +265,11 @@ int lb_rule_seet_set();
 void lbc_text_lobby_trans(u8 *);
 int light_init();
 int load_bin_req();
+#ifdef __MWERKS__
 int load_busy_ck();
+#else
+signed char load_busy_ck();   /* the real return type (tools/check_kr_returns.py) */
+#endif
 int load_eft();
 int load_pit();
 int load_shadow();

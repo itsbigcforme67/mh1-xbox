@@ -158,6 +158,8 @@ void rt_village_enter(void)
                 extern void Set_userdata(void *);
                 if (!User_data[8] && getenv("RT_NAME"))     /* a test hunter without a save: the name the scripts give (RT_NAME), as rt_online does */
                     snprintf((char *)User_data + 8, 0x10, "%s", getenv("RT_NAME"));
+                if (!User_data[0] && User_data[8])  /* "slot in use", as user_data_copy sets it at character creation: without it a */
+                    User_data[0] = 1;               /* bed save of the test hunter loads as "no character data" (CardConld03) */
                 Set_userdata(player_work + 0xA00 * game_w[GWX(0xD1)]);
                 if (getenv("RT_QUEST_TRACE"))
                     fprintf(stderr, "rt_village: hunter name '%s' (save: '%s')\n", (char *)(player_work + 0xA00 * game_w[GWX(0xD1)] + 0x8D4), (char *)User_data + 8);

@@ -16,13 +16,21 @@ int Pl_master_ck(PLW *);
 void Pl_vital_calc(PLW *, s16);
 int Pl_Skill_ck(PLW *, int);
 void Pl_poison_add(PLW *, s16);
+#ifdef __MWERKS__
 int Pl_piyo_ck(PLW *);
+#else
+unsigned char Pl_piyo_ck(PLW *);   /* the real return type (tools/check_kr_returns.py) */
+#endif
 void vib_set_pl(PLW *, int);
 int Code_Make(int, int, int, int);
 void Pl_se_req2(PLW *, int, int, f32 *, int, int);
 
 int mahi_dm_ck(PLW *pl);
+#ifdef __MWERKS__
 int pl_guard_ck(PLW *pl);   /* really returns u8; the caller masks */
+#else
+unsigned char pl_guard_ck(PLW *pl);   /* really returns u8; the caller masks */   /* the real return type (tools/check_kr_returns.py) */
+#endif
 
 /* G: original bytes (build/mhg/raw/pl_guard_set.inc, config/mhg/c_rawfuncs.txt); the C below is the MH1 version */
 #if defined(VERSION_MHG) && defined(__MWERKS__)
@@ -127,6 +135,10 @@ static u8 pl_guard_set(PLW *pl) {
 asm void Pl_damage_sub(PLW *pl)
 {
 #include "Pl_damage_sub.inc"
+#ifndef __MWERKS__
+unsigned char Pl_piyo_ck(PLW *);   /* (declared before its first use) */
+unsigned char pl_guard_ck(PLW *pl);   /* really returns u8; the caller masks */   /* (declared before its first use) */
+#endif
 }
 #elif defined(VERSION_MHG)
 void Eft06_set(void *chr, s16 arg, int x05, int joint, f32 scale);

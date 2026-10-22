@@ -2,6 +2,9 @@
 #define flfntLocate flfntLocate_hdr
 #define font_print_double font_print_double_hdr
 #include "lobby_a.h"
+#ifndef __MWERKS__
+unsigned short Get_sw2();   /* its real return type: was implicitly int (tools/check_kr_returns.py) */
+#endif
 #undef flfntLocate
 #undef font_print_double
 void font_print_double(int, int, int, int, char *);

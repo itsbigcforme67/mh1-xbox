@@ -5,6 +5,9 @@
  * EX = fishing and NPC zoom, demo = scripted point cameras) and cam2view
  * copies the winning slot into lpView with the screen quake. */
 #include "cam.h"
+#ifndef __MWERKS__
+short act_ck();   /* its real return type: was implicitly int (tools/check_kr_returns.py) */
+#endif
 #include "game.h"
 
 #ifndef NULL

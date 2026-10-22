@@ -10,10 +10,6 @@
 #include "pl.h"
 #include "plf.h"
 #include "fl.h"
-#ifdef VERSION_MHG
-#include "quest.h"
-int Event_flag_ck();
-#endif
 
 /* Per-monster work at EMW+0x444. */
 typedef struct EM09W {
@@ -1319,13 +1315,17 @@ void em09_main(EMW *em) {
             w->x4B = 1;
         }
     }
-#ifdef VERSION_MHG
-    if (quest_w.no == 10028 && em->kind == 0x17 && em->stg == 0x45 && Event_flag_ck(0x14) == 0) {
-        /* G only (G em09_main 0x5D6A9C): quest 10028's event demo; the monster waits hidden for its flag */
-        if (game_w.info_stop == 1 && em->mode != 6) {
-            em09_act_set(em, 6, 0, 1);
+#if defined(VERSION_MHG) && !defined(__MWERKS__)
+    {   /* G (game 0x5D6AA0, written from the asm; agent D, 21 Oct 2026): kind 23's scene in quest 10028 */
+        extern unsigned char quest_w[];
+        int Event_flag_ck(int);
+        void em09_act_set(EMW *, int, int, int);
+        if (*(u16 *)(quest_w + 8) == 10028 && em->kind == 23 && em->stg == 69 && Event_flag_ck(20) == 0) {
+            if (game_w.info_stop == 1 && em->mode != 6)
+                em09_act_set(em, 6, 0, 1);
+            goto sub;
         }
-    } else
+    }
 #endif
     switch (em->x734) {
     case 3:
@@ -1335,6 +1335,9 @@ void em09_main(EMW *em) {
         }
         break;
     }
+#if defined(VERSION_MHG) && !defined(__MWERKS__)
+sub:
+#endif
     em09_main_sub(em);
     if (em->x6FF != 0) {
         em09_main_sub(em);
@@ -1342,13 +1345,12 @@ void em09_main(EMW *em) {
     }
 }
 
-#ifdef VERSION_MHG
-/* G 0x5D65E0 / 0x5D6680 (G only): mode 6, the event demo: hidden until event flag 0x14, then the next act */
-static void em_move06_g(EMW *em) {
-    if (em->x15 != 0) {
-        return;
-    }
-    em->x9E1 = 5;
+#if defined(VERSION_MHG) && !defined(__MWERKS__)
+/* G game 0x5D65E0 (agent D, 21 Oct 2026): act 6/0, kind 23's scene in quest 10028: idle until the demo's flag 20 */
+static void em09_g_demo00(EMW *em) {
+    int Event_flag_ck(int);
+
+    em->x9E1 = 5;           /* (G 0x9D9) */
     em->x40C = 5;
     switch (em->x05) {
     case 0:
@@ -1360,7 +1362,7 @@ static void em_move06_g(EMW *em) {
         em->x839 = 0;
         break;
     case 1:
-        if (Event_flag_ck(0x14) == 1) {
+        if (Event_flag_ck(20) == 1) {
             em->x05++;
             em->x01 = 1;
             em09_next_act_set(em);
@@ -1378,8 +1380,8 @@ void em09_main_sub(EMW *em) {
     case 3: em_move03_005AA670(em); break;
     case 4: em_move04_005AAC30(em); break;
     case 5: em_move05_005AB180(em); break;
-#ifdef VERSION_MHG
-    case 6: em_move06_g(em); break;
+#if defined(VERSION_MHG) && !defined(__MWERKS__)
+    case 6: if (em->x15 == 0) em09_g_demo00(em); break;     /* G game 0x5D6680 */
 #else
     case 6: em_move00_005A90A0(em); break;
 #endif

@@ -68,7 +68,11 @@ void eft09_set(EMW *, int);
 void Eft20_set(f32, EMW *, int, int);
 void shell01_set(EMW *, int);
 s16 em_hp_vital_set2(EMW *, s16, s16);
+#ifdef __MWERKS__
 int em_act_search(void *);
+#else
+unsigned short em_act_search(void *);   /* the real return type (tools/check_kr_returns.py) */
+#endif
 void em_char_set(EMW *, int, int, int);
 void em_char_set2();
 void em_act_set(EMW *, int, u16);
@@ -449,6 +453,9 @@ void em_fly02_0056A340(EMW *em, EM01W *w) {
 asm void em_fly03_0056A450(EMW *em, EM01W *w)
 {
 #include "em_fly03_0056A450.inc"
+#ifndef __MWERKS__
+unsigned short em_act_search(void *);   /* (declared before its first use) */
+#endif
 }
 #else
 void em_fly03_0056A450(EMW *em, EM01W *w) {

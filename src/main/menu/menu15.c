@@ -12,6 +12,12 @@ extern u8 room_member_id[];
 void *memset(void *, int, int);
 void se_req(int, int, int);
 #include "version.h"
+#ifndef __MWERKS__
+signed char Monster_list_search(s8, int);   /* (declared before its first use) */
+signed char SoftKeyboard_alive_check(void);   /* (declared before its first use) */
+unsigned char Check_hold_item(int);   /* (declared before its first use) */
+unsigned char Get_weapon_job2(u8, u16);   /* (declared before its first use) */
+#endif
 extern u8 Item_data[327][ITEM_ROW];
 void PlayerStatusWindow(PLW *, u8);
 void DispFrameMessage(void *, int);
@@ -49,7 +55,11 @@ void func_60CE50(void);
 void Disp_NPC_message(void);
 void Pit_disp_pit_effect(void);
 void Pit_disp_receive_mes(void);
+#ifdef __MWERKS__
 int SoftKeyboard_alive_check(void);
+#else
+signed char SoftKeyboard_alive_check(void);   /* the real return type (tools/check_kr_returns.py) */
+#endif
 void DispSoftkeyboard(u8);
 void func_63B470(void);
 void disp_map(void);
@@ -116,8 +126,16 @@ void font_print_uf(char *, int);
 u8 *func_5B4D30(u8);
 extern u8 User_data[];
 int Item_preparation_list_search(s8 *, s8, u16 *, u16 *);
+#ifdef __MWERKS__
 int Monster_list_search(s8, int);
+#else
+signed char Monster_list_search(s8, int);   /* the real return type (tools/check_kr_returns.py) */
+#endif
+#ifdef __MWERKS__
 int Get_weapon_job2(u8, u16);
+#else
+unsigned char Get_weapon_job2(u8, u16);   /* the real return type (tools/check_kr_returns.py) */
+#endif
 void vib_set(int, int);
 int Reibun_Edit_Core(u8);
 int Reibun_Edit_Start(u8);
@@ -125,7 +143,11 @@ u8 Reibun_select_mv(u8);
 extern u16 item_pick_declaration_code;
 extern s16 item_pick_declaration_timer;
 int Pl_master_ck(void);
+#ifdef __MWERKS__
 int Check_hold_item(int);
+#else
+unsigned char Check_hold_item(int);   /* the real return type (tools/check_kr_returns.py) */
+#endif
 void Pl_item_get_se(PLW *, int);
 int Pl_item_stack(PLW *, int, int);
 u8 set01_set(int, int, s16);

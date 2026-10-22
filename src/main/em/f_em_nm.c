@@ -61,7 +61,7 @@ void em_search_data_set(EMW *, u8);
 void em_range_set(EMW *, s8);
 void Ikari_Data_Set(EMW *);
 void em_tsuushin_set(EMW *);
-int Em_max_parts_get(int);
+unsigned char Em_max_parts_get(int);
 void em_dur_init(EMW *);
 void World_calc(void *);
 void eft01_set(void *, int);
@@ -206,9 +206,10 @@ void em_init_sub(EMW *em) {
      * the init here, not in its middle as on the PS2 (nothing in between reads the scale) [agent D, 20 Oct 2026] */
     switch (em->kind) {
     case 3: case 19: case 24: case 29:
+    case 12:    /* G em12_init (game 0x5DB010): kind 12 takes em12_scale_tbl[type] as its base (referee g_gather: 0.5, not 0.8) */
         em->base_scale = em->scale[0];
         /* fall through */
-    case 4: case 5: case 32: case 12: case 25:
+    case 4: case 5: case 32: case 25:
         em_size_scale_set(em);
         break;
     }

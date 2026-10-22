@@ -1,5 +1,9 @@
 /* lb_c512 - agent C round 5 0x005B1160-0x005B134C: lb_select_room (room list entry screen state; one-case switch for the first-time init, tm temp for the 3-way wrap). lb_select_set_data is still asm: called as a global. */
 #include "lobby_b.h"
+#ifndef __MWERKS__
+unsigned short Get_sw2();   /* its real return type: was implicitly int (tools/check_kr_returns.py) */
+unsigned short Lbs_GetClassAdd();   /* its real return type: was implicitly int (tools/check_kr_returns.py) */
+#endif
 extern char lit_427_0065E260[];
 extern char lit_428_0065E270[];
 extern char lit_429_0065E280[];

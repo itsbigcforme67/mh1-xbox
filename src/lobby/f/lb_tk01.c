@@ -2,8 +2,15 @@
    lb_pit+0 (s32) counts frames (-1 = abort), +4 = script entry pointer (8-byte entries), +8 block, +9 yes/no cursor, +0xB talk step (0 = running).
    Layout lessons: the `return 0` after the confirm/cancel if-else sits after the outer else; the final return 0 is reached by fall-through. Whole file in lb_village_nm.c. */
 #include "lobby_f.h"
+#ifndef __MWERKS__
+unsigned short Get_sw2();   /* (declared before its first use) */
+#endif
 extern u8 lb_pit[0xC];
+#ifdef __MWERKS__
 int Get_sw2();
+#else
+unsigned short Get_sw2();   /* the real return type (tools/check_kr_returns.py) */
+#endif
 
 s32 Lb_talk_check_default(s32 a) {
     u16 pad;

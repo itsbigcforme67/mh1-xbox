@@ -143,7 +143,7 @@ extern char *lb_rule_msg_etc[];
 extern char *lb_ibox_str[];
 extern char lit_274_0065E1C8[];
 extern char *pit_help_str_tbl[];
-extern int Ud_stock_item_num_ck3(u16);
+extern short Ud_stock_item_num_ck3(u16);
 int sub_main_func_004C91E0(void *, int);
 void font_print_ex();
 void lb_shop_put_itemDetail(void) {

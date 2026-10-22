@@ -508,6 +508,22 @@ void rt_prims_reset(void)
     if (!sprite_area)       /* 0x100 entries of 0x50 (ioread: app_mem_top + 0x10D200) */
         sprite_area = calloc(0x101, 0x50);
 }
+/* Game_task's first lines (main 0x10F060), once per game tick in every game mode (the quest, the village, the
+ * result screens; viewer.c): the frame counter game_w+0x1E and, every 30 of them, the play time User_data+0x374
+ * (G +0xC1C: the save screen's TIME). The PC counted the frame only in the quest's tick and the play time not at all
+ * until 21 Oct 2026 (the lockstep referee's village scenarios: the saves' TIME 11 seconds behind the PS2's) */
+void rt_game_task_tick(void)
+{
+    extern u8 User_data[];
+    u16 *f = (u16 *)((u8 *)&game_w + 0x1E);
+    (*f)++;
+    if (*f % 30 == 0) {
+        u32 *t = (u32 *)(User_data + (rt_ver_mhg() ? 0xC1C : 0x374));
+        if (++*t > 0x22550FF)
+            *t = 0x22550FF;
+    }
+}
+
 void rt_game_move(void)
 {
     int i;
@@ -516,7 +532,6 @@ void rt_game_move(void)
     for (i = 0; i < OT_N; i++)
         nqueue[i] = 0;
     stage_work.timer++;
-    (*(u16 *)((u8 *)&game_w + 0x1E))++;     /* per-tick counter (0x10F060) */
     rt_prof_begin(RTP_SETS);
     for (i = 0; i < SET_MAX; i++)
         if (set_used[i] && set_pool[i].w.move) {

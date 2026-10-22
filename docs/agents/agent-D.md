@@ -1511,3 +1511,17 @@ differences that start on a blend tick = the blend method (REF_NODES). (4) The f
 during the area load, before the PC has the PS2's random state: the referee now copies EMW+0x39A at play tick 0.
 Open: N-R10 Gravios turn end, N-R11 kind 13 first act (G em16 act set), N-R12 village day not comparable (hook only in
 quests), g_plesioth / g_kind37 PS2 runs failed to start / stopped.
+
+## Referee round 5: story scenes, village day, carving (agent D, 21-22 Oct 2026)
+RELEASE_G R-F23..R-F25 (fifth round block). Lessons: (1) a `_nm.c` file may be a weak copy: check which file the
+binary really uses (`gdb -batch -ex "info line FUNC" build/mhg/pc/mhview_g`) before editing; em04_main lives in
+em04b.c. (2) When a monster is put into a G scene (act 6/N), its act 6 code must be G's as well: MH1's waits for MH1's
+demo flags and keeps the monster in the scene for the whole quest (quest 10046's Khezu; test_all_quests_g found it).
+(3) G's EMW keeps MH1's offsets up to about 0x934; MH1 0x9E1 is G 0x9D9 (the PC keeps MH1's layout, so G code that
+writes 0x9D9 writes x9E1 on the PC). (4) Village lockstep: scenario `village=True` (referee.md).
+Open: N-R10 Gravios, N-R13 g_plesioth start, N-R14 kind 19 fly height, N-R12 reward screen; g_scene_rath's Velociprey
+turns the other way at tick 1151 (the hunter sits almost behind it: a 1-ulp position step decides the side, N-R7 class).
+
+### Round 5, second half (22 Oct 2026)
+RELEASE_G R-F26 / R-F27. Merged main (agent A's em01 / em16 G ports replace my scene parts there). Next round: emulator
+work when memory allows (g_vil_sell, mh1_vil_* scenarios, item box, combine, reward screen), N-R10 Gravios.

@@ -46,6 +46,13 @@ static bool irq_connected, playing, dpc_ready;
  * xemu reads GLOB_CNT as 0 and hangs on a codec register access (13 Oct 2026), so there
  * the codec is left alone. RT_AC97_NOCODEC=1 skips it everywhere (test aid). */
 static bool codec_access;
+/* no codec answered (GLOB_STA bit 8 never set, even after a second cold reset): no codec register is touched
+ * (a read of an absent codec stalled the CPU: the owner's black screen at "ac97 open" after a Back + Start relaunch,
+ * 21 Oct 2026, GLOB_STA 00308000) and no DMA runs; the game goes on silent */
+static bool ac97_dead;
+
+/* a time-out for the waits on the controller: KeTickCount is in ms */
+static bool past(DWORD t0, DWORD ms) { return KeTickCount - t0 >= ms; }
 static volatile LONG done_pending;      /* finished PCM-out buffers not yet called back */
 static volatile unsigned long n_isr, n_bcis, n_cb;      /* for xbox_ac97_dump */
 
@@ -88,10 +95,11 @@ static BOOLEAN __stdcall isr(PKINTERRUPT intr, PVOID ctx)
  * codec access semaphore (GLOB 0x134 bit 0: reading it takes the semaphore) */
 static int cas_wait(void)
 {
-    int n = 0;
-    while ((*mmio32(0x134) & 1) && ++n < 2000)
-        ;
-    return n < 2000;
+    DWORD t0 = KeTickCount;
+    while (*mmio32(0x134) & 1)
+        if (past(t0, 20))
+            return 0;
+    return 1;
 }
 static unsigned codec_rd(int reg)
 {
@@ -126,9 +134,9 @@ void xbox_ac97_dump(const char *when)
  * 48 kHz (variable rate off: the fixed 48 kHz) */
 static void codec_setup(void)
 {
-    int n = 0;
+    DWORD t0 = KeTickCount;
     codec_wr(0x26, 0x0000);             /* power-down bits PR0-PR6 cleared */
-    while ((codec_rd(0x26) & 0x000F) != 0x000F && ++n < 50) {     /* ADC/DAC/analog/ref ready */
+    while ((codec_rd(0x26) & 0x000F) != 0x000F && !past(t0, 200)) {     /* ADC/DAC/analog/ref ready */
         LARGE_INTEGER t;
         t.QuadPart = -10 * 1000;
         KeDelayExecutionThread(KernelMode, FALSE, &t);
@@ -140,26 +148,34 @@ static void codec_setup(void)
     codec_wr(0x18, 0x0808);             /* PCM out */
 }
 
-static void bm_reset(int cr, int sr)
+static bool bm_reset(int cr, int sr)
 {
     volatile unsigned char *pb = mmio8();
-    int n = 0;
+    DWORD t0 = KeTickCount;
+    bool ok = true;
     pb[cr] = 0;                         /* stop (and no interrupts) */
-    pb[cr] = 0x02;                      /* reset the bus master */
-    while ((pb[cr] & 0x02) && ++n < 1000000)
+    while (!(pb[sr] & 0x01) && !past(t0, 50))  /* DCH: the DMA engine halted */
         ;
+    pb[cr] = 0x02;                      /* reset the bus master */
+    t0 = KeTickCount;
+    while (pb[cr] & 0x02)
+        if (past(t0, 50)) {
+            ok = false;
+            break;
+        }
+    pb[cr] = 0;
     pb[sr] = 0x1E;                      /* clear any status left */
+    return ok;
 }
 
 /* stop both DMA channels (before a quit to the dashboard: nothing left running into the
  * next program), interrupts off */
 void xbox_ac97_stop(void)
 {
-    volatile unsigned char *pb = mmio8();
-    pb[PO_CR] = 0;
-    pb[SP_CR] = 0;
-    pb[PO_SR] = 0x1E;
-    pb[SP_SR] = 0x1E;
+    /* run bits off, wait for the halt, reset both bus masters, interrupts masked (CR 0) and status cleared:
+     * the next program (the loader, then the game again without a power cycle) finds the controller idle */
+    bm_reset(PO_CR, PO_SR);
+    bm_reset(SP_CR, SP_SR);
     if (irq_connected) {
         KeDisconnectInterrupt(&irq_obj);
         irq_connected = false;
@@ -189,20 +205,32 @@ void XAudioInit(int sampleSizeInBits, int numChannels, XAudioCallback callback, 
     memset((void *)d->pcmOutDescriptor, 0, sizeof d->pcmOutDescriptor);
     memset((void *)d->pcmSpdifDescriptor, 0, sizeof d->pcmSpdifDescriptor);
 
-    *mmio32(GLOB_CNT) &= ~2u;           /* AC-link cold reset */
-    t.QuadPart = -10 * 1000;            /* 1 ms */
-    KeDelayExecutionThread(KernelMode, FALSE, &t);
-    *mmio32(GLOB_CNT) |= 2u;
-    while (!(*mmio32(GLOB_STA) & 0x100) && ++n < 1000) {
-        t.QuadPart = -10 * 1000;
+    /* AC-link cold reset, then up to 250 ms for the codec; once more with a longer reset if it did not answer */
+    for (n = 0; n < 2; n++) {
+        DWORD t0;
+        *mmio32(GLOB_CNT) &= ~2u;
+        t.QuadPart = -10 * 1000 * (n ? 20 : 1);     /* 1 ms, the second time 20 ms */
         KeDelayExecutionThread(KernelMode, FALSE, &t);
+        *mmio32(GLOB_CNT) |= 2u;
+        t0 = KeTickCount;
+        while (!(*mmio32(GLOB_STA) & 0x100) && !past(t0, 250)) {
+            t.QuadPart = -10 * 1000;
+            KeDelayExecutionThread(KernelMode, FALSE, &t);
+        }
+        if ((*mmio32(GLOB_STA) & 0x100) || !(*mmio32(GLOB_CNT) & 2))   /* ready, or xemu (GLOB_CNT reads 0) */
+            break;
+        rt_warn("ac97: no codec ready after a cold reset (GLOB_STA %08X)%s", *mmio32(GLOB_STA),
+                n ? ": audio off for this run" : ", resetting again");
     }
+    ac97_dead = (*mmio32(GLOB_CNT) & 2) && !(*mmio32(GLOB_STA) & 0x100);
 
-    codec_access = (*mmio32(GLOB_CNT) & 2) && !getenv("RT_AC97_NOCODEC");
+    codec_access = !ac97_dead && (*mmio32(GLOB_CNT) & 2) && !getenv("RT_AC97_NOCODEC");
     if (codec_access)
         codec_setup();
-    bm_reset(PO_CR, PO_SR);
-    bm_reset(SP_CR, SP_SR);
+    if (!bm_reset(PO_CR, PO_SR) || !bm_reset(SP_CR, SP_SR)) {
+        rt_warn("ac97: a bus master did not leave reset: audio off for this run");
+        ac97_dead = true;
+    }
     *mmio32(0x100) = 0;                 /* no PCM in */
     *mmio32(PO_BDBAR) = MmGetPhysicalAddress((PVOID)d->pcmOutDescriptor);
     *mmio32(SP_BDBAR) = MmGetPhysicalAddress((PVOID)d->pcmSpdifDescriptor);
@@ -211,7 +239,7 @@ void XAudioInit(int sampleSizeInBits, int numChannels, XAudioCallback callback, 
     KeInitializeDpc(&dpc_obj, dpc, NULL);
     dpc_ready = true;
     KeInitializeInterrupt(&irq_obj, isr, NULL, vector, irql, LevelSensitive, FALSE);
-    if (callback) {                     /* (SDL's close calls this with none: stay stopped) */
+    if (callback && !ac97_dead) {       /* (SDL's close calls this with none: stay stopped) */
         KeConnectInterrupt(&irq_obj);
         irq_connected = true;
         XAudioPause();
@@ -220,6 +248,8 @@ void XAudioInit(int sampleSizeInBits, int numChannels, XAudioCallback callback, 
 
 void XAudioPlay(void)
 {
+    if (ac97_dead)
+        return;
     mmio8()[PO_CR] = CR_RUN;
     mmio8()[SP_CR] = CR_RUN;
     playing = true;
@@ -227,6 +257,8 @@ void XAudioPlay(void)
 
 void XAudioPause(void)
 {
+    if (ac97_dead)
+        return;
     mmio8()[PO_CR] = CR_PAUSE;
     mmio8()[SP_CR] = CR_PAUSE;
     playing = false;
@@ -249,7 +281,7 @@ void XAudioProvideSamples(unsigned char *buffer, unsigned short bufferLength, in
     pb[PO_LVI] = (unsigned char)i;
     pb[SP_LVI] = (unsigned char)i;
     d->nextDescriptor = (unsigned char)((i + 1) % 32);
-    if (playing) {                      /* a channel that ran dry halted at its last buffer: go on */
+    if (playing && !ac97_dead) {        /* a channel that ran dry halted at its last buffer: go on */
         if (pb[PO_SR] & 0x01)
             pb[PO_CR] = CR_RUN;
         if (pb[SP_SR] & 0x01)

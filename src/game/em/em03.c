@@ -3,6 +3,7 @@
  * damage and death, sound/effect script). Names of the steps follow the
  * split (em_act00, em_move00...). em33.c is the same code for monster 33.
  * Field meanings are mostly guesses. Every function matches. */
+int Event_flag_ck(int);
 #include "em.h"
 #include "game.h"
 #include "fl.h"
@@ -241,6 +242,15 @@ void em03_main(EMW *em) {
         em_cmd_reset(em);
         em->x839 = 1;
     }
+#if defined(VERSION_MHG) && !defined(__MWERKS__)
+    /* G (game 0x5B3FA0, written from the asm; agent D, 21 Oct 2026): its scene in quest 10008 (G calls the act set at
+     * game 0x612FC0, which is MH1's em16_act_set unchanged) */
+    if ((u16)quest_w.x08 == 10008 && em->stg == 38 && Event_flag_ck(21) == 0) {
+        void em16_act_set(EMW *, int, int, int);
+        if (game_w.info_stop == 1 && em->mode != 6)
+            em16_act_set(em, 6, ((u8 *)em + 0x444)[25] == 0 ? 2 : 1, 0);
+    } else
+#endif
     if (em->x839 != 0) {
         em_cmd_ck(em);
         em->x839 = 0;

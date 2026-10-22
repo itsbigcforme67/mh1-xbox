@@ -68,7 +68,7 @@ void sk_skb_kill(int);
 void sk_speaking(void);
 void sk_yn_kigou_func(u8 *);
 int sk_yn_check();
-int sk_zenkaku_ck();
+signed char sk_zenkaku_ck();
 int kbd_insert();
 static int hk_roma_ck(int);
 static int hk_yn_hardkeyboard_check(void *);

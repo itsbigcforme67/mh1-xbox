@@ -1,6 +1,7 @@
 /* Player code (f_pl.s, 0x134950..): working file; matched functions are moved
  * to plX.c, what is left here is near-match (not built). */
 #include "pl.h"
+unsigned short Item_get_ck();   /* its real return type: was implicitly int (tools/check_kr_returns.py) */
 #include "plf.h"
 #include "game.h"
 #include "plst.h"
@@ -1124,13 +1125,13 @@ void pl_light_ck(PLW *pl) {
 #include "flow.h"
 void pl_body_make(PLW *pl, f32 *out, f32 radius);
 void hit_cap_pk(void *, void *);
-int hit_cap_cap3_m(void *, void *, f32 *);
+unsigned char hit_cap_cap3_m(void *, void *, f32 *);
 
 
 extern f32 *D_63FC50[];
 extern f32 *D_6103A0[];
 void flvecNormalize(f32 *);
-int hit_sphr_sphr3(f32 *a, f32 *b, f32 *out, f32 ra, f32 rb);
+unsigned char hit_sphr_sphr3(f32 *a, f32 *b, f32 *out, f32 ra, f32 rb);
 
 /* Pushes two monsters apart (sphere lists from the per-kind push tables). The inner list pointer is
  * never rewound for the 2nd and later spheres of the first monster: faithful to the original. */
@@ -1242,7 +1243,7 @@ extern s16 *D_610370[];
 void body_ptr_ck2(PLW *, s16 **);
 int hit_data_expand(PLW *, s16 *, f32 *, f32 *);
 int hit_data_expand2(f32 *, s16 *, f32 *, f32 *);
-int hit_cap_sphr_m(void *, f32 *, f32 *, f32);
+unsigned char hit_cap_sphr_m(void *, f32 *, f32 *, f32);
 
 /* Pushes the player against one monster's body list (capsule/sphere hit data, 0x28 bytes per entry). */
 void body_hit_sub_new(PLW *pl, PLW *o) {

@@ -374,7 +374,11 @@ void em_search_data_set(EMW *, u8);
 void em_type_act_set(EMW *, int, u16, u16);
 void World_calc2(u8, f32 *, f32 *);
 void SetVector(f32 *, f32, f32, f32);
+#ifdef __MWERKS__
 int GetTenjoHit(f32 *, f32 *, u16 *);
+#else
+unsigned char GetTenjoHit(f32 *, f32 *, u16 *);   /* the real return type (tools/check_kr_returns.py) */
+#endif
 int GetWallHitLine(f32 *, f32 *, f32 *, u16);
 int GetWaterData();
 int Pl_stg_ck_tw(EMW *, PLW *);

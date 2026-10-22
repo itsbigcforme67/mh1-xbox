@@ -147,7 +147,7 @@ void release_prim(s16);
 void get_joint_pos(void *, int, f32 *);
 void flvecCopy(f32 *, f32 *);
 void flvecRotY(f32 *, f32);
-int GetWaterHit(f32 *, f32 *);
+unsigned char GetWaterHit(f32 *, f32 *);
 void se_req2(int, int, int, f32 *, int, int);
 void func_544C90(f32 *, int, int, f32);    /* game.bin Eft08_set */
 

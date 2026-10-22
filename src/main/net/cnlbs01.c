@@ -1,5 +1,8 @@
 /* cnlbs01 - cnLBS file download requests 0x0027CF10-0x0027D028: cnLBS_Read_FileDownload, cnLBS_Get_FileDownloadInfo, cnLBS_Read_FileDownloadHeader. Whole file in cnlbs_nm.c. */
 #include "g_alias.h"
+#ifndef __MWERKS__
+unsigned short __cnet_SendReq_FileDownloadHeader();   /* its real return type: was implicitly int (tools/check_kr_returns.py) */
+#endif
 #include "types.h"
 
 typedef struct DLE { s32 size; s32 x4; s32 ofs; } DLE;

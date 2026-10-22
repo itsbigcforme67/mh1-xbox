@@ -1,6 +1,10 @@
 /* lb_v07 - guild quest level list 0x005C8810-0x005C8D70: lb_select_quest_level_trans. Whole file in lb_x.c. */
 #include "lobby_f.h"
 #include "lbsys_g.h"
+#ifndef __MWERKS__
+signed char Lb_get_quest_type();   /* (declared before its first use) */
+unsigned short Get_sw2();   /* (declared before its first use) */
+#endif
 extern s8 key_quest_num;
 extern u8 *pNet;
 extern u8 lb_quest_info[];
@@ -16,13 +20,21 @@ extern char quest_title[];
 extern char lit_1489_00664A90[];
 extern s32 guildPrice;
 extern s32 pDetail;
+#ifdef __MWERKS__
 int Get_sw2();
+#else
+unsigned short Get_sw2();   /* the real return type (tools/check_kr_returns.py) */
+#endif
 int get_questLevelNum();
 void lb_set_questpage_info();
 void Lbc_set_prim();
 void Lb_guild_trans();
 void Lb_num_to_str();
+#ifdef __MWERKS__
 int Lb_get_quest_type();
+#else
+signed char Lb_get_quest_type();   /* the real return type (tools/check_kr_returns.py) */
+#endif
 int Lb_get_quest_str();
 int sprintf(char *, const char *, ...);
 char *strcpy();

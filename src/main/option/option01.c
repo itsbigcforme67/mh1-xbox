@@ -5,6 +5,9 @@
 #endif
 #include "types.h"
 #include "gwx.h"
+#ifndef __MWERKS__
+unsigned char McCardOperation();   /* (declared before its first use) */
+#endif
 
 typedef struct OPTTSK {
     u8 pad00[8];
@@ -74,7 +77,11 @@ void system_w_set();
 void str_master_vol();
 void flAdjustScreen();
 void McOperationSet();
+#ifdef __MWERKS__
 int McCardOperation();
+#else
+unsigned char McCardOperation();   /* the real return type (tools/check_kr_returns.py) */
+#endif
 void str_stop_all();
 void vib_stop_all();
 void save_file_req();

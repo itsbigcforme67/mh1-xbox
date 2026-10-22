@@ -1815,3 +1815,14 @@ and "town step 4" at tick 578. A PC client (mhview_online, hidden) then logged i
 both handles, the PC log has `slot 0 "XBOX" ... shown`, the Xbox log `slot 1 "PC" ... shown`; screenshots
 build/show/xemu_online/xbox_sees_pc.png and pc_sees_xbox.png (not committed) show both hunters by the fountain, named.
 Not yet on a real Xbox; rooms and a co-op hunt from the Xbox are not tested.
+
+### Black screen at "ac97 open" after a Back + Start relaunch (agent A, 21 Oct 2026)
+Owner (G, real Xbox, logs/20261021-190054-mhg): after a quit through Back + Start and a relaunch from the loader the
+game stopped at boot; the log ends after the first "ac97 open" line with GLOB_STA 00308000 (bit 8, codec ready, not
+set) and before the codec registers line: the codec register read stalled. A power cycle cleared it. Now:
+- leaving (xbox_log_show, every way out, and xbox_log_quit): both DMA channels run bit off, wait for the halt (DCH,
+  50 ms max), bus master reset, CR 0 (interrupts masked), status cleared, the interrupt disconnected;
+- XAudioInit: every wait has a time-out (codec-access semaphore 20 ms, codec ready 250 ms, power-down bits 200 ms,
+  halt / bus master reset 50 ms each). No codec ready after the cold reset: a second, longer (20 ms) cold reset; still
+  none: a warning, no codec register is touched, no DMA runs, the game goes on silent.
+Built (both games); not run on hardware or in xemu (a warm relaunch can't be made there anyway).

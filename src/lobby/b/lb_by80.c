@@ -1,5 +1,6 @@
 /* lb_by80 - agent B promoted near-match 0x00539220-0x00539364: lb_process_tag_decide01 (first drafted by tools/lbauto.py). */
 #include "lobby_s.h"
+short lb_process_set_armorList();   /* its real return type: was implicitly int (tools/check_kr_returns.py) */
 extern s32 armorIndex;
 extern char shop_process2_help[];
 

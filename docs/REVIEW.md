@@ -929,3 +929,16 @@ Both games unless marked.
   config/mhg/pc_noptr.txt entries (vital rows, Item_get rows).
 - **Added (referee):** 15 scenarios (g_*), the tick-0 sync of EMW+0x39A.
 - **To revert:** the commits "WIP referee G monsters ..." / "WIP referee: motion blends ..." on agent-D.
+
+## Referee, fifth round (agent D, 21-22 Oct 2026)
+- **Moved:** the frame counter game_w+0x1E from rt_game_move (quest ticks only) to rt_game_task_tick (every game tick,
+  viewer.c), which also counts the play time (User_data, G +0xC1C). **Why:** Game_task does both every frame.
+- **Changed (G only):** monster story scenes by G's quest numbers (rt_story_quest) and G's own scenes; em_eye_search_set's
+  kind list for G's new kinds; G's act 6 scene code (em04b.c, em09c.c, em15_nm.c, em16_nm.c, em19b.c, em20_ai_nm.c,
+  all `VERSION_MHG`, matched files also `!__MWERKS__`). em04_nm.c's earlier edit was dropped: em04b.c's em04_main is the
+  one built.
+- **Changed (G only, 22 Oct):** lb_by153.c forge question default, em19b.c fliers' ceiling (EM19_TOP), f_em_nm.c kind 12
+  base scale, f_quest_nm.c Em_direct_set stage (em_tsuushin_tbl). **Changed (both):** viewer.c skips the area-exit
+  check on an area's first tick. **Referee:** ps2_rnd.txt has a 4th column, the PS2's frame counter, set on the PC.
+- **Added (referee):** village lockstep scenarios (g_vil_*), g_carve / mh1_carve, the hook's lock mode word (CTL+0x1C).
+- **To revert:** the commits "WIP referee: G's story-scene ..." .. "WIP: Game_task's frame counter ..." on agent-D.

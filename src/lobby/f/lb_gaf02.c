@@ -1,5 +1,10 @@
 /* lb_gaf02 - near-match fixes 0x005D8680-0x005D875C: Local_main. Whole file in lb_af.c. */
 #include "lobby_f.h"
+#ifndef __MWERKS__
+signed char DemoCameraCheck();   /* (declared before its first use) */
+signed char load_busy_ck();   /* (declared before its first use) */
+unsigned char McCardOperation();   /* (declared before its first use) */
+#endif
 extern PLW player_work[];
 extern u8 *pNet;
 extern u8 D_32D471[];
@@ -15,7 +20,11 @@ extern u8 network_work[];
 extern u8 my_user_handle[0x10];
 void Lb_move_common();
 void DemoCameraRequest();
+#ifdef __MWERKS__
 int DemoCameraCheck();
+#else
+signed char DemoCameraCheck();   /* the real return type (tools/check_kr_returns.py) */
+#endif
 void adx_se_set();
 void fade_set();
 int Fade_busy_ck();
@@ -53,13 +62,21 @@ void eft01_set();
 void flSndPortStop();
 void FlushCache();
 void load_bin_req();
+#ifdef __MWERKS__
 int load_busy_ck();
+#else
+signed char load_busy_ck();   /* the real return type (tools/check_kr_returns.py) */
+#endif
 void flSndPackLoadBG();
 int flSndPackLoadStatus();
 void str_fadeout();
 void McOperationSet();
 void str_pause();
+#ifdef __MWERKS__
 int McCardOperation();
+#else
+unsigned char McCardOperation();   /* the real return type (tools/check_kr_returns.py) */
+#endif
 void str_volume();
 void str_fadein();
 void str_fadein_vol();

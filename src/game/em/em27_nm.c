@@ -2159,7 +2159,13 @@ void em27_main(EMW *em) {
         }
         break;
     }
-    if (quest_w.x08 == 0x89 && em->stg == 0x22 && Event_flag_ck(0xC) == 0) {
+#ifdef VERSION_MHG
+int rt_story_quest(void);
+#define STORYQ rt_story_quest()
+#else
+#define STORYQ quest_w.x08
+#endif
+    if (STORYQ == 0x89 && em->stg == 0x22 && Event_flag_ck(0xC) == 0) {
         if (game_w.info_stop == 1 && em->mode != 6) {
             em27_act_set(em, 6, 0, 1);
         }

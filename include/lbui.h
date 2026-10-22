@@ -149,10 +149,18 @@ extern u8 D_3C73B4[];
 extern char lit_193_0065DBE8[];
 extern u8 Friend_data[];
 int net_Check_FriendSuu();
+#ifdef __MWERKS__
 int Get_kb_input();
+#else
+unsigned char Get_kb_input();   /* the real return type (tools/check_kr_returns.py) */
+#endif
 int SoftKeyboard_pos_set(f32, int);
 int SoftKeyboard_set();
+#ifdef __MWERKS__
 int SoftKeyboard_move();
+#else
+signed char SoftKeyboard_move();   /* the real return type (tools/check_kr_returns.py) */
+#endif
 int SoftKeyboard_exit();
 extern u8 BsLbsCount;
 int Lb_select();
@@ -172,9 +180,17 @@ int release_texture();
 int font_set_stack_no();
 int Get_ServerName();
 int sprintf();
+#ifdef __MWERKS__
 int Get_sw2();
+#else
+unsigned short Get_sw2();   /* the real return type (tools/check_kr_returns.py) */
+#endif
 int Get_sw();
+#ifdef __MWERKS__
 int Get_sw_on2();
+#else
+unsigned short Get_sw_on2();   /* the real return type (tools/check_kr_returns.py) */
+#endif
 int Plaza_ReibunEdit_i();
 int Plaza_ReibunEdit_mv();
 int Plaza_chatlog_i();
@@ -185,7 +201,11 @@ int Lbc_RequestNetComment();
 int Lbs_SeekId();
 int Lb_put_msg2();
 int flfntSetSize();
+#ifdef __MWERKS__
 int SoftKeyboard_alive_check();
+#else
+signed char SoftKeyboard_alive_check();   /* the real return type (tools/check_kr_returns.py) */
+#endif
 int DispSoftkeyboard();
 int DispDialogData();
 int Lb_on_dialog();

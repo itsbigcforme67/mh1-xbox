@@ -1,5 +1,9 @@
 /* em15 draft */
+int Event_flag_ck(int);
 #include "em.h"
+unsigned char Em_Dmg_Sys();   /* its real return type: was implicitly int (tools/check_kr_returns.py) */
+unsigned char em15_fly_adjy2();   /* its real return type: was implicitly int (tools/check_kr_returns.py) */
+unsigned short em15_senkai_target();   /* its real return type: was implicitly int (tools/check_kr_returns.py) */
 #include "game.h"
 #include "fl.h"
 #include "pl.h"
@@ -4387,12 +4391,11 @@ static void em_move05_005CAD90(EMW *em, EM15W *w) {
 }
 
 #ifdef VERSION_MHG
-int Event_flag_ck();
-/* G 0x5F58C0 (G only): quest 10046's event demo on stage 0x46: the monster is put at a fixed spot facing 0x8000 and plays
- * motions 0x67 (240 ticks), 0x6E (300 ticks), 0x75, 0x33, 0x36 and 0x01 (each to its end), then waits for event flag
- * 0x1A (the demo's end) and goes back to normal. From G's asm (jump table 0x6D9190 in code order), agent E, 21 Oct 2026. */
-static void em_demo00_g(EMW *em, EM15W *w) {
-    em->x9E1 = 5;
+/* G game 0x5F58C0 (written from the asm; agent D, 21 Oct 2026): act 6/0, Khezu's scene in quest 10046. It sits at
+ * the cave spot, runs three scene motions, then waits for the demo's flag 26 and turns normal. (G's act 6 no 0 is this
+ * scene; MH1's is em_demo04.) */
+static void em15_g_scene(EMW *em) {
+    em->x9E1 = 5;    /* (G 0x9D9; PC keeps the MH1 EMW layout, as em19 em_demo00) */
     em->x40C = 5;
     switch (em->x05) {
     case 0:
@@ -4404,51 +4407,48 @@ static void em_demo00_g(EMW *em, EM15W *w) {
         em->ang[0] = 0;
         em->ang[1] = 0x8000;
         em->ang[2] = 0;
-        em_char_set(em, 0x67, 0, 0);
-        em->work08 = 0xF0;
+        em_char_set(em, 103, 0, 0);
+        em->work08 = 240;
         break;
     case 1:
-        if (--em->work08 > 0) {
+        if (--em->work08 > 0)
             break;
-        }
         em->x05++;
-        em_char_set(em, 0x6E, 0, 0);
-        em->work08 = 0x12C;
+        em_char_set(em, 110, 0, 0);
+        em->work08 = 300;
         break;
     case 2:
-        if (--em->work08 > 0) {
+        if (--em->work08 > 0)
             break;
-        }
         em->x05++;
-        em_char_set(em, 0x75, 0, 0);
+        em_char_set(em, 117, 0, 0);
         em->x388 = 0;
         break;
     case 3:
-        if (em->x194 == 0) {
-            em->x05++;
-            em_char_set(em, 0x33, 0, 0);
-        }
+        if (em->x194 != 0)
+            break;
+        em->x05++;
+        em_char_set(em, 51, 0, 0);
         break;
     case 4:
-        if (em->x194 == 0) {
-            em->x05++;
-            em_char_set(em, 0x36, 0, 0);
-        }
+        if (em->x194 != 0)
+            break;
+        em->x05++;
+        em_char_set(em, 54, 0, 0);
         break;
     case 5:
-        if (em->x194 == 0) {
-            em->x05++;
-            em_char_set(em, 0x1, 0, 0);
-        }
+        if (em->x194 != 0)
+            break;
+        em->x05++;
+        em_char_set(em, 1, 0, 0);
         break;
     case 6:
-        if (Event_flag_ck(0x1A) == 1) {
+        if (Event_flag_ck(26) == 1) {
             em->x05++;
             em15_to_normal(em);
         }
         break;
     }
-    (void)w;
 }
 #endif
 
@@ -4459,10 +4459,10 @@ static void em_move06_005CAE00(EMW *em, EM15W *w) {
     switch (temp_a2) {                              /* irregular */
     case 0:
 #ifdef VERSION_MHG
-        em_demo00_g(em, w);
-#else
-        em_demo04_005C9F20(em, w);
+        em15_g_scene(em);
+        break;
 #endif
+        em_demo04_005C9F20(em, w);
         break;
     case 1:
         em_demo04_005C9F20(em, w);
@@ -4719,11 +4719,10 @@ void em15_main(EMW *em) {
         break;
     }
 #ifdef VERSION_MHG
-    if (quest_w.no == 10046 && em->stg == 0x46 && Event_flag_ck(0x1A) == 0) {
-        /* G only (G em15_main 0x5F7450): quest 10046's event demo (game_func_005F58C0 below) */
-        if (game_w.info_stop == 1 && em->mode != 6) {
+    /* G (game 0x5F7440, written from the asm; agent D, 21 Oct 2026): its scene in quest 10046 */
+    if (quest_w.no == 10046 && em->stg == 70 && Event_flag_ck(26) == 0) {
+        if (game_w.info_stop == 1 && em->mode != 6)
             em15_act_set(em, 6, 0, 1);
-        }
     } else
 #endif
     if (em->x839 != 0) {

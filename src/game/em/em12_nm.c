@@ -3,7 +3,6 @@
  * action steps em_act00-13, move states, damage reactions, death and revival,
  * demo, em12_main, the sound/effect script. Field meanings are guesses. */
 #include "em.h"
-#include "em_demo_g.h"
 #include "game.h"
 #include "fl.h"
 #include "pl.h"
@@ -97,7 +96,7 @@ void em_act_set(EMW *, int, u16);
 s16 em_hp_vital_set(EMW *, s16);
 void flvecCopy(f32 *, f32 *);
 f32 CalcDistanceXZ(f32 *, f32 *);
-int calc_vec_ang(f32, f32, f32, f32);
+unsigned short calc_vec_ang(f32, f32, f32, f32);
 void flvecRotY(f32 *, f32);
 void em_cmd_reset(EMW *);
 void Eft16_set_ex(EMW *, int, int);
@@ -1791,8 +1790,14 @@ void em12_main(EMW *em) {
         em_escape_mind_set(em, 3, 0x90);
         em->x839 = 1;
     }
-    switch (quest_w.x08) {
-    case QN(0x8B, 10032):
+#ifdef VERSION_MHG
+int rt_story_quest(void);
+#define STORYQ rt_story_quest()
+#else
+#define STORYQ quest_w.x08
+#endif
+    switch (STORYQ) {
+    case 0x8B:
         if (em->stg == 0x21 && Event_flag_ck(0xE) == 0) {
             if (game_w.info_stop == 1 && em->mode != 6) {
                 if (em->type == 0) {
@@ -1804,7 +1809,7 @@ void em12_main(EMW *em) {
             break;
         }
         goto cmd;
-    case QN(0x94, 10015):
+    case 0x94:
         if (em->stg == 0x2E && Event_flag_ck(0x10) == 0) {
             if (game_w.info_stop == 1 && em->mode != 6) {
                 em12_act_set(em, 6, 6, 0);

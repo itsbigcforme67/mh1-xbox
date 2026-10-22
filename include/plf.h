@@ -93,7 +93,11 @@ u16 item_sel_sub(PLW *, u16, int);
 void se_req(int, int, int);
 s32 Get_view_dir();
 extern u8 Item_data[327][ITEM_ROW];
+#ifdef __MWERKS__
 int calc_vec_ang2(f32 *, f32 *);
+#else
+unsigned short calc_vec_ang2(f32 *, f32 *);   /* the real return type (tools/check_kr_returns.py) */
+#endif
 f32 flvecCalcLength(f32 *);
 void Pl_act_set2(PLW *, int, int, int);
 void Pl_adj_calc(PLW *, int);

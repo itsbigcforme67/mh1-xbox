@@ -1,9 +1,17 @@
 /* lb_gae01 - near-match fixes 0x005D1820-0x005D1AC4: lb_pl_mv076. Whole file in lb_ae.c. */
 #include "lobby_f.h"
+#ifndef __MWERKS__
+unsigned char McCardOperation();   /* (declared before its first use) */
+unsigned short Get_sw2();   /* (declared before its first use) */
+#endif
 extern u8 *pNet;
 extern s16 ang_894;
 void McOperationSet();
+#ifdef __MWERKS__
 int McCardOperation();
+#else
+unsigned char McCardOperation();   /* the real return type (tools/check_kr_returns.py) */
+#endif
 void SetDialogData();
 void SetDialogYesNo();
 void str_fadeout();
@@ -18,7 +26,11 @@ void Lbs_LogOutRequest();
 void Lb_Pl_basic_flagset();
 void Lb_pl_chr_set();
 void Lb_pl_to_normal();
+#ifdef __MWERKS__
 int Get_sw2();
+#else
+unsigned short Get_sw2();   /* the real return type (tools/check_kr_returns.py) */
+#endif
 int Online_ck();
 void adx_se_set();
 void Eft25_set();

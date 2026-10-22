@@ -15,7 +15,7 @@ void flfntSetSize();
 void font_print_double();
 int Lb_Pl_stg_ck();
 int Lb_get_pl_stat2();
-int Get_weapon_job();
+unsigned char Get_weapon_job();
 void Lb_put_job();
 void Lb_put_icon_free();
 void Lb_put_status();

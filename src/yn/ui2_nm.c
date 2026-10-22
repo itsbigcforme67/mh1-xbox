@@ -51,7 +51,7 @@ int yn_hard_select_set();
 int yn_log_sd();
 int yn_mc_device_check_all();
 int yn_mc_format();
-int yn_mc_get_current();
+signed char yn_mc_get_current();
 int yn_mc_gmfile_check();
 int yn_mc_gmfile_current_set();
 int yn_mc_gmfile_save();

@@ -18,7 +18,7 @@ extern s8 Snd_em_id_file_conv_tbl[];
 void flSndJointInit();
 void flSndJointSet();
 void load_bin_req();
-int load_busy_ck();
+signed char load_busy_ck();
 extern s8 Snd_em_id_conv_tbl[];
 extern void *data_load_ptr;
 extern u8 *pl_area_top;

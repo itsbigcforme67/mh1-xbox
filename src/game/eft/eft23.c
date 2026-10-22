@@ -9,6 +9,9 @@
 #include "prim.h"
 #include "clay.h"
 #include "fl.h"
+#ifndef __MWERKS__
+short act_ck(void *, int, int);   /* (declared before its first use) */
+#endif
 
 /* One material table entry (0x4C bytes). */
 typedef struct MATERIAL {
@@ -78,7 +81,11 @@ extern u8 Eft_hire_rgb[][3];
 
 u32 ran_suu(int);
 int Pl_master_ck(PLW *);
+#ifdef __MWERKS__
 int act_ck(void *, int, int);
+#else
+short act_ck(void *, int, int);   /* the real return type (tools/check_kr_returns.py) */
+#endif
 void release_prim(s16);
 f32 CalcDistanceXZ(f32 *, f32 *);
 u16 Em_Calc_angY(f32 *, f32 *);

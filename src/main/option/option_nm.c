@@ -73,7 +73,7 @@ void system_w_set();
 void str_master_vol();
 void flAdjustScreen();
 void McOperationSet();
-int McCardOperation();
+unsigned char McCardOperation();
 void str_stop_all();
 void vib_stop_all();
 void save_file_req();

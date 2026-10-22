@@ -20,9 +20,11 @@ step() {  # step NAME CMD...
 n=$(grep -cE '^[a-z]+ +OK ' build/check/rebuild.log)
 if [ "$n" = 5 ]; then echo "ok   rebuild (5 OK)"; else echo "FAIL rebuild ($n OK, build/check/rebuild.log)"; fail=1; fi
 step build_pc tools/build_pc.sh
+step kr_returns python3 tools/check_kr_returns.py --implicit build/pc/cmd --mwcc mh1   # Xbox ABI hazard: char/short/float functions declared or used as int
 step build_pc_online env ONLINE=1 tools/build_pc.sh
 step xbox_online bash -c ". ~/xboxdev/env.sh && python3 tools/build_xbox.py --online --gfx nv2a"   # (reads the online objs.txt)
 step build_pc_mhg tools/build_pc_mhg.sh   # tests that also run G use this binary
+step kr_returns_g python3 tools/check_kr_returns.py --implicit build/mhg/pctree/build/pc/cmd --mwcc mhg
 for t in tools/test_*.sh; do
     n=$(basename "$t" .sh)
     case " $EMU_TESTS " in *" $n "*) echo "skip $n (starts an emulator: run it alone by hand)"; continue ;; esac

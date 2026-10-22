@@ -15,7 +15,7 @@ int Seisan_ok_ck(int, s16, int);
 int Get_equip_bit();
 char *Get_equip_name();
 u32 Get_equip_price();
-int Warehouse_search_space();
+unsigned char Warehouse_search_space();
 int Warehouse_space_ck();
 int Now_equip_ck();
 char *strcpy(char *, const char *);

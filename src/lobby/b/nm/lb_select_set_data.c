@@ -1,5 +1,7 @@
 /* lb_select_set_data (0x5B0CE0): logic complete, 13/286 differ (address registers of the two colour-table copies). Not built. */
 #include "lobby_b.h"
+signed char Lb_get_quest_type();   /* its real return type: was implicitly int (tools/check_kr_returns.py) */
+unsigned short Lbs_GetClassAdd();   /* its real return type: was implicitly int (tools/check_kr_returns.py) */
 extern char lit_427_0065E260[];
 extern char lit_428_0065E270[];
 extern char lit_429_0065E280[];

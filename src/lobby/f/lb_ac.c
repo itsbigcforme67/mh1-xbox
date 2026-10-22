@@ -13,7 +13,6 @@ u8 *Stage_unique_data_get();
 void Lb_put_unique_act_hint();
 int lb_ck_unique_act();
 int Lb_Pl_stg_ck();
-int SoftKeyboard_alive_check();
 void lb_insert_target_list(list, tgt)
 u8 **list;
 u8 *tgt;

@@ -41,7 +41,7 @@ typedef u8 PL;   /* the player work, PLW (0xA00 bytes), by raw offset */
 int Pl_master_ck(void *pl);
 int ran_suu(int);
 void net_send_pl(void *pl, int a, int b);
-int act_ck(void *chr, int a, int b);
+short act_ck(void *chr, int a, int b);
 void pl_to_normal(void *pl, int a, int b, int c);
 void pl_to_normal_b(void *pl, int a, int b, int c);
 void frame_init(void *w, int frame, int blend, int n);
@@ -80,7 +80,7 @@ static int rt_pl_trace(void)
 
 /* ------------------------------------------------ Pl_bari_ck file (0x14FC40..) */
 
-int Pl_item_num_ck(void *pl, int id);
+short Pl_item_num_ck(void *pl, int id);
 
 /* ------------------------------------------------ misc (g_Pl_hold_item_ck ..) */
 

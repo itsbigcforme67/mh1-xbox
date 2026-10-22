@@ -1228,3 +1228,32 @@ check.py needs wibo, which this round could not run (PC-only round). Commits on 
 - **Xbox log** (both games): mh1log.txt and logs\*.log were only fflush'ed into the kernel's file cache, which a crash
   never writes out (the owner's log ended long before the crash). xbox_log_commit (xbox_log.c) does fflush +
   NtFlushBuffersFile: every rt_log line after 0.5 s, every warning / error at once, and stderr once a second.
+- **Follow-up (21 Oct, coordinator): the whole class fixed, both games.** tools/check_kr_returns.py --fix gave 906
+  declarations their definition's return type (plain C types, so no header needed); in byte-matching files (config/
+  c_files.txt, config/mhg/c_files.txt) and in every header the original line stays for MWCC under `#ifdef __MWERKS__`.
+  The checker knows those MWCC-only branches. A file that used the function before its declaration got the declaration
+  at the top. `--implicit CMDDIR` compiles every linked PC object's recorded command with gcc -fsyntax-only
+  -Wimplicit-function-declaration: 60 calls of char/short functions without any declaration got one. Both checks are
+  steps of tools/full_check.sh (kr_returns, kr_returns_g) and report 0. Not reported on purpose: a narrower or other
+  char/short declaration of a function (the caller converts the same way on both compilers) and int vs pointer (same
+  register and width on both 32-bit targets). int vs float was reported and fixed too (flSin declared int in the yn
+  files; flps0009 declared f32 but returning int: an x87 stack pop of nothing).
+  Checks: MH1 and G PC builds, MH1 and G Xbox builds, test_all_quests_g (98 + carts + dual), test_all_quests (38),
+  test_urgent, test_urgent_g. **The PS2 byte rebuild (5 OK / 7 OK) was not run** (free memory stayed under 1 GB): left
+  for the coordinator's check.
+- **Rebuild break (21 Oct, fixed on main by agent D) and the tool made safe:** my --fix guarded only c_files-listed files
+  and headers, but the MH1 rebuild (tools/build.py) compiles every file under src/ (not pc/, mhg/, ps2patch/): three
+  lobby files got a `signed char SoftKeyboard_alive_check();` MWCC saw next to the header's int. --fix now guards every
+  change. New `--mwcc mh1|mhg`: reads what MWCC sees (each compiled unit plus the headers it includes, with __MWERKS__
+  and, for G, VERSION_MHG defined; #define renames skipped) and reports a function declared with two return types.
+  Checked: it reports the lb_ac.c case when that line is put back, and 0 on main for both versions. full_check's
+  kr_returns / kr_returns_g steps run it.
+
+## Owner's Xbox report: saving, shop icons (21 Oct 2026)
+- Save round trip reproduced as the owner did it on PC G (tools/test_save_g.sh): works; Xbox-only cause still unknown.
+  mc_xbox.c now logs saves/loads/failures. G's CONTINUE path: power-on autoloads the card ("loaded" right after the
+  reset), the GAME MENU cursor starts on CONTINUE, CardConld03 says "no character data" (msg 26) when every slot's byte
+  0 is 0 (save_data_sub(0, 15) == 7).
+- Weapon shop icons: G Lb_put_job (0x593100) uses e + 0x19 and remaps 5/6 -> 1/4 in the small sheet; lb_ag01.c.
+- G texture slots: menu slots are MH1 + 0x27 (0x118 -> 0x13F, 0x119 -> 0x140, 0x11A -> 0x141, 0x157 -> 0x180); the PC
+  keeps MH1's (GSLOT in include/g_alias.h).

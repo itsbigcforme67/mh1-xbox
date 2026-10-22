@@ -2,7 +2,14 @@
    code (-1, 0..10) to the game's 0..11 (the mapping is the identity except -1 -> 11 and 7 -> 7 via default). Written new in this
    pass (no near-match copy). Jump table in main:rodata. */
 #include "types.h"
+#ifndef __MWERKS__
+short Ave_TcpStat();   /* (declared before its first use) */
+#endif
+#ifdef __MWERKS__
 int Ave_TcpStat();
+#else
+short Ave_TcpStat();   /* the real return type (tools/check_kr_returns.py) */
+#endif
 int common_error(int);
 int CpInetTcpGetStatus(int sock, s16 *st) {
     int r;

@@ -97,7 +97,7 @@ int Event_flag_ck();
 void Event_flag_set();
 int Quest_clear_bit_ck();
 int ran_suu();
-int Get_sw2();
+unsigned short Get_sw2();
 void cnWrap_SoundRequest();
 void Lbc_set_prim();
 void Lbc_init_network_work();

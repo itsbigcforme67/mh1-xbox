@@ -43,7 +43,7 @@ void eft09_set(EMW *, int);
 void Eft20_set(f32, EMW *, int, int);
 void shell01_set(EMW *, int);
 s16 em_hp_vital_set2(EMW *, s16, s16);
-int em_act_search(void *);
+unsigned short em_act_search(void *);
 void em_char_set(EMW *, int, int, int);
 void em_char_set2();
 void em_char_set2();

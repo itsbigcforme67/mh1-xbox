@@ -1,6 +1,7 @@
 /* menu_nm - f_menu (SLPM_654.95 0x00127440-0x00134950, main.bin): the whole pit menu file as near-match C, not built; matching runs are built from it as menuNN.c.
  * Field meanings are guesses. */
 #include "menu.h"
+short Item_preparation();   /* its real return type: was implicitly int (tools/check_kr_returns.py) */
 #include "em.h"
 #include "pl.h"
 #include "fl.h"
@@ -66,7 +67,7 @@ void func_60CE50(void);
 void Disp_NPC_message(void);
 void Pit_disp_pit_effect(void);
 void Pit_disp_receive_mes(void);
-int SoftKeyboard_alive_check(void);
+signed char SoftKeyboard_alive_check(void);
 void DispSoftkeyboard(u8);
 void func_63B470(void);
 void disp_map(void);
@@ -133,8 +134,8 @@ void font_print_uf(char *, int);
 u8 *func_5B4D30(u8);
 extern u8 User_data[];
 int Item_preparation_list_search(s8 *, s8, u16 *, u16 *);
-int Monster_list_search(s8, int);
-int Get_weapon_job2(u8, u16);
+signed char Monster_list_search(s8, int);
+unsigned char Get_weapon_job2(u8, u16);
 void vib_set(int, int);
 int Reibun_Edit_Core(u8);
 int Reibun_Edit_Start(u8);
@@ -142,7 +143,7 @@ u8 Reibun_select_mv(int, u8);
 extern u16 item_pick_declaration_code;
 extern s16 item_pick_declaration_timer;
 int Pl_master_ck(void);
-int Check_hold_item(int);
+unsigned char Check_hold_item(int);
 void Pl_item_get_se(PLW *, int);
 int Pl_item_stack(PLW *, int, int);
 u8 set01_set(int, int, s16);

@@ -38,7 +38,11 @@ void flfntSetSize();
 void font_print_ex();
 void font_print_sp();
 void font_set_palette();
+#ifdef __MWERKS__
 int Equip_moji_color_rare();
+#else
+unsigned char Equip_moji_color_rare();   /* the real return type (tools/check_kr_returns.py) */
+#endif
 extern u8 lb_shop_msg[];
 extern char lit_359_00654D68[];
 extern char lit_360_00654D70[];
@@ -48,7 +52,11 @@ void *memset();
 int Ud_item_search_space_();
 extern void *Lb_mix_item_checkMax_p;
 void Gold_add();
+#ifdef __MWERKS__
 int Item_preparation();
+#else
+short Item_preparation();   /* the real return type (tools/check_kr_returns.py) */
+#endif
 extern s32 *pit_help_str_tbl[];
 /* can `qty` of item `id` be bought / is it held (mode 2) */
 /* can `qty` of item `id` be bought / is it held (mode 2) */
@@ -481,6 +489,10 @@ int lb_mix_item_select() {
 asm void lb_mix_decide()
 {
 #include "lb_mix_decide.inc"
+#ifndef __MWERKS__
+short Item_preparation();   /* (declared before its first use) */
+unsigned char Equip_moji_color_rare();   /* (declared before its first use) */
+#endif
 }
 #endif
 #endif

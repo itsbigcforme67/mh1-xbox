@@ -1,6 +1,9 @@
 /* return_mc_save (0x00271EA0-0x00271FB0): step machine that resets the game, runs a memory card operation (8) and fades out;
  * returns 1 when done (COM_R_No_1 == 3). */
 #include "types.h"
+#ifndef __MWERKS__
+unsigned char McCardOperation();   /* (declared before its first use) */
+#endif
 
 extern u8 COM_R_No_1;
 extern u8 Disp_back[];
@@ -12,7 +15,11 @@ int func_5B7460();
 int fade_set();
 int func_5B2620();
 int McOperationSet();
+#ifdef __MWERKS__
 int McCardOperation();
+#else
+unsigned char McCardOperation();   /* the real return type (tools/check_kr_returns.py) */
+#endif
 int Fade_busy_ck();
 int func_5B78F0();
 

@@ -3,6 +3,9 @@
 #include "game.h"
 #include "fl.h"
 #include "pl.h"
+#ifndef __MWERKS__
+short act_ck(EMW *, int, int);   /* (declared before its first use) */
+#endif
 
 /* Per-monster work at EMW+0x444. */
 typedef struct EM04W {
@@ -54,7 +57,11 @@ void em_cmd_ck(EMW *);
 u8 Em_Dmg_Sys(EMW *, u8 *);
 void em_mahi_dmg_timer_set(EMW *);
 void em_sleep_dmg_timer_set(EMW *);
+#ifdef __MWERKS__
 int act_ck(EMW *, int, int);
+#else
+short act_ck(EMW *, int, int);   /* the real return type (tools/check_kr_returns.py) */
+#endif
 void Quest_enemy_revival_set(EMW *);
 void em_status_init(EMW *);
 void Quest_enemy_escape(EMW *);

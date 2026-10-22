@@ -1,5 +1,6 @@
 /* Lobby item box UI and plaza chat log (SLPM_654.95 lobby overlay 0x609770-0x60E330). Whole file; runs split into lb_ibNN.c */
 #include "lobby_f.h"
+unsigned char Get_weapon_job();   /* its real return type: was implicitly int (tools/check_kr_returns.py) */
 extern s8 D_39DAD1[16];
 extern s8 D_39DAD0[16];
 extern s16 D_39DAD2[16];
@@ -21,7 +22,7 @@ typedef struct IBS4 { u16 w[2]; } IBS4;
 #define IBID(u, i) (((IBS4 *)(u))[i].w[0x37C / 2])
 #define IBNUM(u, i) (((IBS4 *)(u))[i].w[0x37E / 2])
 extern u8 User_data[];
-int Ud_u_item_stack(u16, u16);
+short Ud_u_item_stack(u16, u16);
 void Menu_select_mv();
 void itembox_cursor_mv();
 void PageSelect();
@@ -43,7 +44,7 @@ void Get_equip_icon_uv();
 int Now_equip_ck();
 int Equip_icon_color_rare();
 int equip_ok_chk();
-int Get_equip_rare();
+unsigned char Get_equip_rare();
 char *Get_equip_name();
 void Lb_put_gold();
 void flfntLocate();

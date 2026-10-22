@@ -22,7 +22,7 @@ void flfntSetSize(int, int);
 void *flAllocMemory(int);
 int load_file_mdl(void *, int);
 int flReleaseMotionSetHandle(int);
-int SoftKeyboard_alive_check(void);
+signed char SoftKeyboard_alive_check(void);
 void se_req(int, int, int);
 void adx_se_set(int, int);
 void all_motion_free(void);

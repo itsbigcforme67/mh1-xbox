@@ -4,7 +4,6 @@
  * escape), the demo state, em04_main (damage system, quest 0x87 special
  * case) and em04_main_sub (mode dispatch). */
 #include "em04.h"
-#include "em_demo_g.h"
 
 typedef struct QUEST_W {
     u8 _pad00[8];
@@ -304,10 +303,11 @@ static void em_demo00(EMW *em) {
     }
 }
 
-#ifdef VERSION_MHG
-/* G 0x5BA840 (G only): demo00 again for G's own event demo (quest 10028), waiting for event flag 0x14 */
+#if defined(VERSION_MHG) && !defined(__MWERKS__)
+/* G game 0x5BA840 (written from the asm; agent D, 21 Oct 2026): act 6/1, quest 10028's scene: em_demo00 with G's
+ * flag 20 */
 static void em_demo01_g(EMW *em) {
-    em->x9E1 = 5;
+    em->x9E1 = 5;           /* (G 0x9D9) */
     em->x40C = 5;
     switch (em->x05) {
     case 0:
@@ -319,7 +319,7 @@ static void em_demo01_g(EMW *em) {
         em->x839 = 0;
         break;
     case 1:
-        if (Event_flag_ck(0x14) == 1) {
+        if (Event_flag_ck(20) == 1) {
             em->x05++;
             em->x01 = 1;
             em04_next_act_set(em);
@@ -334,7 +334,7 @@ static void em_move06(EMW *em) {
     case 0:
         em_demo00(em);
         break;
-#ifdef VERSION_MHG
+#if defined(VERSION_MHG) && !defined(__MWERKS__)
     case 1:
         em_demo01_g(em);
         break;
@@ -415,16 +415,24 @@ void em04_main(EMW *em) {
         em_dur_set(em, 0);
         break;
     }
-    if (quest_w.x08 == QN(0x87, 10005) && em->kind == 5 && em->stg == 0x2A && Event_flag_ck(0xF) == 0) {
-        if (game_w.info_stop == 1 && em->mode != 6) {
-            em04_act_set(em, 6, 0, 1);
-        }
-#ifdef VERSION_MHG
-    } else if (quest_w.x08 == 10028 && em->kind == 5 && em->stg == 0x45 && Event_flag_ck(0x14) == 0) {    /* G only (G 0x5BAC88) */
+#if defined(VERSION_MHG) && !defined(__MWERKS__)
+    /* G game 0x5BAC10 (agent D, 21 Oct 2026): the 0x87 scene is G's 10005; G adds quest 10028's scene (stage 69) */
+    if ((u16)quest_w.x08 == 10028 && em->kind == 5 && em->stg == 69 && Event_flag_ck(20) == 0) {
         if (game_w.info_stop == 1 && em->mode != 6) {
             em04_act_set(em, 6, 1, 1);
         }
+    } else
 #endif
+    if (
+#if defined(VERSION_MHG) && !defined(__MWERKS__)
+        (u16)quest_w.x08 == 10005
+#else
+        quest_w.x08 == 0x87
+#endif
+        && em->kind == 5 && em->stg == 0x2A && Event_flag_ck(0xF) == 0) {
+        if (game_w.info_stop == 1 && em->mode != 6) {
+            em04_act_set(em, 6, 0, 1);
+        }
     } else {
         switch (em->x734) {
         case 3:
