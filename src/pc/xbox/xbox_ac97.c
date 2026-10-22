@@ -16,6 +16,7 @@
  * - init stops both DMA channels and the interrupt from a previous init (SDL's close
  *   calls XAudioInit again), cold-resets the AC-link, resets both bus masters and clears
  *   their status; xbox_ac97_stop() stops the DMA before a quit to the dashboard. */
+#include "xbox_watch.h"
 #include <stdbool.h>
 #include <stdlib.h>
 #include <string.h>
@@ -199,6 +200,7 @@ void xbox_ac97_stop(void)
 
 void XAudioInit(int sampleSizeInBits, int numChannels, XAudioCallback callback, void *data)
 {
+    xbox_watch_mark("audio: AC97 start (XAudioInit)");
     AC97_DEVICE *d = &ac97Device;
     LARGE_INTEGER t;
     KIRQL irql;

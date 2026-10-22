@@ -1111,3 +1111,37 @@ refused, package without MH1_HIDDEN -> passes to graphics start-up, no PLAYER.tx
   address ranges. Run wine uncapped (the game itself stays small), with a scratch WINEPREFIX.
 - A --shot run does not look for data next to the program (`&& !shot` in viewer.c): give the data folder.
 - Icon: neither game has a window / exe icon yet (no .ico, no SDL_SetWindowIcon); nothing to match.
+
+## G GALLERY: event scenes and credits clips (21 Oct 2026)
+- **Event scenes (G sub_main 0x4A91D0).** The gallery's 15 scenes are the training/event quests' first-sight demos:
+  scene table 0x4FD100 {id, frames, descriptor}; the descriptor is one of the in-quest event-demo records (evdemo_g_tbl,
+  game 0x678280: stage, flag, demo camera, monster species, music kind, voice); the quest comes from
+  quest_size_flag_tbl {scene id, omake flag, quest} (first match); page 4's 2nd cell (scene 13) loads m60029.mib
+  (AFS_DATA 0xC6A) first. The PS2 then runs Quest_start, stage_init, round_init(1) and per frame only 0x4A9050 (monsters,
+  bgm_server, wall pass, the demo camera alone 0x1D9B50, light_move, effects, sets, stage) with info_stop (game_w+0x1F5)
+  set: that flag is what makes the monsters take their demo acts. On the PC the host does it (viewer.c gal_scene_*) while
+  the boot tasks wait; the gallery task (omake_g.c gal_scene) asks and waits. The scene ends after frames - 15 (+ the fade)
+  or on START.
+- **The monsters' demos were the real work.** Each emNN_main checks quest number + stage + event flag + info_stop; G
+  kept stages/flags/acts and swapped MH1's quest numbers for its training quests (include/em_demo_g.h lists none, each
+  site uses QN(mh1, g)). G-only demos: em02 kind != 2 on stage 0x58 (13 steps, the crimson dragon's flight), em20 quest
+  10028 (9 steps, a walked route), em15 10046 (7 steps), and "hidden until the flag" demos for em04/em09 (10028), em16
+  (10035, also done on main by the quest lane: main's em01/em16/em27 kept at the merge), em19 (10046). Not done: em03's quest 10008 demo (not in the gallery; the PC em03 has no demo code at all).
+- **Data fixes on the way:** G's per-stage AFS tables have 92 entries (stage 88 = event quest 60029's volcano), the split
+  sized them 88; Demo_cam_tbl has 38 cameras and the lists of 5-9 / 35-37 had no symbol (camera 35/36 crashed
+  point_cam_sub); the credits' page 4/5 first line (s16 500, 80) was taken for a pointer (pc_noptr.txt): page 4 never
+  showed and ROLL03 never started.
+- **Credits clips (G main 0x1E4360 -> 0x1E41D0):** cue list 0x50B678 {page, clip}, AFS00 0x76 + clip, 256 x 224 at the
+  n-th of 0x50B690's places, silent; rt_movie_clip. The cue fires when the last page with something on screen changes;
+  G's logo routine marks its page only when drawn (the PC set it always).
+- **Checking:** tools/test_gallery_g.sh (15 scenes + credits, hidden, ~5 min). PS2 references: tools/g_gallery_ref.sh
+  with TICKS (pictures at the scene's own frame counter, G 0x541E02, read through PINE: PCSX2 runs slower than real time
+  in heavy scenes, so wall-clock videos drift). The first save-state load after PCSX2 starts can fail: retried.
+- **Lessons:** never edit a shell script while a background run of it is still reading it (sh reads as it goes; the
+  run went on with a mix and kept polling a dead emulator while holding the emulator lock). Copy it first.
+- **Where I stopped (21 Oct 2026, paused for memory by the coordinator).** Committed: the gallery work and the merge of
+  main. Partial full_check (stopped at test_online_mcs): rebuild 5 OK, build_pc, build_pc_online, xbox_online,
+  build_pc_mhg and the tests up to test_online_guest all ok, test_gallery_g ok; the G Xbox nv2a build was OK before the
+  merge. Still to do: the rest of full_check; xemu run of one scene on the Xbox build (build/E/xg/run.sh, wrapped in
+  flock, only with > 2.5 GB free and no emulator running); PS2 references at scene ticks for scenes 0, 8, 12, 14 (the
+  first save-state load of a PCSX2 run failed for 0 and 8; tools/g_gallery_ref.sh now retries).

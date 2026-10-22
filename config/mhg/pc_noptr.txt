@@ -37,6 +37,8 @@
 2EDFE4  # mp06_st03_em20_data_def_q +0x4: a byte list
 [sub_main]
 526160  # pf_reward_menu +0: s16 x, y (0x20, 0x28) of the reward screen's receive / end menu: relocated, the menu was drawn off screen (agent A, 21 Oct 2026)
+50A8D0  # gal_staff_lines, staff roll page 4 line 0: s16 x 500, y 80 (taken for 0x5001F4: page 4 never showed and its movie clip never started)
+50A940  # gal_staff_lines, page 5 line 0: s16 x 500, y 80
 5082E8  # hit_se_tbl +0x28: sound numbers
 50BAA8  # bou_sei_tbl +0x378: weapon tree rows (s16 pairs)
 50E478  # bou_sei_tbl +0x2D48: weapon tree rows (s16 pairs)

@@ -12,6 +12,21 @@ obvious workarounds.
 
 ## Open
 
+### G gallery event scenes and credits clips; G's monster event demos (21 Oct 2026, agent E)
+- **Dropped:** the GALLERY's "closed entry" answer for its 15 event scenes (omake_g.c) and the black credits; **now**
+  the host plays the scenes (viewer.c gal_scene_*: the quest's stage and monsters, the event-demo camera, no hunter) and
+  the credits start G's ROLL01..06 clips (rt_movie_clip). **Why:** GB2's open part.
+- **Changed (G):** the monsters' event-demo checks in em04b, em12_nm, em19b, em20_ai_nm compare G's quest numbers
+  (include/em_demo_g.h QN(mh1, g); MH1 unchanged; em01/em16/em27 had the same fix on main from the G quest lane, kept);
+  G-only demo acts added for em02 (kinds != 2, stage 0x58), em04, em09, em15, em19, em20 from G's asm; em02's G branch keys on the kind, not on MH1's quest
+  list. em20_ai_nm read MH1's info_stop address (0x3F360F) in both games: now game_w.info_stop. **Why:** G's in-quest
+  first-sight demos had the camera but the monster did not act (also in quests, not only the gallery).
+- **Changed (G):** G's per-stage tables (92 entries), stage_start_pos and Demo_cam_tbl (38) imported at G's sizes, the
+  unnamed demo camera lists 5-9 / 35-37 imported (config/mhg/pc_data.txt); viewer.c's stage limit 88 -> NSTAGE (92 in
+  G); the credits' page 4/5 first lines kept as numbers (pc_noptr.txt). The staff roll's logo marked its page even off
+  screen (omake_g.c gal_staff_logo, against G's 0x4E8AE0): fixed.
+- **To revert:** the commit "G gallery: event scenes, credits clips ..." on agent-E.
+
 ### Xbox log written through to the disk (21 Oct 2026, agent A)
 - **Changed (MH1 and G, Xbox):** the log files are committed to the disk (fflush + NtFlushBuffersFile) at most every
   0.5 s and on every warning / error, and stderr once a second (was: fflush only, every 3 s, which a crash never wrote

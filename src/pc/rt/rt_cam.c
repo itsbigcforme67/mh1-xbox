@@ -69,6 +69,25 @@ void LoadCameraData(int stage)
     SetCameraData(d);
 }
 
+#ifdef VERSION_MHG
+/* G main 0x1D9B50: the demo camera alone (the GALLERY's event scenes, sub_main 0x4A9050, run it instead of CameraMove):
+ * slot 4 (demo) runs its point camera and its eye, target, roll and angle of view go straight into lpView.
+ * Written from G's asm (agent E, 20 Oct 2026), not byte-checked. */
+void cam_sub_demo(CAMW *cw, CAMS *cs);
+void rt_cam_demo_tick(void)
+{
+    extern CAMW CameraWork;
+    CAMS *cs = &CameraWork.sl[4];
+
+    cam_sub_demo(&CameraWork, cs);
+    memcpy(lpView, cs->eye, sizeof cs->eye);
+    memcpy(lpView + 3, cs->tar, sizeof cs->tar);
+    RollView(cs->roll);
+    SetAngleOfView(cs->fov);
+    View_move();
+}
+#endif
+
 /* ------------------------------------------------------------ host side */
 extern CAMW CameraWork;
 void CameraWorkInit(void);

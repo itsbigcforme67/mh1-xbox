@@ -496,7 +496,8 @@ static void raw_write(const char *s, size_t n)
     if (lfd >= 0)
         _write(lfd, s, (unsigned)n);
 #elif defined(MH1_XBOX)
-    (void)s; (void)n;
+    fwrite(s, 1, n, stderr);            /* stderr is the log file, unbuffered (xbox_log.c); and the UART in xemu */
+    xbox_serial_write(s, (int)n);
 #else
     if (lfd >= 0) {
         ssize_t r = write(lfd, s, n);
@@ -608,7 +609,15 @@ static void install_crash(void)
     signal(SIGABRT, win_abort);
 }
 #elif defined(MH1_XBOX)
-static void install_crash(void) {}
+static void install_crash(void) {}      /* the Xbox's catcher is src/pc/xbox/xbox_watch.c (SEH frame), it calls rt_log_crash */
+/* the crash report (game state, backtrace with the build's symbols, the last log lines) for xbox_watch.c */
+void rt_log_crash(const char *what, void *const *frames, int nf)
+{
+    if (in_crash)
+        return;
+    in_crash = 1;
+    crash_report(what, frames, nf);
+}
 #else
 static char altstack[65536];
 static void sig_handler(int sig, siginfo_t *si, void *uc)

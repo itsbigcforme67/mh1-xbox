@@ -65,6 +65,7 @@ static struct {
     float vol;
     double wall0;
     int dump_n;                 /* RT_MOVIE_DUMP=dir: frames written */
+    int clip, cx, cy, cw, ch;   /* G's credits clips (rt_movie_clip): drawn at (cx, cy), cw x ch, silent */
 } mv;
 
 static double wall_s(void) { return (double)time(NULL); }   /* trace only: whole seconds */
@@ -124,6 +125,36 @@ int movie_start(int no)
         fprintf(stderr, "movie: %d = %s (table %dx%d)\n", no, afs->name[rd32(t)], mv.w, mv.h);
     return 0;
 }
+
+#ifdef VERSION_MHG
+/* G main 0x1E41D0 (the credits, func_001E4360): a clip of the staff roll, AFS00 entry `afs` (ROLL01..06.sfd), drawn
+ * w x h at (x, y) of the 512 x 448 screen over the credits' black, with no sound (the credits' music plays on); a clip
+ * still running is stopped first. The PS2 queues it on its own Sofdec list (movie_add_list); here it replaces any
+ * movie. movie_server / movie_draw run it like a movie; movie_exit ends it. Agent E, 20 Oct 2026. */
+int rt_movie_clip(int afs_no, int x, int y, int w, int h)
+{
+    const fmt_afs *afs = rt_snd_afs00();
+    rt_movie_stop();
+    if (getenv("RT_NOMOVIE") || !afs) {
+        rt_log("credits clip %d not played (%s)", afs_no, getenv("RT_NOMOVIE") ? "RT_NOMOVIE" : "AFS00.AFS not found");
+        return -1;
+    }
+    mv.s = sfd_open(afs, afs_no);
+    if (!mv.s) {
+        rt_warn("credits clip: AFS00 entry %d is not a movie", afs_no);
+        return -1;
+    }
+    mv.no = 100 + afs_no;
+    mv.clip = 1;
+    mv.cx = x;
+    mv.cy = y;
+    mv.cw = w;
+    mv.ch = h;
+    mv.playing = 1;
+    rt_log("credits clip: %s at %d,%d", afs->name[afs_no], x, y);
+    return 0;
+}
+#endif
 
 static void set_volume(void)
 {
@@ -198,7 +229,7 @@ static void audio_feed(void)
 static int audio_driving(void)
 {
     uint64_t c;
-    if (!audio_live() || mv.audio_stalled)
+    if (!audio_live() || mv.audio_stalled || mv.clip)
         return 0;
     c = audio_stream_consumed(AUDIO_STREAM_MOVIE);
     if (c != mv.consumed || audio_stream_free(AUDIO_STREAM_MOVIE) >= AUDIO_RATE - 1) {   /* playing, or nothing queued */
@@ -338,7 +369,11 @@ void movie_draw(void)
     /* f_movie's movie_draw: the picture fills the 512 x 448 screen (the
      * 256-wide texture is stretched 2x); the sp_mh movie (8) is drawn
      * at 512/320 of its own size */
-    if (mv.no == 8) {
+    if (mv.clip) {              /* a credits clip (G): its own place and size, the whole picture */
+        x0 = (float)mv.cx; y0 = (float)mv.cy;
+        x1 = x0 + (float)mv.cw; y1 = y0 + (float)mv.ch;
+        u0 = 0; u1 = (float)mv.tw; v0 = 0; v1 = (float)mv.th;
+    } else if (mv.no == 8) {
         x0 = -1; y0 = 1;
         x1 = x0 + (float)((mv.tw << 9) / 320); y1 = y0 + (float)(mv.th - 1);
         u0 = 0; u1 = (float)mv.tw; v0 = 1; v1 = (float)(mv.th - 1);

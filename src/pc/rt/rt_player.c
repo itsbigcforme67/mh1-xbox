@@ -398,7 +398,7 @@ void rt_player_tick(int no)
         unsigned a = 0;
         float d[4];
         nf = sscanf(getenv("RT_AREA_GO"), "%d,%d,%f,%f,%x", &t, &st, &d[0], &d[2], &a);
-        if (nf >= 2 && aid_tick() == t && st >= 0 && st < 88) {
+        if (nf >= 2 && aid_tick() == t && st >= 0 && st < (rt_ver_mhg() ? 92 : 88)) {
             if (nf < 4) {
                 d[0] = stage_start_pos[st][0];
                 d[2] = stage_start_pos[st][2];

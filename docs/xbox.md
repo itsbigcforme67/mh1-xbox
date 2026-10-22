@@ -696,7 +696,10 @@ folder it was started from (XeImageFileName, src/pc/xbox/xbox_path.h), else the 
 1. gets an address by DHCP (nxdk lwIP), reads the laptop address from its folder's
    `loader.txt`;
 2. POSTs the last game log (`mh1log.txt` in its folder, the game's stderr) to the laptop
-   (`/log?game=mhg`) and deletes it;
+   (`/log?game=mhg`) and deletes it; with it the game's save (`E:\UDATA\<title id>\<save id>\`, POST
+   `/save?game=G`, since 21 Oct 2026), which xbox_serve.py keeps in `build/xbox/saves/<time>-<game>/`;
+   `python3 tools/xbox_save_to_pc.py build/xbox/saves/<that folder>` makes the PC card folder from it
+   (`<folder>/pc_card/BISLPM-...`) and prints the `MH1_SAVE_DIR=... mhview ...` line that plays it on the PC;
 3. compares `GET /version?game=G` with `mh1.ver` / `mhg.ver`; when different downloads
    `GET /mh1.xbe` / `/mhg.xbe` to `mh1.xbe` / `mhg.xbe` in its folder;
 4. starts that game (D: is then the loader's folder, so the game finds D:\data).
@@ -1826,3 +1829,25 @@ set) and before the codec registers line: the codec register read stalled. A pow
   halt / bus master reset 50 ms each). No codec ready after the cold reset: a second, longer (20 ms) cold reset; still
   none: a warning, no codec register is touched, no DMA runs, the game goes on silent.
 Built (both games); not run on hardware or in xemu (a warm relaunch can't be made there anyway).
+
+## Freeze watchdog and crash catcher (agent E, 21 Oct 2026)
+
+src/pc/xbox/xbox_watch.c, started from main once the log is open (both games, every Xbox build).
+
+- **Freeze watchdog.** A second thread checks every 0.5 s whether the game made progress: a drawn frame
+  (xbox_log_frame) or a finished load step (rt_lt_end: a file read, an unpack, a texture). With none for 5 s it
+  writes "FREEZE: ..." and the crash report into the log (mode / step / stage / quest, the last checkpoint passed,
+  the last 300 log lines), commits the log and the save files to the disk, stops the AC97, shows the reason and
+  the log's last lines for 4 s and starts the network loader, which sends the log and the save to the laptop.
+  Known long operations (rt_lt_span_*: a quest start, a gallery scene, ...) get 60 s; in xemu (a UART answers)
+  the limit is always 60 s, because xemu can run far below real time; `RT_WATCHDOG_MS=n` in env.txt sets it
+  (0 = off). Checkpoints (xbox_watch_mark, a string): the boot-screen tick, the game tick, the sound tick, the
+  drawing, the frame end, the card's open / read / write, the AC97 start. The kernel has no call that reads another
+  thread's registers, so a freeze report has no backtrace of the frozen code: the checkpoint and the log tell
+  where.
+- **Crash catcher.** An SEH record at the bottom of the main thread's stack (fs:[0]; the kernel's dispatcher calls
+  it before it would stop the console): the exception code and address (with the symbol from the build's own
+  table), the registers, 16 stack words and a backtrace (stack words that point behind a call), then the same
+  report, flush and screen ("crashed - sending the report") and the loader. Exceptions in other threads (audio,
+  the watchdog) are not caught.
+- Not run on hardware or in xemu yet (21 Oct 2026: no memory for an emulator); both nv2a builds link.
