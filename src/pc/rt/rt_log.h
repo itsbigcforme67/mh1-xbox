@@ -24,6 +24,7 @@ int rt_log_started(void);       /* rt_log_init has run */
 void rt_log(const char *fmt, ...) RT_LOG_PRINTF(1, 2);
 /* a warning (flushed at once) */
 void rt_warn(const char *fmt, ...) RT_LOG_PRINTF(1, 2);
+void rt_log_commit(void);      /* the lines so far to the disk now */
 /* a warning that is written the first time only per key (same key text) */
 void rt_warn_once(const char *key, const char *fmt, ...) RT_LOG_PRINTF(2, 3);
 /* a no-op stand-in function was called: one line the first time per name */

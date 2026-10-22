@@ -26,6 +26,12 @@ int audio_open(void)
 {
     SDL_AudioSpec want, have;
 
+#ifdef XBOX
+#define STEP(s) (rt_log("boot step: %s", s), rt_log_commit())
+#else
+#define STEP(s) ((void)0)
+#endif
+    STEP("SDL audio subsystem");
     if (SDL_InitSubSystem(SDL_INIT_AUDIO) != 0) {
         fprintf(stderr, "audio: %s (running silent)\n", SDL_GetError());
         rt_warn("audio: cannot start the audio subsystem: %s (running silent)", SDL_GetError());
@@ -37,6 +43,7 @@ int audio_open(void)
     want.channels = 2;
     want.samples = 1024;
     want.callback = callback;
+    STEP("SDL audio device open");
     dev = SDL_OpenAudioDevice(NULL, 0, &want, &have, 0);
     if (!dev) {
         fprintf(stderr, "audio: %s (running silent)\n", SDL_GetError());

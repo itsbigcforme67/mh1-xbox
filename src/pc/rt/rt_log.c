@@ -872,3 +872,17 @@ void rt_log_shutdown(void)
     }
     inited = 0;
 }
+
+/* the lines so far through to the disk at once (the Xbox's steps before a possible hang: xbox_ac97.c, audio_sdl.c) */
+void rt_log_commit(void)
+{
+#ifdef MH1_XBOX
+    void xbox_log_commit(FILE *f);
+    xbox_log_commit(stderr);
+    if (lf)
+        xbox_log_commit(lf);
+#else
+    if (lf)
+        fflush(lf);
+#endif
+}

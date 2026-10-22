@@ -865,6 +865,10 @@ int rt_snd_init(const char *disc, int device)
 {
     char path[1024];
     trace = getenv("RT_SND_TRACE") != NULL;
+#ifdef MH1_XBOX     /* boot steps to the disk at once: a warm relaunch hung somewhere here (owner, 21 Oct 2026) */
+    rt_log("boot step: sound archives");
+    rt_log_commit();
+#endif
     snprintf(path, sizeof path, "%s/AFS00.AFS", disc);
     if (fmt_afs_open(&afs00, path) != 0) {
         fprintf(stderr, "snd: no %s: no sound\n", path);
@@ -878,6 +882,10 @@ int rt_snd_init(const char *disc, int device)
         fmt_afs_close(&afs00);
         return -1;
     }
+#ifdef MH1_XBOX
+    rt_log("boot step: audio device");
+    rt_log_commit();
+#endif
     if (device)
         audio_open();
     audio_reset();

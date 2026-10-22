@@ -25,6 +25,10 @@
 
 #define AUDIO_IRQ 6
 /* nForce ACI bus master registers (byte offsets from 0xFEC00000) */
+#define PI_SR    0x106          /* PCM in and mic in: not used, reset so no status of theirs raises the interrupt */
+#define PI_CR    0x10B
+#define MC_SR    0x126
+#define MC_CR    0x12B
 #define PO_BDBAR 0x110          /* PCM out: descriptor list base */
 #define PO_LVI   0x115          /* last valid index */
 #define PO_SR    0x116          /* status: 0 DCH halted, 2 LVBCI, 3 BCIS, 4 FIFOE */
@@ -50,6 +54,7 @@ static bool codec_access;
  * (a read of an absent codec stalled the CPU: the owner's black screen at "ac97 open" after a Back + Start relaunch,
  * 21 Oct 2026, GLOB_STA 00308000) and no DMA runs; the game goes on silent */
 static bool ac97_dead;
+#define STEP(...) (rt_log("ac97: " __VA_ARGS__), rt_log_commit())     /* to the disk at once: a hang leaves the last step */
 
 /* a time-out for the waits on the controller: KeTickCount is in ms */
 static bool past(DWORD t0, DWORD ms) { return KeTickCount - t0 >= ms; }
@@ -75,8 +80,17 @@ static BOOLEAN __stdcall isr(PKINTERRUPT intr, PVOID ctx)
     volatile unsigned char *pb = mmio8();
     unsigned char a = pb[PO_SR] & 0x1C, s = pb[SP_SR] & 0x1C;
     (void)intr; (void)ctx;
-    if (!a && !s)
-        return FALSE;
+    if (!a && !s) {
+        unsigned g = *mmio32(GLOB_STA) & 0xC01;   /* GPI change / codec resume interrupts (write 1 to clear): not ours, but a
+                                                   * level interrupt nobody clears would come back for ever */
+        unsigned char pi = pb[PI_SR] & 0x1C, mc = pb[MC_SR] & 0x1C;
+        if (!g && !pi && !mc)
+            return FALSE;
+        *mmio32(GLOB_STA) = g;
+        pb[PI_SR] = pi;
+        pb[MC_SR] = mc;
+        return TRUE;
+    }
     if (a)
         pb[PO_SR] = a;                  /* write-1-to-clear */
     if (s)
@@ -191,7 +205,14 @@ void XAudioInit(int sampleSizeInBits, int numChannels, XAudioCallback callback, 
     ULONG vector;
     int n = 0;
 
+    STEP("init: GLOB_CNT %08X GLOB_STA %08X PO cr %02X sr %04X SP cr %02X sr %04X", *mmio32(GLOB_CNT), *mmio32(GLOB_STA),
+         mmio8()[PO_CR], *(volatile unsigned short *)(mmio8() + PO_SR), mmio8()[SP_CR], *(volatile unsigned short *)(mmio8() + SP_SR));
     xbox_ac97_stop();
+    bm_reset(PI_CR, PI_SR);
+    bm_reset(MC_CR, MC_SR);
+    *mmio32(GLOB_CNT) &= ~1u;           /* GIE off: no GPI / resume interrupts (a previous program may have left it on) */
+    *mmio32(GLOB_STA) = 0xC01;          /* their status cleared */
+    STEP("init: previous DMA stopped");
     if (dpc_ready)
         KeRemoveQueueDpc(&dpc_obj);
     done_pending = 0;
@@ -205,6 +226,7 @@ void XAudioInit(int sampleSizeInBits, int numChannels, XAudioCallback callback, 
     memset((void *)d->pcmOutDescriptor, 0, sizeof d->pcmOutDescriptor);
     memset((void *)d->pcmSpdifDescriptor, 0, sizeof d->pcmSpdifDescriptor);
 
+    STEP("init: AC-link cold reset");
     /* AC-link cold reset, then up to 250 ms for the codec; once more with a longer reset if it did not answer */
     for (n = 0; n < 2; n++) {
         DWORD t0;
@@ -224,9 +246,12 @@ void XAudioInit(int sampleSizeInBits, int numChannels, XAudioCallback callback, 
     }
     ac97_dead = (*mmio32(GLOB_CNT) & 2) && !(*mmio32(GLOB_STA) & 0x100);
 
+    *mmio32(GLOB_STA) = 0xC01;          /* the reset's resume interrupt status */
     codec_access = !ac97_dead && (*mmio32(GLOB_CNT) & 2) && !getenv("RT_AC97_NOCODEC");
+    STEP("init: codec %s (GLOB_STA %08X)", ac97_dead ? "absent" : codec_access ? "ready, setting up" : "not accessed", *mmio32(GLOB_STA));
     if (codec_access)
         codec_setup();
+    STEP("init: bus masters");
     if (!bm_reset(PO_CR, PO_SR) || !bm_reset(SP_CR, SP_SR)) {
         rt_warn("ac97: a bus master did not leave reset: audio off for this run");
         ac97_dead = true;
@@ -240,9 +265,11 @@ void XAudioInit(int sampleSizeInBits, int numChannels, XAudioCallback callback, 
     dpc_ready = true;
     KeInitializeInterrupt(&irq_obj, isr, NULL, vector, irql, LevelSensitive, FALSE);
     if (callback && !ac97_dead) {       /* (SDL's close calls this with none: stay stopped) */
+        STEP("init: interrupt %lu connect", (unsigned long)vector);
         KeConnectInterrupt(&irq_obj);
         irq_connected = true;
         XAudioPause();
+        STEP("init: done");
     }
 }
 
