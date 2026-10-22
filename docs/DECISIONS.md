@@ -318,3 +318,11 @@ Owner to decide.
   (`RT_FPU_PS2=0` keeps the old behaviour for comparison).
 - The PS2 quest clock runs during area loads; the port loads almost instantly, so players get a few seconds more per
   quest. Decided: leave it (a side effect of faster loading, not a change to the game's rules).
+
+### Idea (owner, 21 Oct 2026): all three side by side on real hardware, synced
+Run the real PS2 (own disc), the real Xbox (our port) and the PC port side by side with the same scripted input, to see
+on real hardware what still differs (the referee does this with PCSX2). Input: the owner's PadLink (PS2 pad emulator,
+PAD LINK/) and Xbox pad dongle (MULTI KM/xboxpad/) replay one script into each console, the PC takes --input. Start:
+the same save and quest, from power-on (no memory pokes on a real PS2). Video: capture both consoles (the capture card
+used before for the Xbox), make a side-by-side and a per-frame difference to find the first divergence. Later, after the
+current Xbox bug round.
