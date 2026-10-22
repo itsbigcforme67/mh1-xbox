@@ -34,6 +34,7 @@ static void log_path_from_xbe(void)
  * data "MH1X" so it only sends this log and goes on to the dashboard (src/pc/xbox/loader/main.c). An XBE
  * that is itself default.xbe (installed by hand, or xemu's DVD) goes straight to the dashboard. */
 void mc_xbox_flush_all(void);
+void xbox_ac97_stop(void);
 static void xbox_leave(void)
 {
     static unsigned char ld[3072] = "MH1X";     /* LAUNCH_DATA_PAGE.LaunchData (XLaunchXBEEx copies 3072 bytes) */
@@ -99,6 +100,7 @@ static void xbox_log_show(void)
     FILE *f;
 
     mc_xbox_flush_all();        /* a save file still open: through to the disk before the console moves on */
+    xbox_ac97_stop();           /* every way out (also main's normal end): the AC97 idle for the next program */
     fflush(stdout);
     fflush(stderr);
     if ((f = fopen(XBOX_LOG, "r")) != NULL) {
