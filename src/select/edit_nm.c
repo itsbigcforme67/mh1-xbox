@@ -45,6 +45,14 @@ void char_make_init(void) {
 typedef struct { u8 _p[0x24]; s8 name[0x12]; } UDC_SRC;
 typedef struct { u8 _p[8]; s8 name[0x12]; } UDC_DST;
 
+/* the last chosen hunter slot: option_w + 0xFCE after MH1's three 0x480-byte slots; G 0x2C50 (select 0x548CEC
+ * / 0x549128, after its three 0xE00-byte slots); MH1's place is inside G's slot 1 */
+#ifdef VERSION_MHG
+#define OPT_LAST 0x2C50
+#else
+#define OPT_LAST 0xFCE
+#endif
+
 void user_data_copy(UDC_SRC *src, u8 slot) {
     UDC_DST *dst;
     s16 i;
@@ -54,6 +62,37 @@ void user_data_copy(UDC_SRC *src, u8 slot) {
         dst = (UDC_DST *)(option_w + slot * UD_SLOT + 0x10);
     }
     flMemset(dst, 0, UD_SLOT);
+#ifdef VERSION_MHG
+    /* G select 0x544870: its own field places in the 0xE00-byte hunter (MH1's 0x3D7 / 0x457.. / 0x3ED / 0x37B landed in
+     * other fields of G's layout) */
+    B8(dst, 0) = 1;
+    B8(dst, 1) = B8(src, 4);
+    B8(dst, 2) = B8(src, 5);
+    B8(dst, 0xC7F) = B8(src, 6);
+    B8(dst, 3) = B8(src, 7);
+    B32(dst, 4) = B32(src, 8);
+    for (i = 0; i < 0x12; i++) {
+        dst->name[i] = src->name[i];
+    }
+    BS16(dst, 0x1A) = 0x7D00;
+    B32(dst, 0x20) = 0;
+    BS16(dst, 0xD00) = -1;
+    BS16(dst, 0xD02) = -1;
+    BS16(dst, 0xD04) = -1;
+    BS16(dst, 0xD06) = -1;
+    BS16(dst, 0xD08) = -1;
+    BS8(dst, 0xC95) = 1;
+    B32(dst, 0x1C) = 0;
+    B8(dst, 0xC23) = 0;
+    Warehouse_equip(dst, (u16)Warehouse_equip_stack(dst, 6, 0x9C, 0));
+    Set_equip_idx(dst);
+    BS8(dst, 0xC23) = Get_hunter_rank(dst);
+    {   /* G main 0x12AE80: a random u16 (it also copies a gp word to 0x32CF1A, not modelled here) */
+        int ran_suu();
+        BS16(dst, 0xD0A) = (s16)(ran_suu(2) & 0xFFFF);
+    }
+    return;
+#endif
     B8(dst, 0) = 1;
     B8(dst, 1) = B8(src, 4);
     B8(dst, 2) = B8(src, 5);
@@ -1788,8 +1827,8 @@ void Cont_task(STASK *t) {
                     pl->x01 = 0;
                 }
             }
-            if (option_w[option_w[0xFCE] * UD_SLOT + 0x10] != 0) {
-                e->x0[1] = option_w[0xFCE];
+            if (option_w[option_w[OPT_LAST] * UD_SLOT + 0x10] != 0) {
+                e->x0[1] = option_w[OPT_LAST];
             }
             ed_view_set(&player_work[e->x0[1]], 0, 0);
             com_motion_load(2);
@@ -1870,7 +1909,7 @@ void Cont_task(STASK *t) {
         if ((Psw[2] & 0x20) && e->x0[3] == 0) {
             t->step++;
             ed_decide_se();
-            B8(option_w, 0xFCE) = e->x0[1];
+            B8(option_w, OPT_LAST) = e->x0[1];
             pl = &player_work[e->x0[1]];
             ed_view_set(pl, 2, 1);
             pl->ang[1] = 0;
