@@ -856,6 +856,17 @@ u8 Pl_slash_lv_ck(PLW *pl) {
         return 0;
     }
     cur = pl->work87E;
+#ifdef VERSION_MHG
+    {   /* G sub_main 0x4CCAB0: six sharpness levels, rows of 6 shorts (5 band ends); MH1's 4-level, 8-byte rows read
+         * the wrong row and capped the level at 3 (owner, Xbox: a full blade at quest start looked low, 21 Oct 2026) */
+        int i;
+        t = (s16 *)((u8 *)Pl_slash_tbl[k] + Ken_data[pl->wpn_kind][2] * 12);
+        for (i = 0; i < 5; i++)
+            if (t[i] >= cur)
+                return (u8)i;
+        return 5;
+    }
+#endif
     t = (s16 *)((u8 *)Pl_slash_tbl[k] + Ken_data[pl->wpn_kind][2] * 8);
     if (t[0] >= cur) {
         return 0;
