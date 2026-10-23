@@ -7,7 +7,11 @@ s32 font_set_stack_no();
 extern u8 pNet;
 s32 Disp_FriendListEntry();          /* extern */
 s32 Lb_PlayerStatus();           /* extern */
+#ifdef __MWERKS__
 s32 SoftKeyboard_alive_check();                     /* extern */
+#else
+signed char SoftKeyboard_alive_check();                     /* extern */   /* the real return type (tools/check_kr_returns.py) */
+#endif
 extern s32 lb_player;
 
 void Lb_pl_status_t(void *arg0) {

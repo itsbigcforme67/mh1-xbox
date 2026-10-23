@@ -5,7 +5,11 @@
 
 s32 ChatKinsoku_chk();
 s32 Lb_send_chat();
+#ifdef __MWERKS__
 s32 SoftKeyboard_move();
+#else
+signed char SoftKeyboard_move();   /* the real return type (tools/check_kr_returns.py) */
+#endif
 extern u8 Psw;
 extern u8 game_w;
 s32 Plaza_chatlog_i();                          /* extern */

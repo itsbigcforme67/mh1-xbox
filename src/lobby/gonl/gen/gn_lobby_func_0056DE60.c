@@ -5,7 +5,11 @@
 
 s32 Eft25_set();
 s32 Get_sw();
+#ifdef __MWERKS__
 s32 Get_sw_on2();
+#else
+unsigned short Get_sw_on2();   /* the real return type (tools/check_kr_returns.py) */
+#endif
 s32 Lb_cursorUD();
 s32 SetDialogData();
 s32 SetDialogYesNo();

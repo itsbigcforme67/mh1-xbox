@@ -3,8 +3,16 @@
  * tools/build_pc_mhg.sh). */
 #include "../gonl.h"
 
+#ifdef __MWERKS__
 s32 Get_sw2();
+#else
+unsigned short Get_sw2();   /* the real return type (tools/check_kr_returns.py) */
+#endif
+#ifdef __MWERKS__
 s32 Get_sw_on2();
+#else
+unsigned short Get_sw_on2();   /* the real return type (tools/check_kr_returns.py) */
+#endif
 s32 Lb_cursorUD();
 s32 Lb_select();
 s32 Plaza_log_id_chk();

@@ -4,7 +4,11 @@
 #include "../gonl.h"
 
 s32 lobby_func_00559C30();
+#ifdef __MWERKS__
 s32 Lb_get_quest_type();                         /* extern */
+#else
+signed char Lb_get_quest_type();                         /* extern */   /* the real return type (tools/check_kr_returns.py) */
+#endif
 extern u16 lb_quest_font_color;
 
 s16 lobby_func_00559E20(s32 arg0, s32 arg1, s32 arg2, s32 arg3) {

@@ -12,7 +12,11 @@ s32 fade_set();
 s32 lobby_func_0058BAA0();
 void * memcpy();
 void * memset();
+#ifdef __MWERKS__
 s32 net_SetMenu_SelectHandleName();
+#else
+signed char net_SetMenu_SelectHandleName();   /* the real return type (tools/check_kr_returns.py) */
+#endif
 extern u8 g_main_2EF2A8;
 extern u8 CnetWork;
 extern u8 User_data;

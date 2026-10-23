@@ -3,7 +3,11 @@
  * tools/build_pc_mhg.sh). */
 #include "../gonl.h"
 
+#ifdef __MWERKS__
 s32 Get_weapon_job();
+#else
+unsigned char Get_weapon_job();   /* the real return type (tools/check_kr_returns.py) */
+#endif
 s32 Lb_put_job();
 s32 flfntSetSize();
 s32 font_print_double();

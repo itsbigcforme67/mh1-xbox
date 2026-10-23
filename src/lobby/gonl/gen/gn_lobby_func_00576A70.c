@@ -9,7 +9,11 @@ s32 flfntSetSize();
 s32 font_print_double();
 s32 font_set_palette();
 s32 han2zen();
+#ifdef __MWERKS__
 s32 lobby_func_00559E20();
+#else
+short lobby_func_00559E20();   /* the real return type (tools/check_kr_returns.py) */
+#endif
 void * lobby_func_00559EB0();
 s32 lobby_func_00559FF0();
 s32 lobby_func_005737C0();

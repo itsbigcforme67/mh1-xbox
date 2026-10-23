@@ -3,7 +3,11 @@
  * tools/build_pc_mhg.sh). */
 #include "../gonl.h"
 
+#ifdef __MWERKS__
 s32 Get_weapon_id();
+#else
+unsigned char Get_weapon_id();   /* the real return type (tools/check_kr_returns.py) */
+#endif
 void * memcpy();
 extern u8 Battle_type;
 extern u8 player_work;

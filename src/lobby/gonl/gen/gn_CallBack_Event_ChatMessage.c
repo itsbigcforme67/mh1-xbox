@@ -9,7 +9,11 @@ extern u8 *cw;
 s32 Lb_chat_receipt();
 s32 Plaza_chat_log_add();
 s32 cnLBS_Get_ChatMessage();
+#ifdef __MWERKS__
 s32 get_font_col();
+#else
+unsigned char get_font_col();   /* the real return type (tools/check_kr_returns.py) */
+#endif
 s32 lobby_func_005C1560();
 
 void CallBack_Event_ChatMessage(void)

@@ -5,7 +5,11 @@
 
 s32 CallBack_Result_LoginTopInformation();
 s32 Check_CallBackWait();
+#ifdef __MWERKS__
 s32 Get_sw2();
+#else
+unsigned short Get_sw2();   /* the real return type (tools/check_kr_returns.py) */
+#endif
 s32 Lb_eat_to_bell();
 s32 Lbc_set_prim();
 s32 SetDialogData();

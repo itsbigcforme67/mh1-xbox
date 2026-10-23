@@ -5,7 +5,11 @@
 
 s32 CallBack_Result_Plaza_LobbyEntry();
 s32 Eft25_set();
+#ifdef __MWERKS__
 s32 Get_sw_on2();
+#else
+unsigned short Get_sw_on2();   /* the real return type (tools/check_kr_returns.py) */
+#endif
 s32 Lb_eat_to_bell();
 s32 Lb_select();
 s32 Lbs_SeekId();
@@ -39,7 +43,11 @@ extern u8 pNet;
 extern u8 tl_member_buff;
 s32 Lbc_RequestNetComment();              /* extern */
 s32 SaveNetFile_ForLobby();                       /* extern */
+#ifdef __MWERKS__
 s32 SoftKeyboard_alive_check();                     /* extern */
+#else
+signed char SoftKeyboard_alive_check();                     /* extern */   /* the real return type (tools/check_kr_returns.py) */
+#endif
 s16 net_Check_FriendSuu();        /* extern */
 s32 net_Delete_FriendData(); /* extern */
 extern u8 g_main_302CB0;

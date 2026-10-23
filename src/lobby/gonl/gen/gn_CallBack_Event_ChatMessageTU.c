@@ -7,7 +7,11 @@ extern u8 chat_cnfg_font_color[];
 s32 Lb_chat_receipt();
 s32 Plaza_chat_log_add();
 s32 cnLBS_Get_ChatMessage();
+#ifdef __MWERKS__
 s32 get_font_col();
+#else
+unsigned char get_font_col();   /* the real return type (tools/check_kr_returns.py) */
+#endif
 
 void CallBack_Event_ChatMessageTU(void)
 {

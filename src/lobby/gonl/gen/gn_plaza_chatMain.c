@@ -4,7 +4,11 @@
 #include "../gonl.h"
 
 s32 Get_sw();
+#ifdef __MWERKS__
 s32 Get_sw_on2();
+#else
+unsigned short Get_sw_on2();   /* the real return type (tools/check_kr_returns.py) */
+#endif
 s32 Plaza_chat_move();
 extern u8 Psw;
 extern u8 pNet;

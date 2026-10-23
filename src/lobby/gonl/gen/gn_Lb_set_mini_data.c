@@ -3,7 +3,11 @@
  * tools/build_pc_mhg.sh). */
 #include "../gonl.h"
 
+#ifdef __MWERKS__
 s32 Get_weapon_job();
+#else
+unsigned char Get_weapon_job();   /* the real return type (tools/check_kr_returns.py) */
+#endif
 void * memcpy();
 extern u8 g_main_2EF2A8;
 extern u8 User_data;

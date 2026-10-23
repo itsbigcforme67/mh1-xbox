@@ -9,7 +9,11 @@ s32 lb_key_quest_ck();
 s32 lobby_func_005434A0();
 s32 lobby_func_00543520();
 s32 lobby_func_005438F0();
+#ifdef __MWERKS__
 s32 lobby_func_0055EB40();
+#else
+unsigned short lobby_func_0055EB40();   /* the real return type (tools/check_kr_returns.py) */
+#endif
 s32 lobby_func_0055FA20();
 extern u8 g_main_2EFA68;
 extern u8 g_main_2EFA6C;
@@ -18,7 +22,11 @@ extern u8 g_main_2EFA6C;
 extern u8 guildStr;
 s32 Quest_clear_bit_ck();                        /* extern */
 u16 get_flag_quest();                            /* extern */
+#ifdef __MWERKS__
 s32 get_new_quest();                    /* extern */
+#else
+unsigned char get_new_quest();                    /* extern */   /* the real return type (tools/check_kr_returns.py) */
+#endif
 s32 memset();             /* extern */
 s32 ran_suu();                               /* extern */
 extern u16 lb_quest_all;

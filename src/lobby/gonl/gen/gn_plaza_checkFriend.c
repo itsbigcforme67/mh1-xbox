@@ -20,7 +20,11 @@ extern u8 cw;
 extern u8 g_main_2EFBAC;
 extern u8 pNet;
 extern u8 tl_member_buff;
+#ifdef __MWERKS__
 s32 SoftKeyboard_alive_check();                     /* extern */
+#else
+signed char SoftKeyboard_alive_check();                     /* extern */   /* the real return type (tools/check_kr_returns.py) */
+#endif
 extern s8 g_lb_653A50;
 extern u8 RecvMailInfo;
 

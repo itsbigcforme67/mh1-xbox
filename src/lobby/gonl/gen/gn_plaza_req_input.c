@@ -4,7 +4,11 @@
 #include "../gonl.h"
 
 s32 Get_sw();
+#ifdef __MWERKS__
 s32 SoftKeyboard_move();
+#else
+signed char SoftKeyboard_move();   /* the real return type (tools/check_kr_returns.py) */
+#endif
 s32 cnWrap_SoundRequest();
 s32 func_00220F40();
 extern u8 Psw;

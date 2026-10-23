@@ -3,7 +3,11 @@
  * tools/build_pc_mhg.sh). */
 #include "../gonl.h"
 
+#ifdef __MWERKS__
 s32 Get_sw2();
+#else
+unsigned short Get_sw2();   /* the real return type (tools/check_kr_returns.py) */
+#endif
 s32 Lb_eat_to_bell();
 void * Lb_get_quest_str();
 s32 Lb_set_mini_data();
@@ -30,7 +34,11 @@ extern u8 npc_dialog_table;
 extern u8 pNet;
 extern u8 quest_price;
 extern u8 select_w;
+#ifdef __MWERKS__
 s32 Lb_get_quest_type();                         /* extern */
+#else
+signed char Lb_get_quest_type();                         /* extern */   /* the real return type (tools/check_kr_returns.py) */
+#endif
 s32 Lb_menu_quest_info();                    /* extern */
 s32 Lb_put_set01();                      /* extern */
 s64 Lb_talk_check_default();                 /* extern */

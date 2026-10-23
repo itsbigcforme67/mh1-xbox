@@ -19,7 +19,11 @@ extern u8 cw;
 extern u8 jtbl_0063E490;
 extern u8 pNet;
 s32 Fade_busy_ck();    /* extern */
+#ifdef __MWERKS__
 s32 McCardOperation();    /* extern */
+#else
+unsigned char McCardOperation();    /* extern */   /* the real return type (tools/check_kr_returns.py) */
+#endif
 s32 Q_camera_init();                            /* extern */
 s32 cnLBS_Send_LoginFinish(); /* extern */
 s32 cnLBS_Send_UserMiniData(); /* extern */

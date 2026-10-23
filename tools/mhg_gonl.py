@@ -694,6 +694,9 @@ def main():
         open(path, 'w').write(HEADER % (G_RENAME.get(n, n), gaddr(n)) + d)
     if NEW_NAMES:
         write_names(NEW_NAMES)
+    # m2c declares every unknown callee s32: give a char / short / float one its real return type (the Xbox clang reads
+    # the whole return register; tools/check_kr_returns.py, which full_check runs)
+    subprocess.run([sys.executable, os.path.join(ROOT, 'tools/check_kr_returns.py'), '--fix'], cwd=ROOT)
     print('%d functions, %d by hand (%s), %d new names' % (len(names), len(bad), ' '.join(bad), len(NEW_NAMES)))
 
 

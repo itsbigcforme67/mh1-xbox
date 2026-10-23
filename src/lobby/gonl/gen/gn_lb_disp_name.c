@@ -3,7 +3,11 @@
  * tools/build_pc_mhg.sh). */
 #include "../gonl.h"
 
+#ifdef __MWERKS__
 s32 Get_weapon_job();
+#else
+unsigned char Get_weapon_job();   /* the real return type (tools/check_kr_returns.py) */
+#endif
 s32 Lb_Pl_stg_ck();
 s32 Lb_put_icon_free();
 s32 Lb_put_job();
@@ -28,7 +32,11 @@ extern u8 cw;
 extern u8 game_w;
 s32 Lb_get_pl_stat2();                           /* extern */
 s32 Online_ck();                                    /* extern */
+#ifdef __MWERKS__
 s32 SoftKeyboard_alive_check();                  /* extern */
+#else
+signed char SoftKeyboard_alive_check();                  /* extern */   /* the real return type (tools/check_kr_returns.py) */
+#endif
 extern s32 lbCommer;
 extern s32 lb_quest_color_tbl;
 extern s32 lb_sys;

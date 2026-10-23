@@ -3,7 +3,11 @@
  * tools/build_pc_mhg.sh). */
 #include "../gonl.h"
 
+#ifdef __MWERKS__
 s32 Get_sw2();
+#else
+unsigned short Get_sw2();   /* the real return type (tools/check_kr_returns.py) */
+#endif
 s32 cnWrap_SoundRequest();
 extern u8 g_main_2EFABC;
 extern u8 g_main_2EFABC;
@@ -11,7 +15,11 @@ extern u8 lb_board_exp;
 extern u8 lb_sys;
 extern u8 pNet;
 s32 Lb_put_set01();                  /* extern */
+#ifdef __MWERKS__
 s32 Lbs_GetClassAdd();                          /* extern */
+#else
+unsigned short Lbs_GetClassAdd();                          /* extern */   /* the real return type (tools/check_kr_returns.py) */
+#endif
 void *Lbs_GetRoomInfo();                      /* extern */
 s32 lb_select_set_data();                    /* extern */
 s32 sprintf(); /* extern */

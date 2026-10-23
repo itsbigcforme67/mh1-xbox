@@ -6,7 +6,11 @@
 s32 DispFrameMessage();
 s32 DispHelpLine();
 s32 DispSceneTitle();
+#ifdef __MWERKS__
 s32 Get_sw2();
+#else
+unsigned short Get_sw2();   /* the real return type (tools/check_kr_returns.py) */
+#endif
 s32 Put_2TF();
 s32 SetFilterMode();
 s32 SetTextureStage();

@@ -5,7 +5,11 @@
 
 s32 SetTextureStage();
 s32 flfntSetSize();
+#ifdef __MWERKS__
 s32 func_0012D000();
+#else
+unsigned short func_0012D000();   /* the real return type (tools/check_kr_returns.py) */
+#endif
 s32 lobby_func_005A0E80();
 s32 put_button_help();
 s32 reload_tex();

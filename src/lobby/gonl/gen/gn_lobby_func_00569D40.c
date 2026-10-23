@@ -3,8 +3,16 @@
  * tools/build_pc_mhg.sh). */
 #include "../gonl.h"
 
+#ifdef __MWERKS__
 s32 Get_sw2();
+#else
+unsigned short Get_sw2();   /* the real return type (tools/check_kr_returns.py) */
+#endif
+#ifdef __MWERKS__
 s32 Get_sw_on2();
+#else
+unsigned short Get_sw_on2();   /* the real return type (tools/check_kr_returns.py) */
+#endif
 s32 Lb_eat_to_bell();
 s32 Lb_select();
 s32 Lbs_GetLobbyMemberList();
@@ -14,7 +22,11 @@ s32 lb_chatMemberCheck();
 s32 lbc_in_plaza_03();
 s64 lobby_func_00569320();
 s64 lobby_func_00569390();
+#ifdef __MWERKS__
 s32 lobby_func_00569C20();
+#else
+unsigned char lobby_func_00569C20();   /* the real return type (tools/check_kr_returns.py) */
+#endif
 s32 lobby_func_00569D00();
 s32 lobby_func_0056A810();
 s32 lobby_func_0056A850();
