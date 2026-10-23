@@ -95,6 +95,10 @@ always been a struct field type or a lost field.
 
 ## Current assignments (update when they change)
 
+### Running, 23 Oct 2026 evening
+- agent C (Opus): merge main into agent-C, pass test_online_g.sh + TWO=1, then G rooms/hunt; full check. No emulators.
+- agent B (Sonnet): G gaps GN8 (set19 tables), GN12 (pause menu pages), GM4 (chat/NPC strings), GM5 (sprite sort). No emulators.
+
 ### Hand-over, 23 Oct 2026 (start here)
 Main = GitHub (all pushed, full check passes). No agent running. Agent branches A, B, D, E fully merged.
 - **Unmerged: agent-C (G online), 30 WIP commits ahead of main**, not full-checked: the PC G online build reaches G's
