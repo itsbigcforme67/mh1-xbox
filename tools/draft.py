@@ -149,6 +149,10 @@ def main():
         body, jt = jump_tables(args.module, bl[name][1])
         if args.module.startswith("mhg/lobby"):
             body = inline_leaves(body)
+        if args.module.startswith("mhg/"):
+            # G's split writes the EE's cvt.w.s (float to int, truncating) as a .word with the instruction in a comment;
+            # m2c then passed the float's bits on (an unset $f0, or M2C_BITWISE of the float): give it the instruction
+            body = re.sub(r"\.word\s+0x[0-9A-Fa-f]+\s+#\s+(cvt\.w\.s\s+\$f\d+,\s*\$f\d+)[^\n]*", r"\1", body)
         with tempfile.NamedTemporaryFile("w", suffix=".s", delete=False) as t:
             t.write('.include "macro.inc"\n.set noat\n.set noreorder\n'
                     '.section .text, "ax"\n\n' + named_regs(body) + jt)

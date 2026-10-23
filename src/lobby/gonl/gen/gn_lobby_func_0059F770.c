@@ -79,8 +79,8 @@ void lobby_func_0059F770(void) {
             } while (temp_s0 >= var_v0);
         }
         spE4 -= var_v0 - temp_s0;
-        spE4 = M2C_BITWISE(s16, (0.8f * (f32) spE4));
-        spF2 = spEE + (((s16) (M2C_BITWISE(s64, (0.025f * ((f32) spE4 * (f32) ((*(s16 *)((u8 *)(&(*(u8 *)((u8 *)&helpLineTbl + 0x3C))) + 0x12)) - (*(s16 *)((u8 *)(&(*(u8 *)((u8 *)&helpLineTbl + 0x3C))) + 0xE)))))))));
+        spE4 = (s16) (s32) (0.8f * (f32) spE4);
+        spF2 = spEE + (((s16) ((s32) (s32) (0.025f * ((f32) spE4 * (f32) ((*(s16 *)((u8 *)(&(*(u8 *)((u8 *)&helpLineTbl + 0x3C))) + 0x12)) - (*(s16 *)((u8 *)(&(*(u8 *)((u8 *)&helpLineTbl + 0x3C))) + 0xE))))))));
         Put_sprite_rotate(&spE0, 2);
         var_s7 = ((s16) ((var_s7 + 1)));
         (*(s16 *)((u8 *)(&(*(u8 *)((u8 *)&helpLineTbl + 0x3C))) + 2)) = temp_fp;
@@ -106,7 +106,7 @@ void lobby_func_0059F770(void) {
             } while (var_a0 < temp_s1);
         }
         spE6 -= var_a0 - temp_s1;
-        spF2 = spEE + (((s16) (M2C_BITWISE(s64, (0.025f * ((f32) spE6 * (f32) ((*(s16 *)((u8 *)(&(*(u8 *)((u8 *)&helpLineTbl + 0x64))) + 0x12)) - (*(s16 *)((u8 *)(&(*(u8 *)((u8 *)&helpLineTbl + 0x64))) + 0xE)))))))));
+        spF2 = spEE + (((s16) ((s32) (s32) (0.025f * ((f32) spE6 * (f32) ((*(s16 *)((u8 *)(&(*(u8 *)((u8 *)&helpLineTbl + 0x64))) + 0x12)) - (*(s16 *)((u8 *)(&(*(u8 *)((u8 *)&helpLineTbl + 0x64))) + 0xE))))))));
         Put_2TF(&spE0);
         (*(s16 *)((u8 *)(&(*(u8 *)((u8 *)&helpLineTbl + 0x64))) + 0)) = (s16) spD0;
         var_s5 = ((s16) ((var_s5 + 1)));

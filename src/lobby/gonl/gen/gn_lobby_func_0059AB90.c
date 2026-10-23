@@ -16,10 +16,12 @@ void lobby_func_0059AB90(void *arg0, s32 arg1, s32 arg2, s32 arg3) {
 #define sp36 (*(u8 *)(g_frame + 0x36))
 #define sp37 (*(u8 *)(g_frame + 0x37))
 #define sp38 (*(u8 *)(g_frame + 0x38))
+    f32 temp_f2;
 
-    if (((*(f32 *)((u8 *)(arg0) + 0xAC)) != 0.0f) || ((*(f32 *)((u8 *)(arg0) + 0xB0)) != 0.0f) || ((*(f32 *)((u8 *)(arg0) + 0xB4)) != 0.0f)) {
-        sp30 = M2C_ERROR(/* Read from unset register $f0 */);
-        sp32 = M2C_BITWISE(s16, (*(f32 *)((u8 *)(arg0) + 0xB4)));
+    temp_f2 = (*(f32 *)((u8 *)(arg0) + 0xAC));
+    if ((temp_f2 != 0.0f) || ((*(f32 *)((u8 *)(arg0) + 0xB0)) != 0.0f) || ((*(f32 *)((u8 *)(arg0) + 0xB4)) != 0.0f)) {
+        sp30 = (s16) (s32) temp_f2;
+        sp32 = (s16) (s32) (*(f32 *)((u8 *)(arg0) + 0xB4));
         sp36 = (*(u8 *)((u8 *)(arg0) + 0x14));
         sp37 = (*(u8 *)((u8 *)(arg0) + 0x15));
         sp34 = ((s32) (*(u16 *)((u8 *)(arg0) + 0xE)) >> 8) & 0xFFFF;

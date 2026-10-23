@@ -25,7 +25,7 @@ void Lb_put_icon_free2(s32 arg0, s16 arg1, s16 arg2, s32 arg3, s32 arg4) {
         temp_a3 = (u8 *)&lb_icon_tbl + (temp_a4 * 8);
         sp14 = arg2;
         sp16 = arg2;
-        sp10 = M2C_BITWISE(s16, (0.8f * (f32) arg0));
+        sp10 = (s16) (s32) (0.8f * (f32) arg0);
         (*(s16 *)((u8 *)(&sp1C) + 0)) = (s16) (*(s16 *)((u8 *)(temp_a3) + 0));
         (*(s16 *)((u8 *)(&sp1C) + 2)) = (s16) (*(s16 *)((u8 *)(temp_a3) + 2));
         (*(s16 *)((u8 *)(&sp20) + 0)) = (s16) (*(s16 *)((u8 *)(temp_a3) + 4));

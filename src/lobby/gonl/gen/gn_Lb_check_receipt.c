@@ -39,7 +39,7 @@ void Lb_check_receipt(s32 arg0, void *arg1) {
     temp_s0 = (*(u8 *)((u8 *)(arg1) + 0));
     temp_s1 = arg1 + 1;
     if ((*(u8 *)((u8 *)((*(void **)&cw)) + 0xFA61)) != 0) {
-        var_a0 = Lb_get_plID() & 0xFF;
+        var_a0 = Lb_get_plID(arg0) & 0xFF;
         if (var_a0 == 0xFF) {
             return;
         }

@@ -9,8 +9,8 @@ void Lb_send_pl_warp(void *arg0, s32 unused_a1, s32 unused_a2, s32 arg3) {
 #define sp18 (*(s16 *)(g_frame + 0x18))
 #define sp1A (*(s16 *)(g_frame + 0x1A))
 
-    sp18 = (s16) (*(f32 *)((u8 *)(arg0) + 0xAC));
-    sp1A = (s16) (*(f32 *)((u8 *)(arg0) + 0xB4));
+    sp18 = (s16) (s32) (*(f32 *)((u8 *)(arg0) + 0xAC));
+    sp1A = (s16) (s32) (*(f32 *)((u8 *)(arg0) + 0xB4));
     lb_send_data(4, 2, &sp18, arg3);
 }
 

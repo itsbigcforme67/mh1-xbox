@@ -5,7 +5,7 @@
 
 s32 CallBack_Result_SendChatMessageTU();
 s32 Plaza_chat_log_add();
-s32 cnLBS_Send_ChatBinaryTU();
+s32 gonl_Send_ChatMessageTU();
 s32 cnLBS_Send_ChatMessage();
 void * memcpy();
 void * strcpy();
@@ -39,7 +39,7 @@ void Lb_send_chat(s32 unused_a0, s32 arg1, s32 arg2) {
         var_s0 = &chatIDList;
         do {
             if (*var_s0 != 0) {
-                cnLBS_Send_ChatBinaryTU(arg2 & 0xFF, var_s0, (void *) arg1, temp_v0 & 0xFFFF, (s32) CallBack_Result_SendChatMessageTU);
+                gonl_Send_ChatMessageTU(arg2 & 0xFF, var_s0, (void *) arg1, temp_v0 & 0xFFFF, (s32) CallBack_Result_SendChatMessageTU);
             }
             var_s2 += 1;
             var_s0 += 8;

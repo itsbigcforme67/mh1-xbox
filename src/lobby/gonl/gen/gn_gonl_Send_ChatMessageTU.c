@@ -1,4 +1,4 @@
-/* G online (PC): cnLBS_Send_ChatBinaryTU, written from Monster Hunter G's code at lobby 0x5B0690 by tools/mhg_gonl.py (an m2c draft with
+/* G online (PC): gonl_Send_ChatMessageTU, written from Monster Hunter G's code at lobby 0x5B0690 by tools/mhg_gonl.py (an m2c draft with
  * G's names; docs/network.md 3.12). Not compared with anything; the G online PC build links it (ONLINE=1
  * tools/build_pc_mhg.sh). */
 #include "../gonl.h"
@@ -7,7 +7,7 @@ s32 __cnetSub_Set_BgProcess();
 s32 lobby_func_005B0730();
 extern u8 pFunc;
 
-s32 cnLBS_Send_ChatBinaryTU(s32 arg0, void *arg1, void *arg2, s32 arg3, s32 arg4) {
+s32 gonl_Send_ChatMessageTU(s32 arg0, void *arg1, void *arg2, s32 arg3, s32 arg4) {
     s32 temp_v0;
     s32 var_v0;
 

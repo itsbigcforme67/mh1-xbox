@@ -48,14 +48,14 @@ void lobby_func_0057D5D0(void *arg0) {
     u8 *var_s2;   /* (s32 *) */
     u8 *var_s4_2;   /* (s32 *) */
     f32 temp_f2;
-    f32 var_a0_2;
-    f32 var_a0_3;
-    f32 var_a0_4;
     f32 var_f3;
     f32 var_f4;
     f32 var_f5;
     s16 temp_v0;
     s32 var_a0;
+    s32 var_a0_2;
+    s32 var_a0_3;
+    s32 var_a0_4;
     s32 var_a5;
     s32 var_s3;
     s32 var_s4;
@@ -120,7 +120,7 @@ void lobby_func_0057D5D0(void *arg0) {
         spB0 = 0xFF00FF00;
         if (var_v1 != 0) {
             temp_f2 = (f32) var_a0 / (f32) var_v1;
-            spA4 += M2C_BITWISE(s32, (140.0f * temp_f2));
+            spA4 += (s32) (140.0f * temp_f2);
             var_f5 = 0.0f + (temp_f2 * 255.0f);
             var_f4 = 255.0f + (temp_f2 * -255.0f);
             var_f3 = 0.0f + (temp_f2 * 0.0f);
@@ -130,22 +130,22 @@ void lobby_func_0057D5D0(void *arg0) {
             var_f3 = 0.0f;
         }
         if (!(var_f5 >= 2.1474836e9f)) {
-            var_a0_2 = var_f5;
+            var_a0_2 = (s32) var_f5;
         } else {
-            var_a0_2 = M2C_BITWISE(f32, (M2C_BITWISE(s32, (var_f5 - 2.1474836e9f)) | 0x80000000));
+            var_a0_2 = (s32) (var_f5 - 2.1474836e9f) | 0x80000000;
         }
         if (!(var_f4 >= 2.1474836e9f)) {
-            var_a0_3 = var_f4;
+            var_a0_3 = (s32) var_f4;
         } else {
-            var_a0_3 = M2C_BITWISE(f32, (M2C_BITWISE(s32, (var_f4 - 2.1474836e9f)) | 0x80000000));
+            var_a0_3 = (s32) (var_f4 - 2.1474836e9f) | 0x80000000;
         }
         if (!(var_f3 >= 2.1474836e9f)) {
-            var_a0_4 = var_f3;
+            var_a0_4 = (s32) var_f3;
         } else {
-            var_a0_4 = M2C_BITWISE(f32, (M2C_BITWISE(s32, (var_f3 - 2.1474836e9f)) | 0x80000000));
+            var_a0_4 = (s32) (var_f3 - 2.1474836e9f) | 0x80000000;
         }
         temp_fp = ((s16) ((((s16) ((s32) temp_v0)))));
-        spAC = (M2C_BITWISE(s32, var_a0_4) & 0xFF) + (((M2C_BITWISE(s32, var_a0_2) & 0xFF) << 0x10) + 0xFF000000 + ((M2C_BITWISE(s32, var_a0_3) & 0xFF) << 8));
+        spAC = (var_a0_4 & 0xFF) + (((var_a0_2 & 0xFF) << 0x10) + 0xFF000000 + ((var_a0_3 & 0xFF) << 8));
         spB4 = spAC;
         Paint_square((s32) (((s16) ((temp_fp + 4)))), (s32) (((s16) ((temp_s0 + 3)))), 0x8C, 0xC, -0xFEFEFF);
         func_0012A800(&spA0);

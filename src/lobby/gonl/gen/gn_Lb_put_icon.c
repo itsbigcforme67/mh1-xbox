@@ -20,9 +20,9 @@ void Lb_put_icon(s32 arg0, s16 arg1, u32 arg2, s32 arg3) {
 
     if (arg2 != 0x30) {
         temp_a4 = (u8 *)&lb_icon_tbl + (arg2 * 8);
-        sp10 = M2C_BITWISE(s16, (0.8f * (f32) arg0));
+        sp10 = (s16) (s32) (0.8f * (f32) arg0);
         sp12 = arg1;
-        sp14 = M2C_BITWISE(s16, (0.8f * (f32) ((*(s16 *)((u8 *)(temp_a4) + 4)) - (*(s16 *)((u8 *)(temp_a4) + 0)))));
+        sp14 = (s16) (s32) (0.8f * (f32) ((*(s16 *)((u8 *)(temp_a4) + 4)) - (*(s16 *)((u8 *)(temp_a4) + 0))));
         temp_a0 = sp14;
         if (temp_a0 < 0) {
             sp14 = -temp_a0;

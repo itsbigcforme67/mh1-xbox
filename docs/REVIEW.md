@@ -942,3 +942,11 @@ Both games unless marked.
   check on an area's first tick. **Referee:** ps2_rnd.txt has a 4th column, the PS2's frame counter, set on the PC.
 - **Added (referee):** village lockstep scenarios (g_vil_*), g_carve / mh1_carve, the hook's lock mode word (CTL+0x1C).
 - **To revert:** the commits "WIP referee: G's story-scene ..." .. "WIP: Game_task's frame counter ..." on agent-D.
+
+## G online, round 4 (agent C, 23 Oct 2026)
+- **Dropped:** src/lobby/gonl/gen/gn_cnLBS_Send_ChatBinaryTU.c and gn___cnet_SendSet_ChatMessageTU.c. **Now:** the same G
+  code as gn_gonl_Send_ChatMessageTU.c (G 0x5B0690) and gn_gonl_SendSet_PlazaEntry.c (G 0x5ACC30), G_RENAME in
+  tools/mhg_gonl.py. **Why:** the split gave those G addresses MH1 names of other functions; under the MH1 names they
+  replaced the PC's real cnLBS_Send_ChatBinaryTU / __cnet_SendSet_ChatMessageTU, and G's status send to a newcomer
+  (lb_send_dataTU) crashed with the 5-argument whisper send. **To revert:** the commit "G online PC: two G clients see
+  each other in the town" on agent-C.

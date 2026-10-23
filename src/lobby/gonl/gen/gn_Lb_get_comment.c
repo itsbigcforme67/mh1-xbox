@@ -12,7 +12,7 @@ s32 Lb_get_comment(s32 arg0) {
     s32 temp_a1;
     u8 *temp_v0;
 
-    temp_a1 = Lb_get_plID() & 0xFF;
+    temp_a1 = Lb_get_plID(arg0) & 0xFF;
     if (temp_a1 != 0xFF) {
         temp_v0 = temp_a1 + (*(s32 *)&cw);
         if ((*(u8 *)((u8 *)(temp_v0) + 0xB5A)) == 0) {

@@ -13,12 +13,12 @@ extern u8 RecvMailInfo;
  * Saved: [0x0, 0x10, 0x14, 0x18, 0x1c, 0x20, 0x24, 0x28, 0x2c, 0x30, 0x34], gap at: 0x8. */
 void Lb_put_new_mail(s32 arg0, s32 arg1) {
     f32 var_f20;
-    f32 var_v1;
-    f32 var_v1_2;
-    f32 var_v1_3;
-    f32 var_v1_4;
     s16 temp_v0;
     s16 temp_v1_2;
+    s32 var_v1;
+    s32 var_v1_2;
+    s32 var_v1_3;
+    s32 var_v1_4;
     s32 temp_s0;
     s32 var_a1;
     u8 *var_a0;
@@ -44,36 +44,36 @@ loop_1:
         if (temp_v1_2 & 0x10) {
             if (temp_v1_2 & 0x80) {
                 if (!(var_f20 >= 2.1474836e9f)) {
-                    var_v1 = var_f20;
+                    var_v1 = (s32) var_f20;
                 } else {
-                    var_v1 = M2C_BITWISE(f32, (M2C_BITWISE(s32, (var_f20 - 2.1474836e9f)) | 0x80000000));
+                    var_v1 = (s32) (var_f20 - 2.1474836e9f) | 0x80000000;
                 }
-                Lb_put_icon((s32) (((s16) (((((s16) ((s32) arg0))) - 0x10)))), (s32) (((s16) ((temp_s0 - 6)))), 0xC, (M2C_BITWISE(s32, var_v1) << 0x18) | 0xFFFFFF);
+                Lb_put_icon((s32) (((s16) (((((s16) ((s32) arg0))) - 0x10)))), (s32) (((s16) ((temp_s0 - 6)))), 0xC, (var_v1 << 0x18) | 0xFFFFFF);
                 return;
             }
             if (!(var_f20 >= 2.1474836e9f)) {
-                var_v1_2 = var_f20;
+                var_v1_2 = (s32) var_f20;
             } else {
-                var_v1_2 = M2C_BITWISE(f32, (M2C_BITWISE(s32, (var_f20 - 2.1474836e9f)) | 0x80000000));
+                var_v1_2 = (s32) (var_f20 - 2.1474836e9f) | 0x80000000;
             }
-            Lb_put_icon((s32) (((s16) (((((s16) ((s32) arg0))) - 0x10)))), (s32) (((s16) ((temp_s0 + 8)))), 0xC, (M2C_BITWISE(s32, var_v1_2) << 0x18) | 0xFFFFFF);
+            Lb_put_icon((s32) (((s16) (((((s16) ((s32) arg0))) - 0x10)))), (s32) (((s16) ((temp_s0 + 8)))), 0xC, (var_v1_2 << 0x18) | 0xFFFFFF);
             return;
         }
         if (temp_v1_2 & 0x80) {
             if (!(var_f20 >= 2.1474836e9f)) {
-                var_v1_3 = var_f20;
+                var_v1_3 = (s32) var_f20;
             } else {
-                var_v1_3 = M2C_BITWISE(f32, (M2C_BITWISE(s32, (var_f20 - 2.1474836e9f)) | 0x80000000));
+                var_v1_3 = (s32) (var_f20 - 2.1474836e9f) | 0x80000000;
             }
-            Lb_put_icon((s32) (((s16) (((((s16) ((s32) arg0))) + 0xA)))), (s32) (((s16) ((temp_s0 + 0xA)))), 0xC, (M2C_BITWISE(s32, var_v1_3) << 0x18) | 0xFFFFFF);
+            Lb_put_icon((s32) (((s16) (((((s16) ((s32) arg0))) + 0xA)))), (s32) (((s16) ((temp_s0 + 0xA)))), 0xC, (var_v1_3 << 0x18) | 0xFFFFFF);
             return;
         }
         if (!(var_f20 >= 2.1474836e9f)) {
-            var_v1_4 = var_f20;
+            var_v1_4 = (s32) var_f20;
         } else {
-            var_v1_4 = M2C_BITWISE(f32, (M2C_BITWISE(s32, (var_f20 - 2.1474836e9f)) | 0x80000000));
+            var_v1_4 = (s32) (var_f20 - 2.1474836e9f) | 0x80000000;
         }
-        Lb_put_icon((s32) (((s16) (((((s16) ((s32) arg0))) + 0xA)))), (s32) (((s16) ((temp_s0 - 8)))), 0xC, (M2C_BITWISE(s32, var_v1_4) << 0x18) | 0xFFFFFF);
+        Lb_put_icon((s32) (((s16) (((((s16) ((s32) arg0))) + 0xA)))), (s32) (((s16) ((temp_s0 - 8)))), 0xC, (var_v1_4 << 0x18) | 0xFFFFFF);
         return;
     }
     var_a1 = ((s8) ((var_a1 + 1)));

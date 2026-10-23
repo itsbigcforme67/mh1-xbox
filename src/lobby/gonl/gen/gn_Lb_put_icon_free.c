@@ -23,8 +23,8 @@ void Lb_put_icon_free(s32 arg0, s16 arg1, s16 arg2, s32 arg3, s32 arg4) {
     if (temp_a4 != 0x30) {
         temp_a4_2 = (u8 *)&lb_icon_tbl + (temp_a4 * 8);
         sp12 = arg1;
-        sp10 = M2C_BITWISE(s16, (0.8f * (f32) arg0));
-        sp14 = M2C_BITWISE(s16, (0.8f * (f32) arg2));
+        sp10 = (s16) (s32) (0.8f * (f32) arg0);
+        sp14 = (s16) (s32) (0.8f * (f32) arg2);
         temp_v0 = sp14;
         if (temp_v0 < 0) {
             sp14 = -temp_v0;

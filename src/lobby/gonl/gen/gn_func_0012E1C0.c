@@ -11,8 +11,8 @@ extern u8 g_main_2EF268;
 
 s32 func_0012E1C0(s32 arg0) {
     f32 temp_f1;
-    f32 var_v1;
     s32 var_s0;
+    s32 var_v1;
     u8 temp_s1;
 
     if (arg0 != 0) {
@@ -30,10 +30,10 @@ s32 func_0012E1C0(s32 arg0) {
     }
     temp_f1 = 256.0f * (0.5f * (1.0f + flSin(g_main_2EF264, 2.0f * (3.1415927f * (((360.0f * (f32) (g_main_2EF264 << 8)) / 65536.0f) / 360.0f))))) * (*(s32 *)((u8 *)&g_main_25F250 + (g_main_2EF268 * 4)));
     if (!(temp_f1 >= 2.1474836e9f)) {
-        var_v1 = temp_f1;
+        var_v1 = (s32) temp_f1;
     } else {
-        var_v1 = M2C_BITWISE(f32, (M2C_BITWISE(s32, (temp_f1 - 2.1474836e9f)) | 0x80000000));
+        var_v1 = (s32) (temp_f1 - 2.1474836e9f) | 0x80000000;
     }
-    return ((((M2C_BITWISE(s32, var_v1) & 0xFF) + 0x50) & 0xFF) << 0x18) + var_s0;
+    return ((((var_v1 & 0xFF) + 0x50) & 0xFF) << 0x18) + var_s0;
 }
 

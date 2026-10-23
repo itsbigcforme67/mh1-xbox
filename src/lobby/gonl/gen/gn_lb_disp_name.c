@@ -4,6 +4,7 @@
 #include "../gonl.h"
 
 s32 Get_weapon_job();
+s32 Lb_Pl_stg_ck();
 s32 Lb_put_icon_free();
 s32 Lb_put_job();
 s32 Lb_put_status();
@@ -25,7 +26,6 @@ extern u8 System_timer;
 extern u8 User_data;
 extern u8 cw;
 extern u8 game_w;
-s32 Lb_Pl_stg_ck();                        /* extern */
 s32 Lb_get_pl_stat2();                           /* extern */
 s32 Online_ck();                                    /* extern */
 s32 SoftKeyboard_alive_check();                  /* extern */
@@ -48,8 +48,8 @@ void lb_disp_name(void *arg0) {
     u8 *var_s3;   /* (s32 *) */
     u8 *var_s7;   /* (s32 *) */
     u8 *var_v0;   /* (f32 *) */
+    f32 temp_f0;
     f32 temp_f1;
-    f32 temp_f2;
     f32 var_f0;
     s32 var_s2;
     s32 var_v0_2;
@@ -84,7 +84,7 @@ void lb_disp_name(void *arg0) {
         var_s7 = &lbCommer;
         spA0 = 0;
         do {
-            if (((*(u8 *)((u8 *)(var_s3) + 0)) != 0) && ((*(u8 *)((u8 *)(var_s3) + 1)) != 0) && (Lb_Pl_stg_ck(var_s3) & 0xFF) && (Lb_get_pl_stat2(((s8) (var_s4))) == 0)) {
+            if (((*(u8 *)((u8 *)(var_s3) + 0)) != 0) && ((*(u8 *)((u8 *)(var_s3) + 1)) != 0) && (Lb_Pl_stg_ck(var_s3, M2C_ERROR(/* Read from unset register $a1 */), M2C_ERROR(/* Read from unset register $a2 */), M2C_ERROR(/* Read from unset register $a3 */)) & 0xFF) && (Lb_get_pl_stat2(((s8) (var_s4))) == 0)) {
                 if ((*(f32 *)((u8 *)(var_s3) + 0xAC)) == 0.0f) {
                     if ((*(f32 *)((u8 *)(var_s3) + 0xB4)) != 0.0f) {
                         goto block_17;
@@ -119,11 +119,11 @@ block_17:
                                 if (temp_s1_2 < 0) {
                                     var_v0_2 = (s32) (temp_s1_2 + 1) >> 1;
                                 }
-                                temp_f2 = (f32) (var_v0_2 * 8);
-                                spF0 -= temp_f2;
-                                flfntLocate(M2C_BITWISE(s32, (1.25f * (f32) temp_f2)), M2C_BITWISE(s32, spF4));
-                                temp_s6 = ((s16) (M2C_BITWISE(s64, (1.25f * spF0))));
-                                temp_s5 = ((s16) (M2C_BITWISE(s64, spF4)));
+                                temp_f0 = spF0 - (f32) (var_v0_2 * 8);
+                                spF0 = temp_f0;
+                                flfntLocate((s32) (1.25f * (f32) (s32) temp_f0), (s32) spF4);
+                                temp_s6 = ((s16) ((s32) (s32) (1.25f * spF0)));
+                                temp_s5 = ((s16) ((s32) (s32) spF4));
                                 flfntSetSize(0x10, 0x10);
                                 temp_v0 = (*(s32 *)&cw) + spA0;
                                 temp_v1 = (*(u8 *)((u8 *)(temp_v0) + 0x3A9));
@@ -145,7 +145,7 @@ block_17:
                                     }
                                 }
                                 font_set_stack_no(0);
-                                font_print_double(M2C_BITWISE(s32, (1.25f * (f32) spF0)), M2C_BITWISE(s32, spF4), 1, var_s2, var_s0);
+                                font_print_double((s32) (1.25f * (f32) (s32) spF0), (s32) spF4, 1, var_s2, var_s0);
                                 if ((((s16) (var_s4))) == (*(u8 *)((u8 *)&game_w + 0x3A))) {
                                     var_s2_2 = ((s16) (temp_s5));
                                     var_s0_2 = ((s16) (temp_s6));

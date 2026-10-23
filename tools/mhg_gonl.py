@@ -232,6 +232,10 @@ G_RENAME = {
     'cnLBS_Get_mhRoomJoinUser': 'gonl_Get_PlazaJoinUser',      # G 0x5E3660: a plaza record's two user counts
     '_cnet_RecvFromLbs_BothAnnexJoinUser': 'gnet_6205_both',    # G 0x5E3700: plaza / lobby join users (G's records)
     '_cnet_RecvFromLbs_AnswerLobbyExplain': 'gnet_620A_ans',    # G 0x5E3940: plaza / lobby explanation (G's records)
+    # G 0x5B0690: G's whisper send (u8, id, text, len, callback; row 0xFD, the u8 last), MH1's ChatMessageTU with one more
+    # argument; the split's cnLBS_Send_ChatMessageTU (G 0x5B08B0) is the real ChatBinaryTU (row 0x102, MH1's shape)
+    'cnLBS_Send_ChatBinaryTU': 'gonl_Send_ChatMessageTU',
+    '__cnet_SendSet_ChatMessageTU': 'gonl_SendSet_PlazaEntry',  # G 0x5ACC30: row 46, three u16 (cnLBS_PlazaEntry's send)
 }
 
 
@@ -243,6 +247,10 @@ def renamed(src):
 
 # one-line corrections applied to a function's draft every time it is generated (instead of a HAND-FIXED copy)
 FIXUPS = {
+    'Lb_check_receipt': [   # G passes its own a0 (the sender's id) on to Lb_get_plID unchanged
+        (r'= Lb_get_plID\(\)', '= Lb_get_plID(arg0)')],
+    'Lb_get_comment': [     # the same (G 0x56C2B0)
+        (r'= Lb_get_plID\(\)', '= Lb_get_plID(arg0)')],
     'lbc_login_init': [   # the PC's cnLBS_LoginLobbyServer takes CNET_LOGIN by value (EE GCC passes a pointer to a copy)
         (r'cnLBS_LoginLobbyServer\(&sp40, ', 'cnLBS_LoginLobbyServer(*(struct { u8 b[0x40]; } *)&sp40, ')],
     'lobby_func_00570320': [   # a byte of LobbyInfo+0x16 at a byte offset m2c holds in a pointer

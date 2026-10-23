@@ -37,12 +37,12 @@ void lobby_func_005926C0(s32 arg0, s32 arg1, s32 arg2, s32 arg3, s32 arg4, s32 a
     sp76 = (((s16) (arg1))) + (((s16) (arg3)));
     if (!(arg5 & 0xFF)) {
         temp_a1 = (s32) (arg4 << 0x28) >> 0x28;
-        sp78 = temp_a1 | (((((s8) (M2C_BITWISE(s64, (48.0f * temp_f0))))) + 0x90) << 0x18);
+        sp78 = temp_a1 | (((((s8) ((s32) (s32) (48.0f * temp_f0)))) + 0x90) << 0x18);
         sp7C = (s32) temp_a1;
     } else {
         temp_a1_2 = (s32) (arg4 << 0x28) >> 0x28;
         sp78 = (s32) temp_a1_2;
-        sp7C = temp_a1_2 | (((((s8) (M2C_BITWISE(s64, (48.0f * temp_f0))))) + 0x90) << 0x18);
+        sp7C = temp_a1_2 | (((((s8) ((s32) (s32) (48.0f * temp_f0)))) + 0x90) << 0x18);
     }
     sp80 = sp78;
     sp84 = sp7C;
