@@ -151,6 +151,15 @@ def main():
             for k, v in src.items():
                 if v[0] not in at or (v[1] == "func" and at[v[0]][1] != "func"):
                     at[v[0]] = (k, v[1])
+        # G online: src/lobby/gonl/gen/*.c name the G function each is written from ("... code at lobby 0xADDR")
+        gonl_at = {}
+        import glob
+        for f in glob.glob("src/lobby/gonl/gen/*.c"):
+            with open(f, errors="replace") as fh:
+                m = re.match(r"/\* G online \(PC\): (\w+), written from Monster Hunter G's code at lobby 0x([0-9A-Fa-f]+)",
+                             fh.readline())
+            if m:
+                gonl_at[int(m.group(2), 16)] = m.group(1)
         try:
             lines = open("config/lobby_aliases.txt").read().splitlines()
         except OSError:
@@ -165,6 +174,8 @@ def main():
                 if va is None:
                     continue
             k, kind = at.get(va, (None, None))
+            if G and k not in defined and va in gonl_at:
+                k, kind = gonl_at[va], "func"   # G online: the PC C of G's function at va has its own name (mhg_gonl.py)
             if kind == "func":
                 if k in defined:
                     alias[n] = (k, 0)

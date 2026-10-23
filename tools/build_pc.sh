@@ -721,7 +721,9 @@ for f in $GAME; do
 done
 # the matched lobby functions win over other lobby objects' copies
 BOBJS=$(for f in $BMATCH; do printf 'build/pc/lb__%s.o ' "$(basename "$f" .c)"; done)
-BSYMS=$( (for f in $BMATCH; do nmc --defined-only -g "build/pc/lb__$(basename "$f" .c).o" | awk 'NF == 3 && $2 == "T" {print $3}'; done
+# (T or W: an object a previous build of the other kind weakened (G online: src/lobby/gonl wins) still counts here;
+# pc_link_adapt.py compiles it again with this build's weak list)
+BSYMS=$( (for f in $BMATCH; do nmc --defined-only -g "build/pc/lb__$(basename "$f" .c).o" | awk 'NF == 3 && ($2 == "T" || $2 == "W") {print $3}'; done
           for p in $PICK; do echo "${p#*:}" | tr , '\n'; done) | sort -u)   # PICKed lobby functions win too
 BOBJS="$BOBJS $(for p in $PICK; do printf 'build/pc/lb__%s.o ' "$(basename "${p%%:*}" .c)"; done)"
 for o in $OBJS; do
