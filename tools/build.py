@@ -274,8 +274,10 @@ def main():
                 if "/assets/mhg/" not in f]
         csrc = glob.glob(os.path.join(ROOT, "src/**/*.c"), recursive=True)
         # src/pc is the native PC/Xbox platform layer (tools/build_pc.sh), not PS2 code; src/ps2patch is the
-        # online patch, built only by tools/ps2_patch.py
-        csrc = [c for c in csrc if "/src/pc/" not in c and "/src/mhg/" not in c and "/src/ps2patch/" not in c]
+        # online patch, built only by tools/ps2_patch.py; src/lobby/gonl is PC C of G's lobby code (tools/mhg_gonl.py,
+        # linked only by the PC G online build)
+        csrc = [c for c in csrc if "/src/pc/" not in c and "/src/mhg/" not in c and "/src/ps2patch/" not in c
+                and "/src/lobby/gonl/" not in c]
     with ThreadPoolExecutor(args.j) as pool:
         errors = [e for e in pool.map(compile_c, csrc) if e]
         errors += [e for e in pool.map(assemble, sources) if e]

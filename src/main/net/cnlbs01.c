@@ -67,7 +67,7 @@ int cnLBS_Get_FileDownloadInfo(u8 *a, void **b)
         *b = g_lb_731170;
     }
 #else
-    *a = A_U8(0x6AFF7C);
+    *a = A_U8(GV(0x6AFF7C, 0x731162));
     *b = D_6AFF80;
 #endif
     return 0;
