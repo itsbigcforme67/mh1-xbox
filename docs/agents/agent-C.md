@@ -2119,9 +2119,12 @@ Result: G matched 19.8% -> 20.1% (4124 -> about 4230 functions), all in src/lobb
      instruction for every mhg module; 12 gen files regenerated.
   5. G's Lb_get_plID walks 10 hunters (lb_a.c, G online build only).
 - **Guild hall (step 3, started):** the PC G client walks into the guild hall (stage 0x4D) through the town's door spot
-  (5545, 2750, square), as the PS2 test does. Not further: on the PC only NPC slot 0 is placed there (1047, 50, 1602)
-  and it is not drawn, and the middle counter spot (1120, 1950) gives the unregistered greeting ("ハンターズギルドへ
-  ようこそ" ... "ボスなら隣にいるわよ") although event flag 4 is set (RT_NET_REGISTERED). Next: G's hall NPC set-up
-  (which code places G's three counter ladies) and the talk choice (MH1's Lb_talk_check_default vs G's 0x542A60).
+  (5545, 2750, square), as the PS2 test does. Not further: Lb_npc_set takes 8 NPC slots there (G's
+  npc_dialog_table count) but only slot 0 gets a position (1047, 50, 1602) and none is drawn; the others stay at 0, 0, 0
+  (their G em init programs: the same gap as the G village NPCs, RT_NO_NPC in lb_village_nm.c). At the middle counter
+  spot (1120, 1950) circle gives "ハンターズギルドへようこそ" ... "ボスなら隣にいるわよ" (the greeting for a hunter the
+  guild does not know) although event flag 4 is set (RT_NET_REGISTERED): probably slot 0's talk, not the quest lady's
+  [guess]. G's own Lb_npc_set (0x59CB70: cases 0x51-0x57, get_questLevelNum) is not the PC's either. Next: G's hall
+  NPCs placed and drawn, then the counter menu (G's talk conditions 0x542A60), a room, a quest.
 - **Cosmetic, open:** town name tags draw a white square next to the name (an icon texture, G and MH1 slots differ?).
 - tools/full_check.sh: test_ps2_g_online.sh is an emulator test (skipped), the G online PC build is a step.
