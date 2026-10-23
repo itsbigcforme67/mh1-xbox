@@ -97,7 +97,7 @@ always been a struct field type or a lost field.
 
 ### Running, 23 Oct 2026 evening
 - agent C (Opus): merge main into agent-C, pass test_online_g.sh + TWO=1, then G rooms/hunt; full check. No emulators.
-- agent B (Sonnet): G gaps GN8 (set19 tables), GN12 (pause menu pages), GM4 (chat/NPC strings), GM5 (sprite sort). No emulators.
+- agent B: G gaps GN8/GN12/GM4/GM5 done and merged 23 Oct (full check passed on agent-B).
 
 ### Hand-over, 23 Oct 2026 (start here)
 Main = GitHub (all pushed, full check passes). No agent running. Agent branches A, B, D, E fully merged.
