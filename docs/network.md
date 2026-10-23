@@ -1100,7 +1100,7 @@ sending it: harmless, and closer to the original if it was the login's answer.
   "hostleave" through the relay (the room's leader leaving) is a case to repeat on mcs before step 2: there, drop-outs
   of the owner were tested (above), not of the room leader (slot 0) with three players left.
 
-### 3.12 Monster Hunter G online (agent C, 18-20 Oct 2026; GB7, in progress)
+### 3.12 Monster Hunter G online (agent C, 18-23 Oct 2026; GB7, in progress)
 
 G (SLPM-65869) uses the same lobby-server protocol as MH1 (same framing, login, obfuscation, `LOCKROCK`, sequence
 rules; `cnLBS_LoginLobbyServer`, `mmbbc_encode`, `tcp_init`, `create_server_table` are identical), with a command table
@@ -1210,8 +1210,19 @@ State (22 Oct): on the PC, G's own screens: login, Capcom ID select, info file d
 plaza class menu, the plaza menu, its town list (G Lobby 1-4) and the town: 6305 / 630A / 6708, G's Lb_stage_load puts
 the hunter at one of G's five town starts (stage 0x4C) and the town is drawn. Also found on the way: m2c drops a tail
 jump's delay slot (a store, an argument) - tools/draft.py now runs the slot first; G's 0x59A820 (check_sender0 in the
-split) is Lb_send_pl_status(a0, 0). Test: tools/test_online_g.sh (TWO=1: two G PCs). Next: two G PCs seeing each
-other, the PS2 G disc with a PC, a G hunt, the Xbox.
+split) is Lb_send_pl_status(a0, 0). Test: tools/test_online_g.sh (TWO=1: two G PCs).
+State (23 Oct): **two G PCs see each other in the town** [checked: `TWO=1 tools/test_online_g.sh`, each client's trace
+lists the other in stage 0x4C at the start position]. Found on the way, all G-only:
+- G's lobby events are numbered differently from MH1's. The notice handlers the PC shares with MH1 take G's with
+  `GV()` / `CNEVT()`: the town / room commer and leaver notices (6410 / 6411 and the room ones, `_sub_InOutRoomMember`,
+  G 0x5AC9A0: events 26 / 27 / 36 / 37 / 41 / 42 for kinds 0-5; MH1 38 / 39 / 31 / 32 / 36 / 37), 6005 match cancel 6
+  (MH1 7), 6007 lobby full 7 (MH1 8). Every other G row handler was compared with the MH1 C of its name.
+- The split's names of the TU chat sends are crossed: G 0x5B08B0 is cnLBS_Send_ChatBinaryTU (row 0x102 = 670D, as MH1),
+  G 0x5B0690 is G's whisper (`u8, id, text, len, callback`, row 0xFD, the u8 sent last). A newcomer gets the others'
+  status as 670D -> 670E: type 3 (stage), type 10 (`s16 x, s16 z, u8 dir, u8 ?, u8 stage pair, u8`; lobby 0x59AB90).
+- The PC G client reaches the guild hall (stage 0x4D) through the town's door; its counter is not usable yet (G's
+  ladies are not placed; the talk answers as for an unregistered hunter).
+Next: the guild hall counter, a room and a quest between two G PCs, the PS2 G disc with a PC, the Xbox.
 
 ## 4. Run it
 

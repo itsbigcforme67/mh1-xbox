@@ -2093,3 +2093,35 @@ Result: G matched 19.8% -> 20.1% (4124 -> about 4230 functions), all in src/lobb
   imported, cnLBS_Get_FileDownloadInfo / cnLBS_Read_RoomProperty with G's data (shared cnet C, MHG_NET only).
   Memory on this machine is short (other sessions' emulators): every build / run waits for > 2 GB free
   (build/C/gpc/br.sh does). Emulator steps (PS2 G disc + PC, Xbox) wait for the coordinator.
+
+## G online, round 4 (23 Oct 2026): merge with main, two G PCs in one town
+- **Merge:** `git merge main` (87 commits); conflicts only in config/mhg/pc_data.txt (both sides kept) and the generated
+  config/mhg/pc_ptrs.txt (regenerated with tools/mhg_pcmeta.py). Fixed after it: tools/build.py skipped nothing under
+  src/lobby/gonl (PC-only G C, MWCC choked on it: now skipped like src/pc); cnlbs01.c's non-G-net branch had lost
+  `GV()` (G PS2 lobby mismatched at 0x5BFD40). MH1 5 OK, G 7 OK.
+- **PC build fixes (G):** a plain G build after a G online one linked two strong copies of the matched lobby functions
+  (the online build had weakened them for src/lobby/gonl; build_pc.sh now counts T and W symbols of BMATCH objects);
+  gen_rt_auto.py aliases a lobby `_o` name to the mhg_gonl.py function written from G's code at that address
+  (CallBack_Result_SearchUserPlace_o).
+- **Two G PCs see each other** (`TWO=1 tools/test_online_g.sh` passes; each logs the other in town stage 0x4C at the
+  start position). What it took, each found with gdb (scratch copy of the test with `gdb -batch` around ANNA):
+  1. G's split names 0x5B0690 cnLBS_Send_ChatBinaryTU, but it is G's whisper send (u8, id, text, len, callback; row
+     0xFD); the real ChatBinaryTU is at 0x5B08B0 (split name cnLBS_Send_ChatMessageTU, MH1's shape, row 0x102). The
+     newcomer's status send (lb_send_dataTU -> 4 arguments) crashed in the 5-argument one. G_RENAME: gonl_Send_ChatMessageTU;
+     0x5ACC30 (split: __cnet_SendSet_ChatMessageTU) is the plaza entry send: gonl_SendSet_PlazaEntry.
+  2. G numbers lobby events differently: _sub_InOutRoomMember (G 0x5AC9A0, jump table checked in lobby.bin) fires 26 /
+     27 / 36 / 37 / 41 / 42 for kinds 0-5 (MH1 38 / 39 / 31 / 32 / 36 / 37), so CallBack_Event_LobbyCommer never ran;
+     also NoticeMatchCancel 6 (MH1 7), NoticeLobbyFull 7 (8). An audit of every G table row's handler against the MH1
+     C of the same name (direct `li a0` before _cnet_Return_CallBack) found no other unfixed one.
+  3. m2c dropped the incoming $a0 that Lb_check_receipt / Lb_get_comment pass on to Lb_get_plID (FIXUPS).
+  4. The split writes the EE's cvt.w.s as `.word ... # cvt.w.s`, so m2c passed the float's bits on: the status /
+     position sends (Lb_send_pl_pos, Lb_send_pl_warp, 0x59AB90) sent 0 for x. tools/draft.py now gives m2c the
+     instruction for every mhg module; 12 gen files regenerated.
+  5. G's Lb_get_plID walks 10 hunters (lb_a.c, G online build only).
+- **Guild hall (step 3, started):** the PC G client walks into the guild hall (stage 0x4D) through the town's door spot
+  (5545, 2750, square), as the PS2 test does. Not further: on the PC only NPC slot 0 is placed there (1047, 50, 1602)
+  and it is not drawn, and the middle counter spot (1120, 1950) gives the unregistered greeting ("ハンターズギルドへ
+  ようこそ" ... "ボスなら隣にいるわよ") although event flag 4 is set (RT_NET_REGISTERED). Next: G's hall NPC set-up
+  (which code places G's three counter ladies) and the talk choice (MH1's Lb_talk_check_default vs G's 0x542A60).
+- **Cosmetic, open:** town name tags draw a white square next to the name (an icon texture, G and MH1 slots differ?).
+- tools/full_check.sh: test_ps2_g_online.sh is an emulator test (skipped), the G online PC build is a step.
