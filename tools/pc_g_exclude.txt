@@ -12,3 +12,8 @@ src/main/menu/menu27.c
 src/main/menu/menu32.c
 src/main/menu/menu33.c
 src/main/menu/menu_dmon.c
+# the pause menu's chat settings: G dropped the page row and the send-to-player page (Menu_chatcnfg_i / _mv, Pit_disp_chat_cnfg,
+# menu_chcnfg_reibun's help row; G code in menu_nm.c / menu_disp_nm.c) (agent B, 23 Oct 2026)
+src/main/menu/menu12.c
+src/main/menu/menu37.c
+src/main/menu/menu38.c
