@@ -71,6 +71,11 @@ shell08_atk_no = 0x006C5DA0; // size:0x1C noptr
 shell08_rate_tbl = 0x006C5DC0; // size:0xA8 noptr
 shell08_rate_g_tbl = 0x006C5E70; // size:0xA8 noptr
 shell08_ofs_tbl = 0x006C5F20; // size:0xA8 noptr
+# G's shell08_m also reads two more per-type tables (time limit of a particle, index step; the MH1 code had them as constants per
+# case) and type 12's start offsets (24 rows of x, y, z by the shell's x07). Agent D, 23 Oct 2026.
+shell08_time_g = 0x006C5D20; // size:0x1C noptr
+shell08_step_g = 0x006C5D80; // size:0x1C noptr
+shell08_type12_ofs_g = 0x006C6130; // size:0x120 noptr
 # em01's flight height curves (G em01_fly_adjy2_init has types 15 and 16; agent A, 20 Oct 2026)
 [game]
 fly_adjy2_hosei_tbl_00653E40 = 0x006955D0; // size:0x44    # 17 curve pointers per type (MH1 15)

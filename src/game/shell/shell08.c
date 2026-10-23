@@ -68,6 +68,9 @@ extern f32 D_3F2090[3];
 extern s16 shell08_atk_no[];
 extern u8 shell08_tbl[4];
 extern f32 (*shell08_type8_thunder_pos[])[2];
+#ifdef VERSION_MHG
+extern f32 shell08_type12_ofs_g[][3];   /* G 0x6C6130: where each type 12 shot starts (24 rows, x07) */
+#endif
 
 
 void Shell08_set_ang(EMW *em, s16 joint, u8 arg, u8 x07, u16 ax, u16 ay) {
@@ -252,6 +255,19 @@ void shell08_i(SHLW *sh) {
     w->prim = 0;
     num = shell08_num[sh->arg];
     switch (sh->arg) {
+#ifdef VERSION_MHG
+    case 12:
+        /* G: the shot starts above the monster at one of 24 places, turned by the facing */
+        v[0] = shell08_type12_ofs_g[sh->x07][0];
+        v[1] = shell08_type12_ofs_g[sh->x07][1];
+        v[2] = shell08_type12_ofs_g[sh->x07][2];
+        flvecRotY(v, DEG2RAD(ANG2DEG(sh->ang[1])));
+        sh->pos2.x += v[0];
+        sh->pos2.y += v[1];
+        sh->pos2.z += v[2];
+        flvecCopy(&sh->pos0, &sh->pos2);
+        /* fall through */
+#endif
     case 0:
     case 11:
         w->prim_no = get_prim();
@@ -302,9 +318,22 @@ void shell08_i(SHLW *sh) {
             p->x1A = 0;
         }
         break;
+#ifdef VERSION_MHG
+    case 9:
+        if (sh->x07 >= 2) {
+            sh->rate[0] *= 2.0f;
+            sh->rate[1] *= 2.0f;
+            sh->rate[2] *= 2.0f;
+        }
+        /* fall through */
+    case 13:
+    case 2:
+    case 3:
+#else
     case 2:
     case 3:
     case 9:
+#endif
         w->prim_no = get_prim();
         if (w->prim_no != -1) {
             w->prim = get_prim_ptr(w->prim_no);
@@ -326,6 +355,9 @@ void shell08_i(SHLW *sh) {
         }
         break;
     case 4:
+#ifdef VERSION_MHG
+        w->x36 = sh->x06;       /* G: how long the beam stays at full length (shell08_m state 2) */
+#endif
         for (i = 0; i < num; i++, p++) {
             p->no = i;
             switch (p->no) {
