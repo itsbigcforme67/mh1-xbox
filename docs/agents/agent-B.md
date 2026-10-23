@@ -1438,3 +1438,49 @@ Owner's request: one picture of the PS2, Xbox and PC hunters together in the sam
    name with "%s%s" ("%12s%s" in the plaza list): our names now start with a full-width space. The PC's port of
    plaza_enterLobbyTrans has `% 10` on both indexes (not in the original; kept as a guard). Also seen: the plaza
    header "参加者：　　人" shows no number on the PC (not looked into).
+
+## G English coverage from MH1 US (20 Oct 2026, light job: Python and docs only)
+- tools/text_map.py: new `g_rules` (exact quest fields, layout, marks, buttons, numbers, whole descriptions) and an
+  estimate of what Monster Hunter Portable (disc/mhp DATA.BIN, plain Shift-JIS) has word for word; G 6363 -> 6776
+  strings with official English (47% -> 51%); 4935 of the rest are in Portable (Freedom), ~1350 real strings in neither.
+- Fixed: description lines are no longer propagated one line at a time (US lines are a re-wrap); 7 tutorial tables whose
+  US pages were inserted/shifted (Great Sword page had the Dual Swords text) are now in SHIFTED_US_TABLES (MH1 JP 6272 -> 6249).
+- Details, ambiguous cases and the decision input: docs/english_g.md. Numbers: docs/text_coverage.md.
+- Not done: re-pairing the shifted tutorial pages by content; checking the village/town NPC tables page by page; the
+  memory-card / online lines that have a JP twin but no paired US line.
+- Round 2 (same day): tutorial pages paired by content (page_pairs, 22/23), yes/no + network-setting dialogs as whole
+  messages (group_pairs, 161 slots), quest ties need the same map (quest_map: header section 0 word 5) and G quest
+  fields take other-map English only when no place is named (22 G quests flagged, e.g. G 10018 moved to the forest),
+  US number changes in quest/talk text dropped (same_numbers), US Dual Swords rewrites in talk dropped
+  (us_rewritten_talk). MH1 JP 6272 -> 6379 (78%), G 6776 -> 6839. Tried and dropped: tying the unlocated network
+  messages (net_con_msg, ms_err_str) by content over all US messages - it paired wrong messages.
+- Round 3: tools/text_pairs_manual.txt gets hand-checked pairs (addresses only) for the NET-file / network / error
+  messages (new `msg` kind re-flowed by msg_pairs, 81 messages, 262 slots), lobby netDialogMessage (46), plaza menu help
+  (21), title/game/gallery/network menus, slot names, button help (49). ints_agree: record tables with identical small
+  ints skip the prose length check (meal results). Town NPC talk: MH1 US lobby has MH1's town talk and it is already
+  paired; the G lines left are G's own (19 equal MH1 lines with no US line, ~70 numeric/trivial edits that the US
+  wording can't take). MH1 JP 6379 -> 6629 (81%), G 6839 -> 7064 (53.3%).
+- Round 4 (Freedom readiness): Portable's DATA.BIN mapped (sector file table, string packs, record files; no compressed
+  text, entry 0 = 300 MB high-entropy filler [guess]); PSPDisc reads an extracted folder or an ISO (own ISO 9660 reader);
+  structured Portable index (10828 texts) replaces the raw scan (which had false hits: estimate 4865 -> 4730);
+  run_freedom / freedom_pairs / freedom_for_g pair Portable<->Freedom entry by entry and fill G after MH1 US;
+  --freedom-selftest (Portable with itself): 784 entries, 4624 G strings would get a line. Owner: ISO of ULUS-10084
+  in disc/mhfr/.
+- Round 5 (in game): tools/g_eng_tour.py (14 hidden scenes, HTML contact sheets in build/B/eng/). Fixed in the pipeline:
+  talk_layout (Disp_NPC_message rows of 11 two-byte chars: odd-length English lines overlapped), re-flowed card lines no
+  longer given string-wide (a fragment showed alone), the *button labels* rule (G's ~Bnn label rows). Ranked list in
+  docs/english_g.md "In game".
+- Round 6 (PC fixes, both games): rt_text_vsnprintf (src/pc/rt/rt_text.c) looks up %s arguments of the game's prints
+  (window titles through DispFrameListA, set01 banners) and set01.c is built with -Dstrlen=rt_text_strlen (banner frame
+  fits the English); font_puts reads ~Cnn colour codes (G's shop count line) and keeps proportional spacing to text with
+  letters (numbers drawn over each other line up). Tour: quest_board scene, quest_info reaches the pages; the town is not
+  reachable for G on the PC (no G online client). text_map: 'same overlay' choice for labels with two US spellings.
+  Short-form wording table (ours) in docs/english_g.md.
+  full_check (21 Oct, after these changes): rebuild 5 OK, all PC/Xbox builds and tests ok except test_coop's Wine step:
+  under full_check's 1.5 GB cap Wine itself segfaults on the stale build/win/mhview_online.exe (built 10 Oct, not rebuilt
+  by full_check, so none of these changes are in it); run alone without the cap the Windows joiner joins and both sides
+  agree on its position (8905 41 9701), the host then exits non-zero on "connection closed" (the test's timing).
+- Round 7 (MH1 in English): g_eng_tour.py --mh1 (16 scenes incl. the online town on the test server, sheets in
+  build/B/eng_mh1/); text_map: hand-checked G pairs also fill / correct MH1 strings with the same Japanese (181 / 12:
+  the shop's 売る said "Buy"), MH1 status rows fixed, select-overlay and gallery hand pairs, 'keeptail' (quest card page
+  row), G quest card hand pairs. Ranked list: docs/english.md section 8. full_check 21 Oct: all ok (emulator tests skipped).

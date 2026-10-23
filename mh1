@@ -146,6 +146,13 @@ needs system packages.)"
 }
 
 # ---------------------------------------------------------------- 3. build and assemble
+player_marker() {   # player_marker DIR: PLAYER.txt marks a player package (the G program shows its window only there)
+    cat > "$1/PLAYER.txt" <<'EOT'
+This folder is a player package of the Monster Hunter PC port. Keep this file next to the program:
+Monster Hunter G opens its game window only when it is here (test runs of the build are hidden).
+EOT
+}
+
 copy_data() {   # copy_data DEST [files]
     say "copying the game files from your disc to $1 (about 925 MB)"
     mkdir -p "$1"
@@ -164,9 +171,9 @@ linux)
         cat > "$OUT/play.sh" <<'EOS'
 #!/bin/sh
 # Start Monster Hunter G (see PLAYING.md). Extra options go to the game, e.g. ./play.sh --fullscreen
+# (the window opens because PLAYER.txt is in this folder; without it the G program runs hidden, for tests)
 #   ./play.sh quest   straight into quest 10 (Rathian)      ./play.sh easy   same, the hunter cannot faint
 cd "$(dirname "$0")"
-export MH1_SHOW=1       # a player gets a window (G runs by agents and tests are hidden by default)
 case "$1" in
     quest) shift; exec ./mhview_g --play --quest 10 "$@" ;;
     easy)  shift; RT_PL_GOD=1 exec ./mhview_g --play --quest 10 "$@" ;;
@@ -174,6 +181,7 @@ esac
 exec ./mhview_g --play --boot "$@"
 EOS
         chmod +x "$OUT/play.sh"
+        player_marker "$OUT"
         say "copying the game files from your disc to $OUT/data (about 1.1 GB)"
         mkdir -p "$OUT/data"
         python3 tools/disc_files.py extract "$DISC" "$OUT/data" --files "AFS_DATA.AFS,AFS00.AFS,AFS01.AFS,SLPM_658.69" || die "copying the disc files failed"
@@ -197,6 +205,7 @@ cd "$(dirname "$0")"
 exec ./mhview --play --boot "$@"
 EOS
     chmod +x "$OUT/play.sh"
+    player_marker "$OUT"
     copy_data "$OUT/data" ""
     say "done. Play with:  $OUT/play.sh"
     ;;

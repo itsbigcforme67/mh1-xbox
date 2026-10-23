@@ -1,5 +1,7 @@
 /* em20 draft */
 #include "em.h"
+unsigned char em20_fly_adjy2();   /* its real return type: was implicitly int (tools/check_kr_returns.py) */
+unsigned short em20_senkai_target();   /* its real return type: was implicitly int (tools/check_kr_returns.py) */
 #include "game.h"
 #include "fl.h"
 #include "pl.h"
@@ -5796,6 +5798,115 @@ static void em_move05_005F6810(EMW *em, EM20W *w) {
     }
 }
 
+#ifdef VERSION_MHG
+/* G game 0x622400 (written from the asm; agent D, 21 Oct 2026): act 6/1, the Rathalos scene of quest 10028 (stage 69).
+ * It is placed by the nest, walks three legs toward set points (each ends after its timer or within 200 of the point),
+ * roars, then waits for the demo's flag 20 and turns normal. G's act 6 no 1; MH1's is em_demo00. */
+static void em20_g_scene(EMW *em, EM20W *w) {
+    f32 d;
+
+    em->x9E1 = 5;           /* (G 0x9D9) */
+    em->x40C = 5;
+    switch (em->x05) {
+    case 0:
+        em->x05++;
+        em->x3F4 = 0;
+        em->x388 = 0;
+        em->pos[0] = 11318.0f;
+        em->pos[1] = 0.0f;
+        em->pos[2] = 14653.0f;
+        em->tgt_pos[0] = 10130.0f;
+        em->tgt_pos[1] = 0.0f;
+        em->tgt_pos[2] = 13160.0f;
+        em->ang[0] = 0;
+        em->ang[1] = Em_Calc_angY(em->pos, em->tgt_pos) & 0xFFFF;
+        em_char_set(em, 1, 0, 0);
+        em->ang[2] = 0;
+        em_rate_clear(em);
+        em->work08 = 150;
+        break;
+    case 1:
+        if (--em->work08 > 0)
+            break;
+        em->x05++;
+        em->ang[0] = 0;
+        em->ang[1] = Em_Calc_angY(em->pos, em->tgt_pos) & 0xFFFF;
+        em_char_set(em, 3, 0, 0);
+        em->ang[2] = 0;
+        em->work08 = 180;
+        break;
+    case 2:
+    case 3:
+        d = CalcDistanceXZ(em->pos, em->tgt_pos);
+        if (--em->work08 > 0 && !(d <= 200.0f))
+            break;
+        if (em->x05 == 3) {
+            em->pos[0] = 10130.0f;
+            em->pos[1] = 0.0f;
+            em->pos[2] = 13160.0f;
+            em->tgt_pos[0] = 10060.0f;
+            em->tgt_pos[1] = 0.0f;
+            em->tgt_pos[2] = 8250.0f;
+        } else if (em->x05 == 2) {
+            em->tgt_pos[0] = 9650.0f;
+            em->tgt_pos[1] = 0.0f;
+            em->tgt_pos[2] = 6990.0f;
+            em_char_set(em, 104, 0, 0);
+        }
+        em->x05++;
+        em->ang[0] = 0;
+        em->ang[1] = Em_Calc_angY(em->pos, em->tgt_pos) & 0xFFFF;
+        em->ang[2] = 0;
+        em->work08 = 300;
+        break;
+    case 4:
+        d = CalcDistanceXZ(em->pos, em->tgt_pos);
+        if (--em->work08 > 0 && !(d <= 200.0f))
+            break;
+        em->x05++;
+        em->tgt_pos[0] = 9870.0f;
+        em->tgt_pos[1] = 0.0f;
+        em->tgt_pos[2] = 6760.0f;
+        em_char_set(em, 101, 0, 0);
+        break;
+    case 5:
+        if (em->x194 != 0)
+            break;
+        em->x05++;
+        em->ang[0] = 0;
+        em->ang[1] = Em_Calc_angY(em->pos, em->tgt_pos) & 0xFFFF;
+        em_char_set(em, 3, 0, 0);
+        em->ang[2] = 0;
+        em->work08 = 150;
+        break;
+    case 6:
+        w->x08 = em->work08 & 1;
+        d = CalcDistanceXZ(em->pos, em->tgt_pos);
+        if (--em->work08 > 0 && !(d <= 200.0f))
+            break;
+        em->x05++;
+        em_char_set(em, 51, 0, 0);
+        w->x08 = 0;
+        em->work08 = 360;
+        break;
+    case 7:
+        if (--em->work08 > 0)
+            break;
+        em->x05++;
+        em_char_set(em, 1, 0, 0);
+        break;
+    case 8:
+        if (Event_flag_ck(20) == 1) {
+            em->x05++;
+            em->x9E1 = 0;
+            em->x40C = 0;
+            em20_to_normal(em, 0, 0);
+        }
+        break;
+    }
+}
+#endif
+
 static void em_move06_005F6880(EMW *em, EM20W *w) {
     u8 temp_a2;
 
@@ -5805,6 +5916,10 @@ static void em_move06_005F6880(EMW *em, EM20W *w) {
         em_demo00_005F55D0(em, w);
         break;
     case 1:
+#ifdef VERSION_MHG
+        em20_g_scene(em, w);
+        break;
+#endif
         em_demo00_005F55D0(em, w);
         break;
     case 2:
@@ -5834,6 +5949,45 @@ void em20_main(EMW *em) {
 
     em_mode_timer_sub(em);
     em_no_floor_ck(em);
+#ifdef VERSION_MHG
+    /* G (game 0x623A80, written from the asm; agent D, 20 Oct 2026): game_func_0062A2C0 keeps the flag off in two
+     * Gypceros moves (kinds 20 / 39, mode 3 sub 4 or 9); the needs per difficulty: 2 as MH1's 2, 4 with G's new kind 39
+     * and the countdown-only hunger, 9 / 10 none, any other the countdown-only hunger (MH1: only 2 and 4) */
+    if (em->mode != 5) {
+        if ((em->kind == 20 || em->kind == 39) && em->mode == 3 && (em->x15 == 4 || em->x15 == 9)) {
+            w->x08 = 0;
+        } else if (em->x8B6 != 0) {
+            w->x08 ^= 1;
+        } else {
+            w->x08 = 0;
+        }
+    } else {
+        w->x08 = 0;
+    }
+    if ((em->x8C2 != 1) && (em->x8B6 == 0)) {
+        void game_func_00547C20(EMW *em);
+        switch (game_w.x2E) {
+        case 2:
+            em_hinshi_ck(em, 0.200000003f);
+            em_thirst_ck(em);
+            em_hungry_ck(em);
+            break;
+        case 4:
+            if (em->kind == 20 || em->kind == 39) {
+                em_egg_ck(em);
+            }
+            em_thirst_ck(em);
+            game_func_00547C20(em);
+            break;
+        case 9:
+        case 10:
+            break;
+        default:
+            game_func_00547C20(em);
+            break;
+        }
+    }
+#else
     if (em->mode != 5) {
         if (em->x8B6 != 0) {
             w->x08 ^= 1;
@@ -5856,6 +6010,7 @@ void em20_main(EMW *em) {
             em_hungry_ck(em);
         }
     }
+#endif
     temp_v0 = w->x06;
     if (temp_v0 != 0) {
         w->x06 = (s16) (temp_v0 - 1);
@@ -6065,11 +6220,25 @@ block_111:
         }
         break;
     }
-    if ((quest_w.no == 0x94) && (em->stg == 0x2E) && (Event_flag_ck(0x10) == 0)) {
+#ifdef VERSION_MHG
+int rt_story_quest(void);
+#define STORYQ rt_story_quest()
+#else
+#define STORYQ quest_w.no
+#endif
+    if ((STORYQ == 0x94) && (em->stg == 0x2E) && (Event_flag_ck(0x10) == 0)) {
         if ((*(u8 *)0x3F360F == 1) && (em->mode != 6)) {
             em20_act_set(em, 6, 0, 1);
         }
-    } else {
+    }
+#ifdef VERSION_MHG
+    else if (quest_w.no == 10028 && em->stg == 69 && Event_flag_ck(20) == 0) {
+        if (game_w.info_stop == 1 && em->mode != 6) {      /* G (game 0x624410) */
+            em20_act_set(em, 6, 1, 1);
+        }
+    }
+#endif
+    else {
         switch (em->x734) {
         case 3:
             if (em->x839 != 0) {

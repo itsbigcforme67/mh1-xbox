@@ -7,10 +7,26 @@
 quest_w = 0x0032D010; // size:0x290            # G grew it (Quest_init memsets 0x290)
 select_w = 0x0035EC30; // size:0xF0            # quest number at +0xD0 (MH1 +0xAC)
 start_area_lists = 0x002EECF0; // size:0x88           # start-area lists {weight, stage}.., 0xFF and their pointer lists (Quest_pl_stage_init)
+Demo_cam_tbl = 0x002A0D40; // size:0x98             # G's 38 demo cameras (the split sized it 35: cameras 35-37, the GALLERY's scenes 13 / 14, read past it)
+demo_cam_g05 = 0x00297850; // size:0x8D0 noptr      # demo camera command lists the split left unnamed (cameras 5-9, 35-37); each up to the next
+demo_cam_g06 = 0x00298120; // size:0xBD0 noptr
+demo_cam_g07 = 0x00298CF0; // size:0xDE0 noptr
+demo_cam_g08 = 0x00299AD0; // size:0x1F40 noptr
+demo_cam_g09 = 0x0029BA10; // size:0xB0 noptr
+demo_cam_g35 = 0x0029BAC0; // size:0x31E0 noptr
+demo_cam_g36 = 0x0029ECA0; // size:0x1F70 noptr
+demo_cam_g37 = 0x002A0C10; // size:0x130 noptr
+stage_model_data = 0x002593B0; // size:0x170 noptr   # per-stage AFS indexes: G has 92 stages (88-91 are G's own; the split sized them 88)
+stage_hit_data_w = 0x00259520; // size:0x170 noptr
+set_model_data = 0x00259690; // size:0x170 noptr
+STAGE_TEX = 0x0025ABD0; // size:0x170 noptr
+SET_TEX = 0x0025CF70; // size:0x170 noptr
 gsave_fmt = 0x002EA6B0; // size:0x58 noptr                # save slot screen formats (NO DATA, slot:name, TIME, MONEY / HR, MONEY), G disp_savesel_moji
 fade_data = 0x00253F70; // size:0x188 noptr          # 14 fades (MH1 10: G's online screens use 11-14, e.g. fade_set(12) entering a plaza)
 fade_rgb_110 = 0x00254100; // size:0x30 noptr         # the fades' colours (G 12, MH1 10)
 [sub_main]
+eft20_fade13_g = 0x00506990; // size:0x20 noptr        # G only: eft20 arg 13's fade keys {s32 time, rgba}.., -1 (eft20_t)
+eft20_fade21_g = 0x005073E0; // size:0x30 noptr        # G only: eft20 arg 21's fade keys (eft20_t)
 quest_size_lim_def = 0x004FD8D0; // size:0xA            # monster size limits per class {min, max} x5, copied to quest_size_lim (Quest_start)
 quest_bonus_tbl = 0x004FDB40; // size:0x20           # reward-level bonus by random number (Quest_start, quest_w.x14E)
 quest_size_dist_data = 0x004FDB60; // size:0xE0           # size distributions (7 x 32 bytes, through quest_size_dist_tbl)
@@ -49,6 +65,20 @@ em_parts_num = 0x005207C0; // size:0x34       # motion layers per kind (Em_max_p
 em_dur_tbl = 0x005088C0; // size:0xD0
 em_dur_rows = 0x005084E0; // size:0x3E0 noptr     # em_dur_tbl's rows (9 part hit points + 1, s16): pairs like 0x78, 0x50 read as G
                                                   # addresses (0x500078) by the pointer scan and were relocated (kind 20's parts 4/5; lockstep referee)
+# shell08 (fireballs / beams) per-type tables: G has 14 types (MH1 12; G's Gravios/Basarios beams use 12 and 13).
+# At MH1's size the PC read past the copies for those types. Agent A, 20 Oct 2026. (shell08_data: 17 in both games)
+[game]
+shell08_num = 0x006C5D00; // size:0x1C noptr
+shell08_all_time = 0x006C5D40; // size:0x1C noptr
+shell08_index = 0x006C5D60; // size:0x1C noptr
+shell08_atk_no = 0x006C5DA0; // size:0x1C noptr
+shell08_rate_tbl = 0x006C5DC0; // size:0xA8 noptr
+shell08_rate_g_tbl = 0x006C5E70; // size:0xA8 noptr
+shell08_ofs_tbl = 0x006C5F20; // size:0xA8 noptr
+# em01's flight height curves (G em01_fly_adjy2_init has types 15 and 16; agent A, 20 Oct 2026)
+[game]
+fly_adjy2_hosei_tbl_00653E40 = 0x006955D0; // size:0x44    # 17 curve pointers per type (MH1 15)
+fly_adjz2_hosei_tbl_00654060 = 0x00695800; // size:0x44    # 17 (15 and 16 are 0)
 [game]
 eft19_em_ofs_tbl = 0x0067DA30; // size:0xD0
 enemy_mahi_size = 0x0066F0B0; // size:0xD0
@@ -348,6 +378,9 @@ gal_staff_lines = 0x0050A740; // size:0xEC0           # the staff roll's lines o
 gal_staff_pages = 0x0050B600; // size:0x78
 logo_tbl = 0x0050B6B0; // size:0x140 noptr             # {u, v, w, h, texture - 0x111} per logo (MH1's table is shorter)
 gal_end_msg = 0x0052D4E0; // size:0x18 noptr
+stage_start_pos = 0x00520A30; // size:0x450 noptr    # 92 stages x {x, y, z} (88-91 are G's own)
+gal_staff_cue = 0x0050B678; // size:0xE noptr         # credits movie clips: {page, clip} pairs, 0xFF ends (G main 0x1E4180, func_001E4360)
+gal_staff_clip_pos = 0x0050B690; // size:0x18 noptr    # {x, y} (u16) of the n-th clip of a credits run, n up to 5 (G main 0x1E40D0)
 # memory card messages: G's list has 63 entries (MH1 51); the 0xCC the symbol view gave read past the host array at entry 51 (the OPTIONS / GALLERY save crashed)
 [main]
 McardMsgTbl = 0x002B0B40; // size:0xFC
@@ -535,3 +568,6 @@ g_main_2EFABC = 0x002EFABC; // size:0x8   # tools/mhg_gonl.py: G data the G onli
 g_main_2EFAC0 = 0x002EFAC0; // size:0x4   # tools/mhg_gonl.py: G data the G online code uses (size: up to the next name)
 [sub_main]
 g_sub_527D34 = 0x00527D34; // size:0x2C   # tools/mhg_gonl.py: G data the G online code uses (size: up to the next name)
+[sub_main]
+tuto_str_tbl = 0x005282F0; // size:0x14      # the Elder's lesson window texts (G DispTutorial, game 0x66E700): the PUSH sign, a locked lesson, back, the Elder's name, the page counter (pointers)
+tuto_title_str = 0x00529050; // size:0x20 noptr   # its frame title (a text; MH1 passes a pointer word, soncho_no_oshie)

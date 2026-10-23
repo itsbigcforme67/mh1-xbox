@@ -187,6 +187,13 @@ void rt_hud_init(void)
     load_pit();
     PitWork_init();
     Pit_init();
+    if (Tutorial_quest_ck()) {  /* stage_init's next step (flow01.c: Pit_init, SonchoInit 0x63B020, Q_camera_init): the
+                                 * Elder's lessons. The PS2 runs it for every quest and then indexes tuto_flag_tbl with
+                                 * (quest - first training quest), far past the table for the others; only training
+                                 * quests use it (game_w.x1E7, from the same check), so the PC skips it there */
+        void SonchoInit(void);
+        SonchoInit();
+    }
     Info_Initialization();
 }
 void rt_hud_tick(void)
@@ -205,3 +212,24 @@ void Quest_price_return(void)
         quest_price = 0;
     }
 }
+
+#ifdef VERSION_MHG
+/* The village story quests whose monsters play a scripted scene the first time (em*_main: "quest Q on stage S while
+ * event flag F is clear: act 6/n"). MH1's monster code tests MH1's quest numbers (0x87 ..); G moved those quests to
+ * 10005 .. (read from G's em*_main, agent D 21 Oct 2026). This gives the MH1 number for G's quest, so the shared C
+ * keeps its tests; any other quest gives -1. G's new scenes (10008, 10028, 10035, 10046 ...) are written out in the
+ * em*_main themselves. */
+int rt_story_quest(void)
+{
+    switch (*(u16 *)((u8 *)&quest_w + 8)) {
+    case 10005: return 0x87;
+    case 10006: return 0x88;
+    case 10014: return 0x89;
+    case 10010: return 0x8A;
+    case 10032: return 0x8B;
+    case 10015: return 0x94;
+    case 10041: return 0xAB;
+    }
+    return -1;
+}
+#endif

@@ -8,6 +8,13 @@
 #include "fl.h"
 #include "pl.h"
 #include "plf.h"
+#ifdef VERSION_MHG
+#define EM16_FACE(em, v) ((em)->ang[1] = (v))
+#define EM16_G(g, mh1) (g)
+#else
+#define EM16_FACE(em, v) ((void)0)
+#define EM16_G(g, mh1) (mh1)
+#endif
 
 /* Per-monster work at EMW+0x444 (em16.c has the same start). */
 typedef struct EM16W {
@@ -127,6 +134,9 @@ void em16_local_init(EMW *em) {
     eft01_set((PLW *)em, 0);
 }
 
+#ifdef VERSION_MHG
+extern s16 em_atk_mode_timer_tbl[];
+#endif
 void em16_init(EMW *em) {
     EM16W *w = (EM16W *)em->ex;
 
@@ -161,6 +171,20 @@ void em16_init(EMW *em) {
             break;
         }
     }
+#ifdef VERSION_MHG      /* G em16_init (game 0x5FC520): per-kind animation speed */
+    switch (em->kind) {
+    case 13:
+        em->act_spd = 1.2f;
+        break;
+    case 16:
+    case 35:
+        em->act_spd = 1.0f;
+        break;
+    case 30:
+        em->act_spd = 1.1f;
+        break;
+    }
+#endif
     em_char_set(em, 1, 0, 0);
     em->x388 = 0;
     em_act_set(em, 0, 0xC);
@@ -192,6 +216,11 @@ void em16_init(EMW *em) {
         em_act_set(em, 0, 0xA);
         break;
     }
+#ifdef VERSION_MHG      /* G: kind 30 (Ioprey, a guess) of type 1 starts in attack mode */
+    if (em->kind == 0x1E && em->type == 1) {
+        Em_Mode_Chg(em, 1, em_atk_mode_timer_tbl[em->kind]);
+    }
+#endif
 }
 
 void em16_init2(EMW *em) {
@@ -839,6 +868,9 @@ static void em_atk02_005D2110(EMW *em, EM16W *w) {
     case 1:
         if (em_frame_check(em, 40.0f, 0) != 0) {
             switch (em->kind) {
+#ifdef VERSION_MHG      /* G em_atk02 (game 0x5FE080): kind 35 as 16 */
+            case 35:
+#endif
             case 16:
                 shell13_set(em, 3);
                 break;
@@ -897,6 +929,9 @@ static void em_atk03_005D2400(EMW *em, EM16W *w) {
     case 1:
         if (em_frame_check(em, 16.0f, 0) != 0) {
             switch (em->kind) {
+            #ifdef VERSION_MHG      /* G: kind 35 as 16 */
+            case 35:
+#endif
             case 16:
                 shell13_set(em, 5);
                 break;
@@ -915,7 +950,12 @@ static void em_atk03_005D2400(EMW *em, EM16W *w) {
     }
 }
 
+#ifdef VERSION_MHG
+/* G em_atk04 (game 0x5FE490): a variant argument (em_move03 x15 4 -> 0, the new x15 13 -> 1: Shell08 x07 = 2) */
+static void em_atk04_005D2500(EMW *em, EM16W *w, int var) {
+#else
 static void em_atk04_005D2500(EMW *em, EM16W *w) {
+#endif
     switch (em->x05) {
     case 0:
         em->x05++;
@@ -923,7 +963,11 @@ static void em_atk04_005D2500(EMW *em, EM16W *w) {
         break;
     case 1:
         if (em_frame_check(em, 80.0f, 0) != 0) {
+#ifdef VERSION_MHG
+            Shell08_set_ang(em, 0xF, 9, var == 1 ? 2 : 0, 0xF8E5, 0);
+#else
             Shell08_set_ang(em, 0xF, 9, 0, 0xF8E5, 0);
+#endif
         }
         if (em->x194 == 0) {
             em16_to_normal(em, 0, 0);
@@ -954,6 +998,9 @@ static void em_atk05_005D25B0(EMW *em, EM16W *w) {
     case 1:
         if (em_frame_check(em, 40.0f, 0) != 0) {
             switch (em->kind) {
+            #ifdef VERSION_MHG      /* G: kind 35 as 16 */
+            case 35:
+#endif
             case 16:
                 shell13_set(em, 5);
                 break;
@@ -1025,6 +1072,9 @@ static void em_atk06_005D28A0(EMW *em, EM16W *w) {
     case 1:
         if (em_frame_check(em, 40.0f, 0) != 0) {
             switch (em->kind) {
+            #ifdef VERSION_MHG      /* G: kind 35 as 16 */
+            case 35:
+#endif
             case 16:
                 shell13_set(em, 5);
                 break;
@@ -1320,7 +1370,11 @@ void em_move03_005D3660(EMW *em, EM16W *w) {
     case 1: em_atk01_005D2100(em, w); break;
     case 2: em_atk02_005D2110(em, w); break;
     case 3: em_atk03_005D2400(em, w); break;
+#ifdef VERSION_MHG
+    case 4: em_atk04_005D2500(em, w, 0); break;
+#else
     case 4: em_atk04_005D2500(em, w); break;
+#endif
     case 5: em_atk05_005D25B0(em, w); break;
     case 6: em_atk06_005D28A0(em, w); break;
     case 7: em_atk07_005D2B90(em, w); break;
@@ -1329,6 +1383,9 @@ void em_move03_005D3660(EMW *em, EM16W *w) {
     case 10: em_atk10_005D2FF0(em, w); break;
     case 11: em_atk11_005D3280(em, w); break;
     case 12: em_atk12_005D3510(em, w); break;
+#ifdef VERSION_MHG
+    case 13: em_atk04_005D2500(em, w, 1); break;   /* G em_move03 (game 0x5FF660) */
+#endif
     }
 }
 
@@ -1420,7 +1477,7 @@ static void em_dmg03_005D3AB0(EMW *em, EM16W *w) {
     switch (em->x05) {
     case 0:
         em->x05++;
-        em_char_set(em, 0x23, 0, 0);
+        em_char_set(em, EM16_G(0x25, 0x23), 0, 0);
         w->spd[0] = 0;
         w->spd[1] = (u16)(em->ang[1] - 0x4000);
         w->spd[2] = 0;
@@ -1437,7 +1494,7 @@ static void em_dmg03_005D3AB0(EMW *em, EM16W *w) {
             if (em->pos[1] <= em->x5AC) {
                 em->x05++;
                 em->x388 = 0;
-                em_char_set(em, 0x24, 0, 0);
+                em_char_set(em, EM16_G(0x26, 0x24), 0, 0);
             }
         }
         break;
@@ -1456,7 +1513,7 @@ static void em_dmg04_005D3C30(EMW *em, EM16W *w) {
     switch (em->x05) {
     case 0:
         em->x05++;
-        em_char_set(em, 0x25, 0, 0);
+        em_char_set(em, EM16_G(0x23, 0x25), 0, 0);
         w->spd[0] = 0;
         w->spd[1] = (u16)(em->ang[1] + 0x4000);
         w->spd[2] = 0;
@@ -1473,7 +1530,7 @@ static void em_dmg04_005D3C30(EMW *em, EM16W *w) {
             if (em->pos[1] <= em->x5AC) {
                 em->x05++;
                 em->x388 = 0;
-                em_char_set(em, 0x26, 0, 0);
+                em_char_set(em, EM16_G(0x24, 0x26), 0, 0);
             }
         }
         break;
@@ -1654,7 +1711,7 @@ static void em_die02_005D43D0(EMW *em, EM16W *w) {
         em->x05++;
         w->x60 = 1;
         Quest_enemy_die(em);
-        em_char_set(em, 0x23, 0, 0);
+        em_char_set(em, EM16_G(0x25, 0x23), 0, 0);
         w->spd[0] = 0;
         w->spd[1] = (u16)(em->ang[1] - 0x4000);
         w->spd[2] = 0;
@@ -1669,7 +1726,7 @@ static void em_die02_005D43D0(EMW *em, EM16W *w) {
         if (em->pos[1] <= em->x5AC) {
             em->x05++;
             em->x388 = 0;
-            em_char_set(em, 0x24, 0, 0);
+            em_char_set(em, EM16_G(0x26, 0x24), 0, 0);
         }
         break;
     case 2:
@@ -1711,7 +1768,7 @@ static void em_die03_005D45F0(EMW *em, EM16W *w) {
         em->x05++;
         w->x60 = 1;
         Quest_enemy_die(em);
-        em_char_set(em, 0x25, 0, 0);
+        em_char_set(em, EM16_G(0x23, 0x25), 0, 0);
         w->spd[0] = 0;
         w->spd[1] = (u16)(em->ang[1] + 0x4000);
         w->spd[2] = 0;
@@ -1726,7 +1783,7 @@ static void em_die03_005D45F0(EMW *em, EM16W *w) {
         if (em->pos[1] <= em->x5AC) {
             em->x05++;
             em->x388 = 0;
-            em_char_set(em, 0x26, 0, 0);
+            em_char_set(em, EM16_G(0x24, 0x26), 0, 0);
         }
         break;
     case 2:
@@ -2329,7 +2386,7 @@ static void em_demo04_005D6480(EMW *em, EM16W *w) {
         if (Event_flag_ck(0x13) == 1) {
             em->x05++;
             em->x01 = 1;
-            em16_to_normal(em, 0, 0);
+            em16_to_normal(em);
         }
         break;
     }
@@ -2351,12 +2408,39 @@ static void em_demo05_005D6530(EMW *em, EM16W *w) {
         if (Event_flag_ck(0x12) == 1) {
             em->x05++;
             em->x01 = 1;
-            em16_to_normal(em, 0, 0);
+            em16_to_normal(em);
         }
         break;
     }
 }
 
+#ifdef VERSION_MHG
+/* G game 0x6025F0: quest 10035's demo act (6, 6): hidden until event flag 0x16, then shown and back to normal */
+static void em_demo06_g(EMW *em, EM16W *w) {
+    u8 step;
+
+    em->x9E1 = 5;
+    em->x40C = 5;
+    step = em->x05;
+    switch (step) {
+    case 0:
+        em->x05 = step + 1;
+        em->x3F4 = 0;
+        em->x388 = 0;
+        em_char_set(em, 1, 0, 0);
+        em->x01 = 0;
+        em->x839 = 0;
+        break;
+    case 1:
+        if (Event_flag_ck(0x16) == 1) {
+            em->x05++;
+            em->x01 = 1;
+            em16_to_normal(em);
+        }
+        break;
+    }
+}
+#endif
 void em_move06_005D65E0(EMW *em, EM16W *w) {
     switch (em->x15) {
     case 0: em_demo00_005D5CC0(em, w); break;
@@ -2365,6 +2449,9 @@ void em_move06_005D65E0(EMW *em, EM16W *w) {
     case 3: em_demo03_005D63F0(em, w); break;
     case 4: em_demo04_005D6480(em, w); break;
     case 5: em_demo05_005D6530(em, w); break;
+#ifdef VERSION_MHG
+    case 6: em_demo06_g(em, w); break;     /* G em_move06 (game 0x6026A0) */
+#endif
     }
 }
 
@@ -2516,6 +2603,9 @@ void em_move07_005D6BC0(EMW *em, EM16W *w) {
 
 void em16_main_sub(EMW *em, EM16W *w);
 
+/* G em16_main (game 0x602D00; compared with an m2c draft of G's asm): a hit that makes the monster flinch or fall
+ * first turns it by the hit's side (EM16_FACE, as em27), and the demo stops are G's quests 10006 / 10010 / 10041 and
+ * the new 10035 (stage 0x36, flag 0x16, demo 6) */
 void em16_main(EMW *em) {
     EM16W *w = (EM16W *)em->ex;
     u8 dmg[4];
@@ -2550,23 +2640,31 @@ void em16_main(EMW *em) {
         if (em->x388 == 2 && r == 1 && (em->x788[0] & 2)) {
             d = (u16)(em->dm_ang - em->ang[1]);
             if (d >= 0x6000 && d < 0xA000) {
+                EM16_FACE(em, (s32)em->dm_ang + 0x8000);
                 em16_act_set(em, 5, 6, 0);
             } else if (d >= 0x2000 && d < 0x6000) {
+                EM16_FACE(em, (s32)em->dm_ang - 0x4000);
                 em16_act_set(em, 5, 8, 0);
             } else if (d >= 0xA000 && d < 0xE000) {
+                EM16_FACE(em, (s32)em->dm_ang + 0x4000);
                 em16_act_set(em, 5, 9, 0);
             } else {
+                EM16_FACE(em, em->dm_ang);
                 em16_act_set(em, 5, 7, 0);
             }
         } else {
             d = (u16)(em->dm_ang - em->ang[1]);
             if (d >= 0x6000 && d < 0xA000) {
+                EM16_FACE(em, (s32)em->dm_ang + 0x8000);
                 em16_act_set(em, 5, 0, 0);
             } else if (d >= 0x2000 && d < 0x6000) {
+                EM16_FACE(em, (s32)em->dm_ang - 0x4000);
                 em16_act_set(em, 5, 2, 0);
             } else if (d >= 0xA000 && d < 0xE000) {
+                EM16_FACE(em, (s32)em->dm_ang + 0x4000);
                 em16_act_set(em, 5, 3, 0);
             } else {
+                EM16_FACE(em, em->dm_ang);
                 em16_act_set(em, 5, 1, 0);
             }
         }
@@ -2594,12 +2692,16 @@ void em16_main(EMW *em) {
     case 12:
             d = (u16)(em->dm_ang - em->ang[1]);
             if (d >= 0x6000 && d < 0xA000) {
+                EM16_FACE(em, (s32)em->dm_ang + 0x8000);
                 em16_act_set(em, 4, 1, 0);
             } else if (d >= 0x2000 && d < 0x6000) {
+                EM16_FACE(em, (s32)em->dm_ang - 0x4000);
                 em16_act_set(em, 4, 3, 0);
             } else if (d >= 0xA000 && d < 0xE000) {
+                EM16_FACE(em, (s32)em->dm_ang + 0x4000);
                 em16_act_set(em, 4, 4, 0);
             } else {
+                EM16_FACE(em, em->dm_ang);
                 em16_act_set(em, 4, 2, 0);
             }
         break;
@@ -2608,12 +2710,16 @@ void em16_main(EMW *em) {
         if (em->x388 == 2) {
             d = em->dm_ang;
             if (d >= 0x6000 && d < 0xA000) {
+                EM16_FACE(em, (s32)em->dm_ang + 0x8000);
                 em16_act_set(em, 4, 1, 0);
             } else if (d >= 0x2000 && d < 0x6000) {
+                EM16_FACE(em, (s32)em->dm_ang - 0x4000);
                 em16_act_set(em, 4, 3, 0);
             } else if (d >= 0xA000 && d < 0xE000) {
+                EM16_FACE(em, (s32)em->dm_ang + 0x4000);
                 em16_act_set(em, 4, 4, 0);
             } else {
+                EM16_FACE(em, em->dm_ang);
                 em16_act_set(em, 4, 2, 0);
             }
         } else {
@@ -2628,7 +2734,7 @@ void em16_main(EMW *em) {
         }
     }
     switch (quest_w.x08) {
-    case 0x88:
+    case EM16_G(10006, 0x88):
         if (em->stg == 0x23 && Event_flag_ck(0xA) == 0) {
             if (game_w.info_stop == 1 && em->mode != 6) {
                 em16_act_set(em, 6, 3, 0);
@@ -2636,7 +2742,7 @@ void em16_main(EMW *em) {
             break;
         }
         goto cmd;
-    case 0x8A:
+    case EM16_G(10010, 0x8A):
         if (em->stg == 0x28 && Event_flag_ck(0x13) == 0) {
             if (game_w.info_stop == 1 && em->mode != 6) {
                 em16_act_set(em, 6, 4, 0);
@@ -2644,7 +2750,7 @@ void em16_main(EMW *em) {
             break;
         }
         goto cmd;
-    case 0xAB:
+    case EM16_G(10041, 0xAB):
         if (em->stg == 0x35 && Event_flag_ck(0x12) == 0) {
             if (game_w.info_stop == 1 && em->mode != 6) {
                 em16_act_set(em, 6, 5, 0);
@@ -2652,6 +2758,16 @@ void em16_main(EMW *em) {
             break;
         }
         goto cmd;
+#ifdef VERSION_MHG
+    case 10035:
+        if (em->stg == 0x36 && Event_flag_ck(0x16) == 0) {
+            if (game_w.info_stop == 1 && em->mode != 6) {
+                em16_act_set(em, 6, 6, 1);
+            }
+            break;
+        }
+        goto cmd;
+#endif
     default:
     cmd:
         if (em->x839 != 0) {

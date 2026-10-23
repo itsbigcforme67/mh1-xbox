@@ -5,6 +5,9 @@
 #include "fl.h"
 #include "pl.h"
 #include "plf.h"
+#ifndef __MWERKS__
+unsigned short em_act_search(void *);   /* (declared before its first use) */
+#endif
 
 /* Raw access to EMW fields that em.h does not name yet. */
 #define EMF(em, T, o) (*(T *)((u8 *)(em) + (o)))
@@ -68,7 +71,11 @@ void eft09_set(EMW *, int);
 void Eft20_set(f32, EMW *, int, int);
 void shell01_set(EMW *, int);
 s16 em_hp_vital_set2(EMW *, s16, s16);
+#ifdef __MWERKS__
 int em_act_search(void *);
+#else
+unsigned short em_act_search(void *);   /* the real return type (tools/check_kr_returns.py) */
+#endif
 void em_char_set(EMW *, int, int, int);
 void em_char_set2();
 void em_act_set(EMW *, int, u16);

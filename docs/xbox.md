@@ -696,7 +696,10 @@ folder it was started from (XeImageFileName, src/pc/xbox/xbox_path.h), else the 
 1. gets an address by DHCP (nxdk lwIP), reads the laptop address from its folder's
    `loader.txt`;
 2. POSTs the last game log (`mh1log.txt` in its folder, the game's stderr) to the laptop
-   (`/log?game=mhg`) and deletes it;
+   (`/log?game=mhg`) and deletes it; with it the game's save (`E:\UDATA\<title id>\<save id>\`, POST
+   `/save?game=G`, since 21 Oct 2026), which xbox_serve.py keeps in `build/xbox/saves/<time>-<game>/`;
+   `python3 tools/xbox_save_to_pc.py build/xbox/saves/<that folder>` makes the PC card folder from it
+   (`<folder>/pc_card/BISLPM-...`) and prints the `MH1_SAVE_DIR=... mhview ...` line that plays it on the PC;
 3. compares `GET /version?game=G` with `mh1.ver` / `mhg.ver`; when different downloads
    `GET /mh1.xbe` / `/mhg.xbe` to `mh1.xbe` / `mhg.xbe` in its folder;
 4. starts that game (D: is then the loader's folder, so the game finds D:\data).
@@ -1535,8 +1538,8 @@ build/mhg/pctree (its build/pc holds G's objects and recorded commands), the fro
 output build/mhg/xbox[/nv2a]/default.xbe + mhg.iso. 803 objects, links with no undefined symbols (first try).
 `./mh1 xbox DISC` with the G disc does all of it and makes dist/xbox/MHG (XBE + data/: AFS_DATA.AFS,
 AFS00.AFS, AFS01.AFS, SLPM_658.69, ~1.1 GB); tools/disc_files.py knows G's files (sizes + CRC32, checked
-on the folder and on the .iso; `disc_files.py game DISC` prints mh1 / mhg); `./mh1 linux|windows` refuse a
-G disc for now. tools/xbox_install.sh sends a folder holding SLPM_658.69 to E:\Games\MHG.
+on the folder and on the .iso; `disc_files.py game DISC` prints mh1 / mhg); `./mh1 linux|windows` build G for
+the PC too since 15 Oct (docs/PLAYING.md "Monster Hunter G"). tools/xbox_install.sh sends a folder holding SLPM_658.69 to E:\Games\MHG.
 xemu: `tools/run_xemu.sh --version mhg --gfx nv2a --data disc/mhg ...` (or VERSION=mhg).
 
 **Identity, so MH1 and G install side by side** (src/pc/xbox/xbox_title.h, VERSION_MHG block): title id
@@ -1815,3 +1818,36 @@ and "town step 4" at tick 578. A PC client (mhview_online, hidden) then logged i
 both handles, the PC log has `slot 0 "XBOX" ... shown`, the Xbox log `slot 1 "PC" ... shown`; screenshots
 build/show/xemu_online/xbox_sees_pc.png and pc_sees_xbox.png (not committed) show both hunters by the fountain, named.
 Not yet on a real Xbox; rooms and a co-op hunt from the Xbox are not tested.
+
+### Black screen at "ac97 open" after a Back + Start relaunch (agent A, 21 Oct 2026)
+Owner (G, real Xbox, logs/20261021-190054-mhg): after a quit through Back + Start and a relaunch from the loader the
+game stopped at boot; the log ends after the first "ac97 open" line with GLOB_STA 00308000 (bit 8, codec ready, not
+set) and before the codec registers line: the codec register read stalled. A power cycle cleared it. Now:
+- leaving (xbox_log_show, every way out, and xbox_log_quit): both DMA channels run bit off, wait for the halt (DCH,
+  50 ms max), bus master reset, CR 0 (interrupts masked), status cleared, the interrupt disconnected;
+- XAudioInit: every wait has a time-out (codec-access semaphore 20 ms, codec ready 250 ms, power-down bits 200 ms,
+  halt / bus master reset 50 ms each). No codec ready after the cold reset: a second, longer (20 ms) cold reset; still
+  none: a warning, no codec register is touched, no DMA runs, the game goes on silent.
+Built (both games); not run on hardware or in xemu (a warm relaunch can't be made there anyway).
+
+## Freeze watchdog and crash catcher (agent E, 21 Oct 2026)
+
+src/pc/xbox/xbox_watch.c, started from main once the log is open (both games, every Xbox build).
+
+- **Freeze watchdog.** A second thread checks every 0.5 s whether the game made progress: a drawn frame
+  (xbox_log_frame) or a finished load step (rt_lt_end: a file read, an unpack, a texture). With none for 5 s it
+  writes "FREEZE: ..." and the crash report into the log (mode / step / stage / quest, the last checkpoint passed,
+  the last 300 log lines), commits the log and the save files to the disk, stops the AC97, shows the reason and
+  the log's last lines for 4 s and starts the network loader, which sends the log and the save to the laptop.
+  Known long operations (rt_lt_span_*: a quest start, a gallery scene, ...) get 60 s; in xemu (a UART answers)
+  the limit is always 60 s, because xemu can run far below real time; `RT_WATCHDOG_MS=n` in env.txt sets it
+  (0 = off). Checkpoints (xbox_watch_mark, a string): the boot-screen tick, the game tick, the sound tick, the
+  drawing, the frame end, the card's open / read / write, the AC97 start. The kernel has no call that reads another
+  thread's registers, so a freeze report has no backtrace of the frozen code: the checkpoint and the log tell
+  where.
+- **Crash catcher.** An SEH record at the bottom of the main thread's stack (fs:[0]; the kernel's dispatcher calls
+  it before it would stop the console): the exception code and address (with the symbol from the build's own
+  table), the registers, 16 stack words and a backtrace (stack words that point behind a call), then the same
+  report, flush and screen ("crashed - sending the report") and the loader. Exceptions in other threads (audio,
+  the watchdog) are not caught.
+- Not run on hardware or in xemu yet (21 Oct 2026: no memory for an emulator); both nv2a builds link.

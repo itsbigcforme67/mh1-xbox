@@ -2,6 +2,9 @@
  * flPS2VramTrans (file-static), flPS2GetVramTransAdrs. A texture handle (TEXH, 0x38 bytes) lives in the table flTexture; its mip levels are
  * uploaded to the GS by queueing one load image packet per level. */
 #include "types.h"
+#ifndef __MWERKS__
+short flPS2GetTextureVramBlock(TEXH *t);   /* (declared before its first use) */
+#endif
 
 typedef struct TEXH {
     int x0;             /* 0x00 */
@@ -56,7 +59,11 @@ void flPS2VIF1MakeEndLoadImage(long p, int a);
 long flPS2VIF1MakeLoadImage(long p, int a, int adrs, int size, long vram, long bw, long fmt, long z, long a0, long w, long h);
 int flPS2DmaAddQueue2(int mode, unsigned long tag, long x, void *c);
 int flPS2GetTextureBuffWidth();
+#ifdef __MWERKS__
 int flPS2GetTextureVramBlock(TEXH *t);
+#else
+short flPS2GetTextureVramBlock(TEXH *t);   /* the real return type (tools/check_kr_returns.py) */
+#endif
 int flPS2GetTextureSize(int pix, int w, int h, int mips);
 void flLogOut();
 int flPS2GetVramTransAdrs(TEXH *t, u32 level);

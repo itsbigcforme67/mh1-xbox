@@ -1071,3 +1071,25 @@ moji_tbl_num_h_ol
 nn_tbl
 yn_kigou_tbl
 sfd_tbl
+# the Elder's lesson window of the training quests (game tuto.c: SonchoInit / SonchoMove / DispTutorial; agent D,
+# 18 Oct 2026). G: its texts are tuto_str_tbl / tuto_title_str (config/mhg/pc_data.txt); the lit_* / soncho_no_oshie
+# names are MH1's (zeros in G, unused there)
+tuto_msg_tbl
+tuto_flag_tbl
+pf_message_list
+pf_tuto_message
+button_icon_tbl
+soncho_w work
+lit_442_0068F070
+lit_443_0068F080
+lit_444_0068F0A0
+lit_445_0068F0B0
+lit_446_0068F0C8
+soncho_no_oshie_00389C54
+# flPS2SinFast / CosFast's range and polynomial constants (rt_flmat.c ps2_sincos)
+at_tbl
+SS5432
+# the PS2 C library atanf / atan2f tables (rt_flmat.c flArcTan2)
+atanhi_0035E598
+atanlo_0035E5A8
+aT_0035E5B8

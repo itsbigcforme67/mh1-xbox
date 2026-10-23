@@ -1,5 +1,8 @@
 /* ui32 - yn.bin 0x0053A670-0x0053A8C0: yn_sprite_draw_each (draws count sprite cells with flip/rotate variants through net_flps0008). Draft in ui2_nm.c. */
 #include "yn.h"
+#ifndef __MWERKS__
+signed char yn_mc_get_current();   /* (declared before its first use) */
+#endif
 
 int ADXM_ShutdownThrd();
 int ADXPS2_LoadFcacheDvd();
@@ -51,7 +54,11 @@ int yn_hard_select_set();
 int yn_log_sd();
 int yn_mc_device_check_all();
 int yn_mc_format();
+#ifdef __MWERKS__
 int yn_mc_get_current();
+#else
+signed char yn_mc_get_current();   /* the real return type (tools/check_kr_returns.py) */
+#endif
 int yn_mc_gmfile_check();
 int yn_mc_gmfile_current_set();
 int yn_mc_gmfile_save();

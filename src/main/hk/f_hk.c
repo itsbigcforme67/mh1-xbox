@@ -69,7 +69,11 @@ void sk_skb_kill(int);
 void sk_speaking(void);
 void sk_yn_kigou_func(u8 *);
 int sk_yn_check();
+#ifdef __MWERKS__
 int sk_zenkaku_ck();
+#else
+signed char sk_zenkaku_ck();   /* the real return type (tools/check_kr_returns.py) */
+#endif
 int kbd_insert();
 static int hk_roma_ck(int);
 static int hk_yn_hardkeyboard_check(void *);
@@ -1013,6 +1017,9 @@ extern char lit_2587[];
 asm void kbd_disp_input(f32 x, s16 y)
 {
 #include "kbd_disp_input.inc"
+#ifndef __MWERKS__
+signed char sk_zenkaku_ck();   /* (declared before its first use) */
+#endif
 }
 #endif
 #endif

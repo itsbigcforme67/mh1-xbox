@@ -1,6 +1,7 @@
 /* lbui, run 1: Lb_eat .. Lb_eat (lobby.bin 0x00590D40-0x00590F3C): the matching functions of lbui_nm.c. */
 #pragma readonly_strings on
 #include "lbui_proto.h"
+unsigned char set01_set2();   /* its real return type: was implicitly int (tools/check_kr_returns.py) */
 
 
 /* sprite template for Put_2TF / Put_sprite_rotate (helpLineTbl entries, stride 0x14) */

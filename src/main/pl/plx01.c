@@ -118,19 +118,38 @@ void Pl_se_req2(PLW *, int, int, f32 *, int, int);
 #include "flow.h"
 void pl_body_make(PLW *pl, f32 *out, f32 radius);
 void hit_cap_pk(void *, void *);
+#ifdef __MWERKS__
 int hit_cap_cap3_m(void *, void *, f32 *);
+#else
+unsigned char hit_cap_cap3_m(void *, void *, f32 *);   /* the real return type (tools/check_kr_returns.py) */
+#endif
 extern f32 *D_63FC50[];
 extern f32 *D_6103A0[];
 void flvecNormalize(f32 *);
+#ifdef __MWERKS__
 int hit_sphr_sphr3(f32 *a, f32 *b, f32 *out, f32 ra, f32 rb);
+#else
+unsigned char hit_sphr_sphr3(f32 *a, f32 *b, f32 *out, f32 ra, f32 rb);   /* the real return type (tools/check_kr_returns.py) */
+#endif
 extern s16 *D_63FA10[];
 extern s16 *D_610370[];
 void body_ptr_ck2(PLW *, s16 **);
 int hit_data_expand(PLW *, s16 *, f32 *, f32 *);
 int hit_data_expand2(f32 *, s16 *, f32 *, f32 *);
+#ifdef __MWERKS__
 int hit_cap_sphr_m(void *, f32 *, f32 *, f32);
+#else
+unsigned char hit_cap_sphr_m(void *, f32 *, f32 *, f32);   /* the real return type (tools/check_kr_returns.py) */
+#endif
 s32 Pl_stg_ck_tw(PLW *, PLW *);
 #include "flow.h"
+#ifndef __MWERKS__
+f32 flSqrt(f32);   /* (declared before its first use) */
+s16 Pl_item_num_ck(PLW *, int);   /* (declared before its first use) */
+unsigned char hit_cap_cap3_m(void *, void *, f32 *);   /* (declared before its first use) */
+unsigned char hit_cap_sphr_m(void *, f32 *, f32 *, f32);   /* (declared before its first use) */
+unsigned char hit_sphr_sphr3(f32 *a, f32 *b, f32 *out, f32 ra, f32 rb);   /* (declared before its first use) */
+#endif
 extern u16 Psw[];
 void Item_box_get_efct();
 void Item_box_get_item(u16, u8);

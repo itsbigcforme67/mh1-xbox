@@ -61,7 +61,7 @@ void em_search_data_set(EMW *, u8);
 void em_range_set(EMW *, s8);
 void Ikari_Data_Set(EMW *);
 void em_tsuushin_set(EMW *);
-int Em_max_parts_get(int);
+unsigned char Em_max_parts_get(int);
 void em_dur_init(EMW *);
 void World_calc(void *);
 void eft01_set(void *, int);
@@ -198,6 +198,22 @@ void em_init_sub(EMW *em) {
     case 50: em07_init(em); break;
 #endif
     }
+#if defined(VERSION_MHG) && !defined(__MWERKS__)
+    void em_size_scale_set(EMW *em);
+    /* G's edited em03 / em19 / em29 _init keep the scale they set as the base (EMW+0x600) and, with em04 and em12,
+     * apply the monster's size to it (em_size_scale_set, sub_main 0x4E92D0; game 0x5B3xxx .. 0x61xxxx). The PC runs
+     * MH1's inits: those small monsters kept size-1.0 scales (the referee: a kind-19 at 1.0 instead of 0.8). Done after
+     * the init here, not in its middle as on the PS2 (nothing in between reads the scale) [agent D, 20 Oct 2026] */
+    switch (em->kind) {
+    case 3: case 19: case 24: case 29:
+    case 12:    /* G em12_init (game 0x5DB010): kind 12 takes em12_scale_tbl[type] as its base (referee g_gather: 0.5, not 0.8) */
+        em->base_scale = em->scale[0];
+        /* fall through */
+    case 4: case 5: case 32: case 25:
+        em_size_scale_set(em);
+        break;
+    }
+#endif
 }
 
 #ifdef VERSION_MHG

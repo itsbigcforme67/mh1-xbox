@@ -104,6 +104,12 @@ void em27_atk_act_set(EMW *em, u16 no, u16 arg) {
     em_act_set2(em, 3, no, arg);
 }
 
+#if defined(VERSION_MHG) && !defined(__MWERKS__)
+int Quest_enemy_revival_ck(EMW *);
+int Quest_enemy_revival_set(EMW *);
+void em_status_init(EMW *);
+void em27_revive_init(EMW *);   /* em27a.c */
+#endif
 void em27_act_set(EMW *em, int kind, u16 no, u16 arg) {
     switch ((u16)kind) {
     case 0:
@@ -118,9 +124,22 @@ void em27_act_set(EMW *em, int kind, u16 no, u16 arg) {
     case 3:
         em27_atk_act_set(em, no, arg);
         break;
+#if defined(VERSION_MHG) && !defined(__MWERKS__)
+    case 5:     /* G em27_act_set (game 0x642030): the die act 4 brings a returning monster back first */
+        if (no == 4 && Quest_enemy_revival_ck(em) == 1) {
+            Quest_enemy_revival_set(em);
+            em_status_init(em);
+            em27_revive_init(em);
+        }
+        em_act_set2(em, kind, no, arg);
+        break;
+    case 4:
+    case 6:
+#else
     case 4:
     case 5:
     case 6:
+#endif
         em_act_set2(em, kind, no, arg);
         break;
     case 7:

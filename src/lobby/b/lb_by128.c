@@ -1,5 +1,6 @@
 /* lb_by128 - agent B 0x0053C7F0-0x0053CA14: lb_armor_tag_decide01 (armor shop: builds the buy list for the hunter's job from the shop table). */
 #include "lobby_s.h"
+unsigned char Warehouse_search_space();   /* its real return type: was implicitly int (tools/check_kr_returns.py) */
 typedef struct { u8 x0; s8 kind; s16 id; u8 x4[4]; } EQB;
 typedef struct { s32 kind; s32 id; } SHENT;
 extern s32 shop_armor_help[];

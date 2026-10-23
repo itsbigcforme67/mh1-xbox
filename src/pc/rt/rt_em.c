@@ -478,9 +478,12 @@ static int event_quest_ready(int no)
     memcpy(&o, mission_area, 4);
     return o > 0 && o < 0x3FF00 && mission_area[o + 0x1D] == no;
 }
+/* G: a quest number from 50000 (event quests: Quest_start loads no file for them) whose mission file the caller has
+ * put into mission_area itself (the GALLERY's event scene 13, m60029.mib; viewer.c gal_scene_start) */
+int rt_quest_mission_given;
 int rt_quest_load(int no)
 {
-    if (rt_ver_mhg() ? (no <= 0 || no >= 50000) :   /* G: quest groups 00xxx..20xxx (mNNNNN.mib) */
+    if (rt_ver_mhg() ? (no <= 0 || (no >= 50000 && !rt_quest_mission_given)) :   /* G: quest groups 00xxx..20xxx (mNNNNN.mib) */
             (no <= 0 || (no >= 0xB2 && !event_quest_ready(no)))) {
         rt_warn("quest %d: not a valid quest number", no);
         return -1;
@@ -886,10 +889,15 @@ int rt_monster_tick(int no)
         r = enemy_mv(em);
         if (em->be_flag)
             rt_em_world_mat(em);
-        if (r == 0 && em->kind == 7) {
-            if (em_pose_fn)     /* enemy_mk: the PS2 builds this tick's joint matrices before em_ride_sub reads them */
+        if (r == 0) {
+            /* enemy_mk (move(), right after enemy_mv): the PS2 builds this tick's joint matrices (flCalcTransSI) before
+             * body_hit / item_check and em_ride_sub read them. Until 18 Oct 2026 only the Lao-Shan Lung (em_ride_sub) got
+             * them here, the rest at the end of the tick: body_hit pushed hunter and monster apart one tick late (the
+             * lockstep referee's first difference in every fight, docs/referee.md) */
+            if (em_pose_fn)
                 em_pose_fn(no);
-            em_ride_sub(em);
+            if (em->kind == 7)
+                em_ride_sub(em);
         }
         return r;
     }
@@ -937,3 +945,34 @@ void rt_monster_clear_all(void)
         em_work[i].be_flag = 0;
 }
 
+
+/* mlCalcTransEM's neck turn (main 0x10AA00; G sub_main 0x4DCE60), for the host skeleton: monster no's four neck joints
+ * (em_neck_tbl[kind] bytes 6..9) and their extra turn about Y (EMW+0x6E8 neck angles, flConvertStoR). MH1: kinds 1, 7,
+ * 11; G adds 37, 41, 42, 49, 50. Returns how many (0: the kind has none). On the PS2 enemy_mk turns these joints
+ * before flCalcTransSI; the host skeleton drew and hit-tested monsters with their heads straight ahead until
+ * 20 Oct 2026 (agent D; the lockstep referee: a Rathalos's body push 3 units off). */
+f32 flConvertStoR(u32 a);
+int rt_em_neck(int no, int bones[4], float ry[4])
+{
+    EMW *em = &em_work[no];
+    const s8 *t;
+    int k;
+    extern s8 *em_neck_tbl[];
+    switch (em->kind) {
+    case 1: case 7: case 11:
+#ifdef VERSION_MHG
+    case 37: case 41: case 42: case 49: case 50:
+#endif
+        break;
+    default:
+        return 0;
+    }
+    t = em_neck_tbl[em->kind];
+    if (!t)
+        return 0;
+    for (k = 0; k < 4; k++) {
+        bones[k] = t[6 + k];
+        ry[k] = flConvertStoR(em->neck[k] & 0xFFFF);
+    }
+    return 4;
+}

@@ -17,7 +17,7 @@ nv2a, loader, hardware), **platform** (src/pc host code, packaging), **owner** (
 
 | # | Criterion | How to check | Today |
 |---|---|---|---|
-| G1 | Boots from the player's own G disc, nothing Capcom shipped | PC: an installer for the G ISO; Xbox: a player path to get the 1.1 GB of disc files onto E:\Games\MHG | Xbox: `./mh1 xbox DISC` makes dist/xbox/MHG; the loader's HTTP data install exists (tested in xemu; the owner's first try did not start the loader) [docs]. PC: `./mh1 linux|windows` **refuse a G disc** ("Xbox only for now", mh1:63) [verified]; the G PC build opens no window unless MH1_SHOW=1 (agents' rule), tools/play_g.sh is the owner's launcher [docs] |
+| G1 | Boots from the player's own G disc, nothing Capcom shipped | PC: an installer for the G ISO; Xbox: a player path to get the 1.1 GB of disc files onto E:\Games\MHG | Xbox: `./mh1 xbox DISC` makes dist/xbox/MHG; the loader's HTTP data install exists (tested in xemu; the owner's first try did not start the loader) [docs]. PC: `./mh1 linux|windows DISC` build G into dist/linux/MHG and dist/windows/MHG (GB3, 15 Oct); since 20 Oct (agent E) a player package (PLAYER.txt next to the program) opens its window by itself, so dragging the G .iso onto mhview_g.exe installs and starts it; build-folder runs stay hidden; settings in G's own mhgpc.ini [verified: both packages built from the G ISO, Linux package and Windows exe under Wine run hidden from the package folder, save/settings/log paths checked, docs/PLAYING.md "Monster Hunter G"] |
 | G2 | Title -> NEW GAME -> character -> save -> village -> CONTINUE | hidden runs (section 3) | title, NEW GAME, creation, card save, village intro, Kokoto village: OK. CONTINUE crashed in the game menu whenever a save was on the card: **fixed today** (section 4). The 5th row crash is fixed (GB2, 15 Oct, agent C: it was NETWORK OPTIONS, not an EXTRA menu). OPTIONS opens and leaves through the card save [verified 15 Oct] |
 | G3 | Every offline quest playable from the elder to the reward | tools/test_all_quests_g.sh (98 quests + carts), the elder's lists, a human play-through | 98/98 + carts pass with test aids [verified today]. The elder's quest lists were empty ("1 / 0"): **fixed today**. No human has finished G on the port |
 | G4 | The village works: shops, forge, box, elder, counter | tools/test_gvillage.py (16 cases) | 16/16 OK [verified today]. Equipment detail / skill pages not ported (REVIEW "G village round 2") [docs] |
@@ -37,10 +37,10 @@ nv2a, loader, hardware), **platform** (src/pc host code, packaging), **owner** (
 | # | What the player sees | Where | Status | Lane | Basis |
 |---|---|---|---|---|---|
 | GB1 | Most G-only text is Japanese: weapon and armour names, G items, the G NPC lines, half the quests | rt_text, tools/text_map.py; docs/text_coverage.md | 47% official English; the rest needs a source (owner: Monster Hunter Freedom for G content, own translation in its style) | text + owner | [docs] |
-| GB2 | **FIXED 15 Oct (agent C).** The GAME MENU rows are NEW GAME / CONTINUE / GALLERY / OPTIONS / NETWORK OPTIONS: G has no MH1-style omake menu. Its Omake_task (main 0x1180F0) is NETWORK OPTIONS and the real "omake" is the GALLERY (sub_main 0x4A9960); MH1's omake menu ran for both on the PC (zero tables) and crashed on the 5th row (strlen of omake_str) | src/main/omake/omake_g.c (new; MH1's omake menu is fenced out of omake.c for G); build/C/gb2/ has the pictures | done: NETWORK OPTIONS (rows 0/1 change the two network bytes, EXIT saves; rows 2/3 need the PS2 network stack and answer with the "can't" sound); GALLERY (4 pages, page-turn wipe, cell wobble, NEW markers, unlock flags, movies on the port's player, the credits scroll, the save prompt on leaving). **Not ported:** the 15 event scenes (G 0x4A91D0 loads a stage and a monster into the game's demo camera: they answer like a closed entry), the movie clips behind the credits (G's cue list at 0x50B678) | main | [verified: hidden runs, pictures] |
+| GB2 | **FIXED 15 Oct (agent C).** The GAME MENU rows are NEW GAME / CONTINUE / GALLERY / OPTIONS / NETWORK OPTIONS: G has no MH1-style omake menu. Its Omake_task (main 0x1180F0) is NETWORK OPTIONS and the real "omake" is the GALLERY (sub_main 0x4A9960); MH1's omake menu ran for both on the PC (zero tables) and crashed on the 5th row (strlen of omake_str) | src/main/omake/omake_g.c (new; MH1's omake menu is fenced out of omake.c for G); build/C/gb2/ has the pictures | done: NETWORK OPTIONS (rows 0/1 change the two network bytes, EXIT saves; rows 2/3 need the PS2 network stack and answer with the "can't" sound); GALLERY (4 pages, page-turn wipe, cell wobble, NEW markers, unlock flags, movies on the port's player, the credits scroll, the save prompt on leaving). **21 Oct (agent E): the rest ported.** The 15 event scenes (G 0x4A91D0: a training or event quest's stage and monsters under the quest's event-demo camera; viewer.c gal_scene_*, omake_g.c gal_scene) and the credits' movie clips (cue list 0x50B678: ROLL01..06.sfd at G's places, rt_movie_clip). Needed on the way, both for the gallery and for G's quests: the monsters' event-demo checks use G's quest numbers (em01/04/12/16/19/20/27; G-only demos for em02 kinds != 2, em09, em15, em16, em19, em20, em04), G's 92-stage tables and 38 demo cameras imported, the credits' page 4 line taken for a pointer (pc_noptr.txt) | main | [verified: tools/test_gallery_g.sh 15/15 + credits; PS2 references at the same scene ticks (PCSX2, tools/g_gallery_ref.sh TICKS), build/E/cmp/tk_sN.png in agent E's worktree] |
 | GB3 | G is not on the PC for players: `./mh1 linux|windows` refuse a G disc; the G PC build is hidden unless MH1_SHOW=1 | mh1:63, viewer.c G hidden rule | **done 15 Oct (agent D)**: `./mh1 linux|windows|xbox` build G from the G disc into dist/<platform>/MHG, play scripts set MH1_SHOW=1; docs/PLAYING.md has a G section | platform | [verified] |
 | GB4 | Nobody has played G through on the port; every quest "passes" with test aids (warps, x40 damage, god mode, RT_PL_SLAY) | tools/test_all_quests.py G mode | process gap; owner F8 play-testing | owner + all | [verified: aids in the script] |
-| GB5 | On the Xbox, G has not been played on hardware (installed through the loader, pad fixed; hands-on test pending). The loader's data install did not start on the owner's first try | docs/xbox.md "Owner's first try", "G on the owner's Xbox: no pad" | owner playing it (15 Oct 2026): loader update worked, G starts with pad. Bugs seen: (1) after the debug menu's skip-to-quest, polygons draw in the wrong order, and it stays wrong after going back to the village; (2) quitting to the title keeps the village music playing; (3) no villagers when the village is reached the normal way; villagers appear only when entering through the debug menu; (4) the opening wake-up cutscene in the village shows only blue sky for some frames (camera pointing wrong; the owner saw the camera get lost there on PC earlier too); (5) debug menu weapon swap does not change the weapon (maybe its sounds change); tried swapping to a bowgun; (6) title -> GALLERY -> first movie: flickers black after a few seconds, then the game crashes; (7) debug menu "go to village (no intro)" used on the title screen crashes the game (fixed 16 Oct: the row is greyed out until a hunter is loaded); (5, more) swapping to another blade weapon does not change it either, the sound is still wrong; (11, owner 17 Oct) buying an item in a shop shows the wrong "swap this item for that item" text (owner sent a bug report);; (14, owner 17 Oct, Xbox) entering the house turned the music into static, and it stayed static after going back out; sound effects stay fine, only the music stream; (13, owner 17 Oct) the equipment screen shows the Bone Lance (attack 161) correctly, so the data is right and only the hunter model in the village is not refreshed (still a sword on the back): the village must reload the weapon model on equip, as the original does. Same photo: the half-screen tint triangle of bug (1) is back (diagonal from the lower left), after only shopping, no debug menu used as far as known, plus a blue glowing column at the left; (13, details) equipping after buying is broken: bought a lance and equipped it, but the hunter shows a sword on the back (likely the same wrong item ids as 11: the equip writes or reads MH1 item/weapon numbers or offsets; check the shop's equip prompt, the equipped-set write at G User_data+0xC74, and the village hunter model refresh); (12, owner 17 Oct) saving a bug report on the Xbox freezes the game for a long time with no message (looked like a crash): show "saving..." and make it faster; (10) after a hunt (retire) one frame shows the hunter on the ground with sky where the (training) school should be, i.e. the next area drawn before its stage is loaded; MH1 had the same one-frame flash and agent F fixed it with a black frame during the game2 load steps: check that G takes that path; (8) the save screen is invisible again (as the menus were on the PC before the GB2/GB3 fixes); (9) debug "kill the monsters in this area" leaves one Aptonoth, and that Aptonoth cannot be hurt; the owner thinks it may be a scripted scenery Aptonoth (it runs across the river into the bushes), which would make it unkillable by design: check what the original does; then in the NEXT area a group of Aptonoth died by themselves (kill-all seems to act late or on the wrong area) while one survived, and one-hit kills did kill it: kill-all, not the monster, is suspect. Owner (16 Oct): if the original makes that Aptonoth unkillable, keep it so; only fix kill-all acting on the wrong area. Likely cause [guess, from the code]: rt_dbg_hits (src/pc/rt/rt_dbg.c) picks the monsters by comparing the area byte at +0x736 of the hunter and of each monster, MH1 offsets; if G moved that field, kill-all hits whichever monsters happen to match (here the ones in the next area) and misses the ones really around the hunter. One-hit kills do not look at the area (they act on a real hit), which is why it worked. Owner photo of (1): one half (a triangle) of a full-screen tint drawn over the scene, and the village gate beam drawn behind villagers beyond it: depth test / 2D overlay state left over, guess: from the debug menu's 2D drawing on nv2a [guess, not checked]  **Agent A, 16 Oct 2026 (PC G + xemu G, hidden runs, pictures in build/A/gb5/):** (8) FIXED: the bed's save / quit dialogs (lobby dialog layer) had no draw callback in G's Lbc_init_network_work, and G's tl_etc (lobby 0x636E70) was a function stand-in (drawing the prompt crashed once wired): callback set, tl_etc in pc_names.txt, G's choice strings 3/4 for dialog kind 4 (lb_by180.c) [verified: PC and xemu shots of 'save?' with yes/no; the new-game save-slot screen was already visible in xemu]; (6) FIXED: movie frames now update three fixed textures in place (gfx_update_texture) instead of a palette try + contiguous allocation per frame on the Xbox [verified xemu: gallery movie 9 played to its end, free memory 11 MB flat (was dipping to 4.7 MB), no black frames (7 black samples before)]; hardware speed unknown; (2) FIXED for the debug menu's title row: str_stop_all + se_stop_all [verified: RT_SND_TRACE 'str 0 stops']; (3) FIXED: G's Lb_reset returns at once offline (MH1's push_em_work_all cleared the NPCs and G places them only on the first load of a visit): villagers back after leaving the house [verified PC + xemu shots]; (10) FIXED: black frame while game mode is 6 and the village is not entered yet (viewer.c) [verified: RT_SHOTS tick 477 sky+hunter -> black]; (4) NOT REPRODUCED: new game intro and house wake-up checked tick by tick on the PC and every video frame in xemu, no sky frames (the demo camera fix of 14 Oct may be it); (1) FIXED: the debug menu switched the depth test off for its 2D and never back on: everything drawn after the menu had been open had no depth test (also PC and MH1) [verified: PC shots village gate before / after the menu, xemu quest + village after the debug quest start]; also the debug jumps out of the village now do Local_main's Pit_reset + Lbc_set_prim(0,0,0); the half-screen tint not seen after the fix [inferred: the menu's dim quad drawn without the depth state]; (5) FIXED: rt_player_game_init wrote the default weapon 156 over the save's at every quest start (MH1 and G): now the save's weapon (G ids up to 380) [verified: debug swap to 135 -> next quest weapon 135 model 60 job 3]; the swap shows from the next quest or village visit, as the menu now says; (9) NOT REPRODUCED: kill-all on PC G picks by the area byte correctly (log now lists every monster with its area and hp); the PC keeps MH1's EMW layout, so +0x736 is right; next-area deaths not seen (killed in area 33, then area 32: its monsters alive). The scripted river Aptonoth not identified (left as the original). New find: after NEW GAME's save a garbage line ('慰･$d') at 140,360 (select/edit_nm.c disp_edinfo_g reads G's help table for an item index past its end)  **Agent A, 17 Oct 2026 (bugs 11-14 and the triangle; PC G + xemu G, hidden; pictures build/D/g/wb*, wl1*, hs3 log in the A worktree):** (13) FIXED (both games): the host loaded the hunter's weapon model only at a quest start and followed PLW+0x34C only in the online town; the village shop / item box equip runs Set_userdata (and the original's Lb_player_load remakes the weapon), so the model now follows in the offline village too (viewer.c weapon_follow) [verified PC G: buy Iron Sword -> 'village: slot 0 weapon model 10 (was 69)', buy Bone Lance id 103 -> model 6, lance on the back in the shot; MH1 test_activities wshop_buy/box_equip pass with the follow line]; (11) NOT A SEPARATE BUG: the owner's report (stage 87, tick 8538) is the weapon shop buying the Arbalest (2800z) with the Bone Lance he had just bought and equipped as the current weapon (attack 161 matches his equipment screen): the comparison was right, only the model on the back (13) still showed the old sword [checked: PC G, after buying the Iron Sword the next comparison shows Iron Sword 288 -> Bone Blade 336]; (14) FIXED (G only; MH1's code path differs): G's vs_square_init (lobby 0x59EF00, a stage change inside the village) called lobby_bgm_set without its argument (the stage byte is in a0 in the asm); the garbage was 0 on PC and Xbox: Snd_bgm_tbl[0] = AFS00 60 M6_TAKI1 (a waterfall loop, noise-like) at full volume, in the house and again after leaving it. G's table gives the house (86) the village stream 28 at volume 0x37 [verified PC G RT_SND_TRACE: before 'str 0 plays M6_TAKI1.adx' on entering the house, after 'stage 86 ... fade 0 -> 55' on the village stream; not heard on hardware]; (12) FIXED (both games' reporter): the frozen frame now shows 'SAVING THE BUG REPORT...' for a frame before writing, input ignored meanwhile; the files go out in one write each (viewer_write_file; on the Xbox one WriteFile: pdclib's fwrite wrote 1 KB at a time, 900 per picture), PNG built in memory, Adler-32 with one modulo per 5552 bytes; the log line gives the time [verified xemu (tools/xemu_pick_test.sh --version mhg, 15/15 PASS): written in 5832 ms before, 247 ms after; the owner's hardware took ~80 s, its new time not measured; the one 'saving' frame not caught on a screenshot]; (1 again) NOT REPRODUCED, two candidates fixed: the owner's session did use the debug menu (money, t7168) and saved / cancelled three bug reports; the reporter left the game's texture stage on its own released frozen-frame texture (the game caches the bound texture, so its next 2D draws used a freed texture on GL / no texture on nv2a: plain colour quads) -> end_session now restores the game's texture (both games); stage_spr_disp's full-screen layer is left out of the reporter's id pass (it hid every object: picks came out 'other'). A PC near-plane trace in the shop scene found no skinned model crossing the eye plane | Xbox + owner | [owner, hardware] |
+| GB5 | On the Xbox, G has not been played on hardware (installed through the loader, pad fixed; hands-on test pending). The loader's data install did not start on the owner's first try | docs/xbox.md "Owner's first try", "G on the owner's Xbox: no pad" | owner playing it (15 Oct 2026): loader update worked, G starts with pad. Bugs seen: (1) after the debug menu's skip-to-quest, polygons draw in the wrong order, and it stays wrong after going back to the village; (2) quitting to the title keeps the village music playing; (3) no villagers when the village is reached the normal way; villagers appear only when entering through the debug menu; (4) the opening wake-up cutscene in the village shows only blue sky for some frames (camera pointing wrong; the owner saw the camera get lost there on PC earlier too); (5) debug menu weapon swap does not change the weapon (maybe its sounds change); tried swapping to a bowgun; (6) title -> GALLERY -> first movie: flickers black after a few seconds, then the game crashes; (7) debug menu "go to village (no intro)" used on the title screen crashes the game (fixed 16 Oct: the row is greyed out until a hunter is loaded); (5, more) swapping to another blade weapon does not change it either, the sound is still wrong; (11, owner 17 Oct) buying an item in a shop shows the wrong "swap this item for that item" text (owner sent a bug report);; (14, owner 17 Oct, Xbox) entering the house turned the music into static, and it stayed static after going back out; sound effects stay fine, only the music stream; (13, owner 17 Oct) the equipment screen shows the Bone Lance (attack 161) correctly, so the data is right and only the hunter model in the village is not refreshed (still a sword on the back): the village must reload the weapon model on equip, as the original does. Same photo: the half-screen tint triangle of bug (1) is back (diagonal from the lower left), after only shopping, no debug menu used as far as known, plus a blue glowing column at the left; (13, details) equipping after buying is broken: bought a lance and equipped it, but the hunter shows a sword on the back (likely the same wrong item ids as 11: the equip writes or reads MH1 item/weapon numbers or offsets; check the shop's equip prompt, the equipped-set write at G User_data+0xC74, and the village hunter model refresh); (12, owner 17 Oct) saving a bug report on the Xbox freezes the game for a long time with no message (looked like a crash): show "saving..." and make it faster; (10) after a hunt (retire) one frame shows the hunter on the ground with sky where the (training) school should be, i.e. the next area drawn before its stage is loaded; MH1 had the same one-frame flash and agent F fixed it with a black frame during the game2 load steps: check that G takes that path; (8) the save screen is invisible again (as the menus were on the PC before the GB2/GB3 fixes); (9) debug "kill the monsters in this area" leaves one Aptonoth, and that Aptonoth cannot be hurt; the owner thinks it may be a scripted scenery Aptonoth (it runs across the river into the bushes), which would make it unkillable by design: check what the original does; then in the NEXT area a group of Aptonoth died by themselves (kill-all seems to act late or on the wrong area) while one survived, and one-hit kills did kill it: kill-all, not the monster, is suspect. Owner (16 Oct): if the original makes that Aptonoth unkillable, keep it so; only fix kill-all acting on the wrong area. Likely cause [guess, from the code]: rt_dbg_hits (src/pc/rt/rt_dbg.c) picks the monsters by comparing the area byte at +0x736 of the hunter and of each monster, MH1 offsets; if G moved that field, kill-all hits whichever monsters happen to match (here the ones in the next area) and misses the ones really around the hunter. One-hit kills do not look at the area (they act on a real hit), which is why it worked. Owner photo of (1): one half (a triangle) of a full-screen tint drawn over the scene, and the village gate beam drawn behind villagers beyond it: depth test / 2D overlay state left over, guess: from the debug menu's 2D drawing on nv2a [guess, not checked]  **Agent A, 16 Oct 2026 (PC G + xemu G, hidden runs, pictures in build/A/gb5/):** (8) FIXED: the bed's save / quit dialogs (lobby dialog layer) had no draw callback in G's Lbc_init_network_work, and G's tl_etc (lobby 0x636E70) was a function stand-in (drawing the prompt crashed once wired): callback set, tl_etc in pc_names.txt, G's choice strings 3/4 for dialog kind 4 (lb_by180.c) [verified: PC and xemu shots of 'save?' with yes/no; the new-game save-slot screen was already visible in xemu]; (6) FIXED: movie frames now update three fixed textures in place (gfx_update_texture) instead of a palette try + contiguous allocation per frame on the Xbox [verified xemu: gallery movie 9 played to its end, free memory 11 MB flat (was dipping to 4.7 MB), no black frames (7 black samples before)]; hardware speed unknown; (2) FIXED for the debug menu's title row: str_stop_all + se_stop_all [verified: RT_SND_TRACE 'str 0 stops']; (3) FIXED: G's Lb_reset returns at once offline (MH1's push_em_work_all cleared the NPCs and G places them only on the first load of a visit): villagers back after leaving the house [verified PC + xemu shots]; (10) FIXED: black frame while game mode is 6 and the village is not entered yet (viewer.c) [verified: RT_SHOTS tick 477 sky+hunter -> black]; (4) NOT REPRODUCED: new game intro and house wake-up checked tick by tick on the PC and every video frame in xemu, no sky frames (the demo camera fix of 14 Oct may be it); (1) FIXED: the debug menu switched the depth test off for its 2D and never back on: everything drawn after the menu had been open had no depth test (also PC and MH1) [verified: PC shots village gate before / after the menu, xemu quest + village after the debug quest start]; also the debug jumps out of the village now do Local_main's Pit_reset + Lbc_set_prim(0,0,0); the half-screen tint not seen after the fix [inferred: the menu's dim quad drawn without the depth state]; (5) FIXED: rt_player_game_init wrote the default weapon 156 over the save's at every quest start (MH1 and G): now the save's weapon (G ids up to 380) [verified: debug swap to 135 -> next quest weapon 135 model 60 job 3]; the swap shows from the next quest or village visit, as the menu now says; (9) NOT REPRODUCED: kill-all on PC G picks by the area byte correctly (log now lists every monster with its area and hp); the PC keeps MH1's EMW layout, so +0x736 is right; next-area deaths not seen (killed in area 33, then area 32: its monsters alive). The scripted river Aptonoth not identified (left as the original). New find: after NEW GAME's save a garbage line ('慰･$d') at 140,360 (select/edit_nm.c disp_edinfo_g reads G's help table for an item index past its end)  **Agent A, 17 Oct 2026 (bugs 11-14 and the triangle; PC G + xemu G, hidden; pictures build/D/g/wb*, wl1*, hs3 log in the A worktree):** (13) FIXED (both games): the host loaded the hunter's weapon model only at a quest start and followed PLW+0x34C only in the online town; the village shop / item box equip runs Set_userdata (and the original's Lb_player_load remakes the weapon), so the model now follows in the offline village too (viewer.c weapon_follow) [verified PC G: buy Iron Sword -> 'village: slot 0 weapon model 10 (was 69)', buy Bone Lance id 103 -> model 6, lance on the back in the shot; MH1 test_activities wshop_buy/box_equip pass with the follow line]; (11) NOT A SEPARATE BUG: the owner's report (stage 87, tick 8538) is the weapon shop buying the Arbalest (2800z) with the Bone Lance he had just bought and equipped as the current weapon (attack 161 matches his equipment screen): the comparison was right, only the model on the back (13) still showed the old sword [checked: PC G, after buying the Iron Sword the next comparison shows Iron Sword 288 -> Bone Blade 336]; (14) FIXED (G only; MH1's code path differs): G's vs_square_init (lobby 0x59EF00, a stage change inside the village) called lobby_bgm_set without its argument (the stage byte is in a0 in the asm); the garbage was 0 on PC and Xbox: Snd_bgm_tbl[0] = AFS00 60 M6_TAKI1 (a waterfall loop, noise-like) at full volume, in the house and again after leaving it. G's table gives the house (86) the village stream 28 at volume 0x37 [verified PC G RT_SND_TRACE: before 'str 0 plays M6_TAKI1.adx' on entering the house, after 'stage 86 ... fade 0 -> 55' on the village stream; not heard on hardware]; (12) FIXED (both games' reporter): the frozen frame now shows 'SAVING THE BUG REPORT...' for a frame before writing, input ignored meanwhile; the files go out in one write each (viewer_write_file; on the Xbox one WriteFile: pdclib's fwrite wrote 1 KB at a time, 900 per picture), PNG built in memory, Adler-32 with one modulo per 5552 bytes; the log line gives the time [verified xemu (tools/xemu_pick_test.sh --version mhg, 15/15 PASS): written in 5832 ms before, 247 ms after; the owner's hardware took ~80 s, its new time not measured; the one 'saving' frame not caught on a screenshot]; (1 again) NOT REPRODUCED, two candidates fixed: the owner's session did use the debug menu (money, t7168) and saved / cancelled three bug reports; the reporter left the game's texture stage on its own released frozen-frame texture (the game caches the bound texture, so its next 2D draws used a freed texture on GL / no texture on nv2a: plain colour quads) -> end_session now restores the game's texture (both games); stage_spr_disp's full-screen layer is left out of the reporter's id pass (it hid every object: picks came out 'other'). A PC near-plane trace in the shop scene found no skinned model crossing the eye plane  **Owner, 21 Oct 2026:** the half-screen green/tint "triangle" in the photos is a camera artifact of photographing the CRT (the scan line moves while the photo is taken), not a game bug: nothing to fix. (The depth-order part of (1) was real and is fixed.) **Owner, 21 Oct (Xbox, new save):** the Elder's level list offers only 緊急クエスト (a new save should get ★), and pressing on after "おぬしに頼めそうな依頼はこれぐらいじゃ" crashes where the quest list should open (photos build/xbox/owner_photos/, gitignored); not FPU or stack alignment (a test build with both off crashed too); agent A on it.  **Owner, 21 Oct evening:** a black screen on boot (no Back+Start) after the previous run had not shut down cleanly; the log (build/xbox/logs/20261021-190054-mhg.txt) stops at "ac97 open": the game hung opening the AC97 sound chip; after a power cycle the same build started normally. Needed: a time-out on the AC97 open (src/pc/xbox/xbox_ac97.c, both games): give up on sound after a few seconds and run silent instead of hanging. | Xbox + owner | [owner, hardware] |
 | GB6 | 945 functions the G PC enters in ordinary play are MH1 C where G's code differs (628 edited, 19 rewritten, 71 missing in G, 227 same shape with other constants); each may behave like MH1 instead of G. Many are layout-only edits the PC already absorbs (it keeps MH1's EMW / lb layouts), so the real number is lower | docs/survey/mhg_cov_g.txt (G-CHANGED list); biggest groups: game/em 102, game/set 37, main/menu 34, game/shell 33, main/ud 28, main/pl 25, lobby/b 39, plus 359 in generated copies | needs triage per lane (sort by `sim`, read the low ones against G's asm with tools/mhg_fdiff.py) | all lanes | [verified: coverage today]; the effect of each [inferred] |
 | GB7 | No online play in G (plaza, gathering hall, co-op) | section 1 G10; docs/network.md 3.12 | **in progress (agent C, 20 Oct)**: the real G disc (MH1LAUNCH RAM patch) logs in to mh1-server, gets G's info file, plaza menu, walks in our town; the server keeps G and MH1 apart. PC G online build (21 Oct): G's own lobby screens (about 600 G functions made into PC C by tools/mhg_gonl.py) log in, download the info file, show G's plaza menu and town list and walk into G's town (stage 0x4C, picture build/show/g_online_pc/pc_g_town.png); two G PCs together, the PS2 G disc with a PC, a G hunt and the Xbox are not done | platform + server + owner | [verified: PCSX2 run, build/show/g_online] |
 
@@ -417,29 +417,153 @@ it the runs drift apart as expected (another hit lands, another knockback).
 - R-F7 *G still on MH1 logic*: body_hit_sub_em (monster against monster) uses G's own sphere table (game 0x673260;
   the Rathian 300 instead of the wall table's 500): small monsters were pushed off the Rathian (pl_nm.c).
 
+**Second round (agent D, 18-20 Oct 2026; the referee's PC side re-run against the same PS2 traces):**
+- R-F8 *platform, both games* (owner's decision 18 Oct, DECISIONS "PS2 float rounding on by default"): PS2 float
+  rounding is the default (rt_ref.c fpu_ps2; `RT_FPU_PS2=0` turns it off): SSE rounding toward zero, flush to zero,
+  denormals-are-zero only where the CPU has it (MXCSR_MASK; the Xbox's Pentium III has no DAZ and ldmxcsr with it
+  would fault). The game C is SSE code (build_pc.sh / build_win.sh / build_xbox.py); the host's own float code on
+  32-bit x86 (renderer, mixer, libm) is x87 and keeps round-to-nearest, so nothing had to be switched per tick. Each
+  quest start logs "fpu: mxcsr ..." and sets the mode again if it changed. Test round, rounding off vs on [verified]:
+  the title, logos and opening movie's sound byte-identical; stage pictures identical; G's reference shots of 4 stages
+  (tools/g_ref_shot.sh --pc-only) differ in < 0.01% of pixels; fights differ only as the game takes another path;
+  full_check all ok (test_activities' trader needed another seed: its offer depends on the hunter's path); Windows
+  build under wine and the Xbox G / MH1 builds in xemu reach a quest start with the mode set (mxcsr FFE0 in the logs).
+- R-F9 *port glue, both games*: N-R1 below was not root motion. The PS2's move() builds each monster's joint matrices
+  right after it moves (enemy_mk -> flCalcTransSI) and the hunters' after body_hit (player_mk); the PC made all joints
+  at the end of the tick, so body_hit pushed hunter and monster apart with last tick's joints (found with a gdb
+  watchpoint on the hunter's position: body_hit_sub_new, a jumping Velociprey). Now rt_monster_tick builds them after
+  enemy_mv (rt_em.c, em_pose_now) and sim_tick after body_hit (viewer.c); hit_check uses those. Rathian 203 -> 245,
+  MH1 Rathian 241 -> 291.
+- R-F10 *G-only feature*: N-R3, the Elder's tutorial, is ported for both games (game tuto.c, tutob.c, tuto_nm.c in
+  the PC build; SonchoMove / DispTutorial behind Pit_mv's / trans_pit_1's calls by address, rt_menu.c; SonchoInit at
+  the HUD set-up of a training quest, rt_quest.c). G's differences written from G's asm (game 0x66E270..0x66EDE0):
+  its training quests 10001.., 7 lessons in a sub-list, the texts through a pointer table (sub_main 0x5282F0) and the
+  frame title as text (pc_data.txt tuto_str_tbl / tuto_title_str) [verified: screenshots of the sign, the list and a
+  page in G 10001 and MH1 131; the PS2 reference shot shows the same sign].
+- R-F11 *G still on MH1 logic*: N-R4: G's pl_mv001 (game 0x54F830) blends the Dual Swords (kind 6) into the walk
+  start over 6 like the great sword; MH1's code gave them the default 4 (f_pl.c). The ds scenario is identical now.
+- R-F12 *port glue, G*: the sweep R-F6 asked for: 94 words of pc_ptrs.txt were numbers (s16 pairs in the weapon tree
+  bou_sei_tbl and the forge's kakou_tbl, the yes/no screen's sprite positions yn_spr_data, push00, key codes, colour
+  words in the effect tables). They are listed in config/mhg/pc_noptr.txt, which tools/mhg_pcmeta.py leaves out of
+  pc_ptrs.txt. Found as scan-only words next to small numbers in objects whose MH1 twin has no relocation there.
+  MH1 is not affected (its ELF has real relocations).
+
+**Third round (agent D, 20 Oct 2026; same method, both games):**
+- R-F13 *port glue, both games*: move()'s wall pass after body_hit (HitWallPlayer(.., 1) for every hunter in an online
+  game or with PLW+0x7EC set, and every monster with +0x7EC set) was missing in the host's tick: a hunter pushed into
+  a wall by a monster stayed in it for a tick and the next push started from there (viewer.c). Kut-Ku 622 -> 656.
+- R-F14 *port glue, both games*: CameraMove ran right after the player; move() runs it after body_hit, the wall pass
+  and player_mk, so the camera (and the stick's direction for the next tick) was a tick behind after a push. Kut-Ku
+  656 -> 780 / 804.
+- R-F15 *platform, both games*: the PS2's VU0 library code is now written out as the PS2 does it: flPS2SinFast /
+  CosFast (range reduction + polynomial, sine as +-sqrt(|1 - cos^2|), constants at_tbl / SS5432 from the disc), the
+  motion curves' Hermite and linear formulas (flFCVFcurveInterpolate*, flFCVGetValue2's "unknown interpolation gives
+  0"), and VU0 operations round to nearest (rt_vu.h) while the game's FPU code rounds toward zero; the fl maths, the
+  motion player and the curve reader are built with SSE math like the game C. Measured: the hunter walking at facing
+  1 now drifts sideways as on the PS2 (libm's sine gave none), small monsters' facings stay identical ~20 ticks longer.
+- R-F16 *platform, both games*: flArcTan2 is the PS2 C library's single-precision atan2f / atanf (newlib's, read from
+  the asm: its own pi / pi_lo constants, tables from the disc), not libm's.
+- R-F17 *port glue, both games*: the hunter's joint matrices for the game (body_hit, hit check, effects) carried the
+  host's drawing offset that puts the model's feet on the ground (0.3 units low; REF_NODES -1 showed it).
+Rathian 245 -> 286; MH1 Rathian 291 -> 365.
+
+**Fourth round: G's other monsters, items, gathering (agent D, 20-21 Oct 2026).** New referee scenarios
+(tools/referee.py): g_rathalos (quest 10017), g_gypceros (19), g_basarios (23), g_gravios (26), g_diablos (14),
+g_monoblos (10041), g_khezu (25), g_plesioth (11), g_cephadrome (13), g_kind37 / g_kind44 / g_kind49 (G subspecies
+quests 10038 / 10042 / 10033), g_lao (10048): the hunter is put next to the monster with a great sword and the FIGHT
+pad for 450 ticks; g_items (potion, whetstone, paintball, small barrel bomb, pitfall trap by pouch pokes next to the
+Rathian); g_gather (herbs, mining with a pickaxe, the bug net). Fixed:
+- R-F18 *G still on MH1 logic*: G's monster needs housekeeping in em01_main / em15_main / em20_main (G's difficulty
+  and quest lists, the countdown-only hunger game 0x547C20 on most quests): a Gypceros's hunger counted down on the
+  PS2 only, and its next move differed at tick 49 (em20_ai_nm.c, em01_ai_nm.c, em15_nm.c, em_core_nm.c).
+- R-F19 *G still on MH1 logic*: G's em03 / em04 / em12 / em19 / em29 inits apply the monster's size to small monsters
+  (base scale at EMW+0x600, em_size_scale_set): those small monsters were drawn and hit-tested at size 1.0 (a kind 19 at 1.0 instead of 0.8) (f_em_nm.c).
+- R-F20 *port glue, G*: more numbers taken for pointers (config/mhg/pc_noptr.txt): em_vital_tbl rows of kinds 12 and 19
+  (small monsters spawned with 32648 or -12408 hit points) and Item_get_tbl rows 99 / 100 / 143 (the bug net gave item
+  0xF645). The earlier sweep had filed these words under a wrong object name (st43_sun_rgba_data).
+- R-F21 *port glue, both games*: monster necks did not turn on the host skeleton: enemy_mk's mlCalcTransEM turns the four
+  neck joints of kinds 1 / 7 / 11 (G also 37 / 41 / 42 / 49 / 50) about Y toward the target; the host drew and
+  hit-tested heads straight ahead (fl_skel extra turns, rt_em.c rt_em_neck).
+- R-F22 *port glue, both games*: motion blends: the PS2's flBlendMotionEx mixes each node's local matrix (rows x and y
+  mixed, normalised, z = x cross y, y = z cross x: flmatBlend); the host lerped Euler angles, which bends differently
+  (a Rathalos's wing joints 18 units off mid-blend). Now the same matrix blend (fl_model.c); REF_NODES showed the
+  joints within 0.01 through the blend afterwards. Affects every hunter and monster blend, both games.
+- Referee line-up aid: each monster's action random number (EMW+0x39A) as the PS2 has it at play tick 0 (the first
+  actions are set while the area loads, before the PC gets the PS2's random state).
+
+| scenario | first gameplay difference after the fixes |
+|---|---|
+| g_rathalos | 157 (was 63): a choice in its attack program |
+| g_gypceros | 114 (was 49): a small monster (kind 5) facing |
+| g_basarios | 106 (was 32): a kind-19 small monster's height while flying |
+| g_gravios | 48: the Gravios ends its turn one tick early and attacks (open, below) |
+| g_diablos | 337: red-health recovery tick (N-R9) |
+| g_monoblos | 33: a small monster (kind 13) picks another first move at the area start (open) |
+| g_khezu, g_cephadrome, g_lao | none in 450 ticks |
+| g_kind44 | 62: the subspecies drifts 2 units |
+| g_kind49 | 33: the PC hunter walks into an area exit at its poked start (scenario position) |
+| g_items | 103: red-health recovery tick (N-R9); items used identically |
+| g_gather | 44: Aptonoth drift 2 units; gathered items identical (herbs none at that spot on both, ore, bug) |
+| kutku | 909 (was 804) |
+| g_plesioth, g_kind37 | no comparison yet: the PS2 quest did not start / stopped (referee scenario problem) |
+
+Open from this round: N-R10 (G) Gravios turn end (em17, tick 48: the PS2 runs its command program a tick later; the
+inputs compared are equal); N-R11 (G) kind 13 first action (act speed 1.2 on the PS2 at spawn, 1.0 on the PC: G's
+em16 act set); N-R12 the village day (shops, box, forge) is not compared: the lockstep hook only runs in quests.
+
+**Fifth round (agent D, 21-22 Oct 2026):**
+- R-F23 *G still on MH1 logic*: the monsters' first-encounter story scenes test MH1's quest numbers (0x87 ..); G's quests
+  are 10005 .. (rt_quest.c rt_story_quest maps them, em01 / em04 / em12 / em16 / em19 / em20 / em27) and G added scenes
+  of its own (em03 10008, em04 / em09 / em20 10028, em15 / em19 10046, em16 10035), written from G's asm. g_monoblos:
+  the Velociprey-type monsters of quest 10041 now play their scene: first difference 33 -> 219.
+  The scenes' own act 6 code is G's too (em04 6/1, em09 6/0, em15 6/0, em16 6/6, em19 6/1, em20 6/1: each waits for
+  G's demo flag; MH1's code there waits for MH1 flags and kept the monster in its scene for the whole quest: quest
+  10046's Khezu never fought back, test_all_quests_g caught it). em04's quest check lives in em04b.c (the built file;
+  em04_nm.c is a weak copy). g_scene_khezu (10046): 450 ticks, no difference; g_scene_rath (10028): the Rathalos scene
+  identical for 1500 ticks, the Velociprey 33 -> 1151 (then a facing step of 0x100, open).
+- R-F24 *G still on MH1 logic*: em_eye_search_set's eye joint for G's new kinds (37 41 42 49 like the Rathian, 38 39 43-48
+  like their base monsters, 36, 40, 50): the subspecies looked out of their body and saw the hunter early. g_kind37
+  44 -> 284 (red-health tick only), g_kind44 no difference.
+- R-F25 *port glue, both games*: Game_task's frame counter (game_w+0x1E) and the play time (User_data+0x374, G +0xC1C:
+  the save screen's TIME) now count every game tick in every mode; the PC counted the frame only during quest ticks and
+  the play time never (rt_game.c rt_game_task_tick).
+- Referee: village lockstep (the hook locks in the village's game mode, G: 0; the PC starts in the village with the
+  PS2's User_data: RT_REF_MODE / RT_REF_STAGE / RT_REF_UD_OUT) and the saved hunter compared at the end:
+  g_vil_shop (an item bought), g_vil_wshop (a weapon bought), g_vil_forge: User_data identical but for the play time
+  (the PC run also counts its own start-up ticks). g_carve: the Rathian at 1 hit point killed and carved: the same tick,
+  the same part on both sides (mh1_carve: the same gathering). Line-up aids added: the monsters' needs counters and G
+  size at play tick 0.
+- Still open: N-R10 Gravios notices the hunter a tick early (its head joints 31-39 are up to 20 units from the PS2's
+  although every motion layer, frame and blend agree: likely a node order or a head override on the PS2 side, not found);
+  N-R12 the reward screen is not compared yet (the lockstep only runs in the quest and the village; the clear / result
+  modes load files at their own pace).
+- R-F26 *G still on MH1 logic* (22 Oct): the forge's "equip it now?" starts on "yes" in G (G lobby 0x54CC8C; MH1 "no"):
+  g_vil_forge_ore's saved hunter now identical but the play time. N-R14 closed: above 1000 G pushes kind 19/24 fliers
+  down 20 a tick instead of stopping them, and em_fly05/09 have no ceiling (em19b.c; g_monoblos no difference,
+  g_basarios 106 -> 144). Kind 12's base scale is em12's own table value (G em12_init; g_gather no difference).
+  N-R13 closed: G's Em_direct_set gives kinds of em_tsuushin_tbl their quest stage before their init (sub_main
+  0x4B5714): the Plesioth's init took the hunter's stage for its own and left the water at once (g_plesioth 0 -> 436).
+- R-F27 *port glue, both games*: the area-exit check skips an area's first game tick, where the PS2's move_stage runs
+  stage_i (viewer.c): a hunter put on an exit left a tick early (g_kind49 33 -> 409).
+- Referee: the PC takes the PS2's frame counter (game_w+0x1E) each play tick with Rnd_w (the PS2 also counts its
+  area-load frames): red-health recovery and the frame-timed effects in step. g_kind37, g_diablos, mh1_kutku: no
+  difference left in 450 ticks. Still N-R7 class: g_rathalos 157, g_scene_rath 1151, g_items 297 (a monster with its
+  target almost straight behind turns the other way after a one-float-step drift).
+  G's offline quests have no Kirin, Rathian / Rathalos subspecies other than kinds 37 / 44 / 49 (the quest dry runs).
+
 **Left, ranked by how much a player meets it:**
-1. N-R1 (both games, MH1 seen too) *port glue*: on the first tick of a new motion the PS2 already moves the hunter
-   by its root motion (frame_move -> pl_velocity_sub), the PC one tick later (seen at the start of an attack, a
-   roar's ear-cover pl_dm016, a knockback); the body push against a monster then also lands a tick later. A few
-   units; this is the first difference in every fight. Where: the host's flPlayMotionExSI / skeleton velocity
-   (rt_motion.c) against f_frameb.c frame_move [inferred].
-2. N-R2 (both games) *platform*: the PS2's floats round toward zero. A Velociprey's run loop (2.4 a tick, 48 frames)
-   wraps a tick later on the PS2 (47.99998) than on the PC (48.0) and the monster ends 5 units elsewhere. RT_FPU_PS2=1
-   (rt_ref.c: SSE rounding toward zero, no denormals) fixes it in the referee's runs; the referee uses it. Making it
-   the default for players is the owner's call (it also changes the host's own float code: libm, drawing, audio) —
-   REVIEW "Lockstep referee".
-3. N-R3 (G) *G-only feature missing*: the Elder's tutorial in the first quests: "△ PUSH" opens his paged lessons
-   (soncho_no_oshie, SonchoMove / DispTutorial, game tuto.c) and blocks the buttons while open. The PC shows neither
-   the prompt nor the window (tuto.c is not in the PC build). MH1 has the same tutorial and the same gap [inferred].
-4. N-R4 (G) Dual Swords: the first ticks of walking after a demon-mode attack move the hunter 1.3 units further
-   on the PC (9.5 units by the end of the walk) [verified ds scenario, tick 254]; cause not found.
-5. N-R5 (both) *sound layer*: the PC's sound requests draw their random number one tick later than G's flSndRequest /
+1. N-R7 (both games): position differences of one float step (0.001 units at 10000) appear on the first tick of some
+   root motions (a monster starting to walk); they grow into 1-2 unit drifts after 200-300 ticks and change a push or
+   a facing later. Not traced further; the PS2 side is PCSX2's emulation, whose last-bit rounding the referee cannot
+   tell from the real console's.
+2. N-R9 (both games): the hunter's red-health recovery ticks on game_w+0x1E, a frame counter that on the PS2 also runs
+   while an area loads (dozens of ticks, one on the PC), so the recovery comes 1-60 ticks apart: the same cause as the
+   quest clock (owner, 18 Oct: left as is).
+3. N-R5 (both) *sound layer*: the PC's sound requests draw their random number one tick later than G's flSndRequest /
    flSndChange (channel 1 only; sound pitch variation; no gameplay effect).
-6. N-R6 (both) *referee path only*: `--quest` runs show a default hunter (armour, no name in the HUD) instead of the
+4. N-R6 (both) *referee path only*: `--quest` runs show a default hunter (armour, no name in the HUD) instead of the
    save's look; the real village -> quest path uses the save. Not a player bug; it makes the referee's pictures differ.
-7. Quest timer: the PS2's clock also runs while an area loads (34 ticks per area change from the disc); the PC loads
-   in one tick. A player on the PC gets slightly more time per area change; true to the hardware would be counting
-   the PS2's load time [owner's call; not changed].
+(N-R1..N-R4 of the first round are fixed: R-F9, R-F8, R-F10, R-F11.)
 
 ## 12. Cross-game audit (agent A, 18 Oct 2026; docs/audit_cross_game.md)
 Every G-only / MH1-only change since 13 Oct checked against the other game. For G:
@@ -448,3 +572,103 @@ Every G-only / MH1-only change since 13 Oct checked against the other game. For 
   [verified: G quest 9 sweep run, shot]. "Hunter rank" and "Mark all offline quests cleared" rows now on G too (rank at
   User_data+0xC23; the 98 offline quests) [verified: tools/test_dbgmenu.sh].
 - Quest start: the "save has a pouch" test reads G's pouch (+0xC24), was MH1's offset (no visible effect found).
+
+## 13. The quest lane, seventh pass (agent A, 20 Oct 2026; details docs/agents/agent-A.md "G round 15")
+PC-only round: all G code below is C written from G's asm (VERSION_MHG), not byte-checked (check.py needs wibo).
+Each was compared with an m2c draft of the G asm against the MH1 draft / the PC C, the odd places read in the asm.
+
+**Section 8 / 10's list, done:**
+- **set04**: G's set04_i / _m / _trans. G's new cases are for stages 0x59-0x5B, which G's 88-entry stage tables do not
+  have (FINDS.md); what changes in practice is the default branch and the first-frame draw.
+- **em17 small acts** (Gravios / Basarios): G's attack table (em_move03, 12 entries; MH1's atk07 is unreachable in G),
+  a new jump attack, beam variants (Shell08 types 12 / 13), acts 12 / 14 / 18 / 23 / 26 (the 5% heal now after 600
+  ticks), dmg00 / 04 / 11, the quest 10043 demo (G rewrote it), type-1 sounds, the sound/effect script's new motions
+  and the Black Gravios (kind 0x2F) in the Gravios checks [verified: hunts of quests 23 / 26 / 10043, every attack
+  returns to normal; test_all_quests_g].
+- **em07 item / hagi sets** (Lao-Shan Lung): G's item ids by kind and quest rank (MH1's ids are other items in G's
+  list) [asm read; quest 10048 passes; the items themselves not looked at in a hunt].
+- **eft05 for the other weapons**: nothing to port: G's callers pass the same arguments (args 2 / 3 are the Dual
+  Swords'), G's Eft05_set only adds the demon-mode skip [compared by code, not with PS2 pictures].
+- **em27 die04 the way G does it** (Velocidrome family): G moved the revival into em27_act_set (die act 4:
+  Quest_enemy_revival_set, em_status_init, the start point), die04 only picks the act. Porting both together fixes
+  last round's endless revival [verified: quest 7: three kills with two revivals, then clear; 7 / 15 / 24 / 32 / 42 /
+  10014-10031 pass]. Also G's em27_main (the monster turns by the hit's side before a flinch or fall), die03 / dmg03
+  motions, atk06's variant and G's attack 14.
+- **eft20** (monster dust, splashes, breath dust): G's eft20_i / _m / _t (kind 0x24, the nine kinds' landing hits,
+  args 13 / 21 for Gravios motion 0x45A with G's fade keys, arg 29 scaled) [asm + draft compare; 13 / 21 not seen].
+
+**Beyond the list (ranked by how often a player meets them):**
+- **em01** (Rathian / Rathalos and G's variants, kinds 0x25 / 0x2A / 0x29 / 0x31): the variants now take their
+  originals' paths everywhere (MH1's code only knew kinds 1 / 11), G's em01_main (status checks by G's quest numbers,
+  hunger countdown, demo stops), the airborne fireball attacks (atk09 / 10 / 17 / 22) as G, four new attacks (x15
+  26-29), flight curves 15 / 16, the sound/effect script [verified: hunts of kinds 11 / 1 / 49 / 37, 400 s each;
+  13 em01 quests pass; x15 26-29 not hit in those hunts].
+- **em16** (Velociprey family): the same hit-side turn as em27, G's demo-stop quests and the new quest-10035 act
+  (hidden during the Plesioth opening scene), init speed per kind, a new attack, kind 35.
+- **Monsters with x01 = 0 were drawn on the PC (both games)**: the game only queues a monster's prim when x01 != 0;
+  the PC's monster drawing ignored it. Found through em16 in quest 10035 [verified: build/A/q10035b pictures].
+- **shell08's per-type tables** imported at G's 14 types (G's new types 12 / 13 read past the PC's copies).
+
+**Left, ranked by how often a player meets it** (coverage of the whole quest suite, build/A/cov2/report.txt, then
+checked by hand; "real" = G's asm differs in behaviour, not only in registers / addresses):
+1. **shell08_m / _i / _trans / _impact_set / _h** (fireballs and beams of Rathian, Rathalos, Gravios, Basarios): G
+   reorganised them (types 12 / 13 join the 0/11 and 2/3/9 groups, a sound for type 12, a different ground test,
+   changed timings for old types). Still MH1's code on the PC; the biggest real gap left in a hunt.
+2. **eft13** (smoke / dust puffs: eft13_set_pos_em, _m, _i, _set_sub_em; 0.86-0.93 similar), **eft04_m**,
+   **Eft04_set_time**, **eft02_t**, **eft06 type 2**: effects on every hunt [diffs seen, not read case by case].
+3. **em20_main** (Kut-Ku / Gypceros), **em14_main** (Diablos / Monoblos), **em09_main**, **em04_main**, **em03_init**,
+   **em02** (Fatalis: init, hagi, fly curves): per-monster G edits like the ones ported this round.
+4. **shell06** (init_sub / set), **shell04_m**, **shell14** (pos_get / m00), **set14_trans**: monster shells and a set
+   piece.
+5. **GetWallHitBitPl / Em / 2** (walls): flagged at 0.88-0.92 similar, but what differs looks like register and stack
+   allocation; to be read before calling it a gap.
+6. **em01_init's first act** (G no longer sets act 0.1 itself; left as MH1's) and **em27_init / em16_init**'s G
+   motion helper (0x549FE0): small start-of-hunt differences.
+
+## 14. Xbox: the Elder's quest list crash (agent A, 21 Oct 2026)
+- Owner's bug (real Xbox, G, any save): the Elder's urgent quest -> next -> crash. Reproduced in xemu (access violation in
+  vsprintf on the quest sheet). Cause: `int Lb_get_quest_type();` for an s8 function; clang returned garbage upper bytes
+  (type 16385), the quest sheet used it as an index into its string table. Fixed (G and the MH1 callers); verified in the
+  XBE's code, xemu re-run pending. New: tools/test_urgent_g.sh (board -> depart -> clear -> star level 0) in the full
+  check; tools/check_kr_returns.py lists the other declarations with the same hazard (to be gone through).
+
+## 15. Owner's Xbox report, G build 2305c47e: saving, shop icons (agent A, 21 Oct 2026)
+- **Saving "does nothing"** (bought armour + weapon, equipped, bed save in the house, debug menu "Title screen (soft
+  reset)"): NOT reproduced on the PC. The same sequence on PC G (equip blade 2 from the box, bed save on a new card,
+  debug menu +2000z (not saved), soft reset, CONTINUE -> slot 1 -> hunter -> village) brings back blade 2 and the saved
+  0z: the save is written and CONTINUE reads it (not a stale copy). New tools/test_save_g.sh runs it (full check).
+  The owner's log cannot tell what happened: the Xbox card layer (mc_xbox.c) logged nothing, and after the reset the log
+  never reaches "load finished" (about 80 s in the title / load screens, then the log ends). mc_xbox.c now logs every
+  file saved or loaded ("memory card: saved/loaded NAME, N bytes", as the PC), a failed open / short write / failed
+  close, folder creation and deletes; the next owner log will show whether the bed save reached the disk. Untested on
+  hardware and in xemu (no memory / xemu in use by another session). Found on the way: a G save of an RT_VILLAGE_START
+  test hunter loaded as "no character data" (slot byte 0, set at character creation, was 0); rt_village.c sets it.
+- **Shop list icons**: the weapon shop's list showed the neighbouring icon (a sword as a block shape) until the
+  detail view, which draws its own. G's icon sheet has one more cell before the weapon icons: Lb_put_job draws e + 0x19
+  in G (MH1 + 0x18), and its small-sheet branch maps jobs 5 / 6 to 1 / 4 (G 0x593100). Fixed in lb_ag01.c; checked on a
+  PC G screenshot (great sword, hammer, lance, sword-and-shield icons). The item shop's icons were already the same as
+  MH1's. PC texture slots stay MH1's (0x118 / 0x157: the PC's load_pit loads them; G's 0x13F / 0x180 are the PS2's).
+- **Follow-up (owner's log 20261021-194604):** the bed save was written ("saved ... 78032 bytes" at t4162), then Back +
+  Start -> loader -> G -> CONTINUE loaded the old save. Likely cause: the bytes sat in the Xbox kernel's file cache
+  (fflush only hands them to it) and never reached the disk before the console moved on. mc_xbox.c now writes each
+  card write through (NtFlushBuffersFile, as the log), again at close, and xbox_log.c flushes any open card file
+  before leaving. The save / load log lines now carry a check value (FNV-1a of the bytes moved: the next load must show
+  the save's value) and, for a save, the money and wielded weapon of the hunter in play. Both games; builds only,
+  not run on hardware or xemu.
+- **Follow-up 2 (owner, 20261021-200621): worn equipment and play time lost.** The save copied only MH1's 0x480 bytes
+  per hunter slot, at MH1's slot stride (src/main/ud/udmisc_nm.c Load_userdata / Save_userdata, the PC's copy of
+  f_ud): money, item box and equipment box (all below 0x480) came back, the pouch (+0xC24), the worn set (+0xC75..) and
+  the play time (+0xC1C) did not. Now UD_SLOT (0xE00 in G). Same stride fix in the character select's slot checks
+  (src/select/edit_nm.c). The soft-reset test had passed only because the old hunter was still in memory; test_save_g.sh
+  now also starts a new process and CONTINUEs (blade 2, pouch, play time > 0), which failed before the fix.
+  Open: edit_nm.c (G's character creation / select on the PC) still writes option_w[0xFCE] (MH1's "last slot" byte)
+  and sets a new hunter's fields at MH1 offsets; G's own locations not checked.
+- **Reward screen "no way to skip"**: G's reward screen opens on a two-line menu (receive the reward items / end
+  receiving); ending it is how the 120 s wait is cut short. The menu was never seen: the G import took its frame's
+  first word (s16 x, y = 0x20, 0x28) for a pointer and relocated it, so it was drawn far off screen. Now in
+  config/mhg/pc_noptr.txt; checked on a PC G screenshot (menu and cursor shown). A scan of the other relocated words
+  for the same frame layout found none.
+- **New hunter fields / last slot (edit_nm.c)**: G's user_data_copy (select 0x544870) puts the fields at G's places
+  (0xC7F, 0xD00-0xD08 = -1, 0xC95, 0x1C, 0xC23, 0xD0A); the last-chosen-slot byte is option_w+0x2C50 in G (MH1's
+  0xFCE lay inside G's slot 1). test_save_g.sh passes; a G new-game run was not done.
+- **Supply box cursor**: not reproduced; a scripted run did not get the camp box (stage 21, 9500,9500) to open.

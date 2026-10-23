@@ -29,6 +29,7 @@ typedef struct {
     char online_login[16];    /* the 8-digit login (the MMBB id the KDDI portal gave the PS2) */
     char online_password[24]; /* its password (16 characters) */
     int debug_menu;      /* the testers' debug menu (src/pc/dbgmenu.c): 0 the build's default, 1 on, 2 off (ini `debug_menu`) */
+    int skip_intros;     /* 1: power-on goes straight to the title (no logos, warnings, opening movie; ini `skip_intros`, rt_boot.c) */
 } pc_options;
 extern pc_options pc_opt;
 extern int rt_hud_style;    /* hud: 0 original, 1 prototype gunner (src/pc/rt/rt_hud_gun.c) */

@@ -1,5 +1,8 @@
 /* netwk13 - network connection code 0x0026C400-0x0026C490: Ncm_spr_kill. Whole file in netwk_nm.c. */
 #include "types.h"
+#ifndef __MWERKS__
+signed char SoftKeyboard_move();   /* (declared before its first use) */
+#endif
 
 typedef struct NETCW {
     u8 x00;
@@ -119,7 +122,11 @@ int release_texture();
 int McActInit();
 int Load_overlay();
 int kbdExecServer();
+#ifdef __MWERKS__
 int SoftKeyboard_move();
+#else
+signed char SoftKeyboard_move();   /* the real return type (tools/check_kr_returns.py) */
+#endif
 int SoftKeyboard_pos_set(f32, s16);
 int SoftKeyboard_set();
 int DispSoftkeyboard();

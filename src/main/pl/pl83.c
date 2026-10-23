@@ -3,9 +3,16 @@
 #include "game.h"
 #include "plf.h"
 #include "flow.h"
+#ifndef __MWERKS__
+unsigned char hit_cap_cap3_m(void *, void *, f32 *);   /* (declared before its first use) */
+#endif
 void pl_body_make(PLW *pl, f32 *out, f32 radius);
 void hit_cap_pk(void *, void *);
+#ifdef __MWERKS__
 int hit_cap_cap3_m(void *, void *, f32 *);
+#else
+unsigned char hit_cap_cap3_m(void *, void *, f32 *);   /* the real return type (tools/check_kr_returns.py) */
+#endif
 
 void body_hit_sub_pl(PLW *pl, PLW *o) {
     f32 v[3];

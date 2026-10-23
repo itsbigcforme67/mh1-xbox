@@ -13,7 +13,8 @@
  *   RT_REF_RND=a,b    Rnd_w (the game's random state, ran_suu) set at the first play tick
  *   RT_REF_POKE=file  writes at play ticks, the same ones the PS2 side makes: lines "PTICK REGION OFFSET TYPE VALUE"
  *                     (REGION plw / emN / gw / qw / ud; TYPE u8 u16 u32 f32): scenario aids (an area change)
- *   RT_REF_RNDS=file  the PS2's Rnd_w at the start of each play tick ("PTICK A B" lines), set after this side's record
+ *   RT_REF_RNDS=file  the PS2's Rnd_w (and frame counter game_w+0x1E) at the start of each play tick ("PTICK A B [F]"
+ *                     lines), set after this side's record
  *                     of the tick: a difference in random calls then only shows in the tick where it happens instead
  *                     of moving everything random afterwards (the record still shows the PC's own value)
  *   RT_REF_RNG=file   every ran_suu call: "PTICK CHANNEL OFFSET" (the caller's return address minus ran_suu's own, so
@@ -48,7 +49,7 @@ extern u16 Rnd_w[2];
 #define PLW_SIZE 0xA00
 
 static FILE *out;
-static int on, started, ptick, rawtick;
+static int on, started, ptick, rawtick, cur_play;
 static pad_state *pads;
 static int npads;
 typedef struct { int pt; char reg[8]; int off; char type[4]; double v; } poke;
@@ -93,6 +94,7 @@ static void load_pokes(const char *path)
 
 static FILE *rng;
 static u16 (*rnds)[2];
+static s32 *rfrm;       /* the PS2's frame counter (game_w+0x1E) at the start of each play tick, -1 none */
 static int nrnds;
 extern int rt_ref_rng_on;
 u32 ran_suu(int ch);
@@ -102,24 +104,66 @@ void rt_ref_rng(void *ra, int ch)
         fprintf(rng, "%d %d %ld\n", game_w[0] == 2 && game_w[1] <= 1 ? ptick : -1, ch, (long)((char *)ra - (char *)ran_suu));
 }
 
-/* RT_FPU_PS2=1: the PS2's float rounding for the game's float math: the EE FPU rounds toward zero and has no
- * denormals; SSE does the same with MXCSR's rounding bits at "toward zero" and flush-to-zero / denormals-are-zero.
+/* The PS2's float rounding for the game's float math, ON BY DEFAULT (owner, 18 Oct 2026; RT_FPU_PS2=0 turns it off):
+ * the EE FPU rounds toward zero and has no denormals; SSE does the same with MXCSR's rounding bits at "toward zero"
+ * and flush-to-zero / denormals-are-zero. The game C is built with SSE math (build_pc.sh FPSSE, build_win.sh,
+ * build_xbox.py -msse), so the mode reaches all of it. The host's own float code on 32-bit x86 (rt_*.c, the
+ * renderer, libm, the mixer) is x87 code and does not read MXCSR, so it keeps round-to-nearest.
  * The referee showed why it matters: a Velociprey's run motion counts its frame up by 2.4 a tick; on the PS2 the sum
  * reaches 47.99998 and the 48-frame loop wraps a tick later than the PC's exact 48.0, and the monster lands 5 units
- * elsewhere (docs/referee.md). Test switch only for now: the host's own float code (libm, drawing, audio) runs under
- * the same mode. */
+ * elsewhere (docs/referee.md).
+ * DAZ (bit 6) is only set when the CPU has it: the Xbox's Pentium III has no DAZ, and ldmxcsr with a bit outside
+ * MXCSR_MASK raises #GP (the mask comes from fxsave; 0 there means the old default mask 0xFFBF, no DAZ).
+ * MXCSR is per thread: this runs on the game thread (viewer.c's main) before the game starts. */
+static unsigned int fpu_mode = 0x1F80;
+static unsigned int fpu_mxcsr(void)
+{
+    unsigned int m = 0x1F80;
+#if defined(__i386__) || defined(__x86_64__)
+    __asm__ volatile("stmxcsr %0" : "=m"(m));
+#endif
+    return m;
+}
 static void fpu_ps2(void)
 {
 #if defined(__i386__) || defined(__x86_64__)
     const char *e = getenv("RT_FPU_PS2");
-    if (e && *e && *e != '0') {
-        unsigned int m;
-        __asm__ volatile("stmxcsr %0" : "=m"(m));
-        m |= 0x6000u | 0x8040u;     /* RC = 11 (toward zero), FTZ, DAZ (the game C is built with SSE math, build_pc.sh FPSSE) */
-        __asm__ volatile("ldmxcsr %0" : : "m"(m));
-        rt_log("fpu: PS2 rounding (toward zero, no denormals)");
+    unsigned int m, mask;
+    static unsigned char fx[512 + 16];
+    unsigned char *p = (unsigned char *)(((unsigned long)fx + 15) & ~15ul);
+    if (e && *e == '0') {
+        rt_log("fpu: PC rounding (RT_FPU_PS2=0)");
+        fpu_mode = fpu_mxcsr();
+        return;
     }
+    __asm__ volatile("fxsave %0" : "=m"(*(unsigned char (*)[512])p));
+    memcpy(&mask, p + 28, 4);
+    if (!mask)
+        mask = 0xFFBF;
+    m = fpu_mxcsr();
+    m |= 0x6000u | 0x8000u;     /* RC = 11 (toward zero), FTZ */
+    if (mask & 0x40u)
+        m |= 0x40u;             /* DAZ */
+    m &= mask;
+    __asm__ volatile("ldmxcsr %0" : : "m"(m));
+    fpu_mode = fpu_mxcsr();
+    rt_log("fpu: PS2 rounding (toward zero, flush to zero%s), mxcsr %04X", mask & 0x40u ? ", denormals are zero" : "",
+           fpu_mode);
 #endif
+}
+
+/* at each quest start (rt_log.c): the game thread's MXCSR, and the mode set again if something changed it (a
+ * library, a kernel that does not keep MXCSR across thread switches) */
+void rt_fpu_check(void)
+{
+    unsigned int m = fpu_mxcsr();
+    if ((m & ~0x3Fu) != (fpu_mode & ~0x3Fu)) {     /* bits 0-5: sticky exception flags, not the mode */
+        rt_log("fpu: mxcsr %04X, expected %04X: set again", m, fpu_mode);
+#if defined(__i386__) || defined(__x86_64__)
+        { unsigned int w = fpu_mode; __asm__ volatile("ldmxcsr %0" : : "m"(w)); }
+#endif
+    } else
+        rt_log("fpu: mxcsr %04X", m);
 }
 
 void rt_ref_init(void)
@@ -139,18 +183,23 @@ void rt_ref_init(void)
         load_pokes(k);
     if (getenv("RT_REF_RNDS")) {
         FILE *f = fopen(getenv("RT_REF_RNDS"), "r");
-        int t, a, b, cap = 0;
-        while (f && fscanf(f, "%d %d %d", &t, &a, &b) == 3) {
-            if (t < 0)
+        int t, a, b, c, n, cap = 0;
+        char line[128];
+        while (f && fgets(line, sizeof line, f)) {
+            n = sscanf(line, "%d %d %d %d", &t, &a, &b, &c);
+            if (n < 3 || t < 0)
                 continue;
             while (t >= cap) {
                 int nc = cap ? cap * 2 : 4096;
                 rnds = realloc(rnds, sizeof *rnds * (size_t)nc);
                 memset(rnds + cap, 0xFF, sizeof *rnds * (size_t)(nc - cap));
+                rfrm = realloc(rfrm, sizeof *rfrm * (size_t)nc);
+                memset(rfrm + cap, 0xFF, sizeof *rfrm * (size_t)(nc - cap));
                 cap = nc;
             }
             rnds[t][0] = (u16)a;
             rnds[t][1] = (u16)b;
+            rfrm[t] = n >= 4 ? (c & 0xFFFF) : -1;
             if (t >= nrnds)
                 nrnds = t + 1;
         }
@@ -220,7 +269,20 @@ void rt_ref_tick(int raw)
     if (!on)
         return;
     rawtick = raw;
-    play = game_w[0] == 2 && game_w[1] <= 1;
+    {   /* RT_REF_MODE=6: the lockstep runs in the village instead (tools/referee.py village scenarios): a play tick is
+         * any tick in game mode 6; RT_REF_UD_OUT=file gets User_data after each of them (the referee compares the last) */
+        static int mode = -1;
+        if (mode < 0)
+            mode = getenv("RT_REF_MODE") ? atoi(getenv("RT_REF_MODE")) : 2;
+        int rt_village_active(void);
+        static int vstage = -2;
+        if (vstage == -2)       /* RT_REF_STAGE: the village's stage as the PS2 has it (its play tick 0): the PC's
+                                 * village counts from when it stands there (after its load) */
+            vstage = getenv("RT_REF_STAGE") ? atoi(getenv("RT_REF_STAGE")) : -1;
+        play = mode == 2 ? game_w[0] == 2 && game_w[1] <= 1
+                         : game_w[0] == mode && (mode != 6 || rt_village_active()) && (vstage < 0 || game_w[0x14] == vstage);
+    }
+    cur_play = play;
     if (play && !started) {
         const char *r = getenv("RT_REF_RND");
         started = 1;
@@ -253,12 +315,45 @@ void rt_ref_tick(int raw)
         fwrite(z, 1, 2, out);
         fflush(out);
     }
+    if (play && getenv("RT_REF_NODES") && getenv("RT_REF_NODES_OUT")) {
+        /* RT_REF_NODES=SLOT:COUNT:FIRST-LAST (debug aid, tools/referee.py REF_NODES): the world matrices of monster
+         * SLOT's first COUNT skeleton nodes at the start of these play ticks, as the PS2 side reads them */
+        static FILE *nf;
+        int sl, cnt, a, b, j, k;
+        u8 *rt_actor_nodes(const void *work, int *max);
+        if (sscanf(getenv("RT_REF_NODES"), "%d:%d:%d-%d", &sl, &cnt, &a, &b) == 4 && ptick >= a && ptick <= b && sl >= -1 &&
+            sl < EM_N) {
+            int max;
+            u8 *nd = rt_actor_nodes(sl < 0 ? player_work : em_work + EM_STRIDE * sl, &max);     /* -1: the hunter */
+            if (!nf)
+                nf = fopen(getenv("RT_REF_NODES_OUT"), "w");
+            if (nf && nd) {
+                fprintf(nf, "%d", ptick);
+                for (j = 0; j < cnt && j < max; j++)
+                    for (k = 0; k < 16; k++)
+                        fprintf(nf, " %.9g", (double)((f32 *)(nd + 0x190 * j))[k]);
+                fprintf(nf, "\n");
+                fflush(nf);
+            }
+        }
+    }
+    if (play && getenv("RT_REF_UD_OUT")) {
+        FILE *uf = fopen(getenv("RT_REF_UD_OUT"), "wb");
+        if (uf) {
+            fwrite(User_data, 1, UD_SIZE, uf);
+            fclose(uf);
+        }
+    }
     if (play)
         do_pokes();     /* after the record, as the PS2 side writes them with the go */
     if (play && ptick < nrnds && !(rnds[ptick][0] == 0xFFFF && rnds[ptick][1] == 0xFFFF)) {
         Rnd_w[0] = rnds[ptick][0];
         Rnd_w[1] = rnds[ptick][1];
     }
+    /* and its frame counter: the PS2 counts the frames of an area load (42 on a stage change) that the PC's quick
+     * load does not have, and the hunter's red-health recovery, the effect animations and some sounds go by it */
+    if (play && rfrm && ptick < nrnds && rfrm[ptick] >= 0)
+        *(u16 *)(game_w + 0x1E) = (u16)rfrm[ptick];
 }
 
 /* this tick's pad (read_pad in viewer.c): 1 when the referee gives it */
@@ -267,7 +362,7 @@ int rt_ref_pad(pad_state *ps)
     if (!on || !pads)
         return 0;
     memset(ps, 0, sizeof *ps);
-    if (started && game_w[0] == 2 && game_w[1] <= 1 && ptick < npads)
+    if (started && cur_play && ptick < npads)     /* (a play tick as rt_ref_tick saw it: quest or village) */
         *ps = pads[ptick];
     return 1;
 }

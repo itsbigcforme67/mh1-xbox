@@ -73,7 +73,7 @@ FLMAT *get_joint_wmat(void *, s16);
 void flmatCopy(FLMAT *, FLMAT *);
 void flvecCopy(f32 *, f32 *);
 u16 calc_mat_angY(FLMAT *);
-int GetWaterHit(f32 *, f32 *);
+unsigned char GetWaterHit(f32 *, f32 *);
 void se_req2(int, int, int, f32 *, int, int);
 void func_544C90(f32 *, int, int, f32);    /* game.bin Eft08_set */
 void func_544D20(void *, int, int, f32, f32); /* game.bin Eft08_set2 */

@@ -12,6 +12,9 @@
 #include "game.h"
 #include "prim.h"
 #include "fl.h"
+#ifndef __MWERKS__
+unsigned char GetWaterHit(f32 *, f32 *);   /* (declared before its first use) */
+#endif
 
 #define ANG2DEG(a) (360.0f * (f32)(a) / 65536.0f)
 #define DEG2RAD(d) (2.0f * (3.1415927f * ((d) / 360.0f)))
@@ -34,7 +37,11 @@ void release_prim(s16);
 void get_joint_pos(void *, int, f32 *);
 void flvecCopy(f32 *, f32 *);
 void flvecRotY(f32 *, f32);
+#ifdef __MWERKS__
 int GetWaterHit(f32 *, f32 *);
+#else
+unsigned char GetWaterHit(f32 *, f32 *);   /* the real return type (tools/check_kr_returns.py) */
+#endif
 void se_req2(int, int, int, f32 *, int, int);
 void func_544C90(f32 *, int, int, f32);    /* game.bin Eft08_set */
 

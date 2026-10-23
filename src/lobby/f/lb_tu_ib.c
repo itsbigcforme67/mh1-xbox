@@ -28,7 +28,11 @@ typedef struct IBS4 { u16 w[2]; } IBS4;
 #define UPNUMU(i) F(s16, (((int)(i) << 2) + (int)u), 0x1C6)
 #define IBID2U(i) F(u16, (((int)(i) << 2) + (int)u), 0x37C)
 #define IBNUM2U(i) F(s16, (((int)(i) << 2) + (int)u), 0x37E)
+#ifdef __MWERKS__
 int Ud_u_item_stack(u16, u16);
+#else
+short Ud_u_item_stack(u16, u16);   /* the real return type (tools/check_kr_returns.py) */
+#endif
 void Menu_select_mv();
 void itembox_cursor_mv();
 void PageSelect();
@@ -50,7 +54,11 @@ void Get_equip_icon_uv();
 int Now_equip_ck();
 int Equip_icon_color_rare();
 int equip_ok_chk();
+#ifdef __MWERKS__
 int Get_equip_rare();
+#else
+unsigned char Get_equip_rare();   /* the real return type (tools/check_kr_returns.py) */
+#endif
 char *Get_equip_name();
 void Lb_put_gold();
 void flfntLocate();
@@ -942,6 +950,10 @@ int disp_itembox_cmd(int a) {
 asm int Disp_lb_item_box()
 {
 #include "Disp_lb_item_box.inc"
+#ifndef __MWERKS__
+short Ud_u_item_stack(u16, u16);   /* (declared before its first use) */
+unsigned char Get_equip_rare();   /* (declared before its first use) */
+#endif
 }
 #endif
 #endif

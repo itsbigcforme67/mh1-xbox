@@ -33,6 +33,8 @@ static void log_path_from_xbe(void)
 /* leaving the game: back to the network loader in the game's own folder (its default.xbe), with launch
  * data "MH1X" so it only sends this log and goes on to the dashboard (src/pc/xbox/loader/main.c). An XBE
  * that is itself default.xbe (installed by hand, or xemu's DVD) goes straight to the dashboard. */
+void mc_xbox_flush_all(void);
+void xbox_ac97_stop(void);
 static void xbox_leave(void)
 {
     static unsigned char ld[3072] = "MH1X";     /* LAUNCH_DATA_PAGE.LaunchData (XLaunchXBEEx copies 3072 bytes) */
@@ -65,13 +67,18 @@ static unsigned char port_in(unsigned short p)
     return v;
 }
 
-void xbox_serial_write(const char *s, int n)
+int xbox_serial_present(void)           /* a UART answers (xemu; the retail Xbox has none): xbox_watch.c */
 {
     if (serial < 0) {
         unsigned char lsr = port_in(COM1 + 5);
         serial = !(lsr & 0x80) && (lsr & 0x60) == 0x60;    /* idle UART: transmitter empty */
     }
-    if (!serial)
+    return serial;
+}
+
+void xbox_serial_write(const char *s, int n)
+{
+    if (!xbox_serial_present())
         return;
     while (n-- > 0) {
         int spin = 100000;
@@ -90,6 +97,8 @@ static void serial_line(const char *s)
 /* run before the game leaves for the dashboard: the online build stops the NIC there (net_cpinet.c) */
 void (*xbox_quit_hook)(void);
 
+static const char *bail_headline;       /* xbox_log_bail: the first line of the exit screen, else "... stopped" */
+static int bail_secs = 10;
 static void xbox_log_show(void)
 {
     static char lines[TAIL][96];
@@ -97,6 +106,8 @@ static void xbox_log_show(void)
     int n = 0, i;
     FILE *f;
 
+    mc_xbox_flush_all();        /* a save file still open: through to the disk before the console moves on */
+    xbox_ac97_stop();           /* every way out (also main's normal end): the AC97 idle for the next program */
     fflush(stdout);
     fflush(stderr);
     if ((f = fopen(XBOX_LOG, "r")) != NULL) {
@@ -106,11 +117,13 @@ static void xbox_log_show(void)
     }
     XVideoSetMode(640, 480, 32, REFRESH_DEFAULT);
     debugClearScreen();
+    if (bail_headline)
+        debugPrint("%s\n\n", bail_headline);
     debugPrint(XBOX_GAME_SHORT " stopped. Last lines of %s:\n\n", XBOX_LOG);
     for (i = n > TAIL ? n - TAIL : 0; i < n; i++)
         debugPrint("%s", lines[i % TAIL]);
-    debugPrint("\nBack to the loader / dashboard in 10 s.\n");
-    Sleep(10000);
+    debugPrint("\nBack to the loader / dashboard in %d s.\n", bail_secs);
+    Sleep(bail_secs * 1000);
     if (xbox_quit_hook)
         xbox_quit_hook();
     xbox_leave();
@@ -135,6 +148,31 @@ void xbox_log_quit(void)
 {
     xbox_ac97_stop();           /* no audio DMA left running into the next program (xbox_ac97.c) */
     xbox_log_show();
+}
+
+/* The freeze watchdog and the crash catcher (xbox_watch.c): the log and the save files to the disk, the AC97 off, the
+ * headline and the log's last lines on the screen for `secs` seconds, then the loader (which sends the log and the
+ * save). Does not return. */
+void xbox_log_commit(FILE *f);
+void xbox_log_bail(const char *headline, int secs)
+{
+    bail_headline = headline;
+    bail_secs = secs;
+    xbox_log_commit(stderr);
+    xbox_ac97_stop();
+    xbox_log_show();
+}
+
+/* Commit a log file to the disk: stdio's fflush only hands the bytes to the kernel's file cache, which a crash
+ * (an exception that freezes the box) never writes out, so the owner's log of a crash ended long before it
+ * (21 Oct 2026). NtFlushBuffersFile writes the cached data through. pdclib's FILE starts with the OS handle. */
+void xbox_log_commit(FILE *f)
+{
+    IO_STATUS_BLOCK io;
+    if (!f)
+        return;
+    fflush(f);
+    NtFlushBuffersFile(*(HANDLE *)f, &io);
 }
 
 /* after E: is mounted */
@@ -162,11 +200,14 @@ void xbox_log_note(const char *msg)
 
 /* liveness (the null-graphics build draws nothing else): once a second on the
  * text screen, every 30 s in the log */
+void xbox_watch_alive(void);
 void xbox_log_frame(int frame, unsigned ms)
 {
     static unsigned shown, logged, dlogged;
+    xbox_watch_alive();             /* the freeze watchdog's heartbeat (xbox_watch.c) */
     if (ms / 1000 != shown) {
         shown = ms / 1000;
+        xbox_log_commit(stderr);    /* the last second's lines on the disk (a crash keeps them) */
         debugPrint("frame %d, %u s\n", frame, shown);
     }
     if (ms / 30000 != logged) {

@@ -26,7 +26,7 @@ extern f32 D_3E4C9C[3];
 f32 flvecCalcDistance(f32 *, f32 *);
 u16 Em_Calc_angY(f32 *, f32 *);
 void hit_line2_pk(f32 *, f32 *, void *);
-int hit_line_sphr2(void *, EM_SPOT *, f32);
+unsigned char hit_line_sphr2(void *, EM_SPOT *, f32);
 void cpRotMatrix(s32 *, void *);
 void frame_init(EMW *, u16, s16, int);
 int em_pl_pos_set(EMW *, u8, f32 *);
@@ -77,7 +77,16 @@ s8 em_eye_search_set(EMW *em) {
     em->x3AC = 0;
     best = 0.0f;
     pl = player_work;
+#ifdef VERSION_MHG
+    /* G (game 0x542640, read from the asm; agent D, 21 Oct 2026): the new kinds look out of their base kind's eye
+     * joint: 37 41 42 49 like the Rathian, 38 39 43 44 45 46 47 48 like Kut-Ku / Gypceros / Monoblos / Diablos / Khezu /
+     * Plesioth / Gravios / Basarios, 36 like Fatalis (joint 0x33), 50 like Lao-Shan (0x23), 40 from its body like kinds
+     * 9 / 23. The PC used MH1's list: the subspecies fell to the default (eye at the body), so they saw the hunter
+     * from elsewhere (the lockstep referee, g_kind37: the Rathalos subspecies noticed him five ticks early) */
+    switch (em->kind == 40 ? 9 : em->kind == 50 ? 7 : em->kind == 36 ? 2 : em->kind >= 37 && em->kind <= 49 ? 1 : em->kind) {
+#else
     switch (em->kind) {
+#endif
     case 1:
     case 11:
     case 6:
@@ -2422,6 +2431,19 @@ void em_hungry_ck(EMW *em) {
         }
     }
 }
+
+#if defined(VERSION_MHG) && !defined(__MWERKS__)
+/* G only (game 0x547C20, written from the asm for the PC): em_hungry_ck's countdown without its "hungry now" switch;
+ * G's em01_main / em15_main / em20_main call it in place of em_hungry_ck on many quests (agent D, 20 Oct 2026: the
+ * lockstep referee saw a Gypceros's hunger counting down on the PS2 and not on the PC) */
+void game_func_00547C20(EMW *em) {
+    EM_HUNGRY *t = em_hungry_tbl[em->kind];
+    em->hungry -= em->x888 == 0 ? t->dec : t->dec2;
+    if (em->hungry < 0) {
+        em->hungry = 0;
+    }
+}
+#endif
 
 void em_thirst_ck(EMW *em) {
     EM_NEED *t = em_thirst_tbl[em->kind];

@@ -1,11 +1,19 @@
 /* em17 draft */
 #include "em.h"
+unsigned char GetYouganHit();   /* its real return type: was implicitly int (tools/check_kr_returns.py) */
+unsigned char em17_fly_adjy2();   /* its real return type: was implicitly int (tools/check_kr_returns.py) */
+unsigned short em17_senkai_target();   /* its real return type: was implicitly int (tools/check_kr_returns.py) */
 #include "game.h"
 #include "fl.h"
 #include "pl.h"
 #include "plf.h"
 #include "quest.h"
 #include "em17.h"
+#ifdef VERSION_MHG
+#define EM17_G(g, mh1) (g)
+#else
+#define EM17_G(g, mh1) (mh1)
+#endif
 int Event_flag_ck();
 
 typedef struct STAGE_DATA {
@@ -829,6 +837,9 @@ static void em_act12_005DB3A0(EMW *em, EM17W *w) {
         em->x3F4 = 0;
         em->x88B = 1;
         em_char_set(em, 0x6C, 0, 0);
+#ifdef VERSION_MHG      /* G em_act12 (game 0x607400) */
+        em->x762 = 0;
+#endif
         break;
     case 1:
         if ((em->x8C3 == 0) && (em->x194 == 0)) {
@@ -872,6 +883,33 @@ static void em_act14_005DB510(EMW *em, EM17W *w) {
         em->x05 = temp_a1 + 1;
         em->x388 = 0;
         break;
+#ifdef VERSION_MHG      /* G em_act14 (game 0x607580): after 0x6E the other kinds play 0x72, kinds 0x16 / 0x30 do not */
+    case 1:
+        if (em17_horm_main(em) != 0) {
+            if (em->kind == 0x16 || em->kind == 0x30) {
+                em->x05 = 3;
+            } else {
+                em->x05 += 1;
+            }
+            em->x3F4 = 0;
+            em_char_set(em, 0x6E, 0, 0);
+        }
+        break;
+    case 2:
+        if (em->x194 == 0) {
+            em->x3F4 = 0;
+            em->x05 += 1;
+            em_char_set(em, 0x72, 0, 0);
+        }
+        break;
+    case 3:
+        if (em->x194 == 0) {
+            em->x3F4 = 0;
+            em->x05 += 1;
+            em17_to_normal(em, 0, 0);
+        }
+        break;
+#else
     case 1:
         if (em17_horm_main(em) != 0) {
             em->x05 += 1;
@@ -886,6 +924,7 @@ static void em_act14_005DB510(EMW *em, EM17W *w) {
             em17_to_normal(em, 0, 0);
         }
         break;
+#endif
     }
 }
 
@@ -1015,6 +1054,7 @@ static void em_act19_005DB8D0(EMW *em, EM17W *w) {
     }
 }
 
+/* G em_act18 (game 0x607A80): motions 0x27 / 0x22 in place of 0x20 / 0x1F */
 static void em_act18_005DB9A0(EMW *em, EM17W *w) {
     s16 temp_a1_2;
     s32 temp_v1;
@@ -1026,7 +1066,7 @@ static void em_act18_005DB9A0(EMW *em, EM17W *w) {
         em->x05 = temp_a1 + 1;
         em->x388 = 0;
         em->x3F4 = 0;
-        em_char_set(em, 0x20, 0, 0);
+        em_char_set(em, EM17_G(0x27, 0x20), 0, 0);
         em->x88B = 0;
         em_range_set(em, 1);
         Em_Suimin_Start(em);
@@ -1035,7 +1075,7 @@ static void em_act18_005DB9A0(EMW *em, EM17W *w) {
     case 1:
         if (em->x194 == 0) {
             em->x05 = temp_a1 + 1;
-            em_char_set(em, 0x1F, 0, 0);
+            em_char_set(em, EM17_G(0x22, 0x1F), 0, 0);
         }
         break;
     case 2:
@@ -1170,6 +1210,7 @@ static void em_act22_005DBD70(EMW *em, EM17W *w) {
     }
 }
 
+/* G em_act23 (game 0x607E80..): motion 0x25 in place of 0x21 */
 static void em_act23_005DBDF0(EMW *em, EM17W *w) {
     u8 temp_a1;
 
@@ -1178,7 +1219,7 @@ static void em_act23_005DBDF0(EMW *em, EM17W *w) {
     case 0:
         em->x05 = temp_a1 + 1;
         em->x388 = 0;
-        em_char_set(em, 0x21, 0, 0);
+        em_char_set(em, EM17_G(0x25, 0x21), 0, 0);
         em_range_set(em, 0);
         em->x88B = 1;
         em_suimin_end(em);
@@ -1258,10 +1299,21 @@ static void em_act26_005DC010(EMW *em, EM17W *w) {
         em->x88B = 0;
         em_range_set(em, 1);
         em->x762 = 3;
+#ifdef VERSION_MHG      /* G em_act26 (game 0x6080F0): the 5% heal comes after 600 ticks, not at once */
+        em->work08 = 600;
+        break;
+    case 1:
+        if (--em->work08 <= 0) {
+            em_hp_add(em, (s16)(0.05f * (f32) em->x792));
+            em->x05++;
+        }
+        break;
+#else
         em_hp_add(em, (s16)(0.05f * (f32) em->x792));
         /* fallthrough */
     case 1:
         break;
+#endif
     }
 }
 
@@ -2612,6 +2664,9 @@ static void em_dmg00_005DEB30(EMW *em, EM17W *w) {
     case 1:
         if (em->x194 == 0) {
             em->x05 = temp_a1 + 1;
+#ifdef VERSION_MHG      /* G em_dmg00 (game 0x60AFD0) */
+            em->x762 = 0;
+#endif
             em17_to_normal(em, 0, 0);
         }
         break;
@@ -2700,7 +2755,11 @@ static void em_dmg04_005DED80(EMW *em, EM17W *w) {
         Em_Sleep_Flag_Ck(em);
         break;
     case 1:
-        if ((em_frame_check(em, 0, 6.0f) != 0) && ((s8) em->ex[0xA3] != 0) && (em->kind != 0x14)) {
+        if ((em_frame_check(em, 0, 6.0f) != 0) && ((s8) em->ex[0xA3] != 0) && (em->kind != 0x14)
+#ifdef VERSION_MHG      /* G em_dmg04 (game 0x60B220): kind 0x27 too */
+            && (em->kind != 0x27)
+#endif
+            ) {
             em->ex[0xA3] = 0;
         }
         if ((em_frame_check2(em, 0, 52.0f) != 0) && (em_frame_check2(em, 0, 122.0f) == 0)) {
@@ -2907,7 +2966,9 @@ static void em_dmg11_005DF460(EMW *em, EM17W *w) {
         em->work08 = temp_v1;
         if (temp_v1 <= 0) {
             em->x05 += 1;
+#ifndef VERSION_MHG     /* G em_dmg11 (game 0x60B900) leaves Em_Mahi_End to act 0x21 (em_act33), which calls it in both games */
             Em_Mahi_End(em);
+#endif
             em17_act_set(em, 0, 0x21, 4);
         }
         break;
@@ -3207,6 +3268,121 @@ static void em_dmg20_005DFCF0(EMW *em, EM17W *w) {
     }
 }
 
+#ifdef VERSION_MHG
+/* G em17 demo (game 0x60C280, the PC C from the asm; G's em_move06 calls it for steps 0-3 as MH1's): a scripted walk
+ * between fixed points (two jumps of position, three idle motions on layer 1) until event flag 0x17 (quest 10043's
+ * demo end), then back to normal. MH1's demo (a flight toward a target) is gone from G. */
+static void em_demo00_005DFDF0(EMW *em, EM17W *w) {
+    f32 d;
+    u8 step;
+
+    em->x9E1 = 5;
+    em->x40C = 5;
+    step = em->x05;
+    switch (step) {
+    case 0:
+        em->x05 = step + 1;
+        em->x3F4 = 0;
+        em->x388 = 0;
+        em->pos[0] = 13830.0f;
+        em->pos[1] = -952.0f;
+        em->pos[2] = 5648.0f;
+        em->ang[0] = 0;
+        em->ang[1] = 0x4000;
+        em->ang[2] = 0;
+        em_char_set(em, 1, 0, 0);
+        em->work08 = 180;
+        break;
+    case 1:
+        if (--em->work08 <= 0) {
+            em->x05++;
+            em_char_set(em, 0x27, 0, 0);
+        }
+        break;
+    case 2:
+        if (em->x194 == 0) {
+            em->x05 = step + 1;
+            em->pos[0] = 15980.0f;
+            em->pos[1] = -1095.0f;
+            em->pos[2] = 5935.0f;
+            em->tgt_pos[0] = 12338.0f;
+            em->tgt_pos[1] = -255.0f;
+            em->tgt_pos[2] = 6446.0f;
+            em->ang[0] = 0;
+            em->ang[1] = Em_Calc_angY(em->pos, em->tgt_pos) & 0xFFFF;
+            em->ang[2] = 0;
+            em_char_set(em, 2, 0, 0);
+            em->work08 = 900;
+        }
+        break;
+    case 3:
+        d = CalcDistanceXZ(em->pos, em->tgt_pos);
+        if (--em->work08 <= 0 || d <= 200.0f) {
+            em->x05++;
+            em->pos[0] = 13823.0f;
+            em->pos[1] = -605.0f;
+            em->pos[2] = 6130.0f;
+            em->tgt_pos[0] = 8105.0f;
+            em->tgt_pos[1] = -60.0f;
+            em->tgt_pos[2] = 6994.0f;
+            em->ang[0] = 0;
+            em->ang[1] = Em_Calc_angY(em->pos, em->tgt_pos) & 0xFFFF;
+            em->ang[2] = 0;
+            em->work08 = 570;
+            em->x06 = 0;
+        }
+        break;
+    case 4:
+        d = CalcDistanceXZ(em->pos, em->tgt_pos);
+        if (M2C_FIELD(em, s32 *, 0x1E4) == 0) {
+            switch (em->x06) {
+            case 0:
+                em_char_set2(em, 0x4C4, 0xA, 0, 1);
+                break;
+            case 1:
+                em_char_set2(em, 0x4C8, 0xA, 0, 1);
+                break;
+            case 2:
+                em_char_set2(em, 0x4C9, 0xA, 0, 1);
+                break;
+            }
+            em->x06++;
+        }
+        if (--em->work08 <= 0 || d <= 200.0f) {
+            em->x05++;
+            em_char_set(em, 0x73, 0, 0);
+        }
+        break;
+    case 5:
+        if (--em->work08 <= 0) {
+            em->x05++;
+            em_char_set(em, 0x6E, 0, 0);
+        }
+        break;
+    case 6:
+        if (em->x194 == 0) {
+            em->x3F4 = 0;
+            em->x05++;
+            em_char_set(em, 0x72, 0, 0);
+        }
+        break;
+    case 7:
+        if (M2C_FIELD(em, s32 *, 0x1E4) == 0) {
+            em->x05 = step + 1;
+            em_char_set(em, 1, 0, 0);
+        }
+        break;
+    case 8:
+        if (Event_flag_ck(0x17) == 1) {
+            em->x05++;
+            em->x9E1 = 0;
+            em->x40C = 0;
+            em17_to_normal(em, 0, 0);
+        }
+        break;
+    }
+}
+#else
 static void em_demo00_005DFDF0(EMW *em, EM17W *w) {
     f32 dst[3];
     f32 a120[3];
@@ -3440,6 +3616,7 @@ static void em_demo00_005DFDF0(EMW *em, EM17W *w) {
         em->pos[1] = temp_f1_4;
     }
 }
+#endif
 
 static void em_demo04_005E06F0(EMW *em, EM17W *w) {
     u8 temp_a1;
@@ -3881,6 +4058,243 @@ static void em_move02_005E1030(EMW *em, EM17W *w) {
     }
 }
 
+#ifdef VERSION_MHG
+/* G's em17 attacks (G em_move03, game 0x60D470, a 12-entry jump table): x15 0 atk00, 1 em_atk01_g (game 0x60A480),
+ * 2 em_atk02_g (0x60A580, new), 3 atk03, 4 / 11 atk04 variants 0 / 1, 5 / 7 / 10 atk05 variants 0 / 1 / 2, 6 atk06,
+ * 8 atk08, 9 atk09. MH1's atk07 is no longer reached. PC C from the asm (not match-checked). */
+void Shell08_set_ang_time(EMW *, s16, u8, u8, u16, u16, u8);
+static void em_atk01_g(EMW *em, EM17W *w) {
+    u8 temp_a1;
+
+    temp_a1 = em->x05;
+    switch (temp_a1) {
+    case 0:
+        em->x05 = temp_a1 + 1;
+        em->x388 = 0;
+        break;
+    case 1:
+        if (em17_horm_main(em) != 0) {
+            em->x05 += 1;
+            em->x3F4 = 0;
+            em_char_set(em, 0x69, 0, 0);
+        }
+        break;
+    case 2:
+        if (em_frame_check(em, 0, 122.0f) != 0) {
+            Shell08_set_ang_time(em, 0x22, 4, 0, 0, 0, 0x14);
+        }
+        if (em->x194 == 0) {
+            em->x3F4 = 0;
+            em->x05 += 1;
+            em17_to_normal(em, 0, 0);
+        }
+        break;
+    }
+}
+
+/* G game 0x60A580: a jump (motion 0x77, up at frame 70 with 73 per tick, gravity 3.38, capped at -100 falling),
+ * landing (0x7A) at the ground height x5AC, then back to normal */
+static void em_atk02_g(EMW *em, EM17W *w) {
+    u8 step = em->x05;
+
+    switch (step) {
+    case 0:
+        em->x05 = step + 1;
+        em->x388 = 0;
+        em->x3F4 = 0;
+        em_char_set(em, 0x77, 0, 0);
+        em_rate_clear(em);
+        /* fallthrough */
+    case 1:
+        if (em_frame_check(em, 0, 70.0f) != 0) {
+            em->x05++;
+            em->adj_y = 73.0f;
+            em->x3C0[1] = -3.38f;
+            w->x18 = 0;
+            em->x388 = 2;
+            w->spd[0] = 0;
+            w->spd[1] = em->ang[1];
+            w->spd[2] = 0;
+        }
+        break;
+    case 2:
+        speed_add_g(em, w->spd);
+        if (em->adj_y <= 0.0f) {
+            if (em->adj_y < -100.0f) {
+                em->adj_y = -100.0f;
+            }
+            if (em->pos[1] <= em->x5AC + 100.0f * em->scale[1]) {
+                em_char_set(em, 0x7A, 0, 0);
+                em->x388 = 0;
+                em->pos[1] = em->x5AC;
+                em->x05++;
+                em_rate_clear(em);
+            }
+        }
+        break;
+    case 3:
+        if (em->x194 == 0) {
+            em->x05 = step + 1;
+            em17_to_normal(em, 0, 0);
+        }
+        break;
+    }
+    if (em->pos[1] < em->x5AC) {
+        em->pos[1] = em->x5AC;
+    }
+}
+
+/* G em_atk04 (game 0x60A7C0): beam motion 0x6E (kinds 0x16 / 0x30 skip the follow-up 0x72 with its timed Shell08),
+ * kinds 0x16 / 0x30 fire a Shell08 at a frame / angle given by the variant; no repeat count (MH1's w->x1A) */
+static void em_atk04_g(EMW *em, EM17W *w, int var) {
+    static const u16 tbl[2][2] = { { 76, 910 }, { 74, 63717 } };   /* G main sdata, gp-0x5208 (read from the disc image) */
+    u8 step = em->x05;
+
+    switch (step) {
+    case 0:
+        em->x05 = step + 1;
+        em->x388 = 0;
+        break;
+    case 1:
+        if (em17_horm_main(em) != 0) {
+            if (em->kind == 0x16 || em->kind == 0x30) {
+                em->x05 = 3;
+            } else {
+                em->x05++;
+            }
+            em->x3F4 = 0;
+            em_char_set(em, 0x6E, 0, 0);
+        }
+        break;
+    case 2:
+        if (em_frame_check(em, 0, 136.0f) != 0) {
+            Shell08_set_ang_time(em, 0x22, 4, 1, 0, 0, 0x2D);
+        }
+        if (em->x194 == 0) {
+            em->x3F4 = 0;
+            em->x05++;
+            em_char_set(em, 0x72, 0, 0);
+        }
+        break;
+    case 3:
+        if (em->kind == 0x16 || em->kind == 0x30) {
+            if (em_frame_check(em, 0, (f32)tbl[var][0]) != 0) {
+                Shell08_set_ang(em, 0x22, 0xD, 0, tbl[var][1], 0);
+            }
+        }
+        if (em->x194 == 0) {
+            em->x3F4 = 0;
+            em->x05++;
+            em17_to_normal(em, 0, 0);
+        }
+        break;
+    }
+}
+
+/* G em_atk05 (game 0x60A9D0): MH1's breath loop without the turn step; the variant picks the shell19 type
+ * (0 / 1 / 2: 0xE / 0xC / 0x1F) and the Eft20 flame (variant as its argument, size scale[0], 1.1x for 2) */
+static void em_atk05_flame_g(EMW *em, int var) {
+    switch ((s16)var) {
+    case 2:
+        Eft20_set(1.1f * em->scale[0], em, 0x1D, 2);
+        break;
+    case 1:
+        Eft20_set(em->scale[0], em, 0x1D, 1);
+        break;
+    case 0:
+        Eft20_set(em->scale[0], em, 0x1D, 0);
+        break;
+    }
+}
+
+static void em_atk05_g(EMW *em, EM17W *w, int var) {
+    u8 step = em->x05;
+
+    switch (step) {
+    case 0:
+        em->x05 = step + 1;
+        em->x388 = 0;
+        em->x3F4 = 0;
+        em->work08 = 0x78;
+        em_char_set(em, 0x6F, 0, 0);
+        break;
+    case 1:
+        if (em_frame_check(em, 0, 196.0f) != 0) {
+            switch ((s16)var) {
+            case 2:
+                shell19_set(em, 0x1F);
+                break;
+            case 1:
+                shell19_set(em, 0xC);
+                break;
+            default:
+                shell19_set(em, 0xE);
+                break;
+            }
+        }
+        if ((em_frame_check2(em, 0, 124.0f) != 0) && (((s32)GAME_X1E16 % 24) == 0)) {
+            em_atk05_flame_g(em, (s16)var == 1 || (s16)var == 2 ? var : 0);
+        }
+        if (--em->work08 <= 0) {
+            em->x05++;
+            em_char_set(em, 0x71, 0, 0);
+        }
+        break;
+    case 2:
+        if ((em_frame_check2(em, 0, 50.0f) == 0) && (((s32)GAME_X1E16 % 24) == 0)) {
+            em_atk05_flame_g(em, var);
+        }
+        if (em->x194 == 0) {
+            em->x3F4 = 0;
+            em->x05++;
+            em17_to_normal(em, 0, 0);
+        }
+        break;
+    }
+}
+#endif
+#ifdef VERSION_MHG
+static void em_move03_005E11A0(EMW *em, EM17W *w) {
+    switch (em->x15) {
+    case 0:
+        em_atk00_005DE2C0(em, w);
+        break;
+    case 1:
+        em_atk01_g(em, w);
+        break;
+    case 2:
+        em_atk02_g(em, w);
+        break;
+    case 3:
+        em_atk03_005DE370(em, w);
+        break;
+    case 4:
+        em_atk04_g(em, w, 0);
+        break;
+    case 5:
+        em_atk05_g(em, w, 0);
+        break;
+    case 6:
+        em_atk06_005DE710(em, w);
+        break;
+    case 7:
+        em_atk05_g(em, w, 1);
+        break;
+    case 8:
+        em_atk08_005DE9E0(em, w);
+        break;
+    case 9:
+        em_atk09_005DEAA0(em, w);
+        break;
+    case 10:
+        em_atk05_g(em, w, 2);
+        break;
+    case 11:
+        em_atk04_g(em, w, 1);
+        break;
+    }
+}
+#else
 static void em_move03_005E11A0(EMW *em, EM17W *w) {
     u8 temp_v1;
 
@@ -3917,6 +4331,7 @@ static void em_move03_005E11A0(EMW *em, EM17W *w) {
         break;
     }
 }
+#endif
 
 static void em_move04_005E1270(EMW *em, EM17W *w) {
     u8 temp_v1;
@@ -4384,6 +4799,11 @@ void em17_uvmove(EMW *em) {
 static void sound_call_sub_005E1F80(EMW *em, int se, int joint) {
     f32 pos[3];
 
+#ifdef VERSION_MHG      /* G (game 0x60E3C0): em type 1 plays sounds 96-127 in place of 66-97 */
+    if (em->type == 1 && (u32)se >= 66 && (u32)se < 98) {
+        se += 30;
+    }
+#endif
     flmatGetTrans(pos, em->mdl->bone + joint * 0x190);
     Em_se_req2(em, se, 0, pos, 3, 0);
 }
@@ -4406,6 +4826,11 @@ static void sound_call_parts_005E2090(EMW *em, int frame, int se, int joint, u8 
     f32 pos[3];
 
     if (em_frame_check(em, layer, (f32)frame) != 0) {
+#ifdef VERSION_MHG      /* G (game 0x60E500): as sound_call_sub */
+        if (em->type == 1 && (u32)se >= 66 && (u32)se < 98) {
+            se += 30;
+        }
+#endif
         flmatGetTrans(pos, em->mdl->bone + joint * 0x190);
         Em_se_req2(em, se, 0, pos, 3, 0);
     }
@@ -4436,6 +4861,16 @@ static void move_default_005E2180(EMW *em) {
     M2C_FIELD(em, u8 *, 0x5FB) = 0xFF;
 }
 
+/* G's ef_move_sub (game 0x60E660, compared through an m2c draft of the G asm, case by case): the Gravios checks
+ * take Black Gravios (kind 0x2F) too, motion 0x413 always uses shell19 type 0x10 (0x412, new, the other one),
+ * 0x407-0x409 have no effects, new motions 0x412 / 0x451 / 0x45A / 0x45F / 0x462, 0x456 and 0x45B changed. */
+#ifdef VERSION_MHG
+#define EM17_GRAVIOS(em) ((em)->kind == 0x11 || (em)->kind == 0x2F)
+#define EM17_413_KIND(em) 1
+#else
+#define EM17_GRAVIOS(em) ((em)->kind == 0x11)
+#define EM17_413_KIND(em) ((em)->kind == 0x11)
+#endif
 static void ef_move_sub_005E21D0(EMW *em, EM17W *w) {
     f32 sp50[3];
     f32 v[3];
@@ -4582,7 +5017,7 @@ block_130:
         sound_call_005E1FF0(em, 0xA0, 6, 0x14);
         sound_call_005E1FF0(em, 0xC0, 6, 0x1A);
         if (em_frame_check(em, 0, 150.0f) != 0) {
-            if (em->kind == 0x11) {
+            if (EM17_GRAVIOS(em)) {
                 shell19_set(em, 0xB);
             } else {
                 shell19_set(em, 0x1B);
@@ -4651,6 +5086,7 @@ block_130:
         break;
     case 0x406:
         break;
+#ifndef VERSION_MHG
     case 0x407:
         sound_call_005E1FF0(em, 2, 0x55, 0x23);
         sound_call_005E1FF0(em, 0xB6, 0x55, 0x23);
@@ -4674,6 +5110,7 @@ block_130:
         sound_call_005E1FF0(em, 0xB6, 3, 0x14);
         sound_call_005E1FF0(em, 0x38, 0x16, 0);
         break;
+#endif
     case 0x40A:
         sound_call_005E1FF0(em, 0x24, 0x57, 0x23);
         v2[1] = 10.0f;
@@ -4713,7 +5150,7 @@ block_130:
         sound_call_005E1FF0(em, 0xC, 0xC, 6);
         sound_call_005E1FF0(em, 0xA6, 0, 0x1A);
         if (em_frame_check(em, 0, 50.0f) != 0) {
-            if (em->kind == 0x11) {
+            if (EM17_GRAVIOS(em)) {
                 shell19_set(em, 1);
             } else {
                 shell19_set(em, 0x19);
@@ -4752,6 +5189,19 @@ block_130:
         sound_call_005E1FF0(em, 0x40, 3, 0x1A);
         sound_call_005E1FF0(em, 0x66, 0x10, 0x1A);
         break;
+#ifdef VERSION_MHG
+    case 0x412:
+        sound_call_005E1FF0(em, 8, 0x23, 0x23);
+        sound_call_005E1FF0(em, 0xE, 0xF, 0xC);
+        sound_call_005E1FF0(em, 0x1E, 0x14, 0x2A);
+        sound_call_005E1FF0(em, 0x2A, 0, 0x14);
+        sound_call_005E1FF0(em, 0x48, 1, 0x1A);
+        if (em_frame_check(em, 0, 30.0f) != 0) {
+            shell19_set(em, 0x1C);
+            return;
+        }
+        break;
+#endif
     case 0x413:
         sound_call_005E1FF0(em, 8, 0x23, 0x23);
         sound_call_005E1FF0(em, 0xE, 0xF, 6);
@@ -4761,7 +5211,7 @@ block_130:
         quake_call_005E2130(em, 0x2C, 1);
         quake_call_005E2130(em, 0x49, 1);
         if (em_frame_check(em, 0, 30.0f) != 0) {
-            if (em->kind == 0x11) {
+            if (EM17_413_KIND(em)) {
                 shell19_set(em, 0x10);
                 return;
             }
@@ -4996,7 +5446,7 @@ block_130:
         sound_call_005E1FF0(em, 0x1CA, 1, 0x1A);
         sound_call_005E1FF0(em, 0x1EE, 0, 0x14);
         if (em_frame_check(em, 0, 162.0f) != 0) {
-            if (em->kind == 0x11) {
+            if (EM17_GRAVIOS(em)) {
                 shell19_set(em, 0x17);
             } else {
                 shell19_set(em, 0x1D);
@@ -5251,6 +5701,30 @@ block_304:
             return;
         }
         break;
+#ifdef VERSION_MHG
+    case 0x451:
+        sound_call_005E1FF0(em, 0x72, 0x51, 0x23);
+        sound_call_005E1FF0(em, 0x3E, 0x27, 0x23);
+        sound_call_005E1FF0(em, 0x5E, 0x1B, 0x23);
+        sound_call_005E1FF0(em, 0x78, 0x1A, 0x23);
+        sound_call_005E1FF0(em, 0x78, 0x18, 0x23);
+        sound_call_005E1FF0(em, 0xE, 0xD, 6);
+        sound_call_005E1FF0(em, 0x12, 0xD, 0xC);
+        sound_call_005E1FF0(em, 0x14, 6, 0x14);
+        sound_call_005E1FF0(em, 0xFE, 1, 0x14);
+        sound_call_005E1FF0(em, 0x122, 0, 0x14);
+        if (em_frame_check(em, 0, 106.0f) != 0) {
+            shell19_set(em, 0x18);
+        }
+        if ((em_frame_check3(em, 0, 64.0f, 88.0f) != 0) && !(GAME_X1E16 & 3)) {
+            Eft20_set(1.0f, em, 0x1A, 0);
+        }
+        if ((em_frame_check3(em, 0, 208.0f, 268.0f) != 0) && !(GAME_X1E16 & 3)) {
+            Eft20_set(1.0f, em, 0x1A, 1);
+            return;
+        }
+        break;
+#endif
     case 0x452:
         sound_call_005E1FF0(em, 0x30, 0x20, 0x23);
         sound_call_005E1FF0(em, 0x6C, 0x56, 0x23);
@@ -5309,7 +5783,7 @@ block_304:
         sound_call_005E1FF0(em, 0x4A, 8, 0);
         sound_call_005E1FF0(em, 0x98, 0x16, 0);
         if (em_frame_check(em, 0, 68.0f) != 0) {
-            if (em->kind == 0x11) {
+            if (EM17_GRAVIOS(em)) {
                 shell19_set(em, 2);
             } else {
                 shell19_set(em, 0x1A);
@@ -5323,6 +5797,46 @@ block_304:
             return;
         }
         break;
+#ifdef VERSION_MHG
+    case 0x456:
+        if (EM17_GRAVIOS(em)) {
+            if (em->mode != 0 && em->mode != 6) {
+                sound_call_005E1FF0(em, 0x82, 0x51, 0x23);
+                sound_call_005E1FF0(em, 0xE, 0xD, 6);
+                sound_call_005E1FF0(em, 0x12, 0xD, 0xC);
+                sound_call_005E1FF0(em, 0x1A, 6, 0x14);
+                sound_call_005E1FF0(em, 0x3E, 0x27, 0x23);
+                sound_call_005E1FF0(em, 0x68, 0x1B, 0x23);
+                sound_call_005E1FF0(em, 0x68, 0x19, 0x23);
+                sound_call_005E1FF0(em, 0x90, 0x1A, 0x23);
+                sound_call_005E1FF0(em, 0x90, 0x18, 0x23);
+            } else {
+                sound_call_005E1FF0(em, 0x6E, 0x54, 0x23);
+                sound_call_005E1FF0(em, 0xE, 0xD, 6);
+                sound_call_005E1FF0(em, 0x12, 0xD, 0xC);
+                sound_call_005E1FF0(em, 0x1A, 6, 0x14);
+                sound_call_005E1FF0(em, 0x3E, 0x27, 0x23);
+            }
+            if (em_frame_check(em, 0, 122.0f) != 0) {
+                shell19_set(em, 0x18);
+            }
+            if ((em_frame_check3(em, 0, 64.0f, 88.0f) != 0) && !(GAME_X1E16 & 3)) {
+                Eft20_set(1.0f, em, 0x1A, 0);
+            }
+            if ((em_frame_check3(em, 0, 208.0f, 268.0f) != 0) && !(GAME_X1E16 & 3)) {
+                Eft20_set(1.0f, em, 0x1A, 1);
+                return;
+            }
+        } else {
+            sound_call_005E1FF0(em, 0x14, 6, 0x14);
+            sound_call_005E1FF0(em, 0x3C, 0x27, 0x23);
+            sound_call_005E1FF0(em, 0xE, 0xD, 6);
+            sound_call_005E1FF0(em, 0x12, 0xD, 0xC);
+            sound_call_005E1FF0(em, 0x40, 0x26, 0x23);
+            return;
+        }
+        break;
+#else
     case 0x456:
         if (em->mode != 0) {
             sound_call_005E1FF0(em, 0x3E, 0x27, 0x23);
@@ -5356,13 +5870,14 @@ block_304:
             return;
         }
         break;
+#endif
     case 0x457:
         sound_call_005E1FF0(em, 0x14, 0x23, 0x23);
         sound_call_005E1FF0(em, 0x58, 0x24, 0x23);
         sound_call_005E1FF0(em, 0x7E, 0x56, 0x23);
         sound_call_005E1FF0(em, 0x14, 1, 0x1A);
         sound_call_005E1FF0(em, 0x44, 2, 0x14);
-        if ((em->kind == 0x11) && !(em->x948 & 1) && (em_frame_check(em, 0, 56.0f) != 0)) {
+        if ((EM17_GRAVIOS(em)) && !(em->x948 & 1) && (em_frame_check(em, 0, 56.0f) != 0)) {
             Eft13_set_em_scl(em, 0x2C, 2.0f, 7);
             return;
         }
@@ -5388,10 +5903,36 @@ block_304:
         sound_call_005E1FF0(em, 0x70, 1, 0x14);
         sound_call_005E1FF0(em, 0x98, 0, 0x1A);
         break;
+#ifdef VERSION_MHG
+    case 0x45A:
+        sound_call_005E1FF0(em, 0xA, 0x20, 0x23);
+        sound_call_005E1FF0(em, 0x3E, 0x1C, 6);
+        sound_call_005E1FF0(em, 0x42, 0x1C, 0xC);
+        sound_call_005E1FF0(em, 0x7A, 0x16, 0);
+        sound_call_005E1FF0(em, 0x78, 0x1F, 0x23);
+        sound_call_005E1FF0(em, 0xCA, 1, 0x14);
+        sound_call_005E1FF0(em, 0xE6, 0, 0x1A);
+        if (em_frame_check(em, 0, 94.0f) != 0) {
+            shell19_set(em, 0x20);
+        }
+        if (em_frame_check(em, 0, 64.0f) != 0) {
+            Eft20_set(em->scale[0], em, 0xD, 0);
+        }
+        if (em_frame_check(em, 0, 66.0f) != 0) {
+            Eft20_set(em->scale[0], em, 0x15, 0);
+            return;
+        }
+        break;
+    case 0x45B:
+        sound_call_005E1FF0(em, 4, 0x16, 0);
+        sound_call_005E1FF0(em, 0x32, 0x47, 0x23);
+        break;
+#else
     case 0x45B:
         sound_call_005E1FF0(em, 4, 0x16, 0);
         sound_call_005E1FF0(em, 0x46, 0x1F, 0x23);
         break;
+#endif
     case 0x45C:
         sound_call_005E1FF0(em, 4, 0x2B, 0x23);
         sound_call_005E1FF0(em, 0x34, 0x29, 0x23);
@@ -5422,6 +5963,32 @@ block_381:
         sound_call_005E1FF0(em, 0xA6, 0, 0x14);
         sound_call_005E1FF0(em, 0x28, 0x16, 0);
         break;
+#ifdef VERSION_MHG
+    case 0x45F:
+        sound_call_005E1FF0(em, 0x16, 1, 0x14);
+        sound_call_005E1FF0(em, 0x12, 0x24, 0x23);
+        sound_call_005E1FF0(em, 0xC, 0x16, 0);
+        sound_call_005E1FF0(em, 0x3C, 0xF, 6);
+        sound_call_005E1FF0(em, 0x40, 0xF, 0xC);
+        sound_call_005E1FF0(em, 0x3E, 7, 0x1A);
+        sound_call_005E1FF0(em, 0x8A, 0xE, 6);
+        sound_call_005E1FF0(em, 0x8E, 0xE, 0xC);
+        break;
+    case 0x462:
+        sound_call_005E1FF0(em, 2, 9, 0);
+        sound_call_005E1FF0(em, 0xE, 7, 0);
+        sound_call_005E1FF0(em, 0x82, 0, 0x1A);
+        sound_call_005E1FF0(em, 0xAC, 0, 0x14);
+        quake_call_005E2130(em, 2, 5);
+        if (em_frame_check(em, 0, 2.0f) != 0) {
+            shell19_set(em, 0x1E);
+        }
+        if (em_frame_check(em, 0, 2.0f) != 0) {
+            Eft13_set_em_scl(em, 2, 1.4f, 0x13);
+            return;
+        }
+        break;
+#endif
     default:
         move_default_005E2180(em);
         break;

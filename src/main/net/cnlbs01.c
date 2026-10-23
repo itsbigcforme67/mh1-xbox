@@ -3,6 +3,9 @@
 #define MHG_NET 1       /* G's command indices in the G PC online build (g_alias.h) */
 #endif
 #include "g_alias.h"
+#ifndef __MWERKS__
+unsigned short __cnet_SendReq_FileDownloadHeader();   /* its real return type: was implicitly int (tools/check_kr_returns.py) */
+#endif
 #include "types.h"
 
 typedef struct DLE { s32 size; s32 x4; s32 ofs; } DLE;

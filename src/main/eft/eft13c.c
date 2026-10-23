@@ -9,6 +9,9 @@
 #include "prim.h"
 #include "fl.h"
 #include "clay.h"
+#ifndef __MWERKS__
+unsigned char GetWaterHit(f32 *, f32 *);   /* (declared before its first use) */
+#endif
 void flvecRotY(f32 *, f32); /* was implicit: the angle went as a double */
 
 typedef struct EFT_MDLW {
@@ -74,7 +77,11 @@ FLMAT *get_joint_wmat();
 void flmatCopy(FLMAT *, FLMAT *);
 void flvecCopy(f32 *, f32 *);
 u16 calc_mat_angY(FLMAT *);
+#ifdef __MWERKS__
 int GetWaterHit(f32 *, f32 *);
+#else
+unsigned char GetWaterHit(f32 *, f32 *);   /* the real return type (tools/check_kr_returns.py) */
+#endif
 void se_req2(int, int, int, f32 *, int, int);
 void func_544C90(f32 *, int, int, f32);    /* game.bin Eft08_set */
 void func_544D20(void *, int, int, f32, f32); /* game.bin Eft08_set2 */

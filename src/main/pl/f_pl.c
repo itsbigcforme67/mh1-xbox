@@ -117,17 +117,29 @@ void set01_set(int, int, int);
 void RotMatVec(f32 *, f32 *, int);
 void pl_body_make(PLW *pl, f32 *out, f32 radius);
 void hit_cap_pk(void *, void *);
+#ifdef __MWERKS__
 int hit_cap_cap3_m(void *, void *, f32 *);
+#else
+unsigned char hit_cap_cap3_m(void *, void *, f32 *);   /* the real return type (tools/check_kr_returns.py) */
+#endif
 extern f32 *D_63FC50[];
 extern f32 *D_6103A0[];
 void flvecNormalize(f32 *);
+#ifdef __MWERKS__
 int hit_sphr_sphr3(f32 *a, f32 *b, f32 *out, f32 ra, f32 rb);
+#else
+unsigned char hit_sphr_sphr3(f32 *a, f32 *b, f32 *out, f32 ra, f32 rb);   /* the real return type (tools/check_kr_returns.py) */
+#endif
 extern s16 *D_63FA10[];
 extern s16 *D_610370[];
 void body_ptr_ck2(PLW *, s16 **);
 int hit_data_expand(PLW *, s16 *, f32 *, f32 *);
 int hit_data_expand2(f32 *, s16 *, f32 *, f32 *);
+#ifdef __MWERKS__
 int hit_cap_sphr_m(void *, f32 *, f32 *, f32);
+#else
+unsigned char hit_cap_sphr_m(void *, f32 *, f32 *, f32);   /* the real return type (tools/check_kr_returns.py) */
+#endif
 s32 Pl_stg_ck_tw(PLW *, PLW *);
 extern u16 Psw[];
 void Item_box_get_efct();
@@ -3228,6 +3240,10 @@ static void pl_mv001(PLW *pl, u32 arg1) {
             case 1:
             case 4:
             case 5:
+#ifdef VERSION_MHG
+            case 6:     /* G (game 0x54F830, jump table of 7): the Dual Swords blend into the walk start over 6 like the
+                         * great sword; MH1's code gave them the default 4 (the lockstep referee's ds scenario, tick 254) */
+#endif
                 pl_chr_set2(pl, 0x3EC, 6, 0);
                 break;
             }
@@ -12346,6 +12362,11 @@ static void pl_move_sub_sub(PLW *pl) {
 asm void pl_move_sub(PLW *pl)
 {
 #include "pl_move_sub.inc"
+#ifndef __MWERKS__
+unsigned char hit_cap_cap3_m(void *, void *, f32 *);   /* (declared before its first use) */
+unsigned char hit_cap_sphr_m(void *, f32 *, f32 *, f32);   /* (declared before its first use) */
+unsigned char hit_sphr_sphr3(f32 *a, f32 *b, f32 *out, f32 ra, f32 rb);   /* (declared before its first use) */
+#endif
 }
 #endif
 #endif

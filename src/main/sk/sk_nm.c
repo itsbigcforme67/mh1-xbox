@@ -41,7 +41,7 @@ void sk_skb_kill(void);
 void sk_disp_palette_set(void);
 void sk_palette_cursor_set(void);
 void sk_set_yn_kigou_f(void);
-int sk_zenkaku_ck();
+signed char sk_zenkaku_ck();
 s16 sk_key_repeat(s16, s16);
 void sk_init_mode(u8);
 
@@ -436,7 +436,7 @@ int dakuten_ck_sub(u8 *);
 int kbd_insert(void *, void *, u16, u16);
 int mh_char_make_check(u8 *);
 int sk_yn_check(void);
-int sk_zenkaku_ck(u8 *);
+signed char sk_zenkaku_ck(u8 *);
 int yn_mask_char_check(u8 *);
 extern char lit_628_0036E5C0[];
 extern char *maru_moji;

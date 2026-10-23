@@ -4,6 +4,9 @@
 #include "fl.h"
 #include "pl.h"
 #include "plf.h"
+#ifndef __MWERKS__
+unsigned short calc_vec_ang(f32, f32, f32, f32);   /* (declared before its first use) */
+#endif
 
 /* Per-monster work at EMW+0x444. */
 typedef struct EM12W {
@@ -86,7 +89,11 @@ void em_act_set(EMW *, int, u16);
 s16 em_hp_vital_set(EMW *, s16);
 void flvecCopy(f32 *, f32 *);
 f32 CalcDistanceXZ(f32 *, f32 *);
+#ifdef __MWERKS__
 int calc_vec_ang(f32, f32, f32, f32);
+#else
+unsigned short calc_vec_ang(f32, f32, f32, f32);   /* the real return type (tools/check_kr_returns.py) */
+#endif
 void flvecRotY(f32 *, f32);
 void em_cmd_reset(EMW *);
 void Eft16_set_ex(EMW *, int, int);

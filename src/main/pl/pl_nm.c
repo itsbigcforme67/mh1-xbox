@@ -1,6 +1,7 @@
 /* Player code (f_pl.s, 0x134950..): working file; matched functions are moved
  * to plX.c, what is left here is near-match (not built). */
 #include "pl.h"
+unsigned short Item_get_ck();   /* its real return type: was implicitly int (tools/check_kr_returns.py) */
 #include "plf.h"
 #include "game.h"
 #include "plst.h"
@@ -855,6 +856,17 @@ u8 Pl_slash_lv_ck(PLW *pl) {
         return 0;
     }
     cur = pl->work87E;
+#ifdef VERSION_MHG
+    {   /* G sub_main 0x4CCAB0: six sharpness levels, rows of 6 shorts (5 band ends); MH1's 4-level, 8-byte rows read
+         * the wrong row and capped the level at 3 (owner, Xbox: a full blade at quest start looked low, 21 Oct 2026) */
+        int i;
+        t = (s16 *)((u8 *)Pl_slash_tbl[k] + Ken_data[pl->wpn_kind][2] * 12);
+        for (i = 0; i < 5; i++)
+            if (t[i] >= cur)
+                return (u8)i;
+        return 5;
+    }
+#endif
     t = (s16 *)((u8 *)Pl_slash_tbl[k] + Ken_data[pl->wpn_kind][2] * 8);
     if (t[0] >= cur) {
         return 0;
@@ -1124,13 +1136,13 @@ void pl_light_ck(PLW *pl) {
 #include "flow.h"
 void pl_body_make(PLW *pl, f32 *out, f32 radius);
 void hit_cap_pk(void *, void *);
-int hit_cap_cap3_m(void *, void *, f32 *);
+unsigned char hit_cap_cap3_m(void *, void *, f32 *);
 
 
 extern f32 *D_63FC50[];
 extern f32 *D_6103A0[];
 void flvecNormalize(f32 *);
-int hit_sphr_sphr3(f32 *a, f32 *b, f32 *out, f32 ra, f32 rb);
+unsigned char hit_sphr_sphr3(f32 *a, f32 *b, f32 *out, f32 ra, f32 rb);
 
 /* Pushes two monsters apart (sphere lists from the per-kind push tables). The inner list pointer is
  * never rewound for the 2nd and later spheres of the first monster: faithful to the original. */
@@ -1242,7 +1254,7 @@ extern s16 *D_610370[];
 void body_ptr_ck2(PLW *, s16 **);
 int hit_data_expand(PLW *, s16 *, f32 *, f32 *);
 int hit_data_expand2(f32 *, s16 *, f32 *, f32 *);
-int hit_cap_sphr_m(void *, f32 *, f32 *, f32);
+unsigned char hit_cap_sphr_m(void *, f32 *, f32 *, f32);
 
 /* Pushes the player against one monster's body list (capsule/sphere hit data, 0x28 bytes per entry). */
 void body_hit_sub_new(PLW *pl, PLW *o) {

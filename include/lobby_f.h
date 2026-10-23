@@ -88,7 +88,11 @@ void Lb_set_mini_data_to_pl();
 void Lb_set_player();
 void Lb_player_release();
 void Ud_item_stack(u16, s16);
+#ifdef __MWERKS__
 long Pl_item_num_ck();
+#else
+short Pl_item_num_ck();   /* the real return type (tools/check_kr_returns.py) */
+#endif
 void set01_set(int, int, int);
 s16 act_ck(PLW *, int, int);
 extern u8 my_user_mini_data[];
@@ -104,7 +108,11 @@ void Lbc_init_network_work(int);
 void NPCZoomInCameraCancel();
 LBQUEST *get_quest_info(void);
 int Online_ck();
+#ifdef __MWERKS__
 int SoftKeyboard_alive_check();
+#else
+signed char SoftKeyboard_alive_check();   /* the real return type (tools/check_kr_returns.py) */
+#endif
 void font_set_stack_no(int);
 void DispSoftkeyboard(int);
 void flfntLocate();
@@ -236,7 +244,11 @@ void Lb_eat_to_end();
 extern s8 eatResult;
 int frame_check2(f32, PLW *, int);
 f32 flvecCalcDistance();
+#ifdef __MWERKS__
 long Ud_item_num_ck();
+#else
+short Ud_item_num_ck();   /* the real return type (tools/check_kr_returns.py) */
+#endif
 long Ud_item_num_ck2();
 long Ud_item_search_space();
 void set01_set2();

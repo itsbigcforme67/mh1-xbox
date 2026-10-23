@@ -5,6 +5,9 @@
 #include "types.h"
 #include "game.h"
 #include "pl.h"
+#ifndef __MWERKS__
+unsigned short Get_tuto_id(void *);   /* (declared before its first use) */
+#endif
 
 /* quest_w (0x3C7440): only the quest number is used here. */
 typedef struct QUEST_W {
@@ -27,7 +30,11 @@ extern char lit_173_0068A530[];
 int Event_flag_ck(int);
 void Event_flag_set(int);
 void Event_flag_clear(int);
+#ifdef __MWERKS__
 int Get_tuto_id(void *);
+#else
+unsigned short Get_tuto_id(void *);   /* the real return type (tools/check_kr_returns.py) */
+#endif
 u8 set01_set2(char *str);
 u16 ran_suu(int);
 void se_req(int, int, int);

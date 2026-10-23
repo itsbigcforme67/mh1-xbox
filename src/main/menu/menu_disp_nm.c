@@ -44,7 +44,7 @@ int Item_ok_chk(int, void *);
 int item_present_chk();
 int func_5D8370(s8);
 void func_5CB310(u8);
-int Item_preparation_rate_0(void *, int);
+signed char Item_preparation_rate_0(void *, int);
 void player_name_id_print(void *);
 void font_print_quest_money(int);
 void font_print_quest_time(int);
@@ -579,7 +579,7 @@ void disp_map_sign(int x, int y, s16 timer, int color);
 void wyvn_efct_ripple(void);
 void flmatSetZYX33(f32, f32, f32, FLMAT *);
 void flvecApplyMat33(f32 *, f32 *, FLMAT *);
-int Pl_item_num_ck(PLW *, int);
+short Pl_item_num_ck(PLW *, int);
 typedef struct PFLPS2 {
     s16 s[4];
     u32 col;
@@ -1479,12 +1479,12 @@ extern u8 pf_chat_cnfg[], pf_chcnfg_reibun[], pf_lb_chcnfg_sendpl[];
 extern u8 str_tbl_reibun0[];
 extern void *q_sendpl_list[];
 extern void *lb_sendpl_list[];
-int Pl_slash_lv_ck(PLW *);
+unsigned char Pl_slash_lv_ck(PLW *);
 int PachingerCamChk(PLW *);
 s8 GetPachingerInfo(PLW *, u8 *, u8 *, f32 *);
 void Put_sprite_rotate(void *, s8, ...);
 f32 flCos(f32);
-int Pl_shell_set(PLW *, u16, int);
+unsigned short Pl_shell_set(PLW *, u16, int);
 void disp_gun_load_mess(int);
 void func_5B4B20();
 int Game_clear_ck(int);
@@ -2500,9 +2500,9 @@ none:
 extern u8 item_select_base[];
 extern u8 btn_item_sel_3360[];
 extern s16 sy_tbl_3417[];
-int Get_Use_itemnum(PLW *);
+short Get_Use_itemnum(PLW *);
 u16 item_sel_sub(PLW *, u16, int);
-int Pl_shell_set(PLW *, u16, int);
+unsigned short Pl_shell_set(PLW *, u16, int);
 
 /* 0x12E910 */
 void disp_item_sub_select(void) {

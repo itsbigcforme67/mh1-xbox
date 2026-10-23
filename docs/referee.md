@@ -81,8 +81,9 @@ ud), RT_REF_RNG (random-call log).
 
 - The PS2 hook changes the running game's code in RAM (one jal, ran_suu's first two words); the save state on disk
   is untouched and every run starts from it.
-- PS2 floats round toward zero and have no denormals; the PC rounds to nearest. Positions are compared with a
-  tolerance; slow drift over hundreds of ticks is expected noise.
+- PS2 floats round toward zero and have no denormals; the port does the same by default since 20 Oct 2026 (RT_FPU_PS2,
+  src/pc/rt/rt_ref.c), the host's own x87 code (libm) does not. Positions are compared with a tolerance; slow drift
+  over hundreds of ticks is expected noise.
 - MH1's gate state is made from the PC port's own save (tools/test_quest_loop.sh, build/show/loop/card, put on the
   PCSX2 card by run_pcsx2.sh --card-from): CONTINUE, then the Elder's quest card. G's from NEW GAME.
 - The quest is chosen by poking select_w after a quest has been taken at the Elder (the departure needs a taken quest).
@@ -108,3 +109,46 @@ ud), RT_REF_RNG (random-call log).
 Before the fixes every scenario differed from play tick 0 (start-up order) and the fights from the first monster
 contact. The referee runs with RT_FPU_PS2=1 (REF_FPU=0 turns it off): without it the Rathian fight differs at 186.
 Per-scenario time: ~30-60 s for the PS2 part (lockstep, ~30 play ticks a second), ~30 s for the PC part.
+
+20 Oct 2026 (agent D), after the second round of fixes (PS2 rounding the default, joints built in move(), the Elder's
+tutorial, G's Dual Swords walk-start blend; RELEASE_G section 11 R-F8..R-F10), PC side re-run against the same PS2
+traces:
+
+| scenario | game | play ticks | first gameplay difference |
+|---|---|---|---|
+| walk, sns, gs, ds, hammer, lance, bowgun | G | 400-600 | none |
+| rathian (quest 10) | G | 1100 | 245: a small monster (kind 16) 2 units off after a slow drift (was 203) |
+| kutku (quest 2) | G | 1100 | 369: the push between the hunter and a small monster (kind 23) 2.5 units off (unchanged, cause not found) |
+| mh1_walk, mh1_sns, mh1_gs | MH1 | 400-600 | none |
+| mh1_rathian (quest 10) | MH1 | 1100 | 291 (was 241) |
+| mh1_kutku (quest 4) | MH1 | 1100 | 319 (was 318): a body push, as kutku |
+
+
+20 Oct 2026, third round (agent D; RELEASE_G section 11 R-F13..R-F17: the wall pass after body_hit, CameraMove's place,
+the PS2's VU0 sine / cosine / curve formulas and rounding, the C library's atan2f, the hunter's joints without the
+drawing offset):
+
+| scenario | game | play ticks | first gameplay difference |
+|---|---|---|---|
+| walk, sns, gs, ds, hammer, lance, bowgun | G | 400-600 | none |
+| rathian (quest 10) | G | 1100 | 286: a Velociprey 2 units off after slow drift (was 245) |
+| kutku (quest 2) | G | 1100 | 804: the hunter 1 unit off after a push (the PS2 run of 20 Oct; was 622 on that run) |
+| mh1_walk, mh1_sns, mh1_gs | MH1 | 400-600 | none |
+| mh1_rathian (quest 10) | MH1 | 1100 | 365: red-health recovery a few ticks apart (N-R9, load-time frame counter; was 291) |
+| mh1_kutku (quest 4) | MH1 | 1100 | 364: the same (was 319) |
+
+The PS2's own runs are not always identical: a new `run` of the same scenario can start with another random state and
+play differently (kutku: first difference 478 in one run, 622 in the next); compare PC changes with `referee.py pc`
+against one PS2 trace. Debug aid: `REF_NODES=SLOT:COUNT:FIRST-LAST tools/referee.py run S` also records the joint
+matrices of monster SLOT (-1: the hunter) on both sides; `tools/referee.py nodes DIR` lists per tick how far apart
+they are (the hunter's 0.3-unit offset of R-F17 was found this way).
+
+**Village scenarios** (22 Oct 2026): `village=True` in a scenario: the PS2 locks at once in the village's game mode (G:
+0) from the gate save state instead of departing; the PC starts in the village (RT_VILLAGE_START) with the PS2's
+User_data and counts play ticks from when it stands on the PS2's village stage (RT_REF_MODE=6, RT_REF_STAGE); both
+sides' User_data at the end go into report.txt (byte ranges that differ). The play time (G +0xC1C) always differs:
+the PC run also counts its start-up ticks.
+
+**Story-scene scenarios** (22 Oct 2026): g_scene_khezu (quest 10046, stage 70) and g_scene_rath (10028, stage 69)
+enter the scene's stage directly so the first-sight demo plays; they run 1500 play ticks (the Rathalos scene alone is
+about 1300).

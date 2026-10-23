@@ -1,5 +1,14 @@
 /* AQ session layer (0x0022D4F0-0x0022D68C): AQ_recv, AQ_send. See aq_nm.c. */
 #include "types.h"
+#ifndef __MWERKS__
+short act_ck();   /* (declared before its first use) */
+signed char CngNetAQIsHost();   /* (declared before its first use) */
+unsigned char CngNetAQBuffCheck();   /* (declared before its first use) */
+unsigned char CngNetAQDisconnectUserIDGet();   /* (declared before its first use) */
+unsigned char CngNetAQJoinNumGet();   /* (declared before its first use) */
+unsigned char set01_set2();   /* (declared before its first use) */
+unsigned char set01_set2_use_mem();   /* (declared before its first use) */
+#endif
 
 void *memset(void *, int, int);
 void *memcpy(void *, const void *, int);
@@ -51,19 +60,35 @@ extern f32 session_time;
 int Online_ck();
 int CngNetAQPoll();
 f32 CngNetAQNetTimeGet();
+#ifdef __MWERKS__
 int CngNetAQBuffCheck();
+#else
+unsigned char CngNetAQBuffCheck();   /* the real return type (tools/check_kr_returns.py) */
+#endif
 int CngNetAQSessionCheck();
 int CngNetAQSessionInit_online();
 int CngNetAQConnectIdGet();
+#ifdef __MWERKS__
 int CngNetAQIsHost();
+#else
+signed char CngNetAQIsHost();   /* the real return type (tools/check_kr_returns.py) */
+#endif
 int CngNetAQPacketSend();
+#ifdef __MWERKS__
 int CngNetAQJoinNumGet();
+#else
+unsigned char CngNetAQJoinNumGet();   /* the real return type (tools/check_kr_returns.py) */
+#endif
 int CngNetAQSessionExit();
 int CngNetAQSessionExit_online();
 int CngNetAQInit();
 u8 *CngNetAQcommandExec();
 int mcsls_get_error_code();
+#ifdef __MWERKS__
 int set01_set2();
+#else
+unsigned char set01_set2();   /* the real return type (tools/check_kr_returns.py) */
+#endif
 int Quest_error_set();
 void get_AQdata(void);
 u8 *ck_exec_aq();
@@ -82,9 +107,21 @@ u8 *CngNetAQDataSearch();
 int CngNetAQDataTrans2Work();
 int CngReceiveBuffAdjust();
 int CngNetAQPacketReceive();
+#ifdef __MWERKS__
 int CngNetAQDisconnectUserIDGet();
+#else
+unsigned char CngNetAQDisconnectUserIDGet();   /* the real return type (tools/check_kr_returns.py) */
+#endif
+#ifdef __MWERKS__
 int set01_set2_use_mem();
+#else
+unsigned char set01_set2_use_mem();   /* the real return type (tools/check_kr_returns.py) */
+#endif
+#ifdef __MWERKS__
 int act_ck();
+#else
+short act_ck();   /* the real return type (tools/check_kr_returns.py) */
+#endif
 int Pl_act_set();
 int net_receive_pl();
 int net_receive_host();

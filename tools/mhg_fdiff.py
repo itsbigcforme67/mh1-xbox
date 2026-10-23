@@ -35,7 +35,7 @@ def sx(v):
 
 def dis(binpath, base, addr, size, tab, gp):
     off = addr - base
-    tmp = '/tmp/_fdiff.bin'
+    tmp = '/tmp/_fdiff_%d.bin' % os.getpid()
     open(tmp, 'wb').write(open(binpath, 'rb').read()[off:off + size])
     out = subprocess.run([OBJ, '-D', '-b', 'binary', '-m', 'mips:5900', '--adjust-vma=0x%x' % addr, tmp],
                          capture_output=True, text=True).stdout

@@ -1533,7 +1533,7 @@ extern char *Skill_name[];
 extern u8 my_user_id[];
 int Event_flag_ck(int);
 void Get_hunter_status(void *, u8 *, int *, int *);
-int Get_weapon_job2(u8, u16);
+unsigned char Get_weapon_job2(u8, u16);
 void PrintPlayerJob(void *);
 void PlayerEquipmentWindow(PLW *);
 void Put_comment(int, int, int, void *);
@@ -1636,7 +1636,7 @@ extern u8 menu_stat_icon_tbl1[5];
 extern u8 menu_stat_icon_tbl2[8];
 extern char lit_3652[];
 int Get_equip_name(u8, u16);
-int Get_equip_rare(u8, u16);
+unsigned char Get_equip_rare(u8, u16);
 
 void PlayerEquipmentWindow(PLW *pl) {
     PFLP8 q;
@@ -1804,9 +1804,9 @@ extern char lit_4172[];
 extern char lit_4173[];
 void *Get_equip_data_ptr(void *);
 void font_print_strings(int, int, void *, int);
-int Get_bowgun_atk(void *);
-int Get_weapon_job(void *);
-int Get_equip_rare(u8, u16);
+short Get_bowgun_atk(void *);
+unsigned char Get_weapon_job(void *);
+unsigned char Get_equip_rare(u8, u16);
 static void sword_zokusei(u8 *, int, s16);
 static void slash_level_bar(u8 *, s16, f32);
 
@@ -2193,7 +2193,7 @@ void EquipmentCompareWindowA(u8 *cur, u8 *other, s16 x, s16 y, int page, int alp
 extern u8 Battle_type[];
 extern s16 *Pl_slash_tbl[];
 extern int slash_bar_color[];
-f32 flps0009(void *);
+int flps0009(void *);
 
 typedef struct PFLP9 { s16 x0, y0, x1, y1, x2, y2; u32 col; } PFLP9;
 

@@ -107,6 +107,89 @@ SCENARIOS = {
                       ticks=1100),
     'bowgun':    dict(game='mhg', quest=1, weapon=(7, 2), pad='idle*80,' + GUN, pokes=TO22, ticks=600),
 }
+# G's other large monsters (agent D, 20 Oct 2026): quest, the monster's stage and where it starts there (a PC dry run,
+# RT_EM_TRACE); the hunter is put 600 units south of it (facing north), great sword, FIGHT pad, 450 play ticks
+# items in a quest (G ids: potion 7, whetstone 120, paintball 51, small barrel bomb 66, pitfall 61): pouch slot 0 is
+# filled by a poke before each use, square uses it. Next to the Rathian (quest 10, area 40, as 'rathian')
+def pouch0(pt, item, n):
+    return [(pt, 'plw', 0x828, 'u16', item), (pt, 'plw', 0x82A, 'u16', n)]
+
+
+SCENARIOS['g_items'] = dict(
+    game='mhg', quest=10, weapon=(6, 156), ticks=560,
+    pad='idle*70,square*2,idle*78,square*2,idle*148,square*2,idle*78,square*2,idle*78,square*2,idle*100',
+    pokes=area(30, 40, 10000.0, 0.0, 10000.0) + [(60, 'plw', 0x302, 'u16', 50)] + pouch0(60, 7, 3) +
+    [(140, 'plw', 0x87E, 'u16', 50)] + pouch0(140, 120, 3) + pouch0(290, 51, 3) + pouch0(370, 66, 1) +
+    pouch0(450, 61, 1))
+# gathering: bare-handed herbs on Forest and Hills area 39 (12200, 10300), then mining with a pickaxe (113) on area 32
+# (7790, 6980), then the bug net (116) on area 36 (12057, 9607): tools/test_activities.py's spots
+SCENARIOS['g_gather'] = dict(
+    game='mhg', quest=1, weapon=(6, 156), ticks=760,
+    pad='idle*100,' + ','.join(['circle*2,idle*58'] * 3) + ',idle*40,' + ','.join(['square*2,idle*58'] * 3) +
+        ',idle*60,' + ','.join(['square*2,idle*58'] * 3),
+    pokes=area(30, 39, 12200.0, 0.0, 10300.0) + area(300, 32, 7790.0, 0.0, 6980.0) + pouch0(300, 113, 3) +
+    area(540, 36, 12057.0, 0.0, 9607.0) + pouch0(540, 116, 3))
+# carving: the Rathian (quest 10, area 40) with 1 hit point left (poked at tick 35), great sword attacks until she
+# falls, then the weapon away (square) and circle at the body; the pouch is compared every tick (carve rolls are random
+# draws: with the PS2's random state in step they must give the same parts)
+SCENARIOS['g_carve'] = dict(game='mhg', quest=10, weapon=(6, 1), ticks=700,
+                            pad='idle*80,' + ','.join(['up*10,cam_u*3,idle*25,cam_u*3,idle*25'] * 5) + ',idle*60,square*2,idle*40,' +
+                                ','.join(['circle*2,idle*28'] * 10),
+                            pokes=area(30, 40, 10000.0, 0.0, 10000.0) + [(35, 'em0', 0x302, 'u16', 1),
+                                   (81, 'em0', 0xAC, 'f32', 10000.0), (81, 'em0', 0xB4, 'f32', 10250.0)])
+SCENARIOS['mh1_carve'] = dict(SCENARIOS['g_carve'], game='mh1')
+# a village day (lockstep in game mode 6 from the gate save state; the PC starts in the village with the PS2's
+# User_data): the hunter is put next to an NPC at village tick 30 (G spots of tools/test_gvillage.py), circle talks;
+# the saved hunter (User_data) of both sides is compared at the end (report.txt)
+def vpad(ev, end):
+    out, t = [], 0
+    for k in sorted(ev):
+        if k > t:
+            out.append('idle*%d' % (k - t))
+        out.append(ev[k])
+        t = k + int(ev[k].split('*')[1])
+    out.append('idle*%d' % max(1, end - t))
+    return ','.join(out)
+
+
+def vwarp(pt, x, z):
+    return [(pt, 'plw', 0xAC, 'f32', float(x)), (pt, 'plw', 0xB4, 'f32', float(z)), (pt, 'plw', 0xE, 'u16', 0)]
+
+
+_circ = lambda first, n: {first + 30 * i: 'circle*2' for i in range(n)}
+SCENARIOS['g_vil_shop'] = dict(game='mhg', village=True, ticks=320, pad=vpad(_circ(45, 7), 320),
+                               pokes=[(1, 'ud', 0x20, 'u32', 5000)] + vwarp(30, 10000, 13425))
+SCENARIOS['g_vil_wshop'] = dict(game='mhg', village=True, ticks=360, pad=vpad(_circ(45, 8), 360),
+                                pokes=[(1, 'ud', 0x20, 'u32', 50000)] + vwarp(30, 9860, 12076))
+SCENARIOS['g_vil_forge'] = dict(game='mhg', village=True, ticks=380,
+                                pad=vpad(dict(list({45: 'circle*2', 75: 'circle*2', 105: 'circle*2',
+                                                    135: 'circle*2'}.items()) + list(_circ(165, 4).items())), 380),
+                                pokes=[(1, 'ud', 0x20, 'u32', 50000)] + vwarp(30, 9960, 11920))
+_sell = {45: 'circle*2', 75: 'circle*2', 105: 'circle*2', 120: 'ddown*2'}; _sell.update(_circ(135, 4))
+_forge = {45: 'circle*2', 75: 'circle*2', 105: 'circle*2', 135: 'circle*2'}; _forge.update(_circ(165, 4))
+for _g, _pouch, _herb, _ore in (('g', 0xC24, 129, 155), ('mh1', 0x37C, 65, 109)):    # pouch slot 0: id, count (u16 each)
+    _gm = 'mhg' if _g == 'g' else 'mh1'
+    if _g == 'mh1':
+        SCENARIOS['mh1_vil_shop'] = dict(game=_gm, village=True, ticks=320, pad=vpad(_circ(45, 7), 320),
+                                         pokes=[(1, 'ud', 0x20, 'u32', 5000)] + vwarp(30, 10000, 13425))
+        SCENARIOS['mh1_vil_wshop'] = dict(game=_gm, village=True, ticks=360, pad=vpad(_circ(45, 8), 360),
+                                          pokes=[(1, 'ud', 0x20, 'u32', 50000)] + vwarp(30, 9860, 12076))
+    SCENARIOS[_g + '_vil_sell'] = dict(game=_gm, village=True, ticks=320, pad=vpad(_sell, 320),
+                                       pokes=[(1, 'ud', 0x20, 'u32', 500), (1, 'ud', _pouch, 'u32', _herb | 5 << 16)]
+                                       + vwarp(30, 10000, 13425))
+    SCENARIOS[_g + '_vil_forge_ore'] = dict(game=_gm, village=True, ticks=380, pad=vpad(_forge, 380),
+                                            pokes=[(1, 'ud', 0x20, 'u32', 50000), (1, 'ud', _pouch, 'u32', _ore | 5 << 16)]
+                                            + vwarp(30, 9960, 11920))
+for _n, _q, _st, _x, _z in (('g_rathalos', 10017, 40, 8943, 12232), ('g_gypceros', 19, 69, 9852, 12257),
+                            ('g_basarios', 23, 75, 10241, 10417), ('g_gravios', 26, 69, 9907, 12267),
+                            ('g_diablos', 14, 53, 9638, 7864), ('g_monoblos', 10041, 53, 9638, 7864),
+                            ('g_khezu', 25, 70, 14000, 10500), ('g_plesioth', 11, 54, 9493, 10873),
+                            ('g_cephadrome', 13, 56, 14380, 14930), ('g_kind37', 10038, 52, 12138, 9271),
+                            ('g_kind44', 10042, 53, 9638, 7864), ('g_kind49', 10033, 33, 8943, 12232),
+                            ('g_lao', 10048, 14, 8150, 9310),
+                            ('g_scene_rath', 10028, 69, 9907, 12267), ('g_scene_khezu', 10046, 70, 14000, 10500)):
+    SCENARIOS[_n] = dict(game='mhg', quest=_q, weapon=(6, 1), pad=FIGHT,
+                         pokes=area(30, _st, float(_x), 0.0, float(_z - 600)), ticks=1500 if 'scene' in _n else 450)
 
 
 def expand_pad(script):
@@ -193,10 +276,11 @@ def hook_code(g):
     I(0)
     I(enc_i(0xF, 0, T3, hi(g['gw'])))               # lui t3,hi(game_w)
     I(enc_i(0x24, T3, T3, lo(g['gw'])))             # lbu t3,lo(game_w)(t3)  mode
-    I(enc_i(9, ZERO, T2, 2))                        # li t2,2
+    I(enc_i(0x23, T0, T2, 0x1C))                    # lw t2,0x1C(t0)  the game mode to lock in (2 quest, 6 village)
     br(5, T3, T2, 'out')                            # bne t3,t2,out
     I(0)
-    I(enc_i(0x2B, T0, T2, 0))                       # sw t2,0(t0)  arm = 2
+    I(enc_i(9, ZERO, T2, 2))                        # li t2,2
+    I(enc_i(0x2B, T0, T2, 0))                       # sw t2,0(t0)  arm = 2 (lockstep)
     labels['lock'] = len(code)
     I(enc_i(0x23, T0, T1, 4))                       # lw t1,4(t0)
     I(enc_i(9, T1, T1, 1))                          # addiu t1,t1,1
@@ -745,7 +829,7 @@ class PS2:
         self.p.write_bytes(HOOK + 0x200, rng_hook_code(g, d))
         self.p.write('w32', g['ran'] + 4, 0)
         self.p.write('w32', g['ran'], (2 << 26) | (((HOOK + 0x200) >> 2) & 0x3FFFFFF))
-        self.p.write_bytes(CTL, struct.pack('<7I', 1, 0, 0, 0, 0, 0, 0))
+        self.p.write_bytes(CTL, struct.pack('<8I', 1, 0, 0, 0, 0, 0, 0, 2))
         self.p.write('w32', self.call_at, 0x0C000000 | (HOOK >> 2))
         # depart (square at the gate)
         self.keys(0.5, 'z')
@@ -757,6 +841,32 @@ class PS2:
             if time.time() - t0 > 90:
                 self.grab(os.path.join(self.out, 'depart_fail.png'))
                 raise SystemExit('the quest did not start (%s/depart_fail.png)' % self.out)
+            time.sleep(0.05)
+        self.tick = 1
+
+    def village_start(self, sc):
+        """village scenarios: from the gate save state, lock in game mode 6 at once (no departure)"""
+        g = self.g
+        self.p.load(self.state_slot())
+        time.sleep(4)
+        if any(self.p.read_bytes(HOOK, 0x1000)):
+            raise SystemExit('0x%X..0x%X is not free on this game' % (HOOK, HOOK + 0x1000))
+        jal = 0x0C000000 | (g['padget'] >> 2)
+        body = self.p.read_bytes(g['acr'], 0x400)
+        at = [i for i in range(0, 0x400, 4) if struct.unpack_from('<I', body, i)[0] == jal]
+        self.call_at = g['acr'] + at[0]
+        self.p.write_bytes(HOOK, hook_code(g))
+        d = struct.unpack('<2I', self.p.read_bytes(g['ran'], 8))
+        self.p.write_bytes(HOOK + 0x200, rng_hook_code(g, d))
+        self.p.write('w32', g['ran'] + 4, 0)
+        self.p.write('w32', g['ran'], (2 << 26) | (((HOOK + 0x200) >> 2) & 0x3FFFFFF))
+        self.vmode = self.p.read('r8', g['gw'])     # the village's game mode on this game (G: 0; the PC runs it as 6)
+        self.p.write_bytes(CTL, struct.pack('<8I', 1, 0, 0, 0, 0, 0, 0, self.vmode))
+        self.p.write('w32', self.call_at, 0x0C000000 | (HOOK >> 2))
+        t0 = time.time()
+        while self.r32(CTL + 4) < 1:
+            if time.time() - t0 > 30:
+                raise SystemExit('the village lockstep did not start (game mode %d)' % self.p.read('r8', g['gw']))
             time.sleep(0.05)
         self.tick = 1
 
@@ -797,6 +907,31 @@ class PS2:
             pass
 
 
+def ud_report(out, gname):
+    """village scenarios: the saved hunter (User_data) of both sides after the same inputs, byte ranges that differ
+    (appended to report.txt): money, pouch, item box, equipment box ... (include/ud.h for the offsets)"""
+    a = open(os.path.join(out, 'ud_end_ps2.bin'), 'rb').read() if os.path.exists(os.path.join(out, 'ud_end_ps2.bin')) else b''
+    b = open(os.path.join(out, 'ud_end_pc.bin'), 'rb').read() if os.path.exists(os.path.join(out, 'ud_end_pc.bin')) else b''
+    lines = ['', 'User_data after the run (PS2 / PC, %d / %d bytes):' % (len(a), len(b))]
+    n = min(len(a), len(b))
+    rng, i = [], 0
+    while i < n:
+        if a[i] != b[i]:
+            j = i
+            while j < n and (a[j] != b[j] or (j + 1 < n and a[j + 1] != b[j + 1])):
+                j += 1
+            rng.append((i, j))
+            i = j
+        i += 1
+    if not a or not b:
+        lines.append('  missing (%s)' % ('PS2' if not a else 'PC'))
+    elif not rng:
+        lines.append('  identical')
+    for lo, hi in rng[:40]:
+        lines.append('  +0x%03X..0x%03X  PS2 %s  PC %s' % (lo, hi, a[lo:hi + 1][:16].hex(), b[lo:hi + 1][:16].hex()))
+    open(os.path.join(out, 'report.txt'), 'a').write('\n'.join(lines) + '\n')
+
+
 def run_pc(gname, out, pads, pokes, ud_file, rnd, ticks, shots=None, rsync=None):
     g = GAMES[gname]
     with open(os.path.join(out, 'pad.txt'), 'w') as f:
@@ -810,6 +945,15 @@ def run_pc(gname, out, pads, pokes, ud_file, rnd, ticks, shots=None, rsync=None)
                RT_REF_UD=ud_file, RT_REF_RND='%d,%d' % rnd, RT_SEED='1', RT_REF_RNG=os.path.join(out, 'pc_rng.txt'))
     if rsync:
         env['RT_REF_RNDS'] = rsync
+    if SCN_VILLAGE[0]:      # village scenario: the PC starts in the village with the PS2's User_data
+        env.update(RT_VILLAGE_START='1', RT_VILLAGE_SKIP_INTRO='1', RT_REF_MODE='6',
+                   RT_REF_UD_OUT=os.path.join(out, 'ud_end_pc.bin'))
+        ps0 = Trace(os.path.join(out, 'ps2.ref')) if os.path.exists(os.path.join(out, 'ps2.ref')) else None
+        if ps0 and 0 in ps0.recs:
+            env['RT_REF_STAGE'] = str(ps0.region(ps0.recs[0], 'gw')[0x14])
+    if os.environ.get('REF_NODES') and not shots:
+        env['RT_REF_NODES'] = os.environ['REF_NODES']
+        env['RT_REF_NODES_OUT'] = os.path.join(out, 'pc_nodes.txt')
     if os.environ.get('REF_FPU', '1') != '0':
         env['RT_FPU_PS2'] = '1'     # the PS2's float rounding (rt_ref.c); REF_FPU=0: the PC's default
     secs = ticks / 30.0 + 8
@@ -827,6 +971,7 @@ def run_pc(gname, out, pads, pokes, ud_file, rnd, ticks, shots=None, rsync=None)
 
 
 SCN_QUEST = [10001]
+SCN_VILLAGE = [False]
 
 
 def lock_path():
@@ -844,6 +989,7 @@ def run(name, out, ticks=None):
     n = ticks or sc.get('ticks') or len(pads) + 30
     pokes = sc.get('pokes', [])
     SCN_QUEST[0] = sc.get('quest', 10001)
+    SCN_VILLAGE[0] = bool(sc.get('village'))
     if not os.path.exists(os.path.join(ROOT, g['pc'])):
         raise SystemExit('no %s (build the PC port first)' % g['pc'])
     ps2 = PS2(gname, out)
@@ -857,7 +1003,10 @@ def run(name, out, ticks=None):
         print('%s: PCSX2 up' % name)
         if not ps2.have_state():
             ps2.make_state()
-        ps2.depart(sc, pads)
+        if sc.get('village'):
+            ps2.village_start(sc)
+        else:
+            ps2.depart(sc, pads)
         # play tick 0: the PS2's save and random state, for the PC run
         open(os.path.join(out, 'user_data.bin'), 'wb').write(ps2.p.read_bytes(g['ud'], g['ud_n']))
         rnd = struct.unpack('<HH', ps2.p.read_bytes(g['rnd'], 4))
@@ -872,6 +1021,11 @@ def run(name, out, ticks=None):
         f = open(os.path.join(out, 'ps2.ref'), 'wb')
         f.write(ps2_header(gname, g))
         rlog = open(os.path.join(out, 'ps2_rng.txt'), 'w')
+        nodes_spec = None
+        if os.environ.get('REF_NODES'):
+            a_, c_, r_ = os.environ['REF_NODES'].split(':')
+            nodes_spec = (int(a_), int(c_), 0, int(r_.split('-')[0]), int(r_.split('-')[1]))
+            nlog = open(os.path.join(out, 'ps2_nodes.txt'), 'w')
         rcount = ps2.r32(RING)
         pt, prev_pt, k, t0 = -1, None, 1, time.time()
         while pt < n:
@@ -885,19 +1039,34 @@ def run(name, out, ticks=None):
                     rlog.write('%d %d %d\n' % (prev_pt if prev_pt is not None else -1, ch, ra))
             rcount = rc2
             gw = parts[2]
-            play = gw[0] == 2 and gw[1] <= 1
+            play = gw[0] == ps2.vmode if sc.get('village') else gw[0] == 2 and gw[1] <= 1
             if play:
                 pt += 1
                 tlog.write('%d %.3f\n' % (pt, time.time() - tv0))
             f.write(ps2_record(g, parts, pt if play else -1, k))
+            if play and nodes_spec and nodes_spec[3] <= pt <= nodes_spec[4]:
+                # REF_NODES=SLOT:COUNT:FIRST-LAST (debug aid): the world matrices of monster SLOT's first COUNT skeleton
+                # nodes (EMW+0x50C -> model work +0x24, 0x190 bytes a node) at the start of these play ticks; the PC
+                # writes the same (RT_REF_NODES, rt_ref.c) for tools/referee.py nodes DIR
+                sl, cnt = nodes_spec[0], nodes_spec[1]
+                mdl = struct.unpack_from('<I', parts[0], 0x50C)[0] if sl < 0 else \
+                    struct.unpack_from('<I', parts[1], sl * g['em_stride'] + 0x50C)[0]     # SLOT -1: the hunter
+                if mdl:
+                    sk = ps2.r32(mdl + 0x24)
+                    raw = ps2.p.read_many([(sk + 0x190 * j, 64) for j in range(cnt)])
+                    nlog.write('%d %s\n' % (pt, ' '.join('%.9g' % v for b in raw for v in struct.unpack('<16f', b))))
             pad = pads[pt] if play and 0 <= pt < len(pads) else (0, 0, 0, 0, 0)
             prev_pt = pt if play else -1
             ps2.go(k, fpad_words(pad), [(r, o, t, v) for (p_, r, o, t, v) in pokes if play and p_ == pt])
             k += 1
         f.close()
         rlog.close()
+        if nodes_spec:
+            nlog.close()
         tlog.close()
         print('%s: PS2 %d ticks (%d play ticks) in %.0f s' % (name, k, pt + 1, time.time() - t0))
+        if sc.get('village'):       # the saved hunter after the same inputs (compared with the PC's in the report)
+            open(os.path.join(out, 'ud_end_ps2.bin'), 'wb').write(ps2.p.read_bytes(g['ud'], g['ud_n']))
         ps2.unhook()
     finally:
         if vid:
@@ -920,19 +1089,40 @@ def pc_side(name, out, rng_sync=True):
     pads = expand_pad(sc['pad'])
     pokes = sc.get('pokes', [])
     SCN_QUEST[0] = sc.get('quest', 10001)
+    SCN_VILLAGE[0] = bool(sc.get('village'))
     _, r0, r1, n = open(os.path.join(out, 'run.txt')).read().split()
     rnd, n = (int(r0), int(r1)), int(n)
     ps = Trace(os.path.join(out, 'ps2.ref'))
+    # line-up aid (like Rnd_w at play tick 0): each monster's random number of its last action set (EMW+0x39A) as the
+    # PS2 has it at play tick 0. The monsters spawn and set their first action while the area loads, before play tick
+    # 0, when the PC's random state is not the PS2's yet; without this a Gypceros picked another move at tick 49
+    if 0 in ps.recs and not sc.get('village'):
+        for i in range(EM_N):
+            e = ps.region(ps.recs[0], 'em', i)
+            if e[0]:
+                pokes = pokes + [(0, 'em%d' % i, 0x39A, 'u16', struct.unpack_from('<H', e, 0x39A)[0])]
+                # the other numbers the quest start draws at random before play tick 0: the hunger / thirst /
+                # sleep counters (EMW+0x898..0x8A3) and, in G, the monster's size (G EMW+0x9F8 = the PC's +0xA02)
+                # with the scale it gives (+0xB8..0xC3; base scale +0x600)
+                for off in (0x898, 0x89C, 0x8A0):
+                    pokes = pokes + [(0, 'em%d' % i, off, 'u32', struct.unpack_from('<I', e, off)[0])]
+                if gname == 'mhg':
+                    pokes = pokes + [(0, 'em%d' % i, 0xA02, 'u16', struct.unpack_from('<H', e, 0x9F8)[0])]
+                    for off in (0xB8, 0xBC, 0xC0, 0x600):
+                        pokes = pokes + [(0, 'em%d' % i, off, 'f32', struct.unpack_from('<f', e, off)[0])]
     rsync = None
     if rng_sync:        # the PS2's Rnd_w at the start of each play tick, set on the PC after its record of the tick
         rsync = os.path.join(out, 'ps2_rnd.txt')
         with open(rsync, 'w') as f:
             for t in sorted(ps.recs):
-                f.write('%d %d %d\n' % ((t,) + struct.unpack('<HH', ps.region(ps.recs[t], 'rnd'))))
+                f.write('%d %d %d %d\n' % ((t,) + struct.unpack('<HH', ps.region(ps.recs[t], 'rnd'))
+                                           + (struct.unpack_from('<H', ps.region(ps.recs[t], 'gw'), 0x1E)[0],)))
     rc = run_pc(gname, out, pads, pokes, os.path.join(out, 'user_data.bin'), rnd, n, rsync=rsync)
     pc = Trace(os.path.join(out, 'pc.ref'))
     print('%s: PC %d play ticks (exit %d)' % (name, len(pc.recs), rc))
     first, summ = report(ps, pc, os.path.join(out, 'report.txt'))
+    if SCN_VILLAGE[0]:
+        ud_report(out, gname)
     # pictures: the first difference and a few fixed ticks, PS2 (from the video) left, PC right
     shots = sorted({t for t in (first, 100, 300, 600) if t is not None and t in pc.recs and t in ps.recs})
     tv = dict(tuple(map(float, l.split())) for l in open(os.path.join(out, 'ticks.txt')))
@@ -954,7 +1144,7 @@ def pc_side(name, out, rng_sync=True):
 
 
 def main(argv):
-    if not argv or argv[0] not in ('run', 'pc', 'compare', 'list', 'state'):
+    if not argv or argv[0] not in ('run', 'pc', 'compare', 'list', 'state', 'nodes'):
         raise SystemExit(__doc__)
     out = None
     if '--out' in argv:
@@ -972,6 +1162,17 @@ def main(argv):
     elif argv[0] == 'pc':
         for name in [a for a in argv[1:] if not a.startswith('--')]:
             pc_side(name, out or os.path.join(ROOT, 'build/referee', name), rng_sync='--free-rng' not in argv)
+    elif argv[0] == 'nodes':     # REF_NODES runs: per tick, the largest PS2 - PC distance of a node's position
+        d = argv[1]
+        rd = lambda fn: {int(l.split()[0]): [float(x) for x in l.split()[1:]] for l in open(os.path.join(d, fn))}
+        a, b = rd('ps2_nodes.txt'), rd('pc_nodes.txt')
+        for t in sorted(set(a) & set(b)):
+            n = min(len(a[t]), len(b[t])) // 16
+            dist = [math.dist(a[t][16 * j + 12:16 * j + 15], b[t][16 * j + 12:16 * j + 15]) for j in range(n)]
+            worst = max(range(n), key=lambda j: dist[j])
+            print('%d: nodes %d, largest %.2f at node %d (PS2 %s / PC %s), mean %.2f' % (
+                t, n, dist[worst], worst, ['%.1f' % v for v in a[t][16 * worst + 12:16 * worst + 15]],
+                ['%.1f' % v for v in b[t][16 * worst + 12:16 * worst + 15]], sum(dist) / n))
     elif argv[0] == 'compare':
         d = argv[1]
         report(Trace(os.path.join(d, 'ps2.ref')), Trace(os.path.join(d, 'pc.ref')), os.path.join(d, 'report.txt'))

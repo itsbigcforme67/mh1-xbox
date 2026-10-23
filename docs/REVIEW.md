@@ -12,6 +12,52 @@ obvious workarounds.
 
 ## Open
 
+### G gallery event scenes and credits clips; G's monster event demos (21 Oct 2026, agent E)
+- **Dropped:** the GALLERY's "closed entry" answer for its 15 event scenes (omake_g.c) and the black credits; **now**
+  the host plays the scenes (viewer.c gal_scene_*: the quest's stage and monsters, the event-demo camera, no hunter) and
+  the credits start G's ROLL01..06 clips (rt_movie_clip). **Why:** GB2's open part.
+- **Changed (G):** the monsters' event-demo checks in em04b, em12_nm, em19b, em20_ai_nm compare G's quest numbers
+  (include/em_demo_g.h QN(mh1, g); MH1 unchanged; em01/em16/em27 had the same fix on main from the G quest lane, kept);
+  G-only demo acts added for em02 (kinds != 2, stage 0x58), em04, em09, em15, em19, em20 from G's asm; em02's G branch keys on the kind, not on MH1's quest
+  list. em20_ai_nm read MH1's info_stop address (0x3F360F) in both games: now game_w.info_stop. **Why:** G's in-quest
+  first-sight demos had the camera but the monster did not act (also in quests, not only the gallery).
+- **Changed (G):** G's per-stage tables (92 entries), stage_start_pos and Demo_cam_tbl (38) imported at G's sizes, the
+  unnamed demo camera lists 5-9 / 35-37 imported (config/mhg/pc_data.txt); viewer.c's stage limit 88 -> NSTAGE (92 in
+  G); the credits' page 4/5 first lines kept as numbers (pc_noptr.txt). The staff roll's logo marked its page even off
+  screen (omake_g.c gal_staff_logo, against G's 0x4E8AE0): fixed.
+- **To revert:** the commit "G gallery: event scenes, credits clips ..." on agent-E.
+
+### Xbox log written through to the disk (21 Oct 2026, agent A)
+- **Changed (MH1 and G, Xbox):** the log files are committed to the disk (fflush + NtFlushBuffersFile) at most every
+  0.5 s and on every warning / error, and stderr once a second (was: fflush only, every 3 s, which a crash never wrote
+  out). **Why:** the owner's crash log stopped long before the crash. **Cost:** a disk write per half second while
+  logging. **To revert:** the commit "Xbox G: the Elder's quest list crash ...".
+
+### G quest lane, seventh pass (20 Oct 2026, agent A; RELEASE_G section 13)
+- **Changed (MH1 and G):** viewer.c em_slot_sync no longer draws a monster whose x01 (em+1) is 0 (was: drawn whenever
+  it was alive on the stage). **Why:** the game's em_move only queues the monster's prim when x01 != 0; G's quest
+  10035 hides two Velociprey that way during the opening scene and the PC showed them.
+  **To revert:** the commit "G quest lane: em16 (Velociprey family) as G; hidden monsters are not drawn (both games)".
+- **Dropped (G PC only):** MH1's em27 die04 (revival + start point inside die04) for G; **now** G's flow: em27_act_set
+  (5, 4) does the revival and the start point (em27_revive_init), die04 only picks the act. **Why:** porting die04
+  alone (16 Oct) made the Velocidrome family come back forever; this is how G does it.
+- **Dropped (G PC only):** MH1's em17 attack dispatch (em_move03) and the 10043 demo (em_demo00) for G; **now** G's
+  12-entry table (MH1's atk07 is not reached in G) and G's demo. MH1's em17 atk04 / atk05 / atk10 / atk17 / atk22
+  bodies replaced by G's for G. em01's atk09 / 10 / 17 / 22 likewise. MH1 builds unchanged.
+- **Dropped (G PC only):** set04_i / _m / _trans MH1 bodies for G (G's from the asm).
+- **To revert:** the commits "G quest lane: ..." on agent-A (20 Oct 2026).
+
+### G player packages show their window by themselves (20 Oct 2026, agent E)
+- **Dropped:** `MH1_SHOW=1` in the G play scripts (dist/linux/MHG/play.sh written by `./mh1`, tools/win/play_g.bat).
+  **Now:** a file PLAYER.txt next to the program (written by `./mh1 linux|windows` for both games and by
+  tools/package_win.sh) lets the G build open its window unless MH1_HIDDEN is set (viewer.c, install_player_package
+  in install.c). Build-folder runs stay hidden as before; MH1_SHOW=1 still forces a window (tools/play_g.sh).
+  **Why:** the README says to drag the .iso onto mhview_g.exe, which bypassed play.bat and so refused to start; and a
+  play script that set MH1_SHOW opened a window even for an agent with MH1_HIDDEN=1.
+- **Changed (G PC):** the settings file is G's own `mhgpc.ini` (was `mh1pc.ini`, already in G's folder); an old file
+  is renamed once at start (gfx_opts.c). Window title "Monster Hunter G" / "Monster Hunter" (was "MH1 PC viewer").
+- **To revert:** the commit "G player packages: PLAYER.txt ..." on agent-E.
+
 ### G release audit fixes (15 Oct 2026, agent A)
 - **Dropped:** the G stand-in for Lb_make_quest_tbl_local in lb_village_nm.c's G vs_square_init_init (and its G_STANDIN
   macro); **now** G's own builder (src/lobby/f/lb_guild_g.c) runs at village entry. **Why:** the elder's lists were empty.
@@ -812,9 +858,8 @@ Both games unless marked.
   a quest start see the hunt start one tick later.
 - **Added:** rt_sys_frame_start (the Scheduler's ran_suu(1) each frame after the boot); rounding of the stick angle
   (rt_pad.c); G: em_body_push_tbl (body_hit_sub_em's own table, pl_nm.c) and em_dur_rows noptr (pc_data.txt).
-- **Added, not on by default:** RT_FPU_PS2=1 (rt_ref.c): SSE rounding toward zero + no denormals, as the EE FPU.
-  The referee turns it on; for players it is the owner's call (it would make the game's float math match the PS2,
-  e.g. motion loops ending on the same tick, but the host's own float code runs under it too).
+- **Added:** RT_FPU_PS2 (rt_ref.c): SSE rounding toward zero + no denormals, as the EE FPU. On by default since
+  20 Oct 2026 (owner's decision, next section).
 - **To revert:** the commits "referee: ..." on agent-D.
 
 ## G Xbox bugs 11-14 (agent A, 17 Oct 2026)
@@ -843,3 +888,57 @@ Both games unless marked.
 - **Changed:** tools/test_all_quests.py: the MH1 full sweep now also runs the carts check and one time-out run (quest 139);
   the G time-out check is the shared `timeout_check`.
 - **To revert:** the commit "Cross-game audit ...".
+
+## Referee, second round: PS2 rounding default, joints in move(), tutorial (agent D, 18-20 Oct 2026)
+- **Changed:** PS2 float rounding (RT_FPU_PS2) is on by default, both games, PC and Xbox; RT_FPU_PS2=0 gives the old
+  round-to-nearest. **Why:** owner's decision 18 Oct after the referee (docs/RELEASE_G.md section 11 R-F8).
+- **Dropped:** the joint sync at the end of sim_tick (sync_joints / remote_hunters / monsters_sync(0) before
+  hit_check) and the Lao-Shan-only em_pose_fn call; **now** each monster's joints right after it moves (rt_em.c,
+  enemy_mk) and the hunters' after body_hit (viewer.c, player_mk); hit_check uses those. **Why:** body_hit pushed
+  hunter and monster apart one tick late (R-F9).
+- **Dropped:** the stand-ins func_63B0C0 (returned 0) / func_63B470 (drew nothing) in rt_menu.c; **now** the game's
+  SonchoMove / DispTutorial (tuto.c in the PC build), SonchoInit at a training quest's HUD set-up. **Why:** the
+  Elder's lessons were missing and the buttons were not blocked while the PS2 showed them (R-F10).
+- **Changed:** viewer.c: --help / -h prints the usage and exits before SDL; with MH1_HIDDEN set (and no MH1_SHOW) a run
+  without game data exits with a message instead of opening the install dialog, and an ISO install shows no dialogs.
+  **Why:** an agent's `mhview --help` opened the install dialog on the owner's screen (18 Oct).
+- **Added:** config/mhg/pc_noptr.txt: 94 G data words that are numbers, left out of pc_ptrs.txt (R-F12).
+- **Changed:** tools/test_activities.py trader: seeds 1 5 6 8 27 (TRADER_SEEDS overrides); with PS2 rounding seed 6
+  no longer offers the trade.
+- **To revert:** the commits "WIP: PS2 float rounding ..." / "referee round 2 ..." on agent-D.
+
+## Referee, third round (agent D, 20 Oct 2026)
+- **Added:** move()'s wall pass after body_hit in sim_tick (viewer.c). **Why:** pushed hunters stayed in walls a tick.
+- **Changed:** CameraMove from right after the player to after body_hit / the wall pass / player_mk (viewer.c).
+- **Dropped:** libm sinf / cosf / atan2f in rt_flmat.c (flSin, flCos, the flmatRot*, flArcTan2) and the textbook curve
+  formulas in fmt/aan.c; **now** the PS2's own algorithms (VU0 sine / cosine polynomial and Hermite / linear forms,
+  rounded to nearest through rt_vu.h; the C library's atan2f / atanf) with their constants read from the disc.
+  rt_flmat.c, rt_motion.c, rt_main.c and fmt/aan.c (now built as its own object, build/pc/fmt_aan.o; not in the Xbox
+  FRONT list any more) are compiled with the game's SSE float flags. **Why:** the referee: facings and root motion a
+  float step apart, growing into drifts (RELEASE_G R-F15, R-F16).
+- **Changed:** the hunter's game joints (sync_joints -> rt_player_parts) no longer include hunter_yoff (the drawn
+  model keeps it). **Why:** 0.3 units below the PS2's (R-F17).
+- **To revert:** the commits "WIP referee: ..." / "referee round 3 ..." on agent-D.
+
+## Referee, fourth round (agent D, 20-21 Oct 2026)
+- **Dropped:** fl_model.c's Euler-angle lerp for blended bones; **now** flmatBlend's matrix blend per bone (rows x / y
+  mixed and re-orthonormalised); RT_EULER_BLEND=1 brings the old way back for comparison. **Why:** a blend bent joints
+  up to 18 units away from the PS2's (RELEASE_G R-F22).
+- **Added:** fl_skel extra Y turns (monster necks, rt_em.c rt_em_neck) applied in bone_world.
+- **Changed (G only):** em01_main / em15_main / em20_main needs blocks, small-monster size after their inits,
+  config/mhg/pc_noptr.txt entries (vital rows, Item_get rows).
+- **Added (referee):** 15 scenarios (g_*), the tick-0 sync of EMW+0x39A.
+- **To revert:** the commits "WIP referee G monsters ..." / "WIP referee: motion blends ..." on agent-D.
+
+## Referee, fifth round (agent D, 21-22 Oct 2026)
+- **Moved:** the frame counter game_w+0x1E from rt_game_move (quest ticks only) to rt_game_task_tick (every game tick,
+  viewer.c), which also counts the play time (User_data, G +0xC1C). **Why:** Game_task does both every frame.
+- **Changed (G only):** monster story scenes by G's quest numbers (rt_story_quest) and G's own scenes; em_eye_search_set's
+  kind list for G's new kinds; G's act 6 scene code (em04b.c, em09c.c, em15_nm.c, em16_nm.c, em19b.c, em20_ai_nm.c,
+  all `VERSION_MHG`, matched files also `!__MWERKS__`). em04_nm.c's earlier edit was dropped: em04b.c's em04_main is the
+  one built.
+- **Changed (G only, 22 Oct):** lb_by153.c forge question default, em19b.c fliers' ceiling (EM19_TOP), f_em_nm.c kind 12
+  base scale, f_quest_nm.c Em_direct_set stage (em_tsuushin_tbl). **Changed (both):** viewer.c skips the area-exit
+  check on an area's first tick. **Referee:** ps2_rnd.txt has a 4th column, the PS2's frame counter, set on the PC.
+- **Added (referee):** village lockstep scenarios (g_vil_*), g_carve / mh1_carve, the hook's lock mode word (CTL+0x1C).
+- **To revert:** the commits "WIP referee: G's story-scene ..." .. "WIP: Game_task's frame counter ..." on agent-D.

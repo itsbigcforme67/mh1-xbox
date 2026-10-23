@@ -29,6 +29,7 @@
 #include "install.h"
 #include "rt/rt_save.h"
 #endif
+#include "xbox/xbox_watch.h"
 #include <stdio.h>
 #include "rt/rt_memstat.h"
 #include "rt/rt_prof.h"
@@ -83,15 +84,22 @@ static void drop(uint8_t **keep)
     *keep = NULL;
 }
 
+/* stages: MH1 0-87, G 0-91 (G's per-stage tables have 92 entries; 88-91 are G's own stages, e.g. 88 for event quest
+ * 60029, the GALLERY's scene 13) */
+#ifdef VERSION_MHG
+#define NSTAGE 92
+#else
+#define NSTAGE 88
+#endif
 /* File of a stage from one of the per-stage AFS index tables in main
- * (stage.md 1: 88 x s32, -1 = none), Meltw-decompressed. */
+ * (stage.md 1: NSTAGE x s32, -1 = none), Meltw-decompressed. */
 static fmt_blob load_stage_file(uint32_t table, int stage, uint8_t **keep)
 {
     fmt_blob none = { NULL, 0 };
     const uint8_t *p = RTVA(table) ? rt_addr(RTVA(table) + 4 * (uint32_t)stage, 4) : NULL;    /* MH1 address; G: by name */
     int32_t idx;
     *keep = NULL;
-    if (!p || stage < 0 || stage >= 88)
+    if (!p || stage < 0 || stage >= NSTAGE)
         return none;
     memcpy(&idx, p, 4);
     if (idx < 0 || (uint32_t)idx >= afs.count)
@@ -797,15 +805,19 @@ static void place(flmat w, float x, float y, float z, float yaw)
 static void sync_joints(hunter *h, float hyoff)
 {
     static flmat jw[128];
+    flmat wg;
     float p[3];
     int a, nb, j;
     if (h->game) {
         rt_player_pose(lp, &h->master);
         rt_player_get(lp, p, &a);
         place(h->world, p[0], p[1] + hyoff, p[2], (float)(a & 0xFFFF) * (6.2831853f / 65536.0f));
+        /* the game's joints (body_hit, the hit check, effects) at the hunter's own height: hyoff only lowers the drawn
+         * model onto its feet. They had it until 20 Oct 2026, 0.3 units below the PS2's (the referee's REF_NODES) */
+        place(wg, p[0], p[1], p[2], (float)(a & 0xFFFF) * (6.2831853f / 65536.0f));
         nb = h->master.skel.nbone < 128 ? h->master.skel.nbone : 128;
         for (j = 0; j < nb; j++)
-            flmat_mul(jw[j], h->master.world[j], h->world);
+            flmat_mul(jw[j], h->master.world[j], wg);
         rt_player_parts(lp, &jw[0][0], nb);
     }
 }
@@ -1383,16 +1395,6 @@ static void sim_tick(void)
         rt_np_tick();           /* co-op: the other players' packets (net_receive_pl) */
 #endif
         rt_player_tick(lp);
-        if (game_cam) {
-            flmat cw;
-            rt_cam_tick();      /* CameraMove (src/main/cam) */
-            /* rview_mat follows the game camera every tick (sound
-             * distances, billboards), also when several ticks run
-             * in one drawn frame */
-            rt_cam_view(gc_eye, gc_tar, &gc_roll, &gc_fov);
-            lookat_world(cw, gc_eye, gc_tar);
-            rt_set_camera(cw);
-        }
         /* right stick turns the follow camera */
         cam[3] -= ps.rx * (0.04f / 127.0f);
         if (sw_trace) {
@@ -1440,15 +1442,67 @@ static void sim_tick(void)
         if (game_w[GWX(0x21F)] == 0)         /* move(): item_check / body_hit only while info_stop == 0 (hunters and monsters pushed apart) */
             body_hit();
     }
+    if (ticks >= 2) {
+        /* move()'s wall pass after body_hit (f_frame_nm.c): every hunter (in an online game, or with PLW+0x7EC set) and
+         * every monster with +0x7EC set is pushed out of the walls again with keep = 1. The PC lacked it until 20 Oct
+         * 2026: a hunter pushed into a wall by a monster stayed there for a tick and the next tick's push started from
+         * there (the lockstep referee, Kut-Ku fight) */
+        extern unsigned char game_w[], player_work[], em_work[];
+        void HitWallPlayer(void *w, int keep);
+        int k;
+        for (k = 0; k < 8; k++) {
+            unsigned char *w = player_work + 0xA00 * k;
+            if (w[0] && (game_w[0x2E] == 1 || w[0x7EC]))
+                HitWallPlayer(w, 1);
+        }
+        for (k = 0; k < 20; k++) {
+            unsigned char *w = em_work + 0xA10 * k;
+            if (w[0] && w[0x7EC])
+                HitWallPlayer(w, 1);
+        }
+    }
+    if (pl.game && play && ticks >= 2) {
+        /* player_mk (move(), after body_hit): the hunters' joint matrices of this tick, before the effects / sets read them
+         * (the monsters' come from enemy_mk, right after each one moved: rt_monster_tick -> em_pose_now). Until 18 Oct
+         * 2026 all joints were made at the end of the tick, so body_hit and the effects saw the last tick's */
+        rt_prof_begin(RTP_JOINTS);
+        sync_joints(&pl, hunter_yoff);
+        remote_hunters(0, light_cur());
+        rt_prof_end(RTP_JOINTS);
+    }
+    if (pl.game && play && ticks >= 2 && game_cam) {
+        /* CameraMove: in move() after body_hit, the wall pass and player_mk (f_frame_nm.c), so the camera follows where
+         * the hunter ended up this tick. It ran right after the player until 20 Oct 2026: after a monster pushed the
+         * hunter the camera (and with it the stick's direction for the next tick) was a tick behind (the referee, Kut-Ku) */
+        flmat cw;
+        rt_cam_tick();      /* CameraMove (src/main/cam) */
+        /* rview_mat follows the game camera every tick (sound
+         * distances, billboards), also when several ticks run
+         * in one drawn frame */
+        rt_cam_view(gc_eye, gc_tar, &gc_roll, &gc_fov);
+        lookat_world(cw, gc_eye, gc_tar);
+        rt_set_camera(cw);
+    }
     rt_game_move();             /* move_set / move_eft / move_shell: after the player and CameraMove as in game_core (f_frame_nm.c), so
                                  * camera-attached sets (set13's fog veils, 50 units in front of the eye) use this tick's camera */
     light_move();               /* game_core's step after CameraMove (f_frame_nm.c): turns light 2 of set 1 with the view, runs the
                                  * flash effect. The host's sim_tick stands in for game_core, so it has to call it (only
                                  * the lights of RT_LIGHT_GAME read what it does) */
     if (quest_no && pl.game && play && ticks >= 2) {
+        /* move_stage (f_stage_nm.c): the first game tick of an area runs stage_i (its step 0), only the next ones stage_m
+         * with the area-exit check. The PC checked on that first tick too: a hunter put on an exit left a tick early (the
+         * referee, g_kind49; agent D 22 Oct 2026) */
+        extern unsigned char game_w[];
+        static int mv_stage = -1;
+        static int mv_ticks = -1;
         void stage_mv_ck(void);
-        stage_mv_ck();                  /* move_stage -> stage_m's area-exit check (f_stage.c):
+        if (game_w[0x14] != mv_stage || ticks != mv_ticks + 1) {
+            mv_stage = game_w[0x14];    /* (a new area, or the first tick after a load: stage_i) */
+        } else {
+            stage_mv_ck();              /* move_stage -> stage_m's area-exit check (f_stage.c):
                                          * pl+0x738 = 1 -> game2 steps 2-6 load the next area */
+        }
+        mv_ticks = ticks;
     }
     if (quest_no && ticks >= 2) {
         void bgm_server(void);
@@ -1460,10 +1514,8 @@ static void sim_tick(void)
         rt_snd_stage_tick();            /* move_stage's river / waterfall loops (Snd_server runs per tick below) */
     if (pl.game && play && ticks >= 2) {
         rt_prof_begin(RTP_JOINTS);
-        sync_joints(&pl, hunter_yoff);
-        remote_hunters(0, light_cur());
-        monsters_sync(0, light_cur());
-        rt_actor_nodes_fill();  /* every live actor's node array as after trans() (rt_eft.c) */
+        rt_actor_nodes_fill();  /* every live actor's node array as after trans() (rt_eft.c): the joints made in move()
+                                 * (player_mk above, enemy_mk per monster); trans() makes none, so hit_check sees those */
         rt_prof_end(RTP_JOINTS);
         rt_hit_check();         /* hit_check (src/main/hit/hit_nm.c), as game_core does after trans */
     }
@@ -1580,6 +1632,10 @@ static void em_slot_sync(int i, int draw, const fl_light *L)
     if (em[0x736] != (uint8_t)rt_game_stage())
         return;
     m = &em_mdl[kind];
+    {   /* mlCalcTransEM's neck turn (rt_em.c) */
+        int rt_em_neck(int no, int bones[4], float ry[4]);
+        m->skel.nextra = rt_em_neck(i, m->skel.extra_bone, m->skel.extra_ry);
+    }
     rt_monster_pose(i, &m->skel);
     memcpy(s, em + 0xB8, sizeof s);
     if (s[0] == 0.0f) s[0] = s[1] = s[2] = 1.0f;
@@ -1629,7 +1685,7 @@ static void em_slot_sync(int i, int draw, const fl_light *L)
                     hh, mo);
         }
     }
-    if (draw && rt_monster_motion_ready(i)) {
+    if (draw && em[1] && rt_monster_motion_ready(i)) {   /* em+1 (x01) 0: not drawn (em_move: no prim without it) */
         fl_light lc;
         float f[3];
         int light_col = L && !getenv("RT_EM_ALL_MATS") && em_model_col(&m->model, em, f);
@@ -1658,11 +1714,14 @@ static void monsters_sync(int draw, const fl_light *L)
     for (i = 0; i < 20; i++)
         em_slot_sync(i, draw, L);
 }
-/* enemy_mk's part of the tick (move(): enemy_mv -> enemy_mk -> em_ride_sub): the new pose's joints before
- * em_ride_sub carries the hunters on the Lao-Shan Lung's back (rt_em.c) */
+/* enemy_mk's part of the tick (move(): enemy_mv -> enemy_mk -> em_ride_sub): the new pose's joints, before body_hit
+ * and em_ride_sub (the Lao-Shan Lung carrying the hunters) read them (rt_em.c) */
 static void em_pose_now(int i)
 {
+    void rt_actor_nodes_fill_one(void *work);
+    extern uint8_t em_work[];
     em_slot_sync(i, 0, NULL);
+    rt_actor_nodes_fill_one(em_work + 0xA10 * i);
 }
 
 /* Village NPC models (npc_create_model -> here): slot = NPC kind. */
@@ -2112,6 +2171,190 @@ static void dbg_title(void)             /* the power-on sequence again (logos, t
     booting = 1;
     rt_hunter_draw_hook = ed_hunter_hook;
 }
+#ifdef VERSION_MHG
+/* ------------------------------------------------------------ the GALLERY's event scenes (G)
+ * G sub_main 0x4A91D0 (src/main/omake/omake_g.c asks for one with rt_gal_scene_begin): a training quest's stage and
+ * monsters are loaded as for a quest start, the quest's event demo camera is started on them (evdemo_camera_request
+ * with the scene's descriptor, the same 16-byte records as the in-quest event demos, evdemo_g_tbl), and only the world
+ * moves (0x4A9050: the monsters, the music, the demo camera 0x1D9B50, lights, effects, set objects, the stage); no
+ * hunter, no HUD, no pad. It ends 16 ticks before the scene's length or on START, with a fade, and the gallery takes
+ * over again. While it runs the boot tasks (the gallery) do not tick here; on the PS2 the gallery task itself called
+ * 0x4A91D0 every frame and drew the world with its trans(). Agent E, 20 Oct 2026, written from G's asm. */
+static struct {
+    int want, on, phase;            /* phase 4 fading in, 5 running, 6 fading out (0x4A91D0's sub steps) */
+    int quest, len, cnt, mission;
+    const uint8_t *desc;            /* EVD: +0 stage, +2 demo camera, +3 monster species (0 none), +4 music kind, +5 voice */
+    const char *title;
+    int16_t timer;                  /* D_00541E0C: the music cue of kinds 2 and 3 (pl01_effect_move) */
+} gsc;
+void rt_gal_scene_begin(const void *desc, int len, int quest, int mission_afs, const char *title)
+{
+    gsc.desc = desc;
+    gsc.len = len;
+    gsc.quest = quest;
+    gsc.mission = mission_afs;
+    gsc.title = title;
+    gsc.want = 1;
+}
+int rt_gal_scene_busy(void) { return gsc.want || gsc.on; }
+static int gal_scene_on(void) { return gsc.on; }
+
+static void gal_scene_start(void)
+{
+    extern uint8_t game_w[], player_work[], *mission_area;
+    extern int rt_quest_mission_given;
+    void rt_quest_mem_init(void);
+    int load_file_mdl(void *dst, int id);
+    void func_0012D960(int mode, const char *msg);
+    void stage_bgm_set(int st);
+    void evdemo_camera_request(int cam, int id);
+    void str_pause(int ch, int on);
+    void adx_se_set(void *w, int no);
+    void fade_set(int n);
+    float p[3] = { rx, 0, rz };
+    int st = gsc.desc[0];
+
+    gsc.want = 0;
+    gsc.on = 1;
+    gsc.phase = 4;
+    gsc.cnt = 0;
+    gsc.timer = 0;
+    rt_lt_span_begin("gallery scene");
+    rt_log("gallery: event scene, quest %d, stage %d, demo camera %d on species %d, %d ticks", gsc.quest, st, gsc.desc[2],
+           gsc.desc[3], gsc.len);
+    func_0012D960(0, gsc.title);    /* the loading screen with the scene's title (drawn by the loads, load_wait) */
+    rt_world_reset();
+    rt_monster_clear_all();
+    rt_quest_mem_init();
+    if (gsc.mission > 0) {          /* an event quest's mission file the disc keeps for the gallery (m60029.mib) */
+        load_file_mdl(mission_area, gsc.mission);
+        rt_quest_mission_given = 1;
+    }
+    if (rt_quest_load(gsc.quest) != 0)
+        rt_warn("gallery: quest %d did not load", gsc.quest);
+    rt_quest_mission_given = 0;
+    game_w[0x14] = game_w[0x15] = (uint8_t)st;
+    if (st != stage_no)
+        load_stage_models(st);
+    stage_no = st;
+    rt_game_init(st);               /* stage_init, stage_fog_set, stage_set_set */
+    rt_player_game_init(lp);        /* init_pl_work: the hunter exists (the monsters look for him) but is not drawn */
+    weapon_motions();
+    rt_monster_spawn(1, p, 0);      /* round_init: the quest's monsters on this stage */
+    rt_cam_init(st);
+    stage_bgm_set(st);
+    game_w[0x1F5] = 1;              /* info_stop (G 0x35EF15): the monsters wait for their cue, as during an event demo */
+    game_w[0x10] = game_w[0x11] = 0;
+    evdemo_camera_request(gsc.desc[2], gsc.desc[3]);
+    switch (gsc.desc[4]) {
+    case 3:
+        gsc.timer = 0x10E;
+        str_pause(0, 1);
+        break;
+    case 2:
+        gsc.timer = 0x15E;
+        /* fall through */
+    case 1:
+        str_pause(0, 1);
+        break;
+    }
+    if (gsc.desc[5])
+        adx_se_set(player_work + game_w[0x3A] * 0xA00, gsc.desc[5]);
+    quest_dark_tick = flip_ticks;   /* the loading tick stays dark, as a quest start */
+    fade_set(2);
+    rt_lt_span_end();
+    if (shot && getenv("RT_GAL_SHOTS")) {   /* test aid "t1,t2,...": RT_SHOTS at these ticks after the scene's start */
+        static char abs_list[512];
+        const char *r = getenv("RT_GAL_SHOTS");
+        int n = 0;
+        abs_list[0] = 0;
+        while (*r && n < (int)sizeof abs_list - 16) {
+            long t = strtol(r, (char **)&r, 10);
+            n += snprintf(abs_list + n, sizeof abs_list - (size_t)n, "%s%ld", n ? "," : "", ticks + t);
+            if (*r == ',')
+                r++;
+            else
+                break;
+        }
+        shot_list = abs_list;
+        shot_next = (int)strtol(shot_list, (char **)&shot_list, 10);
+        if (*shot_list == ',')
+            shot_list++;
+        printf("gallery scene starts at tick %d\n", ticks);
+    }
+}
+
+static void gal_scene_tick(void)
+{
+    extern uint8_t em_work[], game_w[];
+    extern uint16_t Psw[];
+    void demo_bgm_set(int no), bgm_server(void), HitWallPlayer(void *w, int keep), rt_cam_demo_tick(void);
+    void fade_set(int n);
+    int Fade_busy_ck(void);
+    int k;
+
+    gsc.cnt++;
+    if (gsc.timer && --gsc.timer == 0) {        /* pl01_effect_move */
+        if (gsc.desc[4] == 2)
+            demo_bgm_set(0x51);
+        else if (gsc.desc[4] == 3)
+            demo_bgm_set(0x57);
+    }
+    for (k = 0; k < 20; k++)                    /* 0x4A9050 */
+        rt_monster_tick(k);
+    bgm_server();
+    for (k = 0; k < 20; k++) {
+        uint8_t *w = em_work + 0xA10 * k;
+        if (w[0] && w[0x7EC])
+            HitWallPlayer(w, 1);
+    }
+    rt_cam_demo_tick();
+    rt_cam_view(gc_eye, gc_tar, &gc_roll, &gc_fov);
+    have_view = 1;
+    {
+        flmat cw;
+        lookat_world(cw, gc_eye, gc_tar);
+        rt_set_camera(cw);
+    }
+    light_move();
+    rt_game_move();
+    if (snd == 0)
+        rt_snd_stage_tick();
+    rt_actor_nodes_fill();
+    switch (gsc.phase) {
+    case 4:
+        if ((Fade_busy_ck() & 0xFF) != 1)
+            gsc.phase = 5;
+        break;
+    case 5:
+        if (gsc.cnt > gsc.len - 16 || (Psw[2] & 0x8000)) {
+            gsc.phase = 6;
+            fade_set(1);
+        }
+        break;
+    case 6:
+        if ((Fade_busy_ck() & 0xFF) != 1) {
+            void DemoCameraCancel(void);
+            void Quest_init(void);
+            void str_stop_all(void);
+            void se_stop_all(void);
+            DemoCameraCancel();
+            game_w[0x1F5] = 0;
+            rt_world_reset();
+            rt_monster_clear_all();
+            all_reset();
+            Quest_init();
+            str_stop_all();
+            se_stop_all();
+            gsc.on = 0;
+            rt_log("gallery: event scene over after %d ticks", gsc.cnt);
+        }
+        break;
+    }
+}
+#else
+static int gal_scene_on(void) { return 0; }
+#endif
 static void dbg_shot(const char *png)
 {
     uint8_t *rgb = malloc((size_t)W * H * 3);
@@ -2141,6 +2384,14 @@ static void mem_tick(int t)
     }
 }
 
+static void usage(FILE *f, const char *exe)
+{
+    fprintf(f, "usage: %s DISC_DIR [--shot out.png] [--frames N] [--time S] "
+            "[--size WxH] [--cam x,y,z,yaw,pitch] [--view ex,ey,ez,tx,ty,tz[,fov]] [--stage N] [--quest N] [--play] [--boot] "
+            "[--input SCRIPT] [--audio-dump FILE.wav] [--install FILE.iso]\n"
+            "  (docs/pc.md lists the RT_* switches; MH1_HIDDEN=1: no window, no install dialog)\n", exe);
+}
+
 int main(int argc, char **argv)
 {
 #ifdef MH1_WIN       /* text-mode stdout / stderr would write CRLF into redirected logs (the tests grep them) */
@@ -2161,6 +2412,7 @@ int main(int argc, char **argv)
     }
 #endif
 #ifdef XBOX
+    xbox_seh_reg xseh;      /* the crash catcher's SEH record: on main's stack for the whole run (xbox_watch.c) */
     nxMountDrive('E', "\\Device\\Harddisk0\\Partition1\\");
     xbox_env_load();        /* before any switch is read (xbox_env.c) */
     if (getenv("RT_ARGS")) {
@@ -2180,6 +2432,11 @@ int main(int argc, char **argv)
     }
 #endif
     rt_stack_paint();
+    for (i = 1; i < argc; i++)      /* --help: the usage on stdout, no SDL, no window, no install dialog */
+        if (!strcmp(argv[i], "--help") || !strcmp(argv[i], "-h")) {
+            usage(stdout, argv[0]);
+            return 0;
+        }
     gfx_opts_load(argc, argv);      /* mh1pc.ini (Xbox: settings.ini in the game folder); the display flags below override it */
     for (i = 1; i < argc; i++) {
         if (!strcmp(argv[i], "--shot") && i + 1 < argc) shot = argv[++i];
@@ -2238,9 +2495,12 @@ int main(int argc, char **argv)
         else if (argv[i][0] != '-') disc = argv[i];
     }
 #if defined(VERSION_MHG) && !defined(XBOX)
-    /* G (docs/mhg.md section 5) is a work in progress run by agents: every run is hidden (no window, no real
-     * controller, no install dialog) unless MH1_SHOW=1 is set by hand; the screenshot ends the run */
-    if (!getenv("MH1_SHOW") && !shot) {
+    /* G (docs/mhg.md section 5) is a work in progress run by agents: a run from the build folder is hidden (no
+     * window, no real controller, no install dialog) unless MH1_SHOW=1 is set by hand; the screenshot ends the run.
+     * A player package (PLAYER.txt next to the program: ./mh1 linux|windows, tools/package_win.sh) shows its window,
+     * except when MH1_HIDDEN is set (agents set it in every shell, so their runs of a package stay hidden too) */
+    int g_show = getenv("MH1_SHOW") != NULL || (!getenv("MH1_HIDDEN") && install_player_package());
+    if (!g_show && !shot) {
         fprintf(stderr, "G runs are hidden: give --shot FILE --time S (with --input SCRIPT for pad input); MH1_SHOW=1 shows a window\n");
         return 1;
     }
@@ -2275,6 +2535,7 @@ int main(int argc, char **argv)
             }
         }
         xbox_log_start();
+        xbox_watch_start(&xseh);    /* freeze watchdog + crash catcher (xbox_watch.c), once the log is open */
         {
             char m[160];
             snprintf(m, sizeof m, "%s", disc ? disc : "");
@@ -2358,7 +2619,11 @@ int main(int argc, char **argv)
         if (!iso && (!disc || (disc && !install_has_data(disc))) && !shot) {
             if (install_find_data(found, sizeof found))
                 disc = found;
-            else if (!disc) {
+            else if (!disc && getenv("MH1_HIDDEN") && !getenv("MH1_SHOW")) {
+                /* a hidden run (agents, tests) never opens the install dialog on the desktop */
+                fprintf(stderr, "no game data found and no DISC_DIR given (MH1_HIDDEN is set: no install dialog)\n");
+                return 1;
+            } else if (!disc) {
                 char got[1024];
                 if (install_prompt(got, sizeof got) == 0) {
                     snprintf(found, sizeof found, "%s", got);
@@ -2374,7 +2639,7 @@ int main(int argc, char **argv)
                 snprintf(dest, sizeof dest, "%s", install_dir);
             else
                 install_default_dir(dest, sizeof dest);
-            if (install_from_iso(iso, dest, !getenv("RT_NO_GUI")) != 0)
+            if (install_from_iso(iso, dest, !getenv("RT_NO_GUI") && !(getenv("MH1_HIDDEN") && !getenv("MH1_SHOW"))) != 0)
                 return 1;
             snprintf(final, sizeof final, "%s", dest);
             disc = final;
@@ -2396,14 +2661,14 @@ int main(int argc, char **argv)
         menu_set_shot(shot != NULL);
     }
     if (!disc) {
-        fprintf(stderr, "usage:%s DISC_DIR [--shot out.png] [--frames N] [--time S] "
-                "[--size WxH] [--cam x,y,z,yaw,pitch] [--view ex,ey,ez,tx,ty,tz[,fov]] [--stage N] [--play] [--input SCRIPT]\n", argv[0]);
+        usage(stderr, argv[0]);
         return 1;
     }
-    if (stage_given && (stage_no < 0 || stage_no >= 88)) {
-        /* both games have stages 0-87 (stage_start_pos[88], the per-stage file tables); G's
-         * stage_hit_data_w holds 0 past 87, which loaded file 0 as a collision link and crashed */
-        fprintf(stderr, "--stage %d: no such stage (0-87)\n", stage_no);
+    if (stage_given && (stage_no < 0 || stage_no >= NSTAGE)) {
+        /* MH1 has stages 0-87, G 0-91 (stage_start_pos, the per-stage file tables). G's tables were imported with
+         * MH1's 88 entries until 21 Oct 2026: stage_hit_data_w then held 0 past 87, which loaded file 0 as a collision
+         * link and crashed */
+        fprintf(stderr, "--stage %d: no such stage (0-%d)\n", stage_no, NSTAGE - 1);
         return 1;
     }
     if (!rt_log_started())
@@ -2479,11 +2744,15 @@ int main(int argc, char **argv)
      * MH1_SHOW=1 shows one anyway for debugging by hand */
     int hide = shot != NULL || ((script != NULL || getenv("MH1_HIDDEN")) && !getenv("MH1_SHOW"));
 #if defined(VERSION_MHG) && !defined(XBOX)
-    if (!getenv("MH1_SHOW"))
+    if (!g_show)
         hide = 1;       /* G on the PC: always hidden (above). Not on the Xbox: the console is played by
                          * hand, and hide also turned off the controller there (owner, 14 Oct) */
 #endif
-    if (gfx_init(W, H, "MH1 PC viewer", hide) != 0) {
+#ifdef VERSION_MHG
+    if (gfx_init(W, H, "Monster Hunter G", hide) != 0) {
+#else
+    if (gfx_init(W, H, "Monster Hunter", hide) != 0) {
+#endif
         rt_warn("graphics start-up failed (no window / OpenGL context)");
         return 1;
     }
@@ -2540,7 +2809,7 @@ int main(int argc, char **argv)
         /* no hand-picked spots: the hunter at the stage's start position
          * (stage_start_pos, main 0x2F2620, also used by set09/em19), else
          * at the middle of the walkable ground */
-        extern float stage_start_pos[88][3];
+        extern float stage_start_pos[NSTAGE][3];
         float sx = stage_start_pos[stage_no][0], sz = stage_start_pos[stage_no][2], x, z, y;
         int cnt = 0;
         if (sx == 0.0f && sz == 0.0f) {
@@ -2886,8 +3155,31 @@ int main(int argc, char **argv)
             in_tick = 1;                /* flFlip shows frames from here (game_flip) */
             flip_ticks = ticks;
             rt_actor_nodes_fill();      /* every actor's node array as the last tick left it (boot screens, village, quests) */
+#ifdef VERSION_MHG
+            if (booting && gal_scene_on()) {    /* the gallery's event scene (above): the world moves, the tasks wait */
+                pad_state ps;
+                read_pad(&ps);
+                rt_pad_set(ps.bits, ps.lx, ps.ly, ps.rx, ps.ry);
+                rt_pad_tick();
+                { void rt_sys_frame_start(void); rt_sys_frame_start(); }
+                gal_scene_tick();
+                rt_sys_tick();          /* Fade_task */
+                if (snd == 0) {
+                    rt_snd_tick();
+                    audio_dump_tick();
+                }
+                ticks++;
+                rt_light_tick();
+                mem_tick(ticks);
+                flip_tick_end();
+                rt_prof_end(RTP_LOGIC);
+                rt_prof_tick();
+                continue;
+            }
+#endif
             if (booting) {      /* ACRMain: pad, then the task scheduler */
                 pad_state ps;
+                xbox_watch_mark("boot screens tick (rt_boot_tick)");
                 read_pad(&ps);
                 rt_pad_set(ps.bits, ps.lx, ps.ly, ps.rx, ps.ry);
                 rt_pad_tick();
@@ -2896,6 +3188,10 @@ int main(int argc, char **argv)
                     rt_log("boot: finished after %d ticks; game mode 6 (village)", ticks);
                     rt_flow_set_mode(6);    /* Game_task offline: the village */
                 }
+#ifdef VERSION_MHG
+                if (booting && gsc.want)
+                    gal_scene_start();      /* the gallery asked for an event scene this tick */
+#endif
                 if (snd == 0) {
                     rt_snd_tick();
                     audio_dump_tick();
@@ -2909,6 +3205,7 @@ int main(int argc, char **argv)
             }
             if (quest_no) {
                 { void rt_ref_tick(int); rt_ref_tick(ticks); }      /* the referee's record of the tick's start */
+                { void rt_game_task_tick(void); rt_game_task_tick(); }  /* Game_task: frame counter, play time */
                 /* outside game2 the host tick (sim_tick) does not run: the
                  * pad is still read every tick (result / reward screens) */
                 extern unsigned char game_w[];
@@ -2923,11 +3220,13 @@ int main(int argc, char **argv)
                         rt_pad_tick();
                 }
                 { void rt_sys_frame_start(void); rt_sys_frame_start(); }  /* the Scheduler's ran_suu(1) (rt_boot.c) */
+                xbox_watch_mark("game tick (rt_flow_tick)");
                 rt_flow_tick();         /* game2 / game3 / game5 (f_game.c): game_core = sim_tick */
                 rt_sys_tick();          /* Fade_task (the scheduler's system tasks) */
             }
             else
                 sim_tick();
+            xbox_watch_mark("sound (rt_snd_tick)");
             if (snd == 0) {             /* Snd_server: ACRMain runs it every frame, in every game mode
                                          * (the village had no music on the PC without it) */
                 rt_snd_tick();
@@ -2964,16 +3263,23 @@ int main(int argc, char **argv)
             rt_prof_tick();
         }
         rt_prof_begin(RTP_DRAW);
+        xbox_watch_mark("drawing the frame");
         if (pick_frozen()) {            /* the bug reporter: the frozen frame, no scene */
             pick_frozen_frame();
             goto frame_done;
         }
     redraw:                             /* (the id pass draws the frame once more) */
-        if (booting) {          /* the boot screens: the last tick's picture */
+        if (booting && !gal_scene_on()) {          /* the boot screens: the last tick's picture */
             gfx_begin_frame(0);
             rt_boot_draw();
             goto frame_done;
         }
+        if (gal_scene_on() && quest_dark_tick >= 0 && quest_dark_tick == flip_ticks) {
+            gfx_begin_frame(0);         /* the scene's loading tick */
+            goto frame_done;
+        }
+        if (gal_scene_on())
+            goto scene_view;            /* the gallery's event scene: the demo camera, no hunter (G) */
         if (quest_no && rt_flow_mode() == 2) {
             /* game2 steps 3-6 (an area change, after the map and st_model_load): the PS2 game
              * returns before game_core, so nothing is drawn and flFlip shows a cleared (black)
@@ -3070,7 +3376,8 @@ int main(int argc, char **argv)
         }
         /* the view of this frame, from the camera the ticks above left
          * (the game camera or the follow camera moved with the hunter) */
-        if (game_cam && have_view) {
+    scene_view:
+        if ((game_cam || gal_scene_on()) && have_view) {
             lookat_world(camw, gc_eye, gc_tar);
         } else {
             float s3[3] = { 1, 1, 1 }, r3[3], t3[3];
@@ -3080,7 +3387,7 @@ int main(int argc, char **argv)
         }
         flmat_invert_affine(view, camw);
         rt_set_camera(camw);
-        flmat_perspective(proj, game_cam && have_view ? gc_fov : view_fov, scene_aspect(), 10.0f, 80000.0f);
+        flmat_perspective(proj, (game_cam || gal_scene_on()) && have_view ? gc_fov : view_fov, scene_aspect(), 10.0f, 80000.0f);
 
         gfx_begin_frame(0);            /* black, as the game's setBGcolor(0) (G stage 24: black below the jungle edge on the PS2) */
         gfx_set_render_state(GFX_RS_PROJECTION, (uintptr_t)proj);
@@ -3098,7 +3405,7 @@ int main(int argc, char **argv)
             rt_prof_end(RTP_STAGE_DRAW);
         }
         gfx_set_render_state(GFX_RS_WORLD, (uintptr_t)pl.world);
-        {
+        if (!gal_scene_on()) {
             int s;
             for (s = 0; s < HUNTER_PARTS; s++) {
                 pick_owner(PK_HUNTER, lp, s, &pl.master);
@@ -3111,14 +3418,14 @@ int main(int argc, char **argv)
             npc_draw(light_cur());
         else
             monsters_sync(1, light_cur());
-        if (weapon.game && pl.game && play) {
+        if (weapon.game && pl.game && play && !gal_scene_on()) {
             static flmat wid;
             flmat_identity(wid);
             gfx_set_render_state(GFX_RS_WORLD, (uintptr_t)wid);
             pick_owner(PK_WEAPON, lp, 0, NULL);
             draw_model_attr(&weapon.model, -1);
         }
-        if (pl.game && play && !rt_village_active())
+        if (pl.game && play && !rt_village_active() && !gal_scene_on())
             rt_player_item_draw(lp);    /* the item in the hand (BBQ spit, pickaxe, net, ...) */
         /* The game's own order (trans(), weapon/trans.c): stage, then the actors (GameTrans), then the shells, prims, set
          * objects and effects. The translucent ones (smoke, dust, sparks, breath) blend over the monsters and the hunter, and the
@@ -3194,6 +3501,7 @@ int main(int argc, char **argv)
         }
         pick_ring_frame();              /* the bug report's clip of the last seconds */
         rt_prof_begin(RTP_GFX);
+        xbox_watch_mark("frame end (gfx_end_frame)");
         gfx_end_frame();
         rt_prof_end(RTP_GFX);
 #ifndef XBOX

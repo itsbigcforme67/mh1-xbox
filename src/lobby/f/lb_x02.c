@@ -1,8 +1,15 @@
 /* lb_x02 - guild quest board 0x005C9A50-0x005C9DE4: lb_select_quest. Whole file in lb_x.c. */
 #include "lobby_f.h"
+#ifndef __MWERKS__
+unsigned short Get_sw2();   /* (declared before its first use) */
+#endif
 extern s8 key_quest_num;
 extern u8 *pNet;
+#ifdef __MWERKS__
 int Get_sw2();
+#else
+unsigned short Get_sw2();   /* the real return type (tools/check_kr_returns.py) */
+#endif
 int get_questLevelNum();
 void lb_set_questpage_info();
 void Lbc_set_prim();

@@ -2,22 +2,59 @@
 /* cpinet2_nm - SLPM_654.95 0x002352E0-0x002359D0 (f_common.s): CpInet error mapping, interface status / problem tracking and
    the TCP socket wrappers (Ave_Tcp* RPC layer). Working file; see cpinet_nm.c for the first half. */
 #include "types.h"
+#ifndef __MWERKS__
+short Ave_SetOpt(s16, int, int, int);   /* (declared before its first use) */
+short Ave_TcpAbort();   /* (declared before its first use) */
+short Ave_TcpClose();   /* (declared before its first use) */
+short Ave_TcpDelete();   /* (declared before its first use) */
+short Ave_TcpInitialize();   /* (declared before its first use) */
+short Ave_TcpOpen();   /* (declared before its first use) */
+short CpInetDhcpTimer();   /* (declared before its first use) */
+#endif
 extern s32 Inet_interface_problem_disable[4];
 extern s32 Inet_interface_status[4];
 extern s32 Inet_interface_problem_status[4];
 extern s8 Initialized_flags[16];
 int Ave_SifCallRpcEnd();
+#ifdef __MWERKS__
 int Ave_TcpInitialize();
+#else
+short Ave_TcpInitialize();   /* the real return type (tools/check_kr_returns.py) */
+#endif
+#ifdef __MWERKS__
 int Ave_TcpOpen();
+#else
+short Ave_TcpOpen();   /* the real return type (tools/check_kr_returns.py) */
+#endif
 int Ave_GetOpt(s16, int, int, int);
+#ifdef __MWERKS__
 int Ave_SetOpt(s16, int, int, int);
+#else
+short Ave_SetOpt(s16, int, int, int);   /* the real return type (tools/check_kr_returns.py) */
+#endif
 int Ave_TcpRecv();
 int Ave_TcpSend();
+#ifdef __MWERKS__
 int Ave_TcpClose();
+#else
+short Ave_TcpClose();   /* the real return type (tools/check_kr_returns.py) */
+#endif
+#ifdef __MWERKS__
 int Ave_TcpAbort();
+#else
+short Ave_TcpAbort();   /* the real return type (tools/check_kr_returns.py) */
+#endif
+#ifdef __MWERKS__
 int Ave_TcpDelete();
+#else
+short Ave_TcpDelete();   /* the real return type (tools/check_kr_returns.py) */
+#endif
 int CpInetDevChanged();
+#ifdef __MWERKS__
 int CpInetDhcpTimer();
+#else
+short CpInetDhcpTimer();   /* the real return type (tools/check_kr_returns.py) */
+#endif
 int CpInetPppGetStatus();
 void CpInetTcpDelayCloseReset(void);
 int CpInetTcpNbCallEnd(void);

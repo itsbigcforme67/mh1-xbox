@@ -41,7 +41,11 @@ void fade_set();
 void flSndPortStop();
 void FlushCache();
 void load_bin_req();
+#ifdef __MWERKS__
 int load_busy_ck();
+#else
+signed char load_busy_ck();   /* the real return type (tools/check_kr_returns.py) */
+#endif
 void flSndPackLoadBG();
 void flSndPackLoadBG2();
 int flSndPackLoadStatus();

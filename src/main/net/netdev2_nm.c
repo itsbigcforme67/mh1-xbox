@@ -25,7 +25,7 @@ typedef struct PPPSTART {
     s8 f36;
     s8 f37;
 } PPPSTART;
-int Ave_PppStart();
+short Ave_PppStart();
 
 int CpInetPppStart(PPPARG *arg) {
     PPPSTART st;
@@ -136,7 +136,7 @@ extern u8 MyDomain[0x100];
 extern s8 MyEtherInitMode;
 extern s32 NdgConfParam[2];
 int CpInetPppGetDns();
-int CpInetDhcpGetDns();
+short CpInetDhcpGetDns();
 int CpInetDnsInitialize();
 void InetDnsCacheInitialize();
 void CpInetHttpResolvCacheInitialize();

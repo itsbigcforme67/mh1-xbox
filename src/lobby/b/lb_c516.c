@@ -2,6 +2,9 @@
 #define flfntLocate flfntLocate_hdr
 #define font_print_double font_print_double_hdr
 #include "lobby_b.h"
+#ifndef __MWERKS__
+signed char Lb_get_quest_type();   /* (declared before its first use) */
+#endif
 #undef flfntLocate
 #undef font_print_double
 void font_print_double(int, int, int, int, char *);
@@ -19,7 +22,11 @@ void Lb_put_msg_type2();
 void Lb_put_room_message();
 void Lb_put_button();
 void Lb_put_gold();
+#ifdef __MWERKS__
 int Lb_get_quest_type();
+#else
+signed char Lb_get_quest_type();   /* the real return type (tools/check_kr_returns.py) */
+#endif
 void Put_2TF();
 void lb_put_room_member(void);
 void lb_select_trans(void) {

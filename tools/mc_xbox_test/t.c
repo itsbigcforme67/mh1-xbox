@@ -15,3 +15,9 @@ int main(void){char tb[0x40*8];int t,f,fm;
  sceMcGetDir(0,0,"BISLPM-65495MH/BISLPM-65495MH",0,8,tb); int n=r(); printf("single %d size %u\n",n,*(unsigned*)(tb+0x10));
  sceMcOpen(0,0,"BISLPM-65495MH/BISLPM-65495MH",1); fd=r(); char b[8]={0}; sceMcRead(fd,b,5); printf("read %d '%s'\n",r(),b); sceMcClose(fd);r();
  sceMcDelete(0,0,"BISLPM-65495MH/BISLPM-65495MH"); printf("delete %d\n",r()); return 0;}
+
+/* stand-ins for the game symbols mc_xbox.c's save / load log lines use (only on the host test) */
+unsigned char User_data[0x10000];
+void rt_log(const char *fmt, ...) { (void)fmt; }
+void rt_warn(const char *fmt, ...) { (void)fmt; }
+unsigned long GetLastError(void) { return 0; }

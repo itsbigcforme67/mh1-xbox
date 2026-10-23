@@ -54,7 +54,7 @@ void eft09_set(EMW *, int);
 void Eft20_set(f32, EMW *, int, int);
 void shell01_set(EMW *, int);
 s16 em_hp_vital_set2(EMW *, s16, s16);
-int em_act_search(void *);
+unsigned short em_act_search(void *);
 void em_char_set(EMW *, int, int, int);
 void em_char_set2();
 void em_char_set2();
@@ -390,6 +390,23 @@ void em02_main(EMW *em) {
         }
         break;
     }
+#ifdef VERSION_MHG
+    /* G (em02_main 0x5AA8A8): the black dragon (kind 2) on stage 0x19 in any quest (G dropped MH1's quest list), the
+     * other dragons of this program (kinds 36 ...) on stage 0x58 with event flag 0x24: G's demo 3 (em_demo03_g) */
+    if (em->kind != 2) {
+        if (em->stg == 0x58 && Event_flag_ck(0x24) == 0) {
+            if (game_w.info_stop == 1 && em->mode != 6) {
+                em02_act_set(em, 6, 3, 0);
+            }
+        } else if (em->x839 != 0) {
+            em_cmd_ck(em);
+            em->x839 = 0;
+        }
+        goto sub;
+    }
+    switch (em->kind) {
+    case 2:
+#else
     switch (quest_w.no) {
     case 0x66:
     case 0x67:
@@ -398,6 +415,7 @@ void em02_main(EMW *em) {
     case 0x6A:
     case 0xB9:
     case 0xCF:
+#endif
         if (em->stg == 0x19) {
             if (Event_flag_ck(0x1B) == 0) {
                 if (game_w.info_stop == 1 && em->mode != 6) {
@@ -429,6 +447,9 @@ void em02_main(EMW *em) {
         }
         break;
     }
+#ifdef VERSION_MHG
+sub:
+#endif
     em02_main_sub(em, w);
     if (em->x6FF != 0) {
         em02_main_sub(em, w);
@@ -1989,12 +2010,138 @@ static void em_demo02_00583610(EMW *em, EM02W *w) {
     }
 }
 
+#ifdef VERSION_MHG
+/* G 0x5AF150 (G only): demo 3, the other dragons' entrance on stage 0x58 (event quest 60029, the GALLERY's scene 13):
+ * the dragon is put far off, flies in to (9896, 15107) and on to (12021, 7469), lands and waits for event flag 0x24.
+ * From G's asm (jump table 0x6D8410 in code order); agent E, 21 Oct 2026, not byte-checked. */
+static void em_demo_turn_g(EMW *em)
+{
+    em->ang[0] = 0;
+    em->ang[1] = Em_Calc_angY(em->pos, em->tgt_pos) & 0xFFFF;
+    em->ang[2] = 0;
+}
+
+static void em_demo03_g(EMW *em, EM02W *w) {
+    em->x9E1 = 5;
+    em->x40C = 5;
+    switch (em->x05) {
+    case 0:
+        em->x05++;
+        em->x388 = 0;
+        em->pos[0] = 15779.0f;
+        em->pos[1] = 571.0f;
+        em->pos[2] = 3495.0f;
+        em->tgt_pos[0] = 9896.0f;
+        em->tgt_pos[1] = 46.0f;
+        em->tgt_pos[2] = 15107.0f;
+        em_demo_turn_g(em);
+        em_char_set(em, 0x1D, 0, 0x27E);
+        em->work08 = 0x5A;
+        break;
+    case 1:
+        if (--em->work08 > 0) {
+            break;
+        }
+        em->x05++;
+        em_char_set(em, 0x1C, 0, 0);
+        break;
+    case 2:
+        if (em->x194 == 0) {
+            em->x05++;
+            em_char_set(em, 8, 0, 0);
+        }
+        break;
+    case 3:
+        if (em->x194 == 0) {
+            em->x05++;
+            em_char_set(em, 1, 0x12, 0);
+            em->work08 = 0x1E;
+        }
+        break;
+    case 4:
+        if (--em->work08 > 0) {
+            break;
+        }
+        em->x05++;
+        em_char_set(em, 0x1E, 0, 0);
+        break;
+    case 5:
+        if (em->x194 == 0) {
+            em->x05++;
+            em_char_set(em, 1, 0, 0);
+            em->work08 = 0xB4;
+        }
+        break;
+    case 6:
+        if (--em->work08 > 0) {
+            break;
+        }
+        em->x05++;
+        em_char_set(em, 0x20, 0, 0);
+        em->x8B6 = 1;
+        em->x8B4 = 0x708;
+        break;
+    case 7:
+        if (em->x194 == 0) {
+            em->x05++;
+            em_char_set(em, 0x23, 0, 0);
+        }
+        break;
+    case 8:
+        if (em->x194 == 0) {
+            em->x05++;
+            em->x388 = 2;
+            em_char_set(em, 0x28, 0, 0);
+            em02_fly_adjy2_init(em, 4);
+            em->x8B6 = 0;
+            em->x8B4 = 0;
+        }
+        break;
+    case 9:
+        em02_fly_adjy2(em);
+        if (CalcDistanceXZ(em->pos, em->tgt_pos) <= 1000.0f) {
+            em->x05++;
+            em->pos[0] = 12021.0f;
+            em->pos[1] = 100.0f;
+            em->pos[2] = 7469.0f;
+            em_demo_turn_g(em);
+        }
+        break;
+    case 10:
+        em02_fly_adjy2(em);
+        if (CalcDistanceXZ(em->pos, em->tgt_pos) <= 1000.0f) {
+            em->x05++;
+            em->x388 = 0;
+            em->pos[1] = em->x5AC;
+            em_char_set(em, 0x24, 0, 0);
+        }
+        break;
+    case 11:
+        if (em->x194 == 0) {
+            em->x05++;
+            em_char_set(em, 1, 0, 0);
+        }
+        break;
+    case 12:
+        if (Event_flag_ck(0x24) == 1) {
+            em->x05++;
+            em02_to_normal(em);
+        }
+        break;
+    }
+    (void)w;
+}
+#endif
+
 static void em_move06_005837B0(EMW *em, EM02W *w) {
     em->act_spd = 1.0f;
     switch (em->x15) {
     case 0: em_demo00_00582F70(em, w); break;
     case 1: em_demo01_00583120(em, w); break;
     case 2: em_demo02_00583610(em, w); break;
+#ifdef VERSION_MHG
+    case 3: em_demo03_g(em, w); break;
+#endif
     }
 }
 

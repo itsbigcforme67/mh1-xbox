@@ -283,6 +283,9 @@ game.bin overlay (an AFS_DATA entry, stored uncompressed) are read for the
 hunter's part-to-bone table (ptmat_tbl, 0x3018F0) and the game data tables
 the decompiled C uses (src/pc/rt/rt_data.c).
 
+`--help` prints the options. The game's float math rounds like the PS2's (toward zero, no denormals) by default
+since 20 Oct 2026; `RT_FPU_PS2=0` gives the PC's round-to-nearest (src/pc/rt/rt_ref.c, docs/referee.md).
+
 Controls (free camera, the default):
 - WASD move, mouse look.
 - Space / C move up / down; Shift moves faster.

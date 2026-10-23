@@ -3,6 +3,10 @@
 #include "game.h"
 #include "pl.h"
 #include "fl.h"
+#ifndef __MWERKS__
+u16 calc_vec_ang(f32, f32, f32, f32);   /* (declared before its first use) */
+unsigned char hit_line_sphr2(void *, EM_SPOT *, f32);   /* (declared before its first use) */
+#endif
 
 typedef struct QUEST_W {
     u8 _pad00[8];
@@ -23,7 +27,11 @@ extern f32 D_3E4C9C[3];
 f32 flvecCalcDistance(f32 *, f32 *);
 u16 Em_Calc_angY(f32 *, f32 *);
 void hit_line2_pk(f32 *, f32 *, void *);
+#ifdef __MWERKS__
 int hit_line_sphr2(void *, EM_SPOT *, f32);
+#else
+unsigned char hit_line_sphr2(void *, EM_SPOT *, f32);   /* the real return type (tools/check_kr_returns.py) */
+#endif
 void cpRotMatrix(s32 *, void *);
 void frame_init(EMW *, u16, s16, int);
 int em_pl_pos_set(EMW *, u8, f32 *);

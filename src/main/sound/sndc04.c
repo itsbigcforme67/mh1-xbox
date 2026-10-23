@@ -2,6 +2,9 @@
 #include "g_alias.h"
 #include "types.h"
 #include "sysw.h"
+#ifndef __MWERKS__
+signed char load_busy_ck();   /* (declared before its first use) */
+#endif
 
 #define WB(w, o) (*(u8 *)((u8 *)(w) + (o)))
 #define WH(w, o) (*(u16 *)((u8 *)(w) + (o)))
@@ -13,7 +16,11 @@ extern s8 Snd_em_id_file_conv_tbl[];
 void flSndJointInit();
 void flSndJointSet();
 void load_bin_req();
+#ifdef __MWERKS__
 int load_busy_ck();
+#else
+signed char load_busy_ck();   /* the real return type (tools/check_kr_returns.py) */
+#endif
 extern s8 Snd_em_id_conv_tbl[];
 extern void *data_load_ptr;
 extern u8 *pl_area_top;

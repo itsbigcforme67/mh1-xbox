@@ -2,6 +2,9 @@
 /* Lobby: target selection (lock-on list), unique-action lookup, receive dispatcher, hand-written from m2c drafts. */
 #include "lbsys_g.h"
 #include "lobby_f.h"
+#ifndef __MWERKS__
+signed char SoftKeyboard_alive_check();   /* (declared before its first use) */
+#endif
 extern PLW player_work[];
 extern u8 sw_flag_1260;
 extern u8 em_work[];
@@ -14,7 +17,11 @@ u8 *Stage_unique_data_get();
 void Lb_put_unique_act_hint();
 int lb_ck_unique_act();
 int Lb_Pl_stg_ck();
+#ifdef __MWERKS__
 int SoftKeyboard_alive_check();
+#else
+signed char SoftKeyboard_alive_check();   /* the real return type (tools/check_kr_returns.py) */
+#endif
 int lb_check_target(PLW *pl, u8 *tgt, u8 **list, int ang, int x, f32 range);
 void Lb_check_target(void) {
     u8 *em;

@@ -176,6 +176,8 @@ volume. The choices are saved in `mh1pc.ini` (Linux `~/.local/share/mh1pc/mh1pc.
 `%APPDATA%\mh1pc\mh1pc.ini`), a plain text file; the same options exist as command-line flags (docs/pc.md,
 "Display options"). The game logic always runs at its original 30 steps per second, whatever the frame rate.
 
+Skip intros is in the PC settings menu (F10) too: `skip_intros = 1` in `mh1pc.ini` / `mhgpc.ini`.
+
 ## Settings (Xbox)
 
 Hold **Back** and click the **left stick** (Back + L3) at any time; the title screen reminds you. The game pauses
@@ -183,7 +185,9 @@ while the menu is open. Rows: text language (English only when you put a transla
 `E:\Games\MH1\text\en.txt`, MHG: `E:\Games\MHG\text\en.txt`; applies at the next start), 4:3 or 16:9 (for a
 widescreen TV set to stretch the picture; menus stay 4:3, the HUD moves to the screen edges), the HUD (original or
 the prototype gunner HUD for bowgun users), which button confirms (B as in Japan, or A), music and effects volume,
-rumble on/off, and the testers' debug menu on/off. D-pad moves, left/right changes, B or Start closes. The choices are
+rumble on/off, the testers' debug menu on/off, and **Skip intros** (from the next start, and at the debug menu's
+soft reset, power-on goes straight to the title screen: no logos, warnings or opening movie; the memory card is still
+read first). D-pad moves, left/right changes, B or Start closes. The choices are
 saved in `settings.ini` in the game's folder on E: and read at every start; until you change the aspect ratio there,
 the dashboard's widescreen setting decides it.
 
@@ -290,14 +294,47 @@ G is the project's main target and a work in progress. `./mh1 linux|windows|xbox
 
     dist/linux/MHG/play.sh        dist/windows/MHG/play.bat        dist/xbox/MHG/ (E:\Games\MHG, below)
 
-`play.sh` / `play.bat` open a window for you (the G program stays hidden when it is started by test scripts; the
-play scripts say otherwise). `play.sh quest` starts G quest 10 (Rathian) directly, `play.sh easy` the same with a
-hunter who cannot faint. Saves are separate from Monster Hunter 1: Linux `~/.local/share/mhgpc/memcard0/`, Windows
-`%APPDATA%\mhgpc\memcard0\`, Xbox `E:\UDATA\` under G's own title id. You can also drag the G `.iso` onto
-`mhview_g.exe` (Windows) once to install its files. Xbox: files go to `E:\Games\MHG` (`default.xbe`,
+Monster Hunter G on Linux, step by step (the same as Monster Hunter 1, with the G disc):
+
+1. `./mh1 linux /path/to/MonsterHunterG.iso` (or a folder with the disc's files). It checks the disc, builds G
+   (`tools/build_pc_mhg.sh`) and makes `dist/linux/MHG/` with `mhview_g`, `play.sh`, `PLAYER.txt`, this guide and
+   `data/` (your disc's `AFS_DATA.AFS`, `AFS00.AFS`, `AFS01.AFS`, `SLPM_658.69`, about 1.1 GB).
+2. `dist/linux/MHG/play.sh` from power-on (logos, title, NEW GAME / CONTINUE, Kokoto village); `play.sh quest`
+   straight into G quest 10 (Rathian), `play.sh easy` the same with a hunter who cannot faint. Extra options go to
+   the game (`play.sh --fullscreen`, `--size 1280x720`, ...). You can move the folder anywhere.
+3. Without the `data/` folder (e.g. you copied only the program), give the `.iso` once: `play.sh /path/to/G.iso`
+   installs its files into `~/.local/share/mhgpc/data` and starts the game; later starts find them there.
+
+Monster Hunter G on Windows: `./mh1 windows DISC` (cross-built on Linux, as for Monster Hunter 1; `--setup` fetches
+the cross-compiler) makes `dist/windows/MHG/` with `mhview_g.exe`, `SDL2.dll`, `play.bat`, `bug_report.bat`,
+`README.txt`, `PLAYER.txt` and `data/`. Copy that folder to the Windows PC and run `play.bat` (`play.bat quest`,
+`play.bat easy` as above). The program alone (the zip of `tools/package_win.sh` with `VERSION=mhg`) needs the disc
+once: drag the G `.iso` onto `mhview_g.exe` or `play.bat`; it copies the files into `data` next to the program, or
+`%APPDATA%\mhgpc\data` when that folder is not writable.
+
+G keeps its own files, apart from Monster Hunter 1's, so both games can be installed at once:
+
+| | Linux | Windows |
+|---|---|---|
+| saves (memory card folder) | `~/.local/share/mhgpc/memcard0/` | `%APPDATA%\mhgpc\memcard0\` |
+| settings (F10 menu, window size) | `~/.local/share/mhgpc/mhgpc.ini` | `%APPDATA%\mhgpc\mhgpc.ini` |
+| debug logs, F8 bug reports | `~/.local/share/mhgpc/logs/`, `reports/` | `%APPDATA%\mhgpc\logs\`, `reports\` |
+| data installed from an ISO | `~/.local/share/mhgpc/data/` | `data\` next to `mhview_g.exe`, else `%APPDATA%\mhgpc\data\` |
+
+`MH1_SAVE_DIR` moves the save folder (settings and logs follow it). The window is titled "Monster Hunter G".
+
+**PLAYER.txt** (keep it next to the program): G is a work in progress that test scripts and agents run all the
+time, so the G program opens no window when it is started from the build folder (`build/mhg/pc/mhview_g`); such runs
+must make a screenshot (`--shot`) and end. `./mh1` and `tools/package_win.sh` put `PLAYER.txt` next to the program,
+and next to that file G opens its window as normal. `MH1_HIDDEN=1` (set by test scripts and agents) keeps even a
+player package hidden; `MH1_SHOW=1` shows a window anywhere (the owner's `tools/play_g.sh` sets it). An older G
+settings file `mh1pc.ini` in G's folder is renamed to `mhgpc.ini` on the first start.
+
+Xbox: files go to `E:\Games\MHG` (`default.xbe`,
 `data\AFS_DATA.AFS` 144 MB, `AFS00.AFS` 884 MB, `AFS01.AFS` 24 MB, `SLPM_658.69` 2 MB); use the loader's HTTP install
 with `tools/xbox_serve.py --data dist/xbox/MHG` as described above, FTP as the fallback; G's own loader (shown as
 Monster Hunter G, `E:\Games\MHG\default.xbe`) installs G beside MH1, and the game itself is `mhg.xbe` there.
+Xbox saves: `E:\UDATA\` under G's own title id.
 
 What works (checked in scripted, hidden runs, not yet by a full human play-through): title, NEW GAME, hunter
 creation, saving, CONTINUE, the village (Kokoto) with its shops, forge, item box and the elder's quests, all 98

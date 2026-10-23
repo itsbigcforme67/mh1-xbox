@@ -2,6 +2,8 @@
  * Near-match file in address order (tools/lbmerge.py ... include/lbui_proto.h lbui.h). */
 #pragma readonly_strings on
 #include "lbui_proto.h"
+unsigned char set01_set2();   /* its real return type: was implicitly int (tools/check_kr_returns.py) */
+unsigned char set01_set2_use_mem();   /* its real return type: was implicitly int (tools/check_kr_returns.py) */
 #ifdef VERSION_MHG
 #include "lbdlg_g.h"
 #include "lbsys_g.h"

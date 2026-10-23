@@ -53,6 +53,8 @@ int rt_text_parse(const char *path);                  /* NULL: RT_TEXT_TABLE; on
 const char *rt_text_for(int space, uint32_t va);      /* replacement text or NULL */
 void rt_text_finish(void);                            /* after all imports: host-pointer registry */
 const char *rt_text_tr(const char *p);                /* p itself unless it is a registered string */
+#include <stdarg.h>
+int rt_text_vsnprintf(char *buf, size_t n, const char *fmt, va_list ap);   /* vsnprintf, %s arguments through rt_text_tr */
 size_t rt_text_quest(int no, uint8_t *buf, size_t n, size_t cap);   /* mission file text */
 size_t rt_text_quest_g(int no, uint8_t *buf, size_t n, size_t cap); /* Monster Hunter G mission file (0x48 header) */
 int rt_text_active(void);

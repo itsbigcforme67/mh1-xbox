@@ -2,6 +2,11 @@
 /* cnmsg_nm - SLPM_654.95 0x00230060-0x00230760 (movie_draw.s): small stream / message-queue helpers of the mcsls session
    layer (CCnNetMsg byte queue methods compiled as C functions, the Inet stream receive, mcsls state accessors). */
 #include "types.h"
+#ifndef __MWERKS__
+unsigned char CngNet_MSG_ReadU8();   /* (declared before its first use) */
+unsigned short CngNet_MSGBOB_ReadU16();   /* (declared before its first use) */
+unsigned short CngNet_MSG_ReadU16();   /* (declared before its first use) */
+#endif
 typedef struct NM {             /* CCnNetMsg, 0x18 bytes */
     s32 x00;
     s32 rd;                     /* 0x04 read position */
@@ -23,10 +28,22 @@ int CngNet_MSG_Read();
 int CngNet_MSG_WriteU16();
 int CngNet_MSG_WriteU8();
 void CngNet_MSG_WriteFloat32(NM *, f32);
+#ifdef __MWERKS__
 int CngNet_MSG_ReadU16();
+#else
+unsigned short CngNet_MSG_ReadU16();   /* the real return type (tools/check_kr_returns.py) */
+#endif
+#ifdef __MWERKS__
 int CngNet_MSG_ReadU8();
+#else
+unsigned char CngNet_MSG_ReadU8();   /* the real return type (tools/check_kr_returns.py) */
+#endif
 f32 CngNet_MSG_ReadFloat32(NM *);
+#ifdef __MWERKS__
 int CngNet_MSGBOB_ReadU16();
+#else
+unsigned short CngNet_MSGBOB_ReadU16();   /* the real return type (tools/check_kr_returns.py) */
+#endif
 int CCnNetMsgBob_CnReadU16(void *);
 int CCnNetMsg_CnReadU8(void *);
 int CCnNetMsgBob_CnReadU8(void *);

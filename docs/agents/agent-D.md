@@ -1472,3 +1472,56 @@ dropped-behaviour list docs/REVIEW.md "Lockstep referee".
   game13 tick, em_dur rows noptr (G), G's monster body table). Not fixed, ranked there: root motion a tick late on the
   PC (first difference in every fight, both games), PS2 float rounding (RT_FPU_PS2, owner's call), the Elder's
   tutorial window, a Dual Swords walk-start difference, the sound layer's random draws.
+
+## Referee round 2 (agent D, 18-20 Oct 2026)
+Owner decisions of 18 Oct. Details and numbers: docs/RELEASE_G.md section 11 R-F8..R-F12, docs/referee.md (results of
+20 Oct), docs/REVIEW.md "Referee, second round".
+- PS2 float rounding on by default (rt_ref.c fpu_ps2; RT_FPU_PS2=0 off). DAZ only where MXCSR_MASK has it (Pentium
+  III: none, ldmxcsr would fault). Host x87 code unaffected. Checked: A/B pictures and sound dumps, G reference shots,
+  full_check (35 ok), Windows exe under wine, Xbox MH1 + G in xemu (mxcsr FFE0 at boot, kept at the quest start;
+  FFF1 there is only sticky exception flags, which the check ignores).
+- Lesson: "root motion a tick late" was the joints. move() builds a monster's joints right after it moves
+  (enemy_mk) and the hunters' after body_hit (player_mk); find such things with a gdb watchpoint on the moved field
+  in the referee's PC run (env as tools/referee.py run_pc builds it).
+- Elder's tutorial ported (tuto.c + tutob.c + tuto_nm.c into the PC build, tables.txt, G texts in pc_data.txt; G's
+  texture slots 0x141/0x142 are the PC's 0x11A/0x11B because the PC keeps MH1's slot numbers). Works on PC and Xbox
+  (xemu shots of the lesson list in G 10001 and MH1 131).
+- G Dual Swords walk-start blend (f_pl.c). pc_noptr.txt sweep (94 words; G forge cases of tools/test_gvillage.py OK).
+- --help / hidden-run install dialog fix (viewer.c; test_log.sh checks it).
+- Debug aid: REF_NODES=SLOT:COUNT:FIRST-LAST tools/referee.py run S writes the PS2's (ps2_nodes.txt) and the PC's
+  (pc_nodes.txt, RT_REF_NODES) joint matrices of one monster; `tools/referee.py nodes DIR` compares them.
+- Note: rt_log's "quest N START" prints the quest as a byte: G's 10001 shows as 17.
+Next: N-R7 (Kut-Ku body push) with REF_NODES, then N-R8 (Velociprey drift) and the MH1 fights.
+
+## Referee round 3 (agent D, 20 Oct 2026)
+R-F13..R-F17 in docs/RELEASE_G.md section 11 (wall pass, CameraMove order, VU0 sin/cos/curves + rt_vu.h nearest
+rounding, newlib atan2f, hunter joints without hunter_yoff). Lessons: the PS2 side is PCSX2, where VU0 results round to
+nearest and FPU results toward zero (the sideways drift of a hunter walking at facing 1 needs cos(~0) = 1 + 1 ulp, i.e.
+nearest); PS2 `run`s of a scenario are not always identical (another random start), so compare PC changes with
+`referee.py pc` against one trace; `exact.py`-style per-field checks with a tiny tolerance find the first float-step
+divergence long before the report's tolerance does. Next: N-R7 (first float steps at root-motion starts, e.g. bowgun
+em0 tick 77: z one step apart after a blend start).
+
+## Referee round 4: G monsters, items, gathering (agent D, 20-21 Oct 2026)
+RELEASE_G section 11 R-F18..R-F22 and the scenario table there. Lessons: (1) byte-diff a monster's EMW between the two
+traces (offsets < 0x9F4; skip pointer words) to find the first field that differs: it found the hunger countdown, the
+size scale and act speed. (2) A garbage number (HP 32648, item 0xF645) in a G table read through a pointer list = a
+pc_ptrs.txt false pointer: look for the row's words in pc_ptrs and add them to config/mhg/pc_noptr.txt. (3) Joint
+differences that start on a blend tick = the blend method (REF_NODES). (4) The first actions of monsters are set
+during the area load, before the PC has the PS2's random state: the referee now copies EMW+0x39A at play tick 0.
+Open: N-R10 Gravios turn end, N-R11 kind 13 first act (G em16 act set), N-R12 village day not comparable (hook only in
+quests), g_plesioth / g_kind37 PS2 runs failed to start / stopped.
+
+## Referee round 5: story scenes, village day, carving (agent D, 21-22 Oct 2026)
+RELEASE_G R-F23..R-F25 (fifth round block). Lessons: (1) a `_nm.c` file may be a weak copy: check which file the
+binary really uses (`gdb -batch -ex "info line FUNC" build/mhg/pc/mhview_g`) before editing; em04_main lives in
+em04b.c. (2) When a monster is put into a G scene (act 6/N), its act 6 code must be G's as well: MH1's waits for MH1's
+demo flags and keeps the monster in the scene for the whole quest (quest 10046's Khezu; test_all_quests_g found it).
+(3) G's EMW keeps MH1's offsets up to about 0x934; MH1 0x9E1 is G 0x9D9 (the PC keeps MH1's layout, so G code that
+writes 0x9D9 writes x9E1 on the PC). (4) Village lockstep: scenario `village=True` (referee.md).
+Open: N-R10 Gravios, N-R13 g_plesioth start, N-R14 kind 19 fly height, N-R12 reward screen; g_scene_rath's Velociprey
+turns the other way at tick 1151 (the hunter sits almost behind it: a 1-ulp position step decides the side, N-R7 class).
+
+### Round 5, second half (22 Oct 2026)
+RELEASE_G R-F26 / R-F27. Merged main (agent A's em01 / em16 G ports replace my scene parts there). Next round: emulator
+work when memory allows (g_vil_sell, mh1_vil_* scenarios, item box, combine, reward screen), N-R10 Gravios.

@@ -15,7 +15,7 @@ mkdir -p build/pc
 nmc() { if [ -n "$SYM_PREFIX" ]; then $NM "$@" | sed "s/^\\([0-9a-fA-F]* [A-Za-z] \\)$SYM_PREFIX/\\1/"; else $NM "$@"; fi; }
 PC="src/pc/viewer.c src/pc/fl/fl_model.c src/pc/gfx/gfx_gl.c \
     src/pc/fmt/afs.c src/pc/fmt/melt.c src/pc/fmt/amo.c src/pc/fmt/apx.c \
-    src/pc/fmt/ahi.c src/pc/fmt/aan.c src/pc/fmt/hits.c src/pc/pad/pad_sdl.c \
+    src/pc/fmt/ahi.c src/pc/fmt/hits.c src/pc/pad/pad_sdl.c \
     src/pc/fmt/snd.c src/pc/movie/sfd.c src/pc/audio/audio_mix.c src/pc/audio/audio_sdl.c src/pc/gfx/gfx_rec.c src/pc/gfx/gfx_opts.c src/pc/gfx/gfx_pal.c src/pc/gfx/gfx_skin.c src/pc/install.c src/pc/pick.c src/pc/font5x7.c src/pc/menu.c src/pc/dbgmenu.c src/pc/fmt/ps2save.c src/pc/fmt/lzari.c"
 # Decompiled game C run natively. set14_nm.c is the whole set14 file
 # (set14_trans is a near-match on the PS2 side, believed equivalent).
@@ -82,8 +82,10 @@ EM="src/main/em/f_em_nm.c src/game/em/em_core_nm.c src/game/em/em_master_nm.c sr
     src/game/em/em16_nm.c src/game/em/em16.c src/game/em/em12_nm.c src/game/em/em29.c"
 # Quest flow (agent C/E): f_quest (whole file near-match; its first part,
 # accessors and Quest_init, is matched: qstb01-07.c), the tutorial checks it
-# calls (game.bin tutorial.c)
+# calls (game.bin tutorial.c), the Elder's lesson window of the training quests (tuto.c: SonchoInit /
+# SonchoMove / DispTutorial, tutob.c, tuto_nm.c's print_tuto_message; Pit_mv / trans_pit_1 call them by address)
 QUEST="src/main/evdemo/evdemo.c src/main/quest/f_quest_nm.c src/game/tuto/tutorial.c \
+       src/game/tuto/tuto.c src/game/tuto/tutob.c src/game/tuto/tuto_nm.c \
        src/main/game/f_game.c src/main/game/f_gameb.c src/main/font/dsp01.c src/main/font/dsp02.c \
        src/main/menu/menu_nm.c src/main/menu/menu_disp_nm.c \
        src/main/chat/chat_nm.c src/main/chat/dispframe_nm.c src/main/font/fontst_nm.c \
@@ -580,6 +582,9 @@ for f in $GAME; do
         -Ddisp_others_info=rt_hud_disp_others_info -Ddisp_map=rt_hud_disp_map -Ddisp_item=rt_hud_disp_item \
         -Ddisp_item_sub_select_ex=rt_hud_disp_item_sub_select_ex" ;;
     # widescreen: the village's talk window and chat / message lines keep to the left edge, whoever calls them (rt_2d.c)
+    # text layer: the info banners size their frame with strlen of the shown string; measure the English when a table
+    # replaces it (rt_text_sp.c), else the frame is the Japanese string's width
+    src/main/set/set01.c) ABI="-Dstrlen=rt_text_strlen" ;;
     src/main/chat/chat_nm.c) ABI="-DDisp_NPC_message=rt_real_Disp_NPC_message -DPit_disp_chat=rt_real_Pit_disp_chat \
         -DPit_disp_receive_mes=rt_real_Pit_disp_receive_mes" ;;
     # em_cmd_nm.c GetWaterData / em_core_nm.c NextStage_No_Set: a0 = em left over (tools/pc_patch.py)
@@ -762,9 +767,15 @@ for f in $NETRT $([ -n "$COV" ] && echo rt_cov) rt_ver rt_game rt_fl rt_flmat rt
     # shellcheck disable=SC2086
     XF=""; [ $f = rt_log ] && XF="-D_GNU_SOURCE"   # ucontext / sigaltstack
     [ $f = rt_menu ] && XF="-DMH1_NO_UTF8"       # include/plf.h declares memset(void *, int, int)
+    # the fl math and the motion player stand in for PS2 library code the game's movement depends on (rotations, root
+    # motion): built with the game's SSE float math, so the PS2 rounding (RT_FPU_PS2, rt_ref.c) reaches them too
+    case $f in rt_flmat|rt_motion|rt_main) XF="$XF $FPSSE" ;; esac
     cc_obj $f "$CC $CFLAGS $XF -DMH1_VERSION=\\\"$MH1_VERSION\\\" $SYS $SDL_CFLAGS -Iinclude $MEMSTAT -c src/pc/rt/$f.c -o build/pc/$f.o"
     OBJS="$OBJS build/pc/$f.o"
 done
+# the motion curves (fmt/aan.c: root motion through flCalcTransVelocity and the poses): the game's SSE float math too
+cc_obj fmt_aan "$CC $CFLAGS $FPSSE $SYS -c src/pc/fmt/aan.c -o build/pc/fmt_aan.o"
+OBJS="$OBJS build/pc/fmt_aan.o"
 # Matched main C (MATCHED_A) must not replace the host's own versions: a global that a strong definition in a
 # src/pc object (rt_*.o) also provides is weakened in the matched object, the host version wins (tools/targets)
 for f in $MATCHED_A; do

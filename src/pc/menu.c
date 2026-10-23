@@ -43,13 +43,13 @@ void audio_pause(int on);
 int flPADShockSet(int port, int strength, int frames);
 
 enum { R_DISPLAY, R_ASPECT, R_VSYNC, R_FPS, R_MSAA, R_ANISO, R_FILTER, R_LANG, R_PAD, R_HUD, R_MUSIC, R_EFFECTS, R_RUMBLE, R_DEBUG,
-       R_DEFAULTS, R_CLOSE, R_N };
+       R_SKIP, R_DEFAULTS, R_CLOSE, R_N };
 #ifdef XBOX     /* the rows shown, in order */
-static const int rows[] = { R_LANG, R_ASPECT, R_HUD, R_PAD, R_MUSIC, R_EFFECTS, R_RUMBLE, R_DEBUG, R_CLOSE };
+static const int rows[] = { R_LANG, R_ASPECT, R_HUD, R_PAD, R_MUSIC, R_EFFECTS, R_RUMBLE, R_DEBUG, R_SKIP, R_CLOSE };
 #define XB(xbox, pc) (xbox)
 #else
 static const int rows[] = { R_DISPLAY, R_ASPECT, R_VSYNC, R_FPS, R_MSAA, R_ANISO, R_FILTER, R_LANG, R_PAD, R_HUD, R_MUSIC, R_EFFECTS,
-                            R_RUMBLE, R_DEBUG, R_DEFAULTS, R_CLOSE };
+                            R_RUMBLE, R_DEBUG, R_SKIP, R_DEFAULTS, R_CLOSE };
 #define XB(xbox, pc) (pc)
 #endif
 #define NROWS ((int)(sizeof rows / sizeof rows[0]))
@@ -73,7 +73,7 @@ static struct {
 static const char *label[R_N] = {
     "Display", "Aspect ratio", "VSync", "Frame rate cap", "Anti-aliasing (MSAA)", "Anisotropic filter", "2D art filter",
     "Text language", "Button layout", "HUD", "Music volume", "Effects volume", "Rumble", "Debug menu (testers)",
-    "Restore display defaults", "Close"
+    "Skip intros", "Restore display defaults", "Close"
 };
 static const int fps_list[] = { 0, 30, 60, 72, 90, 120, 144, 165, 240 };
 #define NFPS ((int)(sizeof fps_list / sizeof fps_list[0]))
@@ -230,6 +230,9 @@ static void change(int row, int d)
         dbgmenu_set_enabled(!dbgmenu_enabled());
         pc_opt.debug_menu = dbgmenu_enabled() ? 1 : 2;
         break;
+    case R_SKIP:
+        pc_opt.skip_intros = !pc_opt.skip_intros;
+        break;
     }
 }
 
@@ -295,6 +298,9 @@ static const char *value(int row, char *buf, size_t n, const char **note)
     case R_DEBUG:
         *note = XB("Back + R3 opens it", "Back + R3 (F9 on the PC) opens it");
         return dbgmenu_enabled() ? "On" : "Off";
+    case R_SKIP:
+        *note = "power-on goes straight to the title screen (from the next start)";
+        return pc_opt.skip_intros ? "On" : "Off";
     }
     return "";
 }

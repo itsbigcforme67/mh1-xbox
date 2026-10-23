@@ -1,5 +1,6 @@
 /* lb_by163 - agent B 0x0053CF60-0x0053D220: shop_armor_question. */
 #include "lobby_s.h"
+unsigned char Warehouse_equip_stack();   /* its real return type: was implicitly int (tools/check_kr_returns.py) */
 extern s8 armor_shop_r;
 extern char User_data[];
 void armor_set_myArmor();

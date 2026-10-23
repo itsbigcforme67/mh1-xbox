@@ -144,6 +144,7 @@ void all_reset(void)
 void PatchLoadinDNAS_Init(void) {}
 int PatchLoadinDNAS_Main(void) { return 1; }
 
+static int intro_skipped;       /* skip_intros_tick (below): the title has been reached this power-on */
 /* ------------------------------------------------------------ boot */
 void rt_boot_init(void)
 {
@@ -158,6 +159,7 @@ void rt_boot_init(void)
     SchedulerInit();
     system_w[0x0B] = 0;
     Tsk_Execute((void *)Init_task, 0);
+    intro_skipped = 0;
     boot_active = 1;
     rt_log("boot: power-on sequence started (logos, title)");
     boot_done = 0;
@@ -204,11 +206,48 @@ static void fade_trace(const char *where)
 
 /* One ACRMain frame. Returns 1 once Game_task has been started (the boot
  * is over: the caller starts the village), else 0. */
+/* Skip intros (the settings menu / ini `skip_intros`, pc_opt): when Demo_task (select.bin, src/select/demo.c) shows its first
+ * logo, it goes straight to its title (mode 6) and Select_task starts as it would at the Capcom logo; the title then stays
+ * (its timer, which would run the logos and the opening movie again, is held). Init_task has already run by then (textures,
+ * sound, the card check and the options / G's card auto-load), so the title has what it needs. Both games; a power-on and
+ * the debug menu's soft reset alike (both start here through rt_boot_init). Agent E, 21 Oct 2026. */
+#include "../gfx/gfx_gl.h"
+extern u8 demo_w[];
+void Tsk_Execute(void *fn, int n);
+void rt_movie_stop(void);
+static int demo_task_running(void)
+{
+    extern u8 tcb_w[];
+    int i;
+    for (i = 0; i < 16; i++) {
+        u8 *t = tcb_w + 0x20 * i;
+        if (*(s16 *)t != 0 && *(void **)(t + 4) == (void *)Demo_task)
+            return 1;
+    }
+    return 0;
+}
+static void skip_intros_tick(void)
+{
+    if (!(pc_opt.skip_intros || getenv("RT_SKIP_INTROS")) || !demo_task_running())     /* (RT_SKIP_INTROS=1: the same, test aid) */
+        return;
+    if (!intro_skipped && demo_w[0] >= 1 && demo_w[0] <= 5) {
+        demo_w[0] = 6;                  /* the title */
+        demo_w[1] = 0;
+        rt_movie_stop();
+        Tsk_Execute((void *)Select_task, 1);
+        intro_skipped = 1;
+        rt_log("boot: intros skipped (skip_intros): straight to the title at tick %d", boot_ticks);
+    }
+    if (intro_skipped && demo_w[0] == 6 && demo_w[1] == 1)
+        *(s16 *)(demo_w + 0xA) = 0xF0;  /* the title stays */
+}
+
 int rt_boot_tick(void)
 {
     if (!boot_active)
         return 1;
     boot_ticks++;
+    skip_intros_tick();
     rt_log_boot_tick();
     rt_font_tick_begin();       /* font_stack_reset */
     rt_prims_reset();           /* ot_init */

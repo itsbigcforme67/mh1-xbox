@@ -44,7 +44,9 @@ f32 set00_st26_scale_tbl[2], set00_st41_scale_tbl[1][3], set00_st42_scale_tbl[2]
 /* set09 (src/game/set/set09.c) and the stage start positions (main) */
 f32 set09_st08_beetle_tbl[4][3], set09_st05_type09_pos[16], set09_st33_bird_tbl[2][3];
 u16 set09_st05_type09_ang[16];
-f32 stage_start_pos[88][3];
+#ifndef VERSION_MHG
+f32 stage_start_pos[88][3];     /* G: 92 stages, imported through config/mhg/pc_data.txt (rt_tables.c) */
+#endif
 
 /* eft01 (lobby.bin enemy_shadow_size_lb, D_610300): the lobby overlay is
  * not loaded; zeros */
@@ -87,7 +89,9 @@ static const struct {
     T(set09_st05_type09_pos, 0x677A40, 0x40),
     T(set09_st05_type09_ang, 0x677A80, 0x20),
     T(set09_st33_bird_tbl, 0x677AA0, 0x18),
+#ifndef VERSION_MHG
     T(stage_start_pos, 0x2F2620, 0x420),
+#endif
     T(st01_parts_id_tbl, 0x389B20, 4),
     T(st02_parts_id_tbl, 0x6784F0, 0x14),
     T(st03_parts_id_tbl, 0x678508, 0xC),

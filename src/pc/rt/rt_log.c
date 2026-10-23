@@ -283,13 +283,29 @@ static void put_line(char level, const char *text)
     xbox_serial_write(line, n + 1);         /* xemu: serial port (xbox_log.c) */
     fwrite(line, 1, (size_t)n + 1, stderr); /* hardware: mh1log.txt in the game's folder, which its network loader
                                              * sends to the laptop (the log file under logs\ never leaves the box) */
+    {   /* through to the disk now and then (xbox_log.c xbox_log_commit), and at once for warnings and errors */
+        static unsigned long last_commit;
+        void xbox_log_commit(FILE *f);
+        if (level == 'W' || level == 'E' || now_ms() - last_commit > 500) {
+            xbox_log_commit(stderr);
+            last_commit = now_ms();
+        }
+    }
 #endif
     if (lf) {
         fwrite(line, 1, (size_t)n + 1, lf);
+#ifdef MH1_XBOX
+        if (level == 'W' || level == 'E' || now_ms() - last_flush > 500) {
+            void xbox_log_commit(FILE *f);
+            xbox_log_commit(lf);        /* fflush + the kernel's cache to the disk (a crash keeps the lines) */
+            last_flush = now_ms();
+        }
+#else
         if (level == 'W' || now_ms() - last_flush > 3000) {
             fflush(lf);
             last_flush = now_ms();
         }
+#endif
     }
 }
 
@@ -376,6 +392,7 @@ void rt_log_game(int mode, int step, int stage, int quest, int result)
         if (mode == 2 && cur_mode != 2) {
             cur_quest = quest;
             rt_log("quest %d START (stage %d)", quest, stage);
+            { void rt_fpu_check(void); rt_fpu_check(); }
             last_quest_mode = 2;
         } else if (cur_mode == 2 && mode == 3) {
             rt_log("quest %d CLEAR (result code %d)", cur_quest, result);
@@ -479,7 +496,8 @@ static void raw_write(const char *s, size_t n)
     if (lfd >= 0)
         _write(lfd, s, (unsigned)n);
 #elif defined(MH1_XBOX)
-    (void)s; (void)n;
+    fwrite(s, 1, n, stderr);            /* stderr is the log file, unbuffered (xbox_log.c); and the UART in xemu */
+    xbox_serial_write(s, (int)n);
 #else
     if (lfd >= 0) {
         ssize_t r = write(lfd, s, n);
@@ -591,7 +609,15 @@ static void install_crash(void)
     signal(SIGABRT, win_abort);
 }
 #elif defined(MH1_XBOX)
-static void install_crash(void) {}
+static void install_crash(void) {}      /* the Xbox's catcher is src/pc/xbox/xbox_watch.c (SEH frame), it calls rt_log_crash */
+/* the crash report (game state, backtrace with the build's symbols, the last log lines) for xbox_watch.c */
+void rt_log_crash(const char *what, void *const *frames, int nf)
+{
+    if (in_crash)
+        return;
+    in_crash = 1;
+    crash_report(what, frames, nf);
+}
 #else
 static char altstack[65536];
 static void sig_handler(int sig, siginfo_t *si, void *uc)
@@ -854,4 +880,18 @@ void rt_log_shutdown(void)
         lf = NULL;
     }
     inited = 0;
+}
+
+/* the lines so far through to the disk at once (the Xbox's steps before a possible hang: xbox_ac97.c, audio_sdl.c) */
+void rt_log_commit(void)
+{
+#ifdef MH1_XBOX
+    void xbox_log_commit(FILE *f);
+    xbox_log_commit(stderr);
+    if (lf)
+        xbox_log_commit(lf);
+#else
+    if (lf)
+        fflush(lf);
+#endif
 }

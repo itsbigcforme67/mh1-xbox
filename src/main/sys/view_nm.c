@@ -28,7 +28,7 @@ void flmatMakeLookAt(void *, void *, void *, void *);
 void flSetRenderState(int, int);
 void flmatrLoad(void *, int);
 void flmatInvert(void *, void *);
-int calc_mat_angY(void *);
+unsigned short calc_mat_angY(void *);
 void flmatInit(void *);
 void flmatSetXYZ33(void *, f32, f32, f32);
 void flmatrMakeProjection(int, f32, f32, f32, f32);

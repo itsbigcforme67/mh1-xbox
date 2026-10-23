@@ -115,6 +115,10 @@ void rt_village_enter(void)
             s = *e ? e + 1 : e;
         }
     }
+    if (getenv("RT_QCLEAR_ALL")) {      /* test aid: the debug menu's "Mark all offline quests cleared" (both games) */
+        int rt_dbg_clear_all_quests(void);
+        rt_dbg_clear_all_quests();
+    }
     if (getenv("RT_QUEST_TRACE")) {     /* star level as the Elder computes it, and the cleared quests */
         int lb_get_quest_level(int);
         int Quest_clear_bit_ck(int), q;
@@ -154,6 +158,8 @@ void rt_village_enter(void)
                 extern void Set_userdata(void *);
                 if (!User_data[8] && getenv("RT_NAME"))     /* a test hunter without a save: the name the scripts give (RT_NAME), as rt_online does */
                     snprintf((char *)User_data + 8, 0x10, "%s", getenv("RT_NAME"));
+                if (!User_data[0] && User_data[8])  /* "slot in use", as user_data_copy sets it at character creation: without it a */
+                    User_data[0] = 1;               /* bed save of the test hunter loads as "no character data" (CardConld03) */
                 Set_userdata(player_work + 0xA00 * game_w[GWX(0xD1)]);
                 if (getenv("RT_QUEST_TRACE"))
                     fprintf(stderr, "rt_village: hunter name '%s' (save: '%s')\n", (char *)(player_work + 0xA00 * game_w[GWX(0xD1)] + 0x8D4), (char *)User_data + 8);
@@ -260,8 +266,9 @@ int rt_village_tick(void)
             for (k = 0; k < (rt_ver_mhg() ? 300 : 64); k++)
                 if (User_data[0x44 + 6 * k])
                     fprintf(stderr, " %d/%d/%d", User_data[0x45 + 6 * k], *(u16 *)(User_data + 0x46 + 6 * k), *(u16 *)(User_data + 0x48 + 6 * k));
-            fprintf(stderr, " | wear: w%d/%d/%x a %d %d %d %d %d\n", User_data[UDO(0x3CD)], *(u16 *)(User_data + UDO(0x3CE)), *(u16 *)(User_data + UDO(0x3D0)),
-                    User_data[UDO(0x3D2)], User_data[UDO(0x3D3)], User_data[UDO(0x3D4)], User_data[UDO(0x3D5)], User_data[UDO(0x3D6)]);
+            fprintf(stderr, " | wear: w%d/%d/%x a %d %d %d %d %d | time %u\n", User_data[UDO(0x3CD)], *(u16 *)(User_data + UDO(0x3CE)), *(u16 *)(User_data + UDO(0x3D0)),
+                    User_data[UDO(0x3D2)], User_data[UDO(0x3D3)], User_data[UDO(0x3D4)], User_data[UDO(0x3D5)], User_data[UDO(0x3D6)],
+                    *(u32 *)(User_data + (rt_ver_mhg() ? 0xC1C : 0x374)));     /* play time in seconds (the save screen's TIME, mcdisp_nm.c) */
             fprintf(stderr, "rt_village: tick %d event flags %04x %04x %04x %04x %04x %04x %04x %04x\n", tick, *(u16 *)(User_data + 0x24), *(u16 *)(User_data + 0x26),
                     *(u16 *)(User_data + 0x28), *(u16 *)(User_data + 0x2A), *(u16 *)(User_data + 0x2C), *(u16 *)(User_data + 0x2E), *(u16 *)(User_data + 0x30), *(u16 *)(User_data + 0x32));
         }

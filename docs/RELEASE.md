@@ -146,9 +146,25 @@ Rathian (quest 10, area 40) and the Kut-Ku quest 4 (area 36) [verified: build/re
 Scheduler's ran_suu(1), stick angle rounding, the monster order 0..19, game_core's order (hit_check after the
 monsters, body_hit before the effects), the game13 tick at the quest start.
 
-**Left, ranked:** (1) root motion of a new motion one tick late on the PC (RELEASE_G N-R1); (2) PS2 float rounding
-(N-R2, RT_FPU_PS2); (3) the Elder's tutorial window / "△ PUSH" not ported (tuto.c) [inferred for MH1: the same code];
-(4) sound-layer random draws a tick late; (5) the quest clock while loading (owner's call).
+**Second round (agent D, 18-20 Oct 2026; the same fixes as docs/RELEASE_G.md section 11 R-F8..R-F10):** PS2 float
+rounding is the default (RT_FPU_PS2=0 turns it off); joints built in move() as enemy_mk / player_mk do (Rathian
+241 -> 291, Kut-Ku 318 -> 319); the Elder's tutorial ("△ PUSH", lessons, pages, buttons blocked while open) ported
+[verified: MH1 quest 131 screenshots]. G's Dual Swords and pc_noptr fixes are G-only.
+
+**Third round (20 Oct 2026; RELEASE_G R-F13..R-F17, all shared code):** the wall pass after body_hit, CameraMove after
+it, the PS2's own sine / cosine / curve formulas and atan2f, the hunter's joints without the drawing offset. Rathian
+291 -> 365, Kut-Ku 319 -> 364; both now first differ in the red-health recovery tick (N-R9: a frame counter that also runs
+during PS2 area loads).
+
+**Fourth round (21 Oct 2026; RELEASE_G R-F21, R-F22, shared code):** monster necks turn on the host skeleton (Rathian,
+Rathalos, Lao-Shan) and motion blends mix matrices as flBlendMotionEx does; MH1 Rathian's later differences moved from
+~290 to 733 [verified: referee pc runs].
+
+**Fifth round (22 Oct 2026; RELEASE_G R-F25, shared):** the frame counter and the play time count every game tick in
+every mode (the PC's saves showed no play time). mh1_carve: gathering identical.
+
+**Left, ranked:** (1) float-step drifts after 200-300 ticks (RELEASE_G N-R7); (2) N-R9; (2) sound-layer random draws
+a tick late; (3) the quest clock while loading (owner, 18 Oct: left as is).
 
 ## 7. Cross-game audit (agent A, 18 Oct 2026; docs/audit_cross_game.md)
 Every G-only / MH1-only change since 13 Oct checked against MH1. For MH1:

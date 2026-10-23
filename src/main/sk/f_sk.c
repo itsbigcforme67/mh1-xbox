@@ -39,7 +39,11 @@ void sk_skb_kill(void);
 void sk_disp_palette_set(void);
 void sk_palette_cursor_set(void);
 void sk_set_yn_kigou_f(void);
+#ifdef __MWERKS__
 int sk_zenkaku_ck();
+#else
+signed char sk_zenkaku_ck();   /* the real return type (tools/check_kr_returns.py) */
+#endif
 static s16 sk_key_repeat(s16, s16);
 static void sk_init_mode(u8);
 void HardKeyboard_move(void);
@@ -741,6 +745,9 @@ static void sk_kbd_act_kill() {
 asm int palette_ng_sub(int pal, u8 *f, u8 *e)
 {
 #include "palette_ng_sub.inc"
+#ifndef __MWERKS__
+signed char sk_zenkaku_ck();   /* (declared before its first use) */
+#endif
 }
 #endif
 #endif

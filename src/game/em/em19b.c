@@ -29,18 +29,31 @@ typedef struct QUEST_W {
 #define ANG2DEG(a) (360.0f * (f32)(a) / 65536.0f)
 #define DEG2RAD(d) (2.0f * (3.1415927f * ((d) / 360.0f)))
 
-/* Keep the flier between the ground and 1000 above it. */
+/* Keep the flier between the ground and 1000 above it. G (game 0x614F30 .. 0x617120, every em19 site; agent D, 22 Oct
+ * 2026: referee g_basarios / g_monoblos) does not stop it at 1000: it pushes it down 20 a tick, so a climb of 30 a tick
+ * goes on at 10; and its em_fly05 / em_fly09 have no ceiling. */
+#if defined(VERSION_MHG) && !defined(__MWERKS__)
+#define EM19_TOP(em) ((em)->pos[1] = (em)->pos[1] - 20.0f)
+#define EM19_G_NOTOP 1
+#else
+#define EM19_TOP(em) ((em)->pos[1] = 1000.0f + (em)->x5AC)
+#define EM19_G_NOTOP 0
+#endif
 #define EM19_CLAMP_Y(em)                                    \
     if ((em)->pos[1] < (em)->x5AC) {                        \
         (em)->pos[1] = (em)->x5AC;                          \
     } else if ((em)->pos[1] > 1000.0f + (em)->x5AC) {       \
-        (em)->pos[1] = 1000.0f + (em)->x5AC;                \
+        EM19_TOP(em);                                       \
     }
 #define EM19_CLAMP_Y2(em)                                   \
     if ((em)->pos[1] <= (em)->x5AC) {                       \
         (em)->pos[1] = (em)->x5AC;                          \
     } else if ((em)->pos[1] > 1000.0f + (em)->x5AC) {       \
-        (em)->pos[1] = 1000.0f + (em)->x5AC;                \
+        EM19_TOP(em);                                       \
+    }
+#define EM19_CLAMP_Y_LOW(em)                                \
+    if ((em)->pos[1] < (em)->x5AC) {                        \
+        (em)->pos[1] = (em)->x5AC;                          \
     }
 
 extern u8 em19_act_tbl[];
@@ -475,7 +488,11 @@ static void em_fly05(EMW *em) {
             }
         }
         em_rate_add_g(em);
+#if EM19_G_NOTOP
+        EM19_CLAMP_Y_LOW(em);
+#else
         EM19_CLAMP_Y(em);
+#endif
         if (--em->work08 <= 0) {
             em->x05++;
             em19_next_act_set(em);
@@ -505,7 +522,7 @@ static void em_fly06(EMW *em) {
             em_char_set(em, 0x11, 0, 0);
             em->x388 = 0;
         } else if (em->pos[1] > 1000.0f + em->x5AC) {
-            em->pos[1] = 1000.0f + em->x5AC;
+            EM19_TOP(em);
         }
         break;
     case 2:
@@ -590,7 +607,11 @@ static void em_fly09(EMW *em) {
     case 1:
         em19_dir_adj(em);
         em19_rate_add_calc(em);
+#if EM19_G_NOTOP
+        EM19_CLAMP_Y_LOW(em);
+#else
         EM19_CLAMP_Y(em);
+#endif
         if (--em->work08 <= 0) {
             em->x05++;
             em19_next_act_set(em);
@@ -833,7 +854,7 @@ static void em_dm01(EMW *em) {
             em_char_set(em, 0xE, 0, 0);
             em_rate_clear(em);
         } else if (em->pos[1] > 1000.0f + em->x5AC) {
-            em->pos[1] = 1000.0f + em->x5AC;
+            EM19_TOP(em);
         }
         break;
     case 2:
@@ -919,7 +940,7 @@ static void em_dm04(EMW *em) {
             em_char_set(em, 0xE, 0, 0);
             em_rate_clear(em);
         } else if (em->pos[1] > 1000.0f + em->x5AC) {
-            em->pos[1] = 1000.0f + em->x5AC;
+            EM19_TOP(em);
         }
         break;
     case 2:
@@ -1057,7 +1078,7 @@ static void em_die01(EMW *em) {
             em_char_set(em, 0xE, 0, 0);
             em_rate_clear(em);
         } else if (em->pos[1] > 1000.0f + em->x5AC) {
-            em->pos[1] = 1000.0f + em->x5AC;
+            EM19_TOP(em);
         }
         break;
     case 2:
@@ -1156,11 +1177,41 @@ static void em_demo00(EMW *em) {
     }
 }
 
+#if defined(VERSION_MHG) && !defined(__MWERKS__)
+/* G game 0x617030 (agent D, 21 Oct 2026): act 6/1, quest 10046's scene: em_demo00 with G's flag 26 */
+static void em_demo01_g(EMW *em) {
+    em->x9E1 = 5;
+    em->x40C = 5;
+    switch (em->x05) {
+    case 0:
+        em->x05++;
+        em->x3F4 = 0;
+        em->x388 = 0;
+        em_char_set(em, 1, 0, 0);
+        em->x01 = 0;
+        em->x839 = 0;
+        break;
+    case 1:
+        if (Event_flag_ck(26, 1) == 1) {
+            em->x05++;
+            em->x01 = 1;
+            em19_next_act_set(em);
+        }
+        break;
+    }
+}
+#endif
+
 static void em_move06(EMW *em) {
     switch (em->x15) {
     case 0:
         em_demo00(em);
         break;
+#if defined(VERSION_MHG) && !defined(__MWERKS__)
+    case 1:
+        em_demo01_g(em);
+        break;
+#endif
     }
 }
 
@@ -1270,11 +1321,25 @@ void em19_main(EMW *em) {
         em->x839 = 0;
         break;
     }
-    if (quest_w.no == 0x8A && em->stg == 0x25 && Event_flag_ck(0xD) == 0) {
+#ifdef VERSION_MHG
+int rt_story_quest(void);
+#define STORYQ rt_story_quest()
+#else
+#define STORYQ quest_w.no
+#endif
+    if (STORYQ == 0x8A && em->stg == 0x25 && Event_flag_ck(0xD) == 0) {
         if (game_w.info_stop == 1 && em->mode != 6) {
             em19_act_set(em, 6, 0, 1);
         }
-    } else {
+    }
+#if defined(VERSION_MHG) && !defined(__MWERKS__)
+    else if (*(u16 *)((u8 *)&quest_w + 8) == 10046 && em->stg == 70 && Event_flag_ck(26) == 0) {
+        if (game_w.info_stop == 1 && em->mode != 6) {      /* G (game 0x617510) */
+            em19_act_set(em, 6, 1, 1);
+        }
+    }
+#endif
+    else {
         switch (em->x734) {
         case 3:
             if (em->x839 != 0) {

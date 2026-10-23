@@ -1,5 +1,9 @@
 /* em15 draft */
+int Event_flag_ck(int);
 #include "em.h"
+unsigned char Em_Dmg_Sys();   /* its real return type: was implicitly int (tools/check_kr_returns.py) */
+unsigned char em15_fly_adjy2();   /* its real return type: was implicitly int (tools/check_kr_returns.py) */
+unsigned short em15_senkai_target();   /* its real return type: was implicitly int (tools/check_kr_returns.py) */
 #include "game.h"
 #include "fl.h"
 #include "pl.h"
@@ -4386,12 +4390,78 @@ static void em_move05_005CAD90(EMW *em, EM15W *w) {
     }
 }
 
+#ifdef VERSION_MHG
+/* G game 0x5F58C0 (written from the asm; agent D, 21 Oct 2026): act 6/0, Khezu's scene in quest 10046. It sits at
+ * the cave spot, runs three scene motions, then waits for the demo's flag 26 and turns normal. (G's act 6 no 0 is this
+ * scene; MH1's is em_demo04.) */
+static void em15_g_scene(EMW *em) {
+    em->x9E1 = 5;    /* (G 0x9D9; PC keeps the MH1 EMW layout, as em19 em_demo00) */
+    em->x40C = 5;
+    switch (em->x05) {
+    case 0:
+        em->x05++;
+        em->x388 = 2;
+        em->pos[0] = 12015.0f;
+        em->pos[1] = 1500.0f;
+        em->pos[2] = 12300.0f;
+        em->ang[0] = 0;
+        em->ang[1] = 0x8000;
+        em->ang[2] = 0;
+        em_char_set(em, 103, 0, 0);
+        em->work08 = 240;
+        break;
+    case 1:
+        if (--em->work08 > 0)
+            break;
+        em->x05++;
+        em_char_set(em, 110, 0, 0);
+        em->work08 = 300;
+        break;
+    case 2:
+        if (--em->work08 > 0)
+            break;
+        em->x05++;
+        em_char_set(em, 117, 0, 0);
+        em->x388 = 0;
+        break;
+    case 3:
+        if (em->x194 != 0)
+            break;
+        em->x05++;
+        em_char_set(em, 51, 0, 0);
+        break;
+    case 4:
+        if (em->x194 != 0)
+            break;
+        em->x05++;
+        em_char_set(em, 54, 0, 0);
+        break;
+    case 5:
+        if (em->x194 != 0)
+            break;
+        em->x05++;
+        em_char_set(em, 1, 0, 0);
+        break;
+    case 6:
+        if (Event_flag_ck(26) == 1) {
+            em->x05++;
+            em15_to_normal(em);
+        }
+        break;
+    }
+}
+#endif
+
 static void em_move06_005CAE00(EMW *em, EM15W *w) {
     u8 temp_a2;
 
     temp_a2 = em->x15;
     switch (temp_a2) {                              /* irregular */
     case 0:
+#ifdef VERSION_MHG
+        em15_g_scene(em);
+        break;
+#endif
         em_demo04_005C9F20(em, w);
         break;
     case 1:
@@ -4468,6 +4538,26 @@ void em15_main(EMW *em) {
         }
     }
     em_mode_timer_sub(em);
+#ifdef VERSION_MHG
+    /* G (game 0x5F6BF0, written from the asm; agent D, 20 Oct 2026): type 1 only counts its hunger down; the rest by
+     * difficulty (6: with thirst) instead of MH1's quest numbers 0x28 / 0x29 */
+    if (em->x8C2 != 1) {
+        void game_func_00547C20(EMW *em);
+        if (em->type == 1) {
+            game_func_00547C20(em);
+        } else if (game_w.x2E == 6) {
+            em_hinshi_ck(em, 0.2f);
+            em_thirst_ck(em);
+            em_hungry_ck(em);
+            em_sleep_ck(em);
+        } else {
+            em_hinshi_ck(em, 0.2f);
+            em_hungry_ck(em);
+            em_sleep_ck(em);
+        }
+    }
+    if (0)
+#endif
     if (em->x8C2 != 1) {
         q = quest_w.no;
         switch (q) {
@@ -4628,6 +4718,13 @@ void em15_main(EMW *em) {
         }
         break;
     }
+#ifdef VERSION_MHG
+    /* G (game 0x5F7440, written from the asm; agent D, 21 Oct 2026): its scene in quest 10046 */
+    if (quest_w.no == 10046 && em->stg == 70 && Event_flag_ck(26) == 0) {
+        if (game_w.info_stop == 1 && em->mode != 6)
+            em15_act_set(em, 6, 0, 1);
+    } else
+#endif
     if (em->x839 != 0) {
         em_cmd_ck(em);
         em->x839 = 0;

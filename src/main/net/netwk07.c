@@ -1,6 +1,9 @@
 /* SLPM_654.95 0x0026CB60-0x0026CBDC: Net_put_overlay_data .. Net_kb_input_sub. See netwk_nm.c. */
 #include "g_alias.h"
 #include "types.h"
+#ifndef __MWERKS__
+signed char SoftKeyboard_move();   /* (declared before its first use) */
+#endif
 
 typedef struct NETCW {
     u8 x00;
@@ -120,7 +123,11 @@ int release_texture();
 int McActInit();
 int Load_overlay();
 int kbdExecServer();
+#ifdef __MWERKS__
 int SoftKeyboard_move();
+#else
+signed char SoftKeyboard_move();   /* the real return type (tools/check_kr_returns.py) */
+#endif
 int SoftKeyboard_pos_set();
 int SoftKeyboard_set();
 int DispSoftkeyboard();
