@@ -95,6 +95,27 @@ always been a struct field type or a lost field.
 
 ## Current assignments (update when they change)
 
+### Hand-over, 23 Oct 2026 (start here)
+Main = GitHub (all pushed, full check passes). No agent running. Agent branches A, B, D, E fully merged.
+- **Unmerged: agent-C (G online), 30 WIP commits ahead of main**, not full-checked: the PC G online build reaches G's
+  town on our server (docs/network.md 3.12, docs/agents/agent-C.md round 3). Next: TWO=1 tools/test_online_g.sh (two G
+  PCs), the real G disc meeting a PC G client (PCSX2, launcher already patches G), G rooms/hunt, Xbox. Merge only after
+  a full check; it touches shared net code (cnlbsg.c, cnlbs.c, cnlbs01.c, rt_data.c, rt_game.c, rt_online.c).
+- **Owner's Xbox (G) state:** the laptop serves the newest G (dist/xbox/MHG). Owner still has to run
+  `XBOX_IP=192.168.1.165 tools/xbox_upload.sh --loader` once (the loader now also sends the save:
+  build/xbox/saves/, tools/xbox_save_to_pc.py). New in that build, untested on hardware: freeze watchdog, crash
+  catcher, AC97 time-outs, Skip intros (settings menu, Back + L3), save flush, G save slot 0xE00, sharpness, reward menu.
+- **Open G Xbox bugs** (docs/RELEASE_G.md GB5 / section 15): black screen on the 2nd start after Back+Start (hang
+  before "audio: driver"; step logging + watchdog should name it next time), supply-box cursor in quests (not
+  reproduced: needs an owner photo), Forest area 1 fog "thick" on the Xbox (PC matches the real G:
+  build/ref_fog/s21_0x4000.png; check the nv2a fog path / an xemu shot). Debug features 4 (input recorder) and 5
+  (on-screen info line) on hold.
+- **Owner preferences now:** moderate token use; one heavy job at a time; no emulator unless > 2.5 GB free and no other
+  emulator running (the owner's other projects run xemu/pcsx2 too: never touch theirs); hidden emulators with an empty
+  /dev/input. Laptop 192.168.1.105/.166, Xbox 192.168.1.165, loader server on :8765 (build/xbox/serve.pid).
+- **Ideas queued:** PS2 + Xbox + PC side by side on real hardware (docs/DECISIONS.md), English: Freedom (owner supplies
+  ULUS-10084 ISO in disc/mhfr/, one text_map.py run), the referee's next items (RELEASE_G section 11).
+
 As of 13 Oct 2026, evening. A-F's MH1 polish round merged (save box, boot/village music, loading
 screens + faster Xbox loads, rumble, packaging ./mh1, RELEASE.md, US survey) plus agent B's G
 bring-up (VERSION=mhg rebuild 7 OK, 7.5% matched, docs/mhg.md).
