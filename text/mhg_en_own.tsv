@@ -86,3 +86,288 @@ lobby:0x603640	52df332d	t	It's a bird every hunter knows, right? But... that col
 lobby:0x6036A0	cb539f1d	t	That strange-colored Kut-Ku I saw... Armor in that color would look lovely.
 lobby:0x6036E0	f677fbd6	t	Or were my eyes playing tricks?
 lobby:0x603C00	3b0354b2	t	Press the L1 button to open or close the List of all players in town.
+# --- town talk 2
+lobby:0x603C60	718aedda	t	In the List, you can check other people's quest status and settings at a glance.
+lobby:0x603CC0	6aa37f68	t	In the Player List, people on the same quest as you are shown in orange.
+lobby:0x603D60	ef5dfad1	t	Use Edit Comment in the menu to write a comment about yourself.
+lobby:0x603E10	b0829487	t	That's just basic manners for a hunter, right?
+lobby:0x603FF0	2aed5c57	t	Oh, and on half-price day, the combination shop does combination requests at half price, too.
+lobby:0x604140	fa9c025c	t	When that happens, use the keyboard's Set Recipient feature.
+lobby:0x604190	c70b9b51	t	You can send chat to just your quest members or to one friend.
+lobby:0x6041E0	d978d5cb	t	When you chat only to your quest members, the text is green. When you chat to just one person, the text is yellow.
+lobby:0x604260	c7d20910	t	It's easy to set: the L2 button on the soft keyboard, or the Tab key on a USB keyboard. Give it a try!
+lobby:0x604460	4e86ba1e	t	I hear really huge monsters have been seen in what hunters call the top-rank quests.
+lobby:0x6044D0	8b048ccb	t	Hunters seem to call them King Size.
+lobby:0x604520	179c2861	t	Prey bigger than anything you've ever seen... I have a feeling something would happen if you hunted one!
+lobby:0x604580	20be31f9	t	King Size, only in top-rank quests... I have a feeling something would happen if you hunted one!
+lobby:0x604C90	a59fcee7	t	Fishing, cooking meat... I hear they teach you all the basics a hunter needs to know there.
+lobby:0x604D00	150779e1	t	They say hunting from the town is tougher than in the village, so maybe you should practice in the village first.
+lobby:0x604D70	150779e1	t	They say hunting from the town is tougher than in the village, so maybe you should practice in the village first.
+lobby:0x604DE0	773ec7ff	t	I hear the kind Village Chief teaches you the hunting basics step by step.
+lobby:0x605060	ec309fad	t	A giant dragon!? If this hunter's story is true, we're in trouble!
+lobby:0x605270	76c2a2d1	t	I hear upgrading a melee weapon raises its Sharpness, up to five levels.
+lobby:0x6052C0	f209be38	t	Rumor has it a sixth level of Sharpness appears some other way than upgrading. Is that true?
+lobby:0x605320	00149daa	t	Upgrading a melee weapon raises its Sharpness up to five levels. Rumor says a sixth appears some other way. Is that true?
+lobby:0x605430	3d251411	t	I hear some wyverns come in rare colors.
+lobby:0x605470	dc1fed4b	t	And it seems the key to meeting those monsters is hunting big monsters! Exciting news, huh?
+lobby:0x6054F0	f0eb73db	t	To meet monsters in rare colors, you have to hunt big monsters. Pretty good tip, huh!?
+lobby:0x605A00	6b3fe60b	t	You beat that giant dragon? For the third time!? Are you really that good a hunter?
+lobby:0x606100	0e4e8054	t	Hey, how's it going? As a ticket maniac, I did some digging, and it looks like this inn gives out three kinds of tickets.
+lobby:0x606170	fb03dd0c	t	The Rook Room gives a Silver Ticket. The Bishop Room gives a Gold Ticket.
+lobby:0x6061D0	73e187cf	t	What's the last one? I'm doing my best to find out. ...Do you know?
+lobby:0x606230	ea18b581	t	Silver and Gold. I really want to know about that last ticket... ...Do you know?
+lobby:0x608670	5f5d46d0	t	What!? You beat it already?? ...Then let me sing! La la la♪ You're famous now♪ The hero of our town♪ I can't wait to see the hero fall♪
+lobby:0x609410	e362a204	t	If you buy Storage Expert at the hunter's shoppe in the tavern...
+lobby:0x609450	580bd40e	t	your Item Box holds 100 more items! That's handy! The Storage Expert book is on my wish list, too!
+lobby:0x6094C0	acbc6aad	t	The Storage Expert book: your Item Box holds 100 more. It's on my wish list, too!
+lobby:0x609E30	f3489229	t	I heard you're taking on top-rank quests. Out of respect for your hard work, I'll be honest with you...
+lobby:0x60B550	11e70225	t	I hear you're taking on top-rank quests. Out of respect for your hard work, let me confess... my big secret...
+lobby:0x60C1B0	96befe13	t	Hey! Welcome! Today's the day of the big sales event!
+lobby:0x60C1F0	a5c9d18e	t	Everything in the market is half-price! Oh, wait! At the combination shop, it's requests that are half-price! Rob us blind!
+lobby:0x60C260	a073dfb2	t	Everything in the market is half-price today! Combination requests are half-price too! Go ahead, rob us blind!
+lobby:0x60D2D0	ad464dcf	t	Today's hunter tip: Sharpness. Upgrade your melee weapon and its Sharpness rises, and so does its power. Useful, huh?
+lobby:0x60DBA0	c4b5c394	t	Oh... What a mess. With the giant dragon back, I can't send a letter to my sister.
+lobby:0x60DBF0	fab63ac3	t	And I wrote to her about the top-rank Hunter Ranks, too...
+lobby:0x60DC40	da5627e9	t	In the top rank, I hear Hunter Rank goes all the way up to 30. But how many hunters can really stand up to G-rank monsters?
+lobby:0x60DCD0	e3e54cd6	t	In the top rank, I hear Hunter Rank goes all the way up to 30. I wonder what gear you can make from G-rank monster materials?
+lobby:0x60E110	f8cea30e	t	When you fought that rocky giant dragon, I was nearby.
+lobby:0x60EA80	9fba9b89	t	Master! I hear you can record how many monsters you've slain, and even their size, in the Monster List!!
+lobby:0x60EAE0	2885739f	t	Hunters call recording the size a Monster Record, it seems.
+lobby:0x60EB40	0ecaecfe	t	Measuring a monster like a prize fish! Can you believe anyone does that with such scary monsters?
+lobby:0x60EBB0	844395fc	t	Master, why don't you try it? A Monster Record. I hear you can start right away if you buy monster info.
+lobby:0x60EC10	cd3feae2	t	I hear you can record how many monsters you've slain, and even their size, in the Monster List!!
+lobby:0x60EC60	4780990b	t	I hear you can start right away if you buy monster info.
+lobby:0x60ED10	198cf299	n t	They say there's an Azure Rathalos!
+lobby:0x60ED50	2f80a35e	n t	And, and, they say there's a Pink Rathian, too!
+lobby:0x60EDA0	4a671a18	t	Do you think it's true!? What do you think?
+lobby:0x60EDD0	a5f04f96	t	Master! The info I got from the Hell Brothers says there are monsters with different body colors!
+lobby:0x60EE40	9aa28192	n t	An Azure Rathalos. A Pink Rathian. Can they really exist!?
+lobby:0x60EEA0	d3953fcc	t	Master!! I got more info from that weird pair, the Hell Brothers!
+lobby:0x60EEF0	988a6ef2	t	They say that in top-rank quests, there's sometimes a Yian Kut-Ku outbreak!
+lobby:0x60EF40	08f8860f	n t	When you reach your limit, put the Felyne Cart Ticket from the supplies in the Delivery Box, and the quest counts as a success!
+lobby:0x60EFC0	f0ce64db	n t	When there's a Kut-Ku outbreak, slay as many as you can, and when you hit your limit, deliver the Felyne Cart Ticket! Got it?
+lobby:0x60F350	9f342d4c	t	Master!! Driving off that giant dragon, the one like a rocky mountain... Honestly, you're invincible!
+lobby:0x60F3B0	25632c26	t	I heard you can get rare materials from that giant dragon's back...
+lobby:0x60F400	e22e32ab	t	If that's true, you could make gear unlike anything from the giant dragons before!
+lobby:0x60F470	370649bb	t	Driving off that giant dragon, the one like a rocky mountain... Master, you really are invincible!
+lobby:0x60F520	0dedfcca	t	Haven't seen you before. Did you come here to be a hunter, too?
+lobby:0x60F560	f3867144	t	All sorts of people live in this big town. Listen to what they say, and you'll pick up useful info.
+lobby:0x60FB40	f101b847	t	I hear the materials from Lao-Shan Lung, like its Shell, Scale, Claw, Horn and Plate, make powerful gear! I'm so jealous!
+lobby:0x6100C0	fa4bdbc3	n t	A True Black Dragon Spear! Maybe you could make a weapon like that!?
+lobby:0x610160	fa4bdbc3	n t	A True Black Dragon Spear! Maybe you could make a weapon like that!?
+lobby:0x6101A0	28d208cb	t	Is it true? You slew that rocky giant dragon that attacked the fortress!?
+lobby:0x610320	d4937a9d	n t	It seems you need a material called Lao-Shan Ruby. They say it's very rare. Can anyone really get one?
+lobby:0x610BC0	3d89ed02	t	It looks like you have good friends with you.
+lobby:0x610BF0	6a080bbb	t	Tell me how you fought sometime, will you?
+lobby:0x610D30	08f8cd52	t	Kirin, cloaked in lightning, calls down thunder at will. Don't you want to see one, just once?
+lobby:0x611090	24369544	t	I still can't believe it. You've driven off Lao-Shan Lung again and again...
+lobby:0x6110E0	e0765698	t	When we first met here, I never imagined you'd grow into such a great hunter...
+lobby:0x612A10	b9722054	t	Did you know some armor skill types are really unusual?
+lobby:0x612A50	c047fa1c	n t	Torso Up doubles the skill points on your body armor.
+lobby:0x612AB0	2e4fdbce	t	Wear several, and your body armor's points go 2x, 3x, 4x, 5x!
+lobby:0x612B10	a451c5f3	n t	Torso Plus adds points to the skill types on your body armor.
+lobby:0x612B60	71abd323	t	Both are great deals, so try them when you get body armor with good skill types!
+lobby:0x612BC0	0ceb0e3e	n t	Me, I recommend both Torso Up and Torso Plus!
+lobby:0x612C10	bf85fac9	t	That's what my papa says, and he's a top hunter who's slain lots of wyverns!
+lobby:0x612C60	e6f69b53	n t	Have you heard of the skill type called Glutton?
+lobby:0x612CA0	841db15a	t	I hear it gives you skills that help with Stamina!
+lobby:0x612CE0	50fb7d08	t	Something about feeling fuller when you eat cooked meat and such... Papa told me. Is it true?
+lobby:0x612D50	c5fb94d7	n t	I hear the Glutton skill type gives you skills that help with Stamina. Papa told me... Is it true?
+lobby:0x612E00	ee38cb2a	n t	It's a skill that makes you take less damage than usual when you're hit! Was it called Divine Protection?
+lobby:0x612E70	0125cbcf	t	It doesn't always work, but it's reassuring! There sure are some strange skills.
+lobby:0x612EC0	bafdc166	n t	The Divine Protection skill seems to reduce damage now and then.
+lobby:0x613250	b743894f	t	You beat that rocky giant dragon!?
+# --- town talk 3
+lobby:0x6132D0	ae9c0e14	n t	There's a skill called Sharpness +1. It's a special skill that adds one level to your Sharpness gauge.
+lobby:0x613340	7882ee99	t	But I don't really know which skill type activates it...
+lobby:0x613390	221efb0a	t	But I bet you can find out!
+lobby:0x6133C0	5bce5ae3	n t	With the Sharpness +1 skill, you can add one level to your Sharpness gauge!
+lobby:0x613420	ce8f0971	t	I don't know which skill type activates it... But I bet you can find out!
+lobby:0x613660	6b98e494	t	Do you know the secret of making Swords? Depending on how you make them, you can create Dual Swords, a pair of blades!
+lobby:0x6136D0	b3940d8d	t	With no shield you can't guard, but you'd get in so many more hits...
+lobby:0x613730	4fa89101	t	And I heard pressing R1 lets you unleash a fierce attack for a while, until your Stamina runs out.
+lobby:0x6137A0	31c769c1	t	Wow, just thinking about it gets my heart racing!
+lobby:0x6137D0	6b98e494	t	Do you know the secret of making Swords? Depending on how you make them, you can create Dual Swords, a pair of blades!
+lobby:0x613D60	db7eae7f	t	Forest Elder: monster parts. Swamp Elder: ores. Jungle... I forget! Try it yourself.
+lobby:0x613E10	db7eae7f	t	Forest Elder: monster parts. Swamp Elder: ores. Jungle... I forget! Try it yourself.
+lobby:0x613F10	61b3217a	t	You've slain Lao-Shan Lung twice, and you're aiming even higher.
+lobby:0x6142F0	15cbd8d8	t	Time to use my Platinum Ticket, saved over a year at the Guest House...!!
+lobby:0x614350	07e754c3	n t	What I'm after is the Barbaroi Blade! How about it? Coolest name ever, right?
+lobby:0x6143A0	0c7b2adf	t	The Platinum Ticket I saved up from a whole year at the Guest House!
+lobby:0x6143E0	76ea96b4	n t	What I'm after is the Barbaroi Blade! How about it? Now you want one too, don't you?
+lobby:0x614F20	5ee6810a	t	Right now I'm dying to go on a top-rank quest!
+lobby:0x614F60	db41a9a5	t	In top-rank quests, supplies aren't guaranteed, and you might not even start from camp!
+lobby:0x614FC0	13be5943	t	You can't get that kind of thrill anywhere else! I'm shaking with excitement!
+lobby:0x615020	e13e0ba1	t	What? Am I allowed to go on top-rank quests? Ouch, that hurts! Leave me alone!
+lobby:0x615080	db41a9a5	t	In top-rank quests, supplies aren't guaranteed, and you might not even start from camp!
+lobby:0x6150E0	13be5943	t	You can't get that kind of thrill anywhere else! I'm shaking with excitement!
+lobby:0x6153D0	d4876ca4	t	I mean, I wouldn't fight Fatalis even if it killed me.
+lobby:0x615410	d0c75eb8	t	Now that the Black Dragon is gone, my life as a hunter is just beginning! Hunting rules!!
+lobby:0x6155B0	8f40ad42	t	They say it's a different color from the giant dragons seen before. I'd have loved just one look at it!
+lobby:0x6156A0	d158c99f	t	But you're the one who really saved this town. Thanks! You did a great job!
+lobby:0x615FF0	83ff2ab2	t	Dohahaha! Top-rank quests sure are tough!
+lobby:0x616030	e8c0d4d8	t	After all, there's no guarantee your supplies will arrive.
+lobby:0x616060	e06ce090	t	And they make you fight G-rank brutes like that! What a classy touch!
+lobby:0x6160B0	5f94946c	t	Well, this great Red Ogre plays it safe and always carries a Farcaster! Dohahaha!
+lobby:0x616110	8863967f	t	Top-rank quests should keep me from getting bored until HE shows up! Dohahaha!
+lobby:0x616F20	85b21af8	t	Diablos has its sneaky tricks, like charging at you with its two horns, but
+lobby:0x616FE0	96d80e0a	t	Bahahaha! Top-rank quests sure are tough!
+lobby:0x617020	f4b00805	t	After all, they often drop you somewhere crazy and make you start the quest from there.
+lobby:0x617080	215a8887	t	And they make you fight G-rank brutes like that! What a classy touch!
+lobby:0x6170D0	b58f6ab0	t	Well, this great Black Ogre plays it safe and always carries a Farcaster! Bahahaha!
+lobby:0x617130	fcfb7ff0	t	Top-rank quests should keep me from getting bored until HE shows up! Bahahaha!
+lobby:0x619790	d26e7aa1	n t	Honestly, this boy! I keep telling him to pick the Alchemy skill, study combining more deeply, and hunt smarter!
+lobby:0x619890	89bda59d	n t	A modern man should use the Alchemy skill to study combining more deeply and hunt smarter, right!?
+lobby:0x619950	32726311	n t	Do you know the Guard +1 skill?
+lobby:0x619980	00060d88	t	I hear it shortens the opening after you guard! Though with some attacks, it seems to make no difference.
+lobby:0x619A30	6a3b1b5b	n t	With the Guard +1 skill, I hear the opening after you guard can be shorter! If you hear anything useful, please tell me!
+lobby:0x619AF0	c854f4c7	n t	The Razor Sharp skill! It makes Sharpness last longer! With that, you could just attack, attack, attack!
+lobby:0x619CC0	ba0e44f7	n t	It's called the Honeycomber! An upgraded version of the Bowgun called the Flechette Gun!
+lobby:0x619F50	6bc6b525	t	You really are strong! Beating that giant dragon three times...
+lobby:0x619FA0	f3ced246	t	You must be really skilled.
+lobby:0x619FD0	03748426	n t	I know! Here's a tip for you. I hear there's a skill called Rapid Fire.
+lobby:0x61A020	8545f8a8	t	They say it's a skill that lets you fire a Bowgun without reloading.
+lobby:0x61A060	04316605	t	A hunter as skilled as you could surely give it a try.
+lobby:0x61A0B0	7ea8578e	n t	I hear the Rapid Fire skill lets you fire a Bowgun without reloading. I'm sure you could give it a try.
+lobby:0x61A930	8cf43b64	t	It seems that in what they call top-rank quests, once in a great while, you get dropped into a special place.
+lobby:0x61A9A0	798bdeab	t	You can find rare items in that special place. It's a bit of a rumor among hunters.
+lobby:0x61AA10	fe7399f5	t	A special place you can reach, very rarely, in top-rank quests...
+lobby:0x61AA50	5566f12f	t	What kind of items do you think you can get there?
+lobby:0x61B0B0	e4730fdb	t	What's more, one combination of Bowgun ammo makes several shots, like 5 to 10.
+lobby:0x61B110	cbd8a01b	t	If you want to be a top Gunner, you have to combine your own ammo!
+lobby:0x61B160	95dbdd59	t	Bowgun ammo, see... One combination makes several shots, like 5 to 10.
+lobby:0x61B1C0	cbd8a01b	t	If you want to be a top Gunner, you have to combine your own ammo!
+lobby:0x61B210	824dcd08	t	How about that? Combining is really simple, and really deep, isn't it?
+lobby:0x61B6F0	95dbdd59	t	Bowgun ammo, see... One combination makes several shots, like 5 to 10.
+lobby:0x61B750	08b13752	n t	And by combining ammo, you can also make Flaming S, Water S and Thunder S. Amazing, huh!?
+lobby:0x61B7C0	95dbdd59	t	Bowgun ammo, see... One combination makes several shots, like 5 to 10.
+lobby:0x61B820	08b13752	n t	And by combining ammo, you can also make Flaming S, Water S and Thunder S. Amazing, huh!?
+lobby:0x61C270	771b9e36	t	Hey, I heard! You slew the Cephadrome in the desert. That's amazing!
+lobby:0x61C2C0	d1ede84c	t	But we're not slacking either. We just got in new armor called Silver Metal Boots!
+lobby:0x61C330	1487ff93	t	Their Defense is second to none! Be sure to buy some! ...Now then, again.
+lobby:0x61C380	b7531196	t	Whoa! You slew Rathalos!? I'm really amazed!
+lobby:0x61C3D0	5592b08a	t	Of course, we've got new armor in, too. Dark Metal Boots and Pink Metal Boots!
+lobby:0x61C430	bcc2c4fd	t	Both are strong leg gear for fighting wyverns. Pink is for women only, so I can't sell it to men! ...Now then, again.
+lobby:0x61C4A0	9972f60e	t	Oh, wow! The hero who beat Monoblos is back! Well then, rob me blind!
+lobby:0x61C500	5b8f0656	t	I'll make a special deal on our secret top armor, Chrome Metal Coil and Chrome Metal Boots!
+lobby:0x61C560	50cb0baa	t	This is amazing armor you can only get here, so take good care of it! ...Now then, again.
+lobby:0x61CCC0	cf721efc	t	I finally got a letter from my brother! He couldn't write because he was chasing bigger monsters.
+lobby:0x61CD30	d2f909fd	t	It's in his letter: Familiar monsters aren't always the same size! Today's prey is a thrilling size! ...he says.
+lobby:0x61CDB0	b14f02ea	t	I don't care how big monsters are... What a pain my brother is.
+lobby:0x61CE00	da7fad32	t	I finally got a letter from my brother. It says monsters aren't all the same size! ...and so on.
+lobby:0x61CE70	b14f02ea	t	I don't care how big monsters are... What a pain my brother is.
+lobby:0x61CEC0	d45466f2	t	His letter says now he's after monsters even bigger than wyverns. Honestly! I give up.
+lobby:0x61D410	da5fd897	t	If only the legendary hunter who vanished would show up... He'd use Herbs and Potions and slay those things.
+lobby:0x61D490	e57ba22a	t	You need healing items when you fight carnivores. Sigh, if only the legendary hunter who vanished were here...
+lobby:0x61DA90	a142de33	t	They saw a poisonous bird wyvern near the Swamp!
+lobby:0x61DAC0	894d7d22	t	The Village Chief says you'll need Antidotes to stand up to that monster.
+lobby:0x61DB10	67773ba8	t	Sigh... If only the legendary Gunner who vanished years ago were here.
+lobby:0x61DB60	1f8966d9	t	If only the legendary hunter who vanished would show up, he'd use Antidotes and slay that poisonous monster...
+lobby:0x61F220	36f62c40	t	But you know, I think giving her a rare fish you caught would work too.
+lobby:0x61F280	770c954a	t	I heard that once in a while, you can catch a fish that shines like gold...
+lobby:0x61F2C0	57167a52	n t	If you're after golden fish, get a certain bait. You can make it by combining a Burrowing Bee and a Firefly.
+lobby:0x61FA40	9a3b4571	t	Look at my buddy. All worked up over one letter.
+lobby:0x61FF90	32baa62d	t	Hm... What do you want? Oh, you again. Coming to me for info... Hunting's tough, huh?
+# --- town talk 2
+# --- town / village talk 4
+lobby:0x620000	4185ca70	t	Speaking of tough, getting Bowgun ammo costs a lot of money, too.
+lobby:0x620050	0b05dccd	t	When that happens, make your ammo by combining. Using up one set of materials should get you several shots. Trust me and try it.
+lobby:0x6200E0	113401a0	t	But how long do you plan to keep hunting? I'd quit before you get badly hurt.
+lobby:0x620140	41fa3162	t	If you want ammo cheaply, make your shots by combining.
+lobby:0x620740	4bf7d3e8	n t	Crag S, Clust S, Flaming, Water and Thunder S. Hm... How do I know so much?
+lobby:0x6207C0	703089af	n t	Crag S, Clust S, Flaming, Water, Thunder S. You can combine special ammo, too.
+lobby:0x620970	9c50be21	t	The weapon shop sometimes gets new equipment. When you feel you've grown, go talk to them.
+lobby:0x620A20	edd7bb67	t	He'll even sell you rare items this village doesn't have.
+lobby:0x620A60	12ae0c11	t	And the trader sometimes comes to this village with newer items. When you feel you've grown, go talk to him.
+lobby:0x620AE0	75042f7a	t	The town trader and our weapon shop: talk to them when you feel you've grown.
+lobby:0x620B40	2129361e	t	Don't forget to take the materials you carve from monsters to the blacksmith.
+lobby:0x620BA0	67a90b0b	t	The blacksmith uses those materials to Create equipment and Upgrade weapons for you.
+lobby:0x621060	3d3958de	t	I hear some of the gear you can put together in this village has really useful skills.
+lobby:0x6210C0	46f0e4f0	n t	One is Razor Sharp. They say it doubles how well a melee weapon holds its Sharpness.
+lobby:0x621110	b39c87bf	n t	The other is Normal S Up. They say it raises the power of a Bowgun's Normal S.
+lobby:0x621610	cb412bc5	t	You came at a good time. I just got new items in from the town.
+lobby:0x621740	bc1af37a	t	You're starting to look like a real hunter. I just got new items in from the town.
+lobby:0x621790	c6a958ee	t	I especially recommend the Cool Drink. It helps you stand the heat, a must in the desert or the volcano.
+lobby:0x621850	2dbf6500	t	I heard you slew Monoblos. Amazing! Oh, speaking of amazing, I just got the best items in from the town.
+lobby:0x621950	d51d6639	n t	And from the Storage Expert series, the Book of Power! Plus lots of useful tools! ...Now then, again.
+lobby:0x6219C0	448bc5e6	t	Is it true you slew Rathalos!? All right, then I'll show you items as good as you are.
+lobby:0x621B10	668b9b6a	t	Perfect timing! I just got new items in from the town.
+lobby:0x621B70	149540a0	n t	Today I recommend Storage Expert! The best item there is: your Item Box holds 100 more. This time it's the Book of Skill!
+lobby:0x6222B0	ebaea631	n t	Have you ever heard of a place called the Training School?
+lobby:0x622690	e36e08d0	t	Hm. So you beat Monoblos... I hate to say it, but as a hunter, you're better than me. ...I admit defeat.
+lobby:0x622700	924c22b2	t	It must have been a tough one. I ran into one once myself, and I still can't forget that horrible single horn...
+lobby:0x622790	730bf92d	t	What!? The one-horn you slew was sand-colored? I think the one I met was different... Am I mistaken?
+lobby:0x622810	7f9a2010	t	The one-horn you slew and the one I met... Somehow our stories don't match...? Is it some mistake?
+lobby:0x6228F0	ab7335f3	t	Press the R1 button to switch your attack style and press on with a storm of combos! But watch your Stamina while you do.
+lobby:0x623500	a14e7e12	t	Though they say a disaster like no other is coming to this village... That huge shadow I saw in my dream... surely it was...
+lobby:0x623580	4fbb5bdd	t	Oh, sorry! Old men do talk to themselves! Fine job slaying Monoblos, Hero of Kokoto!
+lobby:0x623620	84d53912	t	So the villagers wouldn't panic, I had quietly made up my mind to stop it all by myself.
+lobby:0x623800	0f0aa3a3	t	Lastly, I give you this blade, the most treasured of all my treasures! Well done, Hero of Kokoto!
+lobby:0x623C00	577df495	t	Of course, you'll start from Hunter Rank 1 like everyone else. I'm looking forward to seeing how far you go!
+lobby:0x623C70	2d23e1a3	t	The way out to quests is on the right side of this tavern. Don't get lost!
+lobby:0x6245D0	9b453640	t	You've grown even more. You're just one step from the top-rank quests, only for the very best hunters.
+lobby:0x624650	45e7729d	t	We hunters gain experience and hone our gear to earn our daily bread. But in doing so, we have also opened up forbidden ground.
+lobby:0x6246F0	80f284e9	t	In top-rank quests, your foes are even stronger. Is there anyone who can stand up to them, and even beat them...?
+lobby:0x624840	342d4b11	t	You repelled Lao-Shan Lung's return and climbed this high! Well done!!
+lobby:0x624880	9ada0ffb	t	I recognize you as one of the very best hunters, and allow you to take on top-rank quests.
+lobby:0x6248E0	1409d00d	t	However! In the top-rank quests from here on, the Guild cannot promise you its full support. Listen well to what I explain now.
+lobby:0x624960	213303f5	t	First, supplies. In the top rank, there's no guarantee we can deliver your supplies as before.
+lobby:0x624B80	663c0f53	t	I'm expecting great things from you!!
+lobby:0x624BB0	1705c941	t	Ho ho ho. I recognize you as one of the very best hunters, and allow you to take on top-rank quests.
+lobby:0x624C10	1bc82561	t	However, in the top-rank quests from here on, the Guild cannot promise you its full support.
+lobby:0x624CD0	78839aeb	t	Always face them ready to risk your life. I'm expecting great things from you!!
+lobby:0x625280	4f98de03	t	Driving off Lao-Shan Lung again and again...
+lobby:0x6254C0	ef8d6c6a	t	Hoo hoo! It seems you've slain at least 20 of every wyvern.
+lobby:0x625600	a5a816d9	t	Heh heh heh. Today is the market's half-price sale. I'll take combination requests at half price.
+lobby:0x625660	10ef1966	t	Heh heh heh! Could it be you've succeeded at every combination?
+lobby:0x6256B0	61ba52e7	t	I'm surprised you know so much. Perhaps I should entrust you with this book.
+lobby:0x625710	cef8da91	n t	The secret of the Book of Combos series: Book of Combos G: Alchemy. Even deeper combining that makes something from nothing awaits you. Use it with care.
+lobby:0x625AE0	942c17a3	t	By freely combining the parts of your armor, you can gain special abilities called Skills.
+lobby:0x625B50	962aa0b3	t	Head, body, arms, waist, legs: the points of one skill type on each part add up, and the skill activates.
+lobby:0x625BC0	834c9717	t	You can always check your Skills on the Status screen. *Mumble*...
+lobby:0x625CA0	942c17a3	t	By freely combining the parts of your armor, you can gain special abilities called Skills.
+lobby:0x625D10	962aa0b3	t	Head, body, arms, waist, legs: the points of one skill type on each part add up, and the skill activates.
+lobby:0x625FB0	f36d1bfa	t	Buy Monster Info, and you can record how many monsters you've slain and their size, too. *Mumble mumble*...
+lobby:0x626480	942c17a3	t	By freely combining the parts of your armor, you can gain special abilities called Skills.
+lobby:0x6264F0	962aa0b3	t	Head, body, arms, waist, legs: the points of one skill type on each part add up, and the skill activates.
+lobby:0x626560	834c9717	t	You can always check your Skills on the Status screen. *Mumble*...
+lobby:0x6265B0	b760466c	t	Head, body, arms, waist, legs: the skill points of the same skill type in each armor part are added up to activate Skills.
+lobby:0x626620	834c9717	t	You can always check your Skills on the Status screen. *Mumble*...
+lobby:0x627400	515513b9	t	Hm? This is the materials shop. The hunters have done well, so I have finer materials than usual. Take a look.
+lobby:0x627480	06c0d654	t	Hm? This is the materials shop. Seems today is half-price day, so I've made my shop half-price too.
+lobby:0x629DD0	7d32d80b	n t	How to get Melynx Tools? That's a secret, gob!
+lobby:0x629E10	4b0cebc0	t	I won't tell you it's a Catburglar, a Pawprint Stamp, a Platinum Ticket, and my favorite secret ingredient, gob!
+lobby:0x62A560	e5ddc794	t	Today, as a special treat, let me tell you about an extremely rare stone you seldom see.
+lobby:0x62B570	2985e721	t	Today, as a special treat, I'll tell you about an extremely rare material you seldom see.
+lobby:0x62C380	14fefb85	t	I feel like a big dragon is coming, meow! How do I know? Don't underestimate a Felyne's nose, meow!
+lobby:0x62C3F0	e5f6af3b	t	Do you know this, meow? If you climb onto a giant dragon's back and press the ~B00 button, you can carve materials, meow. Did you know, meow?
+lobby:0x62C4A0	766e079e	t	Climb onto a giant dragon's back and press the ~B00 button to carve materials, meow. Try it next time, meow.
+lobby:0x62C570	fa3fdb40	t	In every room but the Pawn Room, you get a ticket at your 10th, 20th, 30th, 40th, 50th, 75th and 100th stay, meow.
+lobby:0x62C5F0	ebf2f162	t	After 100 you don't get any, but you might get one by joining a certain event, meow. Got it, meow?
+lobby:0x62C660	57d49165	t	Paid rooms stop giving tickets after 100 stays, meow. But you might get one by joining a certain event, meow.
+lobby:0x62CB40	90238b60	n t	Add one more item to Pearl Hide, Albino Prime Cut and Dragonite Ore, and you can make a Khezu S Helm or Khezu S Cap, meow!
+lobby:0x62CC30	244559b0	n t	Add one more item to Rathian Ruby, Rathian Scale and Rathian Carapace, and you can make a Rathian S Helm or Rathian S Cap, meow!
+lobby:0x62CD20	59866ec2	n t	Add one more item to Rathalos Ruby, Rathalos Carapace and Rathalos Webbing, and you can make Rathalos S Mail or a Rathalos S Vest, meow!
+lobby:0x62CE00	ae7ead11	n t	Add one more item to Hellfire Stone, Crimson Horn and Monoblos Spine, and you can make Monoblos S Mail or a Monoblos S Vest, meow!
+lobby:0x62CEF0	c8a74f82	n t	Add one more item to Pure Crystal, Novacrystal and Dragonite Ore, and you can make Steel S Vambraces, meow!
+lobby:0x62D0B0	0590cfcb	n t	Add one more item to Vespoid Razorwing, Vespoid Carapace and Vespoid Wing, and you can make a Vespoid S Tasset, meow!
+lobby:0x62D190	a8f5bb53	n t	Add one more item to Hornetaur Razorwing, Hornetaur Carapace and Hornetaur Head, and you can make a Hornet S Coat, meow!
+lobby:0x62D270	b911c09b	n t	Add one item to Gravios Hardshell, Gravios Steel Wing and Gravios Shell to make Gravios S Greaves, Gravios S Leggings and more, meow!
+lobby:0x62D360	7f494d5d	n t	Add one item to Plesioth Scale+, Plesioth Dorsal Fin and Monster Broth to make Plesioth S Greaves, S Leggings, more, meow!
+lobby:0x62D450	c62526b3	n t	Add one more item to Hellfire Stone, Master's Skull and Ancient Potion, and you can make a Skull S Face, meow!
+lobby:0x62D520	87b52ae3	n t	Add one more item to a Platinum Ticket and a Hellfire Stone, and you can make the Barbaroi Blade, meow!
+lobby:0x62D5E0	5f5bc3d7	n t	Add one more item to Velociprey Hide+, Velociprey Scale+ and a Guild Ticket, and you can make the Drome Bite Dagger, meow!
+lobby:0x62D6C0	73403c8a	n t	Add one more item to Rathian Ruby and Rathian Carapace, and you can make Sieglinde G, meow!
+lobby:0x62D780	d9d0fe4c	n t	Add one more item to a Guild Ticket and a Novacrystal, and you can make the Sleepy Bear, meow!
+lobby:0x62D840	3624283e	n t	Add one more item to Rathalos Ruby and Rathalos Carapace, and you can make Siegmund G, meow!
+lobby:0x62D900	1061a5d2	n t	Add one more item to Silver Rathalos Wingtalon, Gypceros Coin and Basarios Coin, and you can make the Master Blade, meow!
+lobby:0x62D9D0	d05af3cd	n t	Add one more item to Silver Rathalos Shell, Kut-Ku Coin and Cephadrome Coin, and you can make the Master Hammer, meow!
+lobby:0x62DAA0	daffca04	n t	Add one more item to Silver Rathalos Tail, Rathalos Coin and Rathian Coin, and you can make the Master Lance, meow!
+lobby:0x62DB70	4601b519	n t	Add one more item to Hard Monster Bone, Cephadrome Coin and Basarios Coin, and you can make the Master Sword, meow!
+lobby:0x62DC40	d4a4e1af	n t	Add one more item to Vespoid Carapace, Vespoid Abdomen and Hornetaur Carapace, and you can make the Honeycomber, meow!
+lobby:0x62DD20	6a73c76b	n t	Add one more item to Inferno Sac, Kut-Ku Coin and Gypceros Coin, and you can make the Master Bowgun, meow!
+lobby:0x642570	268d4150	-	Name:
+lobby:0x6425A0	403eb4ea	-	Comment:
+lobby:0x6425E0	b69876f5	-	Players now:
+lobby:0x642600	41ae43ac	-	  Max players:
+# --- town / village talk 4

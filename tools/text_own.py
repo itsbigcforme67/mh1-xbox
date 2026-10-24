@@ -11,7 +11,7 @@ Japanese at each id from the owner's disc (disc/mhg) only to compute its crc32 (
 holds no game text) and to check the line: printf conversions and ~ codes must be the Japanese's, and the English must
 fit the box the Japanese was laid out for:
   - talk lines (t): after the word wrap at 22 columns, no more rows than the Japanese takes in the talk window
-    (11 two-byte characters a row) plus one;
+    (11 two-byte characters a row) plus one, and no more than 7 unless the Japanese has more;
   - other lines: as many lines as the Japanese, each no wider than the Japanese line (one two-byte character = two
     columns; the English is drawn proportionally, so equal column counts leave room).
 Lines that fail are reported (with the id only) and still written with `add` unless --strict. An id already in the
@@ -25,6 +25,7 @@ sys.path.insert(0, HERE)
 import text_map as tm  # noqa: E402
 
 OWN_TOKEN_RE = tm.OWN_TOKEN
+TALK_MAX_ROWS = 7          # the talk window shows 7 rows (G elder pages, agent B 20 Oct); more only where the Japanese has more
 
 
 def load_g():
@@ -69,7 +70,7 @@ def fit(jb, en, flags):
         wrapped = tm.own_wrap(en)
         if max(len(r) for r in wrapped.split(b"\n")) > tm.TALK_ROW:
             return "a word longer than the talk row"
-        if talk_rows(wrapped) > talk_rows(jb) + 1:
+        if talk_rows(wrapped) > min(talk_rows(jb) + 1, max(talk_rows(jb), TALK_MAX_ROWS)):
             return "talk: %d rows, Japanese %d" % (talk_rows(wrapped), talk_rows(jb))
         return ""
     jl, el = jb.split(b"\n"), en.split(b"\n")
