@@ -2137,3 +2137,45 @@ Result: G matched 19.8% -> 20.1% (4124 -> about 4230 functions), all in src/lobb
   only counts what a G online build weakened (build/pc/.gsyms).
 - **Lesson:** never edit tools/build_pc.sh while a build or full_check runs (sh reads the script as it goes: "Syntax
   error: } unexpected" and the steps after it fail).
+
+## G online, round 5 (24 Oct 2026): guild hall NPCs, the counter, a room, two G PCs start a quest
+All on the PC G online build (`ONLINE=1 tools/build_pc_mhg.sh`) against tools/mh1_testserver.py; G-only code behind
+VERSION_MHG / MHG_ONLINE / MHG_NET / LBNET_G (MH1 builds unchanged). Test: `ROOM=1 tools/test_online_g.sh` (passes, ~9 min).
+- **Hall (and town) NPCs placed and drawn:** G's Lb_move_common (generated) walked em_work with G's 0xA00 stride; the PC
+  keeps MH1's 0xA10 (EMW_STRIDE), so only slot 0 ran. FIXUPS entry in tools/mhg_gonl.py.
+- **The counter knew no registered hunter:** get_questLevelNum online (G 0x542680 -> G's table 0x542A60, case 0/1 = event
+  flag 4) returned 0 in lb_guild_g.c. Then the quest sheet crashed: G's To_EnterPlaza memsets LobbyInfo 0x2F94 bytes, the
+  split sized it MH1's 0x1308 and the next host table (D_00528A80) was wiped; LobbyInfo / PlazaInfo / quest_title now at
+  G's sizes in config/mhg/pc_data.txt (quest_title: the event quest headers' clear wiped pl_light_tbl, the quest load
+  crashed in light_init). Found with gdb watchpoints (scratch scripts build/C/hall5/run.sh, run2.sh, g*.gdb).
+- **The room, step by step** (each found by running, server log + gdb):
+  1. Lb_guild's online steps (7-9 recruit / rule sheet / make room, 15-18 own room / leave) written from G's asm in
+     lb_guild_g.c; generated lb_rule_seet_set, lb_guild_make_room. pNet is shared with G's own lobby code in this build
+     (G's Lbc_set_prim writes +0..0xF): the counter's pNet fields at G's offsets (PN_SUB 0x22, PN_BUSY 0x2D, PN_LEVEL 0x32).
+  2. Room list: G keeps the room count where MH1 keeps the lobby count (CN_ROOM_COUNT); G's 6403 handler fills the room
+     table (gnet_6403_both); G's room getters (status +0x1E, users, password +0x1F, entry users +0x1A) in cnet_g.c.
+  3. Sends whose split names are other G code: 6407 (the "RoomCreate" send is G's 630D), 660C (the "RoomSetFinish" send
+     is G's 6881), the rule reads (CNRR maps MH1 rows to G rows by code; the G PS2 build keeps GV), 6406 (the
+     "RoomEntry" send is G's 6305); 6415 (G only) before 660C; 6605 / 6607 answers swapped back.
+  4. MH1 abs (lb_cli) functions that pass MH1 callback addresses or read MH1 cw offsets replaced by generated G code:
+     Lbs_MatchEntry(Cancel), Lbs_RoomExit, Lbs_InRoomCheck, Lbs_MatchStart, To_EnterRoom, Lbc_SetRoomRule,
+     Lbc_GetRoomRule / Lbc_GuestReadRoom (HAND-FIXED: m2c took their 0x294A4-byte stack buffer for a stack argument),
+     Lbs_GetRoomInfo (G's records start 4 bytes before the split's RoomInfo), CallBack_Result_Lobby_GuestRoomMember,
+     lb_select_trans / lb_select_set_data (HAND-FIXED).
+  5. G burst slots are 0x28 bytes (MH1 0x24): the rule read's room (burst[5].x14) and the match info state (burst[9]).
+  6. Departure (lb_village_nm.c, G 0x598678): owner / member on G's cw offsets; CW_OFS now maps MH1 cw 0x32BE..0x35CF to
+     G (+0xC48C: owner flag 0x32C5 = G 0xF751, ready count, server message).
+  7. Match: G's quest number select_w+0xD0 and the game rule string at G's layout (rt_online.c matched()).
+  8. Server (tools/mhg_lobby.py): G's 640B answer puts the room's maximum first (G compares the members with it).
+- **Town name tags' white square = G's texture slots:** generated G code used G's mem_tex numbers (G 0x180 = MH1 0x157);
+  tools/mhg_gonl.py maps them (tex_slots), 18 files. The tag shows the weapon icon now [checked: shot].
+- **Seen working** [checked: ROOM=1 test + shots]: counter -> quest level -> quest card -> recruit yes -> rule sheet (2
+  hunters) -> room 1 (rules, 6415 `01 00 02 01` as the PS2) -> BOB joins at the left counter -> BOB ready, ANNA departs
+  -> match start (ANNA, BOB) -> both load quest 1 (Forest and Hills camp) and see each other (net_peer co-op session).
+- **Open:** the quest sheet's contract fee shows "z" without a number; G's real 640B / 6403 extra fields unknown (0);
+  event quests (cw+0xB97) untested; mh1-server (mcs relay) with two G PCs not tried (the test server's net_peer session
+  is used); the hunt itself / return to the town not checked for G; several lb_cli abs functions still MH1 code in the G
+  online build (lbc_in_lobby_00_05, Lbs_CheckMatchingFlag, CallBack_Result_SendUserMiniData ...: m2c failed on them).
+- **Lesson:** in the G online build a name can mean three things: MH1's C, G's code at the split's address of that name
+  (often other code), or an abs MH1 translation with MH1 cw / pNet / callback addresses. When G code misbehaves, check
+  each call's target with `nm -l build/mhg/pc/mhview_g_online` first.

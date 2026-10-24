@@ -960,3 +960,18 @@ Both games unless marked.
   **Now:** src/lobby/gonl/gonl_g.c defines CallBack_Result_SearchUserPlace_o as a call of G's function. **Why:** the
   generated alias depended on the previous build's objects (a plain G build then an online one failed to link in
   full_check). **To revert:** the commit "G online: CallBack_Result_SearchUserPlace_o by hand" on agent-C.
+
+## G online, round 5 (agent C, 24 Oct 2026)
+- **Replaced (G online build only):** MH1's lb_cli functions (abs translations) Lbs_MatchEntry, Lbs_MatchEntryCancel,
+  Lbs_RoomExit, Lbs_InRoomCheck, Lbs_MatchStart, Lbs_GetRoomInfo, Lbs_GetClassAdd, To_EnterRoom, Lbc_SetRoomRule,
+  CallBack_Result_Lobby_GuestRoomMember, and MH1's lb_select_trans / lb_select_set_data / Lbc_GetRoomRule /
+  lb_guild_make_room / lb_rule_seet_set. **Now:** G's own code, generated (src/lobby/gonl/gen; some HAND-FIXED). **Why:**
+  the MH1 copies pass MH1 callback addresses and read MH1 cw offsets / record layouts; in G they crashed or never advanced.
+- **Renamed:** gen files gn___cnet_SendReq_RuleListHeadWord / RuleNumOfChoice / gn__cnet_CallBack_Result_RoomRuleCaption /
+  RoomSetFinish -> gn_gonl_SendReq_6316 / 6317 / gn_gonl_cb_BurstFail_5ABA90 / gn_gonl_cb_PlazaCount_5ABE90 (G_RENAME).
+  **Why:** under the MH1 names they replaced the PC's rule reads / burst callbacks the MH1-flow cnet code uses.
+- **Dropped:** lb_guild_g.c's `return 0` for get_questLevelNum online (the online table was "not ported"). **Now:** G's
+  table (generated lobby_func_00542A60, MHG_ONLINE). **Why:** the counter treated every hunter as unregistered.
+- **Changed (G builds):** include/lbsys_g.h CW_OFS maps MH1 cw 0x32BE..0x35CF to G (+0xC48C). **Why:** G's owner flag /
+  ready count / server message sit there (checked against G's lb_guild_make_room, lb_basic_master); identity before.
+- **To revert:** the agent-C commits of 24 Oct 2026 "G online (PC): ..." (eight commits from "Lb_move_common walks em_work").

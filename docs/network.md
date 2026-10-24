@@ -1100,7 +1100,7 @@ sending it: harmless, and closer to the original if it was the login's answer.
   "hostleave" through the relay (the room's leader leaving) is a case to repeat on mcs before step 2: there, drop-outs
   of the owner were tested (above), not of the room leader (slot 0) with three players left.
 
-### 3.12 Monster Hunter G online (agent C, 18-23 Oct 2026; GB7, in progress)
+### 3.12 Monster Hunter G online (agent C, 18-24 Oct 2026; GB7, in progress)
 
 G (SLPM-65869) uses the same lobby-server protocol as MH1 (same framing, login, obfuscation, `LOCKROCK`, sequence
 rules; `cnLBS_LoginLobbyServer`, `mmbbc_encode`, `tcp_init`, `create_server_table` are identical), with a command table
@@ -1220,9 +1220,32 @@ lists the other in stage 0x4C at the start position]. Found on the way, all G-on
 - The split's names of the TU chat sends are crossed: G 0x5B08B0 is cnLBS_Send_ChatBinaryTU (row 0x102 = 670D, as MH1),
   G 0x5B0690 is G's whisper (`u8, id, text, len, callback`, row 0xFD, the u8 sent last). A newcomer gets the others'
   status as 670D -> 670E: type 3 (stage), type 10 (`s16 x, s16 z, u8 dir, u8 ?, u8 stage pair, u8`; lobby 0x59AB90).
-- The PC G client reaches the guild hall (stage 0x4D) through the town's door; its counter is not usable yet (G's
-  ladies are not placed; the talk answers as for an unregistered hunter).
-Next: the guild hall counter, a room and a quest between two G PCs, the PS2 G disc with a PC, the Xbox.
+- The PC G client reaches the guild hall (stage 0x4D) through the town's door (24 Oct: its NPCs are placed and drawn,
+  the counter works, see below).
+State (24 Oct): **two G PCs make a room at the guild hall counter, join it and start a quest together** [checked:
+`ROOM=1 tools/test_online_g.sh`, test server, both load quest 1 at the Forest and Hills camp and see each other]. What G
+does differently in the room (all read from G's code, then seen on the wire):
+- The room count of the town is kept where MH1 keeps the lobby count; the per-room reads are 6403 / 6404 / 640B / 640D /
+  6405 / 650A (val 0xBB). G's room records (G 0x6DE120, 0x15C bytes; the split's RoomInfo symbol is 4 bytes in) hold
+  the quest (+0), members (+6), maximum (+8, from 640B's FIRST u16), status (+0x16, 3 = recruiting), password (+0x17),
+  message (+0x5B). G's lobby-client room table entries (0x164 bytes) keep the status at +0x1E, the password at +0x1F,
+  6403's four u16 at +0xA.., 640B's five at +0xE / +0x12 / +0x16 / +0x14 / +0x18 (in wire order), 6412 / 6506 (match
+  entry users) at +0x1A / +0x1C.
+- The rule codes 6601-6610 mean what they mean in MH1 (6603 rule count, 6607 choices of a rule, 6601 / 6602 / 660F name /
+  password / message permission, 6604 caption, 6606 current, 6605 permission, 6608 / 660E choice name / control; 6609 /
+  660A / 660B / 6610 / 660C set); only the table rows moved. The split's names of several G senders are other G
+  functions (its "RoomCreate" send is the 630D request, "RoomSetFinish" the 6881 request, "RoomEntry" a 6305 send).
+- Room create 6407 (u16 room), then the rules, then **6415** (`u16 room, u8 quest low, u8 quest high, u8 attribute,
+  u8 attribute`; G 0x5BC860, e.g. `0001 01 00 02 01`) before 660C, then 640A / 6403 / 6412 and 6509 (property: hunter
+  value << 16 | quest). Joining: **6406 `u16 room, obfuscated password`** (G 0x5BBF60), then 640A / 6403 / 6412.
+- Ready / depart: a member squares at the departure spot (6504 1, G dialog 103), the owner squares (G dialog 91 when
+  everyone is ready, 89 otherwise) and starts the match (6508); then 6910 / 6911-6917 / 6915 / 6914 / 6916 / 6002 as MH1.
+The PC parts: src/lobby/cnet/cnet_g.c (G's room handlers, getters and sends), G's lobby functions generated or hand-fixed
+in src/lobby/gonl/gen (tools/mhg_gonl.py: G_RENAME for G code under MH1 names, FIXUPS, tex_slots), lb_guild_g.c (the
+counter's online steps), lb_village_nm.c (departure), config/mhg/pc_data.txt (LobbyInfo / PlazaInfo / quest_title at G's
+sizes). Details and the list of fixes: docs/agents/agent-C.md "G online, round 5".
+Next: two G PCs on mh1-server's mcs relay (the game's own in-hunt protocol), the hunt and the return to the town, the
+PS2 G disc with a PC, the Xbox.
 
 ## 4. Run it
 
