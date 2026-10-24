@@ -182,6 +182,13 @@ void em_erase(EMX *w) {
 #endif
 
 #if !defined(G_PART)
+#if defined(VERSION_MHG) && !defined(__MWERKS__)
+/* G (sub_main 0x4EA570): the subspecies 36 / 50 of kinds 2 / 7 are drawn the same way */
+#define EMU_KIND_27(k) ((k) == 2 || (k) == 7 || (k) == 36 || (k) == 50)
+#else
+#define EMU_KIND_27(k) ((k) == 2 || (k) == 7)
+#endif
+
 int enemy_mv(EMX *w) {
     switch (w->state) {
     case 0:
@@ -207,13 +214,13 @@ int enemy_mv(EMX *w) {
         w->prim->pos[2] = w->pos[2];
         if (w->prim != 0) {
             if (w->draw_mode == 1.0f) {
-                if (w->kind == 2 || w->kind == 7) {
+                if (EMU_KIND_27(w->kind)) {
                     add_prim(ot1, w->prim, 0x20, 1);
                 } else {
                     add_prim(ot1, w->prim, 0x20, 0);
                 }
             } else {
-                if (w->kind == 2 || w->kind == 7) {
+                if (EMU_KIND_27(w->kind)) {
                     add_prim(ot0, w->prim, 0x40, 1);
                 } else {
                     add_prim(ot0, w->prim, 0x40, 0);

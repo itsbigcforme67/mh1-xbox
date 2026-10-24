@@ -252,7 +252,11 @@ void em20_fly_act_set(EMW *em, u16 no, u16 arg) {
             if (em->x84D != 0) {
                 em->x828 = 3;
                 if (game_w.x2E == 6) {
+#if defined(VERSION_MHG) && !defined(__MWERKS__)
+                    if (em->kind == 6 || em->kind == 38) {      /* G: subspecies 38 acts as 6 */
+#else
                     if (em->kind == 6) {
+#endif
                         em->x829 = 1;
                     } else {
                         em->x829 = 0;

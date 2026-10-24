@@ -247,6 +247,12 @@ static void eft15_m(EFTW *ew) {
         switch (em->kind) {
         case 0xB:
         case 1:
+#if defined(VERSION_MHG) && !defined(__MWERKS__)
+        case 37:        /* G: the subspecies take their originals' lists (game 0x575320) */
+        case 41:
+        case 42:
+        case 49:
+#endif
             if (!((em->char0 == 0x41E && em_frame_check2(em, 0, 110.0f)) ||
                 (em->char0 == 0x41B && em_frame_check2(em, 0, 160.0f)))) {
                 ew->mode++;
@@ -257,6 +263,10 @@ static void eft15_m(EFTW *ew) {
             break;
         case 0x11:
         case 0x16:
+#if defined(VERSION_MHG) && !defined(__MWERKS__)
+        case 47:
+        case 48:
+#endif
             if (!((em->char0 == 0x41E && em_frame_check2(em, 0, 110.0f)) ||
                 (em->char0 == 0x452 && em_frame_check2(em, 0, 110.0f)))) {
                 ew->mode++;
@@ -267,6 +277,10 @@ static void eft15_m(EFTW *ew) {
             break;
         case 0xE:
         case 0x1A:
+#if defined(VERSION_MHG) && !defined(__MWERKS__)
+        case 43:
+        case 44:
+#endif
             if (!((em->char0 == 0x457 && em_frame_check2(em, 0, 112.0f)) ||
                 (em->char0 == 0x41E && em_frame_check2(em, 0, 110.0f)) ||
                 (em->char0 == 0x41B && em_frame_check2(em, 0, 160.0f)))) {
@@ -277,6 +291,9 @@ static void eft15_m(EFTW *ew) {
             joint = 0x22;
             break;
         case 2:
+#if defined(VERSION_MHG) && !defined(__MWERKS__)
+        case 36:
+#endif
             if (!(em->char0 == 0x408 && em_frame_check2(em, 0, 66.0f))) {
                 ew->mode++;
                 ew->be_flag = 0;
@@ -285,6 +302,18 @@ static void eft15_m(EFTW *ew) {
             joint = 0x33;
             break;
         case 0xF:
+#if defined(VERSION_MHG) && !defined(__MWERKS__)
+        case 45:
+            /* G: a second animation (0x41E at frame 78) also fires it */
+            if (!((em->char0 == 0x451 && em_frame_check2(em, 0, 66.0f)) ||
+                (em->char0 == 0x41E && em_frame_check2(em, 0, 78.0f)))) {
+                ew->mode++;
+                ew->be_flag = 0;
+                return;
+            }
+            joint = 0x22;
+            break;
+#endif
             if (!(em->char0 == 0x451 && em_frame_check2(em, 0, 66.0f))) {
                 ew->mode++;
                 ew->be_flag = 0;
@@ -293,6 +322,9 @@ static void eft15_m(EFTW *ew) {
             joint = 0x22;
             break;
         case 7:
+#if defined(VERSION_MHG) && !defined(__MWERKS__)
+        case 50:
+#endif
             if (!(em->char0 == 0x3EF && em_frame_check2(em, 0, 4.0f))) {
                 ew->mode++;
                 ew->be_flag = 0;

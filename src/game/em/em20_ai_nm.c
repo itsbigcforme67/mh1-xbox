@@ -1,5 +1,13 @@
 /* em20 draft */
 #include "em.h"
+#ifdef VERSION_MHG
+/* G's subspecies: 38 acts as 6 (Yian Kut-Ku), 39 as 20 (Gypceros) in the checks G changed (agent D, 23 Oct 2026) */
+#define EM20_K6(em) ((em)->kind == 6 || (em)->kind == 38)
+#define EM20_K20(em) ((em)->kind == 20 || (em)->kind == 39)
+#else
+#define EM20_K6(em) ((em)->kind == 6)
+#define EM20_K20(em) ((em)->kind == 0x14)
+#endif
 unsigned char em20_fly_adjy2();   /* its real return type: was implicitly int (tools/check_kr_returns.py) */
 unsigned short em20_senkai_target();   /* its real return type: was implicitly int (tools/check_kr_returns.py) */
 #include "game.h"
@@ -509,7 +517,7 @@ void em20_dmg_to_normal(EMW *em, s16 a, s16 b) {
     if (em->x39A % 100 < 0xA) {
         em20_to_normal(em, 0, 0);
         em->x839 = 0;
-        if (em->kind == 0x14) {
+        if (EM20_K20(em)) {
             em20_act_set(em, 3, 0x1E, 1);
             return;
         }
@@ -1083,7 +1091,7 @@ static void em_act18_005ED780(EMW *em, EM20W *w) {
         em->x88B = 0;
         em_range_set(em, 1);
         Em_Suimin_Start(em);
-        if (em->kind == 6) {
+        if (EM20_K6(em)) {
             em->work08 = 0x1518;
             return;
         }
@@ -1096,7 +1104,7 @@ static void em_act18_005ED780(EMW *em, EM20W *w) {
         }
         break;
     case 2:
-        if (em->kind == 6) {
+        if (EM20_K6(em)) {
             em_sleep_hp_add(em, 1, (s16)(0.35f * (f32) em->x792), 9);
         } else {
             em_sleep_hp_add(em, 1, (s16)(0.4f * (f32) em->x792), 5);
@@ -1240,7 +1248,7 @@ static void em_act21_005EDC90(EMW *em, EM20W *w) {
         em_range_set(em, 1);
         em->x88B = 0;
         Em_Sleep_Start(em);
-        if (em->kind == 6) {
+        if (EM20_K6(em)) {
             em->work08 = 0x1518;
             return;
         }
@@ -1253,7 +1261,7 @@ static void em_act21_005EDC90(EMW *em, EM20W *w) {
         }
         break;
     case 2:
-        if (em->kind == 6) {
+        if (EM20_K6(em)) {
             em_sleep_hp_add(em, 1, (s16)(0.35f * (f32) em->x792), 9);
         } else {
             em_sleep_hp_add(em, 1, (s16)(0.4f * (f32) em->x792), 5);
@@ -4246,8 +4254,12 @@ static void em_atk26_005F3CE0(EMW *em, EM20W *w, int idx) {
         break;
     case 2:
         if (em_frame_check(em, 0, (f32)(u32)gero_tbl[idx][0]) != 0) {
-            if (em->kind == 6) {
+            if (EM20_K6(em)) {
                 Shell08_set_ang(em, 0x22, 3, 0, gero_tbl[idx][1], 0);
+#ifdef VERSION_MHG
+            } else if (em->kind == 39) {        /* G: the second shot form */
+                Shell08_set_ang(em, 0x22, 2, 1, gero_tbl[idx][1], 0);
+#endif
             } else {
                 Shell08_set_ang(em, 0x22, 2, 0, gero_tbl[idx][1], 0);
             }
