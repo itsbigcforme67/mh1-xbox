@@ -2392,6 +2392,45 @@ block_136:
                                 temp_a1_5 = *(u8 *)0x3F3404;
                                 switch (temp_a1_5) { /* switch 5; irregular */
                                 case 0x4D:          /* switch 5 */
+#ifdef VERSION_MHG
+                                    /* G (lobby 0x598678): the departure spot. In a room (cw+0xFA5F): the owner (0xF751) gets
+                                     * "depart?" (G dialog 91 when everyone is ready, else 89: G modes 47 / 31 = this port's
+                                     * 0x30 / 0x1D); a member who is ready (mode 8 here, G 9) may cancel (dialog 90, mode
+                                     * 0x28 = G 42), else becomes ready (mode 0x1A = G 28, dialog 103). The room record is G's
+                                     * (0x15C bytes, its member count at +6; G Lbs_GetRoomInfo 0x581B20) */
+                                    if (cw[CW_OFS(0x35D3)] != 0) {
+                                        extern u8 g_lb_6DE120[];
+                                        s32 m = M2C_FIELD(lb_sys, s32 *, LBSYS_OFS(0x68));
+                                        if (cw[CW_OFS(0x32C5)] == 1) {
+                                            if (m != 7 && m != 8) {
+                                                u8 *ri = g_lb_6DE120 + 0x15C * (s16)(M2C_FIELD(ClassInfo, u8 *, 8) - 1);
+                                                if (*(u16 *)(cw + CW_OFS(0x32C6)) + 1 >= (s32)*(u16 *)(ri + 6)) {
+                                                    SetDialogData(91, 2);
+                                                    SetDialogYesNo(0);
+                                                    *(s8 *)0x3F36AB = 0;
+                                                    M2C_FIELD(lb_sys, s32 *, LBSYS_OFS(0x68)) = 0x30;
+                                                } else {
+                                                    SetDialogData(89, 2);
+                                                    SetDialogYesNo(1);
+                                                    *(s8 *)0x3F36AB = 0;
+                                                    M2C_FIELD(lb_sys, s32 *, LBSYS_OFS(0x68)) = 0x1D;
+                                                }
+                                                M2C_FIELD(lb_sys, s32 *, LBSYS_OFS(0x6C)) = 1;
+                                            }
+                                        } else if (m == 8) {
+                                            M2C_FIELD(lb_sys, s32 *, LBSYS_OFS(0x6C)) = 1;
+                                            M2C_FIELD(lb_sys, s32 *, LBSYS_OFS(0x68)) = 0x28;
+                                            M2C_FIELD(lb_sys, s8 *, LBSYS_OFS(6)) = 0;
+                                            *(u8 *)0x3F36AB = 0;
+                                            SetDialogData(90, 2);
+                                            SetDialogYesNo(1);
+                                        } else {
+                                            M2C_FIELD(lb_sys, s32 *, LBSYS_OFS(0x68)) = 0x1A;
+                                            SetDialogData(103, 2);
+                                        }
+                                    }
+                                    return;
+#endif
                                     temp_a1_6 = cw;
                                     if (M2C_FIELD(temp_a1_6, u8 *, 0x35D3) != 0) {
                                         temp_a1_7 = M2C_FIELD(temp_a1_6, u8 *, 0x32C5);

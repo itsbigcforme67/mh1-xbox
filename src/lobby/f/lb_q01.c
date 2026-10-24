@@ -199,8 +199,14 @@ void lb_check_status(void) {
         }
         break;
     case 48: {
+#ifdef VERSION_MHG
+        extern u8 g_lb_6DE120[];
+        u8 *ri = g_lb_6DE120 + 0x15C * (s16)(ClassInfo[8] - 1);   /* G's room record (G 0x581B20): the members at +6 */
+        if ((*(s8 *)&mhRule + 1) > 1 && (*(u16 *)(cw + CW_OFS(0x32C6)) + 1) < (s32)*(u16 *)(ri + 6)) {
+#else
         u8 *ri = Lbs_GetRoomInfo((s16)(ClassInfo[8] - 1));
         if ((*(s8 *)&mhRule + 1) > 1 && (*(u16 *)(cw + CW_OFS(0x32C6)) + 1) < (s32)*(u16 *)(ri + 2)) {
+#endif
             pNet[0xC] = 0;
             *(s8 *)0x3F36AB = 1;
             lb_sys.x6C = 0;
