@@ -1,6 +1,6 @@
 /* G online (PC): lb_select_set_data, written from Monster Hunter G's code at lobby 0x58A6C0 by tools/mhg_gonl.py (an m2c draft with
  * G's names; docs/network.md 3.12). Not compared with anything; the G online PC build links it (ONLINE=1
- * tools/build_pc_mhg.sh). */
+ * tools/build_pc_mhg.sh). HAND-FIXED: a string pointer m2c cut to 16 bits (the third %s of the room count line). */
 #include "../gonl.h"
 
 s32 KinshiYogo_chk();
@@ -79,8 +79,8 @@ void lb_select_set_data(s32 arg0, s32 arg1, s32 arg2, s32 arg3) {
         strcpy(&(*(s32 *)((u8 *)&lb_board_exp + 0x68)), *temp_s0);
     }
     temp_a5 = (*(u8 **)&pNet);
-    sprintf(&(*(s32 *)((u8 *)&lb_board_exp + 0xCC)), &lit_427_0065E260, (*(s32 *)((u8 *)&(*(s32 *)((u8 *)&lb_num_str + 0x4)) + ((*(u8 *)((u8 *)(temp_a5) + 0x28)) * 4))), (*(void * *)((u8 *)&lb_num_str + 0x2C)), (s16) (*(s32 *)((u8 *)&lb_num_str + ((temp_s1 & 0xFFFF) * 4))), temp_a5);
-    sprintf(&(*(s32 *)((u8 *)&lb_board_exp + 0x130)), &lit_427_0065E260, (*(s32 *)((u8 *)&lb_num_str + ((*(u16 *)((u8 *)(temp_s2) + 6)) * 4))), (*(void * *)((u8 *)&lb_num_str + 0x2C)), (s16) (*(s32 *)((u8 *)&lb_num_str + ((*(u16 *)((u8 *)(temp_s2) + 8)) * 4))));
+    sprintf(&(*(s32 *)((u8 *)&lb_board_exp + 0xCC)), &lit_427_0065E260, (*(s32 *)((u8 *)&(*(s32 *)((u8 *)&lb_num_str + 0x4)) + ((*(u8 *)((u8 *)(temp_a5) + 0x28)) * 4))), (*(void * *)((u8 *)&lb_num_str + 0x2C)), (*(s32 *)((u8 *)&lb_num_str + ((temp_s1 & 0xFFFF) * 4))));   /* HAND-FIXED: m2c cast this %s pointer to s16 */
+    sprintf(&(*(s32 *)((u8 *)&lb_board_exp + 0x130)), &lit_427_0065E260, (*(s32 *)((u8 *)&lb_num_str + ((*(u16 *)((u8 *)(temp_s2) + 6)) * 4))), (*(void * *)((u8 *)&lb_num_str + 0x2C)), (*(s32 *)((u8 *)&lb_num_str + ((*(u16 *)((u8 *)(temp_s2) + 8)) * 4))));
     if ((*(u8 *)((u8 *)(temp_s2) + 0x17)) != 0) {
         strcpy(&(*(s32 *)((u8 *)&lb_board_exp + 0x194)), (*(void * *)((u8 *)&lb_rule_msg_etc + 0x8)));
     } else {
