@@ -96,13 +96,14 @@ always been a struct field type or a lost field.
 ## Current assignments (update when they change)
 
 ### Running, 23 Oct 2026 evening
-- agent C (Opus): merge main into agent-C, pass test_online_g.sh + TWO=1, then G rooms/hunt; full check. No emulators.
+- agent C: G online round 4 merged 24 Oct (two PC G clients meet in G's town; full check 42 ok). Next: guild hall NPCs (only slot 0 placed, none drawn), counter menu ('unknown hunter' greeting), room, quest; town name tags draw a white square.
+- agent D (Sonnet): GB6 ninth pass (em02 Fatalis, em14_main, eft04/15/16 type 9/15, eft02_t, set14).
 - agent B: G gaps GN8/GN12/GM4/GM5 done and merged 23 Oct (full check passed on agent-B).
 - agent D: GB6 eighth pass (shell08, eft13 Dual Swords, subspecies kinds 35-50, armor count) merged 24 Oct; what is left: RELEASE_G section 15.
 
 ### Hand-over, 23 Oct 2026 (start here)
 Main = GitHub (all pushed, full check passes). No agent running. Agent branches A, B, D, E fully merged.
-- **Unmerged: agent-C (G online), 30 WIP commits ahead of main**, not full-checked: the PC G online build reaches G's
+- **(merged 24 Oct, see Running above) agent-C (G online)**: the PC G online build reaches G's
   town on our server (docs/network.md 3.12, docs/agents/agent-C.md round 3). Next: TWO=1 tools/test_online_g.sh (two G
   PCs), the real G disc meeting a PC G client (PCSX2, launcher already patches G), G rooms/hunt, Xbox. Merge only after
   a full check; it touches shared net code (cnlbsg.c, cnlbs.c, cnlbs01.c, rt_data.c, rt_game.c, rt_online.c).
