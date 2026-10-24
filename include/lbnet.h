@@ -377,6 +377,25 @@ typedef unsigned long long u64;
 #define CNO(o) (o)
 #endif
 #define CNWP(off) ((u8 *)&CnetSys_w + CNO(off))
+/* the room count of the town one is in: G's 6401 answer (G 0x5BB490, the code of MH1's lobby count handler) and G's room
+ * allocation (G 0x5BADB0..) keep it where MH1 keeps the lobby count (MH1 0x4050, G 0x6FEBC0); MH1: 0x4052 */
+/* CNRR(MH1 row, value for the G PS2 build): a room rule send. The rows' codes (6601-6610) are MH1's in G too, but G's
+ * table is in another order; the G PS2 build's GV() values follow the code G has at each split-named address (the
+ * split put several of these names on the wrong one of G's senders), so the G PC online build maps MH1's row to the
+ * G row of the same code instead (checked against the real G disc's requests: docs/network.md 3.12) */
+#ifdef MHG_NET
+#define CNRR(mh1, gps2) ((mh1) == 0x55 ? 0x93 : (mh1) == 0x57 ? 0x95 : (mh1) == 0x59 ? 0x99 : (mh1) == 0x5B ? 0x9B : \
+    (mh1) == 0x5D ? 0x9D : (mh1) == 0x5F ? 0x9F : (mh1) == 0x61 ? 0xA1 : (mh1) == 0x63 ? 0xA3 : (mh1) == 0x65 ? 0xA5 : \
+    (mh1) == 0x67 ? 0xA7 : (mh1) == 0x69 ? 0xA9 : (mh1) == 0x6B ? 0xAD : (mh1) == 0x6D ? 0xAF : (mh1) == 0x6F ? 0x97 : \
+    (mh1) == 0x71 ? 0xAB : (mh1))
+#else
+#define CNRR(mh1, gps2) GV(mh1, gps2)
+#endif
+#if LBNET_G
+#define CN_ROOM_COUNT 0x4050
+#else
+#define CN_ROOM_COUNT 0x4052
+#endif
 
 /* byte access at an offset of CnetSys_w for fields not named yet */
 #define CNW(T, off) (*(T *)((u8 *)&CnetSys_w + CNO(off)))

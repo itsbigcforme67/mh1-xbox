@@ -3,7 +3,7 @@
  * tools/build_pc_mhg.sh). */
 #include "../gonl.h"
 
-s32 cnLBS_Get_mhLobbyJoinUser(); /* extern */
+s32 gnet_get_room_joinuser(); /* extern */
 s32 cnetGet_Room_LastRecvNumber();         /* extern */
 extern s32 g_lb_6DE120;
 
@@ -14,6 +14,6 @@ void CallBack_Event_RoomJoinUser(void) {
 
     cnetGet_Room_LastRecvNumber(&sp1E);
     temp_v0 = (u8 *)&g_lb_6DE120 + ((sp1E - 1) * 0x15C);
-    cnLBS_Get_mhLobbyJoinUser(sp1E, temp_v0 + 6, temp_v0 + 0x12);
+    gnet_get_room_joinuser(sp1E, temp_v0 + 6, temp_v0 + 0x12);
 }
 

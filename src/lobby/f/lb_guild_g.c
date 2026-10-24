@@ -145,6 +145,35 @@ void lb_guild_end(void);
 void Lb_guild_trans(u8 *prim);
 void lb_set_questpage_info(void);
 
+/* pNet fields of the counter: in the G online build pNet is shared with G's own lobby code (src/lobby/gonl/gen), which
+ * keeps G's layout (Lbc_set_prim writes its prims at +0..+0xF, where the MH1 layout keeps the sub step): G's offsets there */
+#ifdef MHG_ONLINE
+#define PN_SUB 0x22         /* the sub step of lb_select_quest (MH1 2) */
+#define PN_BUSY 0x2D        /* a dialog / the net is busy (MH1 0xC) */
+#define PN_LEVEL 0x32       /* the hunter's highest quest level (MH1 0x12) */
+#else
+#define PN_SUB PNET_OFS(2)
+#define PN_BUSY PNET_OFS(0xC)
+#define PN_LEVEL PNET_OFS(0x12)
+#endif
+
+#ifdef MHG_ONLINE
+/* the G online counter (src/lobby/gonl/gen: G's own code) */
+int lb_rule_seet_set(void);
+int lb_guild_make_room(void);
+void lb_rule_seet_trans(u8 *prim);
+int Lbc_SendMiniData(void);
+int Lbs_RoomExit(void);
+void lobby_func_0055A140(int quiet);
+extern u8 g_main_2EF390[];                         /* G's lobby work area pointer (main 0x2EF390) */
+static u8 *event_quest_head(int i)                 /* lobby_func_00559D30: event quest i's header (quest_title+0x30, 512 bytes
+                                                    * each, a self-relative word) */
+{
+    u8 *p = (u8 *)quest_title + 0x30 + i * 0x200;
+    return p + *(s32 *)p;
+}
+#endif
+
 /* the PC keeps MH1's mem_tex numbers: the lobby UI sprites are slot 0x157 (G 0x180) */
 #define TEX_UI 0x157
 
@@ -855,7 +884,7 @@ int lb_select_quest_level(void)                       /* 0x55B7A0 */
 {
     int sw = Get_sw2(0) & 0xFFFF;
     s16 v;
-    *(s8 *)(pNet + PNET_OFS(0x12)) = (s8)lb_get_quest_level(0);
+    *(s8 *)(pNet + PN_LEVEL) = (s8)lb_get_quest_level(0);
     if (sw & 0x20) {
         v = W_LEVEL;
         switch (W_MODE) {
@@ -889,7 +918,7 @@ int lb_select_quest(void)                             /* 0x55E020 */
 {
     int sw = Get_sw2(0) & 0xFFFF;
     u8 *row = lobby_g_quest_row(QLIST(MH_LEVEL, W_SEL));
-    u8 *st = pNet + PNET_OFS(2);                      /* G pNet+0x22: the sub step */
+    u8 *st = pNet + PN_SUB;
     switch (*st) {
     case 0:
         (*st)++;
@@ -905,7 +934,7 @@ int lb_select_quest(void)                             /* 0x55E020 */
                 return 0;
             }
             SetDialogData_G(0x55);
-            *(s8 *)(pNet + PNET_OFS(0xC)) = 1;
+            *(s8 *)(pNet + PN_BUSY) = 1;
             (*st)++;
             D_0035EFEB = 0;
             cnWrap_SoundRequest(6);
@@ -936,7 +965,7 @@ int lb_select_quest(void)                             /* 0x55E020 */
         }
         return 2;
     case 2:
-        *(s8 *)(pNet + PNET_OFS(0xC)) = 1;
+        *(s8 *)(pNet + PN_BUSY) = 1;
         if (sw & 0x20) {
             D_0035EFEB = 1;
             *st = 1;
@@ -1056,11 +1085,49 @@ void Lb_guild(void)                                   /* 0x55A2D0 */
                 GU8(0x6534E5) = (u8)key_quest_num;
             }
         }
+#ifdef MHG_ONLINE
+        else {
+            if (get_questLevelNum(1) == 0) {        /* not registered with the guild: the talk mode 6, no counter */
+                LBS_X68 = 6;
+                W_STEP = 0;
+                return;
+            }
+            if (cw[CW_OFS(0x2C2F)] != 0) {          /* cw+0xB97: event quests downloaded: their numbers make level 9's list */
+                int i, k = 0;
+                for (i = 0; i < 3; i++) {
+                    if (*(s32 *)(*(u8 **)&g_main_2EF390 + 0x23F4 + i * 8 + 8) != 0) {
+                        QLIST(9, k) = *(u16 *)(event_quest_head(i) + 0x1E);
+                        k++;
+                    }
+                }
+                QCOUNT(9) = (u8)k;                  /* guildStr+0x109 */
+            }
+        }
+#endif
         break;
     case 1:
         Lbc_init_network_work();
         cnWrap_SoundRequest(0xC);
         Lbc_set_prim(0, Lb_guild_trans, 0, 0);
+#ifdef MHG_ONLINE
+        if (Online_ck() == 1) {                     /* G 0x55A530 */
+            if (Lbs_InRoomCheck() == 0) {
+                PIT_X8 = 0;
+                PIT_X0 = 0;
+                W_STEP++;
+                memset(GL(0x653370), 0, 0x64);      /* mhRule: a new room's rules */
+            } else {                                /* already in a room: its quest sheet */
+                PIT_X0 = 0;
+                PIT_X9 = 0;
+                PIT_X8 = 0xA;
+                W_STEP = 0xF;
+                W_TIMER = 0x14;
+                MH_QUEST = *(u16 *)(game_w + 0x2C);
+                lb_set_questpage_info();
+            }
+            break;
+        }
+#endif
         W_STEP++;                                   /* (offline, nobody in a room) */
         break;
     case 2:
@@ -1154,6 +1221,14 @@ void Lb_guild(void)                                   /* 0x55A2D0 */
                             memcpy(lbCommer + MASTER * 0x5C + 0x1C, cw + MASTER * 0x5C + 0x3A8, 0x40);
                         }
                     }
+#ifdef MHG_ONLINE
+                    else {                          /* online: the fee is held until the quest; "recruit members?" */
+                        quest_price = *(s32 *)(lobby_g_quest_row(MH_QUEST) + 4);
+                        PIT_X8 = 3;
+                        PIT_X0 = 0;
+                        W_STEP++;
+                    }
+#endif
                 } else {
                     PIT_X0 = 0;
                     PIT_X8 = 7;
@@ -1206,6 +1281,120 @@ void Lb_guild(void)                                   /* 0x55A2D0 */
             lb_guild_end();
         }
         break;
+#ifdef MHG_ONLINE
+    /* online only (G 0x55AA9C..0x55B1A0): the room. 7 "recruit members?" (yes: the rule sheet, no: a room as it is),
+     * 8 the rule sheet, 9 the room made on the server, 15 / 16 the quest sheet of the room one is in, 17 / 18 leaving it */
+    case 7:
+        if ((s8)Lb_talk_check_default(2) != 0) {
+            if (PIT_X9 == 0) {
+                W_STEP++;
+                cnWrap_SoundRequest(9);
+            } else {
+                W_STEP = 9;
+                SetDialogData_G(0x67);
+                cnWrap_SoundRequest(3);
+            }
+        }
+        break;
+    case 8:
+        if (lb_rule_seet_set() == 1) {
+            W_STEP++;
+            SetDialogData_G(0x67);
+            W_SUB = 0;
+        }
+        break;
+    case 9:
+        *(s8 *)(pNet + PN_BUSY) = 1;
+        r = lb_guild_make_room();
+        if (r == 0) {
+            u8 ty;
+            row = lobby_g_quest_row(MH_QUEST);
+            Lb_menu_quest_info(row);
+            ty = (u8)(Lb_get_quest_type(row) | 0x40);
+            PLAYER(MASTER)[0x916] = ty;
+            Lbc_SendMiniData();
+            Lb_set_mini_data(cw + MASTER * 0x5C + 0x3A8, ty, MASTER);
+            Lb_set_mini_data(lbCommer + MASTER * 0x5C + 0x1C, ty, MASTER);
+            PIT_X0 = 0;
+            PIT_X8 = GS8(0x653370) == 0 ? 8 : 4;    /* mhRule+0: members wanted */
+            W_STEP++;
+            *(u16 *)(select_w + 0xD0) = MH_QUEST;
+            *(u16 *)(game_w + 0x2C) = MH_QUEST;
+        } else if (r == 1) {
+            PIT_X0 = 0;
+            PIT_X8 = 6;
+            W_STEP = 0xD;
+            *(u16 *)(select_w + 0xD0) = MH_QUEST;
+            lobby_func_0055A140(0);                 /* the held fee back */
+        }
+        break;
+    case 15:
+        if (W_TIMER != 0) {
+            W_TIMER--;
+            PIT_B = 1;                              /* lb_pit+0xB */
+        }
+        if ((s8)Lb_talk_check_default(2) != 0) {
+            if (PIT_X9 != 0) {
+                PIT_X0 = 0;
+                PIT_X8 = 6;
+                W_STEP = 0xD;
+            } else if (*(u8 *)(cw + 0xF751) == 1) {   /* the room is ours (lb_guild_make_room): leave it? */
+                PIT_X0 = 0;
+                PIT_X8 = 0xB;
+                PIT_X9 = 0;
+                W_TIMER = 0x14;
+                W_STEP++;
+                cnWrap_SoundRequest(0);
+            } else {
+                W_STEP = 0x11;
+                SetDialogData_G(0x66);
+                cnWrap_SoundRequest(0);
+            }
+        } else if (Get_sw2(0) & 0x200) {
+            if (++W_PAGE >= 3) {
+                W_PAGE = 0;
+            }
+            cnWrap_SoundRequest(6);
+        }
+        break;
+    case 16:
+        if (W_TIMER != 0) {
+            W_TIMER--;
+            PIT_B = 1;
+        }
+        if ((s8)Lb_talk_check_default(0) != 0) {
+            if (PIT_X9 == 0) {
+                PIT_X0 = 0;
+                PIT_X8 = 0xB;
+                PIT_X9 = 1;
+                W_STEP++;
+                SetDialogData_G(0x66);
+            } else {
+                PIT_X0 = 0;
+                PIT_X8 = 6;
+                W_STEP = 0xD;
+            }
+        }
+        break;
+    case 17:
+        *(s8 *)(pNet + PN_BUSY) = 1;
+        if (Lbs_RoomExit() == 1) {
+            if (*(u8 *)(cw + 0xF751) == 1) {
+                lobby_func_0055A140(0);
+                quest_price = 0;
+                *(u8 *)(cw + 0xF751) = 0;
+            }
+            PIT_X0 = 0;
+            PIT_X8 = 0xC;
+            W_STEP = 0x12;
+        }
+        break;
+    case 18:
+        if ((s8)Lb_talk_check_default(0) != 0) {
+            lb_guild_end();
+        }
+        break;
+#endif
     default:
         break;
     }
@@ -1235,7 +1424,7 @@ void lb_select_quest_level_trans(void)               /* 0x55CD70 (offline part) 
     flfntSetSize(0x12, 0x12);
     for (i = 0; i < n; i++) {
         dx = i == W_LEVEL ? -0xC : 0;
-        col = (*(s8 *)(pNet + PNET_OFS(0x12)) >= base + i && (i != 0 || Online_ck() != 0 || key_quest != 0x2711)) ? 5 : 9;
+        col = (*(s8 *)(pNet + PN_LEVEL) >= base + i && (i != 0 || Online_ck() != 0 || key_quest != 0x2711)) ? 5 : 9;
         spr.x += dx;
         Put_2TF(&spr);
         if (i == W_LEVEL) {
@@ -1380,6 +1569,11 @@ void Lb_guild_trans(u8 *prim)                         /* 0x55D5A0 */
         case 15:
             lb_questpage_trans(prim);
             return;
+#ifdef MHG_ONLINE
+        case 8:
+            lb_rule_seet_trans(prim);               /* G's (src/lobby/gonl/gen) */
+            return;
+#endif
         }
     }
 }

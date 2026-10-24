@@ -454,6 +454,16 @@ int rt_online_tick(void)
                 fprintf(stderr, "online: tick %d town state x68 %d talk %d/%d registered %d room %d/%d\n", ticks, l68, l6, l7, f,
                         cw[CW_OFS(0x35D3)], cw[CW_OFS(0x32C5)]);
             }
+#ifdef VERSION_MHG
+            {   /* G's guild counter (Lb_guild, lb_guild_g.c): its step and sub step (G 0x654836 / 0x654837, lb_sys - 0xBA) */
+                static int gs = -1, gu = -1;
+                if ((s8)lb_sys[-0xBA] != gs || (s8)lb_sys[-0xB9] != gu) {
+                    gs = (s8)lb_sys[-0xBA];
+                    gu = (s8)lb_sys[-0xB9];
+                    fprintf(stderr, "online: tick %d guild step %d/%d\n", ticks, gs, gu);
+                }
+            }
+#endif
         }
         if (trace) {        /* a new line in the game's chat log (PitMenu: logtop +0x1E, log[64] of 0x5D bytes at +0x23) */
             extern u8 PitMenu[];

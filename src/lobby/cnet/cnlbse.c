@@ -49,6 +49,12 @@ void __cnet_bgProg_RoomSetRule(void) {
             break;
         case 6:
             b->x21++;
+#ifdef MHG_NET
+            {
+                int gnet_6415_req(void);
+                gnet_6415_req();            /* G (0x5BC860): the quest's attributes for the room list before 660C */
+            }
+#endif
             cnLBS_Set_RoomRuleFinish((int)_cnet_CallBack_Result_RoomSetFinish);
             break;
         case 7:
@@ -257,7 +263,7 @@ int kind;
 
 #if !defined(G_PART)
 int __cnet_SendReq_NumOfRule(int arg0) {
-    int cmd = SetSendCommand(&send_work, 0x59) & 0xFFFF;
+    int cmd = SetSendCommand(&send_work, CNRR(0x59, 0x59)) & 0xFFFF;
     SetSendData16(&send_work, arg0);
     SetSendCommandLen(&send_work);
     Write_Socket(&send_work);
@@ -267,7 +273,7 @@ int __cnet_SendReq_NumOfRule(int arg0) {
 
 #if !defined(G_PART)
 int __cnet_SendReq_RuleListHeadWord(int arg0, int arg1) {
-    int cmd = SetSendCommand(&send_work, 0x5B) & 0xFFFF;
+    int cmd = SetSendCommand(&send_work, CNRR(0x5B, 0x5B)) & 0xFFFF;
     SetSendData16(&send_work, arg0);
     SetSendData8(&send_work, arg1);
     SetSendCommandLen(&send_work);
@@ -278,7 +284,7 @@ int __cnet_SendReq_RuleListHeadWord(int arg0, int arg1) {
 
 #if !defined(G_PART)
 int __cnet_SendReq_RuleNumOfChoice(int arg0, int arg1) {
-    int cmd = SetSendCommand(&send_work, 0x61) & 0xFFFF;
+    int cmd = SetSendCommand(&send_work, CNRR(0x61, 0x61)) & 0xFFFF;
     SetSendData16(&send_work, arg0);
     SetSendData8(&send_work, arg1);
     SetSendCommandLen(&send_work);
@@ -289,7 +295,7 @@ int __cnet_SendReq_RuleNumOfChoice(int arg0, int arg1) {
 
 #if !defined(G_PART)
 int __cnet_SendReq_RuleListNow(int arg0, int arg1) {
-    int cmd = SetSendCommand(&send_work, 0x5F) & 0xFFFF;
+    int cmd = SetSendCommand(&send_work, CNRR(0x5F, 0x5F)) & 0xFFFF;
     SetSendData16(&send_work, arg0);
     SetSendData8(&send_work, arg1);
     SetSendCommandLen(&send_work);
@@ -300,7 +306,7 @@ int __cnet_SendReq_RuleListNow(int arg0, int arg1) {
 
 #if !defined(G_PART) || G_PART == 28
 int __cnet_SendReq_RuleListPermission(int arg0, int arg1) {
-    int cmd = SetSendCommand(&send_work, GV(0x5D, 0x9B)) & 0xFFFF;
+    int cmd = SetSendCommand(&send_work, CNRR(0x5D, 0x9B)) & 0xFFFF;
     SetSendData16(&send_work, arg0);
     SetSendData8(&send_work, arg1);
     SetSendCommandLen(&send_work);
@@ -311,7 +317,7 @@ int __cnet_SendReq_RuleListPermission(int arg0, int arg1) {
 
 #if !defined(G_PART) || G_PART == 29
 int __cnet_SendReq_RuleListName(int arg0, int arg1, int arg2) {
-    int cmd = SetSendCommand(&send_work, GV(0x63, 0xA3)) & 0xFFFF;
+    int cmd = SetSendCommand(&send_work, CNRR(0x63, 0xA3)) & 0xFFFF;
     SetSendData16(&send_work, arg0);
     SetSendData8(&send_work, arg1);
     SetSendData8(&send_work, arg2);
@@ -323,7 +329,7 @@ int __cnet_SendReq_RuleListName(int arg0, int arg1, int arg2) {
 
 #if !defined(G_PART) || G_PART == 30
 int __cnet_SendReq_RuleControl(int arg0, int arg1, int arg2) {
-    int cmd = SetSendCommand(&send_work, GV(0x65, 0xA5)) & 0xFFFF;
+    int cmd = SetSendCommand(&send_work, CNRR(0x65, 0xA5)) & 0xFFFF;
     SetSendData16(&send_work, arg0);
     SetSendData8(&send_work, arg1);
     SetSendData8(&send_work, arg2);
@@ -393,7 +399,7 @@ int __cnet_SendReq_RoomCreate(int arg0) {
 
 #if !defined(G_PART) || G_PART == 27
 int __cnet_SendReq_RoomSetName(int arg0) {
-    int cmd = SetSendCommand(&send_work, GV(0x67, 0xA9)) & 0xFFFF;
+    int cmd = SetSendCommand(&send_work, CNRR(0x67, 0xA9)) & 0xFFFF;
     SetSendStringData2(&send_work, arg0, strlen(arg0) & 0xFFFF);
     SetSendCommandLen(&send_work);
     Write_Socket(&send_work);
@@ -403,7 +409,7 @@ int __cnet_SendReq_RoomSetName(int arg0) {
 
 #if !defined(G_PART)
 int __cnet_SendReq_RoomSetPassword(int arg0) {
-    int cmd = SetSendCommand(&send_work, 0x69) & 0xFFFF;
+    int cmd = SetSendCommand(&send_work, CNRR(0x69, 0x69)) & 0xFFFF;
     SetSendStringData2(&send_work, arg0, strlen(arg0) & 0xFFFF);
     SetSendCommandLen(&send_work);
     Write_Socket(&send_work);
@@ -413,7 +419,7 @@ int __cnet_SendReq_RoomSetPassword(int arg0) {
 
 #if !defined(G_PART) || G_PART == 26
 int __cnet_SendReq_RoomSetRule(int arg0, int arg1) {
-    int cmd = SetSendCommand(&send_work, GV(0x6B, 0xAD)) & 0xFFFF;
+    int cmd = SetSendCommand(&send_work, CNRR(0x6B, 0xAD)) & 0xFFFF;
     SetSendData8(&send_work, arg0);
     SetSendData8(&send_work, arg1);
     SetSendCommandLen(&send_work);
@@ -720,7 +726,7 @@ cb:
 
 #if !defined(G_PART) || G_PART == 24
 int __cnet_SendReq_RoomSetExplain(int arg0, int arg1) {
-    int cmd = SetSendCommand(&send_work, GV(0x71, 0x5D)) & 0xFFFF;
+    int cmd = SetSendCommand(&send_work, CNRR(0x71, 0x5D)) & 0xFFFF;
     SetSendStringData2(&send_work, arg0, arg1);
     SetSendCommandLen(&send_work);
     Write_Socket(&send_work);
@@ -760,7 +766,7 @@ void _cnet_RecvFromLbs_AnswerRoomExplainPermission(void) {
 
 #if !defined(G_PART)
 int __cnet_SendReq_RoomExplainPermission(int arg0) {
-    int cmd = SetSendCommand(&send_work, 0x6F) & 0xFFFF;
+    int cmd = SetSendCommand(&send_work, CNRR(0x6F, 0x6F)) & 0xFFFF;
     SetSendData16(&send_work, arg0);
     SetSendCommandLen(&send_work);
     Write_Socket(&send_work);

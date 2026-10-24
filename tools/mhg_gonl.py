@@ -236,6 +236,19 @@ G_RENAME = {
     # argument; the split's cnLBS_Send_ChatMessageTU (G 0x5B08B0) is the real ChatBinaryTU (row 0x102, MH1's shape)
     'cnLBS_Send_ChatBinaryTU': 'gonl_Send_ChatMessageTU',
     '__cnet_SendSet_ChatMessageTU': 'gonl_SendSet_PlazaEntry',  # G 0x5ACC30: row 46, three u16 (cnLBS_PlazaEntry's send)
+    # G's room getters (src/lobby/cnet/cnet_g.c): the split names them after MH1's lobby getters, or the field moved
+    'cnLBS_Get_LobbyStatus': 'gnet_get_room_status',            # G 0x5BB650: room status (room table +0x1E)
+    'cnLBS_Get_mhLobbyJoinUser': 'gnet_get_room_joinuser',      # G 0x5BB550: a room's two user counts (+0xA / +0xC)
+    'cnLBS_Get_RoomPasswordInfo': 'gnet_get_room_password',     # G 0x5BE0E0: +0x1F (MH1's struct: +0x1D)
+    # G's town-search string sends under MH1's rule-read names: as those names they replaced the PC's rule reads
+    '__cnet_SendReq_RuleListHeadWord': 'gonl_SendReq_6316',     # G 0x5AEC60: row 95 (6316), an obfuscated string
+    '__cnet_SendReq_RuleNumOfChoice': 'gonl_SendReq_6317',      # G 0x5AED70: row 99 (6317), an obfuscated string
+    'cnLBS_Read_RoomRuleCaption': 'gnet_read_6316',             # G 0x5AEBE0..: its read wrappers of those (src/lobby/cnet/cnet_g.c)
+    'cnLBS_Read_RoomRuleChoiceCount': 'gnet_read_6317',
+    'cnLBS_Read_LobbyName': 'gnet_read_6403',                   # G 0x5BB4D0: a room's join users (PieceJoinUser(2), 6403)
+    # G burst callbacks under MH1 callback names the PC's MH1 bursts use (room rules read / set)
+    '_cnet_CallBack_Result_RoomRuleCaption': 'gonl_cb_BurstFail_5ABA90',   # G 0x5ABA90: a burst ends with -1
+    '_cnet_CallBack_Result_RoomSetFinish': 'gonl_cb_PlazaCount_5ABE90',    # G 0x5ABE90: the plaza count read's result
 }
 
 
@@ -256,6 +269,11 @@ FIXUPS = {
     'Lb_move_common': [   # em_work keeps MH1's 0xA10 stride on the PC (EMW_STRIDE, include/version.h): G's 0xA00 moved
                           # only slot 0 (the town / guild hall NPCs 1-8 never ran their init and stood at 0, 0, 0)
         (r'var_s3 \+= 0xA00;', 'var_s3 += EMW_STRIDE;')],
+    'lb_rule_seet_set': [   # m2c puts the inner switch's (empty) default label into the outer switch: two defaults
+        (r'\n    default:                                        /\* switch 2 \*/\n', '\n'),
+        (r'        break;\n    \}\n\}\n', '        break;\n    }\n    return 0;\n}\n')],
+    'lb_guild_make_room': [   # Lbc_SetPropaty's other results (a break out of the switch): G returns 2 (still busy)
+        (r'\n    \}\n\}\n$', '\n    }\n    return 2;\n}\n')],
     'lobby_func_00570320': [   # a byte of LobbyInfo+0x16 at a byte offset m2c holds in a pointer
         (r'\*\(&\(\*\(u8 \*\)\(\(u8 \*\)&LobbyInfo \+ 0x16\)\) \+ var_a0\)', '*((u8 *)&LobbyInfo + 0x16 + (s32) var_a0)')],
 }

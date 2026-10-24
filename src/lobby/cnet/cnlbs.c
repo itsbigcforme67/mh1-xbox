@@ -2,6 +2,8 @@
 #include "lbnet_proto.h"
 #ifdef MHG_NET
 int gnet_630D_req(int);
+int gnet_6407_req(int);
+int gnet_660C_req(void);
 #endif
 #pragma readonly_strings on
 
@@ -1204,7 +1206,11 @@ int arg1;
     u16 cmd;
 
     if (slot != -1) {
+#ifdef MHG_NET
+        cmd = gnet_6407_req(arg0);          /* G 0x5BC190; G's split gives MH1's send name to its 630D send (G 0x5AC5B0) */
+#else
         cmd = __cnet_SendReq_RoomCreate(arg0);
+#endif
         __cnet_KeepEntryFloorInfo(2, arg0);
         CnetSys_w.bg[slot].cmd = cmd;
         return slot;
@@ -1244,7 +1250,11 @@ int cnLBS_Set_RoomRuleFinish(int arg0) {
     int slot = __cnetSub_Set_BgProcess(1, 0, arg0);
 
     if (slot != -1) {
+#ifdef MHG_NET
+        CnetSys_w.bg[slot].cmd = gnet_660C_req();     /* G's split name of this send is its 6881 request (G's login) */
+#else
         CnetSys_w.bg[slot].cmd = __cnet_SendReq_RoomSetFinish();
+#endif
         return slot;
     }
     return -1;
@@ -1514,7 +1524,7 @@ void _cnet_RecvFromLbs_AnswerRoomNamePermission(void) {
 
 #if !defined(G_PART) || G_PART == 50
 int __cnet_SendReq_RoomNamePermission(int arg0) {
-    int cmd = SetSendCommand(&send_work, GV(0x55, 0x99)) & 0xFFFF;
+    int cmd = SetSendCommand(&send_work, CNRR(0x55, 0x99)) & 0xFFFF;
     SetSendData16(&send_work, arg0);
     SetSendCommandLen(&send_work);
     Write_Socket(&send_work);
@@ -1548,7 +1558,7 @@ void _cnet_RecvFromLbs_AnswerRoomPasswordPermission(void) {
 
 #if !defined(G_PART) || G_PART == 51
 int __cnet_SendReq_RoomPasswordPermission(int arg0) {
-    int cmd = SetSendCommand(&send_work, GV(0x57, 0x95)) & 0xFFFF;
+    int cmd = SetSendCommand(&send_work, CNRR(0x57, 0x95)) & 0xFFFF;
     SetSendData16(&send_work, arg0);
     SetSendCommandLen(&send_work);
     Write_Socket(&send_work);
