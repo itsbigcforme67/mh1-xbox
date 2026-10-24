@@ -2193,3 +2193,48 @@ VERSION_MHG / MHG_ONLINE / MHG_NET / LBNET_G (MH1 builds unchanged). Test: `ROOM
 - **Fix:** tools/build_pc_mhg.sh builds ONLINE=1 in its own tree, build/mhg/pctree_online; build/mhg/pctree is always
   the plain G build (build_xbox.py --version mhg and check_kr_returns read it: the G Xbox build had also refused with
   "run tools/build_pc.sh first" because the online build had rewritten pctree's objs.txt last).
+
+## G online, round 6 (24 Oct 2026): the hunt on mh1-server's mcs relay, the clear, back to G's hall
+All on the PC G online build against `mh1_server.py serve --lobby-mcs` (accounts, 127.0.0.1); G-only changes behind
+VERSION_MHG / MHG_ONLINE (MH1 builds unchanged). Test: `HUNT=1 tools/test_online_g.sh` (~20 min): as ROOM=1, but ANNA
+picks the fourth card of level 1 (quest 4, 怪鳥イャンクック襲来！, fee 200z: RT_MONEY=5000 online), both log in to the
+mcs relay, follow the Kut-Ku, ANNA fights it alone, then BOB, then both (owner ANNA -> BOB -> ANNA, tools/hunt_sync.py
+as MH1's KUTKU=1), the kill, both carve, the clear, the reward / money / hunter point screens, the relogin, both back in
+G's guild hall (stage 0x4D: G returns the party where the quest was taken). G's level 1 list here: 1 2 2 4 35 7 11 20.
+- **What broke, each found by running (gdb via the new `GDB=script` hook of the test):**
+  1. cmcs_03 (lb_bz103.c) read the player count / game-server ticket at MH1's cw offsets: CW_OFS now; CW_OFS maps
+     0x35E0..0x35FF too (+0xC48C: G's cmcs_03 reads cw+0xFA6C, Lbc_connect writes cw+0xFA80).
+  2. AQ_init wrote ave_cnf, which G lacks: the PC had a *code* stand-in for it (rt_gen.c) and crashed. ave_cnf /
+     netmod_load_flag are host objects in the G build (rt_mcs.c). Lesson: `nm -u` the MH1 objects a G build links and
+     compare with rt_gen.c's stand-ins; a data name in that list is a crash waiting.
+  3. Every session died with mcsls error 0x10 after ~450 ticks: G keeps MCSLS_SWIN_MINUS in bss and sets it at session
+     start from (&MCSLS_SWIN_LIMIT)[2] (G 0x1E56F0; 100), MH1 keeps 8 in the variable itself; on the PC it stayed 0, so
+     the send-window check counted up every tick. mcsls_r0_nm.c copies it from mcsls_swin_minus_init (pc_data, G 0x2EBF64).
+  4. The room owner waited for ever after the kill (quest command 0x2D: everyone's clear bit): net_send_sys /
+     net_receive_sys (netsyn08.c / netsyn09.c, MH1 C) packed the quest message from MH1's quest_w offsets; G moved that
+     block 0x180 -> 0x280 (include/quest.h). aq_nm.c's drop paths now find pl_state via GWX(0x208).
+  5. The hunter point screen (online only, f_reward_g.c points_disp) crashed on hunter title 24: the host copy of
+     hunter_appellation was MH1's 21 entries; now G's 31 plus the cells G reads through it (pc_data, size 0x170).
+  6. The relogin's card save (lbc_login_finish_after, McOperationSet(7)) fails on the test cards (no G save on them):
+     G asks "セーブせずにゲームを続けますか？" with the cursor on いいえ; the test presses left and circle. With circles only
+     it phase-locked into retries for ever (the retry's error message eats the next circle).
+- **rt_mcs.c:** the quest comes from G's select_w+0xD0. The sys 2 packets (net_send_sys kind 2) still use MH1's select_w
+  layout on both PCs (consistent between PCs); G's real sys 2 has another layout (ready +0xAC, quest +0xD0, ids from
+  byte 18, G 0x4FAE40 / 0x4FB210): needed before a PS2 G and a PC G hunt together.
+- **Quest sheet "z" (task 2):** not reproduced in this build. The counter's sheet shows "０ｚ" for quest 1's fee 0 and the
+  room board's sheet (lb_select_set_data, new trace "board sheet reward/fee") shows "２００ｚ" for quest 4 [checked: shots,
+  trace]. Lb_num_to_str and lb_num_str are the same as G's (G 0x593510; lb_num_str[0] = "０").
+- **lb_cli (task 3):** 197 MH1 lb_cli functions are still linked in the G online build (nm -l: lb__lb_cli.abs.c). 169 have
+  no G function of that name (G's own code reaches its generated copies, not these); of the 28 with a G twin, 14 are
+  byte-matched G parts already (the same C serves G: CallBack_Result_SendUserMiniData, Lbs_CheckMatchingFlag,
+  To_MatchingFailed, tk_logout_init, check_*_level, Init_InterruptFlag, ...: "m2c failed" was "already C"). Of the other
+  14: m2c converts 11; equivalent to the MH1 C on the PC (CW_OFS / aliases): Lbc_connect, internet_connect_minimum_cleanup,
+  Lbc_RequestNetComment, Lbc_SendNetComment (D_3C73B4 is User_data+0xC9C in the G build), lobby_client_matching_failed;
+  the browser trio (Analysis_StringData, Display_StringData, nwDispStr_Html) and Lbc_SendBrowserResult are not on the PC.
+  **Ported (generated, G online build):** text_lobby_trans_ot3 (G's dialog flag pNet+0x2D: G's Lbc_init_network_work
+  puts prim pointers at pNet+0..0x10, so MH1's ot3 read a pointer byte at +0xC and G's system dialogs were not drawn),
+  Set_ErrorDialog (G's dialog numbers 0xA / 8 / 0xB, Lb_eat_to_bell), lbc_logout_01 (G's pNet offsets). Left: Lbc_getDate /
+  CallBack_GetDate (G's wait code 0x27, MH1 0x17; not reached by any G code I found).
+- **Open:** PS2 G + PC G hunt (G's sys 2 layout), a G save on the test cards, the many MH1 C writes of pNet+0xC / +0x11
+  that remain in G-online-built lobby code (G's pNet layout differs: a systematic PNET_OFS map is needed), the hand-over
+  when a G player drops (aq_nm.c paths now use GWX, untested), event quests online.

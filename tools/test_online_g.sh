@@ -10,6 +10,11 @@
 # (spot kind 7): the room list, room 1's quest sheet, join (6406); BOB ready at the departure spot (6504), ANNA departs
 # (dialog yes): the match for two (6508 / 6910 / 6911-6916), both leave the lobby server and load quest 1 together (the
 # co-op session, net_peer: the room owner hosts). As MH1's tools/test_online_mcs.sh, on the test server.
+# HUNT=1 (two clients, ~20 min): ROOM=1 on mh1-server with --lobby-mcs (an account each, the game's own in-hunt protocol
+# through the mcs relay, as MH1's tools/test_online_mcs.sh KUTKU=1): ANNA posts quest 4 (the Kut-Ku, card 4 of level 1,
+# fee 200z: RT_MONEY), both log in to the relay, ANNA fights alone, then BOB, then both (owner ANNA -> BOB -> ANNA,
+# tools/hunt_sync.py), the kill, both carve, the clear, the result screens, the relogin (the test cards hold no G save:
+# "continue without saving?" yes) and both back in G's guild hall. GDB=FILE runs the clients under gdb -x FILE.
 # Screenshots in build/show/g_online_pc (never committed). Build first: ONLINE=1 tools/build_pc_mhg.sh
 cd "$(dirname "$0")/.."
 BIN=${BIN:-build/mhg/pc/mhview_g_online}
@@ -53,7 +58,7 @@ acct() {    # NAME: RT_NET_ID / RT_NET_PASS of its account (HUNT=1)
 }
 # input: circle through login, the Capcom ID ("new ID", yes), the class menu, the plaza menu (街に入る) and the town
 # list (town 1); then "yes" (left, circle) on the town's confirmation
-IN="idle*200$(for i in $(seq 14); do printf ',circle*2,idle*150'; done)$(for i in $(seq 12); do printf ',circle*2,idle*120,dleft*2,idle*30,circle*2,idle*150'; done),idle*${HOLD:-900}"
+IN="idle*200$(for i in $(seq 14); do printf ',circle*2,idle*150'; done)$(for i in $(seq 12); do printf ',circle*2,idle*120,dleft*2,idle*30,circle*2,idle*150'; done),idle*${HOLD:-900}${TAIL:+,$TAIL}"
 run() {     # name seconds extra-env...
     nm=$1; t=$2; shift 2
     rm -rf $OUT/card_$nm
@@ -85,8 +90,12 @@ print(','.join(o))")
     for k in circle circle dleft dleft ddown ddown ddown circle circle circle; do IA="$IA,$k*2,idle*100"; done
     END=",idle*1500"; SA=380; SB=378; A_AID=""; B_AID=""
     if [ -n "$HUNT" ]; then
-        END=$(rep ${HUNTN:-56} ',circle*2,idle*13,cam_u*2,idle*13,circle*2,idle*13,cam_u*2,idle*13,circle*2,idle*13,cam_u*2,idle*13,circle*2,idle*13,cam_u*2,idle*13,circle*2,idle*13,cam_u*2,idle*13,circle*2,idle*13,cam_u*2,idle*13,cross*2,idle*18,ddown*2,idle*18,circle*2,idle*13,cam_u*2,idle*13')
+        END=$(rep ${HUNTN:-36} ',circle*2,idle*13,cam_u*2,idle*13,circle*2,idle*13,cam_u*2,idle*13,circle*2,idle*13,cam_u*2,idle*13,circle*2,idle*13,cam_u*2,idle*13,circle*2,idle*13,cam_u*2,idle*13,circle*2,idle*13,cam_u*2,idle*13,cross*2,idle*18,ddown*2,idle*18,circle*2,idle*13,cam_u*2,idle*13')
         SA=900; SB=898; TMOH=1100
+        # back to the town: the login saves the hunter (lbc_login_finish_after, McOperationSet(7)); the test cards hold no G
+        # save, so the card screen says the save failed and asks "continue without saving?" (cursor on no): left (yes,
+        # pressed often: it only moves the cursor to yes), circle
+        END="$END$(rep ${TAILN:-60} ',dleft*2,idle*13,dleft*2,idle*13,dleft*2,idle*13,dleft*2,idle*13,dleft*2,idle*13,dleft*2,idle*13,circle*2,idle*13')"
         # quest ticks (as KUTKU=1): both follow the Kut-Ku; ANNA fights alone (600-1500) and goes back to the camp so the
         # monster passes to BOB, who fights alone (1600-2600) and goes back in turn; then both fight to the kill and carve
         F="RT_PL_GOD=1 RT_PL_TARGET=k${KIND:-6} RT_PL_GOTO=60,f RT_DMG_MUL=${MUL:-2} RT_GOTO_TRACE=1 RT_PL_CARVE=10 RT_QUEST_TRACE=1 RT_NOMOVIE=1 RT_NP_POS=150 RT_NP_EM=30 RT_MONEY=5000"
@@ -113,7 +122,7 @@ elif [ -n "$TWO" ]; then
     PA=""
     NAMES="ANNA BOB"
 else
-    run ANNA 160 || fail "the client stopped early (see $OUT/ANNA.log)"
+    run ANNA ${T1:-160} || fail "the client stopped early (see $OUT/ANNA.log)"
     NAMES=ANNA
 fi
 kill $SP 2>/dev/null; SP=""
@@ -141,8 +150,9 @@ if [ -n "$ROOM" ]; then
             grep -aq "mcs: start agreed" $OUT/$nm.log || fail "$nm: net_start_ck did not agree on the start"
             grep -aq "rt_flow: tick [0-9]* mode 2 step 0 D5 3" $OUT/$nm.log || fail "$nm did not see the quest cleared"
             grep -aq "online: back to the town after the quest" $OUT/$nm.log || fail "$nm did not go back to the town"
-            sed -n '/back to the town after the quest/,$p' $OUT/$nm.log | grep -aq "slot [0-9] (me) \"$nm\" stage 76 pos [1-9]" ||
-                fail "$nm is not standing in G's town again after the quest"
+            # (G puts the hunter back in the guild hall, stage 0x4D, where the quest was taken)
+            sed -n '/back to the town after the quest/,$p' $OUT/$nm.log | grep -aq "slot [0-9] (me) \"$nm\" stage 7[67] pos [1-9]" ||
+                fail "$nm is not back in G's town / guild hall after the quest"
         else
             grep -aq "online: match: quest 1, 2 players" $OUT/$nm.log || fail "$nm did not get the match (quest 1, 2 players)"
             grep -aq "co-op: quest 1, 2 player(s)" $OUT/$nm.log || fail "$nm did not start quest 1 with the other"
@@ -162,4 +172,4 @@ grep -q "cmd 6882" $OUT/server.log || fail "no info file download (6882)"
 grep -q "cmd 6207" $OUT/server.log || fail "no plaza entry (6207)"
 grep -q "cmd 630D" $OUT/server.log || fail "no town list (630D)"
 grep -q "cmd 6305" $OUT/server.log || fail "no town entry (6305)"
-echo "G online PC test: OK ($NAMES: G's login, Capcom ID, info file, plaza, town list, in the town${TWO:+, each sees the other}${ROOM:+, the guild hall counter: a room for 2, BOB joins, the match, both start quest $QN}${HUNT:+ on mh1-server's mcs relay: the Kut-Ku handed ANNA -> BOB -> ANNA, HP the same on both, killed, both carved, the clear, both back in G's town}; server 127.0.0.1:$PORT)"
+echo "G online PC test: OK ($NAMES: G's login, Capcom ID, info file, plaza, town list, in the town${TWO:+, each sees the other}${ROOM:+, the guild hall counter: a room for 2, BOB joins, the match, both start quest $QN}${HUNT:+ on mh1-server's mcs relay: the Kut-Ku handed ANNA -> BOB -> ANNA, HP the same on both, killed, both carved, the clear, both back in G's guild hall}; server 127.0.0.1:$PORT)"
