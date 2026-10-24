@@ -172,6 +172,9 @@ s16 eft13_set_pos(f32 *pos, EFT13_CHR *chr, int j, s16 arg) {
         AddVector(pos, pos, v);
         break;
     case 8:
+#ifdef VERSION_MHG
+    case 39:
+#endif
         pos[0] = chr->pos[0];
         pos[1] = chr->x5AC;
         pos[2] = chr->pos[2];
@@ -230,6 +233,9 @@ s16 eft13_set_pos(f32 *pos, EFT13_CHR *chr, int j, s16 arg) {
             v[2] = 190.0f;
             break;
         case 4:
+#ifdef VERSION_MHG
+        case 6:
+#endif
             v[0] = -4.9f;
             v[1] = -0.7f;
             v[2] = 90.0f;
@@ -260,6 +266,9 @@ s16 eft13_set_pos(f32 *pos, EFT13_CHR *chr, int j, s16 arg) {
         MAT_ADD(pos, 0.0f, -2.0f, 16.0f);
         break;
     case 23:
+#ifdef VERSION_MHG
+    case 35:
+#endif
         get_joint_pos(chr, j, pos);
         break;
     case 24:
@@ -298,6 +307,22 @@ s16 eft13_set_pos(f32 *pos, EFT13_CHR *chr, int j, s16 arg) {
         pos[1] = 70.0f;
         pos[2] = 14372.39f;
         break;
+#ifdef VERSION_MHG
+    case 36:        /* G: Dual Swords demon mode effects */
+        get_joint_pos(chr, j, pos);
+        pos[1] = 90.0f + chr->x5AC;
+        break;
+    case 37:
+    case 38:
+        v[0] = 0.0f;
+        v[1] = 0.0f;
+        v[2] = 130.0f;
+        flvecRotY(v, DEG2RAD(ANG2DEG(chr->ang[1])));
+        pos[0] = chr->pos[0] + v[0];
+        pos[1] = chr->x5AC;
+        pos[2] = chr->pos[2] + v[2];
+        break;
+#endif
     }
     k = eft13_water_ck(chr, pos, arg);
     if ((s16)arg == 0x13 && k == 0) {
