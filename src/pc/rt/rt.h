@@ -146,6 +146,9 @@ typedef struct {
 } rt_clay_mats;
 void rt_bind_eft_model(int k, gfx_clay *const *c, const uint32_t *attr, int n,
                        const rt_clay_mats *mats, const float (*diffuse)[4], int nmat);
+/* game_w.area_mdlw[slot] (em_create_model's sub model of the kind in model slot `slot`), same arguments; n 0 unbinds */
+void rt_bind_area_model(int slot, gfx_clay *const *c, const uint32_t *attr, int n,
+                        const rt_clay_mats *mats, const float (*diffuse)[4], int nmat);
 /* flExecuteClay with material states pending (flSetRenderState 0x3A + k,
  * pend[k] = the game's flMATERIAL, 0x4C bytes, diffuse RGB at +4, alpha at
  * +0x10), fade = the current fl 0x67 colour: 1 = drawn here with the colours,

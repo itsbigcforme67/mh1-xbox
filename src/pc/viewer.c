@@ -349,55 +349,60 @@ static void eft_skin(int k, const float *mats, int n)
     flmat_identity(id);
     gfx_set_render_state(GFX_RS_WORLD, (uintptr_t)id);
 }
+/* a model's clays, attribute words, material lists and file diffuse colours handed to the game C through `bind`
+ * (rt_bind_eft_model: eft_mdlw[k]; rt_bind_area_model: game_w.area_mdlw[k]) */
+typedef void (*model_bind_fn)(int k, gfx_clay *const *c, const uint32_t *attr, int n, const rt_clay_mats *mats,
+                              const float (*diffuse)[4], int nmat);
+static void model_bind(const fl_model *m, int k, model_bind_fn bind)
+{
+    gfx_clay **c = calloc((size_t)m->npart + 1, sizeof *c);
+    uint32_t *at = calloc((size_t)m->npart + 1, sizeof *at);
+    rt_clay_mats *mats = calloc((size_t)m->npart + 1, sizeof *mats);
+    float (*dif)[4] = calloc((size_t)m->amo.nmat + 1, sizeof *dif);
+    int i;
+    for (i = 0; i < m->npart; i++) {
+        const amo_part *ap = &m->amo.part[i];
+        const fl_part *fp = &m->part[i];
+        int j, b;
+        c[i] = m->part[i].clay;
+        at[i] = part_attr(m, i);
+        mats[i].n = ap->nmatlist < 32 ? ap->nmatlist : 32;     /* the materials the game can colour (rt_clay_mat_draw) */
+        for (j = 0; j < mats[i].n; j++)
+            mats[i].no[j] = ap->matlist[j];
+        for (b = 0; b < 32; b++) {
+            mats[i].bk[b] = -1;
+            for (j = 0; j < mats[i].n && fp->batch_mat[b] >= 0; j++)
+                if (ap->matlist[j] == (uint32_t)fp->batch_mat[b]) {
+                    mats[i].bk[b] = (int8_t)j;
+                    break;
+                }
+        }
+    }
+    for (i = 0; i < m->amo.nmat; i++)
+        memcpy(dif[i], m->amo.mat[i].col_b, sizeof dif[i]);
+    bind(k, c, at, m->npart, mats, (const float (*)[4])dif, m->amo.nmat);
+    free(mats);
+    free(dif);
+    free(c);
+    free(at);
+}
+
 static void load_eft_models(void)
 {
     int k;
     for (k = 0; k < 5; k++) {
         fmt_blob link = load_stage_file(0x2ECEE0, k, &eft_keep[2 * k]);    /* effect_model_data */
         fmt_blob tex = load_stage_file(0x2EF2A0, k, &eft_keep[2 * k + 1]); /* EFT_TEX */
-        gfx_clay **c;
-        uint32_t *at;
-        rt_clay_mats *mats;
-        float (*dif)[4];
-        int i;
         if (!link.p || fl_model_create(&eft_models[k], fmt_link_entry(link, 0, FMT_LE),
                                        fmt_link_entry(link, 1, FMT_LE), tex, 0, FMT_LE) != 0) {
             fprintf(stderr, "effect model %d: load failed\n", k);
             continue;
         }
-        c = calloc((size_t)eft_models[k].npart + 1, sizeof *c);
-        at = calloc((size_t)eft_models[k].npart + 1, sizeof *at);
-        mats = calloc((size_t)eft_models[k].npart + 1, sizeof *mats);
-        dif = calloc((size_t)eft_models[k].amo.nmat + 1, sizeof *dif);
-        for (i = 0; i < eft_models[k].npart; i++) {
-            const amo_part *ap = &eft_models[k].amo.part[i];
-            const fl_part *fp = &eft_models[k].part[i];
-            int j, b;
-            c[i] = eft_models[k].part[i].clay;
-            at[i] = part_attr(&eft_models[k], i);
-            mats[i].n = ap->nmatlist < 32 ? ap->nmatlist : 32;     /* the materials the game can colour (rt_clay_mat_draw) */
-            for (j = 0; j < mats[i].n; j++)
-                mats[i].no[j] = ap->matlist[j];
-            for (b = 0; b < 32; b++) {
-                mats[i].bk[b] = -1;
-                for (j = 0; j < mats[i].n && fp->batch_mat[b] >= 0; j++)
-                    if (ap->matlist[j] == (uint32_t)fp->batch_mat[b]) {
-                        mats[i].bk[b] = (int8_t)j;
-                        break;
-                    }
-            }
-        }
-        for (i = 0; i < eft_models[k].amo.nmat; i++)
-            memcpy(dif[i], eft_models[k].amo.mat[i].col_b, sizeof dif[i]);
-        rt_bind_eft_model(k, c, at, eft_models[k].npart, mats, (const float (*)[4])dif, eft_models[k].amo.nmat);
-        free(mats);
-        free(dif);
+        model_bind(&eft_models[k], k, rt_bind_eft_model);
         drop(&eft_keep[2 * k]);
         drop(&eft_keep[2 * k + 1]);
         if (eft_models[k].skel.nbone > 0)
             rt_bind_eft_skin(k, eft_models[k].skel.nbone, eft_skin);
-        free(c);
-        free(at);
     }
 }
 
@@ -1605,11 +1610,51 @@ static monster *em_kind_model(int kind)
     }
     return e;
 }
+/* The monster kinds' second models (em_create_model -> load_enemy_sub_model: em_sub_model_data main 0x2EC8C0, textures
+ * ENEMY_SUB_TEX 0x2EEEB0, -1 = none), cached by kind like the bodies: the effect clays of that kind (eft04's rocks and
+ * dust, eft20's / shell08's pieces, the arg-4 shadow), handed to the game C as game_w.area_mdlw[slot]. */
+static fl_model em_sub[EM_KINDS];
+static signed char em_sub_have[EM_KINDS];       /* 0 not tried, 1 loaded, -1 the kind has none */
+static int area_kind[4];                        /* the kind whose sub model area_mdlw[slot] holds, 0 none */
+static fl_model *em_sub_model(int kind)
+{
+    if (kind <= 0 || kind >= EM_KINDS || em_sub_have[kind] < 0)
+        return NULL;
+    if (!em_sub_have[kind]) {
+        uint8_t *keep[2];
+        size_t bytes;
+        fmt_blob link = load_stage_file(0x2EC8C0, kind, &keep[0]);
+        fmt_blob tex = load_stage_file(0x2EEEB0, kind, &keep[1]);
+        const char *o = rt_ms_push("monster sub models (area_mdlw, viewer)");
+        em_sub_have[kind] = -1;
+        bytes = link.n + tex.n;
+        if (link.p && fl_model_create(&em_sub[kind], fmt_link_entry(link, 0, FMT_LE), fmt_link_entry(link, 1, FMT_LE),
+                                      tex, 0, FMT_LE) == 0)
+            em_sub_have[kind] = 1;
+        else if (link.p)
+            fprintf(stderr, "monster kind %d: sub model not loaded\n", kind);
+        rt_ms_pop(o);
+        drop(&keep[0]);
+        drop(&keep[1]);
+        if (em_sub_have[kind] > 0 && (getenv("RT_QUEST_TRACE") || getenv("RT_MEM_FILES")))
+            fprintf(stderr, "viewer: monster kind %d sub model (area_mdlw): %d clays, %d textures, files %zu bytes\n", kind,
+                    em_sub[kind].npart, em_sub[kind].ntex, bytes);
+    }
+    return em_sub_have[kind] > 0 ? &em_sub[kind] : NULL;
+}
 static void em_model_load(int slot, int kind)
 {
     monster *e = em_kind_model(kind);
+    fl_model *sub = em_sub_model(kind);
     if (e && e->tbl.p)
         rt_em_motion_create(slot, kind, e->tbl.p);
+    if (slot >= 0 && slot < 4) {
+        if (sub)
+            model_bind(sub, slot, rt_bind_area_model);
+        else
+            rt_bind_area_model(slot, NULL, NULL, 0, NULL, NULL, 0);
+        area_kind[slot] = sub ? kind : 0;
+    }
 }
 
 /* every monster in use on this stage, posed by the game's motion player; also their joint matrices for
@@ -1784,6 +1829,16 @@ static void host_models_gc(void)
         free(e->mem[2]);
         memset(e, 0, sizeof *e);
         em_have[k] = 0;
+        if (em_sub_have[k] > 0) {       /* its sub model, unbound from the area_mdlw slots that hold it */
+            for (i = 0; i < 4; i++)
+                if (area_kind[i] == k) {
+                    rt_bind_area_model(i, NULL, NULL, 0, NULL, NULL, 0);
+                    area_kind[i] = 0;
+                }
+            fl_model_release(&em_sub[k]);
+            memset(&em_sub[k], 0, sizeof em_sub[k]);
+        }
+        em_sub_have[k] = 0;
     }
     if (pl.game && pl.tbl.p && !rt_motion_refs(pl.tbl.p, pl.tbl.n)) {
         /* the hunter's copy of plcom_tbl (hunter_load): in game mode it only gave the first common motion

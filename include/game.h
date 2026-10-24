@@ -63,7 +63,7 @@ typedef struct GAME_W {
     s8 x78[4];          /* 0x078 */
     u8 _pad07C[0x80 - 0x7C];
     u8 _pad080[0xB0 - 0x80];
-    struct EFT_MDLW *area_mdlw[8]; /* 0x0B0 (MH1 0x0A8, 9 entries there; G's x80 sits at 0xD0) */
+    struct EFT_MDLW *area_mdlw[8]; /* 0x0B0 (MH1 0x0A8, 9 entries there; G's x80 sits at 0xD0); [0..3] = sub_ptr, see MH1 */
     u8 x80[4];          /* 0x0D0 (MH1 0x080, Pl_item_cnt_up) */
     u8 _pad0D4[0xEC - 0xD4];
     s16 xCC;            /* 0x0EC (MH1 0x0CC) */
@@ -152,7 +152,9 @@ typedef struct GAME_W {
     u8 _pad07C[0x80 - 0x7C];
     u8 x80[4];          /* 0x080 per player, copied into the cooking smell (Eft12_set4) */
     u8 _pad084[0xA8 - 0x84];
-    struct EFT_MDLW *area_mdlw[9]; /* 0x0A8 model sets by area (eft07_t, Em_area_ck) */
+    struct EFT_MDLW *area_mdlw[9]; /* 0x0A8 model sets by area (eft07_t, Em_area_ck); only [0..3] are pointers: the PS2's
+                                   sub_ptr[4] (crmdl05 em_create_model: the sub model of the kind in model slot i), 0xB8 on
+                                   are sub_n / sub_no; on the PC filled by rt_bind_area_model (viewer.c em_model_load) */
     s16 xCC;            /* 0x0CC stolen item id (Item_stolen) */
     s16 xCE;            /* 0x0CE stolen item count */
     u8 x0D0;            /* 0x0D0 cleared by Quest_start */

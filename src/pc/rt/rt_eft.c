@@ -739,27 +739,28 @@ typedef struct {
 static eft_clay_mat *ecm;
 static int necm;
 
-void rt_bind_eft_model(int k, gfx_clay *const *c, const uint32_t *attr, int n,
-                       const rt_clay_mats *mats, const float (*diffuse)[4], int nmat)
+/* the clays and material list of one model bound into an MDLW the game C reads (eft_mdlw[k], game_w.area_mdlw[slot]);
+ * old: the handles of the model bound there before (reused, so nothing leaks when a model slot gets another kind) */
+int rt_rebind_clay(int old, gfx_clay *c);
+static void bind_mdlw(RT_MDLW *md, gfx_clay *const *c, const uint32_t *attr, int n,
+                      const rt_clay_mats *mats, const float (*diffuse)[4], int nmat, const int *old, int nold)
 {
     CLAY *cl;
     int i, j;
-    if (k < 0 || k >= 5)
-        return;
     cl = calloc((size_t)(n > 0 ? n : 1), sizeof *cl);
-    if (mats && nmat > 0 && !eft_mdl[k].mat) {
+    if (mats && nmat > 0 && !md->mat) {
         /* the material table the game C writes colours into (flMATERIAL, 0x4C bytes: diffuse RGB +4, alpha +0x10) */
         u8 *mt = calloc((size_t)nmat, 0x4C);
         for (j = 0; j < nmat && mt; j++) {
             memcpy(mt + 0x4C * j + 4, diffuse[j], 12);
             *(f32 *)(mt + 0x4C * j + 0x10) = 1.0f;
         }
-        eft_mdl[k].mat = mt;
+        md->mat = mt;
     }
     for (i = 0; i < n; i++) {
-        cl[i].handle = rt_register_clay(c[i]);
+        cl[i].handle = rt_rebind_clay(i < nold ? old[i] : -1, c[i]);
         cl[i].attr = attr ? (s32)attr[i] : 0;
-        if (mats && eft_mdl[k].mat && mats[i].n > 0) {
+        if (mats && md->mat && mats[i].n > 0) {
             eft_clay_mat *e;
             int ok = 1;
             for (j = 0; j < mats[i].n && j < 32; j++)
@@ -777,9 +778,53 @@ void rt_bind_eft_model(int k, gfx_clay *const *c, const uint32_t *attr, int n,
             }
         }
     }
-    eft_mdl[k].flag = 1;
-    eft_mdl[k].clay = cl;
+    md->flag = 1;
+    md->clay = cl;
+}
+
+void rt_bind_eft_model(int k, gfx_clay *const *c, const uint32_t *attr, int n,
+                       const rt_clay_mats *mats, const float (*diffuse)[4], int nmat)
+{
+    if (k < 0 || k >= 5)
+        return;
+    bind_mdlw(&eft_mdl[k], c, attr, n, mats, diffuse, nmat, NULL, 0);
     eft_mdlw[k] = &eft_mdl[k];
+}
+
+/* game_w.area_mdlw[slot] (game_w + 0xA8 MH1 / + 0xB0 G, the PS2's sub_ptr[slot]): em_create_model's second model of
+ * the monster kind in model slot `slot` (load_enemy_sub_model: em_sub_model_data / ENEMY_SUB_TEX, main 0x124820), the
+ * clays eft04, eft01's shadow arg 4, eft07, eft17, eft20 and shell08 draw for that kind (Em_area_ck(kind) = slot).
+ * n 0 unbinds the slot (no sub model, or its model freed). */
+static RT_MDLW area_mdl[4];
+static int area_handle[4][64], area_nhandle[4];
+void rt_bind_area_model(int slot, gfx_clay *const *c, const uint32_t *attr, int n,
+                        const rt_clay_mats *mats, const float (*diffuse)[4], int nmat)
+{
+    RT_MDLW *md;
+    int i, j;
+    if (slot < 0 || slot >= 4)
+        return;
+    md = &area_mdl[slot];
+    game_w.area_mdlw[slot] = NULL;
+    for (i = 0; i < area_nhandle[slot]; i++) {          /* the old model's material entries go */
+        rt_rebind_clay(area_handle[slot][i], NULL);
+        for (j = 0; j < necm; j++)
+            if (ecm[j].handle == area_handle[slot][i])
+                ecm[j--] = ecm[--necm];
+    }
+    free(md->clay);
+    free(md->mat);
+    memset(md, 0, sizeof *md);
+    if (n <= 0 || !c)
+        return;
+    if (n > 64)
+        n = 64;
+    bind_mdlw(md, c, attr, n, mats, diffuse, nmat, area_handle[slot], area_nhandle[slot]);
+    for (i = 0; i < n; i++)
+        area_handle[slot][i] = md->clay[i].handle;
+    if (n > area_nhandle[slot])
+        area_nhandle[slot] = n;
+    game_w.area_mdlw[slot] = (struct EFT_MDLW *)md;
 }
 
 /* A clay of the effect models drawn with the material colours the game set (pl_item_trans_sub: the roast's meat and bone

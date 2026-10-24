@@ -173,6 +173,7 @@ static int rebind_clay(int old, gfx_clay *c)
     }
     return rt_register_clay(c);
 }
+int rt_rebind_clay(int old, gfx_clay *c) { return rebind_clay(old, c); }   /* rt_eft.c: game_w.area_mdlw */
 
 unsigned char rt_stage_sky_flags[64];
 int rt_stage_model_no;                  /* the stage the models being bound belong to (viewer.c load_stage_models) */     /* set by the viewer before rt_bind_stage_model: part k is a sky part */
