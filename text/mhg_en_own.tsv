@@ -73,11 +73,11 @@ lobby:0x6020F0	cef29380	t	Last time I visited the Elder in the Swamp, I think...
 lobby:0x602170	c217efe0	t	But be careful. The Veggie Elders won't always trade you the same thing.
 lobby:0x6021D0	cef29380	t	Last time I visited the Elder in the Swamp, I think... he traded me something really good for a Vespoid Abdomen.
 lobby:0x602250	c217efe0	t	But be careful. The Veggie Elders won't always trade you the same thing.
-lobby:0x602320	d46c7f4d	n t	He traded me Carbalite Ore for a Hornetaur Razorwing!
-lobby:0x602360	a5bb362d	n t	Oh, but the other day, he gave me Dragonite Ore for a Hornetaur Razorwing! I guess he's moody.
-lobby:0x602440	a5bb362d	n t	Oh, but the other day, he gave me Dragonite Ore for a Hornetaur Razorwing! I guess he's moody.
-lobby:0x6029F0	bb20fa9f	n t	He traded me Albino Prime Cut for a Hellfire Stone!
-lobby:0x602A30	7f128649	n t	Oh, but the other day, I gave him a Hellfire Stone and got a Gravios Carapace! I guess he's moody.
+lobby:0x602320	d46c7f4d	t	He traded me Carbalite Ore for a Hornetaur Razorwing!
+lobby:0x602360	a5bb362d	t	Oh, but the other day, he gave me Dragonite Ore for a Hornetaur Razorwing! I guess he's moody.
+lobby:0x602440	a5bb362d	t	Oh, but the other day, he gave me Dragonite Ore for a Hornetaur Razorwing! I guess he's moody.
+lobby:0x6029F0	bb20fa9f	t	He traded me Pale Khezu Steak for a Firecell Stone!
+lobby:0x602A30	7f128649	t	Oh, but the other day, I gave him a Firecell Stone and got a Gravios Carapace! I guess he's moody.
 lobby:0x602AA0	144af095	t	The Veggie Elders are really moody, but if you use them well, you can get lots of good deals. Good luck!
 lobby:0x603590	43c2431d	t	Fishing is fun, but nothing beats hunting.
 lobby:0x6035C0	a2b73eec	t	The other day I was out enjoying a hunt in all sorts of places, when...
@@ -137,15 +137,15 @@ lobby:0x60EB40	0ecaecfe	t	Measuring a monster like a prize fish! Can you believe
 lobby:0x60EBB0	844395fc	t	Master, why don't you try it? A Monster Record. I hear you can start right away if you buy monster info.
 lobby:0x60EC10	cd3feae2	t	I hear you can record how many monsters you've slain, and even their size, in the Monster List!!
 lobby:0x60EC60	4780990b	t	I hear you can start right away if you buy monster info.
-lobby:0x60ED10	198cf299	n t	They say there's an Azure Rathalos!
-lobby:0x60ED50	2f80a35e	n t	And, and, they say there's a Pink Rathian, too!
+lobby:0x60ED10	198cf299	t	They say there's an Azure Rathalos!
+lobby:0x60ED50	2f80a35e	t	And, and, they say there's a Pink Rathian, too!
 lobby:0x60EDA0	4a671a18	t	Do you think it's true!? What do you think?
 lobby:0x60EDD0	a5f04f96	t	Master! The info I got from the Hell Brothers says there are monsters with different body colors!
-lobby:0x60EE40	9aa28192	n t	An Azure Rathalos. A Pink Rathian. Can they really exist!?
+lobby:0x60EE40	9aa28192	t	An Azure Rathalos. A Pink Rathian. Can they really exist!?
 lobby:0x60EEA0	d3953fcc	t	Master!! I got more info from that weird pair, the Hell Brothers!
 lobby:0x60EEF0	988a6ef2	t	They say that in top-rank quests, there's sometimes a Yian Kut-Ku outbreak!
-lobby:0x60EF40	08f8860f	n t	When you reach your limit, put the Felyne Cart Ticket from the supplies in the Delivery Box, and the quest counts as a success!
-lobby:0x60EFC0	f0ce64db	n t	When there's a Kut-Ku outbreak, slay as many as you can, and when you hit your limit, deliver the Felyne Cart Ticket! Got it?
+lobby:0x60EF40	08f8860f	t	When you reach your limit, put the Paw Pass Ticket from the supplies in the Delivery Box, and the quest counts as a success!
+lobby:0x60EFC0	f0ce64db	t	When there's a Kut-Ku outbreak, slay as many as you can, and when you hit your limit, deliver the Paw Pass Ticket! Got it?
 lobby:0x60F350	9f342d4c	t	Master!! Driving off that giant dragon, the one like a rocky mountain... Honestly, you're invincible!
 lobby:0x60F3B0	25632c26	t	I heard you can get rare materials from that giant dragon's back...
 lobby:0x60F400	e22e32ab	t	If that's true, you could make gear unlike anything from the giant dragons before!
@@ -153,48 +153,48 @@ lobby:0x60F470	370649bb	t	Driving off that giant dragon, the one like a rocky mo
 lobby:0x60F520	0dedfcca	t	Haven't seen you before. Did you come here to be a hunter, too?
 lobby:0x60F560	f3867144	t	All sorts of people live in this big town. Listen to what they say, and you'll pick up useful info.
 lobby:0x60FB40	f101b847	t	I hear the materials from Lao-Shan Lung, like its Shell, Scale, Claw, Horn and Plate, make powerful gear! I'm so jealous!
-lobby:0x6100C0	fa4bdbc3	n t	A True Black Dragon Spear! Maybe you could make a weapon like that!?
-lobby:0x610160	fa4bdbc3	n t	A True Black Dragon Spear! Maybe you could make a weapon like that!?
+lobby:0x6100C0	fa4bdbc3	t	A True Black Dragon Spear! Maybe you could make a weapon like that!?
+lobby:0x610160	fa4bdbc3	t	A True Black Dragon Spear! Maybe you could make a weapon like that!?
 lobby:0x6101A0	28d208cb	t	Is it true? You slew that rocky giant dragon that attacked the fortress!?
-lobby:0x610320	d4937a9d	n t	It seems you need a material called Lao-Shan Ruby. They say it's very rare. Can anyone really get one?
+lobby:0x610320	d4937a9d	t	It seems you need a material called Lao-Shan's Ruby. They say it's very rare. Can anyone really get one?
 lobby:0x610BC0	3d89ed02	t	It looks like you have good friends with you.
 lobby:0x610BF0	6a080bbb	t	Tell me how you fought sometime, will you?
 lobby:0x610D30	08f8cd52	t	Kirin, cloaked in lightning, calls down thunder at will. Don't you want to see one, just once?
 lobby:0x611090	24369544	t	I still can't believe it. You've driven off Lao-Shan Lung again and again...
 lobby:0x6110E0	e0765698	t	When we first met here, I never imagined you'd grow into such a great hunter...
 lobby:0x612A10	b9722054	t	Did you know some armor skill types are really unusual?
-lobby:0x612A50	c047fa1c	n t	Torso Up doubles the skill points on your body armor.
+lobby:0x612A50	c047fa1c	t	Torso Increased doubles the skill points on your body armor.
 lobby:0x612AB0	2e4fdbce	t	Wear several, and your body armor's points go 2x, 3x, 4x, 5x!
-lobby:0x612B10	a451c5f3	n t	Torso Plus adds points to the skill types on your body armor.
+lobby:0x612B10	a451c5f3	nt	Torso Plus adds points to the skill types on your body armor.
 lobby:0x612B60	71abd323	t	Both are great deals, so try them when you get body armor with good skill types!
-lobby:0x612BC0	0ceb0e3e	n t	Me, I recommend both Torso Up and Torso Plus!
+lobby:0x612BC0	0ceb0e3e	nt	Me, I recommend both Torso Increased and Torso Plus!
 lobby:0x612C10	bf85fac9	t	That's what my papa says, and he's a top hunter who's slain lots of wyverns!
-lobby:0x612C60	e6f69b53	n t	Have you heard of the skill type called Glutton?
+lobby:0x612C60	e6f69b53	t	Have you heard of the skill type called Gluttony?
 lobby:0x612CA0	841db15a	t	I hear it gives you skills that help with Stamina!
 lobby:0x612CE0	50fb7d08	t	Something about feeling fuller when you eat cooked meat and such... Papa told me. Is it true?
-lobby:0x612D50	c5fb94d7	n t	I hear the Glutton skill type gives you skills that help with Stamina. Papa told me... Is it true?
-lobby:0x612E00	ee38cb2a	n t	It's a skill that makes you take less damage than usual when you're hit! Was it called Divine Protection?
+lobby:0x612D50	c5fb94d7	t	I hear the Gluttony skill type gives you skills that help with Stamina. Papa told me... Is it true?
+lobby:0x612E00	ee38cb2a	t	It's a skill that makes you take less damage than usual when you're hit! Was it called Protection?
 lobby:0x612E70	0125cbcf	t	It doesn't always work, but it's reassuring! There sure are some strange skills.
-lobby:0x612EC0	bafdc166	n t	The Divine Protection skill seems to reduce damage now and then.
+lobby:0x612EC0	bafdc166	t	The Protection skill seems to reduce damage now and then.
 lobby:0x613250	b743894f	t	You beat that rocky giant dragon!?
 # --- town talk 3
-lobby:0x6132D0	ae9c0e14	n t	There's a skill called Sharpness +1. It's a special skill that adds one level to your Sharpness gauge.
+lobby:0x6132D0	ae9c0e14	t	There's a skill called Sharpness +1. It's a special skill that adds one level to your Sharpness gauge.
 lobby:0x613340	7882ee99	t	But I don't really know which skill type activates it...
 lobby:0x613390	221efb0a	t	But I bet you can find out!
-lobby:0x6133C0	5bce5ae3	n t	With the Sharpness +1 skill, you can add one level to your Sharpness gauge!
+lobby:0x6133C0	5bce5ae3	t	With the Sharpness +1 skill, you can add one level to your Sharpness gauge!
 lobby:0x613420	ce8f0971	t	I don't know which skill type activates it... But I bet you can find out!
-lobby:0x613660	6b98e494	t	Do you know the secret of making Swords? Depending on how you make them, you can create Dual Swords, a pair of blades!
+lobby:0x613660	6b98e494	t	Do you know the secret of making Swords? Depending on how you make them, you can create Dual Blades, a pair of blades!
 lobby:0x6136D0	b3940d8d	t	With no shield you can't guard, but you'd get in so many more hits...
 lobby:0x613730	4fa89101	t	And I heard pressing R1 lets you unleash a fierce attack for a while, until your Stamina runs out.
 lobby:0x6137A0	31c769c1	t	Wow, just thinking about it gets my heart racing!
-lobby:0x6137D0	6b98e494	t	Do you know the secret of making Swords? Depending on how you make them, you can create Dual Swords, a pair of blades!
+lobby:0x6137D0	6b98e494	t	Do you know the secret of making Swords? Depending on how you make them, you can create Dual Blades, a pair of blades!
 lobby:0x613D60	db7eae7f	t	Forest Elder: monster parts. Swamp Elder: ores. Jungle... I forget! Try it yourself.
 lobby:0x613E10	db7eae7f	t	Forest Elder: monster parts. Swamp Elder: ores. Jungle... I forget! Try it yourself.
 lobby:0x613F10	61b3217a	t	You've slain Lao-Shan Lung twice, and you're aiming even higher.
 lobby:0x6142F0	15cbd8d8	t	Time to use my Platinum Ticket, saved over a year at the Guest House...!!
-lobby:0x614350	07e754c3	n t	What I'm after is the Barbaroi Blade! How about it? Coolest name ever, right?
+lobby:0x614350	07e754c3	t	What I'm after is the Barbaroi Blade! How about it? Coolest name ever, right?
 lobby:0x6143A0	0c7b2adf	t	The Platinum Ticket I saved up from a whole year at the Guest House!
-lobby:0x6143E0	76ea96b4	n t	What I'm after is the Barbaroi Blade! How about it? Now you want one too, don't you?
+lobby:0x6143E0	76ea96b4	t	What I'm after is the Barbaroi Blade! How about it? Now you want one too, don't you?
 lobby:0x614F20	5ee6810a	t	Right now I'm dying to go on a top-rank quest!
 lobby:0x614F60	db41a9a5	t	In top-rank quests, supplies aren't guaranteed, and you might not even start from camp!
 lobby:0x614FC0	13be5943	t	You can't get that kind of thrill anywhere else! I'm shaking with excitement!
@@ -216,19 +216,19 @@ lobby:0x617020	f4b00805	t	After all, they often drop you somewhere crazy and mak
 lobby:0x617080	215a8887	t	And they make you fight G-rank brutes like that! What a classy touch!
 lobby:0x6170D0	b58f6ab0	t	Well, this great Black Ogre plays it safe and always carries a Farcaster! Bahahaha!
 lobby:0x617130	fcfb7ff0	t	Top-rank quests should keep me from getting bored until HE shows up! Bahahaha!
-lobby:0x619790	d26e7aa1	n t	Honestly, this boy! I keep telling him to pick the Alchemy skill, study combining more deeply, and hunt smarter!
-lobby:0x619890	89bda59d	n t	A modern man should use the Alchemy skill to study combining more deeply and hunt smarter, right!?
-lobby:0x619950	32726311	n t	Do you know the Guard +1 skill?
+lobby:0x619790	d26e7aa1	t	Honestly, this boy! I keep telling him to pick the Alchemy skill, study combining more deeply, and hunt smarter!
+lobby:0x619890	89bda59d	t	A modern man should use the Alchemy skill to study combining more deeply and hunt smarter, right!?
+lobby:0x619950	32726311	nt	Do you know the Guard +1 skill?
 lobby:0x619980	00060d88	t	I hear it shortens the opening after you guard! Though with some attacks, it seems to make no difference.
-lobby:0x619A30	6a3b1b5b	n t	With the Guard +1 skill, I hear the opening after you guard can be shorter! If you hear anything useful, please tell me!
-lobby:0x619AF0	c854f4c7	n t	The Razor Sharp skill! It makes Sharpness last longer! With that, you could just attack, attack, attack!
-lobby:0x619CC0	ba0e44f7	n t	It's called the Honeycomber! An upgraded version of the Bowgun called the Flechette Gun!
+lobby:0x619A30	6a3b1b5b	nt	With the Guard +1 skill, I hear the opening after you guard can be shorter! If you hear anything useful, please tell me!
+lobby:0x619AF0	c854f4c7	t	The Sharp Sword skill! It makes Sharpness last longer! With that, you could just attack, attack, attack!
+lobby:0x619CC0	ba0e44f7	t	It's called the Honeycomber! An upgraded version of the Bowgun called the Flechette Gun!
 lobby:0x619F50	6bc6b525	t	You really are strong! Beating that giant dragon three times...
 lobby:0x619FA0	f3ced246	t	You must be really skilled.
-lobby:0x619FD0	03748426	n t	I know! Here's a tip for you. I hear there's a skill called Rapid Fire.
+lobby:0x619FD0	03748426	t	I know! Here's a tip for you. I hear there's a skill called Rapid Fire.
 lobby:0x61A020	8545f8a8	t	They say it's a skill that lets you fire a Bowgun without reloading.
 lobby:0x61A060	04316605	t	A hunter as skilled as you could surely give it a try.
-lobby:0x61A0B0	7ea8578e	n t	I hear the Rapid Fire skill lets you fire a Bowgun without reloading. I'm sure you could give it a try.
+lobby:0x61A0B0	7ea8578e	t	I hear the Rapid Fire skill lets you fire a Bowgun without reloading. I'm sure you could give it a try.
 lobby:0x61A930	8cf43b64	t	It seems that in what they call top-rank quests, once in a great while, you get dropped into a special place.
 lobby:0x61A9A0	798bdeab	t	You can find rare items in that special place. It's a bit of a rumor among hunters.
 lobby:0x61AA10	fe7399f5	t	A special place you can reach, very rarely, in top-rank quests...
@@ -239,9 +239,9 @@ lobby:0x61B160	95dbdd59	t	Bowgun ammo, see... One combination makes several shot
 lobby:0x61B1C0	cbd8a01b	t	If you want to be a top Gunner, you have to combine your own ammo!
 lobby:0x61B210	824dcd08	t	How about that? Combining is really simple, and really deep, isn't it?
 lobby:0x61B6F0	95dbdd59	t	Bowgun ammo, see... One combination makes several shots, like 5 to 10.
-lobby:0x61B750	08b13752	n t	And by combining ammo, you can also make Flaming S, Water S and Thunder S. Amazing, huh!?
+lobby:0x61B750	08b13752	t	And by combining ammo, you can also make Flaming S, Ice S and Thunder S. Amazing, huh!?
 lobby:0x61B7C0	95dbdd59	t	Bowgun ammo, see... One combination makes several shots, like 5 to 10.
-lobby:0x61B820	08b13752	n t	And by combining ammo, you can also make Flaming S, Water S and Thunder S. Amazing, huh!?
+lobby:0x61B820	08b13752	t	And by combining ammo, you can also make Flaming S, Ice S and Thunder S. Amazing, huh!?
 lobby:0x61C270	771b9e36	t	Hey, I heard! You slew the Cephadrome in the desert. That's amazing!
 lobby:0x61C2C0	d1ede84c	t	But we're not slacking either. We just got in new armor called Silver Metal Boots!
 lobby:0x61C330	1487ff93	t	Their Defense is second to none! Be sure to buy some! ...Now then, again.
@@ -265,7 +265,7 @@ lobby:0x61DB10	67773ba8	t	Sigh... If only the legendary Gunner who vanished year
 lobby:0x61DB60	1f8966d9	t	If only the legendary hunter who vanished would show up, he'd use Antidotes and slay that poisonous monster...
 lobby:0x61F220	36f62c40	t	But you know, I think giving her a rare fish you caught would work too.
 lobby:0x61F280	770c954a	t	I heard that once in a while, you can catch a fish that shines like gold...
-lobby:0x61F2C0	57167a52	n t	If you're after golden fish, get a certain bait. You can make it by combining a Burrowing Bee and a Firefly.
+lobby:0x61F2C0	57167a52	t	If you're after golden fish, get a certain bait. You can make it by combining a Snakebee Larva and a Firefly.
 lobby:0x61FA40	9a3b4571	t	Look at my buddy. All worked up over one letter.
 lobby:0x61FF90	32baa62d	t	Hm... What do you want? Oh, you again. Coming to me for info... Hunting's tough, huh?
 # --- town talk 2
@@ -274,8 +274,8 @@ lobby:0x620000	4185ca70	t	Speaking of tough, getting Bowgun ammo costs a lot of 
 lobby:0x620050	0b05dccd	t	When that happens, make your ammo by combining. Using up one set of materials should get you several shots. Trust me and try it.
 lobby:0x6200E0	113401a0	t	But how long do you plan to keep hunting? I'd quit before you get badly hurt.
 lobby:0x620140	41fa3162	t	If you want ammo cheaply, make your shots by combining.
-lobby:0x620740	4bf7d3e8	n t	Crag S, Clust S, Flaming, Water and Thunder S. Hm... How do I know so much?
-lobby:0x6207C0	703089af	n t	Crag S, Clust S, Flaming, Water, Thunder S. You can combine special ammo, too.
+lobby:0x620740	4bf7d3e8	nt	Crag S, Clust S, Flaming, Ice and Thunder S. Hm... How do I know so much?
+lobby:0x6207C0	703089af	nt	Crag S, Clust S, Flaming, Ice, Thunder S. You can combine special ammo, too.
 lobby:0x620970	9c50be21	t	The weapon shop sometimes gets new equipment. When you feel you've grown, go talk to them.
 lobby:0x620A20	edd7bb67	t	He'll even sell you rare items this village doesn't have.
 lobby:0x620A60	12ae0c11	t	And the trader sometimes comes to this village with newer items. When you feel you've grown, go talk to him.
@@ -283,17 +283,17 @@ lobby:0x620AE0	75042f7a	t	The town trader and our weapon shop: talk to them when
 lobby:0x620B40	2129361e	t	Don't forget to take the materials you carve from monsters to the blacksmith.
 lobby:0x620BA0	67a90b0b	t	The blacksmith uses those materials to Create equipment and Upgrade weapons for you.
 lobby:0x621060	3d3958de	t	I hear some of the gear you can put together in this village has really useful skills.
-lobby:0x6210C0	46f0e4f0	n t	One is Razor Sharp. They say it doubles how well a melee weapon holds its Sharpness.
-lobby:0x621110	b39c87bf	n t	The other is Normal S Up. They say it raises the power of a Bowgun's Normal S.
+lobby:0x6210C0	46f0e4f0	t	One is Sharp Sword. They say it doubles how well a melee weapon holds its Sharpness.
+lobby:0x621110	b39c87bf	nt	The other is Normal S Up. They say it raises the power of a Bowgun's Normal S.
 lobby:0x621610	cb412bc5	t	You came at a good time. I just got new items in from the town.
 lobby:0x621740	bc1af37a	t	You're starting to look like a real hunter. I just got new items in from the town.
 lobby:0x621790	c6a958ee	t	I especially recommend the Cool Drink. It helps you stand the heat, a must in the desert or the volcano.
 lobby:0x621850	2dbf6500	t	I heard you slew Monoblos. Amazing! Oh, speaking of amazing, I just got the best items in from the town.
-lobby:0x621950	d51d6639	n t	And from the Storage Expert series, the Book of Power! Plus lots of useful tools! ...Now then, again.
+lobby:0x621950	d51d6639	t	And the Item Box books are back: this time, the Backpacker Guide! Plus lots of useful tools! ...Now then, again.
 lobby:0x6219C0	448bc5e6	t	Is it true you slew Rathalos!? All right, then I'll show you items as good as you are.
 lobby:0x621B10	668b9b6a	t	Perfect timing! I just got new items in from the town.
-lobby:0x621B70	149540a0	n t	Today I recommend Storage Expert! The best item there is: your Item Box holds 100 more. This time it's the Book of Skill!
-lobby:0x6222B0	ebaea631	n t	Have you ever heard of a place called the Training School?
+lobby:0x621B70	149540a0	t	Today I recommend the Item Box books! The best item there is: your Item Box holds 100 more. This time it's the Organizer Guide!
+lobby:0x6222B0	ebaea631	t	Have you ever heard of a place called the Training School?
 lobby:0x622690	e36e08d0	t	Hm. So you beat Monoblos... I hate to say it, but as a hunter, you're better than me. ...I admit defeat.
 lobby:0x622700	924c22b2	t	It must have been a tough one. I ran into one once myself, and I still can't forget that horrible single horn...
 lobby:0x622790	730bf92d	t	What!? The one-horn you slew was sand-colored? I think the one I met was different... Am I mistaken?
@@ -321,7 +321,7 @@ lobby:0x6254C0	ef8d6c6a	t	Hoo hoo! It seems you've slain at least 20 of every wy
 lobby:0x625600	a5a816d9	t	Heh heh heh. Today is the market's half-price sale. I'll take combination requests at half price.
 lobby:0x625660	10ef1966	t	Heh heh heh! Could it be you've succeeded at every combination?
 lobby:0x6256B0	61ba52e7	t	I'm surprised you know so much. Perhaps I should entrust you with this book.
-lobby:0x625710	cef8da91	n t	The secret of the Book of Combos series: Book of Combos G: Alchemy. Even deeper combining that makes something from nothing awaits you. Use it with care.
+lobby:0x625710	cef8da91	t	The secret of the Book of Combos series: Alchemy Guide. Even deeper combining that makes something from nothing awaits you. Use it with care.
 lobby:0x625AE0	942c17a3	t	By freely combining the parts of your armor, you can gain special abilities called Skills.
 lobby:0x625B50	962aa0b3	t	Head, body, arms, waist, legs: the points of one skill type on each part add up, and the skill activates.
 lobby:0x625BC0	834c9717	t	You can always check your Skills on the Status screen. *Mumble*...
@@ -335,7 +335,7 @@ lobby:0x6265B0	b760466c	t	Head, body, arms, waist, legs: the skill points of the
 lobby:0x626620	834c9717	t	You can always check your Skills on the Status screen. *Mumble*...
 lobby:0x627400	515513b9	t	Hm? This is the materials shop. The hunters have done well, so I have finer materials than usual. Take a look.
 lobby:0x627480	06c0d654	t	Hm? This is the materials shop. Seems today is half-price day, so I've made my shop half-price too.
-lobby:0x629DD0	7d32d80b	n t	How to get Melynx Tools? That's a secret, gob!
+lobby:0x629DD0	7d32d80b	t	How to get Melynx Tools? That's a secret, gob!
 lobby:0x629E10	4b0cebc0	t	I won't tell you it's a Catburglar, a Pawprint Stamp, a Platinum Ticket, and my favorite secret ingredient, gob!
 lobby:0x62A560	e5ddc794	t	Today, as a special treat, let me tell you about an extremely rare stone you seldom see.
 lobby:0x62B570	2985e721	t	Today, as a special treat, I'll tell you about an extremely rare material you seldom see.
@@ -345,27 +345,27 @@ lobby:0x62C4A0	766e079e	t	Climb onto a giant dragon's back and press the ~B00 bu
 lobby:0x62C570	fa3fdb40	t	In every room but the Pawn Room, you get a ticket at your 10th, 20th, 30th, 40th, 50th, 75th and 100th stay, meow.
 lobby:0x62C5F0	ebf2f162	t	After 100 you don't get any, but you might get one by joining a certain event, meow. Got it, meow?
 lobby:0x62C660	57d49165	t	Paid rooms stop giving tickets after 100 stays, meow. But you might get one by joining a certain event, meow.
-lobby:0x62CB40	90238b60	n t	Add one more item to Pearl Hide, Albino Prime Cut and Dragonite Ore, and you can make a Khezu S Helm or Khezu S Cap, meow!
-lobby:0x62CC30	244559b0	n t	Add one more item to Rathian Ruby, Rathian Scale and Rathian Carapace, and you can make a Rathian S Helm or Rathian S Cap, meow!
-lobby:0x62CD20	59866ec2	n t	Add one more item to Rathalos Ruby, Rathalos Carapace and Rathalos Webbing, and you can make Rathalos S Mail or a Rathalos S Vest, meow!
-lobby:0x62CE00	ae7ead11	n t	Add one more item to Hellfire Stone, Crimson Horn and Monoblos Spine, and you can make Monoblos S Mail or a Monoblos S Vest, meow!
-lobby:0x62CEF0	c8a74f82	n t	Add one more item to Pure Crystal, Novacrystal and Dragonite Ore, and you can make Steel S Vambraces, meow!
-lobby:0x62D0B0	0590cfcb	n t	Add one more item to Vespoid Razorwing, Vespoid Carapace and Vespoid Wing, and you can make a Vespoid S Tasset, meow!
-lobby:0x62D190	a8f5bb53	n t	Add one more item to Hornetaur Razorwing, Hornetaur Carapace and Hornetaur Head, and you can make a Hornet S Coat, meow!
-lobby:0x62D270	b911c09b	n t	Add one item to Gravios Hardshell, Gravios Steel Wing and Gravios Shell to make Gravios S Greaves, Gravios S Leggings and more, meow!
-lobby:0x62D360	7f494d5d	n t	Add one item to Plesioth Scale+, Plesioth Dorsal Fin and Monster Broth to make Plesioth S Greaves, S Leggings, more, meow!
-lobby:0x62D450	c62526b3	n t	Add one more item to Hellfire Stone, Master's Skull and Ancient Potion, and you can make a Skull S Face, meow!
-lobby:0x62D520	87b52ae3	n t	Add one more item to a Platinum Ticket and a Hellfire Stone, and you can make the Barbaroi Blade, meow!
-lobby:0x62D5E0	5f5bc3d7	n t	Add one more item to Velociprey Hide+, Velociprey Scale+ and a Guild Ticket, and you can make the Drome Bite Dagger, meow!
-lobby:0x62D6C0	73403c8a	n t	Add one more item to Rathian Ruby and Rathian Carapace, and you can make Sieglinde G, meow!
-lobby:0x62D780	d9d0fe4c	n t	Add one more item to a Guild Ticket and a Novacrystal, and you can make the Sleepy Bear, meow!
-lobby:0x62D840	3624283e	n t	Add one more item to Rathalos Ruby and Rathalos Carapace, and you can make Siegmund G, meow!
-lobby:0x62D900	1061a5d2	n t	Add one more item to Silver Rathalos Wingtalon, Gypceros Coin and Basarios Coin, and you can make the Master Blade, meow!
-lobby:0x62D9D0	d05af3cd	n t	Add one more item to Silver Rathalos Shell, Kut-Ku Coin and Cephadrome Coin, and you can make the Master Hammer, meow!
-lobby:0x62DAA0	daffca04	n t	Add one more item to Silver Rathalos Tail, Rathalos Coin and Rathian Coin, and you can make the Master Lance, meow!
-lobby:0x62DB70	4601b519	n t	Add one more item to Hard Monster Bone, Cephadrome Coin and Basarios Coin, and you can make the Master Sword, meow!
-lobby:0x62DC40	d4a4e1af	n t	Add one more item to Vespoid Carapace, Vespoid Abdomen and Hornetaur Carapace, and you can make the Honeycomber, meow!
-lobby:0x62DD20	6a73c76b	n t	Add one more item to Inferno Sac, Kut-Ku Coin and Gypceros Coin, and you can make the Master Bowgun, meow!
+lobby:0x62CB40	90238b60	t	Add one more item to Khezu Hide - Tan, Pale Khezu Steak and Dragonite Ore, and you can make a Khezu Helm S or Khezu Cap S, meow!
+lobby:0x62CC30	244559b0	t	Add one more item to Rathian Ruby, Rathian Scale and Rathian Carapace, and you can make a Rathian Helm S or Rathian Cap S, meow!
+lobby:0x62CD20	59866ec2	t	Add one more item to Rathalos Ruby, Rathalos Carapace and Rathalos Webbing, and you can make Rathalos Mail S or a Rathalos Vest S, meow!
+lobby:0x62CE00	ae7ead11	t	Add one more item to Firecell Stone, Crimson Horn and Monoblos Spine, and you can make Monoblos Mail S or a Monoblos Vest S, meow!
+lobby:0x62CEF0	c8a74f82	t	Add one more item to Pure Crystal, Novacrystal and Dragonite Ore, and you can make Steel Vambraces S, meow!
+lobby:0x62D0B0	0590cfcb	t	Add one more item to Vespoid Razorwing, Vespoid Carapace and Vespoid Wing, and you can make a Vespoid Tasset S, meow!
+lobby:0x62D190	a8f5bb53	t	Add one more item to Hornetaur Razorwing, Hornetaur Carapace and Hornetaur Head, and you can make a Hornet Coat S, meow!
+lobby:0x62D270	b911c09b	t	Add one item to Gravios Heavy Shell, Strong Gravios Wing and Gravios Shell to make Gravios Greaves S, Gravios Leggings S and more, meow!
+lobby:0x62D360	7f494d5d	t	Add one item to Plesioth Scale+, Plesioth Top Fin and Monster Broth to make Plesioth Greaves S, Leggings S, more, meow!
+lobby:0x62D450	c62526b3	t	Add one more item to Firecell Stone, Master's Skull and Ancient Potion, and you can make a Skull Face S, meow!
+lobby:0x62D520	87b52ae3	t	Add one more item to a Platinum Ticket and a Firecell Stone, and you can make the Barbaroi Blade, meow!
+lobby:0x62D5E0	5f5bc3d7	t	Add one more item to Velociprey Hide+, Velociprey Scale+ and a Guild Ticket, and you can make the Velocidrome Bite, meow!
+lobby:0x62D6C0	73403c8a	t	Add one more item to Rathian Ruby and Rathian Carapace, and you can make Seiglinde+, meow!
+lobby:0x62D780	d9d0fe4c	t	Add one more item to a Guild Ticket and a Novacrystal, and you can make the Teddybear, meow!
+lobby:0x62D840	3624283e	t	Add one more item to Rathalos Ruby and Rathalos Carapace, and you can make Great Golem+, meow!
+lobby:0x62D900	1061a5d2	t	Add one more item to Silver Rathalos Claw, Gypceros Coin and Basarios Coin, and you can make the Expert Blade, meow!
+lobby:0x62D9D0	d05af3cd	t	Add one more item to Silver Rathalos Shell, Kut-Ku Coin and Cephalos Coin, and you can make the Expert Hammer, meow!
+lobby:0x62DAA0	daffca04	t	Add one more item to Silver Rathalos Tail, Rathalos Coin and Rathian Coin, and you can make the Expert Lance, meow!
+lobby:0x62DB70	4601b519	t	Add one more item to Hard Monster Bone, Cephalos Coin and Basarios Coin, and you can make the Expert Sword, meow!
+lobby:0x62DC40	d4a4e1af	t	Add one more item to Vespoid Carapace, Vespoid Abdomen and Hornetaur Carapace, and you can make the Honeycomber, meow!
+lobby:0x62DD20	6a73c76b	t	Add one more item to Inferno Sac, Kut-Ku Coin and Gypceros Coin, and you can make the Expert Bowgun, meow!
 lobby:0x642570	268d4150	-	Name:
 lobby:0x6425A0	403eb4ea	-	Comment:
 lobby:0x6425E0	b69876f5	-	Players now:
@@ -438,13 +438,13 @@ lobby:0x644780	a96cd6dd	-	~C00Releasing...
 lobby:0x6447A0	1cd40e1a	-	~C00Processing...
 # --- village elder / combination talk (sub_main)
 sub_main:0x53B070	7e3c3dfb	t	Hoo hoo! You can't fool these eyes! Those 99 BBQ Tickets you've got! Trade them for it! I won't take no for an answer!!
-sub_main:0x53B940	4b8cb150	n t	Combine a Fire Herb and a Huskberry, and you get Flaming S, ammo for your Bowgun.
-sub_main:0x53BA00	0221f6e8	n t	Combine a Flashbug and a Huskberry, and you get Thunder S, ammo for your Bowgun.
+sub_main:0x53B940	4b8cb150	t	Combine a Fire Herb and a Huskberry, and you get Flaming S, ammo for your Bowgun.
+sub_main:0x53BA00	0221f6e8	t	Combine a Flashbug and a Huskberry, and you get Thunder S, ammo for your Bowgun.
 sub_main:0x53C210	4f4b38ca	t	Combine a Potion and a Huskberry, and you get Recover S Lv2, ammo for your Bowgun.
-# --- elder tutorial: Dual Swords, bug net (game)
-game:0x6DC0B0	9fedc917	p	Upgrading a Sword can sometimes turn it\ninto Dual Swords. It's a bit early, but\nlet me teach you the Dual Swords basics.\n~C06Right analog stick: Draw weapon\nR1 button: Mode change\n~B03 or ~B00 button: Sheathe weapon\n
+# --- elder tutorial: Dual Blades, bug net (game)
+game:0x6DC0B0	9fedc917	p	Upgrading a Sword can sometimes turn it\ninto Dual Blades. It's a bit early, but\nlet me teach you the Dual Blades basics.\n~C06Right analog stick: Draw weapon\nR1 button: Mode change\n~B03 or ~B00 button: Sheathe weapon\n
 game:0x6DC180	99e4b03f	p	~C00Now let's try attacking.\n~C06Right analog stick up: Slice down\nRight analog stick left/right: Spin-slice\nRight analog stick down: Side-slash\n~C00As with the Sword, press the right analog\nstick in a set pattern for ~C05combo attacks~C00.\n
-game:0x6DC280	25d16d63	p	The strength of Dual Swords is the Attack\nboost of the mode change, and the dazzling\nsword moves it unleashes.\nBut the mode change keeps using Stamina\nwhile it lasts, so be careful!\n
+game:0x6DC280	25d16d63	p	The strength of Dual Blades is the Attack\nboost of the mode change, and the dazzling\nsword moves it unleashes.\nBut the mode change keeps using Stamina\nwhile it lasts, so be careful!\n
 game:0x6DEA00	d75e4286	p	~C05When you're close to a Bug Point,\nthe × mark next to the item icon\nwill disappear~C00, meaning you can use\nyour Bugnet. When the × mark is gone,\n~C06~B03 button: Use item~C00\nlets you swing your Bugnet.\n
 # --- G quest texts kept in lobby tables
 lobby:0x5E9330	a3f38c2e	-	Requestor: Party Host\nThere's a party at the lord's\nmanor today, but by mistake\nwe're short of food. Could\nyou bring us 10 pieces of\nfresh Raw Meat, please?
@@ -452,11 +452,11 @@ lobby:0x5EA680	ca16a9b5	-	Swamp Trouble
 lobby:0x5EA6D0	1e63d08c	-	Requestor: Swamp Miner\nThe swamp animals are on edge\nlately. Worst are the giant\nBullfango. I'm supposed to\nhunt 15 of them. Give me a\nhand, will you?
 lobby:0x5EBDD0	e0601b40	-	Requestor: Jungle Researcher\nI got lost surveying the\njungle. The rest of my team\nis still starving! Deliver\n15 Well-Done Steaks as food\nfor the rescue!
 lobby:0x5EC030	495ca301	-	Requestor: Fortress Captain\nWe need Coal to move the\nfortress's anti-wyvern spear,\nand it's found in the jungle\ntoo. The more fuel the better.\nPlease gather 15 Coal.
-lobby:0x5FB110	967973ec	n -	Requestor: Training Instructor\nGravios is a tough foe. But\ndamage it until its chest\nshell breaks off, and its\ndefense drops, so it's easier\nto beat!! Serious, for once.
-lobby:0x5FB240	967973ec	n -	Requestor: Training Instructor\nGravios is a tough foe. But\ndamage it until its chest\nshell breaks off, and its\ndefense drops, so it's easier\nto beat!! Serious, for once.
-lobby:0x5FB370	967973ec	n -	Requestor: Training Instructor\nGravios is a tough foe. But\ndamage it until its chest\nshell breaks off, and its\ndefense drops, so it's easier\nto beat!! Serious, for once.
-lobby:0x5FB4A0	967973ec	n -	Requestor: Training Instructor\nGravios is a tough foe. But\ndamage it until its chest\nshell breaks off, and its\ndefense drops, so it's easier\nto beat!! Serious, for once.
-lobby:0x5FB5D0	967973ec	n -	Requestor: Training Instructor\nGravios is a tough foe. But\ndamage it until its chest\nshell breaks off, and its\ndefense drops, so it's easier\nto beat!! Serious, for once.
+lobby:0x5FB110	967973ec	n	Requestor: Training Instructor\nGravios is a tough foe. But\ndamage it until its chest\nshell breaks off, and its\ndefense drops, so it's easier\nto beat!! Serious, for once.
+lobby:0x5FB240	967973ec	n	Requestor: Training Instructor\nGravios is a tough foe. But\ndamage it until its chest\nshell breaks off, and its\ndefense drops, so it's easier\nto beat!! Serious, for once.
+lobby:0x5FB370	967973ec	n	Requestor: Training Instructor\nGravios is a tough foe. But\ndamage it until its chest\nshell breaks off, and its\ndefense drops, so it's easier\nto beat!! Serious, for once.
+lobby:0x5FB4A0	967973ec	n	Requestor: Training Instructor\nGravios is a tough foe. But\ndamage it until its chest\nshell breaks off, and its\ndefense drops, so it's easier\nto beat!! Serious, for once.
+lobby:0x5FB5D0	967973ec	n	Requestor: Training Instructor\nGravios is a tough foe. But\ndamage it until its chest\nshell breaks off, and its\ndefense drops, so it's easier\nto beat!! Serious, for once.
 # --- online hub screens (lobby)
 lobby:0x63EB60	946b09d0	-	Name: %s\nID: %s
 lobby:0x63EB78	c66e28a8	-	Land
@@ -496,11 +496,11 @@ lobby:0x642210	1b591c4c	-	Open the speaker list and choose whose chat to hide.
 lobby:0x642250	8c19f150	-	Open the Black List of players whose mail\nyou refuse.
 lobby:0x642360	e19a69f6	-	Use when you'll be away for a while.
 lobby:0x642390	aadb8dc3	-	Use to hide that you're logged in.\nSearches won't find you, but you can't\nreceive mail either, so be careful.
-lobby:0x642420	c3503d15	n -	Free Hunt Zone
-lobby:0x642440	84dcb5b1	n -	Rookie Hangout
-lobby:0x642460	78800531	n -	Veterans' Base
-lobby:0x642478	0747487f	n -	Masters
-lobby:0x642490	2b5cf4d2	n -	Hunters' Lounge
+lobby:0x642420	c3503d15	n	Free Hunt Zone
+lobby:0x642440	84dcb5b1	n	Rookie Hangout
+lobby:0x642460	78800531	n	Veterans' Base
+lobby:0x642478	0747487f	n	Masters
+lobby:0x642490	2b5cf4d2	n	Hunters' Lounge
 lobby:0x6424B8	ca18196e	-	Stat
 lobby:0x6424C0	fddef11f	-	ID
 lobby:0x6424C8	228827a3	-	Area
@@ -559,44 +559,44 @@ sub_main:0x537BA0	fe4fa008	-	<Points reduced: low-rank quest>
 sub_main:0x538DC0	d9d7f633	-	ID:
 sub_main:0x53A5D0	04c56cf2	-	Start the game without saving.
 sub_main:0x53A740	18d534ae	-	NETWORK OPTIONS
-sub_main:0x53A790	4a94776e	n -	To Training
+sub_main:0x53A790	4a94776e	n	To Training
 sub_main:0x53A930	17963512	-	Old MH Opening
 sub_main:0x53C640	d0df7e25	-	~B00:Train  ~B10:Details
 # --- Training School briefings (sub_main, the instructor; 3 lines, wide box)
-sub_main:0x53CFC0	30a783fa	n -	Brutal attack power and a body as tough as steel: it's\n~C05Monoblos~C00! A wyvern as mighty as I am!!\nGet your hands on ~C05Sonic Bombs~C00 and you'll stand a chance!
-sub_main:0x53D120	c103305f	n -	Your final trial is ~C05Gravios~C00! The battle is in the volcano,\nwhere your Health drains fast. Start by finding\n~C05Cool Drinks~C00, and when the fight heats up, use bombs!
+sub_main:0x53CFC0	30a783fa	-	Brutal attack power and a body as tough as steel: it's\n~C05Monoblos~C00! A wyvern as mighty as I am!!\nGet your hands on ~C05Sonic Bombs~C00 and you'll stand a chance!
+sub_main:0x53D120	c103305f	-	Your final trial is ~C05Gravios~C00! The battle is in the volcano,\nwhere your Health drains fast. Start by finding\n~C05Cool Drinks~C00, and when the fight heats up, use bombs!
 sub_main:0x53D1D0	57473e81	-	In these hunts, ~C05how you use your few items is key~C00.\nGather, combine, and slay Yian Kut-Ku without armor!\nYou can do it! ...Probably.
-sub_main:0x53D280	2c718ca7	n -	In Training School, monsters give very different carves!\nVelociprey give ~C05Throwing Knives~C00, for example! Why knives\nfrom Velociprey? ~C05If you have to ask, you've already lost~C00!
+sub_main:0x53D280	2c718ca7	-	In Training School, monsters give very different carves!\nVelociprey give ~C05Throwing Knives~C00, for example! Why knives\nfrom Velociprey? ~C05If you have to ask, you've already lost~C00!
 sub_main:0x53D330	b7b68322	-	~C05The Hammer packs huge power~C00. Go for broke right away,\nor take time to prepare your items?\nJudgment is a vital quality for a hunter, too!
 sub_main:0x53D3C0	ad62bf26	-	Lured by your tasty scent, a ~C05Velocidrome~C00 has come too,\nbesides the Yian Kut-Ku! ~C05Combine Power Extract~C00 from\nMosswine, and let them have a Lance charge!
 sub_main:0x53D470	55981f61	-	With a Bowgun, it's ~C05a battle against your ammo count~C00!\nRestock ammo by combining and use bombs and other items.\nWhatever you do, don't run out of shots!!
 sub_main:0x53D510	e74b3d2a	-	The problem is ~C05how to drag it up out of the ground~C00!\nSearch the desert for Sonic Bombs, or, if you trust your\nsword alone, that works too. Go show it what you've got!!
 sub_main:0x53D880	00e1a174	-	Gypceros makes its own flash, so of course ~C05Flash Bombs\nwon't work~C00 on it! The ones in your pouch are to keep the\nVelociprey off you. Practice, and get a feel for ~C05distance~C00!
 sub_main:0x53D9E0	9b7c916d	-	Gypceros' rubbery hide makes it a pain for a Hammer.\nBut ~C05its head~C00 is ~C05easier to damage~C00!\nPound it with your strongest charged attacks!!
-sub_main:0x53DBE0	e401078b	n -	This time I'll even let the Sword wear armor. Add ~C05Monster\nBroth~C00 from insects to a Barrel-Bomb to make ~C05a stronger\nbomb~C00! Blowing yourself up hurts, so be careful!
+sub_main:0x53DBE0	e401078b	-	This time I'll even let the Sword wear armor. Add ~C05Monster\nBroth~C00 from insects to a Barrel-Bomb to make ~C05a stronger\nbomb~C00! Blowing yourself up hurts, so be careful!
 sub_main:0x53DC90	fb7cfc0c	-	Just hitting a flying Rathalos with a Paintball is hard.\nBut this time I've given you a ~C05Psychoserum~C00! Get ready,\nfind it fast, and finish the fight in one go!
 sub_main:0x53DD40	5e79afe0	-	I just took a walk in the Forest and Hills and saw a big\n~C05Velocidrome~C00. But of course, that won't make me cancel\ntraining. Now, show me your hunter's guts!!
 sub_main:0x53DDF0	c2523bbe	-	A Lance's ~C05charge loses its power~C00 fast when its\n~C05Sharpness drops~C00. Use a Whetstone to keep it sharp!\nThis time I've even hidden Whetstones near the camp!
 sub_main:0x53DEA0	b31f45d2	-	I've prepared a special Bowgun that can ~C05fire almost every\nkind of ammo~C00! Use all your power as a Gunner and take on\n~C05the King of Wyverns~C00! Good luck!
-sub_main:0x53DF40	4803b120	n -	Get used to ~C05Dual Swords~C00, a Sword variant, too! They can't\nguard, but they can use ~C05a big move called Demonize~C00.\nAlways keep an eye on your remaining Stamina!
+sub_main:0x53DF40	4803b120	n	Get used to ~C05Dual Blades~C00, a Sword variant, too! They can't\nguard, but they can use ~C05a big move called Demonize~C00.\nAlways keep an eye on your remaining Stamina!
 sub_main:0x53DFF0	8167066f	-	Dodge Basarios' poison attacks by reading its moves!\nThe three ~C05Herbal Medicines~C00 in your pouch show how kind I\nam. ~C05Thank me until your tears run dry~C00! ...Nuhahahaha!!
-sub_main:0x53E0A0	f74bc405	n -	Mix ~C05Ice Crystal~C00 with ~C05a certain insect~C00 to combine a\n~C05Cool Drink~C00! When you head for the lava, use it against\nthe heat so you don't waste Health!
+sub_main:0x53E0A0	f74bc405	-	Mix ~C05Ice Crystal~C00 with ~C05a certain insect~C00 to combine a\n~C05Cool Drink~C00! When you head for the lava, use it against\nthe heat so you don't waste Health!
 sub_main:0x53E210	c249116b	-	To a Gunner who keeps away and ~C05calmly reads its moves~C00,\nBasarios is nothing to fear! The enemy to watch out for\nmost is yourself. ~C05Don't let your guard down~C00!!
-sub_main:0x53E370	1a93ffac	n -	~C05Throwing Knives~C00 are handy for giving a huge wyvern\n~C05status effects~C00 like paralysis or poison! Hit it from its\nblind spot, and when it stops, land a heavy blow!
+sub_main:0x53E370	1a93ffac	-	~C05Throwing Knives~C00 are handy for giving a huge wyvern\n~C05status effects~C00 like paralysis or poison! Hit it from its\nblind spot, and when it stops, land a heavy blow!
 sub_main:0x53E4D0	69807043	-	~C05Mastering the guard~C00 is the first step to becoming a\nLance master! Guarding long tail attacks takes a bit of\n~C05knack~C00. Practice until you can block them perfectly!
 sub_main:0x53E580	57fe6737	-	Just as you look through the scope to judge the wyvern...\n~C05a Bullfango charges in from the side~C00!! ~C05Grrr~C00!\nTaking out the small monsters first is one way to go!
 sub_main:0x53E630	87f0daca	-	As you know, ~C05Plesioth's attack is tremendous~C00! Facing\nit without armor is how a hunter proves their strength!!\nWhat, that's crazy? ...You think so too?
 sub_main:0x53E6E0	6c1b69e1	-	The weapon I, ~C05a man of taste~C00, chose this time is the\n~C05Rathalos Firesword~C00! Fire works on Plesioth!! If you lose\nwith this, start over from scratch! Go and nail it!
-sub_main:0x53E8F0	9a77f350	n -	~C05Crag S~C00 bursts as ~C05loud as a Sonic Bomb~C00! Everyone knows\nPlesioth hates noise. Use that, and you may be able to\ndrive it out of the water!
-sub_main:0x53E9A0	5f485acf	n -	Surprised? ~C05This time your Sword comes with armor~C00!\nAnd I chose earrings suited to an item-focused fight!\nVictory is yours!!
+sub_main:0x53E8F0	9a77f350	n	~C05Crag S~C00 bursts as ~C05loud as a Sonic Bomb~C00! Everyone knows\nPlesioth hates noise. Use that, and you may be able to\ndrive it out of the water!
+sub_main:0x53E9A0	5f485acf	-	Surprised? ~C05This time your Sword comes with armor~C00!\nAnd I chose earrings suited to an item-focused fight!\nVictory is yours!!
 sub_main:0x53EAF0	cf10d7a9	-	~C05Its natural enemy appears~C00! If its roar freezes your\nlegs, its next charge will surely send you flying. I'd say\nhang in there, but if you can't, ~C05mind where you stand~C00!
 sub_main:0x53ECF0	c97d2a3e	-	Seems some ~C05Felynes~C00 with bombs are frolicking around. Lure\nthose cute creatures in, ~C05harden your heart, and send them\ncharging at the wyvern~C00! Ugh... Don't you cry now!
-sub_main:0x53EDA0	1110b3c3	n -	When you fight somewhere cold, like a cave, you'll want a\nwarm drink! Combine ~C05Hot Pepper~C00 and a ~C05Worm~C00 to make\na ~C05Hot Drink~C00 that warms you to the core!
+sub_main:0x53EDA0	1110b3c3	-	When you fight somewhere cold, like a cave, you'll want a\nwarm drink! Combine ~C05Hot Pepper~C00 and a ~C05Bitterbug~C00 to make\na ~C05Hot Drink~C00 that warms you to the core!
 sub_main:0x53F060	e1662768	-	A nimble Sword user should make use of the ~C05exploding\nrocks~C00 around! Memorize where they are and ~C05lure your foe\nwell~C00! This is the last stretch. Finish it off!
 sub_main:0x53F110	9a4c51ef	-	What, the ~C05Cool Drinks~C00 I put in your pouch are gone!?\n...Q-quiet! Find some yourself! Ugh, I ~C05drank too many\ncold ones~C00 and my stomach...
 sub_main:0x53F1C0	d5d77b56	-	Even tough Gravios can't stop a Hammer! Watch out\nfor its full-body ~C05pressing attack~C00 and the ~C05scorching\ngas~C00 it blows from its whole body!
 sub_main:0x53F260	108c8753	-	This time, a present: gear with the ~C05Anti-Heat~C00 skill!\nWith this, you can fight hard right next to the lava!\nHmph, I've gone soft...
-sub_main:0x53F2F0	46279232	n -	This time: ~C05earrings so you won't need to reload~C00.\nYou can fire nonstop, but ~C05the recoil gets bigger~C00!\nDon't get carried away. Fight with care!!
+sub_main:0x53F2F0	46279232	-	This time: ~C05earrings so you won't need to reload~C00.\nYou can fire nonstop, but ~C05the recoil gets bigger~C00!\nDon't get carried away. Fight with care!!
 # --- quest entry rules and settings (sub_main)
 sub_main:0x53FD20	db53b5d1	-	HR 9 or above
 sub_main:0x53FD40	47e48ebf	-	HR 13 or above
@@ -631,7 +631,7 @@ lobby:0x640350	d8cdca2b	-	 Required HR: 24 - 26
 lobby:0x640370	e34f088d	-	Quest Level ★★★★★★★★
 lobby:0x640390	75d1a2af	-	 Required HR: 27 - 30
 # --- items (main)
-main:0x2C6010	d10a8138	n -	A mushroom that restores\na little Stamina.\n~C05(Account Item)
+main:0x2C6010	d10a8138	n	A mushroom that restores\na little Stamina.\n~C05(Account Item)
 main:0x2CBA80	ad27acfc	-	Presented to users of\nthe guest house Rook Room\nfor an extended period.
 main:0x2CBAE0	f9636d37	-	Presented to users of\nthe guest house Bishop Room\nfor an extended period.
 main:0x2CBB40	114baf9b	-	Presented to users of\nthe guest house VIP room\nfor an extended period.
@@ -652,13 +652,13 @@ sub_main:0x5384D0	a373ca00	-	Whiskeru
 sub_main:0x5384E0	84eced05	-	Dyeru
 # --- weapon descriptions (one pointer per line; read as one text)
 main:0x2CF4B0	6adbf4c6	d	Venom Lance, third upgrade.
-main:0x2D1280	e7c81fc6	nd	Guild Rapier, 1st upgrade.
+main:0x2D1280	e7c81fc6	d	Guild Rapier, 1st upgrade.
 main:0x2D12A0	956ee048	d	Its crystal shine catches the
-main:0x2D12C0	69dd7f77	d	eye. Guild-only Dual Swords.
-main:0x2D16A0	e85fd098	d	Dual Swords whose single hits
+main:0x2D12C0	69dd7f77	d	eye. Guild-only Dual Blades.
+main:0x2D16A0	e85fd098	d	Dual Blades whose single hits
 main:0x2D16C0	80de183f	d	are boosted by the fire of
 main:0x2D16E0	d3b981c3	d	the Rath clan. Weak Sharpness.
-main:0x2D1700	94c42b0d	nd	Gladius, 1st upgrade.
+main:0x2D1700	94c42b0d	d	Gradios, 1st upgrade.
 main:0x2D1720	b913e3fd	d	Improved all over to perfect
 main:0x2D1740	ae7075f3	d	it as a weapon.
 main:0x2D1B20	ca1bf4a3	d	A Great Sword for hunters
@@ -703,10 +703,10 @@ main:0x2D3220	c3ff1cb0	d	work. More Attack, of course.
 main:0x2D3240	37859aca	d	No element, but steady power
 main:0x2D3260	8ee04e31	d	and easy to use. Easy to work
 main:0x2D3280	0a1c8c9c	d	too, which makes it popular.
-main:0x2D3580	cd4cd137	nd	Burn Edge, 1st upgrade.
+main:0x2D3580	cd4cd137	d	Djinn, 1st upgrade.
 main:0x2D35A0	222762a1	d	A fire sword improved in
 main:0x2D35C0	a27ea255	d	element, Attack and Sharpness.
-main:0x2D35E0	9f4740dd	nd	Burn Edge, final upgrade.
+main:0x2D35E0	9f4740dd	d	Djinn, final upgrade.
 main:0x2D3600	0e44c75a	d	All the art of controlling
 main:0x2D3620	6bb831c1	d	extreme heat and pressure.
 main:0x2D3D00	68f5a388	d	A Great Sword of the gods.
@@ -715,7 +715,7 @@ main:0x2D3D40	accb6c86	d	bow to it. A hunter-king's.
 main:0x2D3E80	23bfbd62	d	A lance of death that brings
 main:0x2D3EA0	ab4a4123	d	the end to all life. Smashes
 main:0x2D3EC0	c83de486	d	elder dragons in one blow.
-main:0x2D3EE0	82a729f6	d	Demonic Dual Swords of living
+main:0x2D3EE0	82a729f6	d	Demonic Dual Blades of living
 main:0x2D3F00	342cf9da	d	water. Tremors no smith can
 main:0x2D3F20	967ce4c3	d	explain wreck foes from inside.
 main:0x2D3F40	f47ceb4e	d	A legendary club handed down
@@ -1096,3 +1096,35 @@ yn:0xA11470	198fb1d7	-	Enter the port number.
 lobby:0x63E920	b6a285d4	-	No talk data!!!!!
 sub_main:0x52C3E0	ae684e89	-	More than 15 enemies
 sub_main:0x52C400	2c921b6b	-	Press START to continue
+# --- G-only weapon and armour names (not in Freedom; in Freedom's style: the "kai" upgrade = "+", a G version = "+", or " G" where Freedom already uses "X+" for the kai one)
+sub_main:0x52EA60	3928b238	n	Guild Rapier+
+sub_main:0x52EB98	48f4a788	n	Gradios+
+sub_main:0x52ECA0	f196ea71	n	G Sword Origin
+sub_main:0x52ECC0	69683d8d	n	G Sword Origin+
+sub_main:0x52ECD8	9ae1407b	n	Bone Sword G
+sub_main:0x52ECF0	a584f486	n	Bone Sword G+
+sub_main:0x52ED20	5cccb7e8	n	Iron Sword G
+sub_main:0x52ED40	dc318ccd	n	Iron Sword G+
+sub_main:0x52EF10	cf75c8d3	n	G Hammer Origin
+sub_main:0x52EF30	20399ce1	n	G Hammer Origin+
+sub_main:0x52EF50	c3dc475e	n	Atlas Hammer G
+sub_main:0x52EF70	d313e8ff	n	Atlas Hammer G+
+sub_main:0x52F0C0	9c39d87c	n	G Lance Origin
+sub_main:0x52F0E0	14117fef	n	G Lance Origin+
+sub_main:0x52F0F8	3004b725	n	Longhorn G
+sub_main:0x52F110	a2654906	n	Longhorn G+
+sub_main:0x52F280	593abe39	n	G Knife Origin
+sub_main:0x52F2A0	3dcec5c1	n	G Knife Origin+
+sub_main:0x52F2C0	c42c6f3a	n	Upper Dagger
+sub_main:0x52F2E0	e737e956	n	Upper Dagger+
+sub_main:0x52F5A0	26f583d5	n	Ethereal Edge
+sub_main:0x52F5F8	fd829f8a	n	Doom
+sub_main:0x52F610	cfc13286	n	Water Cutter
+sub_main:0x52F628	d64effaa	n	Coma Rod
+sub_main:0x52F630	2107d3b4	n	Howling G
+sub_main:0x52FE18	9bb6cd30	n	Grand Profusion
+sub_main:0x531620	01348957	n	Guild Master Piercing
+sub_main:0x532D70	ecd942e6	n	W Rex Mail
+sub_main:0x534270	eba2908e	n	Divine Braces
+sub_main:0x5358C0	48736cee	n	Rio Metal Tasset
+sub_main:0x536F80	7fd18321	n	Lucky Metal Boots

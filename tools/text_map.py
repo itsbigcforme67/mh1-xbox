@@ -1763,8 +1763,11 @@ def g_rules(jp, g, GS, owner, cells, en_jp, en_g, Jq, Gq, skip=()):
 #   uncompressed on the PSP) and SYSDIR/BOOT.BIN (an unencrypted ELF) hold a few hundred more. Not text: entry 0 (300 MB
 #   of uniform high-entropy bytes, no header: likely UMD filler), audio (RIFF), movies (PSMF), textures (.TMH, PNG),
 #   encrypted modules (~PSP).
-# Freedom is expected to have the same DATA.BIN layout (same engine, a localisation): entry i of Portable pairs with
-# entry i of Freedom, string slot by slot. Every entry is checked before it is used (see freedom_pairs).
+# Freedom (checked on the owner's ULUS-10084, 24 Oct 2026) has the same file kinds but 8 more DATA.BIN entries and its
+# quest files in another order; English strings are longer, so the raw text runs of record files do not line up.
+# psp_entry_map matches the entries (by header bytes in order, then by quest / record / section ids) and
+# freedom_pairs pairs them by structure (block index, quest field, record id, talk section). Every unit is checked
+# (looks translated, MH1 US English for the same Japanese agrees in place) before it is used.
 PSP_SKIP = (b"RIFF", b"PSMF", b".TMH", b"\x89PNG", b"~PSP", b"MIG.", b"SPUM")
 PSP_RUN = re.compile(rb"(?:[\x81-\x9f\xe0-\xfc][\x40-\x7e\x80-\xfc]|[\x20-\x7e\x0a\x09])+(?=\x00)")
 
@@ -1885,9 +1888,95 @@ def _psp_block(b, o, end):
     return out
 
 
+def _psp_fields(b, o, end):
+    """the NUL-ended strings one after the other from o to end (each padded with NULs to the next 4 bytes):
+    [(offset, bytes)] - the inline text of a quest file or a quest-like record"""
+    out = []
+    while o < end:
+        e = b.find(b"\0", o, end)
+        if e < 0:
+            break
+        out.append((o, b[o:e]))
+        o = e + 1
+        while o < end and b[o] == 0 and o % 4:
+            o += 1
+    return out
+
+
+def _psp_quest(b):
+    """a quest file (word 0 = 0x3C, quest id at 0x58, the text fields from 0x5C to word 1): (id, [strings]) or None"""
+    if len(b) < 0x100:
+        return None
+    w0, w1 = struct.unpack_from("<2I", b, 0)
+    if w0 != 0x3C or not 0x5C < w1 <= len(b):
+        return None
+    return struct.unpack_from("<I", b, 0x58)[0], [s for _o, s in _psp_fields(b, 0x5C, w1)]
+
+
+def _psp_records(b):
+    """a file of quest-like records (u32 offsets, the first one = table size, 0 = end; each record has its id at +0x1C
+    and its text fields from +0x20 to the offset in word 6): [(id, [strings])] or None"""
+    if len(b) < 0x40:
+        return None
+    f0, = struct.unpack_from("<I", b, 0)
+    if f0 % 4 or not 8 <= f0 <= 0x400 or f0 >= len(b):
+        return None
+    offs = [x for x in struct.unpack_from("<%dI" % (f0 // 4), b, 0)]
+    while offs and offs[-1] == 0:
+        offs.pop()
+    if len(offs) < 2 or offs != sorted(offs) or offs[0] != f0 or offs[-1] >= len(b):
+        return None
+    out = []
+    for i, o in enumerate(offs):
+        nxt = offs[i + 1] if i + 1 < len(offs) else len(b)
+        if o + 0x24 > nxt:
+            return None
+        end, rid = struct.unpack_from("<2I", b, o + 0x18)
+        if not o + 0x20 < end <= nxt:
+            return None
+        out.append((rid, [s for _o, s in _psp_fields(b, o + 0x20, end)]))
+    return out
+
+
+def _psp_talk(b):
+    """an offset-list file (the village talk): (id, offset) section pairs up to 0xFFFFFFFF twice; a section is
+    (u32, offset) pairs, offsets relative to the section, the first one = table size: [(id, [strings])] or None"""
+    secs, o = [], 0
+    while o + 8 <= min(len(b), 0x400):
+        a, c = struct.unpack_from("<2I", b, o)
+        o += 8
+        if a == 0xFFFFFFFF:
+            break
+        secs.append((a, c))
+    else:
+        return None
+    if not secs or secs[0][1] != o or [c for _a, c in secs] != sorted(c for _a, c in secs) or secs[-1][1] >= len(b):
+        return None
+    out = []
+    for i, (a, c) in enumerate(secs):
+        nxt = secs[i + 1][1] if i + 1 < len(secs) else len(b)
+        f0, = struct.unpack_from("<I", b, c + 4)
+        if f0 % 8 or not 8 <= f0 <= nxt - c:
+            return None
+        ss = []
+        for j in range(f0 // 8):
+            r, = struct.unpack_from("<I", b, c + 8 * j + 4)
+            e = b.find(b"\0", c + r, nxt) if f0 <= r < nxt - c else -1
+            if e < 0:
+                return None
+            ss.append(b[c + r:e])
+        out.append((a, ss))
+    return out
+
+
 def psp_slots(b):
-    """(kind, {slot: string bytes}) of one DATA.BIN entry. kind 'pack' (slot (block, index)), 'block' (slot index) or
-    'runs' (slot (byte offset, order): every NUL-delimited text run, for the record and offset-list files)"""
+    """(kind, {slot: string bytes}) of one DATA.BIN entry, by its structure:
+    'pack'   string pack, slot (block, index)
+    'quest'  quest file, slot ('q', field index); the quest id is in psp_skeleton
+    'records' quest-like records, slot (record id, field index)
+    'talk'   offset-list file, slot (section id, index)
+    'block'  one offset block, slot index
+    'runs'   anything else (code overlays, BOOT.BIN, data files): every NUL-delimited text run, slot (offset, order)"""
     if len(b) >= 12:
         c, t = struct.unpack_from("<2I", b, 0)
         if t == 8 and 0 < c < 400 and 8 + 4 * c <= len(b):
@@ -1895,15 +1984,39 @@ def psp_slots(b):
             blocks = [_psp_block(b, o, len(b)) for o in offs]
             if all(x is not None for x in blocks):
                 return "pack", {(k, j): s for k, bl in enumerate(blocks) for j, s in enumerate(bl) if s}
+    q = _psp_quest(b)
+    if q:
+        return "quest", {("q", j): s for j, s in enumerate(q[1]) if s}
+    for kind, fn in (("records", _psp_records), ("talk", _psp_talk)):
+        r = fn(b)
+        if r and len({a for a, _s in r}) == len(r):
+            return kind, {(a, j): s for a, ss in r for j, s in enumerate(ss) if s}
     bl = _psp_block(b, 0, len(b))
     if bl and len(bl) >= 2 and sum(1 for x in bl if x) >= 2:
         return "block", {j: s for j, s in enumerate(bl) if s}
-    return "runs", {(m.start(), n): m.group(0) for n, m in enumerate(PSP_RUN.finditer(b))}
+    return "runs", psp_runs(b)
+
+
+def psp_runs(b):
+    return {(m.start(), n): m.group(0) for n, m in enumerate(PSP_RUN.finditer(b))}
+
+
+def psp_skeleton(b, kind):
+    """what identifies an entry apart from its language: the quest id, the record / section ids, the block sizes"""
+    if kind == "quest":
+        return ("quest", _psp_quest(b)[0])
+    if kind == "records":
+        return ("records", _psp_records(b)[0][0])
+    if kind == "talk":
+        return ("talk", tuple(a for a, _s in _psp_talk(b)))
+    if kind == "pack":
+        return ("pack", struct.unpack_from("<I", b, 0)[0])
+    return (kind,)
 
 
 def psp_text_entries(disc):
-    """{entry index: (kind, slots)} for the DATA.BIN entries that hold text (Japanese for Portable: at least 3 Japanese
-    strings; for another disc, the same entry numbers are read), plus 'boot' for SYSDIR/BOOT.BIN"""
+    """{entry index: (kind, slots)} for the DATA.BIN entries that hold text (at least 3 Japanese strings), plus 'boot'
+    for SYSDIR/BOOT.BIN"""
     out = {}
     for e, (o, sz) in enumerate(disc.entries()):
         if e == 0 or sz > (4 << 20):
@@ -1917,7 +2030,7 @@ def psp_text_entries(disc):
     try:
         boot = disc.read("PSP_GAME/SYSDIR/BOOT.BIN")
         if boot[:4] == b"\x7fELF":
-            out["boot"] = ("runs", {(m.start(), n): m.group(0) for n, m in enumerate(PSP_RUN.finditer(boot))})
+            out["boot"] = ("runs", psp_runs(boot))
     except OSError:
         pass
     return out
@@ -1936,15 +2049,143 @@ def mhp_texts(path):
     return idx
 
 
-def freedom_pairs(port, free, selftest=False):
-    """{(entry, slot): Freedom string} for Portable's Japanese strings, entry by entry, plus a report {entry: why}.
-    An entry is used when it has the same kind in both (pack / block / runs) and: pack and block - the same slots;
-    runs - the same number of text runs (then paired in order). Each pair must look like a translation (not still
-    Japanese, same printf conversions); an entry where fewer than 80% of its pairs pass is dropped whole (the layout
-    did not mirror). selftest pairs Portable with itself and skips the language checks (plumbing test)."""
-    pe, fe = psp_text_entries(port), {}
-    fdisc_entries = free.entries()
+def psp_entry_map(port, free, pe):
+    """{Portable entry: Freedom entry} for Portable's text entries. Freedom's DATA.BIN has 8 more entries and its
+    quest files in another order (checked 24 Oct 2026), so entries are matched by their first 8 bytes in order
+    (difflib; same-length changed runs pair in order), then checked by structure (psp_skeleton: quest id, record and
+    section ids); an entry whose skeleton differs is looked up by skeleton among Freedom's entries nearby."""
+    def heads(d):
+        f, base, _sz = d.open("PSP_GAME/USRDIR/DATA.BIN")
+        with f:
+            out = []
+            for o, _s in d.entries():
+                f.seek(base + o)
+                out.append(f.read(8))
+            return out
+    a, b = heads(port), heads(free)
+    fsz = [sz for _o, sz in free.entries()]
+    pos = {}
+    for op, i1, i2, j1, j2 in difflib.SequenceMatcher(None, a, b, autojunk=False).get_opcodes():
+        if op == "equal" or (op == "replace" and i2 - i1 == j2 - j1):
+            pos.update(zip(range(i1, i2), range(j1, j2)))
+    fcache = {}
+
+    def fslots(j):
+        if j not in fcache:
+            fb = free.entry(j)
+            k, s = psp_slots(fb)
+            fcache[j] = (k, s, psp_skeleton(fb, k))
+        return fcache[j]
+    out = {}
+    for e, (kind, _sl) in pe.items():
+        if e == "boot":
+            continue
+        sk = psp_skeleton(port.entry(e), kind)
+        j = pos.get(e)
+        if j is not None and fslots(j)[2] == sk:
+            out[e] = j
+            continue
+        if kind in ("pack", "block", "runs") and j is not None:
+            out[e] = j                      # nothing in the skeleton to check: the pairing checks the strings
+            continue
+        hits = [x for x in range(max(1, e - 96), min(len(b), e + 96))
+                if b[x][:4] not in PSP_SKIP and fsz[x] <= (4 << 20) and fslots(x)[2] == sk]
+        if len(hits) == 1:
+            out[e] = hits[0]
+    return out, fcache
+
+
+def _words(x):
+    return set(re.findall(rb"[a-z]{3,}", x.lower()))
+
+
+def _anchor_shift(pairs, anchors):
+    """how well a paired run agrees with MH1 US's English for the same Japanese: (n anchors, agree in place,
+    best agreement when shifted by one slot either way)"""
+    n = a0 = 0
+    sh = collections.Counter()
+    for i, (jb, _x) in enumerate(pairs):
+        us = anchors.get(norm_marks(jb))
+        if not us:
+            continue
+        n += 1
+        wu = _words(us)
+        for d in (-1, 0, 1):
+            if 0 <= i + d < len(pairs) and wu & _words(pairs[i + d][1]):
+                sh[d] += 1
+    return n, sh[0], max(sh[-1], sh[1])
+
+
+def _align_runs(sl, fs):
+    """{Portable slot: Freedom string} for 'runs' entries (code overlays, BOOT.BIN, data): the runs that are not
+    Japanese text are the same bytes on both discs; the ones found once on each side anchor the alignment (longest
+    increasing run of anchors). Between two anchors, Portable's text runs pair in order with Freedom's runs when the
+    stretch has the same length on both sides and its other runs are the same bytes."""
+    pk = sorted(sl, key=lambda k: k[1])
+    A = [None if _jtext(sl[k]) or is_japanese(sl[k]) else sl[k] for k in pk]
+    B = [fs[k] for k in sorted(fs, key=lambda k: k[1])]
+    ca, cb = collections.Counter(A), collections.Counter(B)
+    pb = {x: j for j, x in enumerate(B) if cb[x] == 1}
+    prs = [(i, pb[x]) for i, x in enumerate(A) if x is not None and ca[x] == 1 and x in pb]
+    tails, tj, prev = [], [], [-1] * len(prs)       # longest increasing subsequence by Freedom index
+    for k, (_i, j) in enumerate(prs):
+        p = bisect.bisect_left(tj, j)
+        if p == len(tails):
+            tails.append(k)
+            tj.append(j)
+        else:
+            tails[p], tj[p] = k, j
+        prev[k] = tails[p - 1] if p else -1
+    chain, k = [], tails[-1] if tails else -1
+    while k >= 0:
+        chain.append(prs[k])
+        k = prev[k]
+    chain = [(-1, -1)] + chain[::-1] + [(len(A), len(B))]
+    out = {}
+    for (i0, j0), (i1, j1) in zip(chain, chain[1:]):
+        sa, sb = A[i0 + 1:i1], B[j0 + 1:j1]
+        if len(sa) != len(sb) or None not in sa or any(x is not None and x != y for x, y in zip(sa, sb)):
+            continue
+        for d, x in enumerate(sa):
+            if x is None:
+                out[pk[i0 + 1 + d]] = sb[d]
+    return out
+
+
+def freedom_pairs(port, free, selftest=False, anchors=None):
+    """{(entry, slot): Freedom string} for Portable's Japanese strings, plus a report {entry: why}.
+    Entries are matched by psp_entry_map, then paired by structure: packs and blocks by (block, index), quests by
+    field, records by (record id, field), talk files by (section id, index), anything else by aligning the runs that
+    are the same on both discs (_align_runs). Each unit (a pack's block, a talk section, a whole file) is used when at
+    least 80% of its Japanese pairs look like a translation (English, same printf conversions) and, where MH1 US
+    has English for the same Japanese (anchors: normal form -> English), its words agree in place more often than
+    one slot off (a block whose string count differs needs at least 5 anchors and 60% agreement). selftest pairs
+    Portable with itself and skips the language checks."""
+    pe = psp_text_entries(port)
+    anchors = anchors or {}
+    if selftest:
+        emap, fcache = {e: e for e in pe if e != "boot"}, {}
+    else:
+        emap, fcache = psp_entry_map(port, free, pe)
     out, rep = {}, {}
+
+    def accept(name, pairs, mismatch):
+        """pairs [(slot, jp, en)]: True when the unit passes"""
+        jp = [(k, j, x) for k, j, x in pairs if _jtext(j)]
+        if not jp:
+            return True, ""
+        good = [p for p in jp if selftest or good_english(p[1], p[2])[0]]
+        if len(good) < 0.8 * len(jp):
+            return False, "only %d of %d pairs look translated" % (len(good), len(jp))
+        if selftest:
+            return True, ""
+        n, a0, a1 = _anchor_shift([(j, x) for _k, j, x in pairs], anchors)
+        if mismatch and (n < 5 or a0 < 0.6 * n or a0 <= a1):
+            return False, "count differs, %d of %d anchors agree" % (a0, n)
+        if n >= 5 and (a0 < a1 or a0 < 0.5 * n):
+            return False, "anchors disagree (%d of %d in place, %d one slot off)" % (a0, n, a1)
+        return True, ""
+
     for e, (kind, sl) in pe.items():
         if e == "boot":
             try:
@@ -1955,55 +2196,98 @@ def freedom_pairs(port, free, selftest=False):
             if b[:4] != b"\x7fELF":
                 rep[e] = "BOOT.BIN encrypted"
                 continue
-            fk, fs = "runs", {(m.start(), n): m.group(0) for n, m in enumerate(PSP_RUN.finditer(b))}
+            fk, fs = "runs", psp_runs(b)
+        elif e not in emap:
+            rep[e] = "no matching entry"
+            continue
+        elif emap[e] in fcache:
+            fk, fs, _sk = fcache[emap[e]]
         else:
-            if e >= len(fdisc_entries):
-                rep[e] = "no such entry"
-                continue
-            fk, fs = psp_slots(free.entry(e))
+            fk, fs = psp_slots(free.entry(emap[e]))
         if fk != kind:
             rep[e] = "kind %s vs %s" % (kind, fk)
             continue
+        units = collections.defaultdict(list)
+        mism = set()
         if kind == "runs":
-            if len(fs) != len(sl):
-                rep[e] = "%d vs %d text runs" % (len(sl), len(fs))
+            fm = _align_runs(sl, fs) if not selftest else {k: fs[k] for k in sl}
+            if not any(_jtext(sl[k]) for k in fm):
+                rep[e] = "no text runs aligned"
                 continue
-            fo = [fs[k] for k in sorted(fs, key=lambda k: k[1])]
-            pairs = [(k, fo[k[1]]) for k in sl]
+            for k in sorted(fm, key=lambda k: k[1]):
+                units[0].append((k, sl[k], fm[k]))
         else:
-            if set(fs) - set(sl) or len(set(sl) - set(fs)) > 0.05 * len(sl):
-                rep[e] = "slots differ"
+            grp = (lambda k: 0) if kind == "block" else (lambda k: k[0])
+            for u in {grp(k) for k in sl}:
+                ps = sorted(k for k in sl if grp(k) == u)
+                fq = sorted(k for k in fs if grp(k) == u)
+                last = (lambda ks: max((k if kind == "block" else k[1]) for k in ks) if ks else -1)
+                if not fq:
+                    mism.add(u)
+                    continue
+                if last(ps) != last(fq):        # strings added or dropped: right only if the anchors prove it
+                    mism.add(u)
+                for k in ps:
+                    if k in fs:
+                        units[u].append((k, sl[k], fs[k]))
+                    else:
+                        mism.add(u)
+        if kind in ("quest", "records") and units:    # a quest is too small for its own checks: the file is the unit
+            units = {0: [p for u in sorted(units, key=str) for p in units[u]]}
+            mism = {0} if mism else set()
+        used, why, detail = 0, collections.Counter(), []
+        for u, pairs in units.items():
+            ok, r = accept(u, pairs, u in mism)
+            if not ok:
+                why[r] += 1
+                detail.append("%s: %s" % (u, r))
                 continue
-            pairs = [(k, fs[k]) for k in sl if k in fs]
-        jp_pairs = [(k, x) for k, x in pairs if _jtext(sl[k])]
-        good = [(k, x) for k, x in jp_pairs if selftest or good_english(sl[k], x)[0]]
-        if jp_pairs and len(good) < 0.8 * len(jp_pairs):
-            rep[e] = "only %d of %d pairs look translated" % (len(good), len(jp_pairs))
-            continue
-        for k, x in good:
-            out[(e, k)] = x
-        rep[e] = "ok %d" % len(good)
+            for k, j, x in pairs:
+                if _jtext(j) and (selftest or good_english(j, x)[0]):
+                    out[(e, k)] = x
+                    used += 1
+        if mism - set(units):
+            why["unit with another string count"] += len(mism - set(units))
+        rep[e] = ("ok %d" % used if used else "unused") + ("" if not why else " (%s)" % "; ".join(
+            detail + (["unit with another string count x%d" % why["unit with another string count"]]
+                      if why["unit with another string count"] else [])))
     return out, rep
 
 
 def freedom_for_g(g, GS, Gq, en_g, idx, fpairs, runs, selftest=False):
     """English for G strings without it: G text -> the same Japanese in Portable (normal form) -> Freedom's string in
-    that slot (all slots of that text must agree). A G description (one pointer per line) takes Freedom's
-    description when its whole text matches, split at Freedom's line breaks when the line count is the same.
-    Returns ({g key: English}, Counter(why))."""
+    that slot (all slots of that text must agree; a sentence of 8+ characters with two Freedom wordings takes the
+    more used one). A G description (one pointer per line) takes Freedom's description when its whole text matches,
+    split at Freedom's line breaks when the line count is the same, also over lines that had MH1 US English line by
+    line. Every line passes freedom_ok. Returns ({g key: English}, Counter(why))."""
     new, why = {}, collections.Counter()
 
-    def english(norm):
-        c = collections.Counter(fpairs[s] for s in idx.get(norm, ()) if s in fpairs)
-        return _one_english(c) if c else None
+    def english(norm, count=False):
+        slots = [s for s in idx.get(norm, ()) if s in fpairs]
+        c = collections.Counter(fpairs[s] for s in slots)
+        xb = _one_english(c) if c else None
+        if xb is None and c and len(norm) >= 16:
+            # a sentence (8+ characters) Freedom translated in two ways (the same talk line for two NPCs, a quest
+            # text in two quest files): both are Freedom's English for it; the most used one, then the first slot
+            xb = sorted(c, key=lambda x: (-c[x], min(str(s) for s in slots if fpairs[s] == x)))[0]
+            why["sentence with two Freedom wordings (most used taken)"] += 1
+        if count and xb is None and norm in idx:
+            why["Freedom slots disagree" if c else "in Portable, no Freedom pair"] += 1
+        return xb
 
     def gtext(k):
         return cstr_at(Gq[k[1]], k[2]) if k[0] == "quest" else g.cstr(*k)
     for _sp, run in runs:
-        if any(k in en_g for k in run):
+        part = sum(1 for k in run if k in en_g)
+        if part == len(run):
             continue
-        xb = english(norm_marks(b"".join(g.cstr(*k) for k in run)))
+        jb = b"".join(g.cstr(*k) for k in run)
+        xb = english(norm_marks(jb))
         if xb is None:
+            continue
+        ok, r = (True, "") if selftest else freedom_ok(jb, xb.replace(b"\n", b" "))
+        if not ok:
+            why["description refused (%s)" % r] += len(run)
             continue
         lines = xb.split(b"\n")
         if len(lines) != len(run):
@@ -2011,20 +2295,43 @@ def freedom_for_g(g, GS, Gq, en_g, idx, fpairs, runs, selftest=False):
             continue
         for k, ln in zip(run, lines):
             new[k] = ln
-        why["whole description"] += len(run)
+        # some lines had MH1 US English line by line (a line equal to an MH1 line): Freedom's whole description
+        # replaces them, so the description is not half one translation, half Japanese
+        why["whole description" + (" (replacing %s" % "MH1 US lines line by line)" if part else "")] += len(run)
     targets = [k for k in GS if k not in en_g and k not in new]
     targets += [("quest", n, o) for n, d in Gq.items() for o, b in quest_fields_g(d) if b and ("quest", n, o) not in en_g]
     for gk in targets:
         gb = gtext(gk)
-        xb = english(norm_marks(gb))
+        xb = english(norm_marks(gb), count=True)
         if xb is None:
             continue
-        if selftest or good_english(gb, xb)[0]:
+        ok, r = (True, "") if selftest else freedom_ok(gb, xb)
+        if ok:
             new[gk] = xb
             why["same Japanese"] += 1
         else:
-            why["refused (format / still Japanese)"] += 1
+            why["refused (%s)" % r] += 1
     return new, why
+
+
+def freedom_ok(jb, xb):
+    """(ok, reason): Freedom's English for a G string: good_english (English, same printf conversions), the same ~
+    button / icon codes as G's Japanese, colour codes (~Cnn) only of the colours G's Japanese uses (Freedom
+    highlights other words: the count may differ), no stray '~', and no number the Japanese lacks"""
+    ok, r = good_english(jb, xb)
+    if not ok:
+        return ok, r
+    jc, xc = OWN_TOKEN.findall(jb), OWN_TOKEN.findall(xb)
+    col = lambda cs: {c for c in cs if c.startswith(b"~C")}
+    if sorted(c for c in jc if c[:2] != b"~C") != sorted(c for c in xc if c[:2] != b"~C"):
+        return False, "~ codes differ"          # buttons and icons: Freedom names the PSP's buttons
+    if not col(xc) <= col(jc) | {b"~C00"} or (col(xc) and not col(jc)):
+        return False, "~ colour codes differ"   # colours: Freedom highlights other words, but only in G's colours
+    if own_stray_tilde(xb):
+        return False, "stray ~"
+    if not same_numbers(jb, xb):
+        return False, "a number the Japanese lacks"
+    return True, ""
 
 
 MANUAL = os.path.join(HERE, "text_pairs_manual.txt")
@@ -2150,6 +2457,19 @@ def merged(entries, skip, extra):
     d = {k: v for k, v in entries.items() if k not in skip}
     d.update(extra)
     return d
+
+
+# G's English uses the series' later standard names where MH1 US differs (owner, 25 Oct 2026, docs/DECISIONS.md):
+# MH1 US wrote the weapon class "Dual Swords"; Freedom and every later release say "Dual Blades". Same length, so
+# box widths and talk-window wrapping are unchanged. The separator (blank or line break) is kept.
+G_TERMS = [(re.compile(rb"\b([Dd])ual([ \n])([Ss])word(s?)\b"),
+            lambda m: m.group(1) + b"ual" + m.group(2) + (b"B" if m.group(3) == b"S" else b"b") + b"lade" + m.group(4))]
+
+
+def g_terms(v):
+    for rx, rep in G_TERMS:
+        v = rx.sub(rep, v)
+    return v
 
 
 def write_table(path, entries, header):
@@ -2862,8 +3182,8 @@ def main():
     talk_g = {gk for gk in en_g if gk[0] not in ("quest", "slot") and TALK_TABLES.match(g_owner(gk) or "")}
     log("talk window layout: %d MH1 lines, %d G lines" % (len(talk_jp), len(talk_g)))
     write_table(os.path.join(args.out, "en_mhg.txt"), {(("main",) + k[1:]) if k[0] == "sub_main" else k:
-                                                      (talk_layout(own_wrap(v)) if k in own_talk else
-                                                       talk_layout(v) if k in talk_g else v)
+                                                      g_terms(talk_layout(own_wrap(v)) if k in own_talk else
+                                                              talk_layout(v) if k in talk_g else v)
                                                       for k, v in merged(en_g, gk_slot, {**slot_g, **own_fb}).items()}, hdr)
 
     summary = dict(jp_strings=len(S), jp_en=len(en_jp), g_strings=len(GS), g_en=len(en_g), g_own=len(own_g), gstat=gstat, drop=drop)
@@ -3007,12 +3327,20 @@ def run_freedom(args, g, GS, Gq, en_g, cache):
         if gid not in FREEDOM_IDS:
             log("Freedom: game id %s is not %s; trying anyway (entries that do not mirror Portable are skipped)"
                 % (gid, " / ".join(FREEDOM_IDS)))
-    idx = cached(cache and cache + "_mhp2.pkl", lambda: mhp_texts(args.mhp))
-    fp, rep = freedom_pairs(port, free, selftest)
+    idx = cached(cache and cache + "_mhp3.pkl", lambda: mhp_texts(args.mhp))
+    anchors = collections.defaultdict(collections.Counter)
+    for gk, xb in en_g.items():
+        if gk[0] != "slot":
+            anchors[norm_marks(cstr_at(Gq[gk[1]], gk[2]) if gk[0] == "quest" else g.cstr(*gk))][xb] += 1
+    anchors = {k: c.most_common(1)[0][0] for k, c in anchors.items()}
+    fp, rep = freedom_pairs(port, free, selftest, anchors)
     used = sum(1 for v in rep.values() if v.startswith("ok"))
     log("Freedom%s: %d of %d text entries paired, %d strings; not used: %s" % (
         " self-test" if selftest else "", used, len(rep), len(fp),
-        dict(collections.Counter(re.sub(r"\d+", "N", v) for v in rep.values() if not v.startswith("ok")))))
+        dict(collections.Counter(re.sub(r"\d+", "N", v.split(" (")[0]) for v in rep.values() if not v.startswith("ok")))))
+    for e in sorted(rep, key=str):
+        if os.environ.get("TM_DEBUG") or (rep[e].startswith("ok") and "(" in rep[e]):
+            log("  Freedom entry %s: %s" % (e, rep[e]))
     new, why = freedom_for_g(g, GS, Gq, en_g, idx, fp, g_ptr_runs(g, GS), selftest)
     log("Freedom%s: %d more G strings %s" % (" self-test (would get)" if selftest else "", len(new), dict(why)))
     return {} if selftest else new
@@ -3228,7 +3556,7 @@ def write_report(args, jp, us, g, S, GS, cells, owner, omu, rowsu, omg, rowsg, e
 
     gtab, gtot = table(rows, ["ours", "twin without US English", "edited in G", "G only"])
     # ---- per category, with the new rules and the Portable estimate
-    mhp = cached(cache and cache + "_mhp2.pkl", lambda: mhp_texts(args.mhp)) if getattr(args, "mhp", None) else {}
+    mhp = cached(cache and cache + "_mhp3.pkl", lambda: mhp_texts(args.mhp)) if getattr(args, "mhp", None) else {}
     amb = dict(amb_g)
     in_mhp = set()
     if mhp:

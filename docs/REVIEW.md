@@ -1000,3 +1000,15 @@ Both games unless marked.
 - **Dropped (test):** tools/test_online_g.sh HUNT=1's "continue without saving?" answer (left + circle presses after the
   quest). **Now:** each client starts from a G card made at the village bed, the relogin save writes it, and the card is
   booted back. **To revert:** the agent-C commits of 24 Oct 2026 from "G online (PC): the in-hunt packets in G's layout".
+
+## Freedom pairing by structure (agent A, 24 Oct 2026)
+- **Replaced:** tools/text_map.py freedom_pairs' slot-by-slot pairing (entry i of Portable with entry i of Freedom; text
+  runs in order; an entry whose slots differed was dropped whole). **Now:** psp_entry_map (entries by header bytes and
+  by quest / record / section ids), psp_slots kinds quest / records / talk, pairing per block / section / file with an
+  MH1 US anchor check, freedom_ok (~ codes, stray ~, numbers). **Why:** the owner's Freedom has 8 more entries and its
+  quests in another order, so the old pairing gave 201 G strings instead of ~4400.
+- **Changed:** a G description whose lines had MH1 US English line by line now takes Freedom's whole description (192
+  lines), so a description is not half MH1 US, half Japanese. **Why:** coherent text; MH1 US still wins everywhere else.
+- **Changed:** text/mhg_en_own.tsv: 48 provisional names replaced by Freedom's (Firecell Stone, Paw Pass Ticket,
+  Expert Blade, Gradios, Djinn, Seiglinde+, Great Golem+, "Helm S" suffix order, ...); 31 G-only weapon / armour names
+  added in Freedom's style. **To revert:** the agent-A commits of 24 Oct 2026 "text_map: pair Freedom by structure ...".
