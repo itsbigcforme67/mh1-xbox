@@ -36,8 +36,8 @@ void lobby_func_0059F770(void) {
     s32 var_s5;
     s32 var_s7;
 
-    reload_tex(1, 0x180);
-    SetTextureStage(0x180);
+    reload_tex(1, 0x157);
+    SetTextureStage(0x157);
     (*(f32 *)((u8 *)(&spE0) + 0)) = (f32) (*(f32 *)((u8 *)(&(*(s32 *)((u8 *)&helpLineTbl + 0x28))) + 0));
     (*(f32 *)((u8 *)(&spE0) + 4)) = (f32) (*(f32 *)((u8 *)(&(*(s32 *)((u8 *)&helpLineTbl + 0x28))) + 4));
     (*(f32 *)((u8 *)(&spE0) + 8)) = (f32) (*(f32 *)((u8 *)(&(*(s32 *)((u8 *)&helpLineTbl + 0x28))) + 8));

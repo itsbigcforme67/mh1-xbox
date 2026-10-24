@@ -49,8 +49,8 @@ void DispButtonHelp(void *arg0) {
     temp_s0 = (*(u16 *)((u8 *)(arg0) + 0x20));
     if ((*(u8 *)((u8 *)(arg0) + 0x2D)) == 0) {
         flfntSetSize(0x12, 0x12);
-        reload_tex(1, 0x180);
-        SetTextureStage(0x180);
+        reload_tex(1, 0x157);
+        SetTextureStage(0x157);
         temp_v1 = (*(u8 *)((u8 *)(arg0) + 0x28));
         switch (temp_v1) {                          /* switch 1 */
         default:                                    /* switch 1 */

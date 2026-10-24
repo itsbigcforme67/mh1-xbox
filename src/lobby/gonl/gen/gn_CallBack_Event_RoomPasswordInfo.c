@@ -3,7 +3,7 @@
  * tools/build_pc_mhg.sh). */
 #include "../gonl.h"
 
-s32 cnLBS_Get_RoomPasswordInfo();    /* extern */
+s32 gnet_get_room_password();    /* extern */
 s32 cnetGet_Room_LastRecvNumber();         /* extern */
 extern s32 g_lb_6DE120;
 
@@ -12,6 +12,6 @@ void CallBack_Event_RoomPasswordInfo(void) {
 #define sp1E (*(u16 *)(g_frame + 0x1E))
 
     cnetGet_Room_LastRecvNumber(&sp1E);
-    cnLBS_Get_RoomPasswordInfo(sp1E, (u8 *)&g_lb_6DE120 + ((sp1E - 1) * 0x15C) + 0x17);
+    gnet_get_room_password(sp1E, (u8 *)&g_lb_6DE120 + ((sp1E - 1) * 0x15C) + 0x17);
 }
 

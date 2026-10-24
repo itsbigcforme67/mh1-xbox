@@ -322,7 +322,11 @@ static int matched(void)
     u32 a = 0;
     u16 pt = 0;
     char ip[32];
+#ifdef VERSION_MHG
+    int slot = USER_PL_ID, n = cw[CW_OFS(0x2C47)], quest = *(u16 *)(select_w + 0xD0), port;   /* G: +0xD0 (include/flow.h) */
+#else
     int slot = USER_PL_ID, n = cw[CW_OFS(0x2C47)], quest = *(s16 *)(select_w + 0xAC), port;
+#endif
     cnLBS_Get_GameServerAddress(&a, &pt);
     port = ((pt & 0xFF) << 8) | (pt >> 8);          /* it returns the port in network order */
     snprintf(ip, sizeof ip, "%u.%u.%u.%u", a & 0xFF, (a >> 8) & 0xFF, (a >> 16) & 0xFF, a >> 24);
@@ -332,9 +336,15 @@ static int matched(void)
          * mh1-server's session relay (docs/server.md 4.3): every player joins it, the relay orders the slots as 6912;
          * "mh1-mcs" = a game server of the game's own in-hunt protocol (mcs.py): the PC runs the PS2's session
          * (rt_mcs.c, docs/network.md 3.10), which closes the lobby connection itself (cmcs_00) */
+#ifdef MHG_ONLINE
+        const char *gnet_game_rule(void);           /* G's layout of the lobby client's work (cnet_g.c) */
+        const char *rule = gnet_game_rule();
+#else
         extern u8 CnetSys_w[];
-        int relay = !strncmp((char *)CnetSys_w + 0x30323, "mh1-relay", 9);
-        if (!strncmp((char *)CnetSys_w + 0x30323, "mh1-mcs", 7)) {
+        const char *rule = (char *)CnetSys_w + 0x30323;
+#endif
+        int relay = !strncmp(rule, "mh1-relay", 9);
+        if (!strncmp(rule, "mh1-mcs", 7)) {
             void rt_np_configure_mcs(int players);
             say("the game server speaks the game's own protocol%s: player %d", "", slot);
             rt_np_configure_mcs(n);
@@ -454,6 +464,16 @@ int rt_online_tick(void)
                 fprintf(stderr, "online: tick %d town state x68 %d talk %d/%d registered %d room %d/%d\n", ticks, l68, l6, l7, f,
                         cw[CW_OFS(0x35D3)], cw[CW_OFS(0x32C5)]);
             }
+#ifdef VERSION_MHG
+            {   /* G's guild counter (Lb_guild, lb_guild_g.c): its step and sub step (G 0x654836 / 0x654837, lb_sys - 0xBA) */
+                static int gs = -1, gu = -1;
+                if ((s8)lb_sys[-0xBA] != gs || (s8)lb_sys[-0xB9] != gu) {
+                    gs = (s8)lb_sys[-0xBA];
+                    gu = (s8)lb_sys[-0xB9];
+                    fprintf(stderr, "online: tick %d guild step %d/%d\n", ticks, gs, gu);
+                }
+            }
+#endif
         }
         if (trace) {        /* a new line in the game's chat log (PitMenu: logtop +0x1E, log[64] of 0x5D bytes at +0x23) */
             extern u8 PitMenu[];

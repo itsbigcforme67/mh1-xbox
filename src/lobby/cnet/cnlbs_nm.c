@@ -1970,7 +1970,7 @@ void __cnet_bgProg_ReadRoomAllocation(void) {
                 m >>= 1;
             }
             CNW(u16, 0x1032) = 0;
-            CNW(u16, 0x4052) = 0;
+            CNW(u16, CN_ROOM_COUNT) = 0;
             memset(CnetSys_w.room, 0, 0xB20);
             cnLBS_Read_RoomCount((int)_cnet_CallBack_Result_Room_NumOfRoom);
             break;
@@ -1979,7 +1979,7 @@ void __cnet_bgProg_ReadRoomAllocation(void) {
             if (b->res == 1) {
                 b->x21++;
                 b->res = 0;
-                CNW(u16, 0x1032) = CNW(u16, 0x4052) * b->cnt;
+                CNW(u16, 0x1032) = CNW(u16, CN_ROOM_COUNT) * b->cnt;
                 res.val = 2;
                 res.id = 0xA;
                 b->cb(res, &res);
@@ -1990,7 +1990,7 @@ void __cnet_bgProg_ReadRoomAllocation(void) {
         case 2:
             b->x21++;
             b->res = 0;
-            if (CNW(u16, 0x4052) == 0) {
+            if (CNW(u16, CN_ROOM_COUNT) == 0) {
                 b->x21 = 5;
             }
             break;
@@ -2006,9 +2006,20 @@ void __cnet_bgProg_ReadRoomAllocation(void) {
             if (__cnetSub_Get_RestBgWork() < b->cnt) {
                 break;
             }
+#if LBNET_G
+            /* G (0x5BB0F0): a room's join users and property are read with the room-level sends themselves; the G online
+             * build's cnLBS_Read_RoomJoinUser / cnLBS_Read_RoomProperty are G's town-level reads (6313 / 630D) */
+            if (b->val & 1) {
+                int slot = __cnetSub_Set_BgProcess(1, 0, (int)_cnet_CallBack_Result_RoomJoinJoinUser);
+                if (slot != -1) {
+                    CnetSys_w.bg[slot].cmd = __cnet_SendReq_PieceJoinUser(2, (u16)k);     /* 6403 */
+                }
+            }
+#else
             if (b->val & 1) {
                 cnLBS_Read_RoomJoinUser((u16)k, (int)_cnet_CallBack_Result_RoomJoinJoinUser);
             }
+#endif
             if (b->val & 2) {
                 cnLBS_Read_RoomStatus((u16)k, (int)_cnet_CallBack_Result_RoomJoinJoinUser);
             }
@@ -2027,12 +2038,21 @@ void __cnet_bgProg_ReadRoomAllocation(void) {
             if (b->val & 0x40) {
                 cnLBS_Read_MatchEntryJoinUser((u16)k, (int)_cnet_CallBack_Result_RoomJoinJoinUser);
             }
+#if LBNET_G
+            if (b->val & 0x80) {
+                int slot = __cnetSub_Set_BgProcess(1, 0, (int)_cnet_CallBack_Result_RoomJoinJoinUser);
+                if (slot != -1) {
+                    CnetSys_w.bg[slot].cmd = __cnet_SendReq_RoomProperty((u16)k);         /* 650A */
+                }
+            }
+#else
             if (b->val & 0x80) {
                 cnLBS_Read_RoomProperty((u16)k, (int)_cnet_CallBack_Result_RoomJoinJoinUser);
             }
+#endif
             n = k + 1;
             b->a0C++;
-            if (n > CNW(u16, 0x4052) || n > 8) {
+            if (n > CNW(u16, CN_ROOM_COUNT) || n > 8) {
                 b->x21++;
             }
             break;
@@ -2042,7 +2062,7 @@ void __cnet_bgProg_ReadRoomAllocation(void) {
             int ok;
             int n;
             int k;
-            n = CNW(u16, 0x4052);
+            n = CNW(u16, CN_ROOM_COUNT);
             ok = 1;
             for (k = 0, i = 0; ; ) {
                 k++;

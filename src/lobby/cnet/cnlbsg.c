@@ -491,13 +491,21 @@ void _cnet_RecvFromLbs_MatchPlSide(void) {
 }
 #endif
 
+/* the match information burst's state (MH1 burst[7], G burst[9]: G's slots are 0x28 bytes, MH1's 0x24, so MH1's raw
+ * offset 0xF34 is another byte in G; G 0x5B0D50 reads 0x6FB700) */
+#if LBNET_G
+#define CN_MATCH_BUSY CnetSys_w.burst[9].state
+#else
+#define CN_MATCH_BUSY CNW(u8, 0xF34)
+#endif
+
 #if !defined(G_PART) || G_PART == 8
 void _cnet_RecvFromLbs_MatchOpponentInfo(void) {
     u8 idx;
     R7 r;
     u8 *p;
 
-    if (CNW(u8, 0xF34) != 0 && CnetSys_w.rcat != 0x10) {
+    if (CN_MATCH_BUSY != 0 && CnetSys_w.rcat != 0x10) {
         if (CnetSys_w.rcat == 2) {
             if (CnetSys_w.rres == 0) {
                 p = CNWP(0x30310);
@@ -527,7 +535,7 @@ void _cnet_RecvFromLbs_MatchOpponentStatus(void) {
     R7 res;
     u8 *p;
 
-    if (CNW(u8, 0xF34) != 0 && CnetSys_w.rcat != 0x10) {
+    if (CN_MATCH_BUSY != 0 && CnetSys_w.rcat != 0x10) {
         if (CnetSys_w.rcat == 2) {
             if (CnetSys_w.rres == 0) {
                 p = CNWP(0x30310);
@@ -596,7 +604,7 @@ void _cnet_RecvFromLbs_MatchGameRule(void) {
 void _cnet_RecvFromLbs_MatchGameServerAddr(void) {
     CNET_RES res;
 
-    if (CNW(u8, 0xF34) != 0) {
+    if (CN_MATCH_BUSY != 0) {
         if (CnetSys_w.rcat == 2) {
             if (CnetSys_w.rres == 0) {
                 res.val = 0;

@@ -9,12 +9,12 @@ extern u8 ClassInfo;
 extern u8 cw;
 s32 cnLBS_Get_AllocationProgressCount(); /* extern */
 s32 cnLBS_Get_LobbyCount(); /* extern */
-s32 cnLBS_Get_LobbyStatus();         /* extern */
+s32 gnet_get_room_status();         /* extern */
 s32 cnLBS_Get_RoomExplain();         /* extern */
 s32 cnLBS_Get_RoomJoinInfo(); /* extern */
-s32 cnLBS_Get_RoomPasswordInfo();    /* extern */
+s32 gnet_get_room_password();    /* extern */
 s32 cnLBS_Get_RoomProperty();     /* extern */
-s32 cnLBS_Get_mhLobbyJoinUser(); /* extern */
+s32 gnet_get_room_joinuser(); /* extern */
 extern u16 g_lb_6DE120;
 
 void CallBack_Result_Lobby_ReadRoomAllocation(s64 arg0) {
@@ -49,10 +49,10 @@ void CallBack_Result_Lobby_ReadRoomAllocation(s64 arg0) {
                 do {
                     temp_v0 = var_s1 + 1;
                     (*(s16 *)((u8 *)(var_s0) + 4)) = temp_v0;
-                    cnLBS_Get_LobbyStatus(temp_v0 & 0xFFFF, var_s0 + 0x16);
-                    cnLBS_Get_mhLobbyJoinUser((var_s1 + 1) & 0xFFFF, var_s0 + 6, var_s0 + 0x12);
+                    gnet_get_room_status(temp_v0 & 0xFFFF, var_s0 + 0x16);
+                    gnet_get_room_joinuser((var_s1 + 1) & 0xFFFF, var_s0 + 6, var_s0 + 0x12);
                     cnLBS_Get_RoomJoinInfo((var_s1 + 1) & 0xFFFF, var_s0 + 8, var_s0 + 0xA, var_s0 + 0xC, var_s0 + 0xE, var_s0 + 0x10);
-                    cnLBS_Get_RoomPasswordInfo((var_s1 + 1) & 0xFFFF, var_s0 + 0x17);
+                    gnet_get_room_password((var_s1 + 1) & 0xFFFF, var_s0 + 0x17);
                     cnLBS_Get_RoomProperty((var_s1 + 1) & 0xFFFF, var_s0);
                     cnLBS_Get_RoomExplain((var_s1 + 1) & 0xFFFF, var_s0 + 0x5B);
                     var_s1 += 1;

@@ -104,3 +104,13 @@ def on_6205_1(self, seq, p):
 def on_6303_1(self, seq, p):
     i = struct.unpack(">H", p[:2])[0]
     self.send(ANS, 0x6303, struct.pack(">HHHHH", i, *join_counts(self, 1, i)), seq=seq)
+
+
+def on_640B_1(self, seq, p):            # G: u16 room -> u16 room, five u16: G's room list (lb_select_room, lobby 0x55xxxx
+    # via the room getter 0x5BBA80 into the room record +8) takes the FIRST one as the room's maximum and compares the
+    # members (6403's first u16) with it: "1/2", full when members >= it. MH1's order (members, max) made every G room
+    # look full. The other three: [unknown] (0 here)
+    i = struct.unpack(">H", p[:2])[0]
+    r = self.room(i)
+    n = len(r.members) if r else 0
+    self.send(ANS, 0x640B, struct.pack(">HHHHHH", i, r.max if r else 4, n, 0, 0, 0), seq=seq)

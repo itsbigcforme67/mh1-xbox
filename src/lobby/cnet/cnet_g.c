@@ -102,6 +102,138 @@ int gnet_630D_req(int lobby)
     return cmd;
 }
 
+/* G's cnLBS_Read_RoomRuleAllocation (G 0x5BCEE0; the split gives MH1's name to one of its steps, 0x5BC5B0): the rules of
+ * a room, read by the burst G restructured into small steps (0x5BCF70..); the requests and their order are MH1's, so the
+ * PC runs MH1's burst (cnlbs.c / cnlbs_nm.c __cnet_bgProg_ReadRoomRule) */
+int cnLBS_Read_RoomRuleAllocation(int val, int cb);
+int lobby_func_005BCEE0(int room, void *cb)
+{
+    return cnLBS_Read_RoomRuleAllocation(room & 0xFFFF, (int)(long)cb);
+}
+
+/* 6407 request (G 0x5BC190): u16 room -> create it (cnLBS_RoomCreate, the answer: gnet_6407_ans) */
+int gnet_6407_req(int room)
+{
+    int cmd = SetSendCommand(&send_work, 145) & 0xFFFF;
+    SetSendData16(&send_work, room);
+    SetSendCommandLen(&send_work);
+    Write_Socket(&send_work);
+    return cmd;
+}
+
+/* G's town search reads (G lobby_func_005AE790): an obfuscated string as 6316 / 6317, sent by G's own senders (src/lobby/
+ * gonl/gen, gonl_SendReq_6316 / 6317); the split names these wrappers after MH1's rule reads */
+int gonl_SendReq_6316(void *s, int len);
+int gonl_SendReq_6317(void *s, int len);
+int gnet_read_6316(void *s, int len, int cb)
+{
+    int slot = __cnetSub_Set_BgProcess(1, 0, cb);
+    if (slot != -1) {
+        CnetSys_w.bg[slot].cmd = gonl_SendReq_6316(s, len);
+        return slot;
+    }
+    return -1;
+}
+
+int gnet_read_6317(void *s, int len, int cb)
+{
+    int slot = __cnetSub_Set_BgProcess(1, 0, cb);
+    if (slot != -1) {
+        CnetSys_w.bg[slot].cmd = gonl_SendReq_6317(s, len);
+        return slot;
+    }
+    return -1;
+}
+
+/* G's cnLBS_Set_RoomRule (G 0x5BC240): G's rule block is MH1's (0x16B bytes) plus four bytes (the quest number and two
+ * quest attributes, Lbc_SetRoomRule) that G's set burst (0x5BC310) sends as 6415 (row 272: u16 room, the four bytes)
+ * between the explanation (6610) and 660C. The PC runs MH1's burst (cnlbse.c __cnet_bgProg_RoomSetRule), which sends
+ * 6415 there in the G online build (gnet_6415_req). */
+u8 gnet_rule_extra[4];
+void *memcpy();
+int cnLBS_Set_RoomRule();
+int lobby_func_005BC240(u8 *rule, void *cb)
+{
+    memcpy(gnet_rule_extra, rule + 0x16B, 4);
+    return cnLBS_Set_RoomRule((CNET_RULE *)rule, (int)(long)cb);
+}
+
+static void gnet_cb_none(CNET_RES res)
+{
+    (void)res;
+}
+
+int gnet_6415_req(void)
+{
+    int slot = __cnetSub_Set_BgProcess(1, 0, (int)(long)gnet_cb_none);
+    int cmd, k;
+    if (slot == -1)
+        return -1;
+    cmd = SetSendCommand(&send_work, 272) & 0xFFFF;
+    SetSendData16(&send_work, CNW(u8, 0x4060));     /* G 0x6FEBCE: the room one entered */
+    for (k = 0; k < 4; k++)
+        SetSendData8(&send_work, gnet_rule_extra[k]);
+    SetSendCommandLen(&send_work);
+    Write_Socket(&send_work);
+    CnetSys_w.bg[slot].cmd = cmd;
+    return slot;
+}
+
+/* G 0x5BB4D0 (split name cnLBS_Read_LobbyName): a room's join users, 6403 (To_EnterRoom, the room list) */
+int gnet_read_6403(int room, int cb)
+{
+    int slot = __cnetSub_Set_BgProcess(1, 0, cb);
+    if (slot != -1) {
+        CnetSys_w.bg[slot].cmd = __cnet_SendReq_PieceJoinUser(2, room & 0xFFFF);
+        return slot;
+    }
+    return -1;
+}
+
+/* G 0x5BF190 (no split name): the room's match entry users, 6412 = MH1's cnLBS_Read_MatchEntryJoinUser */
+int cnLBS_Read_MatchEntryJoinUser();
+int lobby_func_005BF190(int room, int cb)
+{
+    return cnLBS_Read_MatchEntryJoinUser(room, cb);
+}
+
+/* the match's game rule string (6914, MH1 CnetSys_w+0x30323) for the PC's session choice (rt_online.c matched()) */
+const char *gnet_game_rule(void)
+{
+    return (const char *)CNWP(0x30323);
+}
+
+/* G's cnLBS_RoomEntry (G 0x5BBED0): join a room: 6406 (row 113: u16 room, the password as an obfuscated string, empty
+ * when none; G 0x5BBF60). G hands the callback to __cnetSub_Set_BgProcess in a2 untouched; the split's names of the send
+ * (__cnet_SendReq_RoomEntry, G 0x5AD390) are G's 6305 send, so the PC's MH1 cnLBS_RoomEntry sent a town entry */
+void __cnet_KeepEntryFloorInfo();
+int gnet_room_entry(int room, char *pw, int cb)
+{
+    int slot = __cnetSub_Set_BgProcess(1, 0, cb), cmd;
+    if (slot == -1)
+        return -1;
+    __cnet_KeepEntryFloorInfo(2, room & 0xFFFF);
+    cmd = SetSendCommand(&send_work, 113) & 0xFFFF;
+    SetSendData16(&send_work, room & 0xFFFF);
+    if (pw == 0)
+        SetSendStringData2(&send_work, "", 0);
+    else
+        SetSendStringData2(&send_work, pw, strlen(pw) & 0xFFFF);
+    SetSendCommandLen(&send_work);
+    Write_Socket(&send_work);
+    CnetSys_w.bg[slot].cmd = cmd;
+    return slot;
+}
+
+/* 660C request: the room's rules are set (row 175; MH1's cnLBS_Set_RoomRuleFinish) */
+int gnet_660C_req(void)
+{
+    int cmd = SetSendCommand(&send_work, 175) & 0xFFFF;
+    SetSendCommandLen(&send_work);
+    Write_Socket(&send_work);
+    return cmd;
+}
+
 /* 61A1 request (G 0x5B02C0), sent after the echo rounds with the first data */
 void __cnet_SendReq_ServerParam2(void)
 {
@@ -372,6 +504,57 @@ void gnet_6890_both(void)      /* G 0x5ADA90: timing value */
     _cnet_Return_CallBack(0x2B);
 }
 
+void gnet_6403_both(void)      /* G 0x5BB590: a room's join users (u16 id, four u16: G's _sub_ReceiveJoinUser 0x5ACAE0 on the
+                                * room table; MH1's handler of this name filled the lobby table and the room read never ended) */
+{
+    u16 id = 0, v[4] = {0, 0, 0, 0};
+    if (G_ERR == 0) {
+        int r = GetRecvData16(&id, recv_work), k;
+        u8 *p;
+        for (k = 0; k < 4; k++)
+            r = GetRecvData16(&v[k], r);
+        p = G_ROOM(id);
+        REC16(p, 8) = id;
+        for (k = 0; k < 4; k++)
+            REC16(p, 0xA + 2 * k) = v[k];
+        REC32(p, 0) |= 1;
+        G_LASTID = id;
+    }
+    _cnet_Return_CallBack(0x1E);
+}
+
+/* G's room getters (the room table filled by gnet_6403 / 6404 / 6405 above). G's split names them after MH1's lobby getters
+ * (cnLBS_Get_LobbyStatus, cnLBS_Get_mhLobbyJoinUser) or MH1's room getter whose field moved (cnLBS_Get_RoomPasswordInfo);
+ * tools/mhg_gonl.py's G_RENAME points the generated G code here. */
+int gnet_get_room_status(int id, u8 *d)               /* G 0x5BB650 */
+{
+    *d = G_ROOM((u16)id)[0x1E];
+    return 0;
+}
+
+int gnet_get_room_joinuser(int id, u16 *a, u16 *b)    /* G 0x5BB550 */
+{
+    *a = REC16(G_ROOM((u16)id), 0xA);
+    *b = REC16(G_ROOM((u16)id), 0xC);
+    return 0;
+}
+
+int gnet_get_room_entryusers(int id, u16 *a, u16 *b) /* G 0x5BF210: the room's match entry users (ready, +0x1A / +0x1C;
+                                                       * gnet_6412_both / gnet_6506_note store them) */
+{
+    if ((u16)id != 0) {
+        *a = REC16(G_ROOM((u16)id), 0x1A);
+        *b = REC16(G_ROOM((u16)id), 0x1C);
+    }
+    return 0;
+}
+
+int gnet_get_room_password(int id, u8 *d)             /* G 0x5BE0E0 */
+{
+    *d = G_ROOM((u16)id)[0x1F];
+    return 0;
+}
+
 void gnet_6402_both(void)      /* G 0x5BB7E0: room name (u16 id, str) */
 {
     u16 id;
@@ -505,6 +688,21 @@ void gnet_6603_ans(void)
     if (G_ERR == 0)
         __cnet_Recv_Byte(CNGP(0xA3BF));
     _cnet_Return_CallBack(0);
+}
+
+/* 6605 / 6607 answers: G's split names its 6605 handler (0x5BE9B0, stores a rule's permission, +0x42, bit 8)
+ * AnswerRuleListNumOf and its 6607 handler (0x5BE6B0, the number of choices, +0x43, bit 4) AnswerRuleListPermission;
+ * the codes mean what they mean in MH1, so the PC runs MH1's handler of the code */
+void _cnet_RecvFromLbs_AnswerRuleListPermission(void);
+void _cnet_RecvFromLbs_AnswerRuleListNumOf(void);
+void gnet_6605_ans(void)
+{
+    _cnet_RecvFromLbs_AnswerRuleListPermission();
+}
+
+void gnet_6607_ans(void)
+{
+    _cnet_RecvFromLbs_AnswerRuleListNumOf();
 }
 
 void gnet_6505_note(void)      /* G 0x5BF840: a server message, event 10 */

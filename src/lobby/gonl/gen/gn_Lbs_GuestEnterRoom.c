@@ -10,7 +10,7 @@ extern u8 RoomRule;
 extern u8 cw;
 extern u8 lb_sys;
 s32 To_EnterRoom();                          /* extern */
-s32 cnLBS_RoomEntry(); /* extern */
+s32 gnet_room_entry(); /* extern */
 extern s32 CallBack_Result_Lobby_RoomEntry;
 
 s32 Lbs_GuestEnterRoom(s32 unused_a0, s32 arg1, s32 arg2, s32 arg3) {
@@ -28,7 +28,7 @@ s32 Lbs_GuestEnterRoom(s32 unused_a0, s32 arg1, s32 arg2, s32 arg3) {
         (*(s8 *)((u8 *)((*(void **)&cw)) + 0xFA65)) = 0;
         (*(s8 *)((u8 *)((*(void **)&cw)) + 0xBA9)) = 0x25;
         (*(s8 *)((u8 *)&ClassInfo + 0x8)) = (*(u8 *)((u8 *)&lb_sys + 0x7E)) + 1;
-        cnLBS_RoomEntry(cnLbc_CheckInFloorOrder(2, arg1, arg2, arg3) & 0xFFFF, &(*(s32 *)((u8 *)&RoomRule + 0x2)), &CallBack_Result_Lobby_RoomEntry);
+        gnet_room_entry(cnLbc_CheckInFloorOrder(2, arg1, arg2, arg3) & 0xFFFF, &(*(s32 *)((u8 *)&RoomRule + 0x2)), &CallBack_Result_Lobby_RoomEntry);
 block_12:
     default:
         return 2;

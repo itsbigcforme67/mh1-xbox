@@ -24,8 +24,8 @@ void Lb_put_new_mail(s32 arg0, s32 arg1) {
     u8 *var_a0;
     u8 *temp_v1;
 
-    reload_tex(1, 0x180);
-    SetTextureStage(0x180);
+    reload_tex(1, 0x157);
+    SetTextureStage(0x157);
     var_a1 = 0;
     var_a0 = &RecvMailInfo;
 loop_1:

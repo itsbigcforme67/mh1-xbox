@@ -3,6 +3,7 @@
 #ifndef GONL_H
 #define GONL_H
 #include "types.h"
+#include "version.h"   /* EMW_STRIDE */
 typedef long long s64;
 typedef double f64;
 typedef unsigned long long u64;

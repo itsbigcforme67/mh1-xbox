@@ -29,8 +29,8 @@ void text_lobby_trans_ot0(void *arg0) {
         temp_v0 = (*(void **)&cw);
         temp_v1 = (*(u8 *)((u8 *)(temp_v0) + 0xB99));
         if ((temp_v1 == 0) && ((s32) (*(u8 *)((u8 *)(temp_v0) + 0xB9B)) < 7) && ((*(u8 *)((u8 *)&CnetWork + 0x5)) == 0)) {
-            reload_tex(1, 0x174);
-            SetTextureStage(0x174);
+            reload_tex(1, 0x14D);
+            SetTextureStage(0x14D);
             SetFilterMode(1);
             flSetRenderState(0x60, 0, M2C_ERROR(/* Read from unset register $a2 */));
             Put_2TF(&(*(s32 *)((u8 *)&textLobbyTbl + 0x28)));
@@ -40,12 +40,12 @@ void text_lobby_trans_ot0(void *arg0) {
             lobby_func_005936B0(1, M2C_ERROR(/* Read from unset register $a1 */), M2C_ERROR(/* Read from unset register $a2 */), M2C_ERROR(/* Read from unset register $a3 */));
         }
     } else {
-        reload_tex(1, 0x140);
-        SetTextureStage(0x140);
+        reload_tex(1, 0x119);
+        SetTextureStage(0x119);
         Put_2TF(&(*(s32 *)((u8 *)&textLobbyTbl + 0x28)));
     }
-    reload_tex(1, 0x180);
-    SetTextureStage(0x180);
+    reload_tex(1, 0x157);
+    SetTextureStage(0x157);
     SetFilterMode(1);
     flSetRenderState(0x60, 0, M2C_ERROR(/* Read from unset register $a2 */));
     temp_a1 = (*(void **)&cw);

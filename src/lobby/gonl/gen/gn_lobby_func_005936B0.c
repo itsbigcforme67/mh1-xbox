@@ -18,8 +18,8 @@ void lobby_func_005936B0(void) {
     (*(f32 *)((u8 *)(&sp10) + 0x10)) = (f32) (*(f32 *)((u8 *)(&(*(u8 *)((u8 *)&lb_button_tbl + 0x80))) + 0x10));
     SetFilterMode(1);
     flSetRenderState(0x60, 0, M2C_ERROR(/* Read from unset register $a2 */));
-    reload_tex(1, 0x17C);
-    SetTextureStage(0x17C);
+    reload_tex(1, 0x153);
+    SetTextureStage(0x153);
     Put_2TF(&sp10);
 }
 

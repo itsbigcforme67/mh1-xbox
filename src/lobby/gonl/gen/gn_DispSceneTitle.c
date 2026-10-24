@@ -17,8 +17,8 @@ extern s32 helpLineTbl;
 void DispSceneTitle(void) {
     u8 *temp_a0;
 
-    reload_tex(1, 0x180);
-    SetTextureStage(0x180);
+    reload_tex(1, 0x157);
+    SetTextureStage(0x157);
     SetFilterMode(1);
     flSetRenderState(0x60, 0, M2C_ERROR(/* Read from unset register $a2 */));
     temp_a0 = (*(void **)&subTitleCol);

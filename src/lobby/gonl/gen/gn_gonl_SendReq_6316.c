@@ -1,4 +1,4 @@
-/* G online (PC): __cnet_SendReq_RuleNumOfChoice, written from Monster Hunter G's code at lobby 0x5AED70 by tools/mhg_gonl.py (an m2c draft with
+/* G online (PC): gonl_SendReq_6316, written from Monster Hunter G's code at lobby 0x5AEC60 by tools/mhg_gonl.py (an m2c draft with
  * G's names; docs/network.md 3.12). Not compared with anything; the G online PC build links it (ONLINE=1
  * tools/build_pc_mhg.sh). */
 #include "../gonl.h"
@@ -9,10 +9,10 @@ s32 SetSendStringData2();
 s32 Write_Socket();
 extern s32 send_work;
 
-s32 __cnet_SendReq_RuleNumOfChoice(void *arg0, s32 arg1) {
+s32 gonl_SendReq_6316(void *arg0, s32 arg1) {
     s32 temp_s0;
 
-    temp_s0 = SetSendCommand(&send_work, 0x63) & 0xFFFF;
+    temp_s0 = SetSendCommand(&send_work, 0x5F) & 0xFFFF;
     SetSendStringData2(&send_work, arg0, arg1);
     SetSendCommandLen(&send_work);
     Write_Socket(&send_work);

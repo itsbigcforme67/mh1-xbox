@@ -9,8 +9,8 @@ s32 lobby_func_005AEA50();
 s32 strlen();
 extern u8 CnetSys_w;
 s32 __cnetSub_Get_RestBgWork();                     /* extern */
-s32 cnLBS_Read_RoomRuleCaption(); /* extern */
-s32 cnLBS_Read_RoomRuleChoiceCount(); /* extern */
+s32 gnet_read_6316(); /* extern */
+s32 gnet_read_6317(); /* extern */
 s32 cnLBS_SendMessage(); /* extern */
 extern u8 g_lb_72E068;
 extern u8 g_lb_72E069;
@@ -25,12 +25,12 @@ void lobby_func_005AE790(void *arg0) {
             (*(u8 *)((u8 *)(arg0) + 0x23)) = (u8) ((*(u8 *)((u8 *)(arg0) + 0x23)) | 1);
         }
         if (((*(s8 *)((u8 *)&CnetSys_w + 0x130B)) != 0) && (g_lb_72E069 == 1)) {
-            cnLBS_Read_RoomRuleCaption(&(*(s8 *)((u8 *)&CnetSys_w + 0x130B)), strlen(&(*(s8 *)((u8 *)&CnetSys_w + 0x130B))) & 0xFFFF, lobby_func_005AEA10);
+            gnet_read_6316(&(*(s8 *)((u8 *)&CnetSys_w + 0x130B)), strlen(&(*(s8 *)((u8 *)&CnetSys_w + 0x130B))) & 0xFFFF, lobby_func_005AEA10);
         } else {
             (*(u8 *)((u8 *)(arg0) + 0x23)) = (u8) ((*(u8 *)((u8 *)(arg0) + 0x23)) | 2);
         }
         if (((*(s8 *)((u8 *)&CnetSys_w + 0x1314)) != 0) && (g_lb_72E06A == 1)) {
-            cnLBS_Read_RoomRuleChoiceCount(&(*(s8 *)((u8 *)&CnetSys_w + 0x1314)), strlen(&(*(s8 *)((u8 *)&CnetSys_w + 0x1314))) & 0xFFFF, lobby_func_005AEA50);
+            gnet_read_6317(&(*(s8 *)((u8 *)&CnetSys_w + 0x1314)), strlen(&(*(s8 *)((u8 *)&CnetSys_w + 0x1314))) & 0xFFFF, lobby_func_005AEA50);
             return;
         }
         (*(u8 *)((u8 *)(arg0) + 0x23)) = (u8) ((*(u8 *)((u8 *)(arg0) + 0x23)) | 4);

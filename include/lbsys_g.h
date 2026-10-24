@@ -11,6 +11,8 @@
     (o) < 0x74 ? (o) - 0x70 + 0x7B : (o) == 0x74 ? 0x10 : (o) == 0x76 ? 0x12 : (o) == 0x78 ? 0x7F : (o) == 0x7C ? 0x80 : \
     (o) == 0x80 ? 0xC : (o) < 0x87 ? (o) : (o) < 0x8D ? (o) + 1 : (o) + 2)
 
+/* cw 0x32BE..0x35CF (the room: owner flag 0x32C5 = G 0xF751, ready count 0x32C6 = G 0xF752, the server message 0x32D1
+ * = G 0xF75D) sit 0xC48C higher in G, like 0x35D0.. (G's lb_guild_make_room / lb_basic_master, 24 Oct 2026) */
 /* pNet (the net window state, network_work) and cw (client work): MH1 offset -> G offset, from tools/mhg_addrmap.py
  * --ptr pNet / --ptr cw (votes) and G's code; unknown offsets stay as they are. */
 /* PC: pNet points at a host buffer in MH1's layout (Clear_lobby_ram, lb_n.c), so MH1's C (raw pNet[0xC] ... offsets) runs
@@ -19,7 +21,8 @@
 #define CW_OFS(o) ((o) < 0x2BFE ? (o) : (o) < 0x2C06 ? (o) - 0x2BFE + 0xB64 : (o) < 0x2C2F ? (o) - 0x2C06 + 0xB6E : \
     (o) < 0x2C3C ? (o) - 0x2C2F + 0xB97 : (o) < 0x2C43 ? (o) - 0x2C3C + 0xBA4 : (o) < 0x2C46 ? (o) - 0x2C43 + 0xBA7 : \
     (o) < 0x2C4C ? (o) - 0x2C46 + 0xBB0 : (o) < 0x2C70 ? (o) - 0x2C4C + 0xBB4 : \
-    ((o) >= 0x2F6E && (o) < 0x2F9A) ? (o) - 0x2F6E + 0xED6 : ((o) >= 0x35D0 && (o) < 0x35E0) ? (o) - 0x35D2 + 0xFA5E : (o))
+    ((o) >= 0x2F6E && (o) < 0x2F9A) ? (o) - 0x2F6E + 0xED6 : ((o) >= 0x32BE && (o) < 0x35D0) ? (o) + 0xC48C : \
+    ((o) >= 0x35D0 && (o) < 0x35E0) ? (o) - 0x35D2 + 0xFA5E : (o))
 
 typedef struct LBSYS_G {       /* at 0x6548F0, 0x98 bytes; comments: G offset (MH1 name) */
     s32 x68;                   /* 0x00 talk/event mode, the exit code Local_main tests (0x22 = quest, 0x27 = title) */

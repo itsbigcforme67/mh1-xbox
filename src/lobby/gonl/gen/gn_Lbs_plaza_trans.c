@@ -45,13 +45,13 @@ void Lbs_plaza_trans(void *arg0) {
     flfntSetSize(0x12, 0x12);
     font_set_palette(0);
     put_plaza_menu(M2C_ERROR(/* Read from unset register $a0 */), M2C_ERROR(/* Read from unset register $a1 */), M2C_ERROR(/* Read from unset register $a2 */), M2C_ERROR(/* Read from unset register $a3 */));
-    reload_tex(1, 0x17B);
-    SetTextureStage(0x17B);
+    reload_tex(1, 0x152);
+    SetTextureStage(0x152);
     SetFilterMode(1);
     flSetRenderState(0x60, 0, M2C_ERROR(/* Read from unset register $a2 */));
     Put_2TF(&textLobbyTbl);
-    reload_tex(1, 0x180);
-    SetTextureStage(0x180);
+    reload_tex(1, 0x157);
+    SetTextureStage(0x157);
     Lb_put_new_mail(0x186, 0x1C, M2C_ERROR(/* Read from unset register $a2 */), M2C_ERROR(/* Read from unset register $a3 */));
     temp_v1 = (*(void **)&pNet);
     if (((s32) (*(u8 *)((u8 *)(temp_v1) + 0x22)) < 2) && ((*(u8 *)((u8 *)(temp_v1) + 0x2D)) == 0)) {

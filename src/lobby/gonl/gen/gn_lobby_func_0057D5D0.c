@@ -68,8 +68,8 @@ void lobby_func_0057D5D0(void *arg0) {
 
     font_set_stack_no((*(s32 *)((u8 *)(arg0) + 0x18)));
     lobby_func_005936B0(M2C_ERROR(/* Read from unset register $a0 */), M2C_ERROR(/* Read from unset register $a1 */), M2C_ERROR(/* Read from unset register $a2 */), M2C_ERROR(/* Read from unset register $a3 */));
-    reload_tex(1, 0x17B);
-    SetTextureStage(0x17B);
+    reload_tex(1, 0x152);
+    SetTextureStage(0x152);
     flfntSetSize(0x12, 0x12);
     var_s3 = 0;
     var_s2 = &(*(s32 *)((u8 *)&textLobbyTbl + 0x50));
@@ -90,8 +90,8 @@ void lobby_func_0057D5D0(void *arg0) {
         var_s1 += 4;
         var_s0 += 4;
     } while (var_s3 < 5);
-    reload_tex(1, 0x180);
-    SetTextureStage(0x180);
+    reload_tex(1, 0x157);
+    SetTextureStage(0x157);
     var_s7 = 0;
     var_s4_2 = &g_lb_5FBBF0;
     do {

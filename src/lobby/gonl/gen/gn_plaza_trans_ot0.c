@@ -60,8 +60,8 @@ void plaza_trans_ot0(void *arg0) {
     var_s0 = -0xAC80AA;
     sp20 = lit_3199;
     font_set_stack_no((*(s32 *)((u8 *)(arg0) + 0x18)));
-    reload_tex(1, 0x180);
-    SetTextureStage(0x180);
+    reload_tex(1, 0x157);
+    SetTextureStage(0x157);
     SetFilterMode(1);
     flSetRenderState(0x60, 0, M2C_ERROR(/* Read from unset register $a2 */));
     Put_2TF(&(*(s32 *)((u8 *)&textLobbyTbl + 0x14)));
