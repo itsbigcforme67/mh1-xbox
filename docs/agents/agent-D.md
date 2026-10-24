@@ -1546,3 +1546,32 @@ list of what was looked at: docs/RELEASE_G.md section 15.
   set14_m / set14_trans, em02 Fatalis, em14_main, the combine list count (Item_preparation_list_num).
 - Results (23 Oct 2026, final tree): tools/rebuild.sh 5 OK; VERSION=mhg tools/rebuild.sh 7 OK; tools/test_all_quests_g.sh 98 quests + carts + Dual Swords all PASS;
   tools/full_check.sh EXIT 0 (every test ok incl. both Xbox builds, 4 emulator tests skipped by design).
+
+## GB6, ninth pass (agent D, Opus, 23 Oct 2026)
+Assignment: the eighth pass's "not looked at" list (em02, em14_main, eft04_i / _m, eft15_m type 9, eft16_m / type 15, eft02_t, set14_m /
+set14_trans). Write-up with evidence tags: docs/RELEASE_G.md section 16.
+- Method additions:
+  - A per-case call-list diff for the animation scripts (ef_move_sub): extract `fn(args)` per `case N:` from the PC's C and from G's m2c
+    (hex float arguments converted to floats, the argument ORDER differs: m2c prints the PS2's f12 first, so compare as sets or ignore
+    em_frame_check / Eft13_set_em_scl / Eft15_set3 argument order) and diff the lists; it found em15's 0x459 second script and the
+    deleted 0x417 shot fan in one run (the throwaway script is in the scratchpad of the session; it is 40 lines, rewrite it).
+  - A whole-module objdump of G (`objdump -D -b binary -m mips:5900 --adjust-vma=VRAM build/mhg/split/MODULE.bin`) to grep callers of a
+    G function with the immediate argument (`jal 0xADDR` then the `li a1,N` before it): found who passes eft04 type 9 / eft16 types.
+  - Forced spawn without touching the game's flow: a TEMPORARY env hook (RT_TESTEFT=SYS:TYPE) at the top of em15's ef_move_sub that
+    calls Eft04_set / Eft15_set2 / Eft16_set_ex3 every 90 ticks, run through quest 41 (kind 15 on stage 18, RT_QUEST_STAGE=1,
+    RT_PL_TARGET=k15, RT_PL_WARP_EM=100-90000, shots at 4.55-4.7 s so the hunter stands at the monster). Removed again (git checkout).
+    Shots: build/D/te/keep/ (eft15 type 9 = blue lightning, eft16 type 15 = white puff, baseline).
+- Pitfalls:
+  - fdiff aligns by mnemonic: a block that moved shows as deleted + inserted, so never read a `!` run as "G added this" without
+    checking the other side (em15's 0x41E x14 test, the Eft04_set_time divide were both "moves").
+  - The m2c of an unknown-signature call (func_00101FE0 / func_00102020, G's two stubs in main that scale a vector by 1.0) looks like
+    new logic; read the callee first (here a 1.0 constant: no-op, left out).
+  - PS2 `Eft04_set_time(em, arg, time, scale)`: G's callers pass the RAW time and the function divides by 2 x act speed; the PC's callers
+    (em03.c, em33.c, em15_nm.c) still divide. The G branch only applies the clamp (>200 or act speed < 0.001: 100), which is equivalent.
+  - **game_w.area_mdlw is never filled on the PC** (all NULL): eft04, eft01 shadow arg 4, eft20 / shell08 clay pieces draw nothing in
+    both games. Found while trying to take a shot of eft04 type 9; not fixed (platform task, see RELEASE_G section 16 "Found").
+- Done: eft04 (type 9, 60-byte pieces, size / scale rules, time clamp), em15 ef_move_sub (0x417, 0x451, 0x459 subspecies roar), eft15
+  type 9 + sounds + 0x6C, eft16 type 15 + dark blood + 0x6C, eft02 dark blood, set14 stage 90, em12 neck spray gone. em14_main was already
+  complete.
+- Not done: **em02** (kind 2 / 36): seven new G functions, acts 11-18, ~14 edited functions; no offline quest spawns it, nothing to verify;
+  list of the pieces in RELEASE_G section 16. Next candidates from section 15's list: em03_init / main, em16_init2.

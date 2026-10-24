@@ -726,3 +726,61 @@ build compiles them), the MH1 branch kept in `#else`; MH1's own C is unchanged, 
   vs 407 / 716), eft15_m, eft16_m (G drops the neck spray), set14_m / set14_trans, em02 (Fatalis) atk / fly, em14_main, em03_init / main, em16_init2.
 
 **Checks** (23 Oct 2026): `tools/rebuild.sh` 5 OK, `VERSION=mhg tools/rebuild.sh` 7 OK, tools/test_all_quests_g.sh, tools/full_check.sh: see the result lines in docs/agents/agent-D.md "GB6 eighth pass".
+
+## 16. GB6, ninth pass (agent D, 23 Oct 2026)
+The "not looked at in detail" list of section 15, same method (tools/mhg_fdiff.py for the asm, tools/gdraft.py for G's m2c, a per-case
+call-list diff of G's draft against the PC's C for the long animation scripts). All code is `VERSION_MHG` (matched files also
+`!__MWERKS__`, so PS2 builds keep their bytes), MH1's C is unchanged; G tables the PC reads at ten / sixteen entries are sized in
+config/mhg/pc_data.txt.
+
+**Ported**
+- **eft04 (monster attack effects: eft04_i / _m / _t, Eft04_set_time)**: G has **ten types** and **60-byte pieces** (a velocity at +0x30).
+  New type 9 = debris thrown around joint 0x22 of em15's subspecies roar: starts 80 in front of the joint, a piece falls (-8 per tick),
+  on the ground a sound (Em_se_req2 30), two Eft04 type 1 / 2 bursts, then the piece is retired (no 0xFF); drawn as an upright billboard
+  (rview_matY) from clay 9. Other G changes: type 0's piece sizes follow the monster's size percent (6 x size / 100 and 2 x size / 100;
+  MH1 3.5 / the effect scale), type 2's pieces rise times the effect's scale and start at scale x (1.2 - 0.2 i), type 8's texture scrolls
+  (0.01875 x lag), eft04_t no longer asks eft_mdlw[0], Eft04_set_time clamps the callers' time (act speed below 0.001 or time above 200: 100;
+  G's callers pass the raw number and it divides by 2 x act speed, the PC's callers still divide, so the clamp alone is equivalent).
+  [m2c + asm read per hit; hidden hunt of quest 41 with a temporary forced spawn: type 9 inits at the joint, falls 291 -> 9 in 8 ticks,
+  lands, ends; no crash. NOT SEEN ON SCREEN: see "Found" below.]
+- **em15 ef_move_sub** (G's em15 serves kind 15 and its subspecies 45): the three-shot fan at animation 0x417 frame 176 is gone, animation
+  0x451 plays sound 0x5B, and 0x459 (the roar) has a **second script for kinds != 15**: its own sounds, shell16 0x27 at frame 16 and 0x28 at
+  130, Eft04 type 9 every 5th tick between frames 120 and 180. [call-list diff of G's draft against the PC's C, all 40+ animations compared]
+- **eft15 type 9** (one sprite, drawn like type 3: clay 66 / 75 with the type 3 uv scroll) and G's **x07 1 = start at once** (types 2, 3, 7, 8
+  skip the lag); **eft15_se_req** plays G's own sounds with se_req2 (type 0: 94, 2: 95, 3 / 7: 97, 8: 98, type 4: 117; none for x07 1) instead
+  of MH1's Pl_se_req2(owner, 0); **eft15_t** switches render state 0x6C off around types 2 and 3 / 7 / 8 / 9 and back on after every sprite.
+  [asm + m2c; forced type 9 spawn at the hunter's side of the quest-41 monster: blue lightning arcs (build/D/te/keep/eft15_t9_thunder.png, a
+  temporary hook)]
+- **eft16 type 15** (hit blood, spray like type 8 without the owner's joint step, one piece) and **dark blood for kinds 8 / 34** (Eft_blood_rgb
+  row 6, mode2 bit 0x40 set by Eft16_set / Eft16_set_impact, eft16_col_type_sel row 6); render state 0x6C off around types 0, 2, 5.
+  [forced type 15 at the same monster: a white-yellow puff beside the hunter, absent in the run without it; the dark-blood path was not hit]
+- **eft02 dark blood for kinds 8 / 34** (Eft02_set3 sets x1E 3, eft02_t takes Eft_blood_rgb row 6 for it). [asm; not hit in a run]
+- **set14 stage 90** (G's own stage): set14_i / set14_m / set14_trans take the stage-51..53 mist-layer code with G's mask table (main 0x2EE948)
+  and position table (game 0x6BFCF0), clay 5. [asm + m2c; no offline quest uses stage 90, not run]
+- **em12 (Cephalos) loses the neck spray**: G has no Eft16_set_ex (and no types 3 / 4 body), em_dm00's frame-2 spray and ef_move_sub's
+  animation 0x424 script are gone. [asm]
+- pc_data.txt: eft04 / eft15 tables ten entries, eft16 sixteen, Eft_blood_rgb a seventh row, eft15 type 9's time table (main 0x2EC774),
+  set14's stage 90 tables.
+
+**Looked at, nothing to port**
+- **em14_main**: already complete in the code (section 7 / the earlier subspecies passes): the x8B6 guard, the act-4 reaction chain for
+  animations 6 / 13 / 14 / 17 / 18, kind 43, G's quest 10041 demo stop and info_stop, the single act-5 call: all of G's differences from
+  MH1's asm are in em14_nm.c. The cov list's 0.96 was stale. [asm diff read hit by hit]
+- **em02 (kind 2 and its subspecies 36)**: G's em02 is a bigger rewrite than the kind lists: seven new functions (game 0x5A9F00 a counter
+  tick, 0x5AC150 a fly-away act with em02_fly_adjy2_init type 6, 0x5AC580 five variants of an attack, 0x5ACFB0, 0x5AD140, 0x5AD470, demo
+  0x5AF150), fly act 11 and attack acts 12-18 in em02_fly_act_set / em02_atk_act_set (G's em_move02 / 03 dispatch to them), fly_adjy2_init
+  types 4-6, em_act05 / 06 / dmg03 ending a sleep through stockEndPulldown / Em_Sleep2_End, em02_init / hagi_set / main with kind 36
+  branches and ef_move_sub (15 KB, +44 instructions). **No offline quest spawns kind 2 or 36** (boss kinds of the
+  98 quests: 1 6 7 8 11 14 15 17 20 21 22 26 27 28 31 37 44 49; the stage lists have no 2 / 36 either), so there is nothing to see in a
+  hunt, and a half port would leave the dispatch pointing at nothing. Left whole, not started: port it together when an online or event
+  quest can spawn it.
+- eft04_type0_0_init / type3_init / type8_init, eft04_d, eft16_i / se_req: same shape as MH1 (the 60-byte stride is the piece struct's).
+
+**Found, not fixed (PC platform, both games)**: `game_w.area_mdlw[]` (the monsters' own effect model sets, game_w + 0xA8 in MH1 / 0xB0 in G)
+is never filled on the PC: all entries are NULL while the quest-41 monster (kind 15) is on screen. Everything that draws from it returns
+without drawing: eft04 (the whole monster-attack effect family), eft01's shadow arg 4, eft20's area pieces and shell08's clay pieces
+(`am = game_w.area_mdlw[Em_area_ck(...)]`). Only eft_mdlw[0..4] (rt_eft.c rt_bind_eft_model: ef_00, three shadows, ef_01) are bound. [checked:
+a trace in eft04_t during the forced spawn printed eight NULL entries] A platform task: bind each loaded monster's effect model
+(eft04 reads clay[0..9] of it, eft20 and shell08 their own clays) the way load_eft does for ef_00.
+
+**Checks** (23 Oct 2026): see docs/agents/agent-D.md "GB6 ninth pass".
