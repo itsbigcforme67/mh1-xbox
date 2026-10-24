@@ -696,7 +696,6 @@ lobby:0x63EB90	village / plaza / guild / shop UI [G table]	G only	in Portable
 lobby:0x63EBF0	village / plaza / guild / shop UI	edited in G	in Portable
 lobby:0x63EC10	village / plaza / guild / shop UI [G table]	G only	in Portable
 lobby:0x63EC30	village / plaza / guild / shop UI [G table]	G only	in Portable
-lobby:0x63EC68	village / plaza / guild / shop UI [G table]	G only	in Portable
 lobby:0x63EC78	village / plaza / guild / shop UI [G table]	G only	in Portable
 lobby:0x63EC80	village / plaza / guild / shop UI [G table]	G only	in Portable
 lobby:0x63EC90	village / plaza / guild / shop UI [G table]	G only	in Portable
@@ -735,10 +734,7 @@ lobby:0x6400C8	other tables (pit_help_itembox_str) [G table]	G only	in Portable
 lobby:0x6400D8	village / plaza / guild / shop UI [G table]	G only	in Portable
 lobby:0x6400E0	village / plaza / guild / shop UI [G table]	G only	in Portable
 lobby:0x6400F0	village / plaza / guild / shop UI [G table]	G only	in Portable
-lobby:0x640148	village / plaza / guild / shop UI [G table]	G only	in Portable
 lobby:0x640158	village / plaza / guild / shop UI [G table]	G only	in Portable
-lobby:0x640188	village / plaza / guild / shop UI [G table]	G only	in Portable
-lobby:0x6401C8	quest board / quest text tables	edited in G
 lobby:0x6402D0	quest board / quest text tables	edited in G	ambiguous: numbers: number changed to or from 1 (singular/plural)
 lobby:0x640310	quest board / quest text tables [G table]	G only	ambiguous: numbers: number changed to or from 1 (singular/plural)
 lobby:0x640330	quest board / quest text tables [G table]	G only
@@ -847,7 +843,7 @@ lobby:0x642818	village / plaza / guild / shop UI [G table]	G only
 lobby:0x642830	village / plaza / guild / shop UI [G table]	G only
 lobby:0x642850	village / plaza / guild / shop UI [G table]	G only
 lobby:0x642870	village / plaza / guild / shop UI [G table]	G only
-lobby:0x6428A0	village NPC lines and talk	twin without US English
+lobby:0x6428A0	village NPC lines and talk	edited in G
 lobby:0x6428D0	village NPC lines and talk [G table]	G only
 lobby:0x6428F0	village NPC lines and talk [G table]	G only
 lobby:0x642900	village NPC lines and talk [G table]	G only
@@ -1400,7 +1396,6 @@ main:0x2C0700	online, keyboard, word filter	twin without US English
 main:0x2C0780	online, keyboard, word filter	twin without US English
 main:0x2C0800	other tables (num_tbl) [G table]	G only
 main:0x2C09E0	code literals (main)	G only	in Portable
-main:0x2C0C10	code literals (main)	G only	in Portable	ambiguous: the same Japanese has two different English texts
 main:0x2C0C30	code literals (main)	G only
 main:0x2C1290	online, keyboard, word filter [G table]	G only
 main:0x2C12C0	online, keyboard, word filter	edited in G
@@ -1497,7 +1492,6 @@ main:0x2C32D0	other tables (menu00_str_tbl)	twin without US English
 main:0x2C3390	other tables (menu02_str_tbl)	twin without US English
 main:0x2C33C0	other tables (menu05_str_tbl)	twin without US English
 main:0x2C33D0	other tables (menu05_str_tbl)	twin without US English
-main:0x2C3430	other tables (menu09_str_tbl)	twin without US English	in Portable	ambiguous: the same Japanese has two different English texts
 main:0x2C3510	memory card and yes/no dialogs	twin without US English
 main:0x2C3540	memory card and yes/no dialogs	twin without US English
 main:0x2C3580	memory card and yes/no dialogs	twin without US English
@@ -5557,7 +5551,6 @@ sub_main:0x537700	other tables (pit_help_reward_str) [G table]	G only	in Portabl
 sub_main:0x537710	other tables (pit_help_reward_str) [G table]	G only	in Portable
 sub_main:0x537718	other tables (pit_help_reward_str) [G table]	G only	in Portable
 sub_main:0x537BA0	other tables (reward_menu_str) [G table]	G only
-sub_main:0x537BD8	other tables (reward_menu_str) [G table]	G only	in Portable
 sub_main:0x537C40	quest board / quest text tables	twin without US English	in Portable
 sub_main:0x537C60	quest board / quest text tables	twin without US English	in Portable
 sub_main:0x537C70	quest board / quest text tables	twin without US English	in Portable
@@ -5596,6 +5589,7 @@ sub_main:0x538C80	menus, options, HUD [G table]	G only	in Portable
 sub_main:0x538CD0	other tables (data_list_str) [G table]	G only	in Portable
 sub_main:0x538D18	menus, options, HUD [G table]	G only	in Portable
 sub_main:0x538D90	menus, options, HUD [G table]	G only	in Portable
+sub_main:0x538DC0	menus, options, HUD	twin without US English
 sub_main:0x538FF0	weapons [G table]	G only	in Portable
 sub_main:0x539000	weapons [G table]	G only	in Portable
 sub_main:0x539040	menus, options, HUD [G table]	G only	in Portable
@@ -5762,25 +5756,14 @@ sub_main:0x53A150	menus, options, HUD [G table]	G only	in Portable
 sub_main:0x53A170	menus, options, HUD [G table]	G only	in Portable
 sub_main:0x53A190	menus, options, HUD [G table]	G only	in Portable
 sub_main:0x53A380	menus, options, HUD [G table]	G only	in Portable
-sub_main:0x53A3F0	other tables (yes_or_no_str) [G table]	G only	in Portable
-sub_main:0x53A400	other tables (yes_or_no_str) [G table]	G only	in Portable
-sub_main:0x53A420	other tables (yes_or_no_str) [G table]	G only	in Portable
 sub_main:0x53A438	other tables (yes_or_no_str) [G table]	G only	in Portable
-sub_main:0x53A450	other tables (yes_or_no_str) [G table]	G only	in Portable
-sub_main:0x53A480	other tables (yes_or_no_str) [G table]	G only	in Portable
-sub_main:0x53A4A0	other tables (yes_or_no_str) [G table]	G only	in Portable
-sub_main:0x53A4D0	other tables (yes_or_no_str) [G table]	G only	in Portable
-sub_main:0x53A500	other tables (yes_or_no_str) [G table]	G only	in Portable
-sub_main:0x53A520	other tables (yes_or_no_str) [G table]	G only	in Portable
-sub_main:0x53A530	menus, options, HUD [G table]	G only	in Portable
 sub_main:0x53A550	menus, options, HUD [G table]	G only	in Portable
 sub_main:0x53A570	menus, options, HUD [G table]	G only	in Portable
-sub_main:0x53A5A0	menus, options, HUD [G table]	G only	in Portable
 sub_main:0x53A5D0	menus, options, HUD [G table]	G only
 sub_main:0x53A600	menus, options, HUD [G table]	G only	in Portable
 sub_main:0x53A630	menus, options, HUD [G table]	G only	in Portable
 sub_main:0x53A640	menus, options, HUD [G table]	G only	in Portable
-sub_main:0x53A670	other tables (edit_menu_msg) [G table]	G only	in Portable
+sub_main:0x53A670	other tables (edit_menu_msg) [G table]	G only	in Portable	ambiguous: numbers: two different English texts
 sub_main:0x53A690	other tables (edit_menu_msg) [G table]	G only	in Portable
 sub_main:0x53A6B0	menus, options, HUD [G table]	G only	in Portable
 sub_main:0x53A740	menus, options, HUD [G table]	G only
@@ -5850,7 +5833,7 @@ sub_main:0x53C6F0	other tables (map_name) [G table]	G only	in Portable
 sub_main:0x53C6F8	other tables (map_name) [G table]	G only	in Portable
 sub_main:0x53C700	other tables (map_name) [G table]	G only	in Portable
 sub_main:0x53C710	other tables (map_name) [G table]	G only	in Portable
-sub_main:0x53C730	other tables (map_name) [G table]	G only	in Portable
+sub_main:0x53C730	other tables (map_name) [G table]	G only	in Portable	ambiguous: numbers: two different English texts
 sub_main:0x53C750	other tables (map_name) [G table]	G only	in Portable
 sub_main:0x53C770	other tables (map_name) [G table]	G only	in Portable
 sub_main:0x53C790	other tables (map_name) [G table]	G only	in Portable
@@ -5953,7 +5936,6 @@ sub_main:0x53FC20	menus, options, HUD [G table]	G only	in Portable
 sub_main:0x53FC40	other tables (map_name) [G table]	G only	in Portable
 sub_main:0x53FC80	other tables (map_name) [G table]	G only	in Portable
 sub_main:0x53FCC0	menus, options, HUD [G table]	G only	in Portable
-sub_main:0x53FCF8	menus, options, HUD [G table]	G only	in Portable	ambiguous: the same Japanese has two different English texts
 sub_main:0x53FD00	menus, options, HUD [G table]	G only	in Portable
 sub_main:0x53FD20	menus, options, HUD [G table]	G only
 sub_main:0x53FD40	menus, options, HUD [G table]	G only
