@@ -27,7 +27,13 @@ typedef struct NSEL {
     u8 xAE[4];
 } NSEL;
 typedef struct NQW {
+#ifdef VERSION_MHG
+    u8 x00[0x281];      /* G moved MH1's 0x180.. block of quest_w to 0x280 (include/quest.h): with MH1's offsets the PC's
+                         * quest messages (sys 6: the clear, everyone back) carried other bytes, and the room owner
+                         * waited for ever at the clear (quest command 0x2D) - 24 Oct 2026 */
+#else
     u8 x00[0x181];
+#endif
     u8 x181;
     u16 x182;
     s16 x184;

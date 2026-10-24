@@ -9,7 +9,7 @@ void cmcs_03(void) {
 
     temp_v1 = (int)cw;
     COM_R_No_1 = (u8) (COM_R_No_1 + 1);
-    LobbyToMcsInit(F(s8, temp_v1, 0x2C47), USER_PL_ID, temp_v1 + 0x35E0);
+    LobbyToMcsInit(F(s8, temp_v1, CW_OFS(0x2C47)), USER_PL_ID, temp_v1 + CW_OFS(0x35E0));   /* (G: cw+0xBB1 / +0xFA6C) */
     LobbyToMcsInitSocket(*(s32 *)0x4E36F4);
     Vs_Cnt_0 = 0xE10;
 }

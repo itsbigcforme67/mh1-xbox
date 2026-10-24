@@ -235,7 +235,7 @@ void AQ_exec(void) {
                 get_AQdata();
                 if (aq_work.session == 0) {
                     w->mode++;
-                    q = ((u8 *)&game_w) + 0x208;
+                    q = ((u8 *)&game_w) + GWX(0x208);    /* pl_state (G: 0x1A4, include/gwx.h) */
                     p = q + game_w.master;
                     v = *p;
                     if (v != 0xFF) {
@@ -297,7 +297,7 @@ void AQ_exec_load(void) {
                 get_AQdata();
                 if (aq_work.session == 0) {
                     w->mode++;
-                    q = ((u8 *)&game_w) + 0x208;
+                    q = ((u8 *)&game_w) + GWX(0x208);    /* pl_state (G: 0x1A4, include/gwx.h) */
                     p = q + game_w.master;
                     v = *p;
                     if (v != 0xFF) {
@@ -396,7 +396,7 @@ void get_AQdata(void) {
         break;
     case 4:
         id = CngNetAQDisconnectUserIDGet(cng_netAQ);
-        q = ((u8 *)&game_w) + 0x208;
+        q = ((u8 *)&game_w) + GWX(0x208);    /* pl_state (G: 0x1A4, include/gwx.h) */
         p = q + id;
         if (*p != 0xFF) {
             *p = 0xFF;
@@ -410,7 +410,7 @@ void get_AQdata(void) {
         }
         break;
     case 0x40:
-        q = ((u8 *)&game_w) + 0x208;
+        q = ((u8 *)&game_w) + GWX(0x208);    /* pl_state (G: 0x1A4, include/gwx.h) */
         p = q + game_w.master;
         v = *p;
         if (v != 0xFF) {

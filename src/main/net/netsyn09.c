@@ -8,7 +8,11 @@ extern u8 player_work[];
 extern u8 select_w[];
 
 typedef struct NQWR {
+#ifdef VERSION_MHG
+    u8 x00[0x280];      /* G: the 0x180.. block is at 0x280 (netsyn08.c, include/quest.h) */
+#else
     u8 x00[0x180];
+#endif
     u8 x180;
     u8 x181;
     u16 x182;

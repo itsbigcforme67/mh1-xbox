@@ -161,7 +161,14 @@ void mcsls_r0_wait_start(void) {
     }
 }
 
+#ifdef VERSION_MHG
+extern s32 MCSLS_SWIN_MINUS;
+extern s32 mcsls_swin_minus_init;   /* G 0x2EBF64 (config/mhg/pc_data.txt): G's MINUS lives in bss and is set here */
+#endif
 void mcsls_r0_start_init(void) {
+#ifdef VERSION_MHG
+    MCSLS_SWIN_MINUS = mcsls_swin_minus_init;   /* G 0x1E56F0: (&MCSLS_SWIN_LIMIT)[2] (as mcsls_r02.c for the G PS2 build) */
+#endif
     mcsls_w.x151 = 0;
     mcsls_set_status(5);
 }

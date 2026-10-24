@@ -31,6 +31,19 @@
 #define GW8(o) (((u8 *)&game_w)[GWX(o)])
 
 extern u8 select_w[];
+#ifdef VERSION_MHG
+#define SW_QUEST 0xD0       /* G's select_w: the quest (include/flow.h xAC), set by G's lobby code; the sys 2 packets of the
+                             * PC's net_send_sys / net_receive_sys (MH1 C) still carry MH1's layout (docs/network.md 3.12) */
+#else
+#define SW_QUEST 0xAC
+#endif
+#ifdef VERSION_MHG
+/* MH1 data the PC's in-hunt session C (aq_nm.c, cng_nm.c: MH1's code) uses and G's main lacks (G's AQ_init calls
+ * CngNetAQInit instead of the TCP config set): without these the G build had code stand-ins (rt_gen.c) for them and
+ * AQ_init's write to ave_cnf crashed (24 Oct 2026). Host objects of MH1's sizes. */
+u8 ave_cnf[0x2C] __attribute__((aligned(16)));
+u8 netmod_load_flag;
+#endif
 extern u8 system_w[];
 extern u8 COM_R_No_1;
 extern u8 cng_netAQ[];
@@ -187,8 +200,8 @@ int rt_mcs_setup(void)
     memcpy(ids, game_w.x1E8, sizeof ids);
     memcpy(states, game_w.pl_state, sizeof states);
     fprintf(stderr, "mcs: every player is in (mcsls state %d): quest %d, %d players, this is slot %d\n", mcsls_state(),
-            *(u16 *)(select_w + 0xAC), game_w.pl_num, me);
-    return *(u16 *)(select_w + 0xAC);
+            *(u16 *)(select_w + SW_QUEST), game_w.pl_num, me);
+    return *(u16 *)(select_w + SW_QUEST);
 }
 
 /* rt_np_init_slots for an mcs session: the slots are the session's (game_w.master / pl_num / pl_state set above);

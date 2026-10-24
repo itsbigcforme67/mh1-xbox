@@ -152,6 +152,8 @@ void rt_online_enter(void)
         int rt_np_load_hunter(void);
         if (!User_data[8] && rt_np_load_hunter() != 0 && getenv("RT_NAME"))
             snprintf((char *)User_data + 8, 0x10, "%s", getenv("RT_NAME"));
+        if (!back && getenv("RT_MONEY"))    /* test aid (as rt_village.c's): the hunter's zenny, e.g. for a quest's fee */
+            *(s32 *)(User_data + 0x20) = atoi(getenv("RT_MONEY"));
     }
     if (back) {     /* after an online quest (Game_task mode 6 online, f_game_nm.c): all_reset, Load_overlay(3),
                      * Clear_lobby_ram, AQ_session_exit_online, internet_connect_minimum_cleanup (done in matched()),
@@ -465,12 +467,32 @@ int rt_online_tick(void)
                         cw[CW_OFS(0x35D3)], cw[CW_OFS(0x32C5)]);
             }
 #ifdef VERSION_MHG
+            {   /* the room list's quest sheet (lb_select_set_data): reward / fee lines, lb_board_message +0x24 / +0x88 */
+                extern u8 lb_board_message[];
+                static char last[0x40];
+                if (memcmp(last, lb_board_message + 0x24, 0x20) || memcmp(last + 0x20, lb_board_message + 0x88, 0x20)) {
+                    int k;
+                    memcpy(last, lb_board_message + 0x24, 0x20);
+                    memcpy(last + 0x20, lb_board_message + 0x88, 0x20);
+                    fprintf(stderr, "online: tick %d board sheet reward/fee:", ticks);
+                    for (k = 0; k < 0x40; k++)
+                        fprintf(stderr, k == 0x20 ? " / %02x" : " %02x", (u8)last[k]);
+                    fprintf(stderr, "\n");
+                }
+            }
             {   /* G's guild counter (Lb_guild, lb_guild_g.c): its step and sub step (G 0x654836 / 0x654837, lb_sys - 0xBA) */
                 static int gs = -1, gu = -1;
                 if ((s8)lb_sys[-0xBA] != gs || (s8)lb_sys[-0xB9] != gu) {
                     gs = (s8)lb_sys[-0xBA];
                     gu = (s8)lb_sys[-0xB9];
                     fprintf(stderr, "online: tick %d guild step %d/%d\n", ticks, gs, gu);
+                    if (gs == 5) {      /* the quest cards of the chosen level (G lb_quest_all 0x653510, QCOUNT 0x6534E0) */
+                        int lv = lb_sys[-0x152C], k, nq = lb_sys[-0x1410 + (lv & 0xF)];
+                        fprintf(stderr, "online: guild level %d cards:", lv);
+                        for (k = 0; k < nq && k < 8; k++)
+                            fprintf(stderr, " %d", *(u16 *)(lb_sys - 0x13E0 + (lv & 0xF) * 0x10 + k * 2));
+                        fprintf(stderr, "\n");
+                    }
                 }
             }
 #endif
