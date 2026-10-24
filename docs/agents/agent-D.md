@@ -1588,3 +1588,14 @@ Assignment: game_w.area_mdlw[] never filled on the PC. Write-up: docs/RELEASE_G.
 - Test aids used: a temporary `RT_E04TR` print in Eft04_set* (removed) gave the ticks (quest 41: kind 15's eft04 type 0 at tick
   144, types 1 / 2 at 874-938); build/D/am/run.sh BIN DISC QUEST KIND TIME OUT.png for hidden before / after shots;
   RT_QEM_KIND=30:33 puts a Kirin into MH1 quest 41.
+
+## Red line at the top-left (agent D, Opus, 24 Oct 2026)
+Hidden shots of MH1 quest 41 with a Kirin (RT_QEM_KIND=30:33) showed a red horizontal line across the top-left, through the life gauge.
+- Cause (RT_2D_TRACE showed one box `-26291,31-80,35`; gdb watch on PLW+0x790): a host test aid, not the game and not the renderer. The
+  god mode (RT_PL_GOD / debug menu "can't faint", rt_player.c) sets the hunter's vital to 30000 before pl_move; a hit makes Pl_damage_sub
+  set vital_red (PLW+0x790, the red part of the life bar) to about 15000, and bar_disp's s16 width (0.9 * 288 * red / 100) wraps negative:
+  a 4 px bar from x=80 running 26000 px left. Only the red bar; a no-god run never has it. Without the Kirin the hunter takes no hit in
+  the shot, so the line was absent (not Kirin specific: any hit under god mode did it, MH1 and G share rt_player.c).
+- Fix: rt_player.c's after-pl_move god block now also sets vital_red to the maximum, with the vital. Checked: before / after hidden shots
+  (the line is gone, rest identical), PC builds of MH1 and G compile. The real game's HUD code is untouched. Test aid / debug menu only,
+  nothing player-visible in normal play, so no RELEASE.md entry.

@@ -662,6 +662,8 @@ void rt_player_tick(int no)
                      * hunter with 150 hp was cut to 100), and 30000 for G's RT_PL_GOD only (the bar ran off the screen) */
         s16 mx = PF(&player_work[no], s16, 0x792);
         PF(&player_work[no], s16, 0x302) = mx > 0 ? mx : 100;
+        PF(&player_work[no], s16, 0x790) = mx > 0 ? mx : 100;   /* the red part (vital_red): a hit taken from 30000 left it near 15000, and the
+                     * HUD drew a bar 40000 px wide (a red line across the top of the screen, 24 Oct 2026) */
         PF(&player_work[no], s16, 0x7AA) = 0;
     }
     if (getenv("RT_PL_TRACE")) {
