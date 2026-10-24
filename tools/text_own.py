@@ -6,7 +6,8 @@
 
 A batch file holds lines `ID<TAB>FLAGS<TAB>ENGLISH` (ids from docs/survey/mhg_text_untranslated.txt, flags '-' or
 letters: t talk window line (word-wrapped by text_map.py), p tutorial page (lines up to 40 columns, as the US pages), d one line of an item/weapon/armour
-description (up to 30 columns: the description window is as wide as its longest line, the US lines run to 28),
+description (up to 30 columns: the description window is as wide as its longest line, the US lines run to 28), m one line of a line-split
+message (the dialog is as wide as the message's longest line: up to 50 columns, as the US messages),
 n uses a G-only name Freedom will decide). `add` reads the
 Japanese at each id from the owner's disc (disc/mhg) only to compute its crc32 (written instead of the text, so the repo
 holds no game text) and to check the line: printf conversions and ~ codes must be the Japanese's, and the English must
@@ -78,7 +79,8 @@ def fit(jb, en, flags):
     if len(el) > len(jl):
         return "%d lines, Japanese %d" % (len(el), len(jl))
     box = max(width(x) for x in jl)
-    room = max(box + box * 15 // 100 if box >= 8 else box, 2, 40 if "p" in flags else 0, 30 if "d" in flags else 0)
+    room = max(box + box * 15 // 100 if box >= 8 else box, 2, 40 if "p" in flags else 0, 30 if "d" in flags else 0,
+               50 if "m" in flags else 0)
     for i, line in enumerate(el):
         if width(line) > room:
             return "line %d: %d columns, Japanese box %d" % (i + 1, width(line), box)
@@ -127,6 +129,8 @@ def main():
         if not jb:
             sys.exit("%s:%d: no string at %s" % (batch, no, i))
         en = text.replace("\\\\", "\0").replace("\\n", "\n").replace("\0", "\\").encode("cp932")
+        if not en.strip():
+            sys.exit("%s:%d: empty English (an empty table value keeps the Japanese)" % (batch, no))
         why = fit(jb, en, flags)
         if why:
             bad += 1

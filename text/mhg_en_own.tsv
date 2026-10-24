@@ -792,3 +792,209 @@ sub_main:0x540580	4877aa6c	-	Accept: rich hunters\nwith 200000z or more
 sub_main:0x5405C0	fcb5bbe2	-	Accept & join:\nDefense ≦ 130
 sub_main:0x5405F0	96724b21	-	Accept & join:\nDefense ≦ 180
 sub_main:0x540620	70fe451b	-	Accept & join:\nHR 27 to 30
+# --- quick chat labels (main; the game cuts them with ‥)
+main:0x2A44B0	bdfad167	-	Sorry‥
+main:0x2A44D0	10821a3d	-	Accept‥
+main:0x2A44E0	78aa8227	-	Join‥
+main:0x2A44F0	8258a0f5	-	Deliver‥
+main:0x2A4500	c85daf6e	-	Found‥
+main:0x2A4510	db8daf48	-	Fought‥
+main:0x2A4520	9c3c0476	-	Ran‥
+main:0x2A4530	6547c145	-	Cover me‥
+main:0x2A4540	215cedb0	-	Take it‥
+main:0x2B1750	fd745fb9	-	X POSITION
+main:0x2B1770	beebc977	-	Y POSITION
+main:0x2B1788	f0852dfe	-	: EXIT
+main:0x2C0C30	0ba98b86	-	Error: %d
+# --- NETWORK MODE start-up messages (line-split; each line reads as a phrase)
+main:0x2C1290	21e09226	m	Game data is auto-saved to MEMORY CARD slot %t
+main:0x2C12C0	e3d95dde	m	and the NET file to MEMORY CARD slot %s.
+main:0x2C12F0	d0714033	m	Keep the memory card (8MB) (for
+main:0x2C1590	e8deb056	m	Until you leave NETWORK MODE,
+main:0x2C16D0	34e5d001	m	Press the ○ button
+main:0x2C1750	882d310b	m	Insert a memory card with a NET file:
+main:0x2C1770	7121b7d8	m	Please insert it.
+main:0x2C1780	f6777ddb	m	○ button = Continue without Saving
+main:0x2C17C0	1d19b1c3	m	Connecting by broadband.
+main:0x2C17E0	f436b829	m	A broadband connection is not possible now.
+main:0x2C1810	ffdfbade	m	To connect by broadband,
+main:0x2C1830	7c50b6fb	m	reset the console, or turn it off
+main:0x2C1860	13ecc11b	m	and on again.
+main:0x2C1880	5d902a01	m	Starting a network connection by broadband.
+main:0x2C18C0	2a4a0ec8	m	To connect by broadband,
+main:0x2C18F0	7fc133ed	m	on the <Monster Hunter G> TOP screen,
+main:0x2C1950	d9ea4344	m	on the <Monster Hunter G> MENU screen,
+main:0x2C19B0	e4726158	m	you must agree to the terms.
+main:0x2C19E0	fd246fcd	m	You'll talk with strangers. Don't do
+main:0x2C1A10	d16186e6	m	anything that would upset other users.
+main:0x2C1A50	2a1edbd0	m	Mind your manners
+main:0x2C1A68	b3dccb0d	m	Next
+main:0x2C1A80	71902c41	m	"Multi Matching BB Terms of Use"  
+main:0x2C1AB0	61aecb88	m	"Capcom Online Game Terms of Use"  
+main:0x2C1AE0	79b90bd0	m	Delete the login ID?
+main:0x2C1B10	9e5f1e7e	m	If a password is also stored,
+main:0x2C1B40	bd6efaff	m	it will be deleted too.
+main:0x2C1B58	a6af855b	m	Login ID
+main:0x2C1B68	abb9dbe9	m	 Password
+main:0x2C1B80	01121ac9	m	Login ID deleted.
+main:0x2C1BA0	c4639434	m	"DNAS" authenticating.
+main:0x2C1C10	7f22a6bb	m	Connecting the same way as last time.
+main:0x2C1C60	1b4cbdd7	m	and the password will be deleted.
+main:0x2C1C80	c51462d7	m	Network
+main:0x2C1C90	4c613ce3	m	Initializing network hardware.
+main:0x2C1E90	fda6b182	m	Online play costs 13 yen per minute
+main:0x2C1EB0	76bb70c7	m	in battle, 10 yen per 3 minutes otherwise.
+main:0x2C1EE0	48ed568f	m	Phone charges apply.
+main:0x2C1F00	a531105e	m	Don't stay connected too long.
+main:0x2C1F90	a1489eb3	m	This title's "DNAS" service has not started.
+main:0x2C1FC0	12b936cd	m	The "DNAS" service for this title has ended.
+main:0x2C2000	b135eae7	m	All "DNAS" services have ended.
+main:0x2C2060	6b408b7f	m	The server is not working properly.
+main:0x2C2090	1b695266	m	A "DNAS" error occurred.
+main:0x2C20B0	06326551	m	"DNAS" server error.
+main:0x2C20D0	1e3a72ea	m	Download error.
+main:0x2C20F0	37fbea95	m	Hardware information error.
+main:0x2C2110	a9ac2b02	m	Network connection stopped.
+main:0x2C2140	3b5dcf69	m	There is an error in the proxy settings.
+main:0x2C2190	34db2f1e	m	Could not connect to the "DNAS" server.
+main:0x2C2260	f3f9295f	m	Communication error.
+main:0x2C2280	681a785d	m	Unique ID error.
+main:0x2C22A0	5d95aa34	m	"DNAS" authentication cancelled.
+main:0x2C2350	78e09c53	m	The game version was updated to           .
+main:0x2C2390	898540ff	m	To play "NETWORK MODE",
+main:0x2C23B0	693b5287	m	save the game data of version           
+main:0x2C23E0	2939472d	m	to a memory card (8MB) (for PlayStation(R)2).
+main:0x2C2410	4bfa0d6e	m	Save to MEMORY CARD slot %s? 
+main:0x2C2440	8408ce42	m	Checking the game version.
+main:0x2C25A8	1bc19596	m	without game data.
+main:0x2C2B20	c162d035	m	"           " and "DNAS" are
+main:0x2C2B40	1bf34a88	m	trademarks of Sony Computer Entertainment Inc.
+main:0x2C2C20	d40cd2f8	m	The game data in MEMORY CARD slot %s
+main:0x2C2D90	c41f3906	m	Stop loading the NET file?
+main:0x2C2EA0	8c649ee9	m	The game data in MEMORY CARD slot %s
+main:0x2C2ED0	6d827928	m	is not the game data in use,
+main:0x2C2F10	4a9d55b8	m	Select where the login ID
+main:0x2C2F30	3439f65c	m	you want to delete is saved.
+main:0x2C2F60	921174c3	m	The loaded NET file
+main:0x2C2F80	c4c3c5e1	m	has no login ID recorded.
+main:0x2C2FB0	b6f438d9	m	Login ID deletion finished.
+main:0x2C2FE0	e53e9056	m	the NET file will be autoloaded.
+main:0x2C3010	ac4e2b5f	m	The NET file could not be
+main:0x2C3030	b2d305a4	m	autoloaded.
+main:0x2C3050	f79ebafa	m	The last connection settings
+main:0x2C3070	f7549727	m	were not found.
+main:0x2C3090	2f6d785c	m	To connect by broadband, you must agree to
+main:0x2C30B0	beec9dcf	m	the "Multi Matching BB Agreement" and
+main:0x2C30E0	eb834256	m	the "Capcom Online Game Terms of Use"
+main:0x2C3100	f0f8205f	m	shown on the screens above.
+main:0x2C3130	539c1721	m	Playing with modified data breaks the terms.
+main:0x2C3160	b741b339	m	You will be banned from connecting, so don't.
+main:0x2C3190	e58e6b84	m	The memory card (8MB) used at the start
+main:0x2C31C0	e304b87d	m	is not inserted, so you cannot save.
+main:0x2C31F0	647ea754	m	Please put it back in MEMORY CARD slot %s.
+main:0x2C3220	85bd6874	m	MEMORY CARD slot %s: no memory card (8MB)
+main:0x2C3250	1994023d	m	Insert a memory card with a NET file
+main:0x2C3280	25be9df8	m	into MEMORY CARD slot %s.
+main:0x2C3510	a297968a	m	Check that supported network hardware is connected
+main:0x2C3540	22f3a9d7	m	to the console, and that your ISP settings are right.
+main:0x2C3580	01182466	m	If this error keeps appearing,
+main:0x2C35B0	e6e18bd4	m	turn the "PlayStation 2" console off once
+main:0x2C35E0	3bdf82d9	m	and try again.
+main:0x2C3600	d0077456	m	The telephone server does not answer.
+main:0x2C3630	a052cb5d	m	is connected properly, and
+main:0x2C3650	0f82a2a9	m	try again later.
+main:0x2C3680	a7ca09f2	m	Check that the outside line prefix
+main:0x2C36A0	55b3a647	m	is set correctly.
+main:0x2C36C0	6b656bde	m	If the settings are right but
+main:0x2C36E0	3e009217	m	the problem continues,
+main:0x2C3700	9a8ca9dd	m	please contact the
+main:0x2C3730	59d49821	m	Capcom user support center.
+main:0x2C3750	60c2f027	m	Check that the phone line is connected,
+main:0x2C3780	debd2e54	m	Check that the Ethernet cable
+main:0x2C37B0	f4aadade	m	is connected to the network hardware.
+main:0x2C37D8	18770fc4	m	Getting an IP
+main:0x2C37F0	26e9ce27	m	address by DHCP failed.
+main:0x2C3820	03235e65	m	Check the DHCP settings
+main:0x2C3840	ae33f8ce	m	of your ISP settings.
+main:0x2C3860	b79f60f1	m	PPPoE authentication failed.
+main:0x2C3880	5d357cc9	m	Check the PPPoE user ID and password
+main:0x2C38B0	95ec4a18	m	in Your Network Configuration
+main:0x2C38D0	78d29aa8	m	file.
+main:0x2C3920	83194a08	m	The server may be busy.
+main:0x2C3950	55ddb29c	m	Please select another server.
+main:0x2C3980	866cb138	m	It may be a communication error.
+main:0x2C39A0	3f09ac7d	m	Please connect again
+main:0x2C39C0	fa1618be	m	from the main menu.
+main:0x2C3A50	df7093cd	m	Connection stopped.
+main:0x2C3B20	2d6655fc	m	Do not turn off the console or remove
+main:0x2C3B50	1141d8b2	m	the memory card (8MB) (for PlayStation(R)2).
+main:0x2C3B70	52a817bd	m	~B00 button = Continue without Saving
+main:0x2C3B90	903aba67	m	Press the ~B00 button
+main:0x2C3BB0	602072f9	m	~B00 button: Next
+main:0x2C3BD0	965eeb15	m	  button = Continue without Saving
+main:0x2C3BF0	54cc46cf	m	  button: press
+main:0x2C3C10	de9a19da	-	  button: Next
+main:0x2C3CA0	6f80f3a0	-	Please wait
+# --- memory card and MH1 -> G character transfer (main)
+main:0x2E93D8	d5c02004	m	CAPCOM
+main:0x2E9810	5365a0f7	m	Checking... Do not turn off the console or
+main:0x2E9840	c4d89df3	m	remove the memory card (8MB) (for PlayStation(R)2).
+main:0x2E98E0	8e783bc5	m	Formatting... Do not turn off the console or
+main:0x2E9990	fd1787ae	m	Saving... Do not turn off the console or
+main:0x2E9C10	b9cdd414	m	Loading... Do not turn off the console or
+main:0x2E9CA0	e58e6b84	m	The memory card (8MB) used at the start
+main:0x2E9CD0	e304b87d	m	is not inserted, so you cannot save.
+main:0x2E9D00	5d83d07c	m	Please put it back in MEMORY CARD slot ~A00.
+main:0x2E9F00	9d454d36	m	Continue the game without saving?
+main:0x2E9FA0	9d299bce	m	On the memory card (8MB) in MEMORY CARD slot 1 or 2,
+main:0x2E9FE0	413a6eb0	m	"Monster Hunter" game data
+main:0x2EA010	1b9e4a82	m	was found.
+main:0x2EA030	b75b3eff	m	You can convert your character to
+main:0x2EA060	1a24a194	m	"Monster Hunter G" data and keep playing with it.
+main:0x2EA0A0	1214ca6b	m	- Some values of weapons, armor, items and so on
+main:0x2EA0D0	96edc43c	m	  are adjusted for "Monster Hunter G".
+main:0x2EA100	b3699041	m	- Cleared quests carry over up to Quest Level 1 offline
+main:0x2EA140	0fc2c619	m	  and up to Quest Level 3 online.
+main:0x2EA180	084d0013	m	- Hunter Rank carries over up to HR 13.
+main:0x2EA1C0	8a909f29	m	- Hunter Points start at each rank's first value.
+main:0x2EA200	04eec73f	m	- Items of Rarity 1 to 3, "Special Mushrooms" and "Goldenfish"
+main:0x2EA240	27be3d2e	m	  do not carry over.
+main:0x2EA260	6454606b	m	  *Items that do not carry over become money (zenny)
+main:0x2EA2A0	7dc7b1b6	m	   worth twice their shop price.
+main:0x2EA2D0	60c36166	m	- The combination list does not carry over.
+main:0x2EA300	aa5d3757	m	- Invalid characters do not carry over.
+main:0x2EA330	a36c2413	m	- Part of the gallery does not carry over.
+main:0x2EA390	dff04c39	m	No "Monster Hunter" game data.
+main:0x2EA3D0	14cc9bd7	m	"Monster Hunter"
+main:0x2EA3F0	f324fdbe	m	No "Monster Hunter" character.
+main:0x2EA430	5e3b2fea	m	Load the game data that holds
+main:0x2EA460	4dcbaa4f	m	the character to transfer.
+main:0x2EA480	d86ebd75	m	Save the transferred character to
+main:0x2EA4B0	3cc47f60	m	"Monster Hunter G" game data.
+main:0x2EA4E0	0bb35df2	m	*The transferred character can only
+main:0x2EA500	1155de5e	m	be saved to the memory card (8MB) that holds
+main:0x2EA530	41eb4711	m	the original "Monster Hunter"
+main:0x2EA560	033182f8	m	game data.
+main:0x2EA580	0f2b4645	m	The memory card (8MB) used for character select
+main:0x2EA5B0	d9f46051	m	Use the transferred character by choosing
+main:0x2EA5E0	c1291b61	m	"CONTINUE" on the game menu screen.
+main:0x2EA610	ca2fb65f	m	Until the transfer is done, in MEMORY CARD slot ~A00,
+main:0x2EA650	6c9c07dd	m	game data loaded.
+main:0x2EF0E8	395cc1ef	-	Close
+# --- fallbacks for lines whose US English is only right in one message slot
+main:0x2E9C40	700672d3	m	In MEMORY CARD slot ~A00, the memory card (8MB):
+main:0x2E9C70	2f03fadb	m	On the memory card (8MB) in MEMORY CARD slot ~A00,
+main:0x2E9590	5f690e54	m	On the memory card (8MB) in MEMORY CARD slot ~A00,
+main:0x2E9520	49d9219b	m	From MEMORY CARD slot ~A00,
+main:0x2E9540	18a64198	m	from the memory card (8MB),
+main:0x2E9B80	61062f48	m	Insert the memory card (8MB) with the
+main:0x2E9BB0	735303f3	m	game data your character was saved in.
+main:0x2E95C0	1b6ef472	m	The game data may be damaged.
+main:0x2E95F0	9458a2b4	m	It could not be loaded.
+main:0x2E99E0	c9a43c33	m	It could not be saved.
+main:0x2E9A00	399ceec8	m	Select where to load from.
+main:0x2E9AC0	0da8f28e	m	Is this OK?
+main:0x2E99C0	3eb6511a	m	Saved.
+main:0x2E9E20	fe2a7fea	m	Character selected.
+main:0x2E9B30	d20ee346	m	never remove the memory card (8MB).
+main:0x2EA360	fede363a	m	Transfer the character?

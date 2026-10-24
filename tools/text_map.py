@@ -2846,7 +2846,7 @@ def main():
     for kind, k in man_drop:
         if kind == "g":
             en_g.pop(k, None)
-    own_g, own_talk, own_st, own_repl = run_own(g, Gq, en_g, fr_g)
+    own_g, own_fb, own_talk, own_st, own_repl = run_own(g, Gq, en_g, fr_g, gk_slot)
     en_g.update(own_g)
     log("G: our own English (text/mhg_en_own.tsv): %d strings %s" % (len(own_g), dict(own_st)))
     if own_repl:
@@ -2864,7 +2864,7 @@ def main():
     write_table(os.path.join(args.out, "en_mhg.txt"), {(("main",) + k[1:]) if k[0] == "sub_main" else k:
                                                       (talk_layout(own_wrap(v)) if k in own_talk else
                                                        talk_layout(v) if k in talk_g else v)
-                                                      for k, v in merged(en_g, gk_slot, slot_g).items()}, hdr)
+                                                      for k, v in merged(en_g, gk_slot, {**slot_g, **own_fb}).items()}, hdr)
 
     summary = dict(jp_strings=len(S), jp_en=len(en_jp), g_strings=len(GS), g_en=len(en_g), g_own=len(own_g), gstat=gstat, drop=drop)
     if args.report or args.ids:
@@ -2903,7 +2903,7 @@ def own_lines(path=OWN):
     lines and blank lines skipped). ID as in docs/survey/mhg_text_untranslated.txt (space:0xADDR, quest:N:0xOFF), CRC the
     crc32 of the Japanese bytes the line was written for (never the Japanese itself), FLAGS '-' or letters (n: uses a
     G-only name Freedom will decide, provisional; t: talk window line, word-wrapped to its rows by the tool; p: tutorial
-    page, checked at the US pages' 40 columns by tools/text_own.py; d: one line of a description, 30 columns), ENGLISH in
+    page, checked at the US pages' 40 columns by tools/text_own.py; d: one line of a description, 30 columns; m: one line of a line-split message, 50 columns), ENGLISH in
     the table's escaping (\n line feed, \\ backslash). Returns [(lineno, key, crc, flags, bytes)]."""
     out = []
     if not os.path.exists(path):
@@ -2920,6 +2920,9 @@ def own_lines(path=OWN):
         k = i.split(":")
         key = ("quest", int(k[1]), int(k[2], 16)) if k[0] == "quest" else (k[0], int(k[1], 16))
         en = en.replace("\\\\", "\0").replace("\\n", "\n").replace("\0", "\\").encode("cp932")
+        if not en.strip():
+            log("own: %s:%d: empty English, skipped (an empty table value keeps the Japanese)" % (path, no))
+            continue
         out.append((no, key, crc.lower(), "" if flags == "-" else flags, en))
     return out
 
@@ -2939,10 +2942,13 @@ def own_wrap(xb, width=22):
     return b"\n".join(rows)
 
 
-def run_own(g, Gq, en_g, fr_g, path=OWN):
+def run_own(g, Gq, en_g, fr_g, slot_only=(), path=OWN):
     """our own English for G strings still without English after the official sources (MH1 US, Freedom): official
-    English always wins. Returns ({key: bytes} added, set of talk-flagged keys, stats Counter, [ids Freedom replaced])"""
-    add, talk, st, replaced = {}, set(), collections.Counter(), []
+    English always wins. A string whose official English is only right in one message slot (slot_only: a line of a
+    re-flowed US message) takes our line as its fallback for the other messages that use it; the slot keeps the US
+    line. Returns ({key: bytes} added, {key: bytes} slot fallbacks, set of talk-flagged keys, stats Counter,
+    [ids Freedom replaced])"""
+    add, fallback, talk, st, replaced = {}, {}, set(), collections.Counter(), []
     for no, key, crc, flags, en in own_lines(path):
         jb = cstr_at(Gq[key[1]], key[2]) if key[0] == "quest" and key[1] in Gq else (
             g.cstr(*key) if key[0] in g.mod else None)
@@ -2959,6 +2965,10 @@ def run_own(g, Gq, en_g, fr_g, path=OWN):
             replaced.append(key_id(key))
             st["replaced by Freedom"] += 1
             continue
+        if key in slot_only:
+            fallback[key] = en
+            st["fallback beside a US message slot"] += 1
+            continue
         if key in en_g:
             st["official English already"] += 1
             continue
@@ -2966,7 +2976,7 @@ def run_own(g, Gq, en_g, fr_g, path=OWN):
         if "t" in flags:
             talk.add(key)
         st["used" + (" (provisional G-only name)" if "n" in flags else "")] += 1
-    return add, talk, st, replaced
+    return add, fallback, talk, st, replaced
 
 
 FREEDOM_IDS = ("ULUS-10084",)        # Monster Hunter Freedom, US UMD (the European ULES-00318 is untested)
