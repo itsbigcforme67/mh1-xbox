@@ -1544,3 +1544,5 @@ list of what was looked at: docs/RELEASE_G.md section 15.
 - Tools left: build/D/e13/run.sh TIME OUT.png (hidden Dual Swords run, shot at a game time; BIN=other binary for before / after).
 - Not done / next: eft04 (G has a type 9 and 60-byte pieces; one G caller, em15 uvmove), eft02_t, eft15_m, eft16_m (G drops the neck types, adds 15),
   set14_m / set14_trans, em02 Fatalis, em14_main, the combine list count (Item_preparation_list_num).
+- Results (23 Oct 2026, final tree): tools/rebuild.sh 5 OK; VERSION=mhg tools/rebuild.sh 7 OK; tools/test_all_quests_g.sh 98 quests + carts + Dual Swords all PASS;
+  tools/full_check.sh EXIT 0 (every test ok incl. both Xbox builds, 4 emulator tests skipped by design).
