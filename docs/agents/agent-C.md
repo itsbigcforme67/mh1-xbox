@@ -2276,3 +2276,13 @@ PC-only work for a real PS2 G (later the Xbox) in a party with PC G players; G-o
   config/mhg/pc_data.txt (em20_sub_contents_g24..g26), pc_ptrs.txt +3 words.
 - **Not done / open:** G's item helper in net_receive_pl (G 0x4C64D0); what G's select_w 0xE4 / 0xE6 / 0xE8 and sys 3's
   s16 mean; pNet MH1 0x10 has no G twin (mapped to a PC-only byte 0x34).
+- **Checks (24 Oct):** full_check all ok (42 steps; the emulator tests skipped), then a fix found by the G rebuild (NGW
+  x110 lacked its 2-byte gap, so G's sub_main netsyn05 mismatched and NGW's x1E2 .. x1E8 sat 2 bytes low in the PC G
+  build): `VERSION=mhg tools/rebuild.sh` 7 OK, test_online_g.sh / TWO=1 / ROOM=1 / HUNT=1 pass again, G Xbox nv2a built.
+  One HUNT=1 run of five failed on ANNA's carve after the kill (the monster changed owner six times there instead of
+  three); the rerun passed [flaky: timing of the hand-overs].
+- **For the PS2 G + PC test (tools/test_ps2_g_online.sh, the coordinator's):** the PC's sys 2 must complete the select
+  on both ("mcs: every player is in", the PS2 leaving its select wait), the PS2 must load the room's quest (slot 0's
+  u16 at 14) and show the PC hunter with its own weapon and look (mini data), sys 3 must agree ("mcs: start agreed",
+  the PS2 past "クエストを開始します"), then the Kut-Ku's HP / owner hand-overs the same on both, the clear (sys 6),
+  and after the quest both back in the guild hall with the PS2's and the PC's relogin saves written.
