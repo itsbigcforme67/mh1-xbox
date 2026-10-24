@@ -36,7 +36,15 @@ lines (~170).
 
 MH1 JP's own table (the same tool) went from 6272 to 6629 strings with US English (81%) over the three rounds.
 
-**The day Freedom arrives** (section "Monster Hunter Freedom: what to give and what happens" below): put an ISO of
+**Update 24 Oct 2026 (agent A): Freedom is in.** With the owner's Monster Hunter Freedom (ULUS-10084, disc/mhfr/)
+G has **11474 of 13263 strings (86.5%) in official English** (was 7087, 53%), plus 1071 of ours (8%): 12545 of 13263
+(94.6%) have English. Per category, official English before -> after: items 560 -> 964 (99%), weapons 934 -> 1693
+(94%), armour and skills 1063 -> 3545 (98%), monsters 56 -> 71, quests 1013 -> 1183 (99%), NPC talk and tutorials
+1929 -> 2038, menus 1184 -> 1587 (88%), system 344 -> 387, kana tables 4 -> 6. Left: 718 (415 of them keyboard kana
+tables, not text). How Freedom is paired and what still fails: section "Monster Hunter Freedom: what to give and what
+happens" below.
+
+**The day Freedom arrives** (kept for reference; the first run gave only 201 strings, see the section below) (section "Monster Hunter Freedom: what to give and what happens" below): put an ISO of
 the owner's own Freedom UMD in `disc/mhfr/` and run `python3 tools/text_map.py`. The step is written and tested
 (self-test on Portable: 4624 G strings would receive a line), so G should go from 53% to about 88-90% official
 English in that one run, if Freedom's DATA.BIN mirrors Portable's as expected.
@@ -92,7 +100,18 @@ Elders, Farcaster, Rathalos Webbing, Lao-Shan Lung, Fatalis), MH1 US's button wo
 the Red / Black Ogres laugh "Dohahaha" / "Bahahaha". Written by Claude (agent A), not a native translator: worth a
 person's read before release, like the hand-checked pairs.
 
-**Waiting for Freedom** (names Freedom's English decides; Portable has the Japanese):
+**Freedom's names (24 Oct 2026):** the provisional names below were checked against Freedom: 48 lines now use
+Freedom's names (Firecell Stone, Pale Khezu Steak, Paw Pass Ticket, Lao-Shan's Ruby, Torso Increased, Gluttony,
+Protection, Sharp Sword, Ice S, Snakebee Larva, Alchemy Guide, Organizer / Backpacker Guide, Khezu Hide - Tan, Expert
+Blade/Hammer/Lance/Sword/Bowgun, Gradios, Djinn, Seiglinde+, Great Golem+, Teddybear, Velocidrome Bite, Freedom's
+suffix order "Khezu Helm S"; Freedom's abbreviated item names written out, e.g. "Silver Rathalos Claw"). Names that
+already matched lost the `n` flag; 24 lines keep it, now meaning "a G-only name no official release has" (Torso
+Plus, Guard +1, Crag S, Demonize, Normal S Up, the online room names, ...). The 31 G-only weapon / armour names are
+now ours too (flag `n`), in Freedom's style: Freedom writes 改 as "+" and a G version as "+" (Seiglinde+, Silver
+Boots+); where Freedom already has "X+" for X改 (Iron Sword+, Longhorn+), the G version is "X G" and its 改 "X G+".
+"Dual Swords" stays as MH1 US writes it (Freedom: Dual Blades) because G's menus take MH1 US's word.
+
+**Waiting for Freedom** (as written before Freedom arrived; kept for the record):
 - 31 G-only weapon / armour **names** left untranslated on purpose (G-rank "G" and "改" versions: Guild Rapier, Gladius,
   G Sword/Hammer/Lance/Knife Origin, Bone Sword G, Iron Sword G, Atlas Hammer G, Longhorn G, and six other new
   weapons, five armour pieces). Their ids are the `weapons` /
@@ -329,6 +348,61 @@ needed; without Freedom the step logs "Freedom: not found ... skipped" and the r
    Portable string (normal form of the *marks* rule) and every Portable slot with that text has the same Freedom
    line. A G description (one pointer per line) takes Freedom's description split at its line breaks when the line
    counts agree.
+
+**What the owner's Freedom turned out to be (24 Oct 2026, agent A).** The first run paired 36 of 784 entries and gave
+201 G strings, because Freedom does NOT mirror Portable entry by entry:
+- DATA.BIN has 5829 entries (Portable 5821); 4887 have the same size. The 240 quest files are in another order (and
+  6 more), the record files after them are shifted by 7, a few entries are added near the end.
+- Quest files: word 0 = 0x3C, quest id at 0x58, text fields from 0x5C to word 1, each NUL-ended and padded to 4 bytes:
+  16 fields in both versions; 239 of 240 Portable quests are in Freedom under the same id (the odd one has a different
+  id; not matched).
+- Record files (training and arena quest records): u32 offset table (first offset = table size, 0 = end); each record is
+  a quest file without its first 0x3C bytes (id at +0x1C, text fields from +0x20 to the offset in word 6). Freedom has
+  more records in two of them; matched by record id.
+- Village talk files: (section id, offset) pairs up to two 0xFFFFFFFF words, each section a table of (u32, offset)
+  pairs relative to the section. Same sections and counts in both.
+- The big string pack (entry 3: 22 blocks of names / descriptions / messages): the same in both except one more string
+  at the end of block 18. Blocks 19 and 20 (save / load and system messages, 111 strings) are still Japanese in
+  Freedom (the US build must draw those from somewhere else), so Freedom gives nothing for them.
+- Code overlays (MWo3) and BOOT.BIN: their Japanese strings are still Japanese in Freedom (the US text comes from the
+  string packs), so nothing to pair there.
+- The record and talk files' raw text runs differed in number because English lines are longer than the Japanese and
+  the binary around them yields other runs: the old pairing "by text run order" could not work there.
+
+**How it pairs now** (`psp_entry_map`, `psp_slots`, `freedom_pairs`, `freedom_ok`): entries are matched by their first
+8 bytes in order (difflib), then checked by a skeleton (quest id, first record id, talk section ids); a mismatch is
+looked up by skeleton among Freedom's entries nearby. Then: packs by (block, index), quests by field, records by
+(record id, field), talk by (section, index), anything else by aligning the runs that are the same bytes on both discs.
+A unit (one block, one talk section, one file) is used when 80% of its Japanese pairs look translated and when MH1 US
+English for the same Japanese (anchors: from G strings that already have US English) shares a word with Freedom's in
+place at least as often as one slot off (entry 3: in place 312/290/287/253... of the anchors per block, one slot off
+far fewer). A unit whose string count differs needs 5 anchors and 60% agreement. Then each G line passes `freedom_ok`:
+English, same printf conversions, the same ~B / icon codes as G's Japanese (Freedom names the PSP's buttons: 6 lines
+refused), colour codes only of G's colours (Freedom highlights other words; the count may differ), no stray '~', no
+number the Japanese lacks. A sentence (8+ characters) that Freedom wrote two ways (the same talk for two NPCs) takes
+the more used wording (26); a short label with two wordings is left out (54). A G description (one pointer per line)
+takes Freedom's whole description split at its line breaks (2628 lines), also where some lines had MH1 US English
+line by line (192 lines replaced, so no description is half one translation and half Japanese).
+
+**What is still in Portable but not given (319, by the report):** 140 keyboard kana; 98 system: the save / load
+messages Freedom keeps in Japanese and code-overlay literals; 32 NPC lines and 32 menu labels: short labels with two
+Freedom wordings or found only in data / overlay files; 11 armour, 4 items, 2 quests (numbers or ~ codes refused).
+
+**Fit on the PS2 screen:** G's descriptions break at the same places as Portable's, so Freedom's lines keep G's line
+count; 98% of the description lines are 31 columns or less (MH1 US's run to 28; the description window is as wide as
+its longest line). Names are Freedom's 16-character forms (abbreviations such as "Slvr Rthalos Clw" are Freedom's
+own). Checked on screen: section "In game" (Freedom round) below.
+
+**On screen (hidden PC G tour, 24 Oct 2026, build/A/eng/freedom, compared with build/A/eng/after):** item shop,
+weapon / armour shop, forge, item box, quest board and card, pause menu, equipment detail, data page, quest info:
+the pictures are the same as before Freedom (only animation timing differs), because the tour's screens show the
+starting village's MH1-era items, weapons and quests, whose English already came from MH1 US. The new Freedom lines
+(G's new items, weapons, armour, G-rank quests) are not on those screens yet; they were checked by width instead
+(above). Still Japanese on the tour's screens, not Freedom's to fix: the item shop's count label (a G code literal,
+not the paired "Amount" string), the talk box title in the quest board scene (drawn from another copy than the
+paired string), and the element label on the equipment page.
+The self-test (Portable paired with itself, the ceiling of this method) gives 4757; the real Freedom gives 4453
+(including the 192 description lines that replace MH1 US lines), 94% of it.
 
 **Tested without Freedom:** `--freedom-selftest` pairs Portable with itself: 784 of 784 text entries paired, 18677
 strings, 4624 G strings would receive a line (2625 description lines, the rest single strings). Pointing

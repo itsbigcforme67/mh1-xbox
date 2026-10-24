@@ -1286,3 +1286,27 @@ check.py needs wibo, which this round could not run (PC-only round). Commits on 
 - **Display:** rt_font.c draws full-width digits/letters inside English lines as half-width (item shop price). Hidden
   before/after tours: build/A/eng/before, build/A/eng/after (tools/g_eng_tour.py, new `G_ENG_OUT`).
 - **Not checked on screen:** the town talk and online-hub lines (no G online client in the tour).
+
+## Freedom pairing (24 Oct 2026)
+- **Problem:** the first run with the owner's Freedom (ULUS-10084) gave 201 G strings: Freedom's DATA.BIN has 8 more
+  entries, its 240 quest files are reordered (matched by quest id at 0x58), the record files are shifted by 7, and
+  the "same number of text runs" rule could never hold for record / talk files (English is longer, the binary around
+  it yields other runs). Entry 3 (the big pack) was dropped whole for one extra string at the end of block 18.
+- **Fix** (tools/text_map.py): psp_entry_map (difflib over the entries' first 8 bytes + skeleton check: quest id,
+  first record id, talk section ids; skeleton search nearby when they differ), new psp_slots kinds quest / records /
+  talk, pairing per unit (block / section / file), _align_runs for overlays and BOOT.BIN (unique identical runs as
+  anchors, LIS), the MH1-US anchor check (_anchor_shift: words shared with US English in place vs one slot off),
+  freedom_ok (~B codes equal, colour codes only G's colours, stray ~, numbers). Descriptions take Freedom's whole text
+  also over MH1 lines matched line by line (192). Sentences with two Freedom wordings take the more used (26).
+- **Numbers:** G official English 7087 -> 11474 (86.5%); ours 1043 -> 1071 (31 G-only names added, 3 replaced by
+  Freedom); left 718 (415 kana tables). Per category (official): items 964/972, weapons 1693/1804, armour 3545/3615,
+  monsters 71/74, quests 1183/1199, NPC talk 2038/2498, menus 1587/1803, system 387/877.
+- **Still not given (319 "in Portable"):** 140 kana; Freedom keeps entry 3 blocks 19/20 (111 save / system messages)
+  and the code overlays' literals in Japanese; 54 short labels with two Freedom wordings; 13 refused by freedom_ok
+  (PSP buttons, number checks); one Portable quest not in Freedom.
+- **Names:** 48 own lines now use Freedom's names; 24 keep flag n (G-only names); 31 G-only weapon / armour names
+  written in Freedom's style (X改 = X+; XG = X+ unless Freedom already has X+, then "X G" / "X G+").
+- **Lesson:** an independent anchor (MH1 US English for the same Japanese) proves an alignment much better than
+  "looks translated": in entry 3 the in-place agreement was 290/297 vs ~150 one slot off.
+- **Not checked on screen:** the tour's screens show only MH1-era content (identical pictures before / after);
+  Freedom's G-new lines were checked by widths (98% of description lines <= 31 columns).
