@@ -1041,7 +1041,7 @@ int __cnet_RecvFromLbs(int cmd, int from, int cat, int x) {
     ft = lbs_fromto_tbl;
     ct = lbs_category_tbl;
     jmp = lbs_command_jmp;
-    for (; i < 0x102; i++, h++, l++, ft++, ct++, jmp++) {
+    for (; i < GV(0x102, 0x125); i++, h++, l++, ft++, ct++, jmp++) {
         hi = (*h << 8) & 0xFFFF;
         full = (hi | *l) & 0xFFFF;
         if (*ft != 8 && c16 == (full & 0xFFFF) && *ct == c8 && *jmp != 0) {

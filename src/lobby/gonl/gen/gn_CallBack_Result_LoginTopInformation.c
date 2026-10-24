@@ -1,0 +1,24 @@
+/* G online (PC): CallBack_Result_LoginTopInformation, written from Monster Hunter G's code at lobby 0x57BFD0 by tools/mhg_gonl.py (an m2c draft with
+ * G's names; docs/network.md 3.12). Not compared with anything; the G online PC build links it (ONLINE=1
+ * tools/build_pc_mhg.sh). */
+#include "../gonl.h"
+
+extern u8 cw;
+void CallBack_Result_LoginTopInformation(s64 arg0) {
+    u8 g_frame[0x10] __attribute__((aligned(16)));   /* G's stack frame */
+#define sp8 (*(s64 *)(g_frame + 0x8))
+    u8 var_v1;
+    u8 *temp_a1;
+
+    temp_a1 = (*(void **)&cw);
+    sp8 = arg0;
+    if ((*(u8 *)((u8 *)(temp_a1) + 0xB99)) != 5) {
+        if ((s8) sp8 == 0) {
+            var_v1 = (*(u8 *)((u8 *)(temp_a1) + 0xB9C)) + 1;
+        } else {
+            var_v1 = 7;
+        }
+        (*(u8 *)((u8 *)(temp_a1) + 0xB9C)) = var_v1;
+    }
+}
+

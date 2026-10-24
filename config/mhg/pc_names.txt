@@ -39,3 +39,216 @@ sub_main lit_2331 0x538958 +  # G quest_condition_print (main 0x11E010) prints t
 sub_main lit_3181_00383570 0x538958 +  # G chat_log_name reads its "%s：" through the cell at 0x2EC62C (gptr_002EC62C), the same string as lit_2331
 sub_main lit_3440 0x537F40 +  # G Disp_NPC_message (main 0x222BC0): the yes/no line with yes chosen, through the cell at 0x527C64 (hunter_appellation+0x154); same string as lit_232_0035A2F0
 sub_main lit_3441 0x538D30 +  # G Disp_NPC_message: the yes/no line with no chosen, through the cell at 0x527C68 (hunter_appellation+0x158); same string as lit_233_0035A310
+
+# G online (agent C, 20 Oct 2026): G's lobby-server receive handlers that G added or changed, named after their
+# function in src/lobby/cnet/cnet_g.c (G online PC build). Some of these addresses had MH1 names in G's symbol list
+# that were wrong (0x5B0230 "_cnet_RecvFromLbs_AnswerPlazaExit" is the 61A0 answer); the code and the command table
+# (lobby 0x63BDD0) say what each one is (docs/network.md 3.12).
+lobby gnet_6101_req 0x5AF470  # G command table row (docs/network.md 3.12)
+lobby gnet_61A0_ans 0x5B0230  # G command table row (docs/network.md 3.12)
+lobby gnet_61A1_ans 0x5B0300  # G command table row (docs/network.md 3.12)
+lobby gnet_600E_ans 0x5AF4F0  # G command table row (docs/network.md 3.12)
+lobby gnet_6148_ans 0x5C09A0  # G command table row (docs/network.md 3.12)
+lobby gnet_6149_ans 0x5C0B40  # G command table row (docs/network.md 3.12)
+lobby gnet_6881_ans 0x5C0320  # G command table row (docs/network.md 3.12)
+lobby gnet_6883_ans 0x5C04F0  # G command table row (docs/network.md 3.12)
+lobby gnet_6882_ans 0x5C0180  # G command table row (docs/network.md 3.12)
+lobby gnet_68A0_ans 0x5C06A0  # G command table row (docs/network.md 3.12)
+lobby gnet_68A1_ans 0x5C0870  # G command table row (docs/network.md 3.12)
+lobby gnet_6010_note 0x5C0580  # G command table row (docs/network.md 3.12)
+lobby gnet_6203_ans 0x5E3440  # G command table row (docs/network.md 3.12)
+lobby gnet_6204_ans 0x5E3540  # G command table row (docs/network.md 3.12)
+lobby gnet_6206_both 0x5E37F0  # G command table row (docs/network.md 3.12)
+lobby gnet_6207_ans 0x5E3A70  # G command table row (docs/network.md 3.12)
+lobby gnet_6306_ans 0x5E3B20  # G command table row (docs/network.md 3.12)
+lobby gnet_6307_note 0x5E3B60  # G command table row (docs/network.md 3.12)
+lobby gnet_6302_ans 0x5AC0D0  # G command table row (docs/network.md 3.12)
+lobby gnet_6304_both 0x5AC350  # G command table row (docs/network.md 3.12)
+lobby gnet_630D_both 0x5AC620  # G command table row (docs/network.md 3.12)
+lobby gnet_630B_both 0x5AC7A0  # G command table row (docs/network.md 3.12)
+lobby gnet_640C_note 0x5ACE90  # G command table row (docs/network.md 3.12)
+lobby gnet_6310_ans 0x5ADD60  # G command table row (docs/network.md 3.12)
+lobby gnet_6312_ans 0x5AE1F0  # G command table row (docs/network.md 3.12)
+lobby gnet_6313_ans 0x5AE320  # G command table row (docs/network.md 3.12)
+lobby gnet_6314_ans 0x5AE450  # G command table row (docs/network.md 3.12)
+lobby gnet_6890_both 0x5ADA90  # G command table row (docs/network.md 3.12)
+lobby gnet_6402_both 0x5BB7E0  # G command table row (docs/network.md 3.12)
+lobby gnet_6404_both 0x5BB680  # G command table row (docs/network.md 3.12)
+lobby gnet_640D_both 0x5BB960  # G command table row (docs/network.md 3.12)
+lobby gnet_640B_both 0x5BBB70  # G command table row (docs/network.md 3.12)
+lobby gnet_6405_both 0x5BE180  # G command table row (docs/network.md 3.12)
+lobby gnet_6407_ans 0x5BC200  # G command table row (docs/network.md 3.12)
+lobby gnet_6412_both 0x5BF250  # G command table row (docs/network.md 3.12)
+lobby gnet_6506_note 0x5BF310  # G command table row (docs/network.md 3.12)
+lobby gnet_6601_ans 0x5BDEF0  # G command table row (docs/network.md 3.12)
+lobby gnet_6602_ans 0x5BDFB0  # G command table row (docs/network.md 3.12)
+lobby gnet_660F_ans 0x5BF6B0  # G command table row (docs/network.md 3.12)
+lobby gnet_6603_ans 0x5BDDC0  # G command table row (docs/network.md 3.12)
+lobby gnet_6502_note 0x5BCED0  # G command table row (docs/network.md 3.12)
+lobby gnet_6503_note 0x5BCEC0  # G command table row (docs/network.md 3.12)
+lobby gnet_6505_note 0x5BF840  # G command table row (docs/network.md 3.12)
+lobby gnet_6705_note 0x5E5C20  # G command table row (docs/network.md 3.12)
+lobby gnet_6311_ans 0x5AEFC0  # G command table row (docs/network.md 3.12)
+lobby gnet_6315_ans 0x5AEBD0  # G command table row (docs/network.md 3.12)
+lobby gnet_6316_ans 0x5AECE0  # G command table row (docs/network.md 3.12)
+lobby gnet_6317_ans 0x5AEDF0  # G command table row (docs/network.md 3.12)
+lobby gnet_630C_ans 0x5AEEF0  # G command table row (docs/network.md 3.12)
+lobby gnet_670B_ans 0x5B07F0  # G command table row (docs/network.md 3.12)
+lobby gnet_670F_ans 0x5E6C00  # G command table row (docs/network.md 3.12)
+lobby gnet_6415_ans 0x5BF830  # G command table row (docs/network.md 3.12)
+lobby gnet_6188_ans 0x5E7790  # G command table row (docs/network.md 3.12)
+lobby gnet_6504_ans 0x5B0BA0  # G command table row (docs/network.md 3.12)
+lobby gnet_6609_ans 0x5BCB80  # G command table row (docs/network.md 3.12)
+lobby gnet_660A_ans 0x5BCC90  # G command table row (docs/network.md 3.12)
+lobby gnet_6610_ans 0x5BCDA0  # G command table row (docs/network.md 3.12)
+lobby gnet_660C_ans 0x5BCE70  # G command table row (docs/network.md 3.12)
+lobby gnet_640E_ans 0x5B0AA0  # G command table row (docs/network.md 3.12)
+lobby gnet_6910_note 0x5B0A50  # G command table row (docs/network.md 3.12)
+lobby gnet_6004_note 0x5E1CE0  # G command table row (docs/network.md 3.12)
+lobby gnet_6144_ans 0x5E27B0  # G command table row (docs/network.md 3.12)
+lobby gnet_6145_ans 0x5E27C0  # G command table row (docs/network.md 3.12)
+lobby gnet_6146_ans 0x5E27D0  # G command table row (docs/network.md 3.12)
+lobby gnet_660B_ans 0x5BCA70  # G command table row (docs/network.md 3.12)
+lobby CnetSys_g 0x6FA760  # the start of G's lobby-server client work as the G C sees it (config/mhg/g_names.txt PROVIDE, include/lbnet.h)
+lobby gnet_6205_both 0x5E3700  # G command table row (docs/network.md 3.12), G's own code (the G_RENAME list of the generator)
+lobby gnet_620A_ans 0x5E3940  # G command table row (docs/network.md 3.12), G's own code (the G_RENAME list of the generator)
+lobby g_lb_731170 0x731170  # G's file download records (CnetSys_w+0x36968: u32 size, u32 version per file), read by cnLBS_Get_FileDownloadInfo (src/main/net/cnlbs01.c)
+lobby g_lb_731162 0x731162  # G's file download count (CnetSys_w+0x3695A), read by cnLBS_Get_FileDownloadInfo (src/main/net/cnlbs01.c)
+lobby g_lb_5E7812 0x5E7812  # tools/mhg_gonl.py: a G address the G online code uses, no name yet
+lobby g_lb_5E7814 0x5E7814  # tools/mhg_gonl.py: a G address the G online code uses, no name yet
+lobby g_lb_5FBBF0 0x5FBBF0  # tools/mhg_gonl.py: a G address the G online code uses, no name yet
+lobby g_lb_5FBC10 0x5FBC10  # tools/mhg_gonl.py: a G address the G online code uses, no name yet
+lobby g_lb_5FBC28 0x5FBC28  # tools/mhg_gonl.py: a G address the G online code uses, no name yet
+lobby g_lb_5FBC29 0x5FBC29  # tools/mhg_gonl.py: a G address the G online code uses, no name yet
+lobby g_lb_5FBCC0 0x5FBCC0  # tools/mhg_gonl.py: a G address the G online code uses, no name yet
+lobby g_lb_636590 0x636590  # tools/mhg_gonl.py: a G address the G online code uses, no name yet
+lobby g_lb_636594 0x636594  # tools/mhg_gonl.py: a G address the G online code uses, no name yet
+lobby g_lb_636814 0x636814  # tools/mhg_gonl.py: a G address the G online code uses, no name yet
+lobby g_lb_636A00 0x636A00  # tools/mhg_gonl.py: a G address the G online code uses, no name yet
+lobby g_lb_636B40 0x636B40  # tools/mhg_gonl.py: a G address the G online code uses, no name yet
+lobby g_lb_636B44 0x636B44  # tools/mhg_gonl.py: a G address the G online code uses, no name yet
+lobby g_lb_636B48 0x636B48  # tools/mhg_gonl.py: a G address the G online code uses, no name yet
+lobby g_lb_636B4C 0x636B4C  # tools/mhg_gonl.py: a G address the G online code uses, no name yet
+lobby g_lb_636B50 0x636B50  # tools/mhg_gonl.py: a G address the G online code uses, no name yet
+lobby g_lb_636B54 0x636B54  # tools/mhg_gonl.py: a G address the G online code uses, no name yet
+lobby g_lb_636B58 0x636B58  # tools/mhg_gonl.py: a G address the G online code uses, no name yet
+lobby g_lb_636B5C 0x636B5C  # tools/mhg_gonl.py: a G address the G online code uses, no name yet
+lobby g_lb_636BC0 0x636BC0  # tools/mhg_gonl.py: a G address the G online code uses, no name yet
+lobby g_lb_636BD8 0x636BD8  # tools/mhg_gonl.py: a G address the G online code uses, no name yet
+lobby g_lb_636BF0 0x636BF0  # tools/mhg_gonl.py: a G address the G online code uses, no name yet
+lobby g_lb_636C10 0x636C10  # tools/mhg_gonl.py: a G address the G online code uses, no name yet
+lobby g_lb_636CD0 0x636CD0  # tools/mhg_gonl.py: a G address the G online code uses, no name yet
+lobby g_lb_636CF0 0x636CF0  # tools/mhg_gonl.py: a G address the G online code uses, no name yet
+lobby g_lb_636CF4 0x636CF4  # tools/mhg_gonl.py: a G address the G online code uses, no name yet
+lobby g_lb_636CF8 0x636CF8  # tools/mhg_gonl.py: a G address the G online code uses, no name yet
+lobby g_lb_636D00 0x636D00  # tools/mhg_gonl.py: a G address the G online code uses, no name yet
+lobby g_lb_636D04 0x636D04  # tools/mhg_gonl.py: a G address the G online code uses, no name yet
+lobby g_lb_636D08 0x636D08  # tools/mhg_gonl.py: a G address the G online code uses, no name yet
+lobby g_lb_636D0C 0x636D0C  # tools/mhg_gonl.py: a G address the G online code uses, no name yet
+lobby g_lb_636D10 0x636D10  # tools/mhg_gonl.py: a G address the G online code uses, no name yet
+lobby g_lb_636D14 0x636D14  # tools/mhg_gonl.py: a G address the G online code uses, no name yet
+lobby g_lb_636D18 0x636D18  # tools/mhg_gonl.py: a G address the G online code uses, no name yet
+lobby g_lb_636D1C 0x636D1C  # tools/mhg_gonl.py: a G address the G online code uses, no name yet
+lobby g_lb_636D20 0x636D20  # tools/mhg_gonl.py: a G address the G online code uses, no name yet
+lobby g_lb_636D24 0x636D24  # tools/mhg_gonl.py: a G address the G online code uses, no name yet
+lobby g_lb_636D28 0x636D28  # tools/mhg_gonl.py: a G address the G online code uses, no name yet
+lobby g_lb_636D2C 0x636D2C  # tools/mhg_gonl.py: a G address the G online code uses, no name yet
+lobby g_lb_636D30 0x636D30  # tools/mhg_gonl.py: a G address the G online code uses, no name yet
+lobby g_lb_636DF8 0x636DF8  # tools/mhg_gonl.py: a G address the G online code uses, no name yet
+lobby g_lb_636E00 0x636E00  # tools/mhg_gonl.py: a G address the G online code uses, no name yet
+lobby g_lb_636E04 0x636E04  # tools/mhg_gonl.py: a G address the G online code uses, no name yet
+lobby g_lb_636E08 0x636E08  # tools/mhg_gonl.py: a G address the G online code uses, no name yet
+lobby g_lb_636E10 0x636E10  # tools/mhg_gonl.py: a G address the G online code uses, no name yet
+lobby g_lb_636E1C 0x636E1C  # tools/mhg_gonl.py: a G address the G online code uses, no name yet
+lobby g_lb_636E20 0x636E20  # tools/mhg_gonl.py: a G address the G online code uses, no name yet
+lobby g_lb_636EB0 0x636EB0  # tools/mhg_gonl.py: a G address the G online code uses, no name yet
+lobby g_lb_636EC0 0x636EC0  # tools/mhg_gonl.py: a G address the G online code uses, no name yet
+lobby g_lb_636EC4 0x636EC4  # tools/mhg_gonl.py: a G address the G online code uses, no name yet
+lobby g_lb_636F24 0x636F24  # tools/mhg_gonl.py: a G address the G online code uses, no name yet
+lobby g_lb_63E020 0x63E020  # tools/mhg_gonl.py: a G address the G online code uses, no name yet
+lobby g_lb_63E128 0x63E128  # tools/mhg_gonl.py: a G address the G online code uses, no name yet
+lobby g_lb_63E1D8 0x63E1D8  # tools/mhg_gonl.py: a G address the G online code uses, no name yet
+lobby g_lb_63E1F0 0x63E1F0  # tools/mhg_gonl.py: a G address the G online code uses, no name yet
+lobby g_lb_63E210 0x63E210  # tools/mhg_gonl.py: a G address the G online code uses, no name yet
+lobby g_lb_63E230 0x63E230  # tools/mhg_gonl.py: a G address the G online code uses, no name yet
+lobby g_lb_63E248 0x63E248  # tools/mhg_gonl.py: a G address the G online code uses, no name yet
+lobby g_lb_63E250 0x63E250  # tools/mhg_gonl.py: a G address the G online code uses, no name yet
+lobby g_lb_63E268 0x63E268  # tools/mhg_gonl.py: a G address the G online code uses, no name yet
+lobby g_lb_63E270 0x63E270  # tools/mhg_gonl.py: a G address the G online code uses, no name yet
+lobby g_lb_63E278 0x63E278  # tools/mhg_gonl.py: a G address the G online code uses, no name yet
+lobby g_lb_63E280 0x63E280  # tools/mhg_gonl.py: a G address the G online code uses, no name yet
+lobby g_lb_63E288 0x63E288  # tools/mhg_gonl.py: a G address the G online code uses, no name yet
+lobby g_lb_63E2A8 0x63E2A8  # tools/mhg_gonl.py: a G address the G online code uses, no name yet
+lobby g_lb_63E2B8 0x63E2B8  # tools/mhg_gonl.py: a G address the G online code uses, no name yet
+lobby g_lb_63E2E0 0x63E2E0  # tools/mhg_gonl.py: a G address the G online code uses, no name yet
+lobby g_lb_63E2E8 0x63E2E8  # tools/mhg_gonl.py: a G address the G online code uses, no name yet
+lobby g_lb_63E348 0x63E348  # tools/mhg_gonl.py: a G address the G online code uses, no name yet
+lobby g_lb_63E350 0x63E350  # tools/mhg_gonl.py: a G address the G online code uses, no name yet
+lobby g_lb_63E530 0x63E530  # tools/mhg_gonl.py: a G address the G online code uses, no name yet
+lobby g_lb_63E538 0x63E538  # tools/mhg_gonl.py: a G address the G online code uses, no name yet
+lobby g_lb_63E540 0x63E540  # tools/mhg_gonl.py: a G address the G online code uses, no name yet
+lobby g_lb_63E908 0x63E908  # tools/mhg_gonl.py: a G address the G online code uses, no name yet
+lobby g_lb_63E918 0x63E918  # tools/mhg_gonl.py: a G address the G online code uses, no name yet
+lobby g_lb_644C58 0x644C58  # tools/mhg_gonl.py: a G address the G online code uses, no name yet
+lobby g_lb_645018 0x645018  # tools/mhg_gonl.py: a G address the G online code uses, no name yet
+lobby g_lb_653950 0x653950  # tools/mhg_gonl.py: a G address the G online code uses, no name yet
+lobby g_lb_653A50 0x653A50  # tools/mhg_gonl.py: a G address the G online code uses, no name yet
+lobby g_lb_654CFC 0x654CFC  # tools/mhg_gonl.py: a G address the G online code uses, no name yet
+lobby g_lb_654CFE 0x654CFE  # tools/mhg_gonl.py: a G address the G online code uses, no name yet
+lobby g_lb_654E00 0x654E00  # tools/mhg_gonl.py: a G address the G online code uses, no name yet
+lobby g_lb_6B42B4 0x6B42B4  # tools/mhg_gonl.py: a G address the G online code uses, no name yet
+lobby g_lb_6B42B6 0x6B42B6  # tools/mhg_gonl.py: a G address the G online code uses, no name yet
+lobby g_lb_6B42B8 0x6B42B8  # tools/mhg_gonl.py: a G address the G online code uses, no name yet
+lobby g_lb_6B42BC 0x6B42BC  # tools/mhg_gonl.py: a G address the G online code uses, no name yet
+lobby g_lb_6B42BD 0x6B42BD  # tools/mhg_gonl.py: a G address the G online code uses, no name yet
+lobby g_lb_6B42C5 0x6B42C5  # tools/mhg_gonl.py: a G address the G online code uses, no name yet
+lobby g_lb_6B42D0 0x6B42D0  # tools/mhg_gonl.py: a G address the G online code uses, no name yet
+lobby g_lb_6B4510 0x6B4510  # tools/mhg_gonl.py: a G address the G online code uses, no name yet
+lobby g_lb_6B4514 0x6B4514  # tools/mhg_gonl.py: a G address the G online code uses, no name yet
+lobby g_lb_6B4518 0x6B4518  # tools/mhg_gonl.py: a G address the G online code uses, no name yet
+lobby g_lb_6B451A 0x6B451A  # tools/mhg_gonl.py: a G address the G online code uses, no name yet
+lobby g_lb_6B451C 0x6B451C  # tools/mhg_gonl.py: a G address the G online code uses, no name yet
+lobby g_lb_6B451D 0x6B451D  # tools/mhg_gonl.py: a G address the G online code uses, no name yet
+lobby g_lb_6B451E 0x6B451E  # tools/mhg_gonl.py: a G address the G online code uses, no name yet
+lobby g_lb_6B461D 0x6B461D  # tools/mhg_gonl.py: a G address the G online code uses, no name yet
+lobby g_lb_6B4620 0x6B4620  # tools/mhg_gonl.py: a G address the G online code uses, no name yet
+lobby g_lb_6B46A0 0x6B46A0  # tools/mhg_gonl.py: a G address the G online code uses, no name yet
+lobby g_lb_6B46A1 0x6B46A1  # tools/mhg_gonl.py: a G address the G online code uses, no name yet
+lobby g_lb_6B46A2 0x6B46A2  # tools/mhg_gonl.py: a G address the G online code uses, no name yet
+lobby g_lb_6B46A4 0x6B46A4  # tools/mhg_gonl.py: a G address the G online code uses, no name yet
+lobby g_lb_6B46A5 0x6B46A5  # tools/mhg_gonl.py: a G address the G online code uses, no name yet
+lobby g_lb_6B46A6 0x6B46A6  # tools/mhg_gonl.py: a G address the G online code uses, no name yet
+lobby g_lb_6B46A8 0x6B46A8  # tools/mhg_gonl.py: a G address the G online code uses, no name yet
+lobby g_lb_6B46A9 0x6B46A9  # tools/mhg_gonl.py: a G address the G online code uses, no name yet
+lobby g_lb_6B46AA 0x6B46AA  # tools/mhg_gonl.py: a G address the G online code uses, no name yet
+lobby g_lb_6B46D0 0x6B46D0  # tools/mhg_gonl.py: a G address the G online code uses, no name yet
+lobby g_lb_6B46D1 0x6B46D1  # tools/mhg_gonl.py: a G address the G online code uses, no name yet
+lobby g_lb_6B4759 0x6B4759  # tools/mhg_gonl.py: a G address the G online code uses, no name yet
+lobby g_lb_6B475C 0x6B475C  # tools/mhg_gonl.py: a G address the G online code uses, no name yet
+lobby g_lb_6DE120 0x6DE120  # tools/mhg_gonl.py: a G address the G online code uses, no name yet
+lobby g_lb_72E068 0x72E068  # tools/mhg_gonl.py: a G address the G online code uses, no name yet
+lobby g_lb_72E069 0x72E069  # tools/mhg_gonl.py: a G address the G online code uses, no name yet
+lobby g_lb_72E06A 0x72E06A  # tools/mhg_gonl.py: a G address the G online code uses, no name yet
+lobby g_lb_72E07E 0x72E07E  # tools/mhg_gonl.py: a G address the G online code uses, no name yet
+lobby g_lb_731163 0x731163  # tools/mhg_gonl.py: a G address the G online code uses, no name yet
+lobby g_lb_731164 0x731164  # tools/mhg_gonl.py: a G address the G online code uses, no name yet
+lobby g_lb_731168 0x731168  # tools/mhg_gonl.py: a G address the G online code uses, no name yet
+lobby g_lb_73116C 0x73116C  # tools/mhg_gonl.py: a G address the G online code uses, no name yet
+lobby g_lb_731270 0x731270  # tools/mhg_gonl.py: a G address the G online code uses, no name yet
+lobby g_lb_733664 0x733664  # tools/mhg_gonl.py: a G address the G online code uses, no name yet
+lobby g_lb_733666 0x733666  # tools/mhg_gonl.py: a G address the G online code uses, no name yet
+lobby g_lb_733CAA 0x733CAA  # tools/mhg_gonl.py: a G address the G online code uses, no name yet
+lobby g_lb_733E3A 0x733E3A  # tools/mhg_gonl.py: a G address the G online code uses, no name yet
+lobby g_lb_734DF4 0x734DF4  # tools/mhg_gonl.py: a G address the G online code uses, no name yet
+lobby g_lb_734DF8 0x734DF8  # tools/mhg_gonl.py: a G address the G online code uses, no name yet
+lobby g_lb_734DFC 0x734DFC  # tools/mhg_gonl.py: a G address the G online code uses, no name yet
+lobby g_lb_734DFD 0x734DFD  # tools/mhg_gonl.py: a G address the G online code uses, no name yet
+lobby g_lb_734DFE 0x734DFE  # tools/mhg_gonl.py: a G address the G online code uses, no name yet
+lobby g_lb_734DFF 0x734DFF  # tools/mhg_gonl.py: a G address the G online code uses, no name yet
+lobby g_lb_734E34 0x734E34  # tools/mhg_gonl.py: a G address the G online code uses, no name yet
+lobby g_lb_5FC59C 0x5FC59C  # tools/mhg_gonl.py: a G address the G online code uses, no name yet
+lobby g_lb_63682C 0x63682C  # tools/mhg_gonl.py: a G address the G online code uses, no name yet
+lobby g_lb_636830 0x636830  # tools/mhg_gonl.py: a G address the G online code uses, no name yet
+lobby g_lb_636864 0x636864  # tools/mhg_gonl.py: a G address the G online code uses, no name yet
+lobby g_lb_636868 0x636868  # tools/mhg_gonl.py: a G address the G online code uses, no name yet
+lobby g_lb_6DDFCA 0x6DDFCA  # tools/mhg_gonl.py: a G address the G online code uses, no name yet

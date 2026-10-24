@@ -322,7 +322,7 @@ static int matched(void)
     u32 a = 0;
     u16 pt = 0;
     char ip[32];
-    int slot = USER_PL_ID, n = cw[0x2C47], quest = *(s16 *)(select_w + 0xAC), port;
+    int slot = USER_PL_ID, n = cw[CW_OFS(0x2C47)], quest = *(s16 *)(select_w + 0xAC), port;
     cnLBS_Get_GameServerAddress(&a, &pt);
     port = ((pt & 0xFF) << 8) | (pt >> 8);          /* it returns the port in network order */
     snprintf(ip, sizeof ip, "%u.%u.%u.%u", a & 0xFF, (a >> 8) & 0xFF, (a >> 16) & 0xFF, a >> 24);
@@ -370,6 +370,15 @@ int rt_online_tick(void)
         r = tcp_init();
         if (r == 0) {
             say("connected%s (socket %d)", "", *(s32 *)(ConnWork + 4));
+#ifdef MHG_ONLINE
+            {   /* G's lobby work area (main 0x2EF390): G's InitCommonWork points it at app_mem_top + 0x126200, the part of
+                 * MH1's stage hit area G gave the lobby (net_ToNetworkLobby clears 0x3CDC bytes of it; lobby code only) */
+                static u8 lobby_area[0x1C000];
+                extern u8 *g_main_2EF390;
+                g_main_2EF390 = lobby_area;
+                rt_main_lobby_patch_named();    /* G main data pointing into lobby.bin (the plaza menu's lists) */
+            }
+#endif
             net_ToNetworkLobby();       /* cw = client_work, pNet = network_work, the client's state */
             rt_np_set_online(1);        /* Online_ck() = 1 (system_w+0x10) */
             system_w[0x10] = 1;
@@ -381,15 +390,15 @@ int rt_online_tick(void)
         }
         return 0;
     case O_LOBBY:
-        if (lb_sys[LBSYS_OFS(3)] == 4 && cw[0x2C31] == 3)
+        if (lb_sys[LBSYS_OFS(3)] == 4 && cw[CW_OFS(0x2C31)] == 3)
             rt_game_move();             /* in the town: set objects and effects (as rt_village_tick) */
         r = internet_lobby_act();
-        if (trace && (cw[0x2C31] != last31 || cw[0x2C33] != last33 || cw[0x2C34] != last34 || lb_sys[LBSYS_OFS(3)] != last3)) {
-            fprintf(stderr, "online: tick %d client %d/%d/%d/%d town step %d stage %d ret %d\n", ticks, cw[0x2C31],
-                    cw[0x2C32], cw[0x2C33], cw[0x2C34], (s8)lb_sys[LBSYS_OFS(3)], game_w[0x14], r);
-            last31 = cw[0x2C31]; last33 = cw[0x2C33]; last34 = cw[0x2C34]; last3 = lb_sys[LBSYS_OFS(3)];
+        if (trace && (cw[CW_OFS(0x2C31)] != last31 || cw[CW_OFS(0x2C33)] != last33 || cw[CW_OFS(0x2C34)] != last34 || lb_sys[LBSYS_OFS(3)] != last3)) {
+            fprintf(stderr, "online: tick %d client %d/%d/%d/%d town step %d stage %d ret %d\n", ticks, cw[CW_OFS(0x2C31)],
+                    cw[CW_OFS(0x2C32)], cw[CW_OFS(0x2C33)], cw[CW_OFS(0x2C34)], (s8)lb_sys[LBSYS_OFS(3)], game_w[0x14], r);
+            last31 = cw[CW_OFS(0x2C31)]; last33 = cw[CW_OFS(0x2C33)]; last34 = cw[CW_OFS(0x2C34)]; last3 = lb_sys[LBSYS_OFS(3)];
         }
-        if (cw[0x2C31] == 3 && lb_sys[LBSYS_OFS(3)] == 4) {
+        if (cw[CW_OFS(0x2C31)] == 3 && lb_sys[LBSYS_OFS(3)] == 4) {
             void rt_np_town_weapon(int slot);
             int k;
             for (k = 0; k < 8; k++)
@@ -408,7 +417,7 @@ int rt_online_tick(void)
                 return 0;
             }
         }
-        if (trace && cw[0x2C31] == 3 && lb_sys[LBSYS_OFS(3)] == 4) {     /* a new town stage: its unique spots (exits, counters) */
+        if (trace && cw[CW_OFS(0x2C31)] == 3 && lb_sys[LBSYS_OFS(3)] == 4) {     /* a new town stage: its unique spots (exits, counters) */
             static int spots_stage = -1, npc_at = -1;
             if (ticks == npc_at) {
                 {   /* its NPCs (slot, model kind, type, talk kind, position), as RT_VILLAGE_TRACE prints them */
@@ -433,7 +442,7 @@ int rt_online_tick(void)
                             *(float *)(q + 0x10), *(u16 *)(q + 0x14));
             }
         }
-        if (trace && cw[0x2C31] == 3) {   /* the town's talk / menu state (lb_sys+LBSYS_OFS(0x68), +6, +7) and the registration flag */
+        if (trace && cw[CW_OFS(0x2C31)] == 3) {   /* the town's talk / menu state (lb_sys+LBSYS_OFS(0x68), +6, +7) and the registration flag */
             static int l68 = -1, l6 = -1, l7 = -1, lf = -1;
             int Event_flag_ck(int);
             int f = Event_flag_ck(4);
@@ -443,7 +452,7 @@ int rt_online_tick(void)
                 l7 = (s8)lb_sys[LBSYS_OFS(7)];
                 lf = f;
                 fprintf(stderr, "online: tick %d town state x68 %d talk %d/%d registered %d room %d/%d\n", ticks, l68, l6, l7, f,
-                        cw[0x35D3], cw[0x32C5]);
+                        cw[CW_OFS(0x35D3)], cw[CW_OFS(0x32C5)]);
             }
         }
         if (trace) {        /* a new line in the game's chat log (PitMenu: logtop +0x1E, log[64] of 0x5D bytes at +0x23) */
@@ -457,7 +466,7 @@ int rt_online_tick(void)
                 last_top = PitMenu[0x1E];
             }
         }
-        if (trace && ticks % 60 == 0 && cw[0x2C31] == 3) {     /* every hunter in the town: slot, name, stage, position */
+        if (trace && ticks % 60 == 0 && cw[CW_OFS(0x2C31)] == 3) {     /* every hunter in the town: slot, name, stage, position */
             extern u8 player_work[];
             int i;
             for (i = 0; i < 8; i++) {

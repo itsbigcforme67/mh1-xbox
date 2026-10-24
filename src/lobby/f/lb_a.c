@@ -101,7 +101,11 @@ int Lb_get_plID(u8 *mac) {
         if (memcmp(c, mac, 6) == 0) return i;
         i = (i + 1) & 0xFF;
         c++;
+#if defined(VERSION_MHG) && defined(MHG_ONLINE)
+    } while (i < 10);   /* G's town holds 10 hunters (G 0x559310) */
+#else
     } while (i < 8);
+#endif
     return 0xFF;
 }
 

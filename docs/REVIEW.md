@@ -942,3 +942,21 @@ Both games unless marked.
   check on an area's first tick. **Referee:** ps2_rnd.txt has a 4th column, the PS2's frame counter, set on the PC.
 - **Added (referee):** village lockstep scenarios (g_vil_*), g_carve / mh1_carve, the hook's lock mode word (CTL+0x1C).
 - **To revert:** the commits "WIP referee: G's story-scene ..." .. "WIP: Game_task's frame counter ..." on agent-D.
+
+## G online, round 4 (agent C, 23 Oct 2026)
+- **Dropped:** src/lobby/gonl/gen/gn_cnLBS_Send_ChatBinaryTU.c and gn___cnet_SendSet_ChatMessageTU.c. **Now:** the same G
+  code as gn_gonl_Send_ChatMessageTU.c (G 0x5B0690) and gn_gonl_SendSet_PlazaEntry.c (G 0x5ACC30), G_RENAME in
+  tools/mhg_gonl.py. **Why:** the split gave those G addresses MH1 names of other functions; under the MH1 names they
+  replaced the PC's real cnLBS_Send_ChatBinaryTU / __cnet_SendSet_ChatMessageTU, and G's status send to a newcomer
+  (lb_send_dataTU) crashed with the 5-argument whisper send. **To revert:** the commit "G online PC: two G clients see
+  each other in the town" on agent-C.
+- **Dropped (23 Oct):** six g_main_ADDR imports in config/mhg/pc_data.txt (2EEE70, 2EFA68, 2EFA6C, 2EFAE0, 2EF078,
+  2EFAC0). **Now:** the gen files use G's data names there (plazaMenuTbl, key_quest_num, key_quest, lbSendInterval,
+  friend_entry_str, joinQuest; tools/mhg_c.py reads config/mhg/data_map.txt high / medium). **Why:** our name hid G's, so
+  the PC's key_quest became a function stand-in and the plain G village crashed (test_save_g, test_urgent_g,
+  test_all_quests_g). Also build_pc.sh's BMATCH W rule narrowed to the G online weakening (.gsyms) and gen_rt_auto.py's
+  gonl names to the G online build. **To revert:** the commit "G PC: the village again ..." on agent-C.
+- **Dropped (23 Oct):** gen_rt_auto.py's lookup of mhg_gonl.py names for lobby `_o` aliases (added earlier this round).
+  **Now:** src/lobby/gonl/gonl_g.c defines CallBack_Result_SearchUserPlace_o as a call of G's function. **Why:** the
+  generated alias depended on the previous build's objects (a plain G build then an online one failed to link in
+  full_check). **To revert:** the commit "G online: CallBack_Result_SearchUserPlace_o by hand" on agent-C.

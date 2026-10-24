@@ -1,0 +1,55 @@
+/* G online (PC): lobby_func_00574750, written from Monster Hunter G's code at lobby 0x574750 by tools/mhg_gonl.py (an m2c draft with
+ * G's names; docs/network.md 3.12). Not compared with anything; the G online PC build links it (ONLINE=1
+ * tools/build_pc_mhg.sh). */
+#include "../gonl.h"
+
+s32 flfntLocate();
+s32 font_print_double();
+s32 font_set_palette();
+s32 han2zen();
+s32 lobby_func_005791D0();
+s32 put_main_cursor2();
+s32 font_print();           /* extern */
+extern s8 g_main_302290;
+extern s32 lit_2316;
+
+void lobby_func_00574750(s32 arg0, s32 arg1, s32 arg2, s32 arg3) {
+    u8 g_frame[0x80] __attribute__((aligned(16)));   /* G's stack frame */
+#define sp60 (*(s32 *)(g_frame + 0x60))
+    s32 temp_v1;
+    s32 var_s1;
+    s32 var_s3;
+    s8 *var_s2;
+
+    put_main_cursor2(arg0, arg1, (s32) (((s8) (arg2))), arg3);
+    lobby_func_005791D0(4, M2C_ERROR(/* Read from unset register $a1 */), M2C_ERROR(/* Read from unset register $a2 */), M2C_ERROR(/* Read from unset register $a3 */));
+    var_s1 = 0;
+    var_s3 = ((s16) ((arg1 + 0x3E)));
+    var_s2 = &g_main_302290;
+    if ((*(s8 *)&g_main_302290) != 0) {
+loop_2:
+        temp_v1 = ((s16) (var_s1));
+        if (temp_v1 < 8) {
+            han2zen(var_s2, &sp60);
+            if ((((s16) ((temp_v1 != (((s8) (arg2))))))) == 0) {
+                font_print_double(0xF4, (s32) var_s3, 1, 4, var_s2 + 8);
+                font_print_double(0x1F4, (s32) var_s3, 1, 4, &sp60);
+            } else {
+                font_set_palette(0);
+                flfntLocate(0xF4, (s32) var_s3);
+                font_print(&lit_2316, var_s2 + 8);
+                flfntLocate(0x1F4, (s32) var_s3);
+                font_print(&lit_2316, &sp60);
+            }
+            var_s2 += 0x18;
+            var_s3 = ((s16) ((var_s3 + 0x16)));
+            var_s1 = ((s16) ((var_s1 + 1)));
+            if (*var_s2 == 0) {
+
+            } else {
+                goto loop_2;
+            }
+        }
+    }
+}
+

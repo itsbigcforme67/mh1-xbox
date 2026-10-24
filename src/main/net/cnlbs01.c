@@ -1,4 +1,7 @@
 /* cnlbs01 - cnLBS file download requests 0x0027CF10-0x0027D028: cnLBS_Read_FileDownload, cnLBS_Get_FileDownloadInfo, cnLBS_Read_FileDownloadHeader. Whole file in cnlbs_nm.c. */
+#if defined(VERSION_MHG) && defined(MHG_ONLINE)
+#define MHG_NET 1       /* G's command indices in the G PC online build (g_alias.h) */
+#endif
 #include "g_alias.h"
 #ifndef __MWERKS__
 unsigned short __cnet_SendReq_FileDownloadHeader();   /* its real return type: was implicitly int (tools/check_kr_returns.py) */
@@ -56,8 +59,17 @@ int cnLBS_Read_FileDownload(int a, void *cb)
 #if !defined(G_PART) || G_PART == 1
 int cnLBS_Get_FileDownloadInfo(u8 *a, void **b)
 {
+#ifdef MHG_NET
+    {   /* G: the count and records are CnetSys_w+0x3695A / +0x36968 (lobby 0x731162 / 0x731170; cnet_g.c's 6881 /
+         * 6883 handlers write them) */
+        extern u8 g_lb_731162[], g_lb_731170[];
+        *a = g_lb_731162[0];
+        *b = g_lb_731170;
+    }
+#else
     *a = A_U8(GV(0x6AFF7C, 0x731162));
     *b = D_6AFF80;
+#endif
     return 0;
 }
 #endif

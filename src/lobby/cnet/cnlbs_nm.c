@@ -4348,12 +4348,12 @@ void _cnet_RecvFromLbs_NoticeShutDownOpponent(void) {
 
 void _cnet_RecvFromLbs_NoticeMatchCancel(void) {
     __cnet_Recv_ServerMessage();
-    _cnetEvent_JumpCallBack(7, 0);
+    CNEVT(7, 6);        /* G 0x5E1CF0: _cnet_Return_CallBack(6) */
 }
 
 void _cnet_RecvFromLbs_NoticeLobbyFull(void) {
     __cnet_Recv_ServerMessage();
-    _cnetEvent_JumpCallBack(8, 0);
+    CNEVT(8, 7);        /* G 0x5E1D20: _cnet_Return_CallBack(7) */
 }
 
 int GetRecvData8(dst, src)

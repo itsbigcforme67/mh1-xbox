@@ -9,13 +9,20 @@
  * mh1l_hook replaces the call of PatchExecCS in Load_overlay (main 0x23E5EC: every overlay load). It runs PatchExecCS
  * as before, then, if the overlay just loaded is the lobby (lobby.bin: CRC32 of the original internet_browser,
  * 720 bytes at 0x5B5980, as on the owner's disc), turns its first instruction into a jump to mh1l_internet_browser.
- * So the lobby is patched at every load (also after a hunt), the disc and the card stay untouched. */
+ * So the lobby is patched at every load (also after a hunt), the disc and the card stay untouched.
+ * Monster Hunter G gets its own copy of this blob (the same C, linked with G's addresses: tools/ps2launch/syms_mhg.ld,
+ * at 0x2130D0 inside G's ms_net_patch_set, 0x2130B0-0x214754). */
 #include "types.h"
 #include "ps2patch.h"
 
+#ifndef IB_ADDR                    /* MH1; tools/ps2launch/build.sh passes G's for the G blob (-DIB_ADDR=...) */
 #define IB_ADDR 0x5B5980u           /* internet_browser (lobby.bin, loaded at 0x533980) */
 #define IB_SIZE 720u
 #define IB_CRC 0xDD22F920u          /* CRC32 of those 720 bytes in SLPM-65495's lobby.bin (a checksum, not the bytes) */
+#endif
+/* G (SLPM-65869): internet_browser at 0x5A2910 (lobby.bin loaded at 0x542600), 768 bytes, CRC32 0x9482CFD7; the
+ * same steps as MH1's (one more MMBB_LOGIN case that our fill never takes), the same bsCsvWork layout (tcp_init and
+ * create_server_table are identical in G) */
 
 void PatchExecCS(int slot, int ov);
 s32 mh1l_internet_browser(void);

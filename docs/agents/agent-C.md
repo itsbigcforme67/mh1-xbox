@@ -2039,3 +2039,101 @@ Result: G matched 19.8% -> 20.1% (4124 -> about 4230 functions), all in src/lobb
 - **Recommendation written (network.md 3.11):** retire the lobby's "mh1-relay" hand-off in two steps (mcs as the
   default first; remove after real hardware, Wine and mcs.py limits); keep relay.py's stand-alone session and
   net_peer direct connect.
+
+## G online (GB7): where I stopped (19 Oct 2026, paused at the owner's request)
+- **Done (committed WIP):** MH1LAUNCH patches the real G disc in RAM (PATCH_MHG in src/ps2patch/launcher.c, G blob linked
+  with tools/ps2launch/syms_mhg.ld at 0x2130D0; MH1 blob byte-identical). mh1-server has a G mode: a client is G once it
+  sends 61A0 (MH1's 6102 waits 0.5 s for it); places / rooms / user search / hunters (accounts schema 3) are per game.
+  G handlers live in tools/mhg_lobby.py (reloaded when the file changes, so a logged-in PS2 is not dropped); G's
+  required info file ("file 0") is made by tools/g_info.py (layout read from the client, in its header).
+- **Seen in PCSX2** (real G + launcher, hidden, flock'd): login, Capcom ID, info file download, G's plaza menu
+  ("G Plaza 1": 街に入る / エリア移動 / ランド移動 / friend list / searches / info). Not committed: screenshots in build/C/gonl.
+- **G protocol found so far** (to go into docs/network.md "G online"): no 6102; 61A0 req u8 (7) -> ans u32,u32; first data
+  kind byte 7 (MH1 4); version string "0411210839" (MH1 "0401290111", MakeMediaVersion from the build date); 61A1 -> u32,u32
+  (mcsls send window); 6148/6149 record upload requests (answer 0 = none); 6881 needs >= 1 file (0 files -> logout),
+  6883 per-file (u8 i, u32 size, u32 version); 68A0 -> u8 n<=3 + 4 bytes, 68A1 news strings; plazas sorted in 5 classes
+  by the explanation's first char '1'..'5' (PlazaInfo+91), class rank limits / town-type list in the info file;
+  630B (u16, u8) / 630D (u16, u32) per-lobby attributes (meaning unknown); 6310-6317 town search/entry: 6310 empty,
+  6312/6313/6314 ans u8, 6315/6316/6311/6317 empty answers (requests: u16 or obfuscated strings).
+  Command table diff: scratch tool (lbs table at G lobby 0x63B910.., 293 rows) — worth committing as tools/lbs_cmdtab.py --g.
+- **Next:** pick 街に入る in the G plaza and handle what G sends (6314 town search by type name, lobby list, town entry);
+  then write docs/network.md G section + RELEASE_G.md GB7; then the PC G online build (VERSION=mhg + ONLINE=1: cnet GV
+  indices must be G's in the G PC build), two G PCs, PS2 G + PC G. Exploration scripts: build/C/gonl/{boot,k,run}.sh
+  (boot.sh: server + PCSX2 + scripted menus to the plaza, ~4 min; savestates break PCSX2's socket networking).
+
+## G online, round 2 (20 Oct 2026)
+- **PS2 side done and tested:** `tools/test_ps2_g_online.sh` (real G disc via MH1LAUNCH: login, info file, plaza,
+  town list, town) and `HUNT=1` (guild registration flag by PINE, counter, room for 1, departure, match, mcs login,
+  the quest's camp). docs/network.md 3.12 has the protocol. Server: tools/mhg_lobby.py (G handlers, reloaded on change).
+- **PC side, in progress:** cnet layer (src/lobby/cnet/cnet_g.c + MHG_NET / LBNET_G) logs in with G's protocol
+  (`--nettest`). G's lobby UI (login screens, class menu, plaza, town list, counter, rooms) is G code the PC lacks:
+  tools/mhg_reach.py sizes it (about 340 G functions beyond the village); tools/mhg_gonl.py makes PC C of each from
+  m2c (src/lobby/gonl/gen, one file per function; HAND-FIXED files are kept). Lessons on m2c output for the PC:
+  pointer arithmetic is in bytes (byte_pointers / byte_globals passes), stack slots are one frame (stack_buffers:
+  defines into g_frame), callees unprototyped, 8-byte by-value args read by field, functions G calls keeping a1-a3
+  across a leaf need a hand fix, widths of `*(&global + k)` reads of unknown globals can be wrong (review).
+- **Next:** compile all gen files (cg loop), link into the G online build (BMATCH, build_pc.sh), give the g_main_*
+  names that are no host object storage, run the PC G client with real screens, debug screen by screen.
+
+## G online, round 3 (20 Oct 2026): the PC G client with G's own screens
+- **How:** tools/mhg_gonl.py turns ~570 G lobby functions into PC C (m2c with G's EE ABI, a signature context, byte
+  pointer passes, CallBackWaitInit inlined, G_RENAME for G code under MH1 names); details in docs/network.md 3.12
+  "The PC G online build". Debug loop: build/C/gpc/dbg.sh (test server on 10256 + gdb backtrace, shots).
+- **Reached:** login with G's screens (the Capcom ID select is G's drawing), 6104, the 6881/6883 file list, 68A0, the
+  plaza reads (6203-620A for five plazas).
+- **Shared code touched:** src/lobby/cnet/cnlbsg.c (the receive loop walks GV(258, 293) rows), tools/draft.py
+  (`DRAFT_T=mipsee-*` register names; alabel functions; G's CallBackWaitInit inlined for mhg/lobby),
+  src/pc/rt/rt_online.c (CW_OFS on cw[] reads; G's lobby work area).
+- **Open:** the info file's data (6882) is not requested on the PC yet (the PS2 asks for it); G main functions the PC
+  lacks are weak stand-ins (Net_all_reset, Net_trans_set, net_flps0004/8); browser drawing (Bs*) stays MH1's.
+- **22 Oct (round 3, cont.):** the PC G client reaches G's town and is drawn there (G's Lb_stage_load). What it took
+  after the plaza: G code under MH1 names (G_RENAME: plaza / town record getters, the file download burst's callback,
+  0x59A820), m2c fixes in the tool (data widths from G's asm incl. gp-relative, four-register calls to G functions,
+  delay slots of tail jumps, (void) pass-throughs out of the context, 8-byte results as s64), G's fades / quest tables
+  imported, cnLBS_Get_FileDownloadInfo / cnLBS_Read_RoomProperty with G's data (shared cnet C, MHG_NET only).
+  Memory on this machine is short (other sessions' emulators): every build / run waits for > 2 GB free
+  (build/C/gpc/br.sh does). Emulator steps (PS2 G disc + PC, Xbox) wait for the coordinator.
+
+## G online, round 4 (23 Oct 2026): merge with main, two G PCs in one town
+- **Merge:** `git merge main` (87 commits); conflicts only in config/mhg/pc_data.txt (both sides kept) and the generated
+  config/mhg/pc_ptrs.txt (regenerated with tools/mhg_pcmeta.py). Fixed after it: tools/build.py skipped nothing under
+  src/lobby/gonl (PC-only G C, MWCC choked on it: now skipped like src/pc); cnlbs01.c's non-G-net branch had lost
+  `GV()` (G PS2 lobby mismatched at 0x5BFD40). MH1 5 OK, G 7 OK.
+- **PC build fixes (G):** a plain G build after a G online one linked two strong copies of the matched lobby functions
+  (the online build had weakened them for src/lobby/gonl; build_pc.sh now counts T and W symbols of BMATCH objects);
+  gen_rt_auto.py aliases a lobby `_o` name to the mhg_gonl.py function written from G's code at that address
+  (CallBack_Result_SearchUserPlace_o).
+- **Two G PCs see each other** (`TWO=1 tools/test_online_g.sh` passes; each logs the other in town stage 0x4C at the
+  start position). What it took, each found with gdb (scratch copy of the test with `gdb -batch` around ANNA):
+  1. G's split names 0x5B0690 cnLBS_Send_ChatBinaryTU, but it is G's whisper send (u8, id, text, len, callback; row
+     0xFD); the real ChatBinaryTU is at 0x5B08B0 (split name cnLBS_Send_ChatMessageTU, MH1's shape, row 0x102). The
+     newcomer's status send (lb_send_dataTU -> 4 arguments) crashed in the 5-argument one. G_RENAME: gonl_Send_ChatMessageTU;
+     0x5ACC30 (split: __cnet_SendSet_ChatMessageTU) is the plaza entry send: gonl_SendSet_PlazaEntry.
+  2. G numbers lobby events differently: _sub_InOutRoomMember (G 0x5AC9A0, jump table checked in lobby.bin) fires 26 /
+     27 / 36 / 37 / 41 / 42 for kinds 0-5 (MH1 38 / 39 / 31 / 32 / 36 / 37), so CallBack_Event_LobbyCommer never ran;
+     also NoticeMatchCancel 6 (MH1 7), NoticeLobbyFull 7 (8). An audit of every G table row's handler against the MH1
+     C of the same name (direct `li a0` before _cnet_Return_CallBack) found no other unfixed one.
+  3. m2c dropped the incoming $a0 that Lb_check_receipt / Lb_get_comment pass on to Lb_get_plID (FIXUPS).
+  4. The split writes the EE's cvt.w.s as `.word ... # cvt.w.s`, so m2c passed the float's bits on: the status /
+     position sends (Lb_send_pl_pos, Lb_send_pl_warp, 0x59AB90) sent 0 for x. tools/draft.py now gives m2c the
+     instruction for every mhg module; 12 gen files regenerated.
+  5. G's Lb_get_plID walks 10 hunters (lb_a.c, G online build only).
+- **Guild hall (step 3, started):** the PC G client walks into the guild hall (stage 0x4D) through the town's door spot
+  (5545, 2750, square), as the PS2 test does. Not further: Lb_npc_set takes 8 NPC slots there (G's
+  npc_dialog_table count) but only slot 0 gets a position (1047, 50, 1602) and none is drawn; the others stay at 0, 0, 0
+  (their G em init programs: the same gap as the G village NPCs, RT_NO_NPC in lb_village_nm.c). At the middle counter
+  spot (1120, 1950) circle gives "ハンターズギルドへようこそ" ... "ボスなら隣にいるわよ" (the greeting for a hunter the
+  guild does not know) although event flag 4 is set (RT_NET_REGISTERED): probably slot 0's talk, not the quest lady's
+  [guess]. G's own Lb_npc_set (0x59CB70: cases 0x51-0x57, get_questLevelNum) is not the PC's either. Next: G's hall
+  NPCs placed and drawn, then the counter menu (G's talk conditions 0x542A60), a room, a quest.
+- **Cosmetic, open:** town name tags draw a white square next to the name (an icon texture, G and MH1 slots differ?).
+- tools/full_check.sh: test_ps2_g_online.sh is an emulator test (skipped), the G online PC build is a step.
+- **full_check (23 Oct) found and fixed:** kr_returns (m2c's `s32` declarations of u16 / s8 callees in the gen files:
+  check_kr_returns --fix, mhg_gonl.py runs it after generating); the plain G village crashed (test_save_g / urgent_g /
+  all_quests_g) because a g_main_2EFA6C import had hidden G's key_quest name, making it a stand-in function: tools/mhg_c.py
+  now takes config/mhg/data_map.txt's high / medium names first, except the two lobby pointer tables 2EEE70 / 2EF078
+  (under G's names the plaza menu crashed); the G online link after a plain G build (CallBack_Result_SearchUserPlace_o:
+  now a hand-written call in src/lobby/gonl/gonl_g.c; gen_rt_auto.py back to main's). The BMATCH W rule in build_pc.sh
+  only counts what a G online build weakened (build/pc/.gsyms).
+- **Lesson:** never edit tools/build_pc.sh while a build or full_check runs (sh reads the script as it goes: "Syntax
+  error: } unexpected" and the steps after it fail).

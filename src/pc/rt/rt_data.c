@@ -150,6 +150,8 @@ static void rt_nop_fn(void) {}
 static uint32_t rd32c(const uint8_t *p) { return p[0] | p[1] << 8 | p[2] << 16 | (uint32_t)p[3] << 24; }
 /* PS2 address -> host pointer (see the header comment) */
 static int map_tables;     /* 1 while relocating the host tables (for RT_TRACE) */
+static void *map_lb(uint32_t v);
+
 static void *map_ptr(uint32_t v)
 {
     const struct rt_table *t;
@@ -398,14 +400,7 @@ int rt_import_lobby(void)
          * (village menu help), shop_default_tag (item shop "buy"/"sell"),
          * my_job_str (the forge's "blademaster"/"gunner" title), hint_tbl[0]
          * (spot hints), armor_shop_tblA/B, plaza menus, ... 72 words. */
-        const uint32_t *pr;
-        size_t k, np = rt_main_lobby_ptrs(&pr);
-        for (k = 0; k < np; k++) {
-            uint8_t *dst = map_ptr(pr[2 * k]);
-            void *h = map_lb(pr[2 * k + 1]);
-            if (dst)
-                memcpy(dst, &h, sizeof h);
-        }
+        rt_main_lobby_patch();
     }
     lb_image_n = n;
     lb_image = malloc(n);       /* the freshly loaded overlay, for rt_lb_reload */
@@ -499,4 +494,41 @@ int rt_data_hosts(int space, uint32_t va, const void **out)
         out[n++] = rt_sel_mem + (va - LB_VRAM);
     }
     return n;
+}
+
+/* main's data words that point into lobby.bin get the host address of their target (at each lobby load; again by
+ * the G online client, whose main data objects can be imported after the lobby's first load: G's plaza menu lists,
+ * main 0x2EEE70) */
+void rt_main_lobby_patch_named(void);
+
+void rt_main_lobby_patch(void)
+{
+    const uint32_t *pr;
+    size_t k, np = rt_main_lobby_ptrs(&pr);
+    for (k = 0; k < np; k++) {
+        uint8_t *dst = map_ptr(pr[2 * k]);
+        void *h = map_lb(pr[2 * k + 1]);
+        if (dst)
+            memcpy(dst, &h, sizeof h);
+    }
+    rt_main_lobby_patch_named();
+}
+
+/* the same for the G online client's host copies of those main objects (config/mhg/pc_data.txt imports: the code
+ * reads them by name, not through the image map_ptr writes), pointing into the running lobby (rt_lb_mem) */
+void rt_main_lobby_patch_named(void)
+{
+    const uint32_t *pr;
+    size_t k, np = rt_main_lobby_ptrs(&pr);
+    for (k = 0; k < np; k++) {
+        uint32_t off = 0;
+        int func = 0;
+        const char *name = rt_sym_at(pr[2 * k], &off, &func);
+        uint8_t *h = name && !func ? rt_host_sym(name) : NULL;
+        uint32_t v = pr[2 * k + 1];
+        if (h && v >= LB_VRAM && v < LB_VRAM + LB_SPAN) {
+            void *p = rt_lb_mem + (v - LB_VRAM);
+            memcpy(h + off, &p, sizeof p);
+        }
+    }
 }

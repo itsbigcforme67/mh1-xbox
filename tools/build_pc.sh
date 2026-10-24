@@ -272,6 +272,14 @@ if [ -n "$ONLINE" ]; then
            src/lobby/b/lb_bz20.c src/lobby/b/lb_c509.c src/lobby/b/lb_bz81.c src/lobby/b/lb_tcp01.c \
            src/ps2patch/online.c $NETLB_MCS"   # (online.c: the server table fill shared with the PS2 online patch)
     GAME="$GAME $NETMAIN $NETLB src/lobby/b/lb_cmcs01.c src/main/boot/boot02.c src/main/plsel/plsel_nm.c"
+    # G: its lobby-server receive handlers that differ from MH1's (named per table address in config/mhg/pc_names.txt)
+    [ "$VERSION" = mhg ] && GAME="$GAME src/lobby/cnet/cnet_g.c"
+    # G: its lobby client, plaza and town functions that differ from MH1's or are G's own (src/lobby/gonl/gen,
+    # tools/mhg_gonl.py): they win over MH1's copies of the same names (BMATCH)
+    if [ "$VERSION" = mhg ]; then
+        GONL="$(ls src/lobby/gonl/gen/*.c src/lobby/gonl/*.c 2>/dev/null | tr '\n' ' ')"
+        GAME="$GAME $GONL"; BMATCH="$BMATCH $GONL"
+    fi
     WEAK="$WEAK lb__cnlbs_nm lb__lbui_nm"   # lbui_nm: the plaza TUs lb_plz2/3 (matched C) win
     # main's cnLBS file-download C calls the lobby's cnet helpers by address
     NETALIASES="func_5AD280=__cnetSub_Set_BgProcess func_5AD1B0=_cnet_Return_CallBack func_5ADB60=GetRecvData8 \
@@ -442,6 +450,8 @@ GAMEFLAGS="$M32 $FPSSE $GAME_EXTRA ${COV:+-finstrument-functions} -std=gnu99 -O2
 # VERSION=mhg: PS2 Monster Hunter G (docs/mhg.md); run through tools/build_pc_mhg.sh, which builds in its own tree
 if [ "$VERSION" = mhg ]; then
     GAMEFLAGS="$GAMEFLAGS -DVERSION_MHG"; CFLAGS="$CFLAGS -DVERSION_MHG"
+    # the G online build: lbnet.h / cnlbs01 / cnlbs03 take G's command indices and work sizes (g_alias.h MHG_NET)
+    [ -n "$ONLINE" ] && { GAMEFLAGS="$GAMEFLAGS -DMHG_ONLINE=1"; CFLAGS="$CFLAGS -DMHG_ONLINE=1"; }
 fi
 LIBS=${LIBS:-"-lSDL2 -lGL -lm"}
 LINK1_OPTS=${LINK1_OPTS--Wl,--warn-unresolved-symbols}   # lld (Windows) has no such switch: LINK1_TOLERANT=1 and --error-limit=0
@@ -711,7 +721,12 @@ for f in $GAME; do
 done
 # the matched lobby functions win over other lobby objects' copies
 BOBJS=$(for f in $BMATCH; do printf 'build/pc/lb__%s.o ' "$(basename "$f" .c)"; done)
-BSYMS=$( (for f in $BMATCH; do nmc --defined-only -g "build/pc/lb__$(basename "$f" .c).o" | awk 'NF == 3 && $2 == "T" {print $3}'; done
+# (also W when only a G online build weakened it, for src/lobby/gonl (build/pc/.gsyms): a plain build after an online one
+# must still let it win; pc_link_adapt.py compiles it again with this build's weak list. Other W stay out: a symbol this
+# kind of build weakens on purpose must not win)
+[ -z "$GONL" ] && [ -f build/pc/.gsyms ] && GW=build/pc/.gsyms || GW=/dev/null
+BSYMS=$( (for f in $BMATCH; do nmc --defined-only -g "build/pc/lb__$(basename "$f" .c).o" | awk -v gw="$GW" 'BEGIN { while ((getline l < gw) > 0) g[l] = 1 }
+              NF == 3 && ($2 == "T" || ($2 == "W" && ($3 in g))) {print $3}'; done
           for p in $PICK; do echo "${p#*:}" | tr , '\n'; done) | sort -u)   # PICKed lobby functions win too
 BOBJS="$BOBJS $(for p in $PICK; do printf 'build/pc/lb__%s.o ' "$(basename "${p%%:*}" .c)"; done)"
 for o in $OBJS; do
@@ -720,6 +735,17 @@ for o in $OBJS; do
     W=$(nmc --defined-only -g "$o" | awk 'NF == 3 {print $3}' | sort -u | comm -12 - "$(printf '%s\n' $BSYMS | sort -u > build/pc/.bsyms; echo build/pc/.bsyms)")
     for w in $W; do echo "weak $o $w"; done >> $REQ
 done
+# G online: G's own versions (src/lobby/gonl) win over every other lobby object's copy, the matched MH1 ones too
+if [ -n "$GONL" ]; then
+    GOBJS=$(for f in $GONL; do printf 'build/pc/lb__%s.o ' "$(basename "$f" .c)"; done)
+    for f in $GOBJS; do nmc --defined-only -g "$f" | awk 'NF == 3 && $2 == "T" {print $3}'; done | sort -u > build/pc/.gsyms
+    for o in $OBJS; do
+        case " $GOBJS " in *" $o "*) continue ;; esac
+        case "$o" in build/pc/lb__*) ;; *) continue ;; esac
+        nmc --defined-only -g "$o" | awk 'NF == 3 {print $3}' | sort -u | comm -12 - build/pc/.gsyms | while read -r w; do
+            echo "weak $o $w"; done >> $REQ
+    done
+fi
 sort -u -o $REQ $REQ
 # libmpeg2 0.5.1 (third_party/libmpeg2, GPL v2, plain C): the movies' MPEG-2 video
 for f in alloc cpu_accel cpu_state decode header idct motion_comp slice; do

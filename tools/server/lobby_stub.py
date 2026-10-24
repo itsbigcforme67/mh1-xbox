@@ -79,18 +79,20 @@ def make_handler(accounts=None, relay=None, relay_host="127.0.0.1", relay_matche
 
         if accounts is not None:
             def hunter_list(self):
-                return [(i, bytes(h), bytes(m) if m else b"") for i, h, m in accounts.hunters(self.login)]
+                return [(i, bytes(h), bytes(m) if m else b"") for i, h, m in accounts.hunters(self.login, self.game)]
 
             def hunter_select(self, ident, handle):
                 if not ident:
                     try:
-                        hid = accounts.add_hunter(self.login, handle)
+                        hid = accounts.add_hunter(self.login, handle, game=self.game)
                     except ValueError as e:
                         return "!" + str(e)
                     log("lobby: account %s: new hunter %s" % (self.login, hid))
                     return hid
                 if accounts.hunter_owner(ident) != self.login:
                     return "!this hunter belongs to another account"
+                if accounts.hunter_game(ident) != self.game:
+                    return "!this hunter is from the other game"
                 accounts.set_handle(ident, handle)
                 return ident
 
@@ -132,7 +134,7 @@ def make_handler(accounts=None, relay=None, relay_host="127.0.0.1", relay_matche
                 with ts.ROOMS_LOCK:
                     port = getattr(r, "relay_port", None)
                     if port is None or getattr(r, "relay_match", None) is not r.match:
-                        quest = (getattr(r, "prop", 0) >> 1) & 0xFF
+                        quest = ts.room_quest(getattr(r, "prop", 0), self.game)
                         names = [m.user_handle.encode("cp932", "replace").hex(" ").upper() for m in r.match]
                         fut = asyncio.run_coroutine_threadsafe(relay.create_session(quest, len(r.match), names), loop)
                         port = fut.result(5)
@@ -153,7 +155,7 @@ def make_handler(accounts=None, relay=None, relay_host="127.0.0.1", relay_matche
                 with ts.ROOMS_LOCK:
                     if getattr(r, "mcs_match", None) is not r.match:
                         r.mcs_match = r.match
-                        quest = (getattr(r, "prop", 0) >> 1) & 0xFF
+                        quest = ts.room_quest(getattr(r, "prop", 0), self.game)
                         name = "room %d quest %d" % (r.id, quest)
                         loop.call_soon_threadsafe(mcs.add_match, keys, name)
                 ip = bytes(int(x) for x in relay_host.split("."))

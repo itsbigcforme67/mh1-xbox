@@ -10,6 +10,13 @@
  * build lays the structs out like the PS2 (docs/pc.md "Port runtime").
  * What is a guess is marked as such.
  */
+#include <stdint.h>
+#if defined(__linux__)
+extern char __executable_start[], etext[];
+static int rt_code_ptr(const void *f) { return (const char *)f >= __executable_start && (const char *)f < etext; }
+#else
+static int rt_code_ptr(const void *f) { (void)f; return 1; }
+#endif
 #include "rt.h"
 #include "rt_prof.h"
 #include "rt_pick.h"
@@ -709,7 +716,11 @@ void rt_game_draw_2d(void)
         for (k = 0; k < nqueue[t]; k++) {
             PRIM *p = queue[t][k].p;
             PICK_FN(PK_HUD, t, k, queue[t][k].pri, 0, (const void *)p->trans, 0, 0);
-            if (p->trans)
+            if (p->trans && !rt_code_ptr((const void *)p->trans)) {
+                static int warned;
+                if (!warned++)      /* a draw function that is not code (a G table word not mapped): skipped, said once */
+                    fprintf(stderr, "2d: prim %p (queue %d #%d) has no draw code (%p)\n", (void *)p, t, k, (void *)p->trans);
+            } else if (p->trans)
                 p->trans(p);
             rt_fl_reset_states();
             if (gfx_2d_anchor)

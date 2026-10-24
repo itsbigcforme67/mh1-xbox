@@ -31,9 +31,29 @@ GPR = ["zero", "at", "v0", "v1", "a0", "a1", "a2", "a3", "t0", "t1", "t2", "t3",
        "t8", "t9", "k0", "k1", "gp", "sp", "fp", "ra"]
 
 
+# the EE ABI (DRAFT_T=mipsee-...) passes arguments 5-8 in $8-$11, which m2c's mipsee target calls a4-a7 (then t0-t3 = $12-$15)
+GPR_EE = GPR[:8] + ["a4", "a5", "a6", "a7", "t0", "t1", "t2", "t3"] + GPR[16:]
+
+
+# G (mhg) calls CallBackWaitInit (lobby 0x579BC0, C in the G build) between setting $a1-$a3 and using them: it is a leaf
+# that only touches $v1/$a0/$at, but m2c takes every call as clobbering the argument registers. Its two stores go inline
+# instead (after the delay slot), so m2c keeps those registers.
+CBWAIT_INLINE = (
+    "    lw $3, -0x2FA8($28)\n    lui $1, 0x1\n    addiu $4, $0, 0xE10\n    addu $1, $3, $1\n    sw $4, -0x598($1)\n"
+    "    lw $3, -0x2FA8($28)\n    lui $1, 0x1\n    addu $1, $3, $1\n    sb $0, -0x59B($1)\n")
+
+
+def inline_leaves(text):
+    text = re.sub(r"^.*\bjal\s+CallBackWaitInit\n(.*\n)", lambda m: m.group(1) + CBWAIT_INLINE, text, flags=re.M)
+    # a tail jump to another function (`j NAME`): m2c drops its delay slot (a store, an argument): run the slot first
+    return re.sub(r"^(.*\bj\s+[A-Za-z_]\w*\n)(\s*/\*[^*]*\*/\s+)(?!nop)(.*\n)",
+                  lambda m: m.group(2) + m.group(3) + m.group(1) + "    nop\n", text, flags=re.M)
+
+
 def named_regs(text):
     """The split uses numeric GPRs ($31) for GNU as; m2c needs $ra etc."""
-    return re.sub(r"\$(\d+)\b", lambda m: "$" + (GPR[int(m.group(1))] if int(m.group(1)) < 32 else m.group(1)), text)
+    names = GPR_EE if os.environ.get("DRAFT_T", "").startswith("mipsee") else GPR
+    return re.sub(r"\$(\d+)\b", lambda m: "$" + (names[int(m.group(1))] if int(m.group(1)) < 32 else m.group(1)), text)
 
 
 def jt_patch(text, module):
@@ -74,13 +94,18 @@ def blocks(module):
         text = open(path).read()
         for m in re.finditer(r"^glabel (\S+)\n(.*?)^endlabel \1\n", text, re.M | re.S):
             out[m.group(1)] = (path, m.group(0))
+        # functions the split left inside another's block as "alabel NAME" (G lobby 0x542640..): each one up to the
+        # next label, as a block of its own
+        for m in re.finditer(r"^\s*alabel (\S+)\n(.*?)(?=^\s*alabel |^\s*glabel |^\s*endlabel |^\.size |\Z)", text, re.M | re.S):
+            if m.group(1) not in out:
+                out[m.group(1)] = (path, "glabel %s\n%sendlabel %s\n" % (m.group(1), m.group(2), m.group(1)))
     return out
 
 
 def jump_tables(module, fn_text):
     """Switch tables referenced by lit_NNN_ADDR in the function: rename to jtbl_* and emit a
     .rodata block with .L labels so m2c can see the switch (select/yn/game data files)."""
-    names = sorted(set(re.findall(r"%hi\((lit_\d+(?:_[0-9A-F]+)?)\)", fn_text)))
+    names = sorted(set(re.findall(r"%hi\((lit_\d+(?:_[0-9A-F]+)?|jtbl_\w+)\)", fn_text)))
     labels = set(re.findall(r"^\s*\.L([0-9A-F]{8}):", fn_text, re.M))
     out = ""
     for n in names:
@@ -90,6 +115,8 @@ def jump_tables(module, fn_text):
             if not m:
                 continue
             words = re.findall(r"\.word (?:0x|\.L)([0-9A-Fa-f]{8})\s*$", m.group(1), re.M)
+            while words and int(words[-1], 16) == 0:     # G's tables keep their alignment padding
+                words.pop()
             if words:
                 for w in set(x.upper() for x in words):
                     if w not in labels:   # case target without a label: add one before that instruction
@@ -120,6 +147,12 @@ def main():
             print("/* %s: not found in asm/%s (already C?) */" % (name, args.module))
             continue
         body, jt = jump_tables(args.module, bl[name][1])
+        if args.module.startswith("mhg/lobby"):
+            body = inline_leaves(body)
+        if args.module.startswith("mhg/"):
+            # G's split writes the EE's cvt.w.s (float to int, truncating) as a .word with the instruction in a comment;
+            # m2c then passed the float's bits on (an unset $f0, or M2C_BITWISE of the float): give it the instruction
+            body = re.sub(r"\.word\s+0x[0-9A-Fa-f]+\s+#\s+(cvt\.w\.s\s+\$f\d+,\s*\$f\d+)[^\n]*", r"\1", body)
         with tempfile.NamedTemporaryFile("w", suffix=".s", delete=False) as t:
             t.write('.include "macro.inc"\n.set noat\n.set noreorder\n'
                     '.section .text, "ax"\n\n' + named_regs(body) + jt)

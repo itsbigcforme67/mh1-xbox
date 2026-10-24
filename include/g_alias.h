@@ -28,6 +28,12 @@ extern void *gptr_00527BF4[];
 #else
 #define GSTR(mh1, cell) (mh1)
 #define GSLOT(mh1, g) (mh1)
+#if defined(VERSION_MHG) && defined(MHG_NET)
+/* the G PC online build's lobby-server client (lbnet.h, cnlbs01/03): G's command indices and work sizes, as on the
+ * PS2 (the PC imports G's command tables and CnetSys_w from G's lobby.bin; docs/network.md "G online") */
+#define GV(mh1, g) (g)
+#else
 #define GV(mh1, g) (mh1)
+#endif
 #endif
 #endif
