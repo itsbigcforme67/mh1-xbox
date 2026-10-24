@@ -2723,7 +2723,11 @@ static void basic_com_ck(PLW *pl) {
         pl->work8F0 = 1;
         if (pl->flag604 != 0) {
             for (var_a0 = 0; var_a0 < 0x14; var_a0++, var_s0++) {
+#ifdef VERSION_MHG      /* G (game 0x54E540): the subspecies 50 of kind 7 can be mounted too */
+                if ((pl->work605 == var_s0->x13) && (var_s0->kind == 7 || var_s0->kind == 0x32)) {
+#else
                 if ((pl->work605 == var_s0->x13) && (var_s0->kind == 7)) {
+#endif
                     if (var_s0->x87F != 0) {
                         Pl_act_set(pl, 2, 7, 0);
                         return;

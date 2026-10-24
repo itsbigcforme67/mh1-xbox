@@ -204,7 +204,11 @@ static void eft17_i00(EFTW *ew) {
     case 1:
         ew->x07 = ew->owner->kind;
         v[0] = 0.0f;
+#if defined(VERSION_MHG) && !defined(__MWERKS__)
+        if (ew->x07 == 2 || ew->x07 == 0x24) {      /* G: the subspecies 36 of kind 2 */
+#else
         if (ew->x07 == 2) {
+#endif
             flmatCopy(&m, get_joint_wmat(ew->owner, 0x33));
             v[1] = -41.8f;
             v[2] = 50.0f;
@@ -222,7 +226,11 @@ static void eft17_i00(EFTW *ew) {
     case 2:
         ew->x07 = ew->owner->kind;
         v[0] = 0.0f;
+#if defined(VERSION_MHG) && !defined(__MWERKS__)
+        if (ew->x07 == 2 || ew->x07 == 0x24) {      /* G: the subspecies 36 of kind 2 */
+#else
         if (ew->x07 == 2) {
+#endif
             flmatCopy(&m, get_joint_wmat(ew->owner, 0x33));
             v[1] = -91.6f;
             v[2] = 132.8f;
@@ -331,7 +339,11 @@ static void eft17_i00(EFTW *ew) {
                 p->lag = 0;
                 p->rot[2] = ran_suu(1);
                 p->rot[1] = ang;
+#if defined(VERSION_MHG) && !defined(__MWERKS__)
+                if (ew->x07 == 2 || ew->x07 == 0x24) {      /* G: the subspecies 36 of kind 2 */
+#else
                 if (ew->x07 == 2) {
+#endif
                     p->u28.size = 1.5f;
                 } else {
                     p->u28.size = 1.0f;
@@ -853,7 +865,11 @@ static void eft17_t00(PRIM *pr) {
                 flag |= 2;
                 flmatMakeTrans(&uv, 0.0f, 0.0f, 0.0f);
                 flSetRenderState(0x19, (u32)&uv);
+#if defined(VERSION_MHG) && !defined(__MWERKS__)
+                if (ew->x07 == 2 || ew->x07 == 0x24) {      /* G: the subspecies 36 of kind 2 */
+#else
                 if (ew->x07 == 2) {
+#endif
                     fade = fade_type3_em02_2;
                 } else {
                     fade = fade_type3_em02_00643DC0;

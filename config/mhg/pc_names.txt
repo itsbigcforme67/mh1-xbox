@@ -35,6 +35,10 @@ sub_main lit_1001_00386A58 0x537B40 +  # G reward_itembox (0x4F8990) reads "%s <
 sub_main lit_1002_00386A60 0x537B48 +  # G reward_itembox: "%s x%d" (name and count) through the cell at 0x5262C4 (G's lit_4893 is the same string)
 lobby lb_banner_close_str 0x636EA4  # pointer cell: the banner's "close" label (G lobby 0x58DC30 prints it)
 lobby tl_etc 0x636E70  # the lobby's short strings (chat window, yes, no, save, quit without saving, OK ...): G's DispDialogData (lobby 0x5A02B0) reads +4 / +8 / +0xC / +0x10. Missing, it was a function stand-in and the bed's save prompt read code bytes (crash once the prompt was drawn)
+sub_main lit_2331 0x538958 +  # G quest_condition_print (main 0x11E010) prints the hunt targets' "%s：" through the cells hunter_appellation+0xA8/+0xAC/+0xB0 (0x527BB8..BC), all pointing here; zero-filled until now
+sub_main lit_3181_00383570 0x538958 +  # G chat_log_name reads its "%s：" through the cell at 0x2EC62C (gptr_002EC62C), the same string as lit_2331
+sub_main lit_3440 0x537F40 +  # G Disp_NPC_message (main 0x222BC0): the yes/no line with yes chosen, through the cell at 0x527C64 (hunter_appellation+0x154); same string as lit_232_0035A2F0
+sub_main lit_3441 0x538D30 +  # G Disp_NPC_message: the yes/no line with no chosen, through the cell at 0x527C68 (hunter_appellation+0x158); same string as lit_233_0035A310
 
 # G online (agent C, 20 Oct 2026): G's lobby-server receive handlers that G added or changed, named after their
 # function in src/lobby/cnet/cnet_g.c (G online PC build). Some of these addresses had MH1 names in G's symbol list

@@ -206,6 +206,18 @@ void senko_ck(EMW *em, int pl, EM_EYE *e) {
     if ((u16)em->x40C > 0 || em->x8BB > 0 || em->x8C3 != 0) {
         return;
     }
+#ifdef VERSION_MHG
+    /* G (game 0x542C80): the monsters a flash bomb does not blind: 2 / 0x24, 5, 7, 8, 0xF, 0x14, 0x15, 0x18, 0x1D, 0x21, 0x27, 0x2D, 0x2E, 0x32
+     * (MH1's list has 34 and lacks the subspecies); 14 / 26 and their subspecies 43 / 44 only while x388 is 4 */
+    switch (em->kind) {
+    case 2: case 0x24: case 5: case 7: case 8: case 0xF: case 0x14: case 0x15: case 0x18: case 0x1D:
+    case 0x21: case 0x27: case 0x2D: case 0x2E: case 0x32:
+        return;
+    }
+    if ((em->kind == 14 || em->kind == 26 || em->kind == 43 || em->kind == 44) && em->x388 == 4) {
+        return;
+    }
+#else
     if (em->kind == 2 || em->kind == 5 || em->kind == 7 || em->kind == 8 || em->kind == 15 ||
         em->kind == 20 || em->kind == 21 || em->kind == 24 || em->kind == 29 ||
         em->kind == 33 || em->kind == 34) {
@@ -214,6 +226,7 @@ void senko_ck(EMW *em, int pl, EM_EYE *e) {
     if ((em->kind == 14 || em->kind == 26) && em->x388 == 4) {
         return;
     }
+#endif
     if (senko_cnt == 0) {
         return;
     }
@@ -2179,15 +2192,25 @@ void em20_local_area_move_init(EMW *);
 void em21_local_area_move_init(EMW *);
 void em27_local_area_move_init(EMW *);
 
+#ifdef VERSION_MHG
+/* G (game 0x547300): the subspecies join their originals' groups: em01 +37 / 41 / 42 / 49, em07 +50, em14 +43 / 44, em15 +45,
+ * em17 +47 / 48, em20 +38 / 39, em21 +46 (MH1's switch below only knows kinds up to 34) */
+#define G_AM(...) __VA_ARGS__
+#else
+#define G_AM(...)
+#endif
+
 void em_area_move_init(EMW *em) {
     em->x928 = -1;
     em->x929 = -1;
     switch (em->kind) {
     case 1:
     case 11:
+    G_AM(case 37: case 41: case 42: case 49:)
         em01_local_area_move_init(em);
         break;
     case 7:
+    G_AM(case 50:)
         em07_local_area_move_init(em);
         break;
     case 8:
@@ -2196,20 +2219,25 @@ void em_area_move_init(EMW *em) {
         break;
     case 14:
     case 26:
+    G_AM(case 43: case 44:)
         em14_local_area_move_init(em);
         break;
     case 15:
+    G_AM(case 45:)
         em15_local_area_move_init(em);
         break;
     case 17:
     case 22:
+    G_AM(case 47: case 48:)
         em17_local_area_move_init(em);
         break;
     case 6:
     case 20:
+    G_AM(case 38: case 39:)
         em20_local_area_move_init(em);
         break;
     case 21:
+    G_AM(case 46:)
         em21_local_area_move_init(em);
         break;
     case 27:

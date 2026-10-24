@@ -161,7 +161,11 @@ int Em_Yobi_Ck(EMW *em, EM_YOBI *self) {
         }
         switch (y->type) {
         case 0:
+#ifdef VERSION_MHG
+            if (em->kind != 16 && em->kind != 35 && em->kind != 27) {      /* G game 0x548890: kind 35 (a Velociprey subspecies) answers the call too */
+#else
             if (em->kind != 16 && em->kind != 27) {
+#endif
                 continue;
             }
             break;
@@ -412,6 +416,9 @@ void em_boss_work_set(EMW *em) {
     case 16:
     case 13:
     case 30:
+#ifdef VERSION_MHG
+    case 35:        /* G: the Velociprey subspecies follows the Velocidrome too */
+#endif
         for (i = 0; i < 20; i++, e++) {
             if (e->kind == 27 && e->be_flag != 0) {
                 em->boss = e;
@@ -1033,7 +1040,11 @@ int Bdora_hp_ck(void) {
     s8 i;
 
     for (i = 0; i < 20; i++, e++) {
+#ifdef VERSION_MHG
+        if (e->be_flag != 0 && (e->kind == 7 || e->kind == 50)) {      /* G: kind 50 counts as 7 */
+#else
         if (e->be_flag != 0 && e->kind == 7) {
+#endif
             if (e->x302 <= e->x792 / 2) {
                 return 1;
             }

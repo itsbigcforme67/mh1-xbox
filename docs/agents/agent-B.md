@@ -1484,3 +1484,21 @@ Owner's request: one picture of the PS2, Xbox and PC hunters together in the sam
   build/B/eng_mh1/); text_map: hand-checked G pairs also fill / correct MH1 strings with the same Japanese (181 / 12:
   the shop's 売る said "Buy"), MH1 status rows fixed, select-overlay and gallery hand pairs, 'keeptail' (quest card page
   row), G quest card hand pairs. Ranked list: docs/english.md section 8. full_check 21 Oct: all ok (emulator tests skipped).
+
+## G gaps GN8 / GN12 / GM4 / GM5 (23 Oct 2026)
+- Method: tools/mhg_fdiff.py MODULE FUNC -a prints MH1's and G's function side by side with symbol names; a G string read
+  through a pointer cell (`lui at,0x52 ; lw a0,off(at)`) is found by reading the cell with a dump of build/mhg/split/*.bin
+  (sub_main vram 0x4A0C80, main 0x100000, game 0x542600) and giving the MH1 name the string's address with a `+` line in
+  config/mhg/pc_names.txt.
+- GM4 / GN12 lit_2331: lit_2331 and lit_3181 are both "%s：" (G merged them, sub_main 0x538958); lit_3440 / lit_3441 are the
+  NPC box's yes/no lines (0x537F40 / 0x538D30). Not ported: G's Disp_NPC_message also scales the font by a chat option.
+- GN12 pf_chat_cnfg / pfl_menu_data: no data to import, G removed them. G's Pit_disp_data uses one frame list
+  (pf_item_box_base + 0x10); G's chat settings are the preset list only (Menu_chatcnfg_i sets x7F, Menu_chatcnfg_mv jumps to
+  menu_chcnfg_reibun, x12 = 0). VERSION_MHG code in menu_nm.c / menu_disp_nm.c; menu12/37/38.c are in tools/pc_g_exclude.txt.
+  Checked: PC G build links; tools/g_eng_tour.py data_page (new scene) shows the pause menu's Reference row and the Monster List
+  page. The chat settings are reachable only online (Online_ck), so that page is [build only, not seen].
+- GM5: G dropped the depth-sorted sprite path (sort_sub, trans_sprite_sort, the softdip 0xAB check); trans2.c skips it
+  under VERSION_MHG. The tables were only working storage.
+- GN8: faithful. G's set19 position tables for stages 67 / 73 / 75 are bss beyond game.bin (0x6E05E0..), nothing writes them
+  (FINDS.md, agent A's PCSX2 read). Nothing to import.
+- MH1: none of these faults exists in MH1 (real data, sort path real).

@@ -1320,6 +1320,25 @@ void Item_box_get_item(s16 id, u8 slot) {
     lpPit->x63 = d;
 }
 
+#ifdef VERSION_MHG
+/* G (main 0x11D5A0 / 0x11D610): no page row any more; the chat settings are the preset list (menu_chcnfg_reibun) alone */
+int Menu_chatcnfg_i(void) {
+    if (Online_ck() == 0) {
+        return -1;
+    }
+    lpPit->x7F = 0;
+    lpPit->x7E = 0;
+    PitMenu.x10 = 1;
+    PitMenu.x11 = 3;
+    PitMenu.x12 = 0;
+    PitMenu.x1B = 0;
+    return 0;
+}
+
+u16 Menu_chatcnfg_mv(int sw) {
+    return menu_chcnfg_reibun(sw);
+}
+#else
 int Menu_chatcnfg_i(void) {
     if (Online_ck() == 0) {
         return -1;
@@ -1332,6 +1351,7 @@ int Menu_chatcnfg_i(void) {
     PitMenu.x1B = 0;
     return 0;
 }
+#endif
 
 
 int menu_chcnfg_sendpl(int sw) {
@@ -1441,7 +1461,11 @@ int menu_chcnfg_reibun(int sw) {
         }
         a = r & 0xFFFF;
         if (!(a & 0x40)) {
+#ifdef VERSION_MHG
+            PitMenu.x12 = 0;
+#else
             PitMenu.x12 = 3;
+#endif
             PitMenu.x1B = Reibun_select_mv(sw, PitMenu.x1B);
             if ((a & 0x20) && Reibun_Edit_Start(PitMenu.x1B) == 1) {
                 lpPit->x7F++;

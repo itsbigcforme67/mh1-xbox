@@ -80,7 +80,11 @@ asm void em20_local_area_move_init(EMW *em)
 #else
 void em20_local_area_move_init(EMW *em) {
     em->stay_tm = em20_stay_timer_tbl[em->stg];
+#if defined(VERSION_MHG) && !defined(__MWERKS__)
+    if (em->kind == 6 || em->kind == 38) {      /* G: the subspecies 38 too */
+#else
     if (em->kind == 6) {
+#endif
         em->runaway_tm = em06_runaway_timer_tbl[em->stg];
     } else {
         em->runaway_tm = em20_runaway_timer_tbl[em->stg];

@@ -113,12 +113,22 @@ int em14_suna_ck(EMW *em) {
 int em14_sasari_ck(EMW *em) {
     EM14_SASW *w = (EM14_SASW *)em->ex;
 
+#if defined(VERSION_MHG) && !defined(__MWERKS__)
+    /* G (game 0x5EE0A0): the subspecies 43 / 44 count as 14 / 26 */
+    if ((em->kind == 14 || em->kind == 43) && w->x1A >= 2) {
+        return 0;
+    }
+    if ((em->kind == 26 || em->kind == 44) && w->x1A > 0) {
+        return 0;
+    }
+#else
     if (em->kind == 14 && w->x1A >= 2) {
         return 0;
     }
     if (em->kind == 26 && w->x1A > 0) {
         return 0;
     }
+#endif
     if (em_frame_check2(em, 0, 60.0f) && (em->x74C & 0xC0000003) && em->x95D) {
         return 1;
     }

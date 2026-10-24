@@ -1599,6 +1599,36 @@ void disp_pachinger(void) {
 
 
 /* 0x131FB0 */
+#ifdef VERSION_MHG
+/* G (main 0x124A30): the pause menu's chat settings are only the list of six preset lines (the page row with
+ * pf_chat_cnfg and the send-to-player page are gone; G's Menu_chatcnfg_i / _mv go straight to menu_chcnfg_reibun).
+ * G cuts each phrase at 20 bytes (its own Reibun_print); the MH1 one cuts at 10 characters, the same for text
+ * made of two-byte characters. Not byte-checked. */
+void Pit_disp_chat_cnfg(void) {
+    char buf[64];   /* PC: room for the longest game format string (the PS2 frame is smaller) */
+    u32 i;
+    int y;
+    u8 *e;
+    s8 k;
+
+    k = PitMenu.x1B;
+    sprintf(buf, (char *)lit_4493_0035A620, k / 6 + 1);
+    DispFrameList(pf_chcnfg_reibun, buf, k % 6);
+    DispFrameListOptionArrow(pf_chcnfg_reibun);
+    flfntSetSize(0x12, 0x12);
+    font_set_palette(0);
+    i = 6;
+    e = str_tbl_reibun0 + (PitMenu.x1B / 6) * 0x60;
+    y = 0x54;
+    do {
+        flfntLocate(0x1AF, y);
+        Reibun_print(10, *(s32 *)(e + 0xC));
+        i--;
+        e += 0x10;
+        y = (s16)(y + 0x16);
+    } while (i != 0);
+}
+#else
 void Pit_disp_chat_cnfg(void) {
     char buf[64];   /* PC: room for the longest game format string (the PS2 frame is smaller) */
     u32 i;
@@ -1638,6 +1668,7 @@ void Pit_disp_chat_cnfg(void) {
         break;
     }
 }
+#endif
 
 /* 0x132160 */
 void lb_disp_chat_cnfg_sendpl(int sw, PIT_W *p) {
@@ -1727,7 +1758,7 @@ void lb_disp_chat_cnfg_sendpl(int sw, PIT_W *p) {
 }
 
 /* ===== wyvern ripple, data/option windows (0x132510-0x133A00) ===== */
-extern u8 pfl_menu_data[];
+extern u8 pfl_menu_data[], pf_item_box_base[];
 extern u8 pf_mix_list_base[], pf_monster_list_base[];
 extern u8 lit_4947[], lit_4948[], lit_4949[], lit_4985[], lit_4986[], lit_4987[], lit_5012[], lit_5054[];
 extern u8 mix_level_color[8];
@@ -1767,7 +1798,7 @@ void Pit_disp_data(void) {
     switch (lpPit->x42) {
     case 0:
         disp_menu(1, lpPit);
-        DispFrameList(pfl_menu_data + game_w.x1DC * 0x18, 0, lpPit->x43);
+        DispFrameList(pf_item_box_base + 0x10, 0, lpPit->x43);     /* G: one frame list (main 0x25E820), not the per-language pfl_menu_data */
         break;
     case 1:
         switch (lpPit->x43) {

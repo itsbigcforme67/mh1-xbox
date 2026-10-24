@@ -3760,6 +3760,13 @@ u8 *em_cmd_end_command(EMW *em, u8 *p) {
     case 0xFE:
         cmd_target_kind_set(em, tgt);
         d = CalcDistanceXZ(tgt, em->pos);
+#ifdef VERSION_MHG      /* G (game 0x58D330): the subspecies 36 / 50 of kinds 2 / 7 */
+        if (em->kind == 2 || em->kind == 0x24 || em->kind == 7 || em->kind == 0x32) {
+            lim = 1000.0f;
+        } else {
+            lim = 500.0f;
+        }
+#else
         if (em->kind != 2) {
             if (em->kind == 7) {
                 lim = 1000.0f;
@@ -3769,6 +3776,7 @@ u8 *em_cmd_end_command(EMW *em, u8 *p) {
         } else {
             lim = 1000.0f;
         }
+#endif
         if (d <= lim) {
             em->x92A = em->x92A + 1;
             switch (em->x830) {

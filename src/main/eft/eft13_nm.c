@@ -64,6 +64,12 @@ void eft_trans_sub(CLAY *, FLMAT *, u16, f32, void *);
 void eft_trans_sub_col(CLAY *, FLMAT *, u32, u16, void *);
 void SetFilterMode(int);
 extern s16 eft13_water_flag[35];
+#ifdef VERSION_MHG
+/* G (Dual Swords demon mode, kinds 35 / 36): per-piece delay and lifetime tables; config/mhg/pc_data.txt */
+extern s16 eft13_k35_lag_g[6];
+extern s16 eft13_k35_time_g[6];
+extern s16 eft13_k36_lag_g[4];
+#endif
 extern s16 Eft_stg_type[];
 
 u8 Pl_stg_ck(void *);
@@ -211,6 +217,10 @@ void eft13_i(EFTW *ew) {
             case 23:
             case 24:
             case 25:
+#ifdef VERSION_MHG
+            case 38:
+            case 39:
+#endif
                 p->size = ew->scale;
                 p->rot = ran_suu(1);
                 p->drot = RAND_ROT(0.001f);
@@ -238,6 +248,9 @@ void eft13_i(EFTW *ew) {
                 break;
             case 16:
             case 31:
+#ifdef VERSION_MHG
+            case 37:
+#endif
                 p->time = -1;
                 p->size = ew->scale;
                 p->rot = 0;
@@ -283,6 +296,38 @@ void eft13_i(EFTW *ew) {
                 p->rot = ran_suu(1);
                 flvecCopy(p->pos, ew->pos);
                 break;
+#ifdef VERSION_MHG
+            case 35:        /* G: six pieces rising from the effect's place (game sub_main 0x4D1CC0) */
+                p->time = eft13_k35_lag_g[i];
+                p->size = ew->scale;
+                p->no = i;
+                flvecCopy(p->pos, ew->pos);
+                p->pos[1] += 30.0f;
+                switch (p->no) {
+                case 0:
+                case 5:
+                    p->rot = 0;
+                    p->drot = 0;
+                    break;
+                case 1:
+                    p->rot = ran_suu(1);
+                    p->drot = 0x1111;
+                    break;
+                default:
+                    p->rot = ran_suu(1);
+                    p->drot = 0xCCD;
+                    break;
+                }
+                break;
+            case 36:        /* G: two mirrored pairs turning with the effect */
+                p->time = eft13_k36_lag_g[i];
+                p->size = ew->scale;
+                p->no = i & 1;
+                flvecCopy(p->pos, ew->pos);
+                p->rot = ran_suu(1);
+                p->drot = p->no == 0 ? 1638 : -1637;
+                break;
+#endif
             }
             p->prim = get_prim_ptr(p->prim_no);
             p->prim->owner = ew;
@@ -322,6 +367,10 @@ void eft13_m(EFTW *ew) {
     case 23:
     case 24:
     case 25:
+#ifdef VERSION_MHG
+    case 38:
+    case 39:
+#endif
         dang = 0x3333;
         break;
     case 19:
@@ -353,6 +402,10 @@ void eft13_m(EFTW *ew) {
         case 23:
         case 24:
         case 25:
+#ifdef VERSION_MHG
+        case 38:
+        case 39:
+#endif
             idx = eft13_index[ew->arg];
         default:
             time = all;
@@ -373,6 +426,15 @@ void eft13_m(EFTW *ew) {
             idx = eft13_index[ew->arg];
             time = 14;
             break;
+#ifdef VERSION_MHG
+        case 35:
+            time = eft13_k35_time_g[i];
+            break;
+        case 36:
+            idx = eft13_index[ew->arg];
+            time = 10;
+            break;
+#endif
         }
         if (++p->time <= 0) {
             p++;
@@ -428,6 +490,12 @@ void eft13_m(EFTW *ew) {
         case 31:
         case 32:
         case 33:
+#ifdef VERSION_MHG
+        case 36:
+        case 37:
+        case 38:
+        case 39:
+#endif
             eft_vec_linear(p->time, eft13_data[idx + 1], p->pos);
             p->pos[0] *= ew->scale;
             p->pos[1] *= ew->scale;
@@ -475,6 +543,9 @@ void eft13_m(EFTW *ew) {
             case 22:
             case 28:
             case 31:
+#ifdef VERSION_MHG
+            case 37:
+#endif
                 p->rot += p->drot;
                 flvecCopy(v, p->pos);
                 flvecRotY(v, DEG2RAD(ANG2DEG(ew->u0A.joint)));
@@ -492,6 +563,10 @@ void eft13_m(EFTW *ew) {
             case 23:
             case 24:
             case 25:
+#ifdef VERSION_MHG
+            case 38:
+            case 39:
+#endif
                 p->rot += p->drot;
                 flvecCopy(v, p->pos);
                 flvecRotY(v, DEG2RAD(ANG2DEG(ew->u0A.joint + ang)));
@@ -534,6 +609,37 @@ void eft13_m(EFTW *ew) {
                 p->prim->pos[1] = p->pos[1];
                 p->prim->pos[2] = p->pos[2];
                 break;
+#ifdef VERSION_MHG
+            case 35:
+                p->rot += p->drot;
+                switch (p->no) {
+                case 0:
+                    if (p->time >= 3) p->pos[1] += 33.3f;
+                    break;
+                case 2:
+                    if (p->time >= 3) p->pos[1] += 25.0f;
+                    break;
+                case 3:
+                    if (p->time >= 3) p->pos[1] += 18.7f;
+                    break;
+                case 4:
+                    if (p->time >= 3) p->pos[1] += 12.5f;
+                    break;
+                }
+                flvecCopy(p->prim->pos, p->pos);
+                break;
+            case 36:
+                p->rot += p->drot;
+                flvecCopy(v, p->pos);
+                if (p->no != 0) {
+                    v[0] = -v[0];
+                }
+                flvecRotY(v, DEG2RAD(ANG2DEG(ew->u0A.joint)));
+                p->prim->pos[0] = v[0] + ew->pos[0];
+                p->prim->pos[1] = v[1] + ew->pos[1];
+                p->prim->pos[2] = v[2] + ew->pos[2];
+                break;
+#endif
             }
             add_prim(ot0, p->prim, 0x40, 0);
         }
@@ -542,6 +648,176 @@ void eft13_m(EFTW *ew) {
 }
 
 
+#ifdef VERSION_MHG
+/* G (sub_main 0x4D5320): the kind lists grew with the subspecies (kinds 35, 37-50); case 7 asks game 0x54A290 about the kind */
+static int eft13_g_kinds(int k)
+{
+    switch ((u8)k) {
+    case 6: case 8: case 0xF: case 0x14: case 0x16: case 0x26: case 0x27: case 0x2D: case 0x30:
+        return 1;
+    }
+    return 0;
+}
+
+void eft13_set_sub_em(EFT13_CHR *chr, s16 j, int arg, EFTW *ew) {
+    FLMAT m;
+
+    ew->type = 13;
+    ew->move = eft13_move;
+    ew->arg = arg;
+    ew->u0A.joint = chr->ang[1];
+    ew->owner = (EMW *)chr;
+    switch (ew->arg) {
+    case 0:
+        switch (chr->kind) {
+        case 12:
+        case 25:
+            ew->scale = 4.0f * chr->scale[0];
+            break;
+        case 18:
+            ew->scale = 0.5f * chr->scale[0];
+            break;
+        case 13:
+        case 16:
+        case 27:
+        case 28:
+        case 30:
+        case 31:
+        case 35:
+            ew->scale = 2.0f * chr->scale[0];
+            break;
+        }
+        break;
+    case 3:
+        switch (chr->kind) {
+        case 9:
+        case 23:
+            ew->scale = 2.0f * chr->scale[0];
+            break;
+        case 3:
+        case 12:
+        case 14:
+        case 15:
+        case 25:
+        case 26:
+        case 33:
+        case 43:
+        case 44:
+        case 45:
+            ew->scale = chr->scale[0];
+            break;
+        }
+        break;
+    case 6:
+        switch (chr->kind) {
+        case 1:
+        case 6:
+        case 11:
+        case 14:
+        case 15:
+        case 17:
+        case 20:
+        case 21:
+        case 26:
+        case 37:
+        case 38:
+        case 39:
+        case 41:
+        case 42:
+        case 43:
+        case 44:
+        case 45:
+        case 46:
+        case 47:
+        case 49:
+            ew->scale = 1.3f * chr->scale[0];
+            break;
+        case 12:
+        case 25:
+            ew->scale = 2.0f * chr->scale[0];
+            break;
+        case 18:
+            ew->scale = chr->scale[0];
+            break;
+        }
+        break;
+    case 7:
+        switch (chr->kind) {
+        case 4:
+        case 5:
+        case 12:
+        case 25:
+        case 32:
+            ew->scale = chr->scale[0];
+            break;
+        case 9:
+        case 23:
+            ew->scale = 0.5f * chr->scale[0];
+            break;
+        case 18:
+            if (j == 0) {
+                ew->scale = 2.0f * chr->scale[0];
+            } else {
+                ew->scale = 0.5f * chr->scale[0];
+            }
+            break;
+        case 1:
+        case 11:
+        case 14:
+        case 15:
+        case 17:
+        case 20:
+        case 22:
+        case 26:
+        case 37:
+        case 39:
+        case 41:
+        case 42:
+        case 43:
+        case 44:
+        case 45:
+        case 47:
+        case 48:
+        case 49:
+            ew->scale = chr->scale[0];
+            if (j == 2) {
+                func_628690(ew, eft13_g_kinds(chr->kind) ? 0x2F : 0xE);
+            }
+            break;
+        }
+        break;
+    case 19:
+        switch (chr->kind) {
+        case 14:
+        case 26:
+        case 43:
+        case 44:
+            ew->scale = chr->scale[0];
+            break;
+        case 7:
+        case 50:
+            func_62A2C0(ew, 0x50);
+            break;
+        }
+        /* fall through */
+    case 20:
+        if (chr->kind == 12 || chr->kind == 25) {
+            ew->scale = 5.0f * chr->scale[0];
+        }
+        break;
+    case 28:
+        if ((game_w.x1DC != 0 && chr->kind == 1) || (game_w.x1DC == 0 && chr->kind == 10)) {
+            flmatCopy(&m, get_joint_wmat_em(chr, j));
+            ew->u0A.joint = calc_mat_angY(&m) + 0x4000;
+        }
+        break;
+    case 30:
+        flmatCopy(&m, get_joint_wmat_em(chr, j));
+        ew->u0A.joint = calc_mat_angY(&m) - 0x4000;
+        break;
+    }
+}
+#else
 void eft13_set_sub_em(EFT13_CHR *chr, s16 j, int arg, EFTW *ew) {
     FLMAT m;
 
@@ -676,7 +952,150 @@ void eft13_set_sub_em(EFT13_CHR *chr, s16 j, int arg, EFTW *ew) {
         break;
     }
 }
+#endif
 
+#ifdef VERSION_MHG
+/* G (sub_main 0x4D59D0): the monster kind lists are gone, every kind not named takes the default (the subspecies need that) */
+s16 eft13_set_pos_em(f32 *pos, EFT13_CHR *chr, s16 j, int arg) {
+    FLMAT m;
+    f32 v[3];
+
+    switch ((s16)arg) {
+    case 0:
+        switch (chr->kind) {
+        case 12:
+        case 25:
+            get_joint_pos_em(chr, j, pos);
+            pos[1] = chr->x5AC;
+            ROT_ADD(pos, chr, 0.0f, 0.0f, -10.0f);
+            break;
+        case 18:
+            get_joint_pos_em(chr, j, pos);
+            pos[1] = chr->x5AC;
+            ROT_ADD(pos, chr, 0.0f, 0.0f, -20.0f);
+            break;
+        default:
+            get_joint_pos_em(chr, j, pos);
+            pos[1] = chr->x5AC;
+            break;
+        }
+        break;
+    case 3:
+        switch (chr->kind) {
+        case 4:
+        case 5:
+        case 32:
+            if (j == 0x11) {
+                get_joint_pos_em(chr, j, pos);
+                get_joint_pos_em(chr, 0xE, v);
+                AddVector(pos, pos, v);
+                ScaleVector(pos, pos, 0.5f);
+            } else {
+                get_joint_pos_em(chr, j, pos);
+            }
+            pos[1] = chr->x5AC;
+            break;
+        case 9:
+        case 23:
+            get_joint_pos_em(chr, j, pos);
+            pos[1] = chr->x5AC;
+            ROT_ADD(pos, chr, 0.02f * (((u16)ran_suu(1) & 0x3FF) - 0x200), 0.0f, 0.0f);
+            break;
+        default:
+            get_joint_pos_em(chr, j, pos);
+            pos[1] = chr->x5AC;
+            break;
+        }
+        break;
+    case 6:
+        if (chr->kind != 0x19 && chr->kind != 0xC) {
+            get_joint_pos_em(chr, j, pos);
+            pos[1] = chr->x5AC;
+        } else {
+            pos[0] = chr->pos[0];
+            pos[1] = chr->x5AC;
+            pos[2] = chr->pos[2];
+        }
+        break;
+    case 7:
+        switch (chr->kind) {
+        case 9:
+        case 23:
+            get_joint_pos_em(chr, j, pos);
+            break;
+        case 17:
+        case 22:
+        case 47:
+        case 48:
+            flmatCopy(&m, get_joint_wmat_em(chr, j));
+            v[1] = 0.0f;
+            v[0] = 100.0f;
+            v[2] = 0.0f;
+            flvecApplyMat33_2(v, &m);
+            get_joint_pos_em(chr, j, pos);
+            pos[1] = chr->x5AC;
+            pos[0] += v[0];
+            pos[2] += v[2];
+            break;
+        default:
+            get_joint_pos_em(chr, j, pos);
+            pos[1] = chr->x5AC;
+            break;
+        }
+        break;
+    case 19:
+        get_joint_pos_em(chr, j, pos);
+        pos[1] = chr->x5AC;
+        break;
+    case 20:
+        if (chr->kind != 0x19 && chr->kind != 0xC) {
+            get_joint_pos_em(chr, j, pos);
+            pos[1] = chr->x5AC;
+        } else {
+            get_joint_pos_em(chr, j, pos);
+            pos[1] = chr->x5AC;
+            ROT_ADD(pos, chr, 0.0f, 0.0f, -10.0f);
+        }
+        break;
+    case 28:
+        if ((game_w.x1DC != 0 && chr->kind == 1) || (game_w.x1DC == 0 && chr->kind == 10)) {
+            flmatCopy(&m, get_joint_wmat_em(chr, j));
+            v[0] = 0.0f;
+            v[1] = 0.0f;
+            v[2] = 15.0f;
+            flvecApplyMat33_2(v, &m);
+            flmatGetTrans(pos, &m);
+            pos[0] += v[0];
+            pos[1] += v[1];
+            pos[2] += v[2];
+        }
+        break;
+    case 30:
+        flmatCopy(&m, get_joint_wmat_em(chr, j));
+        v[0] = 0.0f;
+        v[1] = -14.0f;
+        v[2] = 45.0f;
+        flvecApplyMat33_2(v, &m);
+        flmatGetTrans(pos, &m);
+        pos[0] += v[0];
+        pos[1] += v[1];
+        pos[2] += v[2];
+        break;
+    case 32:
+        flmatCopy(&m, get_joint_wmat_em(chr, j));
+        v[1] = 0.0f;
+        v[0] = 58.2f;
+        v[2] = -474.0f;
+        flvecApplyMat33_2(v, &m);
+        flmatGetTrans(pos, &m);
+        pos[0] += v[0];
+        pos[1] = chr->x5AC;
+        pos[2] += v[2];
+        break;
+    }
+    return eft13_water_ck(chr, pos, arg);
+}
+#else
 s16 eft13_set_pos_em(f32 *pos, EFT13_CHR *chr, s16 j, int arg) {
     FLMAT m;
     f32 v[3];
@@ -876,3 +1295,4 @@ s16 eft13_set_pos_em(f32 *pos, EFT13_CHR *chr, s16 j, int arg) {
     }
     return eft13_water_ck(chr, pos, arg);
 }
+#endif

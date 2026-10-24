@@ -57,11 +57,11 @@ nv2a, loader, hardware), **platform** (src/pc host code, packaging), **owner** (
 
 | GN6 (FIXED 15 Oct, agent A) | Diablos/Monoblos (em14) and Gravios/Basarios (em17) chose their moves with MH1's code (G's to_normal is a jump to a 25-instruction act_dist_select; MH1's paths read em14_act_add / em17_act_add, zero on the G PC) | em14_nm.c, em17_nm.c | done: G's to_normal / act_dist_select / em_act01 / em17_to_fly, and G's em14_main / em17_main reactions (case 11 guards, subspecies 43/47/48 part breaks, quest 10041/10043 demo stops). The zero tables are no longer read. Same pass: em08_main (Plesioth) is G's | quest | [verified: hidden hunts quests 14, 26, 13 (150 s each, no damage aid): 105 / 52 / 99 act changes, every act ends through em_cmd_ck] |
 | GN7 | Equipment detail windows (shop, box, pause menu): attack 0, mis-sized sharpness bar, no skill / ammo pages, zero element names | main equip_exp_core (G 4.7 KB) and its unit (G main 0x2246E0-0x226C20) | **done on the PC** (agent C, 15 Oct 2026, src/main/menu/equip_g.c): attack with G's percentage table, sharpness bar of 6 bands + skill bonus, element / defence bonus, ammo pages of guns, skill pages of armour, description pages, compare windows, the pause menu's equipment page; open: the village's "preview" of a piece you do not wear uses G's gskill_preview on a scratch PLW [shot: armour compare, 3 pages] | village / main | [verified: hidden shots build/C/g/equip_*.png]; REVIEW "G main lane round 2" Checked in the weapon shop by agent D (square key, hidden run): attack 460 / 288, 6-band sharpness bars, element line (build/D/g/det_ws_230.png). |
-| GN8 | Stage set pieces of set19 on stages 67 and 73/75 placed from zero tables (objects at the origin or missing); G edited set19_i / set19_trans | src/game/set/set19*.c, set19_s67_pos_tbl, set19_s73_s75_pos_tbl | open | stage (B/D) | [verified: reached, zero]; what it looks like [inferred] |
+| GN8 | Stage set pieces of set19 on stages 67 and 73/75 placed from zero tables (objects at the origin or missing); G edited set19_i / set19_trans | src/game/set/set19*.c, set19_s67_pos_tbl, set19_s73_s75_pos_tbl | **explained 23 Oct (agent B): faithful, nothing to import.** G's tables sit at game 0x6E05E0.. past the end of the overlay file (bss) and no G code writes them; set19_i / set19_trans are G's | stage (B/D) | [verified: G asm addresses beyond game.bin, PCSX2 read in FINDS.md] |
 | GN9 | Elder's talk: "契約金として z が必要" — the fee number is missing from the sentence | G talk text formatting (village) | FIXED 15 Oct (agent D): lb_guild_talk (lb_guild_g.c) filled the `$` with a sprintf whose format came from a made-up address (printed nothing); now Lb_num_to_str(guildPrice, p) as G (lobby 0x5935A0), the same call that draws the fee on the quest sheet. Not pictured: the test hunter's first quests cost 0z, so the sentence with a fee did not come up in a hidden run | village / text | [verified: G asm]; the picture [unverified] |
 | GN10 | Name entry: G's soft keyboard draws its key grid only partly (G field offsets done, not byte-exact); kana -> kanji (apiask_28_OpenDic) is a stand-in | sk_nm.c, rt_gen.c | partly | main | [docs], stand-in [verified] |
 | GN11 (FIXED 15 Oct, agent A) | Movie / gallery unlocks: MH1's movie_add_ck ran (missing in G) with a zero movie_add_tbl: nothing was unlocked; the "movie added" screen text was zero (lit_676) | src/main/reward/f_reward_g.c | done with GN17: G's ecology movies by cleared quest (sub_main 0x4F42A0, table 0x525FC0) and the gallery titles by event flag (0x4F41B0, rows of 0x526000) set G's Omake flags and show G's "added to the GALLERY" screens | quest | [verified: hidden runs, quests 10043 (Gravios ecology) and 10015 (title "密林の大怪鳥"), shots build/A/gn17/] |
-| GN12 | Pause menu: the chat-config page (pf_chat_cnfg) and the data page frame list (pfl_menu_data) are zero; quest_condition_print's lit_2331 zero | menu_disp_nm.c | open | main | [verified: reached, zero] |
+| GN12 | Pause menu: the chat-config page (pf_chat_cnfg) and the data page frame list (pfl_menu_data) are zero; quest_condition_print's lit_2331 zero | menu_disp_nm.c | **FIXED 23 Oct (agent B)**: not missing data, G dropped them. G's data page draws one frame list (main 0x25E820, pf_item_box_base+0x10); G's chat settings are the preset list only (Menu_chatcnfg_i/_mv, Pit_disp_chat_cnfg, menu_chcnfg_reibun ported, VERSION_MHG); lit_2331 = "%s：" at sub_main 0x538958 (pc_names.txt) | main | [verified: G asm; PC G build, see agent-B.md] |
 | GN13 (explained 15 Oct, agent A) | Quest-score title on the result screens shows nothing after "クエストスコア :" | G's gold_disp / point screen (sub_main 0x4F5D40 / 0x4F6DF0) | G prints the hunter's name there (User_data+8 offline, my_user_handle online); the test hunters of tools/test_all_quests.py have no name. Now G's own screen code (f_reward_g.c) | quest | [verified: G asm]; the empty name in test saves [inferred] |
 | GN14 | Xbox: G frame rate and memory on hardware unknown (xemu only); rt_meta.c costs 1.5 MB of .rdata on G | docs/xbox.md "Monster Hunter G on the Xbox" | owner test | Xbox + owner | [docs] |
 | GN15 (FIXED 15 Oct, agent A) | Sound: G's em04 sound script ran MH1's (stand-in sub_main_func_004ECD00); G's Eft13 dust | em04_nm.c, rt_quest.c | done: G's script differs only by kind 32's sound in motion 0x3F7; the dust script (0x4EDAA0) runs in G only while overlay 2 is in slot 2 (gallery event scenes), so no dust in quests, as on the PS2. No stand-in left | quest | [verified: G asm (0x4ECD00 decoded call by call), build]; sound by ear not checked |
@@ -75,8 +75,8 @@ nv2a, loader, hardware), **platform** (src/pc host code, packaging), **owner** (
 | GM1 | Kind 40 (unused monster) not ported; no quest on the disc uses it | game 0x647060.. | deliberate | quest | [docs] |
 | GM2 (mostly done 15 Oct, agent A) | em07_init's G calls, point_cam_sub case 25, G result_prog's other changes, poison knife ailment value | em*_init, emsrch*.c, cam_nm.c, f_reward.c | done: the G part-durability level bonus (em01/07/08/14/15/17/20/21 inits mark parts, em_dur_init / em_dur_set add base x (0.33 + 0.08 x (lv-9)/3) at level 9+: offline quests are level 2-7, so it shows after revivals and online); point_cam_sub 25 (demo eye kept out of walls); poison knife = G attack entry poison 50 per hit through dm_value_add, plus G's poison_stock_set (no build-up while poisoned). G's result module done (GN17); knife hit [verified 15 Oct: hidden run, pinned Rathian, one poison knife: hp 5500 -> 5496, stock +50 of tolerance 200, decays 10 a step] | quest | [verified: durability bits in RT_EM_TRACE, knife entry read from G's tables]; knife hit seen (build/A/knife) |
 | GM3 | Stage_Hate_Add (missing in G) runs with a zero stage_hate_add_tbl: adds nothing, as G (which removed it) | em_core_nm | harmless [inferred] | quest | [verified: reached] |
-| GM4 | Chat log name (lit_3181) and two NPC message strings (lit_3440/3441) zero | chat, rt_real_Disp_NPC_message | open | main / village | [verified: reached] |
-| GM5 | Sprite sort tables (sort_no, spr_sort_flag, spr_sort_num) zero: draw order of some 2D sprites | trans_sprite_sort | open, maybe host-owned | platform | [verified: reached] |
+| GM4 | Chat log name (lit_3181) and two NPC message strings (lit_3440/3441) zero | chat, rt_real_Disp_NPC_message | **FIXED 23 Oct (agent B)**: lit_3181 = "%s：" (0x538958), lit_3440/3441 = the yes/no lines (0x537F40 / 0x538D30), in pc_names.txt. Not ported: G's chat font-size option in Disp_NPC_message | main / village | [verified: G asm, cells 0x2EC62C, 0x527C64/68] |
+| GM5 | Sprite sort tables (sort_no, spr_sort_flag, spr_sort_num) zero: draw order of some 2D sprites | trans_sprite_sort | **explained 23 Oct (agent B)**: G has no sorted sprite path (sort_sub / trans_sprite_sort missing, trans_sprite at main 0x12A180 has no softdip 0xAB check); trans2.c skips it for G. The tables were only working storage | platform | [verified: G asm] |
 | GM6 | Event 0 / story talk choices of agent D (Event_flag_set(0) guess, story mode numbering) | REVIEW "G village round 2" | owner review | owner | [docs] |
 | GM7 | The 'checking memory card' screen after START stays until a button is pressed in a scripted run (may be faithful) | title -> game menu | unverified vs PS2 | main | [verified: shots], faithfulness [unverified] |
 
@@ -672,3 +672,57 @@ checked by hand; "real" = G's asm differs in behaviour, not only in registers / 
   (0xC7F, 0xD00-0xD08 = -1, 0xC95, 0x1C, 0xC23, 0xD0A); the last-chosen-slot byte is option_w+0x2C50 in G (MH1's
   0xFCE lay inside G's slot 1). test_save_g.sh passes; a G new-game run was not done.
 - **Supply box cursor**: not reproduced; a scripted run did not get the camp box (stage 21, 9500,9500) to open.
+
+## 15. GB6, eighth pass (agent D, 23 Oct 2026)
+Method: docs/survey/mhg_cov_g.txt (945 entries of 15 Oct) re-read against today's code with tools/cov_report_g.py's own marker test (a copy
+that takes the names from the old list): 833 still show no G marker. That count is an over-estimate, as the village pass already found
+(section 7's note): the marker test misses UDO / IBO / UD_WARE_N / list: tables, the map pairs some functions by position (Get_atk_value
+is G's Get_equip_value, already ported), and a function can be partly G (shell08_i had G's attack-data lines only). Ranked by how often a
+hunt or the village reaches it x how different (low `sim` first), then each candidate read with tools/gdraft.py (m2c of G's asm) against the PC C
+or tools/draft.py of MH1's asm, odd places read in the asm. All new code is `VERSION_MHG` (matched files also `!__MWERKS__` where G's PS2
+build compiles them), the MH1 branch kept in `#else`; MH1's own C is unchanged, so the MH1 PC and PS2 builds are the same as before.
+
+**Ported**
+- **shell08 (fireballs and beams: Rathian, Rathalos, Gravios, Basarios, Lao-Shan Lung...), section 13's biggest "left" item.** shell08_m, _i, _trans
+  were MH1's code (agent A had only imported the per-type tables). Now G's: types **12** (a shot falling from 5000 above the monster at one of
+  24 start offsets, table 0x6C6130, a sound as it comes down through 3000, impact kind 0 only, no fade) and **13** (the 2 / 3 shot at double scale,
+  effect scale 2); G's per-type time-limit and index-step tables (0x6C5D20 / 0x6C5D80; MH1 had them as constants per case, type 5's step was
+  uninitialised); type 7's streaks update every tick (G's time limit 0); **type 4 (the Gravios / Basarios beam): the length of state 2 is the
+  shell's x06** (G's em17 passes 20 / 45 ticks; MH1's fixed 17), the shot lives x06 + 31 ticks at most, the states change in place (G) instead of
+  one tick later through a flag; shell08_trans: types 12 / 13, type 5 drawn with rview_matY. [verified: hidden hunts of quests 26 and 10043 pass;
+  the beam's trace (RT_ temp trace, removed) shows states 0 / 1 / 2 / 3 lasting 12 / 8 / x06+1 / 10 (cut by the 76-tick limit) ticks; a temporary
+  forced spawn of types 12 and 13 ran without a crash, type 12 falls 5173 -> 823 in 30 ticks. Types 12 / 13 / 7 / 9 were not seen in an unforced hunt.]
+  config/mhg/pc_data.txt: shell08_time_g, shell08_step_g, shell08_type12_ofs_g.
+- **eft13 kinds 35-39 = the Dual Swords' effects** (Eft13_set_scl in pl_snd01.c). eft13_i / eft13_m only knew MH1's 35 kinds, so the pieces were
+  created without positions (the draw code, eft13_t, was G's since round 11). Now G's init / move for 35 (six pieces rising from the hunter,
+  tables 0x504B58 / 0x504B68), 36 (two mirrored pairs, 0x2EC310), 37 / 38 / 39 in the existing groups, eft13_set_pos cases 35-39 (and case 6 of
+  21). [verified: hidden Dual Swords hunt (quest 10, test_all_quests_g DUAL=1), shot at 3.0 s: the red ring of demon mode appears around the
+  hunter, absent in the same run with the old code (build/D/e13/before_3.0.png / after_3.0.png); kinds 36-39 were not reached by the scripted attacks.]
+- **eft13_set_pos_em / eft13_set_sub_em as G**: G dropped the monster kind lists (every kind not named takes the joint + ground position; MH1's
+  code set nothing for kinds it did not list, so the subspecies' dust / smoke puffs had no position) and lengthened the others to kinds 35, 37-50;
+  case 19 no longer falls into 20; case 7 asks game 0x54A290's kind list for shell01_set2 argument 0x2F. [asm + m2c diff; not watched on a subspecies]
+- **Lb_get_armor_num** (armor shop's owned count): the loop runs over the box's 100 / 200 / 300 pieces, was 64. [asm read]
+
+- **G's subspecies in the PC's monster checks** (the PC's C is MH1's, whose kind lists end at 34; G's kinds 35-50 are the subspecies: 36 = 2, 37 / 41 / 42 / 49 = 1 / 11,
+  38 = 6, 39 = 20, 43 / 44 = 14 / 26, 45 = 15, 46 = 21, 47 / 48 = 17 / 22, 50 = 7). Found by diffing every kind constant 35-50 in G's m2c drafts of the
+  list's functions against the PC's bodies (a scan, then each hit read): **em_area_move_init** (the stay / run-away timers of the area change were never
+  set for kinds 37-50: the subspecies' area changes ran on zero timers), em20_local_area_move_init (38 uses 6's run-away table), **senko_ck** (the flash
+  bomb: G's list of monsters it does not blind has 36, 39, 45, 46, 50, not 34; 43 / 44 follow 14 / 26), **eft15_m** (the muzzle burst's joint by kind and
+  animation: the subspecies take their originals' lists; kinds 15 / 45 also fire on animation 0x41E at frame 78), Em_Yobi_Ck / em_boss_work_set
+  (kind 35 joins the Velociprey pack and its leader), Bdora_hp_ck, enemy_mv (draw flag), em_cmd_end_command's 0xFE distance, basic_com_ck's mounting
+  check and em_ride_sub (50 rides like 7), station_em_set (36), eft17_i00 / eft17_t00 (36 draws as 2), em14_sasari_ck and em_dmg07 (43 / 44), em20 (38 acts as
+  6, 39 as 20 in dmg_to_normal, fly_act_set, the two sleep acts; attack 26: 38 fires type 3, 39 type 2 with x07 1). [asm / m2c read per place; quests 4 5 10 17 26 31 33
+  10036 10043 and the Dual Swords hunt pass hidden; no subspecies hunt was watched.] False hits of the scan (macros, e.g. em_cmd_flag_set's EM_KIND_7, em17_nm's
+  act 14, em01_to_normal's dead branch, em03's stage numbers) were dropped.
+
+**Looked at, nothing to port (or not for the player)**
+- The ud functions of the list (Warehouse_*, Get_equip_bit, Equip_ok_ck, Ud_u_item_stack, Get_atk_value): already G through UD_WARE_N / EQ_ARMOR's row size /
+  Get_equip_value; Ud_u_item_stack's item-book bit is read by nothing. em27_init: hit points go through G's tables (em_hp_vital_set), the stay /
+  runaway timers through the list: tables; only G's char-set helper (0x549FE0) differs. Eft04_set_time: G clamps the time by the owner's act speed (the
+  callers already divide) [inferred negligible]. eft16 (hit blood / sparks): G drops the neck types and adds a type 15; no PC caller passes 15.
+  Lb_pl_move / lb_pl_move_sub / Lb_Pl_stg_ck / eft13_se_req: online-only differences (the master byte, lbCommer). Lb_make_quest_tbl (online table: agent C's lane).
+  Item_preparation_list_num (the combine list's count in the pause menu): G has no twin, arrow only. Layout-only: Get_equip_bit, Equip_ok_ck (armour row size).
+- **Not looked at in detail** (still the top of the remaining list, by size): eft02_t / Eft02_set3, eft04_i / eft04_m (G 524 / 814 instructions
+  vs 407 / 716), eft15_m, eft16_m (G drops the neck spray), set14_m / set14_trans, em02 (Fatalis) atk / fly, em14_main, em03_init / main, em16_init2.
+
+**Checks** (23 Oct 2026): `tools/rebuild.sh` 5 OK, `VERSION=mhg tools/rebuild.sh` 7 OK, tools/test_all_quests_g.sh, tools/full_check.sh: see the result lines in docs/agents/agent-D.md "GB6 eighth pass".

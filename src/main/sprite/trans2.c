@@ -5,9 +5,11 @@
 
 extern u8 *sprite_area;
 extern s16 spr_list_no;
+#ifndef VERSION_MHG
 extern u8 sort_no[0x100];
 extern u8 spr_sort_num;
 extern u8 spr_sort_flag;
+#endif
 extern u32 mem_tex[];
 extern u8 view_mat[];
 
@@ -37,10 +39,12 @@ void trans_sprite(void) {
 
     set_viewproj(0);
     flmatrStore(0x21, view_mat);
+#ifndef VERSION_MHG     /* G (main 0x12A180) has no depth-sorted path (softdip 0xAB): sort_sub / trans_sprite_sort are gone */
     if (softdip_ck(0xAB) != 0) {
         trans_sprite_sort();
         return;
     }
+#endif
     flmatInit(m);
     flSetRenderState(0x1A, (int)m);
     flSetRenderState(0x60, 0);
@@ -53,7 +57,7 @@ void trans_sprite(void) {
 #endif
 
 /* Inserts sprite idx (depth z) into the sort_no order. */
-#if !defined(G_PART)
+#if !defined(G_PART) && !defined(VERSION_MHG)
 static void sort_sub(f32 z, int idx) {
     int i;
     int n;
@@ -81,7 +85,7 @@ static void sort_sub(f32 z, int idx) {
 }
 #endif
 
-#if !defined(G_PART)
+#if !defined(G_PART) && !defined(VERSION_MHG)
 void trans_sprite_sort(void) {
     u8 m[64];
     u8 *spr;

@@ -66,6 +66,11 @@ extern f32 shell08_rate_tbl[][3];
 extern f32 shell08_rate_g_tbl[][3];
 extern s32 shell08_body_tbl[];
 extern s16 shell08_num[];
+#ifdef VERSION_MHG
+/* G tables (game 0x6C5D20 / 0x6C5D80): per-type particle time limit and index step; config/mhg/pc_data.txt */
+extern s16 shell08_time_g[];
+extern s16 shell08_step_g[];
+#endif
 extern s16 shell08_type8_thunder_num[];
 extern s16 rotx_em01[3];
 extern s16 roty_em01[3];
@@ -103,6 +108,10 @@ void shell08_m(SHLW *sh) {
     all = shell08_all_time[sh->arg];
     idx = shell08_index[sh->arg];
     flag = 0;
+#ifdef VERSION_MHG
+    t = shell08_time_g[sh->arg];
+    step = shell08_step_g[sh->arg];
+#endif
     /* The original leaves f20 (the ground height) unset on frames > 33 of type 0/11 and
      * still places the glow at 10 + f20: stale register garbage. Keep the glow on the shot. */
     y = sh->pos2.y - 10.0f;
@@ -113,6 +122,9 @@ void shell08_m(SHLW *sh) {
     case 0:
     case 6:
     case 11:
+#ifdef VERSION_MHG
+    case 12:
+#endif
         step = 1;
         sh->pos0.x = sh->pos2.x;
         sh->pos0.y = sh->pos2.y;
@@ -174,6 +186,9 @@ void shell08_m(SHLW *sh) {
     case 2:
     case 3:
     case 9:
+#ifdef VERSION_MHG
+    case 13:
+#endif
         step = 1;
         t = 10;
         sh->pos0.x = sh->pos2.x;
@@ -181,6 +196,95 @@ void shell08_m(SHLW *sh) {
         sh->pos0.z = sh->pos2.z;
         break;
     case 4:
+#ifdef VERSION_MHG
+        /* G (game 0x660E00): the states change in place, not one tick later through x36. State 2 lasts the shell's x06
+         * (shell08_i keeps it in w->x36); the shot lives x06 + 31 ticks at most. */
+        all = w->x36 + 31;
+        switch (sh->x05) {
+        case 0:
+            t = 11;
+            if (++w->x2E >= 12) {
+                sh->x05++;
+                if (sh->stg == game_w.stage) {
+                    Eft17_set_pos_ang(&sh->pos0.x, 7, ((EMW *)sh->owner)->kind, sh->ang[1], 0.3f);
+                }
+                w->x2E = 0;
+                t = 7;
+                for (i = 0; i < num; i++) {
+                    p[i].x02 = 0;
+                    switch (p[i].no) {
+                    case 0:
+                        p[i].x14 = 0;
+                        p[i].x1A = 0;
+                        break;
+                    case 1:
+                    case 2:
+                        p[i].x14 = 0;
+                        p[i].x1A = 0x1000;
+                        break;
+                    }
+                }
+            }
+            break;
+        case 1:
+            t = 7;
+            if (++w->x2E >= 8) {
+                sh->x05++;
+                w->x2E = 0;
+                t = w->x36;
+                for (i = 0; i < num; i++) {
+                    p[i].x02 = 0;
+                }
+            }
+            break;
+        case 2:
+            t = w->x36;
+            if (t < ++w->x2E) {
+                t = 13;
+                sh->x05++;
+                w->x2E = 0;
+                for (i = 0; i < num; i++) {
+                    p[i].x02 = 0;
+                }
+                sh->xB = 0;
+                if (sh->stg == game_w.stage) {
+                    Eft17_set_pos_ang(&sh->pos0.x, 6, ((EMW *)sh->owner)->kind, sh->ang[1], 1.0f);
+                }
+            }
+            break;
+        case 3:
+            t = 13;
+            if (++w->x2E >= 14) {
+                sh->x61 = 0;
+                sh->mode++;
+                return;
+            }
+            break;
+        default:
+            sh->x61 = 0;
+            sh->mode++;
+            return;
+        }
+        switch (sh->x05) {
+        case 0:
+            step = 2;
+            idx = 5;
+            break;
+        case 1:
+            step = 1;
+            idx = 6;
+            break;
+        case 2:
+            step = 0;
+            idx = -1;
+            break;
+        case 3:
+            step = 1;
+            idx = 8;
+            break;
+        }
+        break;
+#else
         if (w->x36 != 0) {
             switch (sh->x05) {
             case 0:
@@ -263,6 +367,7 @@ void shell08_m(SHLW *sh) {
             break;
         }
         break;
+#endif
     case 5:
         sh->pos0.x = sh->pos2.x;
         sh->pos0.y = sh->pos2.y;
@@ -305,7 +410,12 @@ void shell08_m(SHLW *sh) {
     switch (sh->arg) {
     case 0:
     case 11:
+#ifdef VERSION_MHG
+    case 12:
+        if (sh->arg != 12 && sh->char0 > 30) {
+#else
         if (sh->char0 > 30) {
+#endif
             d = 1.0f / (f32)(sh->char0 - 30);
             sh->rate[0] *= d;
             sh->rate[1] *= d;
@@ -322,14 +432,27 @@ void shell08_m(SHLW *sh) {
                     Eft17_type3_set(&sh->pos2.x, sh->ang[0], sh->ang[1], 0, ((EMW *)sh->owner)->kind);
                 }
             }
+#ifdef VERSION_MHG
+            /* G type 12: the sound as the shot comes down through height 3000 */
+            if (sh->arg == 12 && !(sh->pos0.y < 3000.0f) && sh->pos2.y < 3000.0f) {
+                Em_se_req2(sh->owner, 0x42, 0, &sh->pos2.x, 8, 0);
+            }
+#endif
         }
         break;
     case 2:
     case 3:
+#ifdef VERSION_MHG
+    case 13:
+#endif
         shell_rate_add_g(sh);
         if (sh->stg == game_w.stage) {
             if (sh->char0 >= 3 && (sh->char0 & 1)) {
+#ifdef VERSION_MHG
+                Eft17_set_pos_ang(&sh->pos2.x, 0x12, ((EMW *)sh->owner)->kind, sh->ang[1], sh->arg == 13 ? 2.0f : 1.0f);
+#else
                 Eft17_set_pos_ang(&sh->pos2.x, 0x12, ((EMW *)sh->owner)->kind, sh->ang[1], 1.0f);
+#endif
             }
         }
         break;
@@ -392,6 +515,18 @@ void shell08_m(SHLW *sh) {
                 t = 5;
             }
             break;
+#ifdef VERSION_MHG
+        case 12:
+            if (i < 3) {
+                t = 1000;
+                if (p->no != 0) {
+                    idx = 1;
+                }
+            } else {
+                t = 5;
+            }
+            break;
+#endif
         }
         if (++p->x02 <= 0) {
             idx += step;
@@ -402,8 +537,23 @@ void shell08_m(SHLW *sh) {
             switch (sh->arg) {
             case 2:
             case 3:
+#ifdef VERSION_MHG
+            case 13:
+#endif
                 p->x02 = 1;
                 break;
+#ifdef VERSION_MHG
+            case 7:     /* G: the pair of streaks keeps updating (time limit 0 in G's table) */
+                break;
+            case 12:
+                if (i < 3) {
+                    p->x02 = 0;
+                    break;
+                }
+                idx += step;
+                p++;
+                continue;
+#endif
             case 6:
                 shell08_type6_init(sh, p);
                 if (p->x02 <= 0) {
@@ -426,6 +576,9 @@ void shell08_m(SHLW *sh) {
         switch (sh->arg) {
         case 0:
         case 11:
+#ifdef VERSION_MHG
+        case 12:
+#endif
             dat = shell08_data[idx++];
             eft_vec_linear(p->x02, dat, p->scl);
             if (p->no == 0) {
@@ -465,8 +618,18 @@ void shell08_m(SHLW *sh) {
         case 2:
         case 3:
         case 9:
+#ifdef VERSION_MHG
+        case 13:
+#endif
             p->x14 += p->x1A;
             eft_vec_linear(p->x02, shell08_data[idx], p->scl);
+#ifdef VERSION_MHG
+            if (sh->arg == 13) {
+                p->scl[0] *= 2.0f;
+                p->scl[1] *= 2.0f;
+                p->scl[2] *= 2.0f;
+            }
+#endif
             break;
         case 4:
             switch (sh->x05) {
@@ -566,10 +729,19 @@ void shell08_m(SHLW *sh) {
     switch (sh->arg) {
     case 0:
     case 11:
+#ifdef VERSION_MHG
+    case 12:
+        if (sh->char0 <= (sh->arg == 12 ? 36 : 33)) {
+#else
         if (sh->char0 <= 33) {
+#endif
             y = GetGroundShellHit(&sh->pos2);
             if (sh->pos2.y <= y) {
+#ifdef VERSION_MHG
+                if (sh->arg != 12 && y - sh->pos2.y > 100.0f) {
+#else
                 if (y - sh->pos2.y > 100.0f) {
+#endif
                     shell08_impact_set(sh, 2, &sh->pos2.x);
                 } else {
                     v2[0] = sh->pos2.x;
@@ -640,6 +812,9 @@ void shell08_m(SHLW *sh) {
     case 2:
     case 3:
     case 9:
+#ifdef VERSION_MHG
+    case 13:
+#endif
         y = GetGroundShellHit(&sh->pos2);
         if (sh->pos2.y <= y) {
             if (y - sh->pos2.y > 100.0f) {
@@ -762,6 +937,9 @@ void shell08_m(SHLW *sh) {
         switch (sh->arg) {
         case 0:
         case 11:
+#ifdef VERSION_MHG
+        case 12:
+#endif
             w->prim->pos[0] = sh->pos2.x;
             w->prim->pos[1] = y + 10.0f;
             w->prim->pos[2] = sh->pos2.z;
@@ -769,6 +947,9 @@ void shell08_m(SHLW *sh) {
         case 2:
         case 3:
         case 9:
+#ifdef VERSION_MHG
+        case 13:
+#endif
             v[0] = 0.0f;
             v[1] = 0.0f;
             v[2] = -20.0f;
@@ -848,6 +1029,9 @@ extern RGBA_KEY fade_type4_em00_0[];
 extern RGBA_KEY fade_type4_em00_2[];
 extern RGBA_KEY fade_type8_em05_0[];
 extern FLMAT rview_mat;
+#ifdef VERSION_MHG
+extern FLMAT rview_matY;
+#endif
 s16 Em_area_ck(int);
 void SetTrnslMode(int, int);
 void clay_attr_reset(void);
@@ -903,6 +1087,9 @@ void shell08_trans(PRIM *pr) {
     switch (sh->arg) {
     case 0:
     case 11:
+#ifdef VERSION_MHG
+    case 12:
+#endif
         cnt1 = 1;
         thr = 0x1E;
         cnt0 = 3;
@@ -916,6 +1103,11 @@ void shell08_trans(PRIM *pr) {
             cg = 0xF3;
             cr = 0xDF;
         }
+#ifdef VERSION_MHG
+        if (sh->arg == 12) {
+            thr = 1000;     /* G: never fades (the shot is gone long before) */
+        }
+#endif
         if (sh->char0 < thr) {
             alpha = 0xFF;
             fa = 0;
@@ -986,7 +1178,11 @@ void shell08_trans(PRIM *pr) {
         break;
     case 2:
     case 3:
-    case 9: {
+    case 9:
+#ifdef VERSION_MHG
+    case 13:
+#endif
+    {
         f32 sx, sy, sz;
         CLAY *cl;
         if (pr->no == 1) p++;
@@ -1005,7 +1201,11 @@ void shell08_trans(PRIM *pr) {
             }
             if (sh->arg == 2) {
                 key = shell08_type2_fade;
+#ifdef VERSION_MHG
+            } else if (sh->arg == 3 || sh->arg == 13) {
+#else
             } else if (sh->arg == 3) {
+#endif
                 key = shell08_type3_fade;
             } else {
                 key = shell08_type9_fade;
@@ -1103,7 +1303,11 @@ void shell08_trans(PRIM *pr) {
         mats = am->mat;
         flmatInit(&m);
         flmatSetTrans(&m, pr->pos[0], pr->pos[1], pr->pos[2]);
+#ifdef VERSION_MHG
+        flmatMul33_2(&m, &rview_matY);      /* G: the upright billboard matrix */
+#else
         flmatMul33_2(&m, &rview_mat);
+#endif
         shell08_trans_sub(&am->clay[9], &m, -1, 0, mats);
         break;
     case 6:

@@ -1525,3 +1525,24 @@ turns the other way at tick 1151 (the hunter sits almost behind it: a 1-ulp posi
 ### Round 5, second half (22 Oct 2026)
 RELEASE_G R-F26 / R-F27. Merged main (agent A's em01 / em16 G ports replace my scene parts there). Next round: emulator
 work when memory allows (g_vil_sell, mh1_vil_* scenarios, item box, combine, reward screen), N-R10 Gravios.
+
+## GB6, eighth pass (agent D, Opus, 23 Oct 2026)
+Assignment: functions the G PC enters in play that still run MH1 C where G differs (docs/survey/mhg_cov_g.txt). Details, evidence tags and the
+list of what was looked at: docs/RELEASE_G.md section 15.
+- Method that worked: `python3 tools/gdraft.py -m MODULE FUNC` (G's m2c; MODULE game / sub_main / main / lobby; names as in config/mhg/symbols, or
+  `game_func_00XXXXXX`) for the G side; `python3 tools/draft.py main|game FUNC` for MH1 only where the MH1 asm still exists (a function matched in
+  MH1 has no asm/ dump: read the PC C instead); normalise both (temps, D_ names, addresses) and `diff`; `tools/mhg_fdiff.py MODULE FUNC [-g]` for
+  the asm when m2c drops call arguments (it dropped the last argument of Eft17_type3_set / Em_se_req2: read a4 / t0 from the asm). A G data table the
+  code reads: `gread.py`-style read of build/mhg/split/MODULE.bin at the G address (vram from config/mhg/MODULE.yaml), then a pc_data.txt line.
+- The cov list is over-approximate (see section 15). A better first filter than the marker test: look for G-only data a function reads (a table
+  address that pc_data.txt does not have, a G kind number above 34) and for kind lists in the MH1 C (G's subspecies are kinds 35-50: a
+  `case 1: case 11: ...` list in MH1 code means nothing is done for them).
+- Pitfall: a state-in-place rewrite. G's shell08_m keeps the Gravios beam's state in the work block (w[2]); the PC keeps it in sh->x05 (SH08W's layout is
+  shared with the PS2 builds, so no field can be added at 0x02). Same behaviour, different place; the type 4 `all` is x06 + 31 and w->x36 holds x06 (G w[0x3A]).
+- Pitfall: a temporary spawn hack found a crash that was only the test's (type 13 with x07 = 3: attack row 37 does not exist). Force with the arguments
+  G's callers really pass (x07 0).
+- Tools left: build/D/e13/run.sh TIME OUT.png (hidden Dual Swords run, shot at a game time; BIN=other binary for before / after).
+- Not done / next: eft04 (G has a type 9 and 60-byte pieces; one G caller, em15 uvmove), eft02_t, eft15_m, eft16_m (G drops the neck types, adds 15),
+  set14_m / set14_trans, em02 Fatalis, em14_main, the combine list count (Item_preparation_list_num).
+- Results (23 Oct 2026, final tree): tools/rebuild.sh 5 OK; VERSION=mhg tools/rebuild.sh 7 OK; tools/test_all_quests_g.sh 98 quests + carts + Dual Swords all PASS;
+  tools/full_check.sh EXIT 0 (every test ok incl. both Xbox builds, 4 emulator tests skipped by design).

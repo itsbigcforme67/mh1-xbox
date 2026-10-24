@@ -2163,7 +2163,11 @@ static void station_em_set(void)
                 break;
             }
             if ((em = Em_direct_set(e)) != 0) {
+#ifdef VERSION_MHG      /* G (sub_main 0x4B7DA0): the subspecies 36 of kind 2 too */
+                if ((em->kind == 2 || em->kind == 0x24) && Quest_f_dra_ck(*(u8 *)&quest_w.no) != 0) {
+#else
                 if (em->kind == 2 && Quest_f_dra_ck(*(u8 *)&quest_w.no) != 0) {
+#endif
                     quest_w.x14C = em->x302;
                 }
                 em->stg = e->x07;

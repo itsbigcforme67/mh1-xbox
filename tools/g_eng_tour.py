@@ -117,6 +117,9 @@ SCENES = {
     "pause": village({60: "start*2", 100: "circle*2", 160: "dright*2", 200: "cross*2", 230: "ddown*2", 250: "circle*2", 310: "cross*2",
                       340: "ddown*2", 360: "ddown*2", 380: "circle*2", 440: "cross*2", 470: "ddown*2", 490: "ddown*2", 510: "circle*2"}, 600,
                      [80, 130, 180, 280, 330, 420, 460, 560]),
+    # pause menu, Reference row: the data page (G's frame list, hunting log, mix list)
+    "data_page": village({60: "start*2", 100: "ddown*2", 130: "ddown*2", 160: "ddown*2", 200: "circle*2", 280: "dright*2", 340: "circle*2"}, 440,
+                         [90, 150, 190, 230, 260, 320, 370, 430]),
     # in a quest: pause menu, quest info pages, the item pouch
     "quest_info": dict(args=["--quest", "1", "--play"], input="idle*200,start*2,idle*40,ddown*2,idle*20,ddown*2,idle*20,ddown*2,idle*20,circle*2,idle*60,dright*2,idle*60,"
                        "dright*2,idle*60,cross*2,idle*30,cross*2,idle*60,start*2,idle*40,circle*2,idle*90", time=30,
