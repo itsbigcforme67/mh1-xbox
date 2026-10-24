@@ -1578,3 +1578,13 @@ set14_trans). Write-up with evidence tags: docs/RELEASE_G.md section 16.
 - Results (23 Oct 2026, partial: coordinator asked to stop): tools/test_all_quests_g.sh 98 quests + carts + Dual Swords all PASS; tools/rebuild.sh 5 OK;
   VERSION=mhg tools/rebuild.sh 7 OK; tools/full_check.sh stopped early on request: 25 steps ok (rebuild, builds, kr_returns, Xbox online, PC tests up to
   test_online), no FAIL, the rest not run (coordinator runs it at merge). Status: PARTIAL (em02 not started, by evidence; see RELEASE_G section 16).
+
+## area_mdlw platform fix (agent D, Opus, 24 Oct 2026)
+Assignment: game_w.area_mdlw[] never filled on the PC. Write-up: docs/RELEASE_G.md section 16, "Fixed (24 Oct 2026)".
+- Where the PS2 fills it: em_create_model (crmdl05.c, matched): GWM.sub_ptr[slot] at game_w+0xA8 (G 0xB0) = the kind's sub model
+  (em_sub_model_data / ENEMY_SUB_TEX). The name area_mdlw came from the readers (Em_area_ck = model slot of a kind). Lesson: when a
+  game_w pointer is never set on the PC, grep the matched C for a second struct view of game_w (crmdl05's GWM) before the asm.
+- PC: viewer.c em_sub_model + model_bind (shared with load_eft_models), rt_eft.c rt_bind_area_model, rt_game.c rt_rebind_clay.
+- Test aids used: a temporary `RT_E04TR` print in Eft04_set* (removed) gave the ticks (quest 41: kind 15's eft04 type 0 at tick
+  144, types 1 / 2 at 874-938); build/D/am/run.sh BIN DISC QUEST KIND TIME OUT.png for hidden before / after shots;
+  RT_QEM_KIND=30:33 puts a Kirin into MH1 quest 41.

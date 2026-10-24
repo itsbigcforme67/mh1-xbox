@@ -784,3 +784,19 @@ a trace in eft04_t during the forced spawn printed eight NULL entries] A platfor
 (eft04 reads clay[0..9] of it, eft20 and shell08 their own clays) the way load_eft does for ef_00.
 
 **Checks** (23 Oct 2026): quest suite 98 + carts + Dual PASS, rebuild 5 OK / G 7 OK, full_check stopped at 25 ok steps (no FAIL) on the coordinator's request. **Left: em02** (whole), the area_mdlw platform gap.
+
+**Fixed (24 Oct 2026, agent D, both games): game_w.area_mdlw.** What it is: the PS2's `em_create_model` (main 0x124820,
+src/main/model/crmdl05.c) loads, after a model slot's monster body, the kind's **sub model** (`load_enemy_sub_model`: AFS index
+from `em_sub_model_data` main 0x2EC8C0 / G 0x2592E0, texture `ENEMY_SUB_TEX` 0x2EEEB0 / G 0x25CB10, -1 = none) and keeps its MDLW
+in `sub_ptr[slot]` = game_w + 0xA8 (G + 0xB0), with sub_n / sub_no after it (so "area_mdlw[9]" really is four pointers; `Em_area_ck(kind)`
+returns the model slot whose game_w+0x28 kind matches). The PC host (rt_quest.c em_create_model -> viewer.c em_model_load) only
+loaded the body. Now em_model_load also loads the sub model (cached by kind like the body, freed with it in host_models_gc) and
+rt_eft.c `rt_bind_area_model` binds its clays / materials into game_w.area_mdlw[slot] the same way as eft_mdlw (handles reused per
+slot). Kinds with a sub model: MH1 1 2 6 8 11 14 15 17 20 21 22 26 33 34; G those plus 36-49 (read from both tables) [checked].
+Seen [checked, hidden shots build/D/am/keep/, before = the binaries without the fix]: quest 41 kind 15 (Khezu) at 4.9 s: its
+body discharge (eft04 type 0) now drawn as a blue aura in **MH1** (a_mh1_4.9 vs b_mh1_4.9) and in **G** (a_g_4.9 vs b_g_4.9, G's own
+piece sizes); kind 33 (Kirin, RT_QEM_KIND=30:33 in MH1 quest 41): the arg-4 ground glow of eft01 under both Kirins (a_mh1_k33 vs
+b_mh1_k33). Not seen on screen: eft04 type 9 (G subspecies roar), eft20, shell08 pieces, a G Kirin (the swap spawns it but on
+another area). Memory (RT_MEM, G quest 41, tick 200): +57 KB CPU heap ("monster sub models" category, 291 KB peak while the file
+copies are live), +65 KB textures as the Xbox keeps them; per kind 107-123 KB of files. A red horizontal line at the top-left in
+the Kirin shots is in both before and after (not from this fix, not looked at).
