@@ -41,17 +41,17 @@ void plaza_setChatModeTrans(void) {
     int temp_v0;
 
     temp_s0 = F(int, &text_lobby_msg, 8);
-    if (F(u8, pNet, 3) != 0) {
+    if (F(u8, pNet, PNET_OFS(3)) != 0) {
         font_set_palette(0);
         flfntSetSize(0x12, 0x12);
-        put_main_cursor(F(u8, pNet, 0xA) - 1);
+        put_main_cursor(F(u8, pNet, PNET_OFS(0xA)) - 1);
         Lb_put_msg_type2(temp_s0 + 0x150);
         flfntLocate( ((s16)((F(s16, temp_s0, 0x150) + 0x90))), F(s16, temp_s0, 0x152));
         sprintf(spD0, &lit_2602, 7 - F(u8, (u8 *)cw, CW_OFS(0x32BE)));
         han2zen(spD0, &spA0);
         font_print(&lit_2316, &spA0);
         temp_s0_2 = temp_s0 + 0x158;
-        if (F(u8, pNet, 0xA) == 0) {
+        if (F(u8, pNet, PNET_OFS(0xA)) == 0) {
             font_print_double(F(s16, temp_s0, 0x158), F(s16, temp_s0_2, 2), 1, 4);
         } else {
             Lb_put_msg_type2();
@@ -62,16 +62,16 @@ void plaza_setChatModeTrans(void) {
         temp_a0 = (int)pNet;
         temp_s3 = F(s16, temp_s0, 0x158);
         var_s2 =  ((s16)((F(s16, temp_s0_2, 2) + 0x16)));
-        if (F(u8, temp_a0, 3) < 3) {
+        if (F(u8, temp_a0, PNET_OFS(3)) < 3) {
             temp_v1 = (s16)temp_s3;
             temp_s6 = temp_v1 + 0xA4;
             temp_fp = temp_v1 - 0x1A;
             var_s5 = 0;
-            var_s7 = (int)&chatLogBuff + (( (F(s16, temp_a0, 0x24) * 0x7000000000000) >> 0x30) * 4);
+            var_s7 = (int)&chatLogBuff + (( (F(s16, temp_a0, PNET_OFS(0x24)) * 0x7000000000000) >> 0x30) * 4);
 loop_8:
             temp_s4 = (*(s32 *)var_s7);
             if (temp_s4 != 0) {
-                if (F(u8, pNet, 0xA) == (( ((s16)(var_s5))) + 1)) {
+                if (F(u8, pNet, PNET_OFS(0xA)) == (( ((s16)(var_s5))) + 1)) {
                     sprintf(spD0, temp_s4 + 0x4C, 8);
                     font_print_double(temp_s3, (s16) var_s2, 1, 4);
                     strcpy(spD0, temp_s4 + 0x44);
@@ -109,7 +109,7 @@ loop_13:
                 }
             }
             temp_v0 = (int)pNet;
-            Put_page_num(0x1F4, 0x128, F(s16, temp_v0, 0x24), F(s16, temp_v0, 0x26));
+            Put_page_num(0x1F4, 0x128, F(s16, temp_v0, PNET_OFS(0x24)), F(s16, temp_v0, PNET_OFS(0x26)));
             return;
         }
         var_s5_2 = (int)&chatIDList;
@@ -121,7 +121,7 @@ loop_13:
         do {
             if ((*(s8 *)var_s5_2) != 0) {
                 temp_s1 =  ((s16)(var_s0_2));
-                if (F(u8, pNet, 0xA) == (temp_s1 + 1)) {
+                if (F(u8, pNet, PNET_OFS(0xA)) == (temp_s1 + 1)) {
                     sprintf(spD0, var_s6, 0x10);
                     temp_s1_2 = 1 << temp_s1;
                     if (chatListFlag & temp_s1_2) {

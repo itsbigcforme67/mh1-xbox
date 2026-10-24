@@ -211,7 +211,8 @@ void Clear_lobby_ram(void) {
     }
     init_set_work();
     cw = client_work;
-    {   /* MH1's C writes pNet by MH1 offsets: a host buffer in that layout instead of G's network_work (lbsys_g.h) */
+    {   /* a host buffer instead of G's network_work: MH1's layout in the plain G build, G's in the online build, where
+         * MH1's C reaches it through PNET_OFS and shares it with G's generated lobby code (lbsys_g.h) */
         static u8 pnet_host[0x400];
         memset(pnet_host, 0, sizeof pnet_host);
         pNet = pnet_host;

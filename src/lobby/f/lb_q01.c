@@ -135,7 +135,7 @@ void lb_check_status(void) {
         }
         break;
     case 23:
-        pNet[0xC] = 1;
+        pNet[PNET_OFS(0xC)] = 1;
         if ((u16)pad & 0x20) {
             *(s8 *)0x3F36AB = 1;
             lb_sys.x68 = 0;
@@ -175,12 +175,12 @@ void lb_check_status(void) {
     case 29:
         q = *(s8 *)&mhRule + 1;
         if (q > 1 && (*(u16 *)(cw + CW_OFS(0x32C6)) + 1) == q) {
-            pNet[0xC] = 0;
+            pNet[PNET_OFS(0xC)] = 0;
             *(s8 *)0x3F36AB = 1;
             lb_sys.x6C = 0;
             lb_sys.x68 = 0;
         } else {
-            pNet[0xC] = 1;
+            pNet[PNET_OFS(0xC)] = 1;
             v = Lb_select(q);
             switch (v) {
             case 0:
@@ -207,12 +207,12 @@ void lb_check_status(void) {
         u8 *ri = Lbs_GetRoomInfo((s16)(ClassInfo[8] - 1));
         if ((*(s8 *)&mhRule + 1) > 1 && (*(u16 *)(cw + CW_OFS(0x32C6)) + 1) < (s32)*(u16 *)(ri + 2)) {
 #endif
-            pNet[0xC] = 0;
+            pNet[PNET_OFS(0xC)] = 0;
             *(s8 *)0x3F36AB = 1;
             lb_sys.x6C = 0;
             lb_sys.x68 = 0;
         } else {
-            pNet[0xC] = 1;
+            pNet[PNET_OFS(0xC)] = 1;
             v = Lb_select();
             switch (v) {
             case 0:
@@ -307,7 +307,7 @@ void lb_check_status(void) {
         }
         break;
     case 40:
-        pNet[0xC] = 1;
+        pNet[PNET_OFS(0xC)] = 1;
         switch (lb_sys.x06) {
         case 0:
             lb_sys.x06 = lb_sys.x06 + 1;
@@ -344,7 +344,7 @@ void lb_check_status(void) {
         }
         break;
     case 42:
-        pNet[0xC] = 1;
+        pNet[PNET_OFS(0xC)] = 1;
         if ((u16)pad & 0x20) {
             *(s8 *)0x3F36AB = 1;
             lb_sys.x68 = 8;
@@ -402,7 +402,7 @@ void lb_check_status(void) {
     case 32:
         break;
     }
-    if (pNet[0xC] != 0) {
+    if (pNet[PNET_OFS(0xC)] != 0) {
         if (SoftKeyboard_alive_check() != 0) {
             SoftKeyboard_exit();
         }

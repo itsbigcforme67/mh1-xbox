@@ -36,19 +36,19 @@ s32 lb_select_room(void) {
     u8 tm;
     s32 vv;
 
-    r = Lbs_GetRoomInfo(F(u8, pNet, 7));
+    r = Lbs_GetRoomInfo(F(u8, pNet, PNET_OFS(7)));
     sw = Get_sw2(0) & 0xFFFF;
     d = pNet->depth;
     switch (d) {
     case 0:
         pNet->depth = d + 1;
         v = (u32)(F(s32, r, 0x158) & 0x1FE) >> 1;
-        F(s8, pNet, 0x12) = v;
+        F(s8, pNet, PNET_OFS(0x12)) = v;
         vv = v & 0xFF;
         if (F(u8, r, 0x10) != 3) {
-            F(s8, pNet, 0xE) = 1;
+            F(s8, pNet, PNET_OFS(0xE)) = 1;
         } else {
-            F(s8, pNet, 0xE) = 0;
+            F(s8, pNet, PNET_OFS(0xE)) = 0;
         }
         lb_select_set_data(vv);
         break;
@@ -66,7 +66,7 @@ done:
     case 3:
         t = sw & 0xFFFF;
         if (t & 0x20) {
-            lb_sys.x73 = F(u8, pNet, 7);
+            lb_sys.x73 = F(u8, pNet, PNET_OFS(7));
             Lbs_GetRoomInfo(lb_sys.x73);
             cnWrap_SoundRequest(0);
             return 0;

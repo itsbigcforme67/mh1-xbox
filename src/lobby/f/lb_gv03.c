@@ -88,9 +88,9 @@ int guild_input_message(int a) {
     Get_kb_input();
     p = pNet;
     q = p + 2;
-    switch (p[2]) {
+    switch (p[PNET_OFS(2)]) {
     case 0:
-        *q = p[2] + 1;
+        *q = p[PNET_OFS(2)] + 1;
         SoftKeyboard_pos_set(80.0f, 0x3A);
         SoftKeyboard_set(1, 0, 0x3D, a);
         Lbc_set_prim(0, Lb_guild_trans, lb_rule_seet_trans_ot2);
@@ -101,12 +101,12 @@ int guild_input_message(int a) {
         switch (v) {
         case 1:
         case -1:
-            pNet[2] = pNet[2] + 1;
+            pNet[PNET_OFS(2)] = pNet[PNET_OFS(2)] + 1;
         }
         break;
     case 2:
         SoftKeyboard_exit();
-        pNet[2] = 0;
+        pNet[PNET_OFS(2)] = 0;
         *(u8 *)0x3F36AB = 1;
         return 1;
     }
@@ -120,9 +120,9 @@ int guild_input_pass(int a) {
     Get_sw(0);
     p = pNet;
     q = p + 2;
-    switch (p[2]) {
+    switch (p[PNET_OFS(2)]) {
     case 0:
-        *q = p[2] + 1;
+        *q = p[PNET_OFS(2)] + 1;
         SoftKeyboard_pos_set(80.0f, 0x3A);
         SoftKeyboard_set(3, 6, 8, a);
         Lbc_set_prim(0, Lb_guild_trans, lb_rule_seet_trans_ot2);
@@ -130,12 +130,12 @@ int guild_input_pass(int a) {
         break;
     case 1:
         if ((sx1 = SoftKeyboard_move(a, *(s16 *)0x3F3710, *(s16 *)0x3F3714)) != 0) {
-            pNet[2] = pNet[2] + 1;
+            pNet[PNET_OFS(2)] = pNet[PNET_OFS(2)] + 1;
         }
         break;
     case 2:
         SoftKeyboard_exit();
-        pNet[2] = 0;
+        pNet[PNET_OFS(2)] = 0;
         *(u8 *)0x3F36AB = 1;
         return 1;
     }

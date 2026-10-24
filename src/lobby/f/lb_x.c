@@ -39,14 +39,14 @@ int lb_select_quest(void) {
     if (s1 == (sx = get_questLevelNum()) + 1) {
         q = get_quest_info();
     } else {
-        q = lb_quest_all[(lb_quest_info + (s1 & 0xFF) * 5)[pNet[7]]];
+        q = lb_quest_all[(lb_quest_info + (s1 & 0xFF) * 5)[pNet[PNET_OFS(7)]]];
     }
     p = pNet;
-    switch (p[2]) {
+    switch (p[PNET_OFS(2)]) {
     case 0:
-        p[2] = p[2] + 1;
+        p[PNET_OFS(2)] = p[PNET_OFS(2)] + 1;
         lb_set_questpage_info();
-        pNet[8] = 0;
+        pNet[PNET_OFS(8)] = 0;
         Lbc_set_prim(0, Lb_guild_trans, 0);
     default:
         return 2;
@@ -65,10 +65,10 @@ int lb_select_quest(void) {
         if (t & 0x400) {
             if (mhRule.x58 < (sx = get_questLevelNum())) {
                 u8 *n = pNet;
-                u8 v = n[7] + 1;
-                n[7] = v;
+                u8 v = n[PNET_OFS(7)] + 1;
+                n[PNET_OFS(7)] = v;
                 if (v >= 5) {
-                    pNet[7] = 0;
+                    pNet[PNET_OFS(7)] = 0;
                 }
                 lb_set_questpage_info();
                 mhRule.quest = *((u8 *)q + 0x1D);
@@ -76,10 +76,10 @@ int lb_select_quest(void) {
             } else if (key_quest_num >= 2) {
                 if (mhRule.x58 == (sx = get_questLevelNum())) {
                     u8 *n = pNet;
-                    u8 v = n[7] + 1;
-                    n[7] = v;
+                    u8 v = n[PNET_OFS(7)] + 1;
+                    n[PNET_OFS(7)] = v;
                     if (v >= key_quest_num) {
-                        pNet[7] = 0;
+                        pNet[PNET_OFS(7)] = 0;
                     }
                     lb_set_questpage_info();
                     mhRule.quest = *((u8 *)q + 0x1D);
@@ -89,38 +89,38 @@ int lb_select_quest(void) {
         } else if (t & 0x800) {
             if (mhRule.x58 < (sx = get_questLevelNum())) {
                 u8 *n = pNet;
-                u8 v = n[7];
+                u8 v = n[PNET_OFS(7)];
                 if (v == 0) {
                     v = 4;
                 } else {
                     v = v - 1;
                 }
-                n[7] = v;
+                n[PNET_OFS(7)] = v;
                 lb_set_questpage_info();
                 mhRule.quest = *((u8 *)q + 0x1D);
                 cnWrap_SoundRequest(1);
             } else if (key_quest_num >= 2) {
                 if (mhRule.x58 == (sx = get_questLevelNum())) {
                     u8 *n = pNet;
-                    u8 v = n[7];
+                    u8 v = n[PNET_OFS(7)];
                     if (v == 0) {
                         v = key_quest_num - 1;
                     } else {
                         v = v - 1;
                     }
-                    n[7] = v;
+                    n[PNET_OFS(7)] = v;
                     lb_set_questpage_info();
                     mhRule.quest = *((u8 *)q + 0x1D);
                     cnWrap_SoundRequest(1);
                 }
             }
         } else if (t & 0x200) {
-            u8 v = p[8] + 1;
-            p[8] = v;
+            u8 v = p[PNET_OFS(8)] + 1;
+            p[PNET_OFS(8)] = v;
             if (v >= 3) {
-                pNet[8] = 0;
+                pNet[PNET_OFS(8)] = 0;
             }
-            Lb_num_to_str(pNet[8] + 1, lb_quest_exp + 0xCC);
+            Lb_num_to_str(pNet[PNET_OFS(8)] + 1, lb_quest_exp + 0xCC);
             cnWrap_SoundRequest(6);
         }
         return 2;
@@ -147,7 +147,7 @@ void lb_set_questpage_info(void) {
         if (mhRule.x58 == (sx = get_questLevelNum()) + 1) {
             q = get_quest_info();
         } else {
-            q = lb_quest_all[(lb_quest_info + (mhRule.x58 & 0xFF) * 5)[pNet[7]]];
+            q = lb_quest_all[(lb_quest_info + (mhRule.x58 & 0xFF) * 5)[pNet[PNET_OFS(7)]]];
         }
     }
     qb = (u8 *)q;
@@ -166,8 +166,8 @@ void lb_set_questpage_info(void) {
         strcpy((char *)lb_quest_exp + 0x68, *(char **)s0);
         strcpy(quest_title, *(char **)s0);
     }
-    Lb_num_to_str(pNet[8] + 1, lb_quest_exp + 0xCC);
-    Lb_num_to_str(pNet[7] + 1, lb_quest_exp + 0x130);
+    Lb_num_to_str(pNet[PNET_OFS(8)] + 1, lb_quest_exp + 0xCC);
+    Lb_num_to_str(pNet[PNET_OFS(7)] + 1, lb_quest_exp + 0x130);
     if (mhRule.x58 != (sx = get_questLevelNum())) {
         if (Online_ck() == 1 && mhRule.x58 == (sx = get_questLevelNum()) + 1) {
             strcpy(lb_quest_message[3], lb_guild_str[0]);
@@ -271,18 +271,18 @@ void lb_select_quest_level_trans(void) {
     if ((sx = get_questLevelNum()) > 0) {
         do {
             s1 = -0xC;
-            if (i == pNet[8]) {
+            if (i == pNet[PNET_OFS(8)]) {
             } else {
                 s1 = 0;
             }
-            if (*(s8 *)(pNet + 0x12) >= i && (i != 0 || Online_ck() != 0 || key_quest != 0x83)) {
+            if (*(s8 *)(pNet + PNET_OFS(0x12)) >= i && (i != 0 || Online_ck() != 0 || key_quest != 0x83)) {
                 s2 = 5;
             } else {
                 s2 = 9;
             }
             sp80.x += s1;
             Put_2TF(&sp80);
-            if (i == pNet[8]) {
+            if (i == pNet[PNET_OFS(8)]) {
                 Lb_put_icon(sp80.x - 0xA, sp80.y + 0xC, 1, 0xFF00FF00);
             }
             sp80.y += 0x30;
@@ -316,14 +316,14 @@ void lb_select_quest_level_trans(void) {
     } else {
         s0 = 9;
     }
-    if (pNet[8] == (sx = get_questLevelNum())) {
+    if (pNet[PNET_OFS(8)] == (sx = get_questLevelNum())) {
         s2 = -0xC;
     } else {
         s2 = 0;
     }
     sp80.x += s2;
     Put_2TF(&sp80);
-    if (pNet[8] == (sx = get_questLevelNum())) {
+    if (pNet[PNET_OFS(8)] == (sx = get_questLevelNum())) {
         Lb_put_icon(sp80.x - 0xA, sp80.y + 0xA, 1, 0xFF00FF00);
     }
     if (Online_ck() == 0) {
@@ -335,13 +335,13 @@ void lb_select_quest_level_trans(void) {
     sp80.y += 0x30;
     s0 = *(s8 *)(cw + CW_OFS(0x2C2F));
     s1 = -0xC;
-    if (pNet[8] == (sx = get_questLevelNum()) + 1) {
+    if (pNet[PNET_OFS(8)] == (sx = get_questLevelNum()) + 1) {
     } else {
         s1 = 0;
     }
     sp80.x += s1;
     Put_2TF(&sp80);
-    if (pNet[8] == (sx = get_questLevelNum()) + 1) {
+    if (pNet[PNET_OFS(8)] == (sx = get_questLevelNum()) + 1) {
         Lb_put_icon(sp80.x - 0xA, sp80.y + 0xA, 1, 0xFF00FF00);
     }
     font_print_double((s16)(((LBS8 *)(lb_quest_level_str + 0x70))->x + (s16)s1), ((LBS8 *)(lb_quest_level_str + 0x70))->y, 1, (s16)((s0 == 0) ? 9 : 5));
@@ -360,7 +360,7 @@ void lb_questpage_trans(int a) {
         if (mhRule.x58 == (sx = get_questLevelNum()) + 1) {
             q = get_quest_info();
         } else {
-            q = lb_quest_all[(lb_quest_info + (mhRule.x58 & 0xFF) * 5)[pNet[7]]];
+            q = lb_quest_all[(lb_quest_info + (mhRule.x58 & 0xFF) * 5)[pNet[PNET_OFS(7)]]];
         }
     } else if (mhRule.quest >= 0xC8U) {
         q = get_quest_info();
@@ -405,7 +405,7 @@ void lb_questpage_trans(int a) {
         i += 1;
         p += 8;
     } while (i < 2);
-    switch (pNet[8]) {
+    switch (pNet[PNET_OFS(8)]) {
     case 0:
         s1 = 2;
         s3 = 4;

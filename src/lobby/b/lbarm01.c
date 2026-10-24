@@ -73,7 +73,7 @@ void Lb_armor_shop(void) {
         }
         break;
     case 5:
-        *(s8 *)(pNet + 0xC) = 1;
+        *(s8 *)(pNet + PNET_OFS(0xC)) = 1;
         break;
     }
     armor_shop_trans();

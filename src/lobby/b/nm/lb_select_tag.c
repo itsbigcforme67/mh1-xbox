@@ -65,7 +65,7 @@ void lb_select_tag(void) {    /* (not static: Lb_join_trans, lb_bz134.c, calls i
     if (0 < cls) {
         do {
             spA0 = i & 0xFFFF;
-            if (spA0 == F(u8, pNet, 7)) {
+            if (spA0 == F(u8, pNet, PNET_OFS(7))) {
                 t.x = t.x - 0xC;
             }
             r = Lbs_GetRoomInfo((s16)i);
@@ -120,7 +120,7 @@ void lb_select_tag(void) {    /* (not static: Lb_join_trans, lb_bz134.c, calls i
             }
             Put_2TF(&t);
             font_print_double((s16)(t.x + 0xA), (s16)(t.y + 0xC), 1, (s16)col, ns[1]);
-            if (spA0 == F(u8, pNet, 7)) {
+            if (spA0 == F(u8, pNet, PNET_OFS(7))) {
                 Lb_put_icon((s16)(t.x - 0xE), (s16)(t.y + 8), 1, 0xFF00FF00);
                 t.x = t.x + 0xC;
             }

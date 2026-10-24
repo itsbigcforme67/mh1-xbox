@@ -4,7 +4,7 @@ extern u8 * pNet;
 
 s32 lm_mail_box_i(void) {
     Lbc_init_network_work();
-    F(s8, pNet, 7) = 4;
+    F(s8, pNet, PNET_OFS(7)) = 4;
     SetSceneSubTitle(2, 1, *(s32 *)0x389E78 + 0x100);
     SetMessageHaltFlag();
     return 0;

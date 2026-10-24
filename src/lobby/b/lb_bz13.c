@@ -21,7 +21,7 @@ s32 lm_net_status_mv(s32 arg0) {
     temp_v1 = arg0 & 0xFFFF;
     if (temp_v1 & 0x20) {
         temp_a0 = game_w.master;
-        temp_a1 = F(u8, pNet, 8);
+        temp_a1 = F(u8, pNet, PNET_OFS(8));
         *((u8 *)&D_3E5505 + (temp_a0 * 0xA00)) = temp_a1;
         Lbc_SendMiniData(temp_a0, temp_a1);
         cnWrap_SoundRequest(6);
@@ -30,18 +30,18 @@ s32 lm_net_status_mv(s32 arg0) {
     if (temp_v1 & 0x40) {
         return 0x40;
     }
-    F(u8, pNet, 8) = Lb_cursorUD(F(u8, pNet, 8), 5);
+    F(u8, pNet, PNET_OFS(8)) = Lb_cursorUD(F(u8, pNet, PNET_OFS(8)), 5);
 block_7:
     return arg0;
 }
 
 void lm_net_status_trans(void) {
-    DispFrameList(&statData, (*(s32 *)(lm_menu2_tbl + 4)), F(u8, pNet, 8));
+    DispFrameList(&statData, (*(s32 *)(lm_menu2_tbl + 4)), F(u8, pNet, PNET_OFS(8)));
 }
 
 s32 lm_introduction_i(void) {
     Lbc_init_network_work();
-    F(s8, pNet, 7) = 8;
+    F(s8, pNet, PNET_OFS(7)) = 8;
     SetSceneSubTitle(2, 1, *(s32 *)0x389E7C + 0x70);
     SetMessageHaltFlag();
     return 0;

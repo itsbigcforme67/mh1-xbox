@@ -32,7 +32,7 @@ void plaza_checkFriendTrans(int arg0, int arg1, int arg2) {
 
     temp_v1 = (s8)arg2;
     var_s0 = 0;
-    temp_a3 = F(s16, pNet, 0x24) * 0x150;
+    temp_a3 = F(s16, pNet, PNET_OFS(0x24)) * 0x150;
     var_s1 = (int)&Friend_data + temp_a3;
     switch (temp_v1) {                              /* irregular */
     case 0:
@@ -48,17 +48,17 @@ void plaza_checkFriendTrans(int arg0, int arg1, int arg2) {
         return;
     }
     temp_a2 = (int)pNet;
-    temp_v1_2 = F(u8, temp_a2, 3);
+    temp_v1_2 = F(u8, temp_a2, PNET_OFS(3));
     if ((temp_v1_2 >= 4) && (temp_v1_2 != 0xD) && ((u32) (temp_v1_2 - 9) >= 3U)) {
         if (temp_v1_2 == 0xE) {
             goto block_14;
         }
         if (temp_v1_2 == 4) {
-            temp_a2_2 = (int)&Friend_data + ((F(u8, temp_a2, 6) + (F(s16, temp_a2, 0x24) * 7)) * 0x30);
+            temp_a2_2 = (int)&Friend_data + ((F(u8, temp_a2, PNET_OFS(6)) + (F(s16, temp_a2, PNET_OFS(0x24)) * 7)) * 0x30);
             /* (the asm passes all 8: the online friend's mini data in tl_member_buff, the page pNet+0x12, 3 pages, the
              * comment cw+0x2B9C) */
-            disp_status(arg0, arg1, temp_a2_2, temp_a2_2 + 8, (int)tl_member_buff + F(u8, temp_a2, 6) * 0x2FC + 0x29A,
-                        F(s8, temp_a2, 0x12), 3, (int)cw + CW_OFS(0x2B9C));
+            disp_status(arg0, arg1, temp_a2_2, temp_a2_2 + 8, (int)tl_member_buff + F(u8, temp_a2, PNET_OFS(6)) * 0x2FC + 0x29A,
+                        F(s8, temp_a2, PNET_OFS(0x12)), 3, (int)cw + CW_OFS(0x2B9C));
             return;
         }
         temp_s1 =  ((s16)((( ((s16)(arg1))) + 0x3E)));
@@ -77,7 +77,7 @@ void plaza_checkFriendTrans(int arg0, int arg1, int arg2) {
         return;
     }
 block_14:
-    put_main_cursor2(arg0, arg1, F(u8, temp_a2, 0xA));
+    put_main_cursor2(arg0, arg1, F(u8, temp_a2, PNET_OFS(0xA)));
     temp_s4 =  ((s16)(arg0));
     temp_s3 = temp_s4 + 0xA;
     put_titles( ((s16)(temp_s3)),  ((s16)((( ((s16)(arg1))) + 0x28))), F(s32, &tl_msg_tbl, 4));
@@ -85,13 +85,13 @@ block_14:
     var_s2 =  ((s16)((arg1 + 0x3E)));
     var_s5 = (int)&tl_member_buff;
     do {
-        temp_a0 = var_s0 + (F(s16, pNet, 0x24) * 7);
+        temp_a0 = var_s0 + (F(s16, pNet, PNET_OFS(0x24)) * 7);
         if ((temp_a0 < 0x32) && ((*(s8 *)((u8 *)&Friend_data + (temp_a0 * 0x30))) != 0)) {
             /* (asm: info = the online friend's mini data, or 0 when offline; flag = not the cursor's line) */
             if (F(s8, var_s5, 0x280) != 0) {
-                put_member_info( ((s16)(temp_s4_2)), var_s2, var_s1, var_s1 + 8, var_s5 + 0x29A, var_s0 != F(u8, pNet, 0xA));
+                put_member_info( ((s16)(temp_s4_2)), var_s2, var_s1, var_s1 + 8, var_s5 + 0x29A, var_s0 != F(u8, pNet, PNET_OFS(0xA)));
             } else {
-                put_member_info( ((s16)(temp_s4_2)), var_s2, var_s1, var_s1 + 8, 0, var_s0 != F(u8, pNet, 0xA));
+                put_member_info( ((s16)(temp_s4_2)), var_s2, var_s1, var_s1 + 8, 0, var_s0 != F(u8, pNet, PNET_OFS(0xA)));
             }
         }
         var_s0 += 1;
@@ -100,5 +100,5 @@ block_14:
         var_s1 += 0x30;
     } while (var_s0 < 7);
     temp_v1_3 = (int)pNet;
-    Put_page_num( ((s16)((( ((s16)(temp_s3))) + 0x12C))), var_s2, F(s16, temp_v1_3, 0x24), F(s16, temp_v1_3, 0x26));
+    Put_page_num( ((s16)((( ((s16)(temp_s3))) + 0x12C))), var_s2, F(s16, temp_v1_3, PNET_OFS(0x24)), F(s16, temp_v1_3, PNET_OFS(0x26)));
 }

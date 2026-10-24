@@ -34,7 +34,7 @@ s32 server_select_03(void) {
     temp_v0_2 = cnLbc_MoveMenuServerSelect(&network_work);
     switch (temp_v0_2) {                            /* irregular */
     case 0:
-        memcpy(&ConnectLbsId, (u8 *)&BsLbsInfo + (F(u8, pNet, 8) * 0x102), 0xC);
+        memcpy(&ConnectLbsId, (u8 *)&BsLbsInfo + (F(u8, pNet, PNET_OFS(8)) * 0x102), 0xC);
         var_s0 = 1;
         break;
     case -1:

@@ -85,7 +85,7 @@ void lb_questpage_trans(int a) {
         if (mhRule.x58 == (sx = get_questLevelNum()) + 1) {
             q = get_quest_info();
         } else {
-            q = lb_quest_all[(lb_quest_info + (mhRule.x58 & 0xFF) * 5)[pNet[7]]];
+            q = lb_quest_all[(lb_quest_info + (mhRule.x58 & 0xFF) * 5)[pNet[PNET_OFS(7)]]];
         }
     } else if (mhRule.quest >= 0xC8U) {
         q = get_quest_info();
@@ -122,7 +122,7 @@ void lb_questpage_trans(int a) {
         j += 1;
         p2 += 8;
     } while (j < 2);
-    switch (pNet[8]) {
+    switch (pNet[PNET_OFS(8)]) {
     case 0:
         s1 = 2;
         s3 = 4;

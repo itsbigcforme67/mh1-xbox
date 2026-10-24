@@ -109,14 +109,14 @@ void lbc_login_init(void) {
         cnLBS_Set_LoginFirstData(&fd);
         SetSceneTitle(0, 0);
         SetDialogData(0, 5);
-        F(s8, pNet, 0xC) = 1;
+        F(s8, pNet, PNET_OFS(0xC)) = 1;
         break;
     case 1:
         *stp = st + 1;
-        F(s8, pNet, 0xC) = 2;
+        F(s8, pNet, PNET_OFS(0xC)) = 2;
     case 2:
         cw[CW_OFS(0x2C34)]++;
-        F(s8, pNet, 0xC) = 1;
+        F(s8, pNet, PNET_OFS(0xC)) = 1;
         memset(&lg, 0, 0x40);
         lg.x00 = 1;
         lg.x01 = *(s8 *)0x3A6EA2;
@@ -127,7 +127,7 @@ void lbc_login_init(void) {
         cnLBS_LoginLobbyServer(&lg, CallBack_Result_LoginLobbyServer);
         break;
     case 3:
-        F(s8, pNet, 0xC) = 1;
+        F(s8, pNet, PNET_OFS(0xC)) = 1;
         Check_CallBackWait();
         break;
     }

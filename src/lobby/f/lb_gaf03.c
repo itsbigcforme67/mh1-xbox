@@ -97,7 +97,7 @@ int c;
     top = pl_area_top;
     *(s8 *)0x3F36C5 = 1;
     if (Online_ck() == 0) {
-        pNet[0x11] = 1;
+        pNet[PNET_OFS(0x11)] = 1;
     }
     a1 = lb_sys.x04;
     switch (a1) {
@@ -180,11 +180,11 @@ int c;
         str_pause(0, 1);
         lb_sys.x04 = lb_sys.x04 + 1;
         fade_set(2);
-        pNet[0x11] = 0;
+        pNet[PNET_OFS(0x11)] = 0;
         return;
     }
     case 10:
-        pNet[0x11] = 0;
+        pNet[PNET_OFS(0x11)] = 0;
         if (McCardOperation() & 0xFF) {
             lb_sys.x04 = lb_sys.x04 + 1;
             fade_set(0xA);
@@ -194,7 +194,7 @@ int c;
         }
         return;
     case 11:
-        pNet[0x11] = 0;
+        pNet[PNET_OFS(0x11)] = 0;
         if ((Fade_busy_ck() & 0xFF) != 1) {
             cw[CW_OFS(0x2C08)] = 1;
             fade_set(2);

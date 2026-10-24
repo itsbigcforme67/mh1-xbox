@@ -20,13 +20,13 @@ s32 lb_select_quest_level(void) {
     u16 pad;
     u8 *n;
     pad = Get_sw2(0);
-    pNet[0x12] = lb_get_quest_level(0);
+    pNet[PNET_OFS(0x12)] = lb_get_quest_level(0);
     if (pad & 0x20) {
-        if ((s8)check_questLevelSelect((s8)pNet[8], pad) == 0) {
+        if ((s8)check_questLevelSelect((s8)pNet[PNET_OFS(8)], pad) == 0) {
             n = pNet;
-            mhRule.x58 = n[8];
-            n[0x13] = n[8];
-            pNet[8] = 0;
+            mhRule.x58 = n[PNET_OFS(8)];
+            n[PNET_OFS(0x13)] = n[PNET_OFS(8)];
+            pNet[PNET_OFS(8)] = 0;
             cnWrap_SoundRequest(0);
             return 0;
         }
@@ -38,9 +38,9 @@ s32 lb_select_quest_level(void) {
         return 3;
     }
     if (Online_ck() == 1) {
-        pNet[8] = Lb_cursorUD(pNet[8], (s8)get_questLevelNum() + 2);
+        pNet[PNET_OFS(8)] = Lb_cursorUD(pNet[PNET_OFS(8)], (s8)get_questLevelNum() + 2);
     } else {
-        pNet[8] = Lb_cursorUD(pNet[8], (s8)get_questLevelNum() + 1);
+        pNet[PNET_OFS(8)] = Lb_cursorUD(pNet[PNET_OFS(8)], (s8)get_questLevelNum() + 1);
     }
 done:
     return 2;

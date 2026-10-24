@@ -4,7 +4,7 @@ extern u8 * pNet;
 
 s32 lm_friend_list_i(void) {
     Lbc_init_network_work();
-    F(s8, pNet, 7) = 3;
+    F(s8, pNet, PNET_OFS(7)) = 3;
     SetSceneSubTitle(2, 1, *(s32 *)0x389E78 + 0xDC);
     SetMessageHaltFlag();
     plaza_checkFriend();

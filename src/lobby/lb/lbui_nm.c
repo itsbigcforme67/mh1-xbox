@@ -1805,7 +1805,7 @@ int Lb_get_cursor_col(void) {
 }
 
 void plaza_checkMyStatusTrans(void) {
-    disp_status(0xD8, 0x50, CW->x440, CW->x448, my_user_mini_data, *(s8 *)((u8 *)pNet + 0x24), 3, D_3C73B4);
+    disp_status(0xD8, 0x50, CW->x440, CW->x448, my_user_mini_data, *(s8 *)((u8 *)pNet + PNET_OFS(0x24)), 3, D_3C73B4);
 }
 
 void plaza_chatTrans(void) {

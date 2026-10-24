@@ -150,14 +150,14 @@ void Lb_guild(void) {
             }
             cnWrap_SoundRequest(9);
             if (key_quest_num == 0) {
-                pNet[8] = lb_get_quest_level(0);
+                pNet[PNET_OFS(8)] = lb_get_quest_level(0);
             } else if (Online_ck() == 1) {
-                pNet[8] = 6;
+                pNet[PNET_OFS(8)] = 6;
             } else {
-                pNet[8] = 5;
+                pNet[PNET_OFS(8)] = 5;
             }
-            if ((s8)pNet[8] < 0) {
-                pNet[8] = 5;
+            if ((s8)pNet[PNET_OFS(8)] < 0) {
+                pNet[PNET_OFS(8)] = 5;
             }
             lb_sys.x06 = lb_sys.x06 + 1;
             Gunner_wasure_ck(User_data);
@@ -200,8 +200,8 @@ void Lb_guild(void) {
             break;
         case 3:
             lb_sys.x06 = 3;
-            pNet[7] = 0;
-            pNet[8] = pNet[0x13];
+            pNet[PNET_OFS(7)] = 0;
+            pNet[PNET_OFS(8)] = pNet[PNET_OFS(0x13)];
             break;
         }
         break;
@@ -354,12 +354,12 @@ void Lb_guild(void) {
         } else {
 b111:
             if (*(u16 *)0x3F3714 & 0x200) {
-                v = pNet[8] + 1;
-                pNet[8] = v;
+                v = pNet[PNET_OFS(8)] + 1;
+                pNet[PNET_OFS(8)] = v;
                 if ((v & 0xFF) >= 3) {
-                    pNet[8] = 0;
+                    pNet[PNET_OFS(8)] = 0;
                 }
-                Lb_num_to_str(pNet[8] + 1, lb_quest_exp + 0xCC);
+                Lb_num_to_str(pNet[PNET_OFS(8)] + 1, lb_quest_exp + 0xCC);
                 cnWrap_SoundRequest(6);
             }
         }

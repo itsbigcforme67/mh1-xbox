@@ -145,17 +145,11 @@ void lb_guild_end(void);
 void Lb_guild_trans(u8 *prim);
 void lb_set_questpage_info(void);
 
-/* pNet fields of the counter: in the G online build pNet is shared with G's own lobby code (src/lobby/gonl/gen), which
- * keeps G's layout (Lbc_set_prim writes its prims at +0..+0xF, where the MH1 layout keeps the sub step): G's offsets there */
-#ifdef MHG_ONLINE
-#define PN_SUB 0x22         /* the sub step of lb_select_quest (MH1 2) */
-#define PN_BUSY 0x2D        /* a dialog / the net is busy (MH1 0xC) */
-#define PN_LEVEL 0x32       /* the hunter's highest quest level (MH1 0x12) */
-#else
-#define PN_SUB PNET_OFS(2)
-#define PN_BUSY PNET_OFS(0xC)
-#define PN_LEVEL PNET_OFS(0x12)
-#endif
+/* pNet fields of the counter (in the G online build PNET_OFS gives G's layout, shared with G's own lobby code: G 0x22 /
+ * 0x2D / 0x32; lbsys_g.h) */
+#define PN_SUB PNET_OFS(2)          /* the sub step of lb_select_quest */
+#define PN_BUSY PNET_OFS(0xC)       /* a dialog / the net is busy */
+#define PN_LEVEL PNET_OFS(0x12)     /* the hunter's highest quest level */
 
 #ifdef MHG_ONLINE
 /* the G online counter (src/lobby/gonl/gen: G's own code) */

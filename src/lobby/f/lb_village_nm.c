@@ -928,7 +928,7 @@ void vs_square_exit(void) {
 
     pl = player_work + (*(u8 *)0x3F34C1 * 0xA00);
     if (Online_ck() == 1) {
-        M2C_FIELD(pNet, s8 *, 0xC) = 1;
+        M2C_FIELD(pNet, s8 *, PNET_OFS(0xC)) = 1;
     }
     switch (M2C_FIELD(lb_sys, s8 *, LBSYS_OFS(4))) {
     case 0:
@@ -3837,7 +3837,7 @@ void lb_check_status(void) {
             break;
         case 23:                                    /* switch 1 */
             temp_a0 = pNet;
-            M2C_FIELD(temp_a0, u8 *, 0xC) = 1U;
+            M2C_FIELD(temp_a0, u8 *, PNET_OFS(0xC)) = 1U;
             if (temp_s1 & 0xFFFF & 0x20) {
                 *(s8 *)0x3F36AB = 1;
                 M2C_FIELD(lb_sys, u32 *, LBSYS_OFS(0x68)) = 0U;
@@ -4307,8 +4307,8 @@ block_36:
                 M2C_FIELD(pNet, s8 *, PNET_OFS(8)) = 5;
             }
             temp_v0 = pNet;
-            if (M2C_FIELD(temp_v0, s8 *, 8) < 0) {
-                M2C_FIELD(temp_v0, s8 *, 8) = 5;
+            if (M2C_FIELD(temp_v0, s8 *, PNET_OFS(8)) < 0) {
+                M2C_FIELD(temp_v0, s8 *, PNET_OFS(8)) = 5;
             }
             M2C_FIELD(lb_sys, s8 *, LBSYS_OFS(6)) = (s8) (M2C_FIELD(lb_sys, s8 *, LBSYS_OFS(6)) + 1);
             Gunner_wasure_ck(User_data);
@@ -4354,7 +4354,7 @@ block_36:
             M2C_FIELD(lb_sys, s8 *, LBSYS_OFS(6)) = 3;
             M2C_FIELD(pNet, s8 *, PNET_OFS(7)) = 0;
             temp_v1 = pNet;
-            M2C_FIELD(temp_v1, s8 *, 8) = (s8) M2C_FIELD(temp_v1, u8 *, 0x13);
+            M2C_FIELD(temp_v1, s8 *, PNET_OFS(8)) = (s8) M2C_FIELD(temp_v1, u8 *, PNET_OFS(0x13));
             break;
         }
         goto block_137;
@@ -4507,8 +4507,8 @@ block_36:
 block_111:
             if (*(u16 *)0x3F3714 & 0x200) {
                 temp_v1_2 = pNet;
-                temp_v0_5 = (u8) M2C_FIELD(temp_v1_2, s8 *, 8) + 1;
-                M2C_FIELD(temp_v1_2, s8 *, 8) = temp_v0_5;
+                temp_v0_5 = (u8) M2C_FIELD(temp_v1_2, s8 *, PNET_OFS(8)) + 1;
+                M2C_FIELD(temp_v1_2, s8 *, PNET_OFS(8)) = temp_v0_5;
                 if ((temp_v0_5 & 0xFF) >= 3) {
                     M2C_FIELD(pNet, s8 *, PNET_OFS(8)) = 0;
                 }
@@ -4741,11 +4741,11 @@ s32 lb_select_quest(void) {
         var_v0 = *(u8 * *)(lb_quest_all + (*(M2C_FIELD(pNet, u8 *, PNET_OFS(7)) + (lb_quest_info + ((temp_s1 & 0xFF) * 5))) * 4));
     }
     temp_a0 = pNet;
-    temp_v1 = M2C_FIELD(temp_a0, u8 *, 2);
+    temp_v1 = M2C_FIELD(temp_a0, u8 *, PNET_OFS(2));
     temp_a1 = temp_a0 + 2;
     switch (temp_v1) {                              /* irregular */
     case 0:
-        M2C_FIELD(temp_a0, u8 *, 2) = (u8) (temp_v1 + 1);
+        M2C_FIELD(temp_a0, u8 *, PNET_OFS(2)) = (u8) (temp_v1 + 1);
         lb_set_questpage_info(temp_a0, temp_a1);
         M2C_FIELD(pNet, u8 *, PNET_OFS(8)) = 0U;
         Lbc_set_prim(0, Lb_guild_trans, 0);
@@ -4768,8 +4768,8 @@ block_43:
             temp_s0_2 = M2C_FIELD(mhRule, u8 *, 0x58);
             if ((s32) temp_s0_2 < (((s8)(get_questLevelNum(temp_a0, temp_a1))))) {
                 temp_v1_3 = pNet;
-                temp_v0 = M2C_FIELD(temp_v1_3, u8 *, 7) + 1;
-                M2C_FIELD(temp_v1_3, u8 *, 7) = temp_v0;
+                temp_v0 = M2C_FIELD(temp_v1_3, u8 *, PNET_OFS(7)) + 1;
+                M2C_FIELD(temp_v1_3, u8 *, PNET_OFS(7)) = temp_v0;
                 if ((temp_v0 & 0xFF) >= 5) {
                     M2C_FIELD(pNet, u8 *, PNET_OFS(7)) = 0U;
                 }
@@ -4780,8 +4780,8 @@ block_43:
                 temp_s0_3 = M2C_FIELD(mhRule, u8 *, 0x58);
                 if (temp_s0_3 == (((s8)(get_questLevelNum())))) {
                     temp_v1_4 = pNet;
-                    temp_v0_2 = M2C_FIELD(temp_v1_4, u8 *, 7) + 1;
-                    M2C_FIELD(temp_v1_4, u8 *, 7) = temp_v0_2;
+                    temp_v0_2 = M2C_FIELD(temp_v1_4, u8 *, PNET_OFS(7)) + 1;
+                    M2C_FIELD(temp_v1_4, u8 *, PNET_OFS(7)) = temp_v0_2;
                     if ((temp_v0_2 & 0xFF) >= key_quest_num) {
                         M2C_FIELD(pNet, u8 *, PNET_OFS(7)) = 0U;
                     }
@@ -4794,13 +4794,13 @@ block_43:
             temp_s0_4 = M2C_FIELD(mhRule, u8 *, 0x58);
             if ((s32) temp_s0_4 < (((s8)(get_questLevelNum(temp_a0, temp_a1))))) {
                 temp_v0_3 = pNet;
-                temp_v0_4 = M2C_FIELD(temp_v0_3, u8 *, 7);
+                temp_v0_4 = M2C_FIELD(temp_v0_3, u8 *, PNET_OFS(7));
                 if (temp_v0_4 == 0) {
                     var_v0_2 = 4;
                 } else {
                     var_v0_2 = temp_v0_4 - 1;
                 }
-                M2C_FIELD(temp_v0_3, u8 *, 7) = var_v0_2;
+                M2C_FIELD(temp_v0_3, u8 *, PNET_OFS(7)) = var_v0_2;
                 lb_set_questpage_info();
                 M2C_FIELD(mhRule, s32 *, 0x54) = (s32) M2C_FIELD(var_v0, u8 *, 0x1D);
                 cnWrap_SoundRequest(1);
@@ -4808,21 +4808,21 @@ block_43:
                 temp_s0_5 = M2C_FIELD(mhRule, u8 *, 0x58);
                 if (temp_s0_5 == (((s8)(get_questLevelNum())))) {
                     temp_v0_5 = pNet;
-                    temp_v0_6 = M2C_FIELD(temp_v0_5, u8 *, 7);
+                    temp_v0_6 = M2C_FIELD(temp_v0_5, u8 *, PNET_OFS(7));
                     if (temp_v0_6 == 0) {
                         var_v0_3 = key_quest_num - 1;
                     } else {
                         var_v0_3 = temp_v0_6 - 1;
                     }
-                    M2C_FIELD(temp_v0_5, u8 *, 7) = var_v0_3;
+                    M2C_FIELD(temp_v0_5, u8 *, PNET_OFS(7)) = var_v0_3;
                     lb_set_questpage_info();
                     M2C_FIELD(mhRule, s32 *, 0x54) = (s32) M2C_FIELD(var_v0, u8 *, 0x1D);
                     cnWrap_SoundRequest(1);
                 }
             }
         } else if (temp_v1_2 & 0x200) {
-            temp_v0_7 = M2C_FIELD(temp_a0, u8 *, 8) + 1;
-            M2C_FIELD(temp_a0, u8 *, 8) = temp_v0_7;
+            temp_v0_7 = M2C_FIELD(temp_a0, u8 *, PNET_OFS(8)) + 1;
+            M2C_FIELD(temp_a0, u8 *, PNET_OFS(8)) = temp_v0_7;
             if ((temp_v0_7 & 0xFF) >= 3) {
                 M2C_FIELD(pNet, u8 *, PNET_OFS(8)) = 0U;
             }
@@ -4847,8 +4847,8 @@ s32 lb_select_quest_level(void) {
     if (temp_a1 & 0x20) {
         if ((((s8)(check_questLevelSelect(M2C_FIELD(pNet, s8 *, PNET_OFS(8)), temp_a1)))) == 0) {
             temp_v1 = pNet;
-            M2C_FIELD(mhRule, u8 *, 0x58) = (u8) M2C_FIELD(temp_v1, s8 *, 8);
-            M2C_FIELD(temp_v1, u8 *, 0x13) = (u8) M2C_FIELD(temp_v1, s8 *, 8);
+            M2C_FIELD(mhRule, u8 *, 0x58) = (u8) M2C_FIELD(temp_v1, s8 *, PNET_OFS(8));
+            M2C_FIELD(temp_v1, u8 *, PNET_OFS(0x13)) = (u8) M2C_FIELD(temp_v1, s8 *, PNET_OFS(8));
             M2C_FIELD(pNet, s8 *, PNET_OFS(8)) = 0;
             cnWrap_SoundRequest(0);
             return 0;

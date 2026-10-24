@@ -15,10 +15,10 @@ void plaza_mailBoxTrans(int arg0, int arg1, int arg2) {
     char **num = (char **)lb_num_str;
     s16 x = (s16)arg0, y = (s16)arg1, xt, yt, i;
 
-    F(s16, pNet, 0x26) = 0;
+    F(s16, pNet, PNET_OFS(0x26)) = 0;
     for (i = 0; i < 8 && m[i * 0x9A + 1] != 0; i++)
-        F(s16, pNet, 0x26) = (s16)(F(s16, pNet, 0x26) + 1);
-    if (F(u8, pNet, 3) == 0)
+        F(s16, pNet, PNET_OFS(0x26)) = (s16)(F(s16, pNet, PNET_OFS(0x26)) + 1);
+    if (F(u8, pNet, PNET_OFS(3)) == 0)
         return;
     switch ((s8)arg2) {
     case 0:
@@ -32,19 +32,19 @@ void plaza_mailBoxTrans(int arg0, int arg1, int arg2) {
     flfntSetSize(0x12, 0x12);
     xt = (s16)(x + 0xA);
     yt = (s16)(y + 0x28);
-    if (F(u8, pNet, 3) < 2) {
-        if (F(s16, pNet, 0x26) == 0) {     /* no mail */
+    if (F(u8, pNet, PNET_OFS(3)) < 2) {
+        if (F(s16, pNet, PNET_OFS(0x26)) == 0) {     /* no mail */
             put_titles(xt, yt, F(s32, &tl_msg_tbl, 0xC));
             flfntSetSize(0x14, 0x14);
             font_print_double((s16)(xt + 0x46), (s16)(yt + 0x3C), 1, 4, F(s32, &tl_msg_tbl, 0x10));
             return;
         }
-        put_main_cursor2(arg0, arg1, F(u8, pNet, 0xA));
+        put_main_cursor2(arg0, arg1, F(u8, pNet, PNET_OFS(0xA)));
         put_titles(xt, yt, F(s32, &tl_msg_tbl, 0xC));
         y = (s16)(y + 0x3E);
-        for (i = 0, use = m; i < F(s16, pNet, 0x26) && use[1] != 0; i++, use += 0x9A, y = (s16)(y + 0x16)) {
+        for (i = 0, use = m; i < F(s16, pNet, PNET_OFS(0x26)) && use[1] != 0; i++, use += 0x9A, y = (s16)(y + 0x16)) {
             /* the line: number, handle, id (full width), the unread / read icon */
-            if (F(u8, pNet, 0xA) == i) {
+            if (F(u8, pNet, PNET_OFS(0xA)) == i) {
                 font_print_double((s16)(xt + 9), y, 1, 4, (int)num[i + 1]);
                 flfntSetSize(0x16, 0x12);
                 font_print_double((s16)(xt + 0x78), y, 1, 4, (int)(use + 9));
@@ -67,10 +67,10 @@ void plaza_mailBoxTrans(int arg0, int arg1, int arg2) {
         }
         return;
     }
-    if (F(u8, pNet, 3) == 2) {     /* reading a mail: title, "No.", its number, the mail */
+    if (F(u8, pNet, PNET_OFS(3)) == 2) {     /* reading a mail: title, "No.", its number, the mail */
         put_titles(xt, yt, F(s32, &tl_mail_tbl, 0));
         put_titles((s16)(xt + 0x12C), yt, F(s32, &tl_mail_tbl, 4));
-        put_titles((s16)(xt + 0x168), yt, (int)num[F(u8, pNet, 0xE) + 1]);
+        put_titles((s16)(xt + 0x168), yt, (int)num[F(u8, pNet, PNET_OFS(0xE)) + 1]);
         plaza_disp_mail(pNet, xt, (s16)(yt + 0x16));
         return;
     }

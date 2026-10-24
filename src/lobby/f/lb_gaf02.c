@@ -86,11 +86,11 @@ int Lbc_getDate();
 void Lb_check_newCommer();
 
 int Local_main(void) {
-    pNet[0xC] = 0;
-    pNet[0x11] = 0;
+    pNet[PNET_OFS(0xC)] = 0;
+    pNet[PNET_OFS(0x11)] = 0;
     font_set_stack_no(0);
     vs_square_func_213[lb_sys.x03]();
-    if (pNet[0x11] == 0) {
+    if (pNet[PNET_OFS(0x11)] == 0) {
         lbc_text_lobby_trans(network_work);
     }
     if (lb_sys.x68 == 32) {

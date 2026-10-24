@@ -6,9 +6,9 @@ void ss_text_lobby_trans_ot(u8 *arg0) {
     u8 temp_a0;
 
     font_set_stack_no(F(s32, arg0, 0x18));
-    temp_a0 = F(u8, pNet, 0xC);
+    temp_a0 = F(u8, pNet, PNET_OFS(0xC));
     if (temp_a0 == 1) {
         DispDialogData(temp_a0);
-        F(u8, pNet, 0xC) = 0U;
+        F(u8, pNet, PNET_OFS(0xC)) = 0U;
     }
 }

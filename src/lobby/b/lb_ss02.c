@@ -32,7 +32,7 @@ s32 server_select_01(void) {
             COM_R_No_3 = 0;
             COM_R_No_1 = (u8) (COM_R_No_1 + 1);
             memset(&network_work, 0, 0x2C);
-            F(s8, pNet, 6) = 1;
+            F(s8, pNet, PNET_OFS(6)) = 1;
             cnLbc_MoveMenuServerSelect(&network_work);
         }
     } else if (CnetWork.x05 == 3) {

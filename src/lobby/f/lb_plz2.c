@@ -673,7 +673,7 @@ int plaza_checkFriend()
         switch (getUserInfo(a)) {
         case 0:
             pNet->step++;
-            (*((u8 *)pNet + 0x13)) = 3;
+            (*((u8 *)pNet + PNET_OFS(0x13))) = 3;
             *(u8 *)&pNet->x12 = 0;
             break;
         case 1:

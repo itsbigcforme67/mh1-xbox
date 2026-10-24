@@ -105,7 +105,7 @@ loop_18:
                 var_s3 += 0x14A8;
             } while (var_s0 < F(u8, &RoomRule, 0x54));
         }
-        F(s8, pNet, 6) = 3;
+        F(s8, pNet, PNET_OFS(6)) = 3;
         return 1;
     }
     return 0;

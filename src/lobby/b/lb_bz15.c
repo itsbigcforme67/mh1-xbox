@@ -10,7 +10,7 @@ void Lb_pl_status_t(u8 *arg0) {
 
     font_set_stack_no(F(s32, arg0, 0x18));
     temp_v1 = pNet;
-    Lb_PlayerStatus((u8 *)&lb_player + (F(u8, temp_v1, 8) * 0x38), F(u8, temp_v1, 3));
+    Lb_PlayerStatus((u8 *)&lb_player + (F(u8, temp_v1, PNET_OFS(8)) * 0x38), F(u8, temp_v1, PNET_OFS(3)));
 }
 #endif
 

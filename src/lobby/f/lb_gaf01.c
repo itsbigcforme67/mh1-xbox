@@ -95,7 +95,7 @@ int b;
 int c;
 {
     if (Online_ck() == 0) {
-        pNet[0x11] = 1;
+        pNet[PNET_OFS(0x11)] = 1;
     }
     switch (lb_sys.x04) {
     case 0:

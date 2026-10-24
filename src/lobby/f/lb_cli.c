@@ -624,7 +624,7 @@ void lobby_client_login() {
 #endif
 
 #ifdef VERSION_MHG
-/* G (lobby 0x57A0A0): the prims are lb_prim[0..] 0x20 apart (MH1's D_3EBC90.. have no G address); pNet is MH1's layout here */
+/* G (lobby 0x57A0A0): the prims are lb_prim[0..] 0x20 apart (MH1's D_3EBC90.. have no G address); pNet by PNET_OFS */
 #if !defined(G_PART)
 void Lbc_set_prim(s32 arg0, s32 arg1, s32 arg2) {
     F(int, pNet, PNET_OFS(0x14)) = (int)&lb_prim;
@@ -2404,7 +2404,7 @@ void CallBack_Result_Plaza_LobbyMember2(CNET_RES res) {
             } while (var_s1 < 8);
         }
         temp_a0 = (int)pNet;
-        F(u8, temp_a0, 0x12) = (u8) (F(u8, temp_a0, 0x12) + 1);
+        F(u8, temp_a0, PNET_OFS(0x12)) = (u8) (F(u8, temp_a0, PNET_OFS(0x12)) + 1);
     }
 }
 #endif

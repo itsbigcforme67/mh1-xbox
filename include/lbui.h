@@ -19,6 +19,36 @@ typedef struct LB_DIALOG {
 } LB_DIALOG;
 
 /* net window state pointed to by pNet (main .sbss); also the argument of tl_menu_cursor_up/down */
+#ifdef MHG_ONLINE
+/* the PC G online build: G's layout (include/lbsys_g.h PNET_OFS), shared with G's generated lobby code */
+typedef struct LB_NETW {
+    u8 _prim[0x18];     /* 0x00 G: five prim pointers (MH1 0x14..) and +0x14 */
+    s16 idx;            /* 0x18 (MH1 0x00) */
+    u8 _pad1A[0x1C - 0x1A];
+    s16 x24;            /* 0x1C (MH1 0x24) */
+    s16 x26;            /* 0x1E (MH1 0x26) */
+    s16 x28;            /* 0x20 (MH1 0x28) */
+    u8 depth;           /* 0x22 (MH1 0x02) */
+    u8 step;            /* 0x23 (MH1 0x03) */
+    u8 x04;             /* 0x24 */
+    u8 x05;             /* 0x25 */
+    u8 gx26;            /* 0x26 G only */
+    s8 x06;             /* 0x27 (MH1 0x06) */
+    u8 sel;             /* 0x28 (MH1 0x07) */
+    u8 menu;            /* 0x29 (MH1 0x08) */
+    u8 cur;             /* 0x2A (MH1 0x09) */
+    s8 x0A;             /* 0x2B (MH1 0x0A) */
+    u8 _pad0B;          /* 0x2C */
+    u8 x0C;             /* 0x2D (MH1 0x0C) */
+    s8 x0D;             /* 0x2E */
+    s8 x0E  ;            /* 0x2F (MH1 0x0E) */
+    u8 yesno;           /* 0x30 (MH1 0x0F) */
+    u8 _pad11;          /* 0x31 (MH1 0x11) */
+    s8 x12;             /* 0x32 (MH1 0x12) */
+    u8 _pad33;          /* 0x33 (MH1 0x13) */
+    u8 x10;             /* 0x34 (MH1 0x10: PC only, lbsys_g.h) */
+} LB_NETW;
+#else
 typedef struct LB_NETW {
     s16 idx;            /* 0x00 loop index (chat members) */
     u8 depth;           /* 0x02 menu depth */
@@ -43,6 +73,7 @@ typedef struct LB_NETW {
     s16 x26;            /* 0x26 */
     s16 x28;            /* 0x28 */
 } LB_NETW;
+#endif
 typedef LB_NETW LB_TLMENU;
 
 /* plaza / lobby info tables (main .bss): 0x15C bytes per entry */

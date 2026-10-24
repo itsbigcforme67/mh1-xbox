@@ -30,7 +30,7 @@ int lb_select_quest(void) {
     if (s1 == (sx = get_questLevelNum()) + 1) {
         q = get_quest_info();
     } else {
-        q = lb_quest_all[(lb_quest_info + (s1 & 0xFF) * 5)[pNet[7]]];
+        q = lb_quest_all[(lb_quest_info + (s1 & 0xFF) * 5)[pNet[PNET_OFS(7)]]];
     }
     p = pNet;
     p2 = p + 2;
@@ -38,7 +38,7 @@ int lb_select_quest(void) {
     case 0:
         *p2 = *p2 + 1;
         lb_set_questpage_info();
-        pNet[8] = 0;
+        pNet[PNET_OFS(8)] = 0;
         Lbc_set_prim(0, Lb_guild_trans, 0);
         break;
     case 1:
@@ -56,10 +56,10 @@ int lb_select_quest(void) {
         if (t & 0x400) {
             if (mhRule.x58 < (sx = get_questLevelNum())) {
                 u8 *n = pNet;
-                u8 v = n[7] + 1;
-                n[7] = v;
+                u8 v = n[PNET_OFS(7)] + 1;
+                n[PNET_OFS(7)] = v;
                 if (v >= 5) {
-                    pNet[7] = 0;
+                    pNet[PNET_OFS(7)] = 0;
                 }
                 lb_set_questpage_info();
                 mhRule.quest = *((u8 *)q + 0x1D);
@@ -67,10 +67,10 @@ int lb_select_quest(void) {
             } else if (key_quest_num > 1) {
                 if (mhRule.x58 == (sx = get_questLevelNum())) {
                     u8 *n = pNet;
-                    u8 v = n[7] + 1;
-                    n[7] = v;
+                    u8 v = n[PNET_OFS(7)] + 1;
+                    n[PNET_OFS(7)] = v;
                     if (v >= key_quest_num) {
-                        pNet[7] = 0;
+                        pNet[PNET_OFS(7)] = 0;
                     }
                     lb_set_questpage_info();
                     mhRule.quest = *((u8 *)q + 0x1D);
@@ -79,7 +79,7 @@ int lb_select_quest(void) {
             }
         } else if (t & 0x800) {
             if (mhRule.x58 < (sx = get_questLevelNum())) {
-                u8 *pv = pNet + 7;
+                u8 *pv = pNet + PNET_OFS(7);
                 if (*pv == 0) {
                     *pv = 4;
                 } else {
@@ -90,7 +90,7 @@ int lb_select_quest(void) {
                 cnWrap_SoundRequest(1);
             } else if (key_quest_num > 1) {
                 if (mhRule.x58 == (sx = get_questLevelNum())) {
-                    u8 *pv = pNet + 7;
+                    u8 *pv = pNet + PNET_OFS(7);
                     if (*pv == 0) {
                         *pv = key_quest_num - 1;
                     } else {
@@ -102,12 +102,12 @@ int lb_select_quest(void) {
                 }
             }
         } else if (t & 0x200) {
-            u8 v = p[8] + 1;
-            p[8] = v;
+            u8 v = p[PNET_OFS(8)] + 1;
+            p[PNET_OFS(8)] = v;
             if (v >= 3) {
-                pNet[8] = 0;
+                pNet[PNET_OFS(8)] = 0;
             }
-            Lb_num_to_str(pNet[8] + 1, lb_quest_exp + 0xCC);
+            Lb_num_to_str(pNet[PNET_OFS(8)] + 1, lb_quest_exp + 0xCC);
             cnWrap_SoundRequest(6);
         }
         break;

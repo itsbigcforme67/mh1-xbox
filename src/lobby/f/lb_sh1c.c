@@ -112,7 +112,7 @@ s32 shop_process_after() {
         }
         break;
     case 1:
-        pNet[0x11] = 1;
+        pNet[PNET_OFS(0x11)] = 1;
         pl->work8ED = 0;
         if (*(u16 *)(em + 0x2DC) == 0x3FE) {
             r_no_process++;
@@ -120,7 +120,7 @@ s32 shop_process_after() {
         break;
     case 2:
         pl->work8ED = 0;
-        pNet[0x11] = 1;
+        pNet[PNET_OFS(0x11)] = 1;
         if (*(u16 *)(em + 0x2DC) == 0x3E9) {
             r_no_process++;
             lbShop.help = shop_process2_help[6];

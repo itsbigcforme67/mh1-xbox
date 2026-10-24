@@ -131,15 +131,15 @@ void lbc_login_init(void)
         cnLBS_Set_LoginFirstData(&fd);
         SetSceneTitle(0, 0);
         SetDialogData(0, 5);
-        pNet[0xC] = 1;
+        pNet[PNET_OFS(0xC)] = 1;
         break;
     case 1:
         cw[CW_OFS(0x2C34)] = st + 1;
-        pNet[0xC] = 2;
+        pNet[PNET_OFS(0xC)] = 2;
         /* fallthrough */
     case 2:
         cw[CW_OFS(0x2C34)]++;
-        pNet[0xC] = 1;
+        pNet[PNET_OFS(0xC)] = 1;
         memset(&lg, 0, sizeof lg);
         lg.x00[0] = 1;
         lg.x00[1] = D_3A6EA2;
@@ -150,7 +150,7 @@ void lbc_login_init(void)
         cnLBS_LoginLobbyServer(lg, (int)(long)CallBack_Result_LoginLobbyServer);
         break;
     case 3:
-        pNet[0xC] = 1;
+        pNet[PNET_OFS(0xC)] = 1;
         Check_CallBackWait();
         break;
     }
@@ -222,7 +222,7 @@ s32 Lbc_GetRoomRule(void)
             s += 0x14A5;
             d += 0x14A8;
         }
-        pNet[6] = 3;
+        pNet[PNET_OFS(6)] = 3;
         return 1;
     }
     return 0;

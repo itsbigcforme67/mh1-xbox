@@ -85,7 +85,7 @@ void lb_pl_mv052(PLW *pl, int a1, int a2) {
             str_fadeout(0, pl->work08);
             return;
         case 1:
-            pNet[0xC] = 1;
+            pNet[PNET_OFS(0xC)] = 1;
             v = Lb_select();
             switch (v) {
             case 0:
@@ -137,7 +137,7 @@ void lb_pl_mv052(PLW *pl, int a1, int a2) {
             pl_sleeping(pl);
             return;
         case 3:
-            pNet[0xC] = 1;
+            pNet[PNET_OFS(0xC)] = 1;
             v = Lb_select();
             switch (v) {
             case 0:
@@ -155,7 +155,7 @@ void lb_pl_mv052(PLW *pl, int a1, int a2) {
             pl_sleeping(pl);
             return;
         case 4:
-            pNet[0xC] = 1;
+            pNet[PNET_OFS(0xC)] = 1;
             v = Lb_select();
             switch (v) {
             case 0:
@@ -173,7 +173,7 @@ void lb_pl_mv052(PLW *pl, int a1, int a2) {
             pl_sleeping(pl);
             return;
         case 5:
-            pNet[0xC] = 1;
+            pNet[PNET_OFS(0xC)] = 1;
             v = Lb_select();
             switch (v) {
             case 0:

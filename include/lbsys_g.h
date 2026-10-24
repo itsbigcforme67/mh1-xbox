@@ -16,9 +16,24 @@
  * 0x35E0.. from G's cmcs_03 (the game-server ticket, G cw+0xFA6C) and Lbc_connect (0x35F4 = G 0xFA80), 24 Oct round 6) */
 /* pNet (the net window state, network_work) and cw (client work): MH1 offset -> G offset, from tools/mhg_addrmap.py
  * --ptr pNet / --ptr cw (votes) and G's code; unknown offsets stay as they are. */
-/* PC: pNet points at a host buffer in MH1's layout (Clear_lobby_ram, lb_n.c), so MH1's C (raw pNet[0xC] ... offsets) runs
- * unchanged and PNET_OFS is the identity. G's own layout (prims at +0..0x10, the flags at +0x2D / +0x31) is not used. */
+/* pNet (the lobby's network window state): G's layout, voted with `tools/mhg_addrmap.py lobby 0 0 --ptr pNet` and read in
+ * G's own code (24 Oct 2026, round 7; docs/network.md 3.12 "pNet"):
+ *   MH1 0x00 s16 idx      -> G 0x18        MH1 0x02..0x05 -> G 0x22..0x25 (+0x20)
+ *   MH1 0x06..0x0F        -> G 0x27..0x30 (+0x21; G 0x26 is a G-only byte, used by G's new plaza functions 0x569C20..)
+ *   MH1 0x11..0x13        -> G 0x31..0x33 (+0x20)
+ *   MH1 0x14..0x23 prims  -> G 0x00..0x0F (G has a fifth prim pointer at 0x10: text_lobby_trans_ot3)
+ *   MH1 0x24 / 0x26 / 0x28 s16 -> G 0x1C / 0x1E / 0x20
+ *   MH1 0x10 (no MH1 C uses it; no G twin found) -> 0x34, a byte past G's fields (PC only)
+ * Only the PC G online build (MHG_ONLINE) uses it: there G's generated lobby code (src/lobby/gonl) and MH1's lobby C share
+ * pNet, so MH1's C must write G's places (before round 7 it wrote MH1's, e.g. its dialog flag +0xC landed in G's prim
+ * pointer at +0xC). The plain PC G build has no G lobby code and keeps MH1's layout in its host buffer (lb_n.c); the PS2 G
+ * build's matched C does not touch pNet by raw offsets. */
+#ifdef MHG_ONLINE
+#define PNET_OFS(o) ((o) < 2 ? (o) + 0x18 : (o) < 6 ? (o) + 0x20 : (o) < 0x10 ? (o) + 0x21 : (o) == 0x10 ? 0x34 : \
+    (o) < 0x14 ? (o) + 0x20 : (o) < 0x24 ? (o) - 0x14 : (o) < 0x2A ? (o) - 8 : (o))
+#else
 #define PNET_OFS(o) (o)
+#endif
 #define CW_OFS(o) ((o) < 0x2BFE ? (o) : (o) < 0x2C06 ? (o) - 0x2BFE + 0xB64 : (o) < 0x2C2F ? (o) - 0x2C06 + 0xB6E : \
     (o) < 0x2C3C ? (o) - 0x2C2F + 0xB97 : (o) < 0x2C43 ? (o) - 0x2C3C + 0xBA4 : (o) < 0x2C46 ? (o) - 0x2C43 + 0xBA7 : \
     (o) < 0x2C4C ? (o) - 0x2C46 + 0xBB0 : (o) < 0x2C70 ? (o) - 0x2C4C + 0xBB4 : \

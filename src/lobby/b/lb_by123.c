@@ -81,7 +81,7 @@ void Lb_pl_status_i(void) {
         return;
     }
     *(s8 *)0x39DAD0 = 0;
-    pNet[8] = *(u16 *)(st + 0xC);
-    Lb_PlStatusSet(pNet[8]);
+    pNet[PNET_OFS(8)] = *(u16 *)(st + 0xC);
+    Lb_PlStatusSet(pNet[PNET_OFS(8)]);
     cnWrap_SoundRequest(6);
 }

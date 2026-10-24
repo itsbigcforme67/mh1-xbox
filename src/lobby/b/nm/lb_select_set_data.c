@@ -40,7 +40,7 @@ static void lb_select_set_data(s32 arg0) {
     s16 *cp;
     s16 *d2;
 
-    r = Lbs_GetRoomInfo(F(u8, pNet, 7));
+    r = Lbs_GetRoomInfo(F(u8, pNet, PNET_OFS(7)));
     cls = Lbs_GetClassAdd() & 0xFFFF;
     id = arg0 & 0xFF;
     if (id >= 0xC8) {
@@ -65,7 +65,7 @@ static void lb_select_set_data(s32 arg0) {
     } else {
         strcpy(lb_board_exp + 0x68, *qs);
     }
-    sprintf(lb_board_exp + 0xCC, lit_427_0065E260, lb_num_str[1 + F(u8, pNet, 7)], lb_num_str[0xB], lb_num_str[cls & 0xFFFF]);
+    sprintf(lb_board_exp + 0xCC, lit_427_0065E260, lb_num_str[1 + F(u8, pNet, PNET_OFS(7))], lb_num_str[0xB], lb_num_str[cls & 0xFFFF]);
     sprintf(lb_board_exp + 0x130, lit_428_0065E270, lb_num_str[r->x2], lb_num_str[0xB], lb_num_str[r->x4], lb_rule_msg_etc[0]);
     if (r->x11 != 0) {
         strcpy(lb_board_exp + 0x194, lb_rule_msg_etc[2]);

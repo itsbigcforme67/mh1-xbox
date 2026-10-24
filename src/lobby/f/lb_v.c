@@ -105,13 +105,13 @@ int lb_select_quest_level(void) {
     s8 v;
     pad = Get_sw2(0);
     t = pad;
-    pNet[0x12] = lb_get_quest_level(0);
+    pNet[PNET_OFS(0x12)] = lb_get_quest_level(0);
     if (t & 0x20) {
-        if (check_questLevelSelect(*(s8 *)(pNet + 8), t) == 0) {
+        if (check_questLevelSelect(*(s8 *)(pNet + PNET_OFS(8)), t) == 0) {
             u8 *n = pNet;
-            mhRule.x58 = n[8];
-            n[0x13] = n[8];
-            pNet[8] = 0;
+            mhRule.x58 = n[PNET_OFS(8)];
+            n[PNET_OFS(0x13)] = n[PNET_OFS(8)];
+            pNet[PNET_OFS(8)] = 0;
             cnWrap_SoundRequest(0);
             return 0;
         }
@@ -123,11 +123,11 @@ int lb_select_quest_level(void) {
         return 3;
     }
     if (Online_ck() == 1) {
-        v = Lb_cursorUD(pNet[8], get_questLevelNum() + 2);
+        v = Lb_cursorUD(pNet[PNET_OFS(8)], get_questLevelNum() + 2);
     } else {
-        v = Lb_cursorUD(pNet[8], get_questLevelNum() + 1);
+        v = Lb_cursorUD(pNet[PNET_OFS(8)], get_questLevelNum() + 1);
     }
-    pNet[8] = v;
+    pNet[PNET_OFS(8)] = v;
     return 2;
 }
 
@@ -249,7 +249,7 @@ int lb_guild_make_room(void) {
     int pad;
     int q;
     pad = Get_sw2(0) & 0xFFFF;
-    pNet[0xC] = 0;
+    pNet[PNET_OFS(0xC)] = 0;
     switch (lb_sys.x07) {
     case 0:
         switch (Lbc_ReadRoomInfo(lb_sys.x07, pad)) {
@@ -318,7 +318,7 @@ int lb_guild_make_room(void) {
         }
         break;
     case 6:
-        pNet[0xC] = 1;
+        pNet[PNET_OFS(0xC)] = 1;
         if ((u16)pad & 0x20) {
             *(u8 *)0x3F36AB = 1;
             cnWrap_SoundRequest(3);
@@ -336,9 +336,9 @@ int guild_input_message(int a) {
     Get_kb_input();
     p = pNet;
     q = p + 2;
-    switch (p[2]) {
+    switch (p[PNET_OFS(2)]) {
     case 0:
-        *q = p[2] + 1;
+        *q = p[PNET_OFS(2)] + 1;
         SoftKeyboard_pos_set(80.0f, 0x3A);
         SoftKeyboard_set(1, 0, 0x3D, a);
         Lbc_set_prim(0, Lb_guild_trans, lb_rule_seet_trans_ot2);
@@ -349,12 +349,12 @@ int guild_input_message(int a) {
         switch (v) {
         case 1:
         case -1:
-            pNet[2] = pNet[2] + 1;
+            pNet[PNET_OFS(2)] = pNet[PNET_OFS(2)] + 1;
         }
         break;
     case 2:
         SoftKeyboard_exit();
-        pNet[2] = 0;
+        pNet[PNET_OFS(2)] = 0;
         *(u8 *)0x3F36AB = 1;
         return 1;
     }
@@ -367,9 +367,9 @@ int guild_input_pass(int a) {
     Get_sw(0);
     p = pNet;
     q = p + 2;
-    switch (p[2]) {
+    switch (p[PNET_OFS(2)]) {
     case 0:
-        *q = p[2] + 1;
+        *q = p[PNET_OFS(2)] + 1;
         SoftKeyboard_pos_set(80.0f, 0x3A);
         SoftKeyboard_set(3, 6, 8, a);
         Lbc_set_prim(0, Lb_guild_trans, lb_rule_seet_trans_ot2);
@@ -377,12 +377,12 @@ int guild_input_pass(int a) {
         break;
     case 1:
         if ((sx1 = SoftKeyboard_move(a, *(s16 *)0x3F3710, *(s16 *)0x3F3714)) != 0) {
-            pNet[2] = pNet[2] + 1;
+            pNet[PNET_OFS(2)] = pNet[PNET_OFS(2)] + 1;
         }
         break;
     case 2:
         SoftKeyboard_exit();
-        pNet[2] = 0;
+        pNet[PNET_OFS(2)] = 0;
         *(u8 *)0x3F36AB = 1;
         return 1;
     }

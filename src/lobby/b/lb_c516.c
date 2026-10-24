@@ -41,7 +41,7 @@ void lb_select_trans(void) {
     if (joinQuest >= 0xC8) {
         q = (s32)get_quest_info();
     } else {
-        q = (s32)lb_quest_all[F(u8, pNet, 0x12)];
+        q = (s32)lb_quest_all[F(u8, pNet, PNET_OFS(0x12))];
     }
     reload_tex(1, 0x157);
     SetTextureStage(0x157);
@@ -53,7 +53,7 @@ void lb_select_trans(void) {
     Put_2TF(lb_quest_data_tbl + 0x78);
     Put_2TF(lb_quest_data_tbl + 0x3C);
     Lb_put_msg(lb_board_exp + 0xC8);
-    if (F(u8, pNet, 0xE) == 1) {
+    if (F(u8, pNet, PNET_OFS(0xE)) == 1) {
         pm = lb_board_message + 0x60;
         Lb_put_msg(lb_board_exp + 0xC8);
         font_print_double(*(s16 *)pm, *(s16 *)(pm + 2), 1, 0xA, *(char **)(pm + 4));
@@ -67,7 +67,7 @@ void lb_select_trans(void) {
     Lb_put_msg(lb_board_exp);
     font_set_palette(0);
     Lb_put_msg(lb_board_exp + 0x64);
-    switch (F(u8, pNet, 8)) {
+    switch (F(u8, pNet, PNET_OFS(8))) {
     case 0:
         n1 = 4;
         pe = lb_board_exp + 0x12C;

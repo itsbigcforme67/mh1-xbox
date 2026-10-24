@@ -64,7 +64,7 @@ void lb_set_questpage_info(void) {
         if (mhRule.x58 == (s8)get_questLevelNum() + 1) {
             qb = (u8 *)get_quest_info();
         } else {
-            qb = (u8 *)lb_quest_all[(lb_quest_info + (mhRule.x58 & 0xFF) * 5)[pNet[7]]];
+            qb = (u8 *)lb_quest_all[(lb_quest_info + (mhRule.x58 & 0xFF) * 5)[pNet[PNET_OFS(7)]]];
         }
     }
     type = Lb_get_quest_type(qb);
@@ -83,8 +83,8 @@ void lb_set_questpage_info(void) {
         strcpy((char *)lb_quest_exp + 0x68, *(char **)s0);
         strcpy(quest_title, *(char **)s0);
     }
-    Lb_num_to_str(pNet[8] + 1, lb_quest_exp + 0xCC);
-    Lb_num_to_str(pNet[7] + 1, lb_quest_exp + 0x130);
+    Lb_num_to_str(pNet[PNET_OFS(8)] + 1, lb_quest_exp + 0xCC);
+    Lb_num_to_str(pNet[PNET_OFS(7)] + 1, lb_quest_exp + 0x130);
     if (mhRule.x58 != (s8)get_questLevelNum()) {
         if (Online_ck() == 1 && mhRule.x58 == (s8)get_questLevelNum() + 1) {
             strcpy(lb_quest_message[3], lb_guild_str[0]);
