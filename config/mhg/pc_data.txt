@@ -606,3 +606,5 @@ PlazaInfo = 0x003065B0; // size:0x2360 noptr        # G online: G's plaza record
 quest_title = 0x00300A90; // size:0x630 noptr       # G online: + the three event quest headers (0x30 + 3 x 512 bytes; lbc_login_finish_after clears them; at 0x20 the clear wiped pl_light_tbl and the quest load crashed in light_init)
 [main]
 mcsls_swin_minus_init = 0x002EBF64; // size:0x4     # the word G's mcsls_r0_start_init copies into MCSLS_SWIN_MINUS ((&MCSLS_SWIN_LIMIT)[2], 100; MH1 keeps 8 in MINUS itself): MINUS stayed 0 on the PC and every in-hunt session ended with error 0x10 after ~450 ticks
+[sub_main]
+hunter_appellation = 0x00527B10; // size:0x170     # G's 31 hunter titles (MH1 21: the host copy was MH1's 0x54) plus the cells G reads through it up to the next name (+0xA8.., +0x154); the online hunter point screen (f_reward_g.c points_disp) read title 24 past the copy and crashed
