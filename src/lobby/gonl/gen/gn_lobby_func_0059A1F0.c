@@ -6,13 +6,9 @@
 extern u8 g_main_2EFAD4;
 extern u8 g_main_2EFAD8;
 extern u8 g_main_2EFADC;
-extern u8 g_main_2EFAE0;
-extern u8 g_main_2EFAD4;
-extern u8 g_main_2EFAD8;
-extern u8 g_main_2EFADC;
-extern u8 g_main_2EFAE0;
+extern u8 lbSendInterval;
 void lobby_func_0059A1F0(void) {
-    (*(s16 *)&g_main_2EFAE0) = 0x14;
+    (*(s16 *)&lbSendInterval) = 0x14;
     (*(s16 *)&g_main_2EFAD8) = 0x1518;
     (*(s16 *)&g_main_2EFADC) = 0x708;
     (*(s16 *)&g_main_2EFAD4) = 0x1518;

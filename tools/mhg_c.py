@@ -27,6 +27,13 @@ def load_names():
             m = re.match(r'(\S+) = 0x([0-9A-Fa-f]+);(?:.*size:0x([0-9A-Fa-f]+))?', ln)
             if m and not m[1].startswith(('D_', 'lit_', 'jtbl_', 'func_', 'lobby_func_', 'sub_main_func_')):
                 names.setdefault(int(m[2], 16), (m[1], int(m[3], 16) if m[3] else 0))
+    # G data names tools/mhg_datamap.py found (high / medium, as tools/mhg_pcmeta.py takes them): a g_main_ADDR name
+    # of our own at such an address took the name from the PC's symbols, and the PC's C of that name (key_quest) then
+    # read a stand-in (23 Oct 2026: the G village crashed)
+    for ln in open(os.path.join(ROOT, 'config/mhg/data_map.txt')):
+        f = ln.split()
+        if len(f) >= 4 and f[0] in ('main', 'sub_main', 'lobby') and f[2].startswith('0x') and f[3] in ('high', 'medium'):
+            names.setdefault(int(f[2], 16), (f[1], 0))
     # sizes from the G PC build's symbol list (tools/mhg_pcmeta.py), which knows more of them
     pcs = os.path.join(ROOT, 'build/mhg/pc/symbols')
     if os.path.isdir(pcs):

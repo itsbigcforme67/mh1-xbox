@@ -154,7 +154,7 @@ def main():
         # G online: src/lobby/gonl/gen/*.c name the G function each is written from ("... code at lobby 0xADDR")
         gonl_at = {}
         import glob
-        for f in glob.glob("src/lobby/gonl/gen/*.c"):
+        for f in (glob.glob("src/lobby/gonl/gen/*.c") if os.environ.get("RT_GEN_GONL") else []):   # (G online builds only)
             with open(f, errors="replace") as fh:
                 m = re.match(r"/\* G online \(PC\): (\w+), written from Monster Hunter G's code at lobby 0x([0-9A-Fa-f]+)",
                              fh.readline())

@@ -22,7 +22,7 @@ extern u8 pNet;
 s32 font_print();                      /* extern */
 s32 sprintf();         /* extern */
 extern s32 g_lb_63E1D8;
-extern s32 g_main_2EEE70;
+extern s32 plazaMenuTbl;
 extern s32 pfl_menu_2138;
 extern s32 textLobbyTbl;
 
@@ -39,7 +39,7 @@ void Lbs_plaza_trans(void *arg0) {
     u8 *var_s3;
     u8 *temp_v1;
 
-    var_s3 = (*(s32 *)((u8 *)&g_main_2EEE70 + ((*(u8 *)((u8 *)((*(void **)&pNet)) + 0x29)) * 4)));
+    var_s3 = (*(s32 *)((u8 *)&plazaMenuTbl + ((*(u8 *)((u8 *)((*(void **)&pNet)) + 0x29)) * 4)));
     (*(s8 *)((u8 *)&pfl_menu_2138 + 0x7)) = 0xC;
     font_set_stack_no((*(s32 *)((u8 *)(arg0) + 0x18)));
     flfntSetSize(0x12, 0x12);

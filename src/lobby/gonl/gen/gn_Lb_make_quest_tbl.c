@@ -15,10 +15,8 @@ s32 lobby_func_0055EB40();
 unsigned short lobby_func_0055EB40();   /* the real return type (tools/check_kr_returns.py) */
 #endif
 s32 lobby_func_0055FA20();
-extern u8 g_main_2EFA68;
-extern u8 g_main_2EFA6C;
-extern u8 g_main_2EFA68;
-extern u8 g_main_2EFA6C;
+extern u8 key_quest_num;
+extern u8 key_quest;
 extern u8 guildStr;
 s32 Quest_clear_bit_ck();                        /* extern */
 u16 get_flag_quest();                            /* extern */
@@ -79,8 +77,8 @@ void Lb_make_quest_tbl(void) {
     u8 *var_s5_2;
     u8 *var_s7;
 
-    (*(u16 *)&g_main_2EFA6C) = 0U;
-    (*(s16 *)&g_main_2EFA68) = 0;
+    (*(u16 *)&key_quest) = 0U;
+    (*(s16 *)&key_quest_num) = 0;
     sp110 = 0;
     memset(&(*(u8 *)((u8 *)&guildStr + 0x100)), 0, 0xA0);
     sp130 = (s32) (((s8) (lb_get_quest_level(1))));
@@ -173,44 +171,44 @@ loop_12:
                 switch (sp130) {
                 case 0:
                     if (Quest_clear_bit_ck(0x27U) == 0) {
-                        (*(u16 *)&g_main_2EFA6C) = 0x27U;
+                        (*(u16 *)&key_quest) = 0x27U;
                     }
                     break;
                 case 1:
                     if (Quest_clear_bit_ck(9U) == 0) {
-                        (*(u16 *)&g_main_2EFA6C) = 9U;
+                        (*(u16 *)&key_quest) = 9U;
                     }
                     break;
                 case 2:
                     if (Quest_clear_bit_ck(0xBB9U) == 0) {
-                        (*(u16 *)&g_main_2EFA6C) = 0xBB9U;
+                        (*(u16 *)&key_quest) = 0xBB9U;
                     }
                     break;
                 case 3:
                     if (Quest_clear_bit_ck(0x40BU) == 0) {
-                        (*(u16 *)&g_main_2EFA6C) = 0x40BU;
+                        (*(u16 *)&key_quest) = 0x40BU;
                     }
                     break;
                 case 4:
                     if (Quest_clear_bit_ck(0xBBAU) == 0) {
-                        (*(u16 *)&g_main_2EFA6C) = 0xBBAU;
+                        (*(u16 *)&key_quest) = 0xBBAU;
                     }
                     break;
                 case 5:
                     if (Quest_clear_bit_ck(0x7ECU) == 0) {
-                        (*(u16 *)&g_main_2EFA6C) = 0x7ECU;
+                        (*(u16 *)&key_quest) = 0x7ECU;
                     }
                     break;
                 case 6:
                     if (Quest_clear_bit_ck(0x802U) == 0) {
-                        (*(u16 *)&g_main_2EFA6C) = 0x802U;
+                        (*(u16 *)&key_quest) = 0x802U;
                     }
                     break;
                 case 7:
                     if (lobby_func_0055FA20() == 1) {
-                        (*(u16 *)&g_main_2EFA6C) = 0xBBCU;
+                        (*(u16 *)&key_quest) = 0xBBCU;
                     } else {
-                        (*(u16 *)&g_main_2EFA6C) = 0xBBBU;
+                        (*(u16 *)&key_quest) = 0xBBBU;
                     }
                     break;
                 }
@@ -313,7 +311,7 @@ block_92:
         spF0 += 1;
         var_s5_2 += 1;
     } while (var_s6_2 < 8);
-    temp_a2_2 = (*(u16 *)&g_main_2EFA6C);
+    temp_a2_2 = (*(u16 *)&key_quest);
     if (temp_a2_2 != 0) {
         if (temp_a2_2 != 0xBBC) {
             var_v1 = 1;
@@ -326,8 +324,8 @@ block_92:
             var_v1 = 5;
             (*(s16 *)((u8 *)&lb_quest_all + 0x88)) = 0xBBB;
         }
-        (*(s16 *)&g_main_2EFA68) = var_v1;
+        (*(s16 *)&key_quest_num) = var_v1;
     }
-    (*(s8 *)((u8 *)&guildStr + 0x108)) = (s8) (*(s16 *)&g_main_2EFA68);
+    (*(s8 *)((u8 *)&guildStr + 0x108)) = (s8) (*(s16 *)&key_quest_num);
 }
 

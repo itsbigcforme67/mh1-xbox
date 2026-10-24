@@ -22,12 +22,10 @@ s32 lobby_func_00559CE0();
 void * memset();
 void * strcpy();
 extern u8 g_main_2EFABC;
-extern u8 g_main_2EFAC0;
+extern u8 joinQuest;
 extern u8 D_0035EFEB;
 extern u8 RoomRule;
 extern u8 cw;
-extern u8 g_main_2EFABC;
-extern u8 g_main_2EFAC0;
 extern u8 game_w;
 extern u8 mhRule;
 extern u8 npc_dialog_table;
@@ -162,10 +160,10 @@ block_105:
         } else {
             (*(s8 *)((u8 *)&lb_sys + 0x1C)) += 1;
             (*(s8 *)((u8 *)((*(void **)&pNet)) + 0x22)) = 0;
-            (*(s32 *)&g_main_2EFAC0) = (s32) *Lbs_GetRoomInfo((*(u8 *)((u8 *)&lb_sys + 0x7E)));
+            (*(s32 *)&joinQuest) = (s32) *Lbs_GetRoomInfo((*(u8 *)((u8 *)&lb_sys + 0x7E)));
             (*(s8 *)&g_main_2EFABC) = 0;
-            (*(s8 *)((u8 *)((*(void **)&pNet)) + 0x32)) = (s8) (*(s32 *)&g_main_2EFAC0);
-            lb_select_set_data((u16) (*(s32 *)&g_main_2EFAC0));
+            (*(s8 *)((u8 *)((*(void **)&pNet)) + 0x32)) = (s8) (*(s32 *)&joinQuest);
+            lb_select_set_data((u16) (*(s32 *)&joinQuest));
             (*(u8 *)&D_0035EFEB) = 1;
         }
         goto block_106;
@@ -237,7 +235,7 @@ block_105:
             (*(s8 *)((u8 *)&lb_sys + 0x1C)) = 0xA;
             SetDialogData(0x67, M2C_ERROR(/* Read from unset register $a1 */), M2C_ERROR(/* Read from unset register $a2 */), M2C_ERROR(/* Read from unset register $a3 */));
             (*(u8 *)&D_0035EFEB) = 1;
-            (*(u16 *)((u8 *)&mhRule + 0x52)) = (u16) (*(s32 *)&g_main_2EFAC0);
+            (*(u16 *)((u8 *)&mhRule + 0x52)) = (u16) (*(s32 *)&joinQuest);
         } else {
             SetDialogData(0x56, M2C_ERROR(/* Read from unset register $a1 */), M2C_ERROR(/* Read from unset register $a2 */), M2C_ERROR(/* Read from unset register $a3 */));
             (*(s8 *)((u8 *)((*(void **)&pNet)) + 0x2D)) = 1;
@@ -255,7 +253,7 @@ block_105:
             (*(s8 *)((u8 *)&lb_sys + 0x1C)) += 1;
             SetDialogData(0x67, M2C_ERROR(/* Read from unset register $a1 */), M2C_ERROR(/* Read from unset register $a2 */), M2C_ERROR(/* Read from unset register $a3 */));
             (*(u8 *)&D_0035EFEB) = 0;
-            (*(u16 *)((u8 *)&mhRule + 0x52)) = (u16) (*(s32 *)&g_main_2EFAC0);
+            (*(u16 *)((u8 *)&mhRule + 0x52)) = (u16) (*(s32 *)&joinQuest);
             break;
         case 3:                                     /* switch 6 */
             (*(s8 *)((u8 *)&lb_sys + 0x1C)) = 3;
@@ -295,7 +293,7 @@ block_105:
         temp_v0_6 = Lbs_GuestEnterRoom((*(s8 *)((u8 *)&lb_sys + 0x1C)));
         switch (temp_v0_6) {                        /* switch 8; irregular */
         case 0:                                     /* switch 8 */
-            temp_v1 = (*(s32 *)&g_main_2EFAC0);
+            temp_v1 = (*(s32 *)&joinQuest);
             if (temp_v1 != *Lbs_GetRoomInfo((*(u8 *)((u8 *)&lb_sys + 0x7E)))) {
                 var_v0 = 0x13;
                 (*(u8 *)&D_0035EFEB) = 0;
@@ -306,7 +304,7 @@ block_105:
             temp_a1 = Lb_get_quest_type(temp_v0_7) | 0x10;
             *(&(*(u8 *)((u8 *)&player_work + 0x916)) + ((*(u8 *)((u8 *)&game_w + 0x3A)) * 0xA00)) = temp_a1;
             temp_v0_8 = Lbs_GetRoomInfo((*(u8 *)((u8 *)&lb_sys + 0x7E)), temp_a1);
-            temp_a0_2 = (*(s32 *)&g_main_2EFAC0);
+            temp_a0_2 = (*(s32 *)&joinQuest);
             (*(s16 *)((u8 *)&game_w + 0x2C)) = (s16) temp_a0_2;
             (*(s16 *)((u8 *)&select_w + 0xD0)) = (s16) temp_a0_2;
             (*(u16 *)((u8 *)&mhRule + 0x52)) = (u16) temp_a0_2;
@@ -320,7 +318,7 @@ block_105:
             (*(s8 *)((u8 *)&lb_sys + 0x1C)) += 1;
             lb_pit = 0;
             SetDialogData(0x52, M2C_ERROR(/* Read from unset register $a1 */), M2C_ERROR(/* Read from unset register $a2 */), M2C_ERROR(/* Read from unset register $a3 */));
-            temp_v1_2 = (*(s32 *)&g_main_2EFAC0);
+            temp_v1_2 = (*(s32 *)&joinQuest);
             (*(s32 *)&quest_price) = 0;
             if (temp_v1_2 >= 0xC350) {
                 strcpy(&quest_title, Lb_get_quest_str(temp_v1_2 & 0xFFFF, 0, M2C_ERROR(/* Read from unset register $a2 */), M2C_ERROR(/* Read from unset register $a3 */)));

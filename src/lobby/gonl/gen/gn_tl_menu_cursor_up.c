@@ -4,7 +4,7 @@
 #include "../gonl.h"
 
 extern u8 pNet;
-extern s32 g_main_2EEE70;
+extern s32 plazaMenuTbl;
 
 void tl_menu_cursor_up(void) {
     s32 var_a4;
@@ -15,7 +15,7 @@ void tl_menu_cursor_up(void) {
     u8 *var_a3;
 
     temp_a1 = (*(void **)&pNet);
-    temp_a5 = (*(s32 *)((u8 *)&g_main_2EEE70 + ((*(u8 *)((u8 *)(temp_a1) + 0x29)) * 4)));
+    temp_a5 = (*(s32 *)((u8 *)&plazaMenuTbl + ((*(u8 *)((u8 *)(temp_a1) + 0x29)) * 4)));
     (*(s16 *)((u8 *)(temp_a1) + 0x20)) = 0;
     do {
         temp_a0 = (*(void **)&pNet);

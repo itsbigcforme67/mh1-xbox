@@ -721,9 +721,12 @@ for f in $GAME; do
 done
 # the matched lobby functions win over other lobby objects' copies
 BOBJS=$(for f in $BMATCH; do printf 'build/pc/lb__%s.o ' "$(basename "$f" .c)"; done)
-# (T or W: an object a previous build of the other kind weakened (G online: src/lobby/gonl wins) still counts here;
-# pc_link_adapt.py compiles it again with this build's weak list)
-BSYMS=$( (for f in $BMATCH; do nmc --defined-only -g "build/pc/lb__$(basename "$f" .c).o" | awk 'NF == 3 && ($2 == "T" || $2 == "W") {print $3}'; done
+# (also W when only a G online build weakened it, for src/lobby/gonl (build/pc/.gsyms): a plain build after an online one
+# must still let it win; pc_link_adapt.py compiles it again with this build's weak list. Other W stay out: a symbol this
+# kind of build weakens on purpose must not win)
+[ -z "$GONL" ] && [ -f build/pc/.gsyms ] && GW=build/pc/.gsyms || GW=/dev/null
+BSYMS=$( (for f in $BMATCH; do nmc --defined-only -g "build/pc/lb__$(basename "$f" .c).o" | awk -v gw="$GW" 'BEGIN { while ((getline l < gw) > 0) g[l] = 1 }
+              NF == 3 && ($2 == "T" || ($2 == "W" && ($3 in g))) {print $3}'; done
           for p in $PICK; do echo "${p#*:}" | tr , '\n'; done) | sort -u)   # PICKed lobby functions win too
 BOBJS="$BOBJS $(for p in $PICK; do printf 'build/pc/lb__%s.o ' "$(basename "${p%%:*}" .c)"; done)"
 for o in $OBJS; do
@@ -845,7 +848,7 @@ comm -23 build/pc/defined.txt build/pc/aliased.txt > build/pc/defined.tmp && mv 
 # RT_GEN_LB_ALIASES=1 in every build (was ONLINE=1 only): the offline village uses lb_cli.c's prims too, and without
 # the aliases text_lobby_trans_ot3_o (the dialog layer, DispDialogData: the bed's save prompt) was a no-op stand-in
 # and pNet_c7 read a stand-in function's code
-RT_GEN_LB_ALIASES=1 python3 tools/gen_rt_auto.py build/pc/undefined.txt build/pc/defined.txt build/pc/rt_gen.c build/pc/rt_gen.defsym
+RT_GEN_GONL=${GONL:+1} RT_GEN_LB_ALIASES=1 python3 tools/gen_rt_auto.py build/pc/undefined.txt build/pc/defined.txt build/pc/rt_gen.c build/pc/rt_gen.defsym
 cc_obj rt_gen "$CC $CFLAGS $SYS -w -c build/pc/rt_gen.c -o build/pc/rt_gen.o"
 echo build/pc/rt_gen.o >> build/pc/objs.txt
 # the generated D_xxxx aliases (gen_rt_auto.py writes them as --defsym lines)

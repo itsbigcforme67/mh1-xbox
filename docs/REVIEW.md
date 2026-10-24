@@ -950,3 +950,9 @@ Both games unless marked.
   replaced the PC's real cnLBS_Send_ChatBinaryTU / __cnet_SendSet_ChatMessageTU, and G's status send to a newcomer
   (lb_send_dataTU) crashed with the 5-argument whisper send. **To revert:** the commit "G online PC: two G clients see
   each other in the town" on agent-C.
+- **Dropped (23 Oct):** six g_main_ADDR imports in config/mhg/pc_data.txt (2EEE70, 2EFA68, 2EFA6C, 2EFAE0, 2EF078,
+  2EFAC0). **Now:** the gen files use G's data names there (plazaMenuTbl, key_quest_num, key_quest, lbSendInterval,
+  friend_entry_str, joinQuest; tools/mhg_c.py reads config/mhg/data_map.txt high / medium). **Why:** our name hid G's, so
+  the PC's key_quest became a function stand-in and the plain G village crashed (test_save_g, test_urgent_g,
+  test_all_quests_g). Also build_pc.sh's BMATCH W rule narrowed to the G online weakening (.gsyms) and gen_rt_auto.py's
+  gonl names to the G online build. **To revert:** the commit "G PC: the village again ..." on agent-C.

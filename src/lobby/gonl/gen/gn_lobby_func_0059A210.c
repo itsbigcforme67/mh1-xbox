@@ -7,12 +7,7 @@ extern u8 g_main_2EF390;
 extern u8 g_main_2EFAD4;
 extern u8 g_main_2EFAD8;
 extern u8 g_main_2EFADC;
-extern u8 g_main_2EFAE0;
-extern u8 g_main_2EF390;
-extern u8 g_main_2EFAD4;
-extern u8 g_main_2EFAD8;
-extern u8 g_main_2EFADC;
-extern u8 g_main_2EFAE0;
+extern u8 lbSendInterval;
 s32 memcpy();                  /* extern */
 extern s32 g_sub_541E40;
 
@@ -28,7 +23,7 @@ void lobby_func_0059A210(void) {
     temp_v0_2 = (*(u16 *)((u8 *)(temp_v0) + 0x2D9C));
     temp_v1 = temp_v0 + 0x23F4 + 0x20;
     if (temp_v0_2 != 0) {
-        (*(u16 *)&g_main_2EFAE0) = temp_v0_2;
+        (*(u16 *)&lbSendInterval) = temp_v0_2;
     }
     temp_v0_3 = (*(u16 *)((u8 *)(temp_v1) + 0x98A));
     if (temp_v0_3 != 0) {
