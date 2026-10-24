@@ -23,6 +23,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include "gwx.h"
+#include "swx.h"
 #include "rt.h"
 #include "types.h"
 #include "game.h"
@@ -31,12 +32,8 @@
 #define GW8(o) (((u8 *)&game_w)[GWX(o)])
 
 extern u8 select_w[];
-#ifdef VERSION_MHG
-#define SW_QUEST 0xD0       /* G's select_w: the quest (include/flow.h xAC), set by G's lobby code; the sys 2 packets of the
-                             * PC's net_send_sys / net_receive_sys (MH1 C) still carry MH1's layout (docs/network.md 3.12) */
-#else
-#define SW_QUEST 0xAC
-#endif
+#define SW_QUEST SWX(0xAC)  /* the quest (G 0xD0, set by G's lobby code; include/swx.h) */
+#define SW_READY SWX(0x8C)  /* the ready flags (G 0xAC); sys 2 carries G's layout in the G build (netsyn08.c) */
 #ifdef VERSION_MHG
 /* MH1 data the PC's in-hunt session C (aq_nm.c, cng_nm.c: MH1's code) uses and G's main lacks (G's AQ_init calls
  * CngNetAQInit instead of the TCP config set): without these the G build had code stand-ins (rt_gen.c) for them and
@@ -124,13 +121,13 @@ static int ready_all(void)
 {
     int i;
     for (i = 0; i < 4; i++)
-        if (select_w[0x8C + i] == 0 && game_w.pl_state[i] != 0xFF)
+        if (select_w[SW_READY + i] == 0 && game_w.pl_state[i] != 0xFF)
             return 0;
     return 1;
 }
 
 /* After the lobby's match (rt_online.c matched, which leaves the lobby socket to cmcs_00): steps 1-3 above.
- * Returns the quest (select_w+0xAC, the room's, re-sent by slot 0 in sys 2), -1 on failure. */
+ * Returns the quest (select_w+SWX(0xAC), the room's, re-sent by slot 0 in sys 2), -1 on failure. */
 int rt_mcs_setup(void)
 {
     int t, r, i, me;
@@ -177,7 +174,7 @@ int rt_mcs_setup(void)
     Copy_user_id(me);
     init_select_work(0);
     sel_default_set();
-    select_w[0x8C + me] = 1;
+    select_w[SW_READY + me] = 1;
     net_send_sys(2, me);
     for (t = 0; !ready_all(); t++) {
         frame(NULL);
@@ -190,7 +187,8 @@ int rt_mcs_setup(void)
             net_send_sys(8, me);        /* Plsel_task's keep-alive every 60 frames */
         if (trace && t % 30 == 0)
             fprintf(stderr, "mcs: select wait %d: mcsls state %d, ready %d %d %d %d\n", t, mcsls_state(),
-                    (s8)select_w[0x8C], (s8)select_w[0x8D], (s8)select_w[0x8E], (s8)select_w[0x8F]);
+                    (s8)select_w[SW_READY], (s8)select_w[SW_READY + 1], (s8)select_w[SW_READY + 2],
+                    (s8)select_w[SW_READY + 3]);
     }
     net_send_sys(2, me);                /* player_wait */
     for (t = 0; t < 0x1E; t++)

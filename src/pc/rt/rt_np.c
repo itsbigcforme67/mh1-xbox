@@ -24,6 +24,7 @@
 #include "gwx.h"
 #include "rt.h"
 #include "types.h"
+#include "swx.h"
 #include "game.h"
 #include "pl.h"
 #include "../net/net_peer.h"
@@ -457,7 +458,7 @@ static int load_own_hunter(void)
         return -1;
     }
     Load_userdata(s);
-    select_w[0xB6] = (u8)s;
+    select_w[SWX(0xB6)] = (u8)s;      /* G 0xDC (swx.h) */
     save_slot = s;
     fprintf(stderr, "co-op: hunter \"%.18s\" from save slot %d (%d zenny)\n", (char *)User_data + 8, s + 1, *(s32 *)(User_data + 0x20));
     return 0;
@@ -737,7 +738,7 @@ void rt_np_init_slots(void)
     {   /* the same random numbers to start with on every machine (the PS2 seeds them from its
          * clock, init_ran_suu): the quest's set-up then places the same things */
         extern u16 Rnd_w[];
-        Rnd_w[0] = Rnd_w[1] = (u16)(0x1234 + (rt_mcs_on() ? *(u16 *)(select_w_ + 0xAC) : np_quest()));
+        Rnd_w[0] = Rnd_w[1] = (u16)(0x1234 + (rt_mcs_on() ? *(u16 *)(select_w_ + SWX(0xAC)) : np_quest()));
     }
     if (getenv("RT_QUEST_TIME")) {  /* test aid: the quest's time left (ticks), for time-out tests */
         extern u8 quest_w[];

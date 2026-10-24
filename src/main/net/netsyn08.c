@@ -2,6 +2,7 @@
  * (player count, character select, start handshake, item box, quest info), 8..0x18 bytes each. */
 #include "types.h"
 #include "netsyn.h"
+#include "swx.h"
 
 extern NGW game_w;
 extern u8 player_work[];
@@ -42,10 +43,17 @@ typedef struct NQW {
 extern NSEL select_w;
 extern NQW quest_w;
 extern s16 no_send_timer;
+#ifdef VERSION_MHG
+extern s16 net_sys3_word[4];    /* netsyn09.c */
+#endif
 extern s8 send_flag;
 
 typedef union NPKS {
+#ifdef VERSION_MHG
+    u8 b[0x20];         /* G's sys 2 is 0x1E bytes */
+#else
     u8 b[0x18];
+#endif
     struct {
         u8 cmd, len, x2, x3, slot, b5, b6, b7;
         u16 u8_;
@@ -94,6 +102,32 @@ void net_send_sys(u8 kind, u8 slot) {
                 pk.c3.slot = game_w.pl_num;
                 break;
             case 2:
+#ifdef VERSION_MHG
+                /* G's character select packet (net_send_sys G 0x4FAE40), 0x1E bytes: slot, sw[0x66+s], weapon (sw+0x70+6s:
+                 * +1 byte at 6, +2 u16 at 8, +4 byte at 7), the stage at 10, sw[0xAC+s] (ready) at 11, sw[0xC+s] at 12,
+                 * sw[0xB6+s] at 13, the quest (u16 sw+0xD0) at 14, sw[0xD2+s] at 16, sw+0xE8 at 17, u16 sw+0xE4 at 18,
+                 * u16 sw+0xE6 at 20, the hunter id at 22..29. MH1's is 0x18 bytes (net_receive_sys reads it back). */
+                pk.b[1] = 0x1E;
+                pk.b[0] = kind;
+                pk.b[4] = slot;
+                pk.b[5] = sw[slot + SWX(0x54)];
+                pk.b[6] = sw[slot * 6 + SWX(0x5D)];
+                *(u16 *)(pk.b + 8) = *(u16 *)(sw + slot * 6 + SWX(0x5E));
+                pk.b[7] = *(u16 *)(sw + slot * 6 + SWX(0x60));
+                pk.b[10] = *(s16 *)(sw + 0xA);
+                pk.b[11] = sw[slot + SWX(0x8C)];
+                pk.b[12] = sw[slot + 0xC];
+                pk.b[13] = sw[slot + SWX(0x94)];
+                pk.b[16] = sw[slot + SWX(0xAE)];
+                *(u16 *)(pk.b + 14) = *(u16 *)(sw + SWX(0xAC));
+                pk.b[17] = sw[0xE8];
+                *(u16 *)(pk.b + 18) = *(u16 *)(sw + 0xE4);
+                *(u16 *)(pk.b + 20) = *(u16 *)(sw + 0xE6);
+                for (i = 0; i < 8; i++) {
+                    pk.b[22 + i] = my_user_id[i];
+                }
+                break;
+#endif
                 pk.c2.len = 0x18;
                 pk.c2.cmd = kind;
                 pk.c2.slot = slot;
@@ -121,6 +155,11 @@ void net_send_sys(u8 kind, u8 slot) {
                 pk.c3.b7 = game_w.xD8[1];
                 pk.c3.b8 = game_w.xD8[2];
                 pk.c3.b9 = game_w.xD8[3];
+#ifdef VERSION_MHG
+                /* G adds an s16 at 10: the value stored for the sender's own slot (net_send_sys G 0x4FAFF8; G 0x2EF718,
+                 * written only by net_receive_sys kind 3, so 0 unless a player received its own packet) */
+                *(s16 *)(pk.b + 10) = net_sys3_word[slot & 3];
+#endif
                 break;
             case 4:
             case 11:

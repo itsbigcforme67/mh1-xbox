@@ -158,12 +158,12 @@ void net_receive_em(int slot0, u8 *buf) {
                     func_5655D0(em);
                     em->x86F = 0;
                 }
-                if (em->x02 == 7) {
+                if (EMK_7(em->x02)) {
                     em->x45C = PU8(0x21);
                     em->x45D = PS8(0x22);
                     game_w.x21D = em->x45D;
                 }
-                if (em->x02 == 0xF) {
+                if (EMK_15(em->x02)) {
                     em->x488 = PU8(0x21);
                     em->x489 = PS8(0x22);
                 }
@@ -216,7 +216,7 @@ void net_receive_em(int slot0, u8 *buf) {
                     func_5655D0(em);
                     em->x86F = 0;
                 }
-                if (em->x02 == 7) {
+                if (EMK_7(em->x02)) {
                     em->x45C = PU8(0x21);
                     em->x45D = PS8(0x22);
                     game_w.x21D = em->x45D;
@@ -287,12 +287,12 @@ void net_receive_em(int slot0, u8 *buf) {
                     em->x86F = 0;
                     func_5655D0(em);
                 }
-                if (em->x02 == 7) {
+                if (EMK_7(em->x02)) {
                     em->x45C = PU8(0x20);
                     em->x45D = PU8(0x21);
                     game_w.x21D = em->x45D;
                 }
-                if (em->x02 == 0xF) {
+                if (EMK_15(em->x02)) {
                     em->x488 = PU8(0x20);
                     em->x489 = PU8(0x21);
                 }
@@ -326,7 +326,7 @@ void net_receive_em(int slot0, u8 *buf) {
             em->x883 = em->x829;
             mask = PU8(0x1A);
             EM_DUR(mask)
-            if (em->x02 == 7) {
+            if (EMK_7(em->x02)) {
                 v = PS16(0x1E);
                 q = (u8 *)em + 0x444;
                 if (em->x45C < v) {
@@ -345,7 +345,7 @@ void net_receive_em(int slot0, u8 *buf) {
                     func_5655D0(em);
                 }
             }
-            if (em->x02 == 0xF) {
+            if (EMK_15(em->x02)) {
                 em->x488 = PS16(0x1E);
                 em->x489 = PU8(0x1F);
                 q = (u8 *)em + 0x444;

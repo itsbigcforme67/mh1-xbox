@@ -4,16 +4,20 @@
  * debug monster picker (4 slots of kind + count, at most 16 monsters in total) with disp_em_select drawing it,
  * sel_default_set fills select_w with the default characters. Field names are guesses from use. */
 #include "types.h"
+#include "gwx.h"
+#include "swx.h"
+#include "lbsys_g.h"
 
 extern u8 select_w[];
 extern u8 game_w[];
 extern u8 system_w[];
-#define SELB(o) (*(u8 *)(select_w + (o)))
-#define SELS8(o) (*(s8 *)(select_w + (o)))
-#define SELH(o) (*(u16 *)(select_w + (o)))
-#define SELSH(o) (*(s16 *)(select_w + (o)))
-#define GW8(o) (*(u8 *)(game_w + (o)))
-#define GWS8(o) (*(s8 *)(game_w + (o)))
+/* MH1 offsets; in G (VERSION_MHG) SWX / GWX / UDO map them to G's select_w / game_w / User_data (swx.h, gwx.h, lbsys_g.h) */
+#define SELB(o) (*(u8 *)(select_w + SWX(o)))
+#define SELS8(o) (*(s8 *)(select_w + SWX(o)))
+#define SELH(o) (*(u16 *)(select_w + SWX(o)))
+#define SELSH(o) (*(s16 *)(select_w + SWX(o)))
+#define GW8(o) (*(u8 *)(game_w + GWX(o)))
+#define GWS8(o) (*(s8 *)(game_w + GWX(o)))
 
 extern s32 mem_tex[];
 extern char *em_name[];
@@ -114,11 +118,11 @@ void player_sel(u8 *t) {
         t[9] = k + 1;
         init_select_work(k);
         sel_default_set();
-        sw[me + 0x8C] = 1;
+        sw[me + SWX(0x8C)] = 1;
         net_send_sys(2, GW8(0xD1));
         break;
     case 1:
-        if (Online_ck() == 1 && *(game_w + 0x208 + GW8(0xD1)) == 0xFF) {
+        if (Online_ck() == 1 && *(game_w + GWX(0x208) + GW8(0xD1)) == 0xFF) {
             GWS8(0) = 5;
             Quest_error_set2();
             Tsk_Exit(t);
@@ -127,7 +131,7 @@ void player_sel(u8 *t) {
         i = 0;
         g = game_w;
         do {
-            if (((s8 *)(sw + i))[0x8C] == 0 && g[0x208] != 0xFF) {
+            if (((s8 *)(sw + i))[SWX(0x8C)] == 0 && g[GWX(0x208)] != 0xFF) {
                 return;
             }
             i++;
@@ -161,7 +165,7 @@ void player_wait(u8 *t) {
     }
 }
 
-typedef struct SELEM { u8 _p00[2]; u8 cur; u8 _p03[0x9C - 3]; u16 kind[4]; u16 cnt[4]; } SELEM;
+typedef struct SELEM { u8 _p00[2]; u8 cur; u8 _p03[SWX(0x9C) - 3]; u16 kind[4]; u16 cnt[4]; } SELEM;
 
 void disp_em_select(SELEM *w, u8 *unused) {
     u8 pal[4];
@@ -226,7 +230,7 @@ void em_select(u8 *t) {
             }
         }
         if (pad & 0x400) {
-            e = (u16 *)((u8 *)(sw[2] * 2) + (int)sw + 0x9C);
+            e = (u16 *)((u8 *)(sw[2] * 2) + (int)sw + SWX(0x9C));
             v = *e;
             if (v >= 0x22) {
                 *e = 0;
@@ -235,7 +239,7 @@ void em_select(u8 *t) {
             }
         }
         if (pad & 0x800) {
-            e = (u16 *)((u8 *)(sw[2] * 2) + (int)sw + 0x9C);
+            e = (u16 *)((u8 *)(sw[2] * 2) + (int)sw + SWX(0x9C));
             v = *e;
             if (v <= 0) {
                 *e = 0x22;
@@ -244,14 +248,14 @@ void em_select(u8 *t) {
             }
         }
         if (pad & 0x40) {
-            e = (u16 *)((u8 *)(sw[2] * 2) + (int)sw + 0xA4);
+            e = (u16 *)((u8 *)(sw[2] * 2) + (int)sw + SWX(0xA4));
             v = *e;
             if (v != 0) {
                 *e = v - 1;
             }
         }
         if (pad & 0x220) {
-            e = (u16 *)((u8 *)(sw[2] * 2) + (int)sw + 0xA4);
+            e = (u16 *)((u8 *)(sw[2] * 2) + (int)sw + SWX(0xA4));
             v = *e;
             if (v < 0xF) {
                 *e = v + 1;
@@ -259,10 +263,10 @@ void em_select(u8 *t) {
         }
         if (pad & 0x8000) {
             sum = 0;
-            sum += *(u16 *)(sw + 0xA4);
-            sum += *(u16 *)(sw + 0xA6);
-            sum += *(u16 *)(sw + 0xA8);
-            sum += *(u16 *)(sw + 0xAA);
+            sum += *(u16 *)(sw + SWX(0xA4));
+            sum += *(u16 *)(sw + SWX(0xA6));
+            sum += *(u16 *)(sw + SWX(0xA8));
+            sum += *(u16 *)(sw + SWX(0xAA));
             if (sum < 0x10) {
                 system_w[3] = 1;
                 all_reset();
@@ -289,60 +293,60 @@ void sel_default_set(void) {
         if (Online_ck() == 1) {
             if (i < GW8(0xD3)) {
                 s1 = sw + i;
-                s1[0x8C] = 0;
+                s1[SWX(0x8C)] = 0;
             } else {
                 s1 = sw + i;
-                ((s8 *)s1)[0x8C] = -1;
+                ((s8 *)s1)[SWX(0x8C)] = -1;
             }
         } else if (i == 0) {
             s1 = sw + i;
-            s1[0x8C] = 0;
+            s1[SWX(0x8C)] = 0;
         } else {
             s1 = sw + i;
-            s1[0x8C] = 1;
+            s1[SWX(0x8C)] = 1;
         }
-        s1[0xC] = (i & 1) != 0;
-        s1[0x94] = 0;
+        s1[SWX(0xC)] = (i & 1) != 0;
+        s1[SWX(0x94)] = 0;
         if (i == GW8(0xD1)) {
-            s1[0x54] = 0;
+            s1[SWX(0x54)] = 0;
             if (User_data[0] != 0) {
-                u8 *ud = User_data + 0x3CC;
-                *(s16 *)(s2 + 0x5C) = *(s16 *)(User_data + 0x3CC);
-                *(s16 *)(s2 + 0x5E) = *(s16 *)(ud + 2);
-                *(s16 *)(s2 + 0x60) = *(s16 *)(ud + 4);
+                u8 *ud = User_data + UDO(0x3CC);
+                *(s16 *)(s2 + SWX(0x5C)) = *(s16 *)(User_data + UDO(0x3CC));
+                *(s16 *)(s2 + SWX(0x5E)) = *(s16 *)(ud + 2);
+                *(s16 *)(s2 + SWX(0x60)) = *(s16 *)(ud + 4);
             } else {
-                s2[0x5D] = 6;
-                *(s16 *)(s2 + 0x5E) = 0;
-                *(s16 *)(s2 + 0x60) = 0;
+                s2[SWX(0x5D)] = 6;
+                *(s16 *)(s2 + SWX(0x5E)) = 0;
+                *(s16 *)(s2 + SWX(0x60)) = 0;
             }
         } else {
             if (Online_ck() == 1) {
-                s1[0x54] = 0;
-                pw = s1 + 0x54;
+                s1[SWX(0x54)] = 0;
+                pw = s1 + SWX(0x54);
             } else {
-                pw = s1 + 0x54;
-                s1[0x54] = ((int)(ran_suu(1) & 0xFFFF) % 4) + 1;
+                pw = s1 + SWX(0x54);
+                s1[SWX(0x54)] = ((int)(ran_suu(1) & 0xFFFF) % 4) + 1;
             }
             if (equip_weapon[*pw] != 1) {
-                s2[0x5D] = 6;
-                *(s16 *)(s2 + 0x5E) = 0;
+                s2[SWX(0x5D)] = 6;
+                *(s16 *)(s2 + SWX(0x5E)) = 0;
             } else {
-                s2[0x5D] = 7;
-                *(s16 *)(s2 + 0x5E) = 0;
+                s2[SWX(0x5D)] = 7;
+                *(s16 *)(s2 + SWX(0x5E)) = 0;
             }
-            *(s16 *)(s2 + 0x60) = 0;
+            *(s16 *)(s2 + SWX(0x60)) = 0;
         }
-        s1[0x14] = 0;
-        s1[0x1C] = 4;
+        s1[SWX(0x14)] = 0;
+        s1[SWX(0x1C)] = 4;
         i++;
-        s2[0x24] = 1;
-        s2[0x25] = 1;
-        s2[0x26] = 1;
-        s2[0x27] = 1;
-        s2[0x28] = 1;
-        s2[0x29] = 1;
+        s2[SWX(0x24) + 0] = 1;
+        s2[SWX(0x24) + 1] = 1;
+        s2[SWX(0x24) + 2] = 1;
+        s2[SWX(0x24) + 3] = 1;
+        s2[SWX(0x24) + 4] = 1;
+        s2[SWX(0x24) + 5] = 1;
         s2 += 6;
-    } while (i < 8);
+    } while (i < SW_SLOTS);         /* G: 10 slots */
     SELSH(0x9C) = em_softdip_ck();
     SELSH(0xA4) = 1;
     SELSH(0x9E) = 0;

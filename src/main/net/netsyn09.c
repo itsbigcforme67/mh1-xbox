@@ -2,6 +2,8 @@
  * sent by net_send_sys (see netsyn08.c): player count, character select, start handshake, item box, quest info, map sign, drop. */
 #include "types.h"
 #include "netsyn.h"
+#include "swx.h"
+#include <stddef.h>
 
 extern NGW game_w;
 extern u8 player_work[];
@@ -25,6 +27,9 @@ void Quest_net_sub(u8);
 void MapSignRequest(u8);
 void mcsls_force_drop(u8);
 void net_send_sys(u8, u8);
+#ifdef VERSION_MHG
+s16 net_sys3_word[4];       /* G 0x2EF718 (main .sbss, after no_send_timer): sys 3's extra s16 per slot */
+#endif
 
 void net_receive_sys(int slot0, u8 *buf) {
     u8 *p;
@@ -56,6 +61,31 @@ void net_receive_sys(int slot0, u8 *buf) {
             break;
         case 2:
             slot = p[0];
+#ifdef VERSION_MHG
+            /* G's layout (net_receive_sys G 0x4FB210; net_send_sys in netsyn08.c): slot 0 also hands out the quest
+             * (sw+0xD0) and G's sw+0xE8 / +0xE4 / +0xE6 */
+            sw[slot + 0xC] = p[8];
+            sw[slot + SWX(0x94)] = p[9];
+            sw[slot + SWX(0x54)] = p[1];
+            sw[slot * 6 + SWX(0x5D)] = p[2];
+            *(u16 *)(sw + slot * 6 + SWX(0x5E)) = *(u16 *)(p + 4);
+            *(s16 *)(sw + slot * 6 + SWX(0x60)) = p[3];
+            sw[slot + SWX(0x8C)] = p[7];
+            sw[slot + SWX(0xAE)] = p[0xC];
+            for (j = 0; j < 8; j++) {
+                game_w.x1E8[slot][j] = ((s8 *)p)[0x12 + j];
+            }
+            if (game_w.master != game_w.x21B) {
+                if (slot == 0) {
+                    *(s16 *)(sw + 0xA) = p[6];
+                    *(u16 *)(sw + SWX(0xAC)) = *(u16 *)(p + 0xA);
+                    sw[0xE8] = p[0xD];
+                    *(u16 *)(sw + 0xE4) = *(u16 *)(p + 0xE);
+                    *(u16 *)(sw + 0xE6) = *(u16 *)(p + 0x10);
+                }
+            }
+            break;
+#endif
             sw[slot + 0xC] = p[8];
             sw[slot + 0x94] = p[9];
             sw[slot + 0x54] = p[1];
@@ -80,6 +110,9 @@ void net_receive_sys(int slot0, u8 *buf) {
             game_w.xE0[1] = p[3];
             game_w.xE0[2] = p[4];
             game_w.xE0[3] = p[5];
+#ifdef VERSION_MHG
+            net_sys3_word[p[0] & 3] = *(s16 *)(p + 6);     /* G's extra s16 (G 0x4FB3DC; netsyn08.c) */
+#endif
             break;
         case 4:
         case 11:
@@ -96,8 +129,8 @@ void net_receive_sys(int slot0, u8 *buf) {
         case 5:
             slot = p[0];
             t8 = (u8 *)&game_w + slot * 2;
-            q = t8 + 0xF8;
-            r = t8 + 0xF9;
+            q = t8 + offsetof(NGW, xF8);    /* G 0x1C2 (MH1 0xF8) */
+            r = t8 + offsetof(NGW, xF8) + 1;
             for (i = 0; i < 4; i++) {
                 if (p[1] == game_w.master && p[2] != 0) {
                     *q = slot;

@@ -37,7 +37,11 @@ int net_start_ck(void) {
     }
     t = no_send_timer + 1;
     no_send_timer = t;
+#ifdef VERSION_MHG
+    if (t >= 300) {         /* G's keep-alive comes every 300 frames here (net_start_ck G 0x4FBDE4; MH1 60) */
+#else
     if (t >= 0x3C) {
+#endif
         no_send_timer = 0;
         net_send_sys(8, game_w.master);
     }
@@ -68,6 +72,9 @@ int net_start_ck(void) {
         game_w.xD6++;
         game_w.x124 = 0;
         net_time_cnt = 0;
+#ifdef VERSION_MHG
+        game_w.x1B0 = 0;    /* G clears the network delay here (G 0x4FBF3C) */
+#endif
         pl = (NPLV *)(player_work + game_w.master * 0xA00);
         pl->slot[0].timer = 0;
         pl->slot[0].x = 0;
@@ -131,9 +138,11 @@ int net_start_ck(void) {
         if (game_w.x1B0 == 0) {
             game_w.x1B0 = 1;
         }
-        if (game_w.x1B0 >= 0x3D) {
+#ifndef VERSION_MHG
+        if (game_w.x1B0 >= 0x3D) {      /* (G has no 60-frame cap, G 0x4FC228) */
             game_w.x1B0 = 0x3C;
         }
+#endif
         game_w.x124 = 0;
         r = 1;
         net_game_w_clear();

@@ -222,11 +222,13 @@ typedef struct NGW {
     u8     pl_state[8];       /* 0x1A4 (MH1 0x208) */
     u8  x1AC_[0x1AE - 0x1AC];
     u8     xE8[8];            /* 0x1AE (MH1 0x0E8) */
-    u8     xF8[8];            /* 0x1B6 [guess: MH1 0x0F8 follows xE8 by 0x10 there; not voted] */
-    u8  x1BE_[0x1D6 - 0x1BE];
+    u8  x1B6_[0x1C2 - 0x1B6];
+    u8     xF8[8];            /* 0x1C2 (MH1 0x0F8: net_receive_sys kind 5 / net_game_w_clear G 0x4FB478 / 0x4FBD48; it was a
+                               * guess at 0x1B6 before 24 Oct 2026) */
+    u8  x1CA_[0x1D6 - 0x1CA];
     u8     x108[8];           /* 0x1D6 (MH1 0x108) */
-    u8     x110[4];           /* 0x1DE [guess: follows x108 as in MH1; not voted] */
-    u8  x1E2_[0x1EA - 0x1E2];
+    u8     x110[4];           /* 0x1E0 (MH1 0x110: net_game_w_clear G 0x4FBD50; was a guess at 0x1DE) */
+    u8  x1E4_[0x1EA - 0x1E4];
     u16    x1E2;              /* 0x1EA (MH1 0x1E2) */
     u16    x1E4;              /* 0x1EC (MH1 0x1E4) */
     u8     x21B;              /* 0x1EE (MH1 0x21B) */
@@ -275,6 +277,15 @@ typedef struct NGW {
 } NGW;
 #endif
 
+/* G handles two of its new monsters like MH1's kinds 7 and 15 in the enemy packets (net_send_em G 0x4F9800 / net_receive_em
+ * G 0x4F9F60: `kind == 7 || kind == 50`, `kind == 15 || kind == 45`) [which monsters: unverified] */
+#ifdef VERSION_MHG
+#define EMK_7(k) ((k) == 7 || (k) == 50)
+#define EMK_15(k) ((k) == 0xF || (k) == 45)
+#else
+#define EMK_7(k) ((k) == 7)
+#define EMK_15(k) ((k) == 0xF)
+#endif
 int Online_ck();
 int Now_Game_ck(void);
 int Pl_master_ck(void *);

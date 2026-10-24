@@ -373,6 +373,24 @@ void Set_mini_data_to_pl(s8 *key, u8 *pl) {
 
     id = Get_pl_id(key);
     m = room_member_mini_data[id];
+#ifdef VERSION_MHG
+    /* G's mini data (the lobby's 64-byte record per member) is laid out differently: Set_mini_data_to_pl G 0x4C67B0
+     * reads +0x14 / +0x19 / +0x18 / +0xA.. / +0x1A and the 6 look bytes at +3 (MH1 +4 / +3 / +0x14 / +8.. / +0x16 / +0xE).
+     * The lobby side (G's own generated code) fills it in G's layout; until 24 Oct 2026 the hunt read it by MH1's
+     * offsets and the other hunters' equipment / look came out wrong. */
+    *(s32 *)(pl + 0x5FC) = *(s32 *)(m + 0x14);
+    pl[0x11] = m[0x19];
+    pl[0x34E] = m[0x18];
+    w = *(s16 *)(m + 0xA);
+    v = *(s16 *)(m + 0xC);
+    x = *(s16 *)(m + 0xE);
+    *(s16 *)(pl + 0x35E) = w;
+    *(s16 *)(pl + 0x360) = v;
+    *(s16 *)(pl + 0x362) = x;
+    pl[0x8D3] = m[0x1A];
+    *(s8 *)(pl + 0x34C) = Get_weapon_id(m + 0xA, w);
+    memcpy(pl + 0x352, m + 3, 6);
+#else
     *(s32 *)(pl + 0x5FC) = *(s32 *)(m + 4);
     pl[0x11] = m[3];
     pl[0x34E] = m[0x14];
@@ -385,6 +403,7 @@ void Set_mini_data_to_pl(s8 *key, u8 *pl) {
     pl[0x8D3] = m[0x16];
     *(s8 *)(pl + 0x34C) = Get_weapon_id(m + 8, w);
     memcpy(pl + 0x352, m + 0xE, 6);
+#endif
     strcpy((char *)pl + 0x8D4, room_member_handle[id]);
 }
 
@@ -406,7 +425,12 @@ s8 Get_pl_id(s8 *key) {
 
 void Copy_user_id(u8 no)
 {
+#ifdef VERSION_MHG
+  u8 *d = (u8 *)&game_w + 0x1F6 + no * 8;     /* G keeps the hunter ids at game_w+0x1F6 (Copy_user_id G 0x4C6900); MH1's
+                                              * 0x1E8 is G's x1E2 / x1E4 / x21B / x21E there */
+#else
   u8 *d = (((u8 *) (&game_w)) + 0x1E8) - (-(no * 8));
+#endif
   d[0] = my_user_id[0];
   d[1] = my_user_id[1];
   d[2] = my_user_id[2];

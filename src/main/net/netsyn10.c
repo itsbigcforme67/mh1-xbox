@@ -101,12 +101,12 @@ void net_send_em(NEMV *em, u8 kind, s8 arg2) {
                     em->x86F = 0;
                 }
                 pk.a.flags = f;
-                if (em->x02 == 7) {
+                if (EMK_7(em->x02)) {
                     pk.a.b25 = em->x45C;
                     pk.a.c26 = em->x45D;
                     em->x462 = 0x96;
                 }
-                if (em->x02 == 0xF) {
+                if (EMK_15(em->x02)) {
                     pk.a.b25 = em->x488;
                     pk.a.c26 = em->x489;
                 }
@@ -149,7 +149,7 @@ void net_send_em(NEMV *em, u8 kind, s8 arg2) {
                     em->x86F = 0;
                 }
                 pk.a.flags = f;
-                if (em->x02 == 7) {
+                if (EMK_7(em->x02)) {
                     pk.a.b25 = em->x45C;
                     pk.a.c26 = em->x45D;
                     em->x462 = 0x96;
@@ -197,12 +197,12 @@ void net_send_em(NEMV *em, u8 kind, s8 arg2) {
                 }
                 pk.c.flags = f;
                 pk.c.b26 = game_w.master;
-                if (em->x02 == 7) {
+                if (EMK_7(em->x02)) {
                     pk.c.b24 = em->x45C;
                     pk.c.b25 = em->x45D;
                     em->x462 = 0x96;
                 }
-                if (em->x02 == 0xF) {
+                if (EMK_15(em->x02)) {
                     pk.c.b24 = em->x488;
                     pk.c.b25 = em->x489;
                 }
@@ -231,12 +231,12 @@ void net_send_em(NEMV *em, u8 kind, s8 arg2) {
                 pk.d.c24 = em->xA00;
                 em->xA00 = 0;
                 pk.d.b25 = em->x88B;
-                if (em->x02 == 7) {
+                if (EMK_7(em->x02)) {
                     pk.d.b22 = em->x45C;
                     pk.d.b23 = em->x45D;
                     em->x462 = 0x96;
                 }
-                if (em->x02 == 0xF) {
+                if (EMK_15(em->x02)) {
                     pk.d.b22 = em->x488;
                     pk.d.b23 = em->x489;
                 }

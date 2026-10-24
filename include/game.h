@@ -56,13 +56,12 @@ typedef struct GAME_W {
     u8 hit_id;          /* 0x03D (MH1 0x0D4, Get_hit_id counter) */
     u8 x0D5;            /* 0x03E (MH1 0x0D5) */
     u8 x1DC;            /* 0x03F (MH1 0x1DC) */
-    V3S x40[4];         /* 0x040 */
-    u8 _pad058[0x70 - 0x58];
-    u8 x70[4];          /* 0x070 */
-    u8 _pad074[0x78 - 0x74];
-    s8 x78[4];          /* 0x078 */
-    u8 _pad07C[0x80 - 0x7C];
-    u8 _pad080[0xB0 - 0x80];
+    V3S x40[4];         /* 0x040 (G: 10 entries, to 0x7C) */
+    u8 _pad058[0x7C - 0x58];
+    u8 x70[4];          /* 0x07C (MH1 0x070; G game11 0x102790: from select_w+0x66, 10 entries) */
+    u8 _pad080[0x86 - 0x80];
+    s8 x78[4];          /* 0x086 (MH1 0x078; from select_w+0xB6) */
+    u8 _pad08A[0xB0 - 0x8A];
     struct EFT_MDLW *area_mdlw[8]; /* 0x0B0 (MH1 0x0A8, 9 entries there; G's x80 sits at 0xD0); [0..3] = sub_ptr, see MH1 */
     u8 x80[4];          /* 0x0D0 (MH1 0x080, Pl_item_cnt_up) */
     u8 _pad0D4[0xEC - 0xD4];

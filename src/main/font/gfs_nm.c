@@ -4,6 +4,7 @@
  * menu sounds. */
 #include "types.h"
 #include "sysw.h"
+#include "swx.h"
 
 typedef struct PSWE { u16 w[17]; } PSWE;
 extern PSWE Psw[];
@@ -11,7 +12,7 @@ extern int font_reset_flag;
 extern u32 motion_set_handle_tbl[0x1004];
 extern int ask_load_adrs;
 extern u8 *lpSKey;
-extern u8 select_w[0xC0];
+extern u8 select_w[];
 extern u8 demo_w[0x44];
 extern u8 game_w[0x224];
 
@@ -272,11 +273,11 @@ void init_select_work(void) {
     u16 a;
     u8 b;
 
-    a = *(u16 *)(select_w + 0xAC);
-    b = select_w[0xB6];
-    memset(select_w, 0, 0xC0);
-    *(u16 *)(select_w + 0xAC) = a;
-    select_w[0xB6] = b;
+    a = *(u16 *)(select_w + SWX(0xAC));     /* G: 0xD0 / 0xDC, a 0xF0-byte select_w (swx.h, as gfs01.c's G part) */
+    b = select_w[SWX(0xB6)];
+    memset(select_w, 0, SW_SIZE);
+    *(u16 *)(select_w + SWX(0xAC)) = a;
+    select_w[SWX(0xB6)] = b;
 }
 
 void softreset(void) {

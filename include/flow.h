@@ -30,21 +30,24 @@ typedef struct SELECT_W {
     u8 _pad00[0x0A];
     s16 x0A;            /* 0x0A stage number (Quest_start) */
     u8 x0C[4];
+#ifdef VERSION_MHG
+    /* G select_w is 0xF0 bytes (0x35EC30) with 10-entry per-player arrays: the full map is include/swx.h (SWX) */
+    u8 _pad10[0x66 - 0x10];
+    u8 x54[4];          /* 0x66 (MH1 0x54) */
+    u8 _pad6A[0x70 - 0x6A];
+    V3S x5C[4];         /* 0x70 (MH1 0x5C) */
+    u8 _pad88[0xAC - 0x88];
+    s8 ready[4];        /* 0xAC per player ready flag (MH1 0x8C) */
+    u8 _padB0[0xB6 - 0xB0];
+    s8 x94[4];          /* 0xB6 (MH1 0x94) */
+    u8 _padBA[0xD0 - 0xBA];
+    u16 xAC;            /* 0xD0 selected quest number (MH1 0xAC) */
+    u8 _padD2[0xF0 - 0xD2];
+#else
     u8 _pad10[0x54 - 0x10];
     u8 x54[4];
     u8 _pad58[0x5C - 0x58];
     V3S x5C[4];
-#ifdef VERSION_MHG
-    /* G select_w is 0xF0 bytes (0x35EC30): ready moved 0x8C -> 0xAC, xAC 0xAC -> 0xD0 (tools/mhg_fields.py);
-     * the other fields keep their MH1 offset until G code that uses them is seen */
-    u8 _pad74[0x94 - 0x74];
-    s8 x94[4];
-    u8 _pad98[0xAC - 0x98];
-    s8 ready[4];        /* 0xAC per player ready flag (MH1 0x8C) */
-    u8 _padB0[0xD0 - 0xB0];
-    u16 xAC;            /* 0xD0 selected quest number (MH1 0xAC) */
-    u8 _padD2[0xF0 - 0xD2];
-#else
     u8 _pad74[0x8C - 0x74];
     s8 ready[4];        /* 0x8C per player ready flag (game3/game4) */
     u8 _pad90[0x94 - 0x90];
