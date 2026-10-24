@@ -1,13 +1,12 @@
 /* G online (PC): Lbc_GuestReadRoom, written from Monster Hunter G's code at lobby 0x582410 by tools/mhg_gonl.py (an m2c draft with
- * G's names; docs/network.md 3.12). Not compared with anything; the G online PC build links it (ONLINE=1
- * tools/build_pc_mhg.sh). */
+ * G's names; docs/network.md 3.12). HAND-FIXED: m2c took G's rule-table stack buffer (sp+0x80) for a stack argument
+ * (the copy overran the frame): a static buffer, as Lbc_GetRoomRule. */
 #include "../gonl.h"
 
 s32 Check_CallBackWait();
 void * memset();
 void * strcpy();
 extern u8 RoomInfo;
-extern u8 arg_sp80;
 extern u8 cw;
 extern u8 pNet;
 s32 cnLBS_Get_RoomMemberList(); /* extern */
@@ -20,7 +19,8 @@ extern s32 g_lb_6DE120;
 extern u8 RoomRule;
 extern s32 join_member;
 
-s32 Lbc_GuestReadRoom(s32 arg0, s32 unused_a1, s32 arg2, s32 arg3, u8 arg_sp80) {
+s32 Lbc_GuestReadRoom(s32 arg0, s32 unused_a1, s32 arg2, s32 arg3) {
+    static u8 rbuf[0x2A000];          /* G: 0x294A4 bytes at sp+0x80 */
     u8 *var_s1_2;   /* (s32 *) */
     s32 temp_s0;
     s32 temp_s6;
@@ -62,13 +62,13 @@ block_21:
     case 3:
         (*(u8 *)((u8 *)(temp_v0) + 0xB9D)) = (u8) (temp_a0 + 1);
         temp_s6 = (arg0 & 0xFFFF) + 1;
-        cnLBS_Get_RoomRuleAllocation(temp_s6 & 0xFFFF, &arg_sp80);
-        RoomRule = arg_sp80;
-        (*(u8 *)((u8 *)&RoomRule + 0x1)) = arg_sp80;
-        (*(u8 *)((u8 *)&RoomRule + 0x54)) = arg_sp80;
+        cnLBS_Get_RoomRuleAllocation(temp_s6 & 0xFFFF, rbuf);
+        RoomRule = rbuf[0];
+        (*(u8 *)((u8 *)&RoomRule + 0x1)) = rbuf[1];
+        (*(u8 *)((u8 *)&RoomRule + 0x54)) = rbuf[3];
         var_s0 = 0;
         if ((s32) (*(u8 *)((u8 *)&RoomRule + 0x54)) > 0) {
-            var_s4 = &arg_sp80;
+            var_s4 = rbuf;
             var_s3 = &RoomRule;
             do {
                 strcpy(var_s3 + 0x56, var_s4 + 5);

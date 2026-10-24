@@ -20,8 +20,8 @@ void lb_rule_seet_trans_ot(void) {
     u8 *var_s1;   /* (s32 *) */
     s32 var_s0;
 
-    reload_tex(1, 0x180);
-    SetTextureStage(0x180);
+    reload_tex(1, 0x157);
+    SetTextureStage(0x157);
     SetFilterMode(1);
     flSetRenderState(0x60, 0, M2C_ERROR(/* Read from unset register $a2 */));
     if (lb_sys != 3) {

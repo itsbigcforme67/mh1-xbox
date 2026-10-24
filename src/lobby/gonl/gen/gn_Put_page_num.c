@@ -52,8 +52,8 @@ void Put_page_num(s32 arg0, s32 arg1, s32 arg2, s32 arg3, s32 arg4) {
         font_print(&lit_2316, &sp90);
     }
     if (temp_s0 >= 2) {
-        reload_tex(1, 0x180);
-        SetTextureStage(0x180);
+        reload_tex(1, 0x157);
+        SetTextureStage(0x157);
         if (arg4 != 0) {
             if (temp_s0 < 0xA) {
                 temp_s0_2 = ((s16) ((s32) arg0));

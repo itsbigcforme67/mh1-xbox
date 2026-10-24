@@ -577,3 +577,5 @@ g_main_2EF078 = 0x002EF078; // size:0x8   # tools/mhg_gonl.py: G data the G onli
 [main]
 LobbyInfo = 0x00303610; // size:0x2FA0 noptr        # G online: G's town records (To_EnterPlaza memsets 0x2F94; the split sized it MH1's 0x1308 and the memset wiped the next host table, D_00528A80: the quest sheet crashed)
 PlazaInfo = 0x003065B0; // size:0x2360 noptr        # G online: G's plaza records (lbc_top_menu_00 memsets 0x2358; was 0xD98)
+[main]
+quest_title = 0x00300A90; // size:0x630 noptr       # G online: + the three event quest headers (0x30 + 3 x 512 bytes; lbc_login_finish_after clears them; at 0x20 the clear wiped pl_light_tbl and the quest load crashed in light_init)

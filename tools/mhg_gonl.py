@@ -210,6 +210,7 @@ def convert(src):
     src = narrow_s64(src)
     src = deref_ints(src)
     src = function_tables(src)
+    src = tex_slots(src)
     src = unprototype(src)
     # m2c's declarations of names that became NAME+offset are no declarations any more
     src = re.sub(r'^extern [^;\n]*\(\*\([^;\n]*;\n', '', src, flags=re.M)
@@ -219,6 +220,24 @@ def convert(src):
     used = set(re.findall(r'\bg_(?:main|sub|lb)_[0-9A-F]{6}\b', src))
     decl = ''.join('extern u8 %s;\n' % n for n in sorted(used) if not re.search(r'extern [^;]*\b%s\b' % n, src))
     return declare_ctx_calls(decl + undeclared(src))
+
+
+def g_tex_slot(g):
+    # G renumbered mem_tex (docs/mhg.md): the PC keeps MH1's numbers (its own loads and MH1's C agree), so G's code
+    # must use MH1's slot: G 0x179..0x188 = MH1 0x150..0x15F (the 0x15x group, +0x29: the lobby UI sprites G 0x180 =
+    # MH1 0x157), G 0x13F..0x178 = MH1 0x118.. (menu / HUD slots, +0x27). With G's numbers the lobby drew empty or
+    # white squares (the town name tags' icon, the rule sheet's buttons)
+    if 0x179 <= g <= 0x188:
+        return g - 0x29
+    if 0x13F <= g < 0x179:
+        return g - 0x27
+    return g
+
+
+def tex_slots(src):
+    src = re.sub(r'\breload_tex\((\d+), 0x([0-9A-Fa-f]+)\)',
+                 lambda m: 'reload_tex(%s, 0x%X)' % (m[1], g_tex_slot(int(m[2], 16))), src)
+    return re.sub(r'\bSetTextureStage\(0x([0-9A-Fa-f]+)\)', lambda m: 'SetTextureStage(0x%X)' % g_tex_slot(int(m[1], 16)), src)
 
 
 # G functions that carry an MH1 name (the split matched them by place) but are other code: the PC's cnet C keeps the
@@ -240,11 +259,13 @@ G_RENAME = {
     'cnLBS_Get_LobbyStatus': 'gnet_get_room_status',            # G 0x5BB650: room status (room table +0x1E)
     'cnLBS_Get_mhLobbyJoinUser': 'gnet_get_room_joinuser',      # G 0x5BB550: a room's two user counts (+0xA / +0xC)
     'cnLBS_Get_RoomPasswordInfo': 'gnet_get_room_password',     # G 0x5BE0E0: +0x1F (MH1's struct: +0x1D)
+    'cnLBS_Get_MatchEntryJoinUser': 'gnet_get_room_entryusers', # G 0x5BF210: +0x1A / +0x1C (MH1's struct: +0x18 / +0x1A)
     # G's town-search string sends under MH1's rule-read names: as those names they replaced the PC's rule reads
     '__cnet_SendReq_RuleListHeadWord': 'gonl_SendReq_6316',     # G 0x5AEC60: row 95 (6316), an obfuscated string
     '__cnet_SendReq_RuleNumOfChoice': 'gonl_SendReq_6317',      # G 0x5AED70: row 99 (6317), an obfuscated string
     'cnLBS_Read_RoomRuleCaption': 'gnet_read_6316',             # G 0x5AEBE0..: its read wrappers of those (src/lobby/cnet/cnet_g.c)
     'cnLBS_Read_RoomRuleChoiceCount': 'gnet_read_6317',
+    'cnLBS_RoomEntry': 'gnet_room_entry',                       # G 0x5BBED0: 6406 with the callback (cnet_g.c)
     'cnLBS_Read_LobbyName': 'gnet_read_6403',                   # G 0x5BB4D0: a room's join users (PieceJoinUser(2), 6403)
     # G burst callbacks under MH1 callback names the PC's MH1 bursts use (room rules read / set)
     '_cnet_CallBack_Result_RoomRuleCaption': 'gonl_cb_BurstFail_5ABA90',   # G 0x5ABA90: a burst ends with -1

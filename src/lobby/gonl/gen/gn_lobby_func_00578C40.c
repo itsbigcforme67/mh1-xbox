@@ -29,8 +29,8 @@ void lobby_func_00578C40(s16 arg0) {
 #define sp90 (*(s16 *)(g_frame + 0x90))
 #define sp92 (*(s16 *)(g_frame + 0x92))
 
-    reload_tex(1, 0x180);
-    SetTextureStage(0x180);
+    reload_tex(1, 0x157);
+    SetTextureStage(0x157);
     SetFilterMode(1);
     flSetRenderState(0x60, 0, M2C_ERROR(/* Read from unset register $a2 */));
     (*(f32 *)((u8 *)(&sp90) + 0)) = (f32) (*(f32 *)((u8 *)(&(*(s32 *)((u8 *)&textLobbyTbl + 0x14))) + 0));

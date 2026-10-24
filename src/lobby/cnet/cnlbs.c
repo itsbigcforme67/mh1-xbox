@@ -1476,7 +1476,11 @@ CNET_PIECE *tbl;
 int cnLBS_Read_RoomRuleAllocation(int val, int cb) {
     if (CnetSys_w.burst[5].state == 0) {
         CnetSys_w.burst[5].cb = (void *)cb;
+#if LBNET_G
+        CnetSys_w.burst[5].x14 = val & 0xFFFF;      /* the room (MH1's raw 0xEE0 is this field only with MH1's 0x24-byte slots) */
+#else
         CNW(s32, 0xEE0) = val & 0xFFFF;
+#endif
         CnetSys_w.burst[5].state = 1;
         CnetSys_w.burst[5].run = __cnet_bgProg_ReadRoomRule;
         CnetSys_w.burst[5].x21 = 0;

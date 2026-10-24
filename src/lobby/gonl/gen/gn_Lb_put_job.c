@@ -13,11 +13,11 @@ void Lb_put_job(s32 arg0, s32 arg1, s32 arg2, s32 arg3, s32 arg4, s32 arg5) {
 
     var_s0 = arg4;
     if ((((s8) (arg5))) != 0) {
-        reload_tex(1, 0x13F);
-        SetTextureStage(0x13F);
+        reload_tex(1, 0x118);
+        SetTextureStage(0x118);
         Lb_put_icon_free2(arg0, arg1, arg2, arg3, (s32) (((s16) (((((s16) (var_s0))) + 0x19)))));
-        reload_tex(1, 0x180);
-        SetTextureStage(0x180);
+        reload_tex(1, 0x157);
+        SetTextureStage(0x157);
         return;
     }
     temp_v1 = ((s16) (var_s0));

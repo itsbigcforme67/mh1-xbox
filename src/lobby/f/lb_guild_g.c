@@ -832,6 +832,14 @@ static int quest_cond(int kind, int online)
     }
 }
 
+#ifdef MHG_ONLINE
+int lobby_func_0055E300(int kind, int online)         /* G's own code calls the quest conditions by address (the room list's
+                                                       * check_room_require; a stand-in returning 0 refused every room) */
+{
+    return quest_cond(kind & 0xFF, online & 0xFF);
+}
+#endif
+
 /* ---------------------------------------------------------------------------------------------- the quest sheet text */
 void lb_set_questpage_info(void)
 {

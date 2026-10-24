@@ -197,6 +197,34 @@ int lobby_func_005BF190(int room, int cb)
     return cnLBS_Read_MatchEntryJoinUser(room, cb);
 }
 
+/* the match's game rule string (6914, MH1 CnetSys_w+0x30323) for the PC's session choice (rt_online.c matched()) */
+const char *gnet_game_rule(void)
+{
+    return (const char *)CNWP(0x30323);
+}
+
+/* G's cnLBS_RoomEntry (G 0x5BBED0): join a room: 6406 (row 113: u16 room, the password as an obfuscated string, empty
+ * when none; G 0x5BBF60). G hands the callback to __cnetSub_Set_BgProcess in a2 untouched; the split's names of the send
+ * (__cnet_SendReq_RoomEntry, G 0x5AD390) are G's 6305 send, so the PC's MH1 cnLBS_RoomEntry sent a town entry */
+void __cnet_KeepEntryFloorInfo();
+int gnet_room_entry(int room, char *pw, int cb)
+{
+    int slot = __cnetSub_Set_BgProcess(1, 0, cb), cmd;
+    if (slot == -1)
+        return -1;
+    __cnet_KeepEntryFloorInfo(2, room & 0xFFFF);
+    cmd = SetSendCommand(&send_work, 113) & 0xFFFF;
+    SetSendData16(&send_work, room & 0xFFFF);
+    if (pw == 0)
+        SetSendStringData2(&send_work, "", 0);
+    else
+        SetSendStringData2(&send_work, pw, strlen(pw) & 0xFFFF);
+    SetSendCommandLen(&send_work);
+    Write_Socket(&send_work);
+    CnetSys_w.bg[slot].cmd = cmd;
+    return slot;
+}
+
 /* 660C request: the room's rules are set (row 175; MH1's cnLBS_Set_RoomRuleFinish) */
 int gnet_660C_req(void)
 {
@@ -508,6 +536,16 @@ int gnet_get_room_joinuser(int id, u16 *a, u16 *b)    /* G 0x5BB550 */
 {
     *a = REC16(G_ROOM((u16)id), 0xA);
     *b = REC16(G_ROOM((u16)id), 0xC);
+    return 0;
+}
+
+int gnet_get_room_entryusers(int id, u16 *a, u16 *b) /* G 0x5BF210: the room's match entry users (ready, +0x1A / +0x1C;
+                                                       * gnet_6412_both / gnet_6506_note store them) */
+{
+    if ((u16)id != 0) {
+        *a = REC16(G_ROOM((u16)id), 0x1A);
+        *b = REC16(G_ROOM((u16)id), 0x1C);
+    }
     return 0;
 }
 

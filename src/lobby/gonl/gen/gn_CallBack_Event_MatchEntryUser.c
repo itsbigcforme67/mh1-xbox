@@ -7,7 +7,7 @@ s32 Lb_put_chat();
 s32 cnWrap_SoundRequest();
 extern u8 ClassInfo;
 extern u8 cw;
-s32 cnLBS_Get_MatchEntryJoinUser(); /* extern */
+s32 gnet_get_room_entryusers(); /* extern */
 extern s32 lb_sys;
 extern s8 mhRule;
 
@@ -23,7 +23,7 @@ void CallBack_Event_MatchEntryUser(void) {
     if (((*(u16 *)((u8 *)(temp_a2) + 0xF752)) + 1) == (mhRule + 1)) {
         var_s0 = 1;
     }
-    cnLBS_Get_MatchEntryJoinUser((*(u8 *)((u8 *)&ClassInfo + 0x8)) & 0xFFFF, temp_a2 + 0xF752, temp_a2 + 0xF754);
+    gnet_get_room_entryusers((*(u8 *)((u8 *)&ClassInfo + 0x8)) & 0xFFFF, temp_a2 + 0xF752, temp_a2 + 0xF754);
     if ((lb_sys != 8) && (lb_sys != 9) && ((mhRule + 1) >= 2)) {
         temp_a1 = (*(void **)&cw);
         if (((*(u16 *)((u8 *)(temp_a1) + 0xF752)) == mhRule) && ((*(u8 *)((u8 *)(temp_a1) + 0xF751)) != 0)) {

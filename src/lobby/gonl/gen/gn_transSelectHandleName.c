@@ -48,8 +48,8 @@ void transSelectHandleName(void *arg0) {
     Get_sw2(0);
     sp40 = lit_324_00617F70;
     sp30 = lit_326_00617F80;
-    reload_tex(1, 0x174);
-    SetTextureStage(0x174);
+    reload_tex(1, 0x14D);
+    SetTextureStage(0x14D);
     SetFilterMode(1);
     flSetRenderState(0x60, 0, M2C_ERROR(/* Read from unset register $a2 */));
     Put_2TF(&(*(s32 *)((u8 *)&textLobbyTbl + 0x28)));

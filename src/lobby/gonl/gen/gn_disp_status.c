@@ -77,8 +77,8 @@ void disp_status(s32 arg0, s32 arg1, void *arg2, s32 *arg3, void *arg4, s32 arg5
     var_s4 = ((s16) ((arg1 + 0x28)));
     temp_s0 = ((s16) (arg0));
     put_titles(((s16) ((temp_s0 + 0xA))), var_s4, (*(s32 *)((u8 *)&tl_mail_tbl + 0x28)));
-    reload_tex(1, 0x180);
-    SetTextureStage(0x180);
+    reload_tex(1, 0x157);
+    SetTextureStage(0x157);
     SetFilterMode(1);
     flSetRenderState(0x60, 0, M2C_ERROR(/* Read from unset register $a2 */));
     temp_s2 = ((s16) ((temp_s0 + 0xA)));
@@ -151,8 +151,8 @@ void disp_status(s32 arg0, s32 arg1, void *arg2, s32 *arg3, void *arg4, s32 arg5
         }
         temp_s1_2 = ((s16) ((temp_s0 + 0x2C)));
         Lb_put_job((s32) (((s16) ((temp_s1_2 - 0x25)))), (s32) (((s16) (((((s16) (temp_s4_7))) - 5)))), 0x1C, -1, Get_weapon_job(arg4 + 0xA) & 0xFF, 1);
-        reload_tex(1, 0x13F);
-        SetTextureStage(0x13F);
+        reload_tex(1, 0x118);
+        SetTextureStage(0x118);
         temp_s4_8 = ((s16) ((temp_s4_7 + 0x1E)));
         flfntLocate((s32) (((s16) ((temp_s0 + 0x2C)))), (s32) temp_s4_8);
         font_print(&g_lb_63E280, (*(s32 *)((u8 *)&(*(s32 *)((u8 *)&Armor_Head_Data + 0x10)) + ((*(u8 *)((u8 *)(arg4) + 5)) << 5))));
