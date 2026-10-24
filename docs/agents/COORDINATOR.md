@@ -97,7 +97,8 @@ always been a struct field type or a lost field.
 
 ### Running, 23 Oct 2026 evening
 - agent C: G online round 4 merged 24 Oct (two PC G clients meet in G's town; full check 42 ok). Next: guild hall NPCs (only slot 0 placed, none drawn), counter menu ('unknown hunter' greeting), room, quest; town name tags draw a white square.
-- agent D (Sonnet): GB6 ninth pass (em02 Fatalis, em14_main, eft04/15/16 type 9/15, eft02_t, set14).
+- agent D: GB6 ninth pass merged 24 Oct (eft04/15/16/02, set14, em12/em15; full check 42 ok). Left: em02 Fatalis rewrite (RELEASE_G 16; no offline quest spawns it). Found (both games): game_w.area_mdlw[] never filled on the PC, so eft04 / eft01 shadow arg 4 / eft20 area pieces / shell08 clay pieces draw nothing: platform task, queued.
+- agent A (Opus): G English: refresh text_map, fix English display in G, own-translation layer + ~1090 strings not in Portable. Freedom (ULUS-10084) asked from the owner for disc/mhfr/.
 - agent B: G gaps GN8/GN12/GM4/GM5 done and merged 23 Oct (full check passed on agent-B).
 - agent D: GB6 eighth pass (shell08, eft13 Dual Swords, subspecies kinds 35-50, armor count) merged 24 Oct; what is left: RELEASE_G section 15.
 
