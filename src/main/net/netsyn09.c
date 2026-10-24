@@ -3,7 +3,6 @@
 #include "types.h"
 #include "netsyn.h"
 #include "swx.h"
-#include <stddef.h>
 
 extern NGW game_w;
 extern u8 player_work[];
@@ -129,8 +128,13 @@ void net_receive_sys(int slot0, u8 *buf) {
         case 5:
             slot = p[0];
             t8 = (u8 *)&game_w + slot * 2;
-            q = t8 + offsetof(NGW, xF8);    /* G 0x1C2 (MH1 0xF8) */
-            r = t8 + offsetof(NGW, xF8) + 1;
+#ifdef VERSION_MHG
+            q = t8 + 0x1C2;                 /* G: game_w xF8 at 0x1C2 (netsyn.h NGW) */
+            r = t8 + 0x1C3;
+#else
+            q = t8 + 0xF8;
+            r = t8 + 0xF9;
+#endif
             for (i = 0; i < 4; i++) {
                 if (p[1] == game_w.master && p[2] != 0) {
                     *q = slot;
