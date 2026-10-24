@@ -956,3 +956,7 @@ Both games unless marked.
   the PC's key_quest became a function stand-in and the plain G village crashed (test_save_g, test_urgent_g,
   test_all_quests_g). Also build_pc.sh's BMATCH W rule narrowed to the G online weakening (.gsyms) and gen_rt_auto.py's
   gonl names to the G online build. **To revert:** the commit "G PC: the village again ..." on agent-C.
+- **Dropped (23 Oct):** gen_rt_auto.py's lookup of mhg_gonl.py names for lobby `_o` aliases (added earlier this round).
+  **Now:** src/lobby/gonl/gonl_g.c defines CallBack_Result_SearchUserPlace_o as a call of G's function. **Why:** the
+  generated alias depended on the previous build's objects (a plain G build then an online one failed to link in
+  full_check). **To revert:** the commit "G online: CallBack_Result_SearchUserPlace_o by hand" on agent-C.
