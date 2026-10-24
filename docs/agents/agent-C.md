@@ -2238,3 +2238,41 @@ G's guild hall (stage 0x4D: G returns the party where the quest was taken). G's 
 - **Open:** PS2 G + PC G hunt (G's sys 2 layout), a G save on the test cards, the many MH1 C writes of pNet+0xC / +0x11
   that remain in G-online-built lobby code (G's pNet layout differs: a systematic PNET_OFS map is needed), the hand-over
   when a G player drops (aq_nm.c paths now use GWX, untested), event quests online.
+
+## G online, round 7 (24 Oct 2026): G's in-hunt packets, G's pNet layout, G save cards for the tests
+PC-only work for a real PS2 G (later the Xbox) in a party with PC G players; G-only behind VERSION_MHG / MHG_ONLINE
+(MH1 builds and both PS2 builds unchanged: the maps are the identity there). Details: docs/network.md 3.12 "round 7".
+- **Packets compared (send and receive, G twin of each, tools/mhg_fdiff.py main FUNC):** sys 1-12, pl, em, em act,
+  chat, host. Different: **sys 2** (character select: 0x1E bytes, quest u16 at 14, id at 22, three G-only select_w
+  fields from slot 0), **sys 3** (+ s16 at 10), **em** (kinds 50 / 45 take MH1's kind-7 / kind-15 bytes). Same layout:
+  sys 1, 4-12, pl (G's receive adds an item helper call, not ported), chat, host. Around them: net_start_ck's
+  keep-alive 300 frames / delay reset / no 60 cap; game_w 0xD6..0xDB (GWX had identity placeholders) and 0x1E8
+  (Copy_user_id wrote the ids over G's x21B / x21E); G's mini data layout (Set_mini_data_to_pl read MH1's: the other
+  hunters' equipment came from the wrong bytes); NGW's guessed xF8 / x110 offsets (sys 5 wrote G 0x1B6, G uses 0x1C2).
+- **select_w:** include/swx.h, the whole MH1 -> G map (10-slot arrays in G; sel_default_set loops 10). Used by plsel_nm.c
+  (it also read game_w by raw MH1 offsets: GWX now), gfs_nm.c init_select_work (G size 0xF0, keeps 0xD0 / 0xDC),
+  rt_mcs.c (ready flags were read at MH1's 0x8C = G's 0x6C.. bytes), rt_np.c, the packets. GAME_W x70 / x78 at G's 0x7C /
+  0x86 (game11).
+- **pNet (task 2):** the map from `tools/mhg_addrmap.py lobby 0 0 --ptr pNet` (plus G's code for the low-vote ones):
+  PNET_OFS in include/lbsys_g.h for MHG_ONLINE; LB_NETW (lbui.h) / LBNETW_B (lobby_b.h) in G's layout there. Raw
+  accesses converted mechanically in 50+ lobby files (pNet[N], F(T, pNet, N), (pNet + N), M2C_FIELD(pNet, T, N) and the
+  same through local aliases `p = pNet`; scratch scripts, not committed). Of the MH1 lobby functions the G online build
+  still links (nm -l), 31 touched pNet by raw offsets (e.g. plaza_enterLobby, plaza_mailBox, plaza_searchAll,
+  lm_member_list_mv, lb_check_status, Clear_lobby_ram, Lb_eat, guild_input_message / _pass, shop_process_after,
+  lm_logout_mv); the struct users (pNet->step ...) follow the struct. lb_guild_g.c's hard-coded G offsets became
+  PNET_OFS. CW_OFS checked against `--ptr cw` votes: no disagreement with more than 2 votes (left as is).
+- **G save cards (task 3):** tools/test_online_g.sh mkgsave: a G card per hunter, saved at the village bed (offline,
+  the same binary, build/show/g_online_pc_cards, remade when the binary is newer); HUNT=1 starts each client from a copy,
+  checks "memory card: saved" after the relogin and boots each card offline (CONTINUE) expecting the hunt's money.
+  A card alone was not enough: G's online save (CardOnsv101/102) compares the card's check values with the ones kept
+  from the session's own card load (check_sum_set) and said "continue without saving?" for a hunter that never came
+  from the card. rt_np.c's load_own_hunter (the card's hunter when started with --online, MH1 already had it) now
+  knows G's card file (BISLPM-65869MHG, 0x130D0 bytes; the PC encodes it as MH1's 0x8A20-word image) and G's 0xE00-byte
+  slots, so the G client starts with the card's hunter and the check values.
+- **Found on the way (offline G too):** em20's G-only sub contents at main 0x2EDDB8 / 0x2EDDC0 / 0x2EDDC8 had no name, so
+  the game.bin table at 0x6B0274 that points at them got no pointer words (tools/mhg_pcmeta.py takes only label starts
+  from an overlay into main) and em_cmd_ck read 0x2EDDC0 raw: a crash in the camp (stage 21) after the hunt's RNG seed
+  changed (rt_np.c now seeds from the quest at G's select_w+0xD0; it read G's ready flags at +0xAC before). Named in
+  config/mhg/pc_data.txt (em20_sub_contents_g24..g26), pc_ptrs.txt +3 words.
+- **Not done / open:** G's item helper in net_receive_pl (G 0x4C64D0); what G's select_w 0xE4 / 0xE6 / 0xE8 and sys 3's
+  s16 mean; pNet MH1 0x10 has no G twin (mapped to a PC-only byte 0x34).

@@ -1100,7 +1100,7 @@ sending it: harmless, and closer to the original if it was the login's answer.
   "hostleave" through the relay (the room's leader leaving) is a case to repeat on mcs before step 2: there, drop-outs
   of the owner were tested (above), not of the room leader (slot 0) with three players left.
 
-### 3.12 Monster Hunter G online (agent C, 18-24 Oct 2026, round 6; GB7, in progress)
+### 3.12 Monster Hunter G online (agent C, 18-24 Oct 2026, round 7; GB7, in progress)
 
 G (SLPM-65869) uses the same lobby-server protocol as MH1 (same framing, login, obfuscation, `LOCKROCK`, sequence
 rules; `cnLBS_LoginLobbyServer`, `mmbbc_encode`, `tcp_init`, `create_server_table` are identical), with a command table
@@ -1257,13 +1257,48 @@ does differently, found on the way (all [code only] unless the test shows it):
 - G's quest_w moved MH1's 0x180.. block (the quest messages of sys 6: clear, everyone's end bits) to 0x280; the room
   owner waits at quest command 0x2D until every member's bit came [checked: the owner hung there with MH1's offsets].
 - G's sys 2 (select) packet has another layout than MH1's: the ready flag goes to select_w+0xAC, the quest to +0xD0,
-  the hunter id from byte 18 (net_receive_sys G 0x4FB210, net_send_sys G 0x4FAE40). The PC G client still sends MH1's
-  layout (fine between PCs); a PS2 G in the party needs G's.
+  the hunter id from byte 18 (net_receive_sys G 0x4FB210, net_send_sys G 0x4FAE40). Round 6's PC G client still sent MH1's
+  layout (fine between PCs); since round 7 it sends G's (below).
 - cmcs_03 takes the player count from cw+0xBB1 and the game-server ticket from cw+0xFA6C (MH1 0x2C47 / 0x35E0).
 - After the quest G logs in again and saves the hunter to the card (lbc_login_finish_after, McOperationSet(7)); then the
   party stands in the guild hall (stage 0x4D), not in the town.
-Next: the PS2 G disc with a PC G in one hunt (G's sys 2 layout first), the Xbox, G save cards for the tests, G's pNet
-layout for the MH1 lobby C still linked in the G online build.
+State (24 Oct, round 7): **the PC G client sends and reads G's own in-hunt packets** (the PC's net_* C is MH1's; every
+packet the AQ channels carry was compared with G's twin, send and receive side; tools/mhg_fdiff.py main FUNC):
+
+| Packet (AQ ch 10 sys / pl / em / chat / host) | G vs MH1 | PC G build now |
+|---|---|---|
+| sys 1 player count | same | - |
+| **sys 2 character select** (net_send_sys G 0x4FAE40 / net_receive_sys G 0x4FB210) | **0x1E bytes (MH1 0x18)**: slot, sw[0x66+s], weapon byte / u16 / byte, stage, ready, sw[0xC+s], sw[0xB6+s], **u16 quest at 14** (MH1 a byte at 10), sw[0xD2+s] at 16, G-only sw+0xE8 / u16 +0xE4 / u16 +0xE6 at 17 / 18 / 20, **the hunter id at 22** (MH1 16); slot 0 hands out the stage, quest and the G-only three | G's layout (netsyn08.c / netsyn09.c, VERSION_MHG) |
+| **sys 3 start round** | **+ s16 at 10**: the value G keeps per slot at 0x2EF718 (only net_receive_sys kind 3 writes it, so in practice 0) | sent and stored |
+| sys 4/11, 6 (quest, quest_w 0x280 block since round 6), 7/10 (items), 8, 9, 12 | same layout | sys 5's target is game_w+0x1C2 (was a guess, 0x1B6) |
+| sys 5 item box | same layout | - |
+| pl (net_send_pl identical; net_receive_pl) | same layout; G's receive calls a new item helper (G 0x4C64D0) before Pl_item_stack on an item hand-over | layout as is; the helper is not ported [code only] |
+| em (net_send_em / net_receive_em / net_receive_em_act) | same layout; **G treats kinds 50 and 45 like 7 and 15** (the bytes at 0x21/0x22, 0x1E/0x1F) | EMK_7 / EMK_15 (netsyn.h) [which monsters: unverified] |
+| chat (net_send_chat; receive identical) | same | (the PC's chat send is a stub) |
+| host (identical) | same | - |
+
+Also G, around the packets: net_start_ck sends its keep-alive (sys 8) every 300 frames (MH1 60), clears the network delay
+at round 0 and has no 60-frame cap (netsyn07_nm.c); game_w's start-round fields are 0xDA / 0x190.. (GWX, include/gwx.h:
+identity placeholders before); Copy_user_id writes the hunter ids at game_w+0x1F6 (MH1 0x1E8, which is x1E2 / x21B /
+x21E in G); Set_mini_data_to_pl reads **G's mini data layout** (s32 +0x14, bytes +0x19 / +0x18 / +0x1A, the weapon s16s
+at +0xA.., the 6 look bytes at +3; G 0x4C67B0). select_w moved field by field (G arrays have 10 slots): include/swx.h
+(SWX) has the map and serves plsel_nm.c, gfs_nm.c, rt_mcs.c, rt_np.c and the packets. The lobby server and the mcs relay
+keep mini data and records opaque (tools/server/accounts.py stores 0x40 bytes, mcs.py counts record kinds), so they
+need no change; tools/mhg_lobby.py reads nothing of these packets.
+[checked: `HUNT=1 tools/test_online_g.sh` with two G PCs; against a PS2 G: not yet, see below]
+
+**pNet (the lobby's network window state) in the G online build:** G re-laid it out (prims first): MH1 0x00 s16 -> G 0x18,
+0x02..0x05 -> +0x20, 0x06..0x0F -> +0x21 (G 0x26 is G-only), 0x11..0x13 -> +0x20, the four prim pointers 0x14..0x23 ->
+0x00..0x0F (G has a fifth at 0x10), the s16s 0x24 / 0x26 / 0x28 -> 0x1C / 0x1E / 0x20 (`tools/mhg_addrmap.py lobby 0 0
+--ptr pNet`, checked in G's lbc_login_id_select / lb_select_room_list / lbc_top_menu_00). PNET_OFS (include/lbsys_g.h)
+is that map in the online build (MHG_ONLINE), where G's generated lobby code shares pNet with MH1's lobby C; LB_NETW /
+LBNETW_B take G's layout there. The plain G and the PS2 builds keep the identity.
+
+**G save cards:** the HUNT test makes a G card per hunter once (the village bed, offline) and starts each client from a
+copy, so G's relogin save after the quest writes the card [checked: "memory card: saved", the card loads back with the
+hunt's money].
+
+Next: the PS2 G disc with a PC G in one hunt (tools/test_ps2_g_online.sh, the coordinator's), the Xbox, event quests.
 
 ## 4. Run it
 

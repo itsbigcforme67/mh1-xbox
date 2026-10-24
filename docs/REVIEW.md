@@ -986,3 +986,17 @@ Both games unless marked.
 - **Changed (G PC only):** netsyn08.c / netsyn09.c quest messages at G's quest_w 0x280 block; aq_nm.c pl_state via GWX
   (identity in MH1); hunter_appellation / mcsls_swin_minus_init in config/mhg/pc_data.txt.
 - **To revert:** the agent-C commits of 24 Oct 2026 from "G online (PC): the hunt on mh1-server's mcs relay (WIP)".
+
+## G online, round 7 (agent C, 24 Oct 2026)
+- **Replaced (G builds):** include/netsyn.h NGW's guessed G offsets of xF8 (0x1B6) and x110 (0x1DE); include/gwx.h's
+  identity placeholders GWX_0xD6 / 0xD8..0xDB. **Now:** G's 0x1C2 / 0x1E0 and 0xDA / 0x190..0x193, read from G's
+  net_receive_sys / net_game_w_clear / game11 / net_start_ck. **Why:** sys 5 and the start round wrote other G fields.
+- **Replaced (G builds):** include/flow.h SELECT_W kept x54 / x5C / x94 at MH1's offsets in G. **Now:** G's 0x66 / 0x70 /
+  0xB6 (include/swx.h has the full map). Also include/game.h GAME_W x70 / x78 -> G's 0x7C / 0x86.
+- **Replaced (G online build):** lb_guild_g.c's hard-coded G pNet offsets (PN_SUB 0x22 ...) and the "pNet is MH1's
+  layout on the PC" rule (PNET_OFS identity). **Now:** PNET_OFS maps MH1 -> G pNet offsets under MHG_ONLINE and the MH1
+  lobby C reaches pNet through it (50+ files edited mechanically; identity in every other build). **Why:** G's generated
+  lobby code shares pNet with that C in the online build; MH1's C wrote its dialog flag into G's prim pointers.
+- **Dropped (test):** tools/test_online_g.sh HUNT=1's "continue without saving?" answer (left + circle presses after the
+  quest). **Now:** each client starts from a G card made at the village bed, the relogin save writes it, and the card is
+  booted back. **To revert:** the agent-C commits of 24 Oct 2026 from "G online (PC): the in-hunt packets in G's layout".
