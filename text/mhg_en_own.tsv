@@ -371,3 +371,73 @@ lobby:0x6425A0	403eb4ea	-	Comment:
 lobby:0x6425E0	b69876f5	-	Players now:
 lobby:0x642600	41ae43ac	-	  Max players:
 # --- town / village talk 4
+# --- online hub: town / search / Black List screens (lobby)
+lobby:0x642618	a400c37d	-	New town
+lobby:0x642640	7d48fa6c	-	Write Short Mail
+lobby:0x642668	f94b8d24	-	Slots left:
+lobby:0x642680	9067f2e3	-	Quest Title
+lobby:0x6426A0	39437506	-	Town:
+lobby:0x6428A0	3888c848	-	...Over 100 results found.
+lobby:0x6428D0	d364ef91	-	Not available at present.
+lobby:0x6428F0	97d5aa8f	-	Name Town
+lobby:0x642900	0002dae3	-	Name now:
+lobby:0x642910	c17276cf	-	No name
+lobby:0x642920	c59aaca6	-	Result
+lobby:0x642930	b1872263	-	All in Area
+lobby:0x642940	1bfd6e96	-	Filter in Area
+lobby:0x642958	8aff1596	-	All Lands
+lobby:0x642968	6d465881	-	All Quests
+lobby:0x642980	c765bb1b	-	Filter Quests
+lobby:0x6429D0	2a922b9f	-	HR 0  - HR 12
+lobby:0x6429F0	952f851e	-	HR 13 - HR 16
+lobby:0x642A10	a9367cc5	-	HR 17 - HR 20
+lobby:0x642A30	d32e1429	-	HR 21 - HR 23
+lobby:0x642A50	f080ed44	-	HR 24 - HR 26
+lobby:0x642A70	128b1974	-	HR 27 - HR 30
+lobby:0x642AF0	4f57161f	-	Online
+lobby:0x642B00	c16f23ae	-	On Quest
+lobby:0x642B20	d2681b57	-	-----
+lobby:0x642C38	3fa1ddd7	-	New Mail
+lobby:0x642F40	bcb5fc7f	-	~C00Your Hunter Rank does not match this area.
+lobby:0x643180	7442b3ad	-	~C00Getting area information.
+lobby:0x6431B0	37eb6c2b	-	~C00Quest search failed.
+lobby:0x6432D0	e9c2a82f	-	~C00No results found.
+lobby:0x6435A0	83e401ba	-	\n\n\n~C00Add the player above to your Black List\nand refuse their mail. OK?
+lobby:0x643600	a8adb6ac	-	~C00Black List entry cancelled.
+lobby:0x643630	25b7e8f4	-	~C00Added to your Black List.
+lobby:0x643660	b31f0cff	-	~C00Black List entry overwritten.
+lobby:0x643690	f4ce4bed	-	~C00OK to overwrite this entry?
+lobby:0x6436D0	0ded01b4	-	~C00Add to your Black List?
+lobby:0x643710	750d2a8d	-	~C00Your Black List is full.\nYou need to delete some names\nto make room for new entries.
+lobby:0x643780	81670f5f	-	~C00You've chosen 8 people already.\nYou can't choose any more.
+lobby:0x643980	0fcaecf6	-	~C00Entered.
+lobby:0x6439A0	3ce59920	-	~C00Jump there?
+lobby:0x6439C0	d6d84cd9	-	~C00Enter this town?
+lobby:0x6439E0	a258d408	-	~C00The selected town has closed.
+lobby:0x643A10	336b1b79	-	~C00Preparing...
+lobby:0x643A80	19da94b0	-	~C00\n   Choose from Friend List   \n\nEnter Capcom ID\n\n\n ~B01 Back         ~B00 Confirm\n
+lobby:0x643AE0	0b46df64	-	~C00\n          Enter Name          \n\nChoose from Friend List\n\n\n ~B01 Back        ~B00 Confirm\n
+lobby:0x643B40	760dc49a	-	~C00\nEnter Capcom ID\n\n   Choose from Friend List   \n\n\n ~B01 Back         ~B00 Confirm\n
+lobby:0x643BA0	ed1d6578	-	~C00You can't pick yourself.
+lobby:0x643BC0	5e57a3b0	-	~C00\nAll in Area\n\n      Filter in Area      \n\nAll Lands\n\n\n ~B01 Back        ~B00 Confirm\n
+lobby:0x643C20	505e2183	-	~C00\nAll Quests\n\n      Filter Quests      \n\n\n ~B01 Back        ~B00 Confirm\n
+lobby:0x643C80	aaa720a3	-	~C00Searching for quests...
+lobby:0x643CB0	99eeb112	-	~C00You cannot join the quest.\nThe selected town has closed.
+lobby:0x643CF0	1ccb4e35	-	~C00Quest details are not available.\n\nThe accepted quest was cancelled\nor has already departed.
+lobby:0x643D50	e5a835a4	-	~C00You cannot jump to this town now.
+lobby:0x643D80	3844046f	-	~C00You cannot jump to this area now.
+lobby:0x643DB0	fa4c6256	-	~C00\nChat Filter\n\n      Mail Filter      \n\n\n ~B01 Back        ~B00 Confirm\n
+lobby:0x643FD0	e6f5f0b6	-	~C00Failed to download the event quest.\nYou may need to re-enter the town\nto get the event data again.
+lobby:0x644060	0be295d4	-	~C00You can't meet this quest's terms.
+lobby:0x644090	95927c1e	-	~C00You can't meet the terms to join.
+lobby:0x6440C0	e0d91e10	-	~C00You cannot accept a quest.\n\nThe Guild is busy.\nPlease wait for other hunters\nto depart on their quests.
+lobby:0x644460	3a5310e0	-	~C00No memory card (8MB)\n(for PlayStation(R)2)\nin MEMORY CARD slot ~A00.\nInsert a memory card\nwith a NET file into\nMEMORY CARD slot ~A00.\n\n~B00: Don't save\n\n\n
+lobby:0x6445B0	3a18bbc8	-	~C00No NET file on the\nmemory card (8MB) (for\nPlayStation(R)2) in\nMEMORY CARD slot ~A00.\nInsert a memory card\nwith a NET file into\nMEMORY CARD slot ~A00.\n\n~B00: Don't save\n\n\n
+lobby:0x644680	c09509a4	-	~C00Could not connect to the server.\nThe server may be busy.\nPlease select another server.\n\nIf this error keeps appearing, check\nyour network settings and network\nconnections, then reconnect from\nthe Game Menu.
+lobby:0x644780	a96cd6dd	-	~C00Releasing...
+lobby:0x6447A0	1cd40e1a	-	~C00Processing...
+# --- village elder / combination talk (sub_main)
+sub_main:0x53B070	7e3c3dfb	t	Hoo hoo! You can't fool these eyes! Those 99 BBQ Tickets you've got! Trade them for it! I won't take no for an answer!!
+sub_main:0x53B940	4b8cb150	n t	Combine a Fire Herb and a Huskberry, and you get Flaming S, ammo for your Bowgun.
+sub_main:0x53BA00	0221f6e8	n t	Combine a Flashbug and a Huskberry, and you get Thunder S, ammo for your Bowgun.
+sub_main:0x53C210	4f4b38ca	t	Combine a Potion and a Huskberry, and you get Recover S Lv2, ammo for your Bowgun.

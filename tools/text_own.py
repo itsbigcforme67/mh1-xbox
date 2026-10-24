@@ -12,8 +12,9 @@ holds no game text) and to check the line: printf conversions and ~ codes must b
 fit the box the Japanese was laid out for:
   - talk lines (t): after the word wrap at 22 columns, no more rows than the Japanese takes in the talk window
     (11 two-byte characters a row) plus one, and no more than 7 unless the Japanese has more;
-  - other lines: as many lines as the Japanese, each no wider than the Japanese line (one two-byte character = two
-    columns; the English is drawn proportionally, so equal column counts leave room).
+  - other lines: no more lines than the Japanese, each no wider than the Japanese's widest line (a message box is as
+    wide as its widest line; one two-byte character = two columns; the English is drawn proportionally, so equal
+    column counts leave room).
 Lines that fail are reported (with the id only) and still written with `add` unless --strict. An id already in the
 file is replaced, a new one appended at the end of its batch's group comment. Standard library only.
 """
@@ -76,9 +77,10 @@ def fit(jb, en, flags):
     jl, el = jb.split(b"\n"), en.split(b"\n")
     if len(el) > len(jl):
         return "%d lines, Japanese %d" % (len(el), len(jl))
+    box = max(width(x) for x in jl)
     for i, line in enumerate(el):
-        if width(line) > max(width(jl[i]), 2, 40 if "p" in flags else 0):
-            return "line %d: %d columns, Japanese %d" % (i + 1, width(line), width(jl[i]))
+        if width(line) > max(box, 2, 40 if "p" in flags else 0):
+            return "line %d: %d columns, Japanese box %d" % (i + 1, width(line), box)
     return ""
 
 
