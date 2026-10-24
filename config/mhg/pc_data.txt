@@ -559,3 +559,7 @@ g_sub_527D34 = 0x00527D34; // size:0x2C   # tools/mhg_gonl.py: G data the G onli
 [sub_main]
 tuto_str_tbl = 0x005282F0; // size:0x14      # the Elder's lesson window texts (G DispTutorial, game 0x66E700): the PUSH sign, a locked lesson, back, the Elder's name, the page counter (pointers)
 tuto_title_str = 0x00529050; // size:0x20 noptr   # its frame title (a text; MH1 passes a pointer word, soncho_no_oshie)
+[main]
+g_main_2EEE70 = 0x002EEE70; // size:0x8   # tools/mhg_gonl.py: G data the G online code uses (size: up to the next name)
+[main]
+g_main_2EF078 = 0x002EF078; // size:0x8   # tools/mhg_gonl.py: G data the G online code uses (size: up to the next name)

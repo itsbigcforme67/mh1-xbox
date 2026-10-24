@@ -5,13 +5,13 @@
 
 s32 DispFrameMessage();
 s32 PutButtonICON();
-extern s32 friend_entry_str;
+extern s32 g_main_2EF078;
 extern s32 btn_friendentry;
 extern s32 pf_friendentry;
 
 void Disp_FriendListEntry(s16 arg0, s32 arg1) {
     (*(s16 *)((u8 *)&pf_friendentry + 0x2)) = arg0;
-    DispFrameMessage(&pf_friendentry, (*(s32 *)((u8 *)&friend_entry_str + ((arg1 & 0xFF) * 4))));
+    DispFrameMessage(&pf_friendentry, (*(s32 *)((u8 *)&g_main_2EF078 + ((arg1 & 0xFF) * 4))));
     if (!(arg1 & 0xFF)) {
         (*(s16 *)((u8 *)&btn_friendentry + 0x2)) = (s16) ((((s16) ((s32) arg0))) - 2);
         PutButtonICON(&btn_friendentry, 1);

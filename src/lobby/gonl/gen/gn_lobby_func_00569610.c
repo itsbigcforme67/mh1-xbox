@@ -6,7 +6,7 @@
 #include "../gonl.h"
 
 extern u8 *pNet;
-extern u8 plazaMenuTbl[];      /* G gp-15616: the two pages' entry lists (pointers) */
+extern u8 g_main_2EEE70[];      /* G gp-15616: the two pages' entry lists (pointers) */
 extern u8 *tl_etc;              /* G 0x636E70: a text the menu shows (the help line's first) */
 extern u8 lb_ibox_str[];        /* G 0x6364C0: string pointers, by the entry's s16 */
 extern u8 g_lb_5FBCC0[];        /* G 0x5FBCC0: s16 help message per action (-1 none) */
@@ -41,7 +41,7 @@ s32 tl_menu_cursor_up();
 
 void lobby_func_00569610(void)
 {
-    u8 *list = ((u8 **)plazaMenuTbl)[pNet[0x29]];
+    u8 *list = ((u8 **)g_main_2EEE70)[pNet[0x29]];
     u16 sw = (u16)Get_sw2(0);
     u8 *info;
     *(s16 *)(pNet + 0x20) = sw;
@@ -62,7 +62,7 @@ void lobby_func_00569610(void)
     if (sw & 0xC00) {
         u8 *l2;
         pNet[0x29] ^= 1;
-        l2 = ((u8 **)plazaMenuTbl)[pNet[0x29]];
+        l2 = ((u8 **)g_main_2EEE70)[pNet[0x29]];
         if (l2[pNet[0x2A] * 4] != 1)
             tl_menu_cursor_up();
         SetHelpLineMsg(l2[pNet[0x2A] * 4 + 1] + 2);

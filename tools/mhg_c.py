@@ -32,7 +32,10 @@ def load_names():
     # read a stand-in (23 Oct 2026: the G village crashed)
     for ln in open(os.path.join(ROOT, 'config/mhg/data_map.txt')):
         f = ln.split()
-        if len(f) >= 4 and f[0] in ('main', 'sub_main', 'lobby') and f[2].startswith('0x') and f[3] in ('high', 'medium'):
+        # (not the two pointer tables into lobby.bin the G online client reads as its own imports, g_main_2EEE70 / 2EF078:
+        # under G's names the PC imports them with pointer words that do not point into the running lobby)
+        if len(f) >= 4 and f[0] in ('main', 'sub_main', 'lobby') and f[2].startswith('0x') and f[3] in ('high', 'medium') \
+                and int(f[2], 16) not in (0x2EEE70, 0x2EF078):
             names.setdefault(int(f[2], 16), (f[1], 0))
     # sizes from the G PC build's symbol list (tools/mhg_pcmeta.py), which knows more of them
     pcs = os.path.join(ROOT, 'build/mhg/pc/symbols')
