@@ -50,7 +50,11 @@ void em_ride_sub(EMW *em) {
     if (em->be_flag == 0 || em->x01 == 0) {
         return;
     }
+#ifdef VERSION_MHG      /* G: kind 50 rides like 7 */
+    if ((em->kind != 7 && em->kind != 0x32) || !(Em_stg_ck(em) & 0xFF)) {
+#else
     if (em->kind != 7 || !(Em_stg_ck(em) & 0xFF)) {
+#endif
         return;
     }
     for (n = 0; n < 4; n++, pl = (PLW *)((u8 *)pl + 0xA00)) {

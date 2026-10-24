@@ -2694,7 +2694,11 @@ static void em_dmg07_005B9ED0(EMW *em, EM14W *w) {
         em_cmd_reset(em);
         em_char_set(em, 0x71, 0, 0);
         w->x1A = (u8) (w->x1A + 1);
+#ifdef VERSION_MHG      /* G (game 0x5E...): the subspecies 43 (0x2B) likewise */
+        if (em->kind == 0xE || em->kind == 0x2B) {
+#else
         if (em->kind == 0xE) {
+#endif
             temp_a0 = w->x1A;
             if (temp_a0 != 1) {
                 if (temp_a0 == 2) {
