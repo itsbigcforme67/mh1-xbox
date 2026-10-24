@@ -1800,6 +1800,12 @@ static void str_gattai(char *dst, char *fmt, ...)
 {
     va_list ap;
 
+#ifndef __MWERKS__
+    {   /* PC text layer: the format is one of the game's strings (the quest time limit), so look it up */
+        extern const char *rt_text_tr(const char *p);
+        fmt = (char *)rt_text_tr(fmt);
+    }
+#endif
     va_start(ap, fmt);
     vsprintf(dst, fmt, ap);
 }

@@ -1310,3 +1310,20 @@ check.py needs wibo, which this round could not run (PC-only round). Commits on 
   "looks translated": in entry 3 the in-place agreement was 290/297 vs ~150 one slot off.
 - **Not checked on screen:** the tour's screens show only MH1-era content (identical pictures before / after);
   Freedom's G-new lines were checked by widths (98% of description lines <= 31 columns).
+
+## G screens still Japanese on the PC tour (24 Oct 2026)
+- **Tool:** `RT_TEXT_JP=1` (rt_font.c, in flfntPrintf) logs every drawn string that still holds Shift-JIS (hex, first 64 bytes) to stderr;
+  run `RT_TEXT_JP=1 G_ENG_OUT=build/A/eng/x python3 tools/g_eng_tour.py` and decode the `textjp:` lines of the scene logs.
+- **Chat title** (`sub_main` 0x538D18, id already in the table): DispFrameMessageA (PC file dispframe_nm.c) copies the text line by line
+  into buf before drawing, so rt_text_tr never saw the game's pointer; it now looks the pointer up first.
+  **Time limit "制限時間は%d分です"** (sub_main 0x537DB0, also in the table): drawn through f_quest.c str_gattai -> vsprintf, which skipped
+  the lookup; str_gattai now calls rt_text_tr on its format (`#ifndef __MWERKS__`, PS2 build unchanged).
+- **Item shop count** = lobby 0x63EBF0 (the code appends the "×"): own line "Amnt " (MH1 US has "Amnt X" for the one-piece MH1 string).
+  **Element label** = the format "~C%02d%s属性%s" at sub_main 0x5392E8 (slot 52 of gequip_str): own "~C%02d%s Element%s"; mixed ASCII/Shift-JIS
+  formats like it are not found by text_dump's run scan (too few double-byte characters), so such strings need hand-added own lines:
+  also 0x539300 (Defense), 0x539318 (colon), reward size 0x537700 / 0x537718 (Lngth:), 0x5408B0, lobby 0x63EBD0 ("分" -> "min"),
+  the memory-card lines main 0x2E9690 / 0x2C1450 / 0x2C1560 (US wording of the same sentences) and the five combo-book titles
+  sub_main 0x529A80..0x529AC0. text_map.OWN_TOKEN now also accepts the format-time colour "~C%02d".
+- **Still Japanese (not cheap):** the quest clear line "依頼の敵を全て討伐しました" (reward screen) lives in the quest files' later sections
+  (offset 0x43AC in m00004, 185 quests have it), not in the 4 header fields rt_text_quest rewrites; player name / full-width digits and
+  "：" labels are not words. Before: build/A/eng/b0, after: build/A/eng/b4.

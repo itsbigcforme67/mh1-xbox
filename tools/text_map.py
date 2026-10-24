@@ -3196,15 +3196,16 @@ def main():
 
 # ---------------------------------------------------------------- our own English for G (text/mhg_en_own.tsv)
 OWN = os.path.join(ROOT, "text", "mhg_en_own.tsv")
-OWN_TOKEN = re.compile(rb"~[A-Z][0-9]{2}")
+OWN_TOKEN = re.compile(rb"~[A-Z](?:[0-9]{2}|%02d)")      # ~Cnn, or ~C%02d (a colour the code picks: the equipment page formats)
 
 
 def own_stray_tilde(b):
     """a ~ byte outside the ~Xnn codes and outside two-byte characters (whose second byte may be 0x7E, as in ×)"""
     i = 0
     while i < len(b):
-        if OWN_TOKEN.match(b, i):
-            i += 4
+        m = OWN_TOKEN.match(b, i)
+        if m:
+            i = m.end()
         elif _sjis_at(b, i):
             i += 2
         elif b[i:i + 1] == b"~":
