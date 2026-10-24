@@ -113,7 +113,7 @@ void Lb_move_common(void) {
             }
         }
         var_s0_2 += 1;
-        var_s3 += 0xA00;
+        var_s3 += EMW_STRIDE;
     } while (var_s0_2 < 0x14U);
     player_mk();
     yure_move();

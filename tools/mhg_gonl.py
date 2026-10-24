@@ -253,6 +253,9 @@ FIXUPS = {
         (r'= Lb_get_plID\(\)', '= Lb_get_plID(arg0)')],
     'lbc_login_init': [   # the PC's cnLBS_LoginLobbyServer takes CNET_LOGIN by value (EE GCC passes a pointer to a copy)
         (r'cnLBS_LoginLobbyServer\(&sp40, ', 'cnLBS_LoginLobbyServer(*(struct { u8 b[0x40]; } *)&sp40, ')],
+    'Lb_move_common': [   # em_work keeps MH1's 0xA10 stride on the PC (EMW_STRIDE, include/version.h): G's 0xA00 moved
+                          # only slot 0 (the town / guild hall NPCs 1-8 never ran their init and stood at 0, 0, 0)
+        (r'var_s3 \+= 0xA00;', 'var_s3 += EMW_STRIDE;')],
     'lobby_func_00570320': [   # a byte of LobbyInfo+0x16 at a byte offset m2c holds in a pointer
         (r'\*\(&\(\*\(u8 \*\)\(\(u8 \*\)&LobbyInfo \+ 0x16\)\) \+ var_a0\)', '*((u8 *)&LobbyInfo + 0x16 + (s32) var_a0)')],
 }
