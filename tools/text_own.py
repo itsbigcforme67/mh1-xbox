@@ -14,7 +14,7 @@ fit the box the Japanese was laid out for:
     (11 two-byte characters a row) plus one, and no more than 7 unless the Japanese has more;
   - other lines: no more lines than the Japanese, each no wider than the Japanese's widest line (a message box is as
     wide as its widest line; one two-byte character = two columns; the English is drawn proportionally, so equal
-    column counts leave room).
+    column counts leave room: 15% more columns are allowed in boxes of 8 columns or more).
 Lines that fail are reported (with the id only) and still written with `add` unless --strict. An id already in the
 file is replaced, a new one appended at the end of its batch's group comment. Standard library only.
 """
@@ -25,7 +25,6 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, HERE)
 import text_map as tm  # noqa: E402
 
-OWN_TOKEN_RE = tm.OWN_TOKEN
 TALK_MAX_ROWS = 7          # the talk window shows 7 rows (G elder pages, agent B 20 Oct); more only where the Japanese has more
 
 
@@ -65,7 +64,7 @@ def fit(jb, en, flags):
     """'' when the English fits the Japanese box, else why not"""
     if tm.conv_sig(jb) != tm.conv_sig(en) or sorted(tm.OWN_TOKEN.findall(jb)) != sorted(tm.OWN_TOKEN.findall(en)):
         return "printf conversions or ~ codes differ"
-    if b"~" in OWN_TOKEN_RE.sub(b"", en):
+    if tm.own_stray_tilde(en):
         return "a ~ that is not a ~Xnn code (the game reads ~ as a code)"
     if "t" in flags:
         wrapped = tm.own_wrap(en)
@@ -78,8 +77,9 @@ def fit(jb, en, flags):
     if len(el) > len(jl):
         return "%d lines, Japanese %d" % (len(el), len(jl))
     box = max(width(x) for x in jl)
+    room = max(box + box * 15 // 100 if box >= 8 else box, 2, 40 if "p" in flags else 0)
     for i, line in enumerate(el):
-        if width(line) > max(box, 2, 40 if "p" in flags else 0):
+        if width(line) > room:
             return "line %d: %d columns, Japanese box %d" % (i + 1, width(line), box)
     return ""
 

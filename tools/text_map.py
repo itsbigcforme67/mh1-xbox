@@ -2879,6 +2879,21 @@ OWN = os.path.join(ROOT, "text", "mhg_en_own.tsv")
 OWN_TOKEN = re.compile(rb"~[A-Z][0-9]{2}")
 
 
+def own_stray_tilde(b):
+    """a ~ byte outside the ~Xnn codes and outside two-byte characters (whose second byte may be 0x7E, as in ×)"""
+    i = 0
+    while i < len(b):
+        if OWN_TOKEN.match(b, i):
+            i += 4
+        elif _sjis_at(b, i):
+            i += 2
+        elif b[i:i + 1] == b"~":
+            return True
+        else:
+            i += 1
+    return False
+
+
 def own_crc(b):
     return "%08x" % (zlib.crc32(b) & 0xFFFFFFFF)
 
@@ -2936,7 +2951,7 @@ def run_own(g, Gq, en_g, fr_g, path=OWN):
             log("own: line %d %s: stale, skipped" % (no, key_id(key)))
             continue
         if (conv_sig(jb) != conv_sig(en) or sorted(OWN_TOKEN.findall(jb)) != sorted(OWN_TOKEN.findall(en))
-                or b"~" in OWN_TOKEN.sub(b"", en)):
+                or own_stray_tilde(en)):
             st["printf conversions or ~ codes differ"] += 1
             log("own: line %d %s: printf conversions or ~ codes differ from the Japanese, skipped" % (no, key_id(key)))
             continue

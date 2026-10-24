@@ -441,3 +441,185 @@ sub_main:0x53B070	7e3c3dfb	t	Hoo hoo! You can't fool these eyes! Those 99 BBQ Ti
 sub_main:0x53B940	4b8cb150	n t	Combine a Fire Herb and a Huskberry, and you get Flaming S, ammo for your Bowgun.
 sub_main:0x53BA00	0221f6e8	n t	Combine a Flashbug and a Huskberry, and you get Thunder S, ammo for your Bowgun.
 sub_main:0x53C210	4f4b38ca	t	Combine a Potion and a Huskberry, and you get Recover S Lv2, ammo for your Bowgun.
+# --- elder tutorial: Dual Swords, bug net (game)
+game:0x6DC0B0	9fedc917	p	Upgrading a Sword can sometimes turn it\ninto Dual Swords. It's a bit early, but\nlet me teach you the Dual Swords basics.\n~C06Right analog stick: Draw weapon\nR1 button: Mode change\n~B03 or ~B00 button: Sheathe weapon\n
+game:0x6DC180	99e4b03f	p	~C00Now let's try attacking.\n~C06Right analog stick up: Slice down\nRight analog stick left/right: Spin-slice\nRight analog stick down: Side-slash\n~C00As with the Sword, press the right analog\nstick in a set pattern for ~C05combo attacks~C00.\n
+game:0x6DC280	25d16d63	p	The strength of Dual Swords is the Attack\nboost of the mode change, and the dazzling\nsword moves it unleashes.\nBut the mode change keeps using Stamina\nwhile it lasts, so be careful!\n
+game:0x6DEA00	d75e4286	p	~C05When you're close to a Bug Point,\nthe × mark next to the item icon\nwill disappear~C00, meaning you can use\nyour Bugnet. When the × mark is gone,\n~C06~B03 button: Use item~C00\nlets you swing your Bugnet.\n
+# --- G quest texts kept in lobby tables
+lobby:0x5E9330	a3f38c2e	-	Requestor: Party Host\nThere's a party at the lord's\nmanor today, but by mistake\nwe're short of food. Could\nyou bring us 10 pieces of\nfresh Raw Meat, please?
+lobby:0x5EA680	ca16a9b5	-	Swamp Trouble
+lobby:0x5EA6D0	1e63d08c	-	Requestor: Swamp Miner\nThe swamp animals are on edge\nlately. Worst are the giant\nBullfango. I'm supposed to\nhunt 15 of them. Give me a\nhand, will you?
+lobby:0x5EBDD0	e0601b40	-	Requestor: Jungle Researcher\nI got lost surveying the\njungle. The rest of my team\nis still starving! Deliver\n15 Well-Done Steaks as food\nfor the rescue!
+lobby:0x5EC030	495ca301	-	Requestor: Fortress Captain\nWe need Coal to move the\nfortress's anti-wyvern spear,\nand it's found in the jungle\ntoo. The more fuel the better.\nPlease gather 15 Coal.
+lobby:0x5FB110	967973ec	n -	Requestor: Training Instructor\nGravios is a tough foe. But\ndamage it until its chest\nshell breaks off, and its\ndefense drops, so it's easier\nto beat!! Serious, for once.
+lobby:0x5FB240	967973ec	n -	Requestor: Training Instructor\nGravios is a tough foe. But\ndamage it until its chest\nshell breaks off, and its\ndefense drops, so it's easier\nto beat!! Serious, for once.
+lobby:0x5FB370	967973ec	n -	Requestor: Training Instructor\nGravios is a tough foe. But\ndamage it until its chest\nshell breaks off, and its\ndefense drops, so it's easier\nto beat!! Serious, for once.
+lobby:0x5FB4A0	967973ec	n -	Requestor: Training Instructor\nGravios is a tough foe. But\ndamage it until its chest\nshell breaks off, and its\ndefense drops, so it's easier\nto beat!! Serious, for once.
+lobby:0x5FB5D0	967973ec	n -	Requestor: Training Instructor\nGravios is a tough foe. But\ndamage it until its chest\nshell breaks off, and its\ndefense drops, so it's easier\nto beat!! Serious, for once.
+# --- online hub screens (lobby)
+lobby:0x63EB60	946b09d0	-	Name: %s\nID: %s
+lobby:0x63EB78	c66e28a8	-	Land
+lobby:0x641500	8e81d377	-	%s is on the way to town.
+lobby:0x641520	445d1b35	-	%s has arrived.
+lobby:0x641560	c5ebfb86	-	Chat send error (check your Send Settings)
+lobby:0x641590	8015663e	-	%s has left on a quest.
+lobby:0x6415B0	27ddbfa1	-	%s has left the town.
+lobby:0x641638	f77eed79	-	Area Select
+lobby:0x641650	932529f6	-	Capcom ID Select
+lobby:0x6416A0	e73bd4dd	-	Select the ID to use.\nSelect "Not registered" to get a new ID.\n*You can get up to 3 IDs.
+lobby:0x6417A0	9caa65ed	-	Open your Friend List.\nYou can register up to 50 friends.\nYour friends' connection status is updated regularly.
+lobby:0x641850	f2550ee4	-	Search for players.
+lobby:0x641870	900eee01	-	Search for quests accepted in this area.
+lobby:0x6418E0	40e5069b	-	Go to the Hunters' Site.\nRead information and the terms of use,\nand register or change your user details.
+lobby:0x6419A0	f77d132d	-	Limit the chat and mail you receive.
+lobby:0x6419D0	31f85868	-	Check event quest information.
+lobby:0x641A00	e65c9613	-	Select where to go.\n~B03: List the players and quests in a town.
+lobby:0x641A60	29f6330e	-	Select where to go.
+lobby:0x641A80	7f40c259	-	Open "Status" with the ~B00 button to search all lands\nfor that friend and see where they are.\nIf they're in the same land, you can jump to them.
+lobby:0x641B30	fdb01771	-	Read the Short Mail you received.\nPress the R1 button to write or reply to Short Mail.\nFrom a message, you can refuse that sender's mail.
+lobby:0x641BD0	695a1cca	-	Open "Status" with the ~B00 button to see where they\nare.\nIf they're in the same land, you can jump to them.
+lobby:0x641C60	6b50b9f0	-	Open "Details" with the ~B00 button to see the quest\ndetails and members.\nYou can also jump to the town where it was accepted.
+lobby:0x641D00	db7d45b3	-	Check location, comment and equipment.
+lobby:0x641D90	faeac23c	-	Scroll the chat log window up and down\nwith the directional buttons.
+lobby:0x641DE0	02d6a2c1	-	Choose the players whose chat you want to hide.\nYou can choose up to 8 players.\nPress the ~B03 button to see who you've chosen.
+lobby:0x641E80	3608cfb9	-	Choose "Refuse Mail" on a Short Mail you received\nto add the sender to this Black List.\nUp to 8 players; their mail will be refused.
+lobby:0x641F20	bae44be1	-	Search all players in this area.
+lobby:0x641F50	1b318ae5	-	Search players in this area by conditions.
+lobby:0x641F90	6c70f15a	-	Search players in all lands.
+lobby:0x641FC0	c17630d8	-	Search for players in this area.\nA search by "Name" or "Capcom ID"\nlooks in all lands.
+lobby:0x642050	1aa3ab41	-	Name search needs an exact match: to find "MHG",\nyou must enter "MHG" and search.\nYou may find someone else with the same name.
+lobby:0x642100	c1deef69	-	Name search matches the start: if you enter "M",\nyou find not only "M" but also "MH" and "MHG".
+lobby:0x642190	e6faabfd	-	Search all quests accepted in this area.
+lobby:0x6421D0	acb17f00	-	Search quests accepted in this area\nby conditions.
+lobby:0x642210	1b591c4c	-	Open the speaker list and choose whose chat to hide.
+lobby:0x642250	8c19f150	-	Open the Black List of players whose mail\nyou refuse.
+lobby:0x642360	e19a69f6	-	Use when you'll be away for a while.
+lobby:0x642390	aadb8dc3	-	Use to hide that you're logged in.\nSearches won't find you, but you can't\nreceive mail either, so be careful.
+lobby:0x642420	c3503d15	n -	Free Hunt Zone
+lobby:0x642440	84dcb5b1	n -	Rookie Hangout
+lobby:0x642460	78800531	n -	Veterans' Base
+lobby:0x642478	0747487f	n -	Masters
+lobby:0x642490	2b5cf4d2	n -	Hunters' Lounge
+lobby:0x6424B8	ca18196e	-	Stat
+lobby:0x6424C0	fddef11f	-	ID
+lobby:0x6424C8	228827a3	-	Area
+lobby:0x6424D8	3155205e	-	Players
+lobby:0x6424E8	7c2ca104	-	Town
+lobby:0x6424F0	86a338c6	-	Town
+lobby:0x642508	55d015a3	-	Status
+lobby:0x642518	52a99da7	-	No.
+lobby:0x642520	52fe98c1	-	Read
+lobby:0x642528	72ffffb8	-	From
+lobby:0x642530	044c7459	-	Quest/Join
+lobby:0x642540	a9955947	-	Leader
+lobby:0x642548	5dea318b	-	Party
+lobby:0x6425B0	63eb7ba1	-	State:
+lobby:0x6425B8	c318b8d1	-	Area/Town:
+lobby:0x6425C8	e9a7831c	-	Area pop.:
+lobby:0x6426B0	e0e2c07d	-	Title:
+lobby:0x642710	62712f99	-	Search by: Away
+lobby:0x642730	44aa66ad	-	Search by: Capcom ID
+lobby:0x642750	a4af8d13	-	Search by:   Hunting Quest
+lobby:0x642770	c23d98f2	-	Search by:  Gathering Quest
+lobby:0x642790	b5703471	-	Search by:   Capture Quest
+lobby:0x6427B0	cd7b01a1	-	Search by: Urgent Quest
+lobby:0x6427D0	110e0db2	-	Search by: Event Quest
+lobby:0x6427F0	dffe3554	-	All
+lobby:0x6427F8	7ce059c7	-	Lv★～★★★
+lobby:0x642808	d2f3af36	-	Lv★★★★
+lobby:0x642818	bcee3c50	-	Lv★★★★★
+lobby:0x642830	e64f5c92	-	Lv★★★★★★
+lobby:0x642850	5231d2a7	-	Lv★★★★★★★
+lobby:0x642870	fa000a48	-	Lv★★★★★★★★
+lobby:0x642B60	55f67a22	-	: Close
+lobby:0x642B90	5e811732	-	Name/ID
+lobby:0x642BA8	fd38ac00	-	Quest List
+lobby:0x642BC8	6e2d337f	-	Write Mail
+lobby:0x642C08	06f52ac9	-	Reply
+lobby:0x642C18	09a545c1	-	Refuse
+lobby:0x642C70	99f726a0	-	Jump
+lobby:0x642C80	a9bb5749	-	Details
+lobby:0x642C90	c25f0bd3	-	Members
+lobby:0x642CA0	d9122c2d	-	Chosen
+lobby:0x6447C0	8195b54c	-	~C00Could not connect properly.
+lobby:0x6447F0	4d2b3440	-	~C00Searching...
+lobby:0x644810	225d0a20	-	~C00Return to the area?
+lobby:0x644830	ae7547b6	-	~C00Names longer than 8\nletters can't be chosen.
+lobby:0x645FA8	f1f99376	-	User ID
+lobby:0x645FC0	2b8b0b5a	-	A valid MMBB login ID
+# --- main / sub_main menus
+main:0x2C32D0	df1a992a	-	Dial-up connection
+main:0x2C3390	26ea6c7f	-	Outside line prefix
+main:0x2C33C0	6359d299	-	Delete
+main:0x2C33D0	fba5b4b7	-	Keep
+main:0x2E9F80	d42dfe7d	-	Stop the transfer?
+main:0x2EA990	93728158	-	Disconnected
+sub_main:0x537BA0	fe4fa008	-	<Points reduced: low-rank quest>
+sub_main:0x538DC0	d9d7f633	-	ID:
+sub_main:0x53A5D0	04c56cf2	-	Start the game without saving.
+sub_main:0x53A740	18d534ae	-	NETWORK OPTIONS
+sub_main:0x53A790	4a94776e	n -	To Training
+sub_main:0x53A930	17963512	-	Old MH Opening
+sub_main:0x53C640	d0df7e25	-	~B00:Train  ~B10:Details
+# --- Training School briefings (sub_main, the instructor; 3 lines, wide box)
+sub_main:0x53CFC0	30a783fa	n -	Brutal attack power and a body as tough as steel: it's\n~C05Monoblos~C00! A wyvern as mighty as I am!!\nGet your hands on ~C05Sonic Bombs~C00 and you'll stand a chance!
+sub_main:0x53D120	c103305f	n -	Your final trial is ~C05Gravios~C00! The battle is in the volcano,\nwhere your Health drains fast. Start by finding\n~C05Cool Drinks~C00, and when the fight heats up, use bombs!
+sub_main:0x53D1D0	57473e81	-	In these hunts, ~C05how you use your few items is key~C00.\nGather, combine, and slay Yian Kut-Ku without armor!\nYou can do it! ...Probably.
+sub_main:0x53D280	2c718ca7	n -	In Training School, monsters give very different carves!\nVelociprey give ~C05Throwing Knives~C00, for example! Why knives\nfrom Velociprey? ~C05If you have to ask, you've already lost~C00!
+sub_main:0x53D330	b7b68322	-	~C05The Hammer packs huge power~C00. Go for broke right away,\nor take time to prepare your items?\nJudgment is a vital quality for a hunter, too!
+sub_main:0x53D3C0	ad62bf26	-	Lured by your tasty scent, a ~C05Velocidrome~C00 has come too,\nbesides the Yian Kut-Ku! ~C05Combine Power Extract~C00 from\nMosswine, and let them have a Lance charge!
+sub_main:0x53D470	55981f61	-	With a Bowgun, it's ~C05a battle against your ammo count~C00!\nRestock ammo by combining and use bombs and other items.\nWhatever you do, don't run out of shots!!
+sub_main:0x53D510	e74b3d2a	-	The problem is ~C05how to drag it up out of the ground~C00!\nSearch the desert for Sonic Bombs, or, if you trust your\nsword alone, that works too. Go show it what you've got!!
+sub_main:0x53D880	00e1a174	-	Gypceros makes its own flash, so of course ~C05Flash Bombs\nwon't work~C00 on it! The ones in your pouch are to keep the\nVelociprey off you. Practice, and get a feel for ~C05distance~C00!
+sub_main:0x53D9E0	9b7c916d	-	Gypceros' rubbery hide makes it a pain for a Hammer.\nBut ~C05its head~C00 is ~C05easier to damage~C00!\nPound it with your strongest charged attacks!!
+sub_main:0x53DBE0	e401078b	n -	This time I'll even let the Sword wear armor. Add ~C05Monster\nBroth~C00 from insects to a Barrel-Bomb to make ~C05a stronger\nbomb~C00! Blowing yourself up hurts, so be careful!
+sub_main:0x53DC90	fb7cfc0c	-	Just hitting a flying Rathalos with a Paintball is hard.\nBut this time I've given you a ~C05Psychoserum~C00! Get ready,\nfind it fast, and finish the fight in one go!
+sub_main:0x53DD40	5e79afe0	-	I just took a walk in the Forest and Hills and saw a big\n~C05Velocidrome~C00. But of course, that won't make me cancel\ntraining. Now, show me your hunter's guts!!
+sub_main:0x53DDF0	c2523bbe	-	A Lance's ~C05charge loses its power~C00 fast when its\n~C05Sharpness drops~C00. Use a Whetstone to keep it sharp!\nThis time I've even hidden Whetstones near the camp!
+sub_main:0x53DEA0	b31f45d2	-	I've prepared a special Bowgun that can ~C05fire almost every\nkind of ammo~C00! Use all your power as a Gunner and take on\n~C05the King of Wyverns~C00! Good luck!
+sub_main:0x53DF40	4803b120	n -	Get used to ~C05Dual Swords~C00, a Sword variant, too! They can't\nguard, but they can use ~C05a big move called Demonize~C00.\nAlways keep an eye on your remaining Stamina!
+sub_main:0x53DFF0	8167066f	-	Dodge Basarios' poison attacks by reading its moves!\nThe three ~C05Herbal Medicines~C00 in your pouch show how kind I\nam. ~C05Thank me until your tears run dry~C00! ...Nuhahahaha!!
+sub_main:0x53E0A0	f74bc405	n -	Mix ~C05Ice Crystal~C00 with ~C05a certain insect~C00 to combine a\n~C05Cool Drink~C00! When you head for the lava, use it against\nthe heat so you don't waste Health!
+sub_main:0x53E210	c249116b	-	To a Gunner who keeps away and ~C05calmly reads its moves~C00,\nBasarios is nothing to fear! The enemy to watch out for\nmost is yourself. ~C05Don't let your guard down~C00!!
+sub_main:0x53E370	1a93ffac	n -	~C05Throwing Knives~C00 are handy for giving a huge wyvern\n~C05status effects~C00 like paralysis or poison! Hit it from its\nblind spot, and when it stops, land a heavy blow!
+sub_main:0x53E4D0	69807043	-	~C05Mastering the guard~C00 is the first step to becoming a\nLance master! Guarding long tail attacks takes a bit of\n~C05knack~C00. Practice until you can block them perfectly!
+sub_main:0x53E580	57fe6737	-	Just as you look through the scope to judge the wyvern...\n~C05a Bullfango charges in from the side~C00!! ~C05Grrr~C00!\nTaking out the small monsters first is one way to go!
+sub_main:0x53E630	87f0daca	-	As you know, ~C05Plesioth's attack is tremendous~C00! Facing\nit without armor is how a hunter proves their strength!!\nWhat, that's crazy? ...You think so too?
+sub_main:0x53E6E0	6c1b69e1	-	The weapon I, ~C05a man of taste~C00, chose this time is the\n~C05Rathalos Firesword~C00! Fire works on Plesioth!! If you lose\nwith this, start over from scratch! Go and nail it!
+sub_main:0x53E8F0	9a77f350	n -	~C05Crag S~C00 bursts as ~C05loud as a Sonic Bomb~C00! Everyone knows\nPlesioth hates noise. Use that, and you may be able to\ndrive it out of the water!
+sub_main:0x53E9A0	5f485acf	n -	Surprised? ~C05This time your Sword comes with armor~C00!\nAnd I chose earrings suited to an item-focused fight!\nVictory is yours!!
+sub_main:0x53EAF0	cf10d7a9	-	~C05Its natural enemy appears~C00! If its roar freezes your\nlegs, its next charge will surely send you flying. I'd say\nhang in there, but if you can't, ~C05mind where you stand~C00!
+sub_main:0x53ECF0	c97d2a3e	-	Seems some ~C05Felynes~C00 with bombs are frolicking around. Lure\nthose cute creatures in, ~C05harden your heart, and send them\ncharging at the wyvern~C00! Ugh... Don't you cry now!
+sub_main:0x53EDA0	1110b3c3	n -	When you fight somewhere cold, like a cave, you'll want a\nwarm drink! Combine ~C05Hot Pepper~C00 and a ~C05Worm~C00 to make\na ~C05Hot Drink~C00 that warms you to the core!
+sub_main:0x53F060	e1662768	-	A nimble Sword user should make use of the ~C05exploding\nrocks~C00 around! Memorize where they are and ~C05lure your foe\nwell~C00! This is the last stretch. Finish it off!
+sub_main:0x53F110	9a4c51ef	-	What, the ~C05Cool Drinks~C00 I put in your pouch are gone!?\n...Q-quiet! Find some yourself! Ugh, I ~C05drank too many\ncold ones~C00 and my stomach...
+sub_main:0x53F1C0	d5d77b56	-	Even tough Gravios can't stop a Hammer! Watch out\nfor its full-body ~C05pressing attack~C00 and the ~C05scorching\ngas~C00 it blows from its whole body!
+sub_main:0x53F260	108c8753	-	This time, a present: gear with the ~C05Anti-Heat~C00 skill!\nWith this, you can fight hard right next to the lava!\nHmph, I've gone soft...
+sub_main:0x53F2F0	46279232	n -	This time: ~C05earrings so you won't need to reload~C00.\nYou can fire nonstop, but ~C05the recoil gets bigger~C00!\nDon't get carried away. Fight with care!!
+# --- quest entry rules and settings (sub_main)
+sub_main:0x53FD20	db53b5d1	-	HR 9 or above
+sub_main:0x53FD40	47e48ebf	-	HR 13 or above
+sub_main:0x53FD60	b264287f	-	HR 17 or above
+sub_main:0x53FD80	9b53d66b	-	HR 21 or above
+sub_main:0x53FDA0	dcf3acbb	-	HR 24 or above
+sub_main:0x53FDC0	141323cb	-	HR 27 or above
+sub_main:0x53FDE0	ab239daa	-	HR 29 or above
+sub_main:0x53FE00	2594e378	-	HR 30 only
+sub_main:0x53FE20	148c7415	-	Accept & join:\nHR 4 or below
+sub_main:0x53FE40	e10cd2d5	-	Accept & join:\nHR 8 or below
+sub_main:0x53FE60	435d8b13	-	Accept & join:\nHR 12 or below
+sub_main:0x53FE80	b6dd2dd3	-	Accept & join:\nHR 16 or below
+sub_main:0x53FEA0	3afaa944	-	Accept & join:\nHR 20 or below
+sub_main:0x53FEC0	a28afa77	-	Accept & join:\nHR 23 or below
+sub_main:0x53FEE0	10aa2667	-	Accept & join:\nHR 26 or below
+sub_main:0x53FF00	e569d321	-	Accept & join:\nHR 1 to 12
+sub_main:0x53FF30	77e8332e	-	Accept & join:\nHR 13 to 20
+sub_main:0x53FF60	c3fa49f7	-	Accept & join:\nHR 21 to 30
+sub_main:0x53FF90	460029b3	-	Accept & join:\nHR 13 to 30
+sub_main:0x53FFC0	7a80a44a	-	Accept & join:\nHR 30!!
+sub_main:0x53FFE0	dae44337	-	Men-only quest
+sub_main:0x541490	827324ed	-	WINDOW SIZE
+sub_main:0x541688	986a24d9	-	SMALL
+sub_main:0x541698	46fb0e7d	-	MEDIUM
+sub_main:0x5416A8	9a4e8a77	-	LARGE
