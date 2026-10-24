@@ -623,3 +623,172 @@ sub_main:0x541490	827324ed	-	WINDOW SIZE
 sub_main:0x541688	986a24d9	-	SMALL
 sub_main:0x541698	46fb0e7d	-	MEDIUM
 sub_main:0x5416A8	9a4e8a77	-	LARGE
+# --- quest board labels (lobby)
+lobby:0x6402D0	60ec08b5	-	 Required HR: 17 - 20
+lobby:0x640310	77414515	-	 Required HR: 21 - 23
+lobby:0x640330	bfe2fb50	-	Quest Level ★★★★★★★
+lobby:0x640350	d8cdca2b	-	 Required HR: 24 - 26
+lobby:0x640370	e34f088d	-	Quest Level ★★★★★★★★
+lobby:0x640390	75d1a2af	-	 Required HR: 27 - 30
+# --- items (main)
+main:0x2C6010	d10a8138	n -	A mushroom that restores\na little Stamina.\n~C05(Account Item)
+main:0x2CBA80	ad27acfc	-	Presented to users of\nthe guest house Rook Room\nfor an extended period.
+main:0x2CBAE0	f9636d37	-	Presented to users of\nthe guest house Bishop Room\nfor an extended period.
+main:0x2CBB40	114baf9b	-	Presented to users of\nthe guest house VIP room\nfor an extended period.
+# --- quests (G quest files)
+quest:19:0x68	ca16a9b5	-	Swamp Trouble
+quest:38:0xAC	e0601b40	-	Requestor: Jungle Researcher\nI got lost surveying the\njungle. The rest of my team\nis still starving! Deliver\n15 Well-Done Steaks as food\nfor the rescue!
+quest:10029:0x68	fdd88d40	-	The Gourmet's Dream
+quest:10044:0x68	5d03b6bb	-	Danger! Handle with Care!
+quest:20046:0xA4	967973ec	-	Requestor: Training Instructor\nGravios is a tough foe. But\ndamage it until its chest\nshell breaks off, and its\ndefense drops, so it's easier\nto beat!! Serious, for once.
+quest:20047:0xA4	967973ec	-	Requestor: Training Instructor\nGravios is a tough foe. But\ndamage it until its chest\nshell breaks off, and its\ndefense drops, so it's easier\nto beat!! Serious, for once.
+quest:20048:0xA4	967973ec	-	Requestor: Training Instructor\nGravios is a tough foe. But\ndamage it until its chest\nshell breaks off, and its\ndefense drops, so it's easier\nto beat!! Serious, for once.
+quest:20049:0xA4	967973ec	-	Requestor: Training Instructor\nGravios is a tough foe. But\ndamage it until its chest\nshell breaks off, and its\ndefense drops, so it's easier\nto beat!! Serious, for once.
+quest:20050:0xA4	967973ec	-	Requestor: Training Instructor\nGravios is a tough foe. But\ndamage it until its chest\nshell breaks off, and its\ndefense drops, so it's easier\nto beat!! Serious, for once.
+quest:60029:0x9C	14282a15	-	Requestor: Guildmaster\nHow terrible... The Black\nDragon Fatalis lurks near the\nvolcano's crater, gathering\nits power and moaning darkly.\nStop this evil omen!
+# --- monsters (G-only Felynes; neither MH1 US nor Portable names them)
+sub_main:0x5383C0	e2054993	-	Cart Felyne
+sub_main:0x5384D0	a373ca00	-	Whiskeru
+sub_main:0x5384E0	84eced05	-	Dyeru
+# --- weapon descriptions (one pointer per line; read as one text)
+main:0x2CF4B0	6adbf4c6	d	Venom Lance, third upgrade.
+main:0x2D1280	e7c81fc6	nd	Guild Rapier, 1st upgrade.
+main:0x2D12A0	956ee048	d	Its crystal shine catches the
+main:0x2D12C0	69dd7f77	d	eye. Guild-only Dual Swords.
+main:0x2D16A0	e85fd098	d	Dual Swords whose single hits
+main:0x2D16C0	80de183f	d	are boosted by the fire of
+main:0x2D16E0	d3b981c3	d	the Rath clan. Weak Sharpness.
+main:0x2D1700	94c42b0d	nd	Gladius, 1st upgrade.
+main:0x2D1720	b913e3fd	d	Improved all over to perfect
+main:0x2D1740	ae7075f3	d	it as a weapon.
+main:0x2D1B20	ca1bf4a3	d	A Great Sword for hunters
+main:0x2D1B40	57140cf3	d	taking a new step in high
+main:0x2D1B60	3794457a	d	rank. Great hidden potential.
+main:0x2D1B80	b6d907e5	d	Reinforced all over to stand
+main:0x2D1BA0	4340abfe	d	special treatment. Its true
+main:0x2D1BC0	8375172b	d	worth is only now showing.
+main:0x2D1BE0	3dbe8c2f	d	A bone Great Sword for high
+main:0x2D1C00	12938684	d	rank hunters. Still half
+main:0x2D1C20	cf080081	d	made; its power is unknown.
+main:0x2D1C40	3dae339c	d	A strong bone Great Sword.
+main:0x2D1C60	07263fae	d	A fine base, it gains many
+main:0x2D1C80	adc13ec0	d	powers with the right work.
+main:0x2D1D00	298c9e0d	d	A simple metal Great Sword.
+main:0x2D1D20	4f585413	d	Strong as is, but any smith
+main:0x2D1D40	7f4b6461	d	who sees it wants to improve it.
+main:0x2D1D60	97397101	nd	Iron Sword G, final upgrade.
+main:0x2D1D80	08851094	d	Ready for any battle. A
+main:0x2D1DA0	d4f099b6	d	flexible, timeless classic.
+main:0x2D24C0	9c998d2a	d	Hammer. Start here.
+main:0x2D24E0	4ec8d53c	d	A Hammer made stiffer for
+main:0x2D2500	d1c3cf7c	d	work to come. How you treat
+main:0x2D2520	5c673693	d	it next is what counts.
+main:0x2D25A0	57ec8861	nd	Atlas Hammer G, final form.
+main:0x2D25C0	7cc65e1a	d	Depending on the materials,
+main:0x2D25E0	700182b4	d	it can become anything.
+main:0x2D2AE0	90a34011	d	Lance. Easy to work. Popular.
+main:0x2D2B00	b7ac5b76	d	A Lance made stronger to
+main:0x2D2B20	39990940	d	stand much more work. Your
+main:0x2D2B40	b857fa82	d	skill decides what's next.
+main:0x2D2B60	c1de7b78	d	A bone Lance, but improved
+main:0x2D2B80	dd666df6	d	far beyond the old ones in
+main:0x2D2BA0	5af2e314	d	strength and more.
+main:0x2D2BC0	ae10024c	nd	Longhorn G, final upgrade.
+main:0x2D2BE0	4bbf6d2f	d	Combine materials well to
+main:0x2D2C00	94c197a9	d	work it even further.
+main:0x2D31C0	7a087f7e	d	Sword. Easy to use and strong.
+main:0x2D31E0	9c00f9cf	d	A Sword made stiffer all over
+main:0x2D3200	7eb47220	d	as a first step to complex
+main:0x2D3220	c3ff1cb0	d	work. More Attack, of course.
+main:0x2D3240	37859aca	d	No element, but steady power
+main:0x2D3260	8ee04e31	d	and easy to use. Easy to work
+main:0x2D3280	0a1c8c9c	d	too, which makes it popular.
+main:0x2D3580	cd4cd137	nd	Burn Edge, 1st upgrade.
+main:0x2D35A0	222762a1	d	A fire sword improved in
+main:0x2D35C0	a27ea255	d	element, Attack and Sharpness.
+main:0x2D35E0	9f4740dd	nd	Burn Edge, final upgrade.
+main:0x2D3600	0e44c75a	d	All the art of controlling
+main:0x2D3620	6bb831c1	d	extreme heat and pressure.
+main:0x2D3D00	68f5a388	d	A Great Sword of the gods.
+main:0x2D3D20	1827c18f	d	Heaven, earth and dragons
+main:0x2D3D40	accb6c86	d	bow to it. A hunter-king's.
+main:0x2D3E80	23bfbd62	d	A lance of death that brings
+main:0x2D3EA0	ab4a4123	d	the end to all life. Smashes
+main:0x2D3EC0	c83de486	d	elder dragons in one blow.
+main:0x2D3EE0	82a729f6	d	Demonic Dual Swords of living
+main:0x2D3F00	342cf9da	d	water. Tremors no smith can
+main:0x2D3F20	967ce4c3	d	explain wreck foes from inside.
+main:0x2D3F40	f47ceb4e	d	A legendary club handed down
+main:0x2D3F60	58adfe4b	d	by the Felynes. It knocks out
+main:0x2D3F80	c976237e	d	even mighty wyverns with ease.
+main:0x2D3FA0	8d2cee19	d	A Hammer made from the whole
+main:0x2D3FC0	c01dfb85	d	head of an old dragon-eater.
+main:0x2D3FE0	9e181cc7	d	Named for its howl at dragons.
+main:0x2D5B40	2b069c5a	d	The ultimate weapon, made
+main:0x2D5B60	81f08af0	d	to destroy everything. Its
+main:0x2D5B80	4cec24fa	d	blasts bloom like flowers.
+# --- armour descriptions
+main:0x2D6600	2b169d3d	d	resistance to many elements.
+main:0x2DB370	ea961d66	d	resistance to many elements.
+main:0x2D82D0	a0e82cca	d	Headgear made from lots of
+main:0x2D82F0	67187e1b	d	rare shrimp shells. The
+main:0x2D8310	ac851dbd	d	armory's pride and joy.
+main:0x2D9090	5c87db5f	d	Upgraded headgear shaped
+main:0x2D90B0	3600bdcf	d	like a Mosswine head.
+main:0x2D90C0	9b64a162	d	A Mosswine's appetite, maybe?
+main:0x2DA920	cee219d7	d	Earring given to the Guild's
+main:0x2DA940	7854017a	d	founder by a man in red. It
+main:0x2DA960	c9e4fee8	d	beats every element attack.
+main:0x2DC950	e3693b8b	d	Many wyverns breathe fire, so
+main:0x2DC970	aa9b329e	d	Fire Res matters. This one
+main:0x2DC990	9b23bbd9	d	has the finest Defense of all.
+main:0x2DD7F0	633ace30	d	Body armor from pink shell.
+main:0x2DD810	1511617e	d	This wyvern was only known
+main:0x2DD830	1e80ba1a	d	from legends, and doubted.
+main:0x2DD9F0	5a8e2651	d	Body armor shaped like a
+main:0x2DDA10	6a4e0f47	d	Mosswine head. Its nose too?
+main:0x2DE930	1045ee10	d	Armor made from the ancient
+main:0x2DE950	e1f41d6e	d	Wyvern Rex, thought extinct.
+main:0x2DE970	2d8ac514	d	A thing full of mysteries.
+main:0x2E1710	6512afc2	d	Thin, but strong arm guards
+main:0x2E1730	c9551c66	d	for the Guild Knights. Same
+main:0x2E1750	59f37746	d	as the Blademaster's version.
+main:0x2E2430	bc0000cb	d	Gauntlets said to have no
+main:0x2E2450	3134ffa8	d	equal on earth or in heaven.
+main:0x2E2470	797ba945	d	Truly invincible armor.
+main:0x2E5B60	35c138c6	d	Platinum waist armor with the
+main:0x2E5B80	28e17bee	d	power of king and queen. For
+main:0x2E5BA0	189bf13b	d	those who beat every wyvern.
+main:0x2E9230	f82f1c56	d	Armor blessed by everything
+main:0x2E9250	28ef1e36	d	from gods to dragons. A rain
+main:0x2E9270	42415506	d	of good luck falls on you.
+# --- quest entry rules (sub_main)
+sub_main:0x540000	cb6a764d	-	Women-only quest
+sub_main:0x5400C0	72d20e89	-	Accept & join: those\nwho slew Monoblos
+sub_main:0x5400F0	e1e4c566	-	Accept & join: those who\nslew the village Lao-Shan
+sub_main:0x540130	67855158	-	Accept & join:\nHR 17 to 30
+sub_main:0x540160	e87135fd	-	Accept & join:\ncarrying no items
+sub_main:0x540190	268a6bc6	-	Accept & join: carrying\nno Well-Done Steaks
+sub_main:0x5401E0	d4eb46a7	-	Accept & join: those\nusing a Hunter's Knife
+sub_main:0x540210	f5616e54	-	Accept & join: broke\nhunters, 100z or less
+sub_main:0x540250	d29f05f7	-	Accept & join:\nDefense ≧ 180
+sub_main:0x540280	6e6de1fe	-	Accept & join:\nDefense ≦ 75
+sub_main:0x5402B0	1d8c6c85	-	Accept & join:\nFire Res ≧ 40
+sub_main:0x5402E0	38b64393	-	Accept & join:\nFire Res ≦ 40
+sub_main:0x540310	8f2c81a1	-	Accept & join:\nWater Res ≧ 40
+sub_main:0x540340	aa16aeb7	-	Accept & join:\nWater Res ≦ 40
+sub_main:0x540370	100727d1	-	Accept & join:\nThunder Res ≧ 40
+sub_main:0x5403A0	353d08c7	-	Accept & join:\nThunder Res ≦ 40
+sub_main:0x5403D0	300e1fcb	-	Accept & join:\nDragon Res ≧ 40
+sub_main:0x540400	153430dd	-	Accept & join:\nDragon Res ≦ 40
+sub_main:0x540430	7c92f4e2	-	Accept & join: those\nwho slew Lao-Shan Lung
+sub_main:0x540460	0c5fd3db	-	Accept & join: those\nwho slew Fatalis
+sub_main:0x540490	34fe47b0	-	Top hunters only
+sub_main:0x5404B0	8eafb354	-	Light Bowgun only
+sub_main:0x5404D0	fa0480fb	-	Heavy Bowgun only
+sub_main:0x540510	29256fe6	-	Accept: rich hunters\nwith 50000z or more
+sub_main:0x540540	fbe387af	-	Accept: rich hunters\nwith 100000z or more
+sub_main:0x540580	4877aa6c	-	Accept: rich hunters\nwith 200000z or more
+sub_main:0x5405C0	fcb5bbe2	-	Accept & join:\nDefense ≦ 130
+sub_main:0x5405F0	96724b21	-	Accept & join:\nDefense ≦ 180
+sub_main:0x540620	70fe451b	-	Accept & join:\nHR 27 to 30

@@ -2903,7 +2903,7 @@ def own_lines(path=OWN):
     lines and blank lines skipped). ID as in docs/survey/mhg_text_untranslated.txt (space:0xADDR, quest:N:0xOFF), CRC the
     crc32 of the Japanese bytes the line was written for (never the Japanese itself), FLAGS '-' or letters (n: uses a
     G-only name Freedom will decide, provisional; t: talk window line, word-wrapped to its rows by the tool; p: tutorial
-    page, checked at the US pages' 40 columns by tools/text_own.py), ENGLISH in
+    page, checked at the US pages' 40 columns by tools/text_own.py; d: one line of a description, 30 columns), ENGLISH in
     the table's escaping (\n line feed, \\ backslash). Returns [(lineno, key, crc, flags, bytes)]."""
     out = []
     if not os.path.exists(path):
