@@ -97,7 +97,7 @@ always been a struct field type or a lost field.
 
 ### Running, 23 Oct 2026 evening
 - agent C: G online round 4 merged 24 Oct (two PC G clients meet in G's town; full check 42 ok). Next: guild hall NPCs (only slot 0 placed, none drawn), counter menu ('unknown hunter' greeting), room, quest; town name tags draw a white square.
-- agent D: GB6 ninth pass merged 24 Oct (eft04/15/16/02, set14, em12/em15; full check 42 ok). Left: em02 Fatalis rewrite (RELEASE_G 16; no offline quest spawns it). Found (both games): game_w.area_mdlw[] never filled on the PC, so eft04 / eft01 shadow arg 4 / eft20 area pieces / shell08 clay pieces draw nothing: platform task, queued.
+- agent D: GB6 ninth pass merged 24 Oct (eft04/15/16/02, set14, em12/em15; full check 42 ok). Left: em02 Fatalis rewrite (RELEASE_G 16; no offline quest spawns it). area_mdlw (monster sub models) fixed and merged 24 Oct (both games). Open: red horizontal line top-left in Kirin shots (not looked at).
 - agent A: G English merged 24 Oct: 7087 official (53.4%) + 1043 own (text/mhg_en_own.tsv, tools/text_own.py); 4703 wait for Freedom (owner asked for an image of their ULUS-10084 in disc/mhfr/); 97 own lines flagged n use provisional names. Town / online screens not seen on screen yet. Own text is Claude's: a person should read it before release.
 - agent B: G gaps GN8/GN12/GM4/GM5 done and merged 23 Oct (full check passed on agent-B).
 - agent D: GB6 eighth pass (shell08, eft13 Dual Swords, subspecies kinds 35-50, armor count) merged 24 Oct; what is left: RELEASE_G section 15.
