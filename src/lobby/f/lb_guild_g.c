@@ -337,7 +337,13 @@ static int story_equip_all(void)                      /* lobby_func_005429A0 */
 int get_questLevelNum(int n)                          /* lobby_func_00543180 (offline) */
 {
     if (Online_ck() == 1) {
-        return 0;                                    /* the online table (lobby_func_00542A60) is not ported */
+#ifdef MHG_ONLINE
+        int lobby_func_00542A60(int n, int a1, int a2, int a3);   /* G's online table, src/lobby/gonl/gen (the guild
+                                                                    * hall counter: registration = event flag 4) */
+        return lobby_func_00542A60(n, 0, 0, 0);
+#else
+        return 0;                                    /* the online table is in the G online build only */
+#endif
     }
     switch (n & 0xFF) {
     case 0x23: return Event_flag_ck(2);
