@@ -1128,3 +1128,22 @@ sub_main:0x532D70	ecd942e6	n	W Rex Mail
 sub_main:0x534270	eba2908e	n	Divine Braces
 sub_main:0x5358C0	48736cee	n	Rio Metal Tasset
 sub_main:0x536F80	7fd18321	n	Lucky Metal Boots
+# --- G screens still in Japanese on the PC tour (24 Oct 2026): shop count label, equipment page, reward size, combo books
+lobby:0x63EBF0	db1c9871	-	Amnt 
+sub_main:0x5392E8	09d0e6ef	-	~C%02d%s Element%s
+sub_main:0x539300	38090ea2	-	~C%02dDefense~C%02d+%d
+sub_main:0x539318	1ba99824	-	: ~C%02d%3d0
+sub_main:0x539330	a5fae5ff	-	(Buildup): ~C%02d%2d0
+sub_main:0x537700	c83a78b5	-	Lngth: %4.1f
+sub_main:0x537718	a6099d7a	-	Lngth: ---
+sub_main:0x5408B0	19913065	-	Def. +5
+sub_main:0x529A80	202318eb	-	Combos 1: Intro
+sub_main:0x529A90	20cc0306	-	Combos 2: Basic
+sub_main:0x529AA0	2c3c9f0f	-	Combos 3: Mid
+sub_main:0x529AB0	64d17dc3	-	Combos 4: Adv.
+sub_main:0x529AC0	7b4826fb	-	Combos 5: Master
+main:0x2E9690	3411627e	-	No memory card (8MB) is inserted.
+main:0x2C1450	60a69628	-	No memory card (8MB) is inserted.
+main:0x2C1560	a3ac1303	-	The memory card (8MB) was removed.
+# --- G screens still in Japanese on the PC tour (24 Oct 2026): shop count label, equipment page, reward size, combo books
+lobby:0x63EBD0	7bec2656	-	min

@@ -46,9 +46,10 @@ def width(b):
     """display columns of a line: two-byte characters 2, ~Xnn codes 0 (~Bnn icons 2), others 1"""
     n = i = 0
     while i < len(b):
-        if tm.OWN_TOKEN.match(b, i):
+        m = tm.OWN_TOKEN.match(b, i)
+        if m:
             n += 2 if b[i + 1:i + 2] == b"B" else 0
-            i += 4
+            i = m.end()
         elif tm._sjis_at(b, i):
             n += 2
             i += 2

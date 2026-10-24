@@ -276,6 +276,17 @@ void flfntPrintf(const char *fmt, ...)
     va_end(ap);
     if (n < 0)
         n = 0;
+    if (getenv("RT_TEXT_JP")) {     /* hidden-tour aid: log each Japanese string that is still drawn (hex of its first bytes) */
+        const unsigned char *u = (const unsigned char *)(strbuf + e->str), *v;
+        for (v = u; *v && v - u < 255; v++)
+            if ((*v >= 0x81 && *v <= 0x9F) || (*v >= 0xE0 && *v <= 0xEF)) {
+                fprintf(stderr, "textjp:");
+                for (v = u; *v && v - u < 64; v++)
+                    fprintf(stderr, " %02X", *v);
+                fprintf(stderr, "\n");
+                break;
+            }
+    }
     strpos += (u32)n;
     if (strpos >= STRBUF - 1)
         strpos = STRBUF - 2;

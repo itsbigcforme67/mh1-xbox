@@ -31,6 +31,7 @@ extern u8 lit_2244[];
 #define FU32(p, o) (*(u32 *)((u8 *)(p) + (o)))
 #define SX(v) ((s16)(s32)(0.8f * (v)))
 
+const char *rt_text_tr(const char *p);
 void DispFrameMessageA(u8 *fr, char *text, int alpha) {
     s16 q[10];          /* sprite: x y w h col(2) u0 v0 u1 v1 */
     s16 r[6];           /* rect: x0 y0 x1 y1 col(2) */
@@ -238,6 +239,7 @@ void DispFrameMessageA(u8 *fr, char *text, int alpha) {
         }
     }
     if (text != 0) {
+        text = (char *)rt_text_tr(text);    /* the lines are copied to buf below: look the string up while its pointer is still the game's */
         ty = FS16(fr, 2);
         SetTrnslMode(4, 5);
         flfntSetSize(fr[4], fr[5]);
