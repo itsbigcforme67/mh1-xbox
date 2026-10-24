@@ -1,0 +1,1098 @@
+# Our own English for Monster Hunter G (PS2): only strings no official release has (not MH1 US, not in Monster Hunter
+# Portable, so Freedom will not have them either). Read by tools/text_map.py after the official sources; official English
+# always wins. Format and rules: docs/english_g.md "Our own translation". Add lines with tools/text_own.py.
+# ID <TAB> crc32 of the Japanese it was written for <TAB> flags (- none; t talk window; p tutorial page;
+#   n provisional G-only name, Freedom decides) <TAB> English (\n line feed). No Japanese text in this file.
+# Style: MH1 US terms and names exactly as MH1 US writes them; written by Claude (agent A), not a native translator.
+# --- elder tutorial pages G edited (US line structure, G's buttons)
+game:0x6DBC40	7afda796	p	Of course, you can use items like the\n~C05Mini Whetstone~C00 to ~C05sharpen a dull weapon~C00.\n~C06 L2 button + ~B03 or ~B00: Select item\n~B03 button: Use item\n
+game:0x6DC630	2923a807	p	~C00Now let's try attacking.\n~C06Right analog stick up: Medium thrust\nRight analog stick down: Upper thrust\nR3 button: Charge\n~C00With your weapon drawn, ~C05press the\n~B01 button~C00 to perform a ~C05back-step~C00.\n
+game:0x6DC9F0	2df09aed	p	To become a hunter you must hunt!\nYou won't last long if you don't master\nhunting. Let's try using a Bowgun.\n~C06Right analog stick: Ready Bowgun\n~B03 or ~B00 button: Put Bowgun away\n
+game:0x6DD170	be359abd	p	Your hunting skills are improving! Now,\ncarve up your kill and ~C05cook the Raw Meat\non your Portable Spit~C00!\n~C06 L2 button + ~B03 or ~B00: Select item\n~B03 button: Use item\n
+# --- town: Hunter's shoppe, armory, guest house, market (talk window)
+lobby:0x5FE140	44cf554a	t	Welcome to the hunter's shoppe! We offer all kinds of goods to match your Hunter Rank!\n...What can I get for you?
+lobby:0x5FE230	a2185925	t	Oh, it's you! I see you've been working hard to raise your HR.
+lobby:0x5FE270	635a0def	t	So, as a special treat, I'm revealing our secret monster info! Put it to good use against unknown wyverns, and in your Monster Records!
+lobby:0x5FE300	24a1ee1b	t	Huh? You don't know about Monster Records? That's when you log a monster's length in your Monster List. Every hunter knows that!
+lobby:0x5FE3F0	8da3789f	t	As a special treat, we've got charms with amazing effects! And info on the monsters everyone's talking about. Use it well!
+lobby:0x5FE490	79df84ba	t	Um... excuse me? I heard you drove off Lao-Shan Lung twice. You're joking, right?
+lobby:0x5FE650	8c3967bd	t	Buy it together with the Storage Expert book that's already a hit, and your storage goes up by a whole 200! You just have to buy it, right?
+lobby:0x5FE6F0	4291816a	t	Welcome to the armory. We offer all kinds of equipment to match your Hunter Rank.\nWhat can I get for you?
+lobby:0x5FE7B0	fa503618	t	Congratulations on slaying the Gypceros!
+lobby:0x5FE7E0	bb7bd475	t	Under Guild rules, you may now buy Silver Metal Boots.
+lobby:0x5FE830	41173db2	t	Boots made of a special alloy. They're sure to serve you well. Please, try them!
+lobby:0x5FE8A0	1bf4373c	t	Good work slaying the Rathalos!
+lobby:0x5FE8D0	35c8f6ea	t	Under Guild rules, you may now buy Dark Metal Boots and Pink Metal Boots.
+lobby:0x5FE930	5f676cb3	t	Lovely new colors to put a little style in your step! Please, try them!
+lobby:0x5FE9B0	fb7987a0	t	Congratulations on slaying two Diablos!
+lobby:0x5FE9E0	17f7d116	t	Under Guild rules, you may now buy the upgraded alloy boots.
+lobby:0x5FEA30	67421c33	t	A new offer from the Hunter's Guild, made with your legs' health in mind! Please, try them!
+lobby:0x5FEAB0	20aa1b94	t	Splendid work repelling Lao-Shan Lung!
+lobby:0x5FEAE0	e71ee1ba	t	Under Guild rules, you may now buy Chrome Metal G Boots and Chrome Metal G Coil.
+lobby:0x5FEB40	cfa60278	t	Black alloy set off by an elegant gold pattern. Perfect for the mature hunter, and the Guild's own pick! Please, try them!
+lobby:0x5FEBD0	b83a5ee9	t	Congratulations on slaying both Rathalos and Rathian!
+lobby:0x5FEC10	eab87dcf	t	Under Guild rules, you may now buy the strongest alloy boots.
+lobby:0x5FEC60	e92d905b	t	It's all about the S! S for Super! Special!! Spectacular!!!
+lobby:0x5FECB0	1a4edcbc	t	...Ahem. Er, let me start over.
+lobby:0x5FECE0	20aa1b94	t	Splendid work repelling Lao-Shan Lung!
+lobby:0x5FED10	adde98f7	t	Under Guild rules, you may now buy Chrome Metal S Boots and Chrome Metal S Coil.
+lobby:0x5FED70	c810e0b1	t	Refined design. Refined Defense. You'll never want any other armor... Please, try them!
+lobby:0x5FEE80	a0da7b2f	t	...*Gulp!* Oh, uh, welcome! Today's a big sales day! My shop's always well stocked, and today we've got loads of special goods! Don't miss out!
+lobby:0x5FEF10	48ecdfb5	t	...*Gulp!* Oh, uh, welcome! Today's half-price day. If you buy too much I won't make a profit, so go easy on me!
+lobby:0x5FF750	1122fda6	t	Even at the Bishop Room level, we give fancy tickets to our regular customers.
+lobby:0x5FF830	1122fda6	t	Even at the Bishop Room level, we give fancy tickets to our regular customers.
+lobby:0x5FF910	3614cfbf	t	I hear you drove off the giant dragon that attacked the fortress! I can smell the money from here!
+lobby:0x5FF970	bda9430e	t	For a customer like you, we can offer the Queen Room! Please, take your time and relax.
+lobby:0x5FF9E0	5a9f16b0	t	You drove off the giant dragon! Splendid! Please, make yourself at home in the Queen Room.
+lobby:0x5FFDF0	e5488827	t	Well, well! Welcome! I hear you slew both Rathian and Rathalos!
+lobby:0x5FFE60	ae9f5e1d	t	You carry yourself like royalty, so we'd be honored to offer you rooms up to the King Room!
+lobby:0x5FFF40	9b36525c	t	You carry yourself like royalty, so we'd be honored to offer you rooms up to the King Room! Please, enjoy your stay!
+lobby:0x600040	00055a14	t	Come again anytime.
+lobby:0x600060	b111eab4	t	Come on, buy whatever you like! It's half-price day! Fresh food is a bargain, too!
+lobby:0x6000C0	f91d0de7	t	Lucky you! We've got special goods today! Come on, buy whatever you like!
+lobby:0x600120	f2027160	t	Come on in! Oh? You've got a hunter's eyes now! How can I tell? Remembering customers is the first rule of business!
+lobby:0x6001A0	ca606bc0	t	I've got something nice for you! Take this to the armory!
+lobby:0x6006F0	4ba33736	t	Also, from here on, in the top-rank quests, the Guild can't promise you its full support.
+lobby:0x600750	84747b49	t	Before you head out on one of those, be sure to hear the details from the Guildmaster.
+lobby:0x600A60	ef5d546a	t	By the way, if you buy Storage Expert, you can store 100 more items. It's a bit pricey, though.
+lobby:0x600AC0	f5eec2b2	t	The Master Craftsman Triplets' armory has an Item Box, too. Buy Storage Expert and you can store 100 more items!
+lobby:0x600FB0	8425d304	t	The Elders at our armory were saying that it helps to have a Gunner with you when you fight a giant dragon.
+lobby:0x601030	2213a664	t	They say a giant dragon's weak spot is on its back. A Gunner can hit it there more easily. Is that true?
+lobby:0x6010B0	f97898d9	t	They say giant dragons have a weak spot on the back, and a Gunner can hit it there more easily. Is that true?
+lobby:0x601160	6f353dd6	t	I hear the G-rank monsters in top-rank quests give the very best materials.
+lobby:0x6011C0	26c2c934	t	With those materials, you can make gear more powerful than anything before!
+lobby:0x601230	0c32941e	t	To stand up to G-rank monsters, you'll need to power up your gear, of course.
+lobby:0x601290	56ba1101	t	I hear the G-rank monsters in top-rank quests give the very best materials.
+lobby:0x6012F0	0c32941e	t	To stand up to G-rank monsters, you'll need to power up your gear, of course.
+lobby:0x601A70	2e4e1fcc	t	You'll find Item Boxes in your Guest House room and at the armory.
+lobby:0x601F20	45875dd7	t	But they won't always make the same trade, so be careful.
+lobby:0x601F60	eaa4c330	t	For example, you might trade them Iron Ore and get Sm Monster Bone or Mystery Bone back.
+lobby:0x601FD0	afbcd8fe	t	The Veggie Elders in the Forest and Hills, Swamp, and Jungle won't always make the same trade, so be careful.
+lobby:0x602050	eaa4c330	t	For example, you might trade them Iron Ore and get Sm Monster Bone or Mystery Bone back.
+lobby:0x6020F0	cef29380	t	Last time I visited the Elder in the Swamp, I think... he traded me something really good for a Vespoid Abdomen.
+lobby:0x602170	c217efe0	t	But be careful. The Veggie Elders won't always trade you the same thing.
+lobby:0x6021D0	cef29380	t	Last time I visited the Elder in the Swamp, I think... he traded me something really good for a Vespoid Abdomen.
+lobby:0x602250	c217efe0	t	But be careful. The Veggie Elders won't always trade you the same thing.
+lobby:0x602320	d46c7f4d	n t	He traded me Carbalite Ore for a Hornetaur Razorwing!
+lobby:0x602360	a5bb362d	n t	Oh, but the other day, he gave me Dragonite Ore for a Hornetaur Razorwing! I guess he's moody.
+lobby:0x602440	a5bb362d	n t	Oh, but the other day, he gave me Dragonite Ore for a Hornetaur Razorwing! I guess he's moody.
+lobby:0x6029F0	bb20fa9f	n t	He traded me Albino Prime Cut for a Hellfire Stone!
+lobby:0x602A30	7f128649	n t	Oh, but the other day, I gave him a Hellfire Stone and got a Gravios Carapace! I guess he's moody.
+lobby:0x602AA0	144af095	t	The Veggie Elders are really moody, but if you use them well, you can get lots of good deals. Good luck!
+lobby:0x603590	43c2431d	t	Fishing is fun, but nothing beats hunting.
+lobby:0x6035C0	a2b73eec	t	The other day I was out enjoying a hunt in all sorts of places, when...
+lobby:0x603610	847cdecc	t	a Yian Kut-Ku in a strange color showed up! What a shock!
+lobby:0x603640	52df332d	t	It's a bird every hunter knows, right? But... that color... Were my eyes playing tricks?
+lobby:0x6036A0	cb539f1d	t	That strange-colored Kut-Ku I saw... Armor in that color would look lovely.
+lobby:0x6036E0	f677fbd6	t	Or were my eyes playing tricks?
+lobby:0x603C00	3b0354b2	t	Press the L1 button to open or close the List of all players in town.
+# --- town talk 2
+lobby:0x603C60	718aedda	t	In the List, you can check other people's quest status and settings at a glance.
+lobby:0x603CC0	6aa37f68	t	In the Player List, people on the same quest as you are shown in orange.
+lobby:0x603D60	ef5dfad1	t	Use Edit Comment in the menu to write a comment about yourself.
+lobby:0x603E10	b0829487	t	That's just basic manners for a hunter, right?
+lobby:0x603FF0	2aed5c57	t	Oh, and on half-price day, the combination shop does combination requests at half price, too.
+lobby:0x604140	fa9c025c	t	When that happens, use the keyboard's Set Recipient feature.
+lobby:0x604190	c70b9b51	t	You can send chat to just your quest members or to one friend.
+lobby:0x6041E0	d978d5cb	t	When you chat only to your quest members, the text is green. When you chat to just one person, the text is yellow.
+lobby:0x604260	c7d20910	t	It's easy to set: the L2 button on the soft keyboard, or the Tab key on a USB keyboard. Give it a try!
+lobby:0x604460	4e86ba1e	t	I hear really huge monsters have been seen in what hunters call the top-rank quests.
+lobby:0x6044D0	8b048ccb	t	Hunters seem to call them King Size.
+lobby:0x604520	179c2861	t	Prey bigger than anything you've ever seen... I have a feeling something would happen if you hunted one!
+lobby:0x604580	20be31f9	t	King Size, only in top-rank quests... I have a feeling something would happen if you hunted one!
+lobby:0x604C90	a59fcee7	t	Fishing, cooking meat... I hear they teach you all the basics a hunter needs to know there.
+lobby:0x604D00	150779e1	t	They say hunting from the town is tougher than in the village, so maybe you should practice in the village first.
+lobby:0x604D70	150779e1	t	They say hunting from the town is tougher than in the village, so maybe you should practice in the village first.
+lobby:0x604DE0	773ec7ff	t	I hear the kind Village Chief teaches you the hunting basics step by step.
+lobby:0x605060	ec309fad	t	A giant dragon!? If this hunter's story is true, we're in trouble!
+lobby:0x605270	76c2a2d1	t	I hear upgrading a melee weapon raises its Sharpness, up to five levels.
+lobby:0x6052C0	f209be38	t	Rumor has it a sixth level of Sharpness appears some other way than upgrading. Is that true?
+lobby:0x605320	00149daa	t	Upgrading a melee weapon raises its Sharpness up to five levels. Rumor says a sixth appears some other way. Is that true?
+lobby:0x605430	3d251411	t	I hear some wyverns come in rare colors.
+lobby:0x605470	dc1fed4b	t	And it seems the key to meeting those monsters is hunting big monsters! Exciting news, huh?
+lobby:0x6054F0	f0eb73db	t	To meet monsters in rare colors, you have to hunt big monsters. Pretty good tip, huh!?
+lobby:0x605A00	6b3fe60b	t	You beat that giant dragon? For the third time!? Are you really that good a hunter?
+lobby:0x606100	0e4e8054	t	Hey, how's it going? As a ticket maniac, I did some digging, and it looks like this inn gives out three kinds of tickets.
+lobby:0x606170	fb03dd0c	t	The Rook Room gives a Silver Ticket. The Bishop Room gives a Gold Ticket.
+lobby:0x6061D0	73e187cf	t	What's the last one? I'm doing my best to find out. ...Do you know?
+lobby:0x606230	ea18b581	t	Silver and Gold. I really want to know about that last ticket... ...Do you know?
+lobby:0x608670	5f5d46d0	t	What!? You beat it already?? ...Then let me sing! La la la♪ You're famous now♪ The hero of our town♪ I can't wait to see the hero fall♪
+lobby:0x609410	e362a204	t	If you buy Storage Expert at the hunter's shoppe in the tavern...
+lobby:0x609450	580bd40e	t	your Item Box holds 100 more items! That's handy! The Storage Expert book is on my wish list, too!
+lobby:0x6094C0	acbc6aad	t	The Storage Expert book: your Item Box holds 100 more. It's on my wish list, too!
+lobby:0x609E30	f3489229	t	I heard you're taking on top-rank quests. Out of respect for your hard work, I'll be honest with you...
+lobby:0x60B550	11e70225	t	I hear you're taking on top-rank quests. Out of respect for your hard work, let me confess... my big secret...
+lobby:0x60C1B0	96befe13	t	Hey! Welcome! Today's the day of the big sales event!
+lobby:0x60C1F0	a5c9d18e	t	Everything in the market is half-price! Oh, wait! At the combination shop, it's requests that are half-price! Rob us blind!
+lobby:0x60C260	a073dfb2	t	Everything in the market is half-price today! Combination requests are half-price too! Go ahead, rob us blind!
+lobby:0x60D2D0	ad464dcf	t	Today's hunter tip: Sharpness. Upgrade your melee weapon and its Sharpness rises, and so does its power. Useful, huh?
+lobby:0x60DBA0	c4b5c394	t	Oh... What a mess. With the giant dragon back, I can't send a letter to my sister.
+lobby:0x60DBF0	fab63ac3	t	And I wrote to her about the top-rank Hunter Ranks, too...
+lobby:0x60DC40	da5627e9	t	In the top rank, I hear Hunter Rank goes all the way up to 30. But how many hunters can really stand up to G-rank monsters?
+lobby:0x60DCD0	e3e54cd6	t	In the top rank, I hear Hunter Rank goes all the way up to 30. I wonder what gear you can make from G-rank monster materials?
+lobby:0x60E110	f8cea30e	t	When you fought that rocky giant dragon, I was nearby.
+lobby:0x60EA80	9fba9b89	t	Master! I hear you can record how many monsters you've slain, and even their size, in the Monster List!!
+lobby:0x60EAE0	2885739f	t	Hunters call recording the size a Monster Record, it seems.
+lobby:0x60EB40	0ecaecfe	t	Measuring a monster like a prize fish! Can you believe anyone does that with such scary monsters?
+lobby:0x60EBB0	844395fc	t	Master, why don't you try it? A Monster Record. I hear you can start right away if you buy monster info.
+lobby:0x60EC10	cd3feae2	t	I hear you can record how many monsters you've slain, and even their size, in the Monster List!!
+lobby:0x60EC60	4780990b	t	I hear you can start right away if you buy monster info.
+lobby:0x60ED10	198cf299	n t	They say there's an Azure Rathalos!
+lobby:0x60ED50	2f80a35e	n t	And, and, they say there's a Pink Rathian, too!
+lobby:0x60EDA0	4a671a18	t	Do you think it's true!? What do you think?
+lobby:0x60EDD0	a5f04f96	t	Master! The info I got from the Hell Brothers says there are monsters with different body colors!
+lobby:0x60EE40	9aa28192	n t	An Azure Rathalos. A Pink Rathian. Can they really exist!?
+lobby:0x60EEA0	d3953fcc	t	Master!! I got more info from that weird pair, the Hell Brothers!
+lobby:0x60EEF0	988a6ef2	t	They say that in top-rank quests, there's sometimes a Yian Kut-Ku outbreak!
+lobby:0x60EF40	08f8860f	n t	When you reach your limit, put the Felyne Cart Ticket from the supplies in the Delivery Box, and the quest counts as a success!
+lobby:0x60EFC0	f0ce64db	n t	When there's a Kut-Ku outbreak, slay as many as you can, and when you hit your limit, deliver the Felyne Cart Ticket! Got it?
+lobby:0x60F350	9f342d4c	t	Master!! Driving off that giant dragon, the one like a rocky mountain... Honestly, you're invincible!
+lobby:0x60F3B0	25632c26	t	I heard you can get rare materials from that giant dragon's back...
+lobby:0x60F400	e22e32ab	t	If that's true, you could make gear unlike anything from the giant dragons before!
+lobby:0x60F470	370649bb	t	Driving off that giant dragon, the one like a rocky mountain... Master, you really are invincible!
+lobby:0x60F520	0dedfcca	t	Haven't seen you before. Did you come here to be a hunter, too?
+lobby:0x60F560	f3867144	t	All sorts of people live in this big town. Listen to what they say, and you'll pick up useful info.
+lobby:0x60FB40	f101b847	t	I hear the materials from Lao-Shan Lung, like its Shell, Scale, Claw, Horn and Plate, make powerful gear! I'm so jealous!
+lobby:0x6100C0	fa4bdbc3	n t	A True Black Dragon Spear! Maybe you could make a weapon like that!?
+lobby:0x610160	fa4bdbc3	n t	A True Black Dragon Spear! Maybe you could make a weapon like that!?
+lobby:0x6101A0	28d208cb	t	Is it true? You slew that rocky giant dragon that attacked the fortress!?
+lobby:0x610320	d4937a9d	n t	It seems you need a material called Lao-Shan Ruby. They say it's very rare. Can anyone really get one?
+lobby:0x610BC0	3d89ed02	t	It looks like you have good friends with you.
+lobby:0x610BF0	6a080bbb	t	Tell me how you fought sometime, will you?
+lobby:0x610D30	08f8cd52	t	Kirin, cloaked in lightning, calls down thunder at will. Don't you want to see one, just once?
+lobby:0x611090	24369544	t	I still can't believe it. You've driven off Lao-Shan Lung again and again...
+lobby:0x6110E0	e0765698	t	When we first met here, I never imagined you'd grow into such a great hunter...
+lobby:0x612A10	b9722054	t	Did you know some armor skill types are really unusual?
+lobby:0x612A50	c047fa1c	n t	Torso Up doubles the skill points on your body armor.
+lobby:0x612AB0	2e4fdbce	t	Wear several, and your body armor's points go 2x, 3x, 4x, 5x!
+lobby:0x612B10	a451c5f3	n t	Torso Plus adds points to the skill types on your body armor.
+lobby:0x612B60	71abd323	t	Both are great deals, so try them when you get body armor with good skill types!
+lobby:0x612BC0	0ceb0e3e	n t	Me, I recommend both Torso Up and Torso Plus!
+lobby:0x612C10	bf85fac9	t	That's what my papa says, and he's a top hunter who's slain lots of wyverns!
+lobby:0x612C60	e6f69b53	n t	Have you heard of the skill type called Glutton?
+lobby:0x612CA0	841db15a	t	I hear it gives you skills that help with Stamina!
+lobby:0x612CE0	50fb7d08	t	Something about feeling fuller when you eat cooked meat and such... Papa told me. Is it true?
+lobby:0x612D50	c5fb94d7	n t	I hear the Glutton skill type gives you skills that help with Stamina. Papa told me... Is it true?
+lobby:0x612E00	ee38cb2a	n t	It's a skill that makes you take less damage than usual when you're hit! Was it called Divine Protection?
+lobby:0x612E70	0125cbcf	t	It doesn't always work, but it's reassuring! There sure are some strange skills.
+lobby:0x612EC0	bafdc166	n t	The Divine Protection skill seems to reduce damage now and then.
+lobby:0x613250	b743894f	t	You beat that rocky giant dragon!?
+# --- town talk 3
+lobby:0x6132D0	ae9c0e14	n t	There's a skill called Sharpness +1. It's a special skill that adds one level to your Sharpness gauge.
+lobby:0x613340	7882ee99	t	But I don't really know which skill type activates it...
+lobby:0x613390	221efb0a	t	But I bet you can find out!
+lobby:0x6133C0	5bce5ae3	n t	With the Sharpness +1 skill, you can add one level to your Sharpness gauge!
+lobby:0x613420	ce8f0971	t	I don't know which skill type activates it... But I bet you can find out!
+lobby:0x613660	6b98e494	t	Do you know the secret of making Swords? Depending on how you make them, you can create Dual Swords, a pair of blades!
+lobby:0x6136D0	b3940d8d	t	With no shield you can't guard, but you'd get in so many more hits...
+lobby:0x613730	4fa89101	t	And I heard pressing R1 lets you unleash a fierce attack for a while, until your Stamina runs out.
+lobby:0x6137A0	31c769c1	t	Wow, just thinking about it gets my heart racing!
+lobby:0x6137D0	6b98e494	t	Do you know the secret of making Swords? Depending on how you make them, you can create Dual Swords, a pair of blades!
+lobby:0x613D60	db7eae7f	t	Forest Elder: monster parts. Swamp Elder: ores. Jungle... I forget! Try it yourself.
+lobby:0x613E10	db7eae7f	t	Forest Elder: monster parts. Swamp Elder: ores. Jungle... I forget! Try it yourself.
+lobby:0x613F10	61b3217a	t	You've slain Lao-Shan Lung twice, and you're aiming even higher.
+lobby:0x6142F0	15cbd8d8	t	Time to use my Platinum Ticket, saved over a year at the Guest House...!!
+lobby:0x614350	07e754c3	n t	What I'm after is the Barbaroi Blade! How about it? Coolest name ever, right?
+lobby:0x6143A0	0c7b2adf	t	The Platinum Ticket I saved up from a whole year at the Guest House!
+lobby:0x6143E0	76ea96b4	n t	What I'm after is the Barbaroi Blade! How about it? Now you want one too, don't you?
+lobby:0x614F20	5ee6810a	t	Right now I'm dying to go on a top-rank quest!
+lobby:0x614F60	db41a9a5	t	In top-rank quests, supplies aren't guaranteed, and you might not even start from camp!
+lobby:0x614FC0	13be5943	t	You can't get that kind of thrill anywhere else! I'm shaking with excitement!
+lobby:0x615020	e13e0ba1	t	What? Am I allowed to go on top-rank quests? Ouch, that hurts! Leave me alone!
+lobby:0x615080	db41a9a5	t	In top-rank quests, supplies aren't guaranteed, and you might not even start from camp!
+lobby:0x6150E0	13be5943	t	You can't get that kind of thrill anywhere else! I'm shaking with excitement!
+lobby:0x6153D0	d4876ca4	t	I mean, I wouldn't fight Fatalis even if it killed me.
+lobby:0x615410	d0c75eb8	t	Now that the Black Dragon is gone, my life as a hunter is just beginning! Hunting rules!!
+lobby:0x6155B0	8f40ad42	t	They say it's a different color from the giant dragons seen before. I'd have loved just one look at it!
+lobby:0x6156A0	d158c99f	t	But you're the one who really saved this town. Thanks! You did a great job!
+lobby:0x615FF0	83ff2ab2	t	Dohahaha! Top-rank quests sure are tough!
+lobby:0x616030	e8c0d4d8	t	After all, there's no guarantee your supplies will arrive.
+lobby:0x616060	e06ce090	t	And they make you fight G-rank brutes like that! What a classy touch!
+lobby:0x6160B0	5f94946c	t	Well, this great Red Ogre plays it safe and always carries a Farcaster! Dohahaha!
+lobby:0x616110	8863967f	t	Top-rank quests should keep me from getting bored until HE shows up! Dohahaha!
+lobby:0x616F20	85b21af8	t	Diablos has its sneaky tricks, like charging at you with its two horns, but
+lobby:0x616FE0	96d80e0a	t	Bahahaha! Top-rank quests sure are tough!
+lobby:0x617020	f4b00805	t	After all, they often drop you somewhere crazy and make you start the quest from there.
+lobby:0x617080	215a8887	t	And they make you fight G-rank brutes like that! What a classy touch!
+lobby:0x6170D0	b58f6ab0	t	Well, this great Black Ogre plays it safe and always carries a Farcaster! Bahahaha!
+lobby:0x617130	fcfb7ff0	t	Top-rank quests should keep me from getting bored until HE shows up! Bahahaha!
+lobby:0x619790	d26e7aa1	n t	Honestly, this boy! I keep telling him to pick the Alchemy skill, study combining more deeply, and hunt smarter!
+lobby:0x619890	89bda59d	n t	A modern man should use the Alchemy skill to study combining more deeply and hunt smarter, right!?
+lobby:0x619950	32726311	n t	Do you know the Guard +1 skill?
+lobby:0x619980	00060d88	t	I hear it shortens the opening after you guard! Though with some attacks, it seems to make no difference.
+lobby:0x619A30	6a3b1b5b	n t	With the Guard +1 skill, I hear the opening after you guard can be shorter! If you hear anything useful, please tell me!
+lobby:0x619AF0	c854f4c7	n t	The Razor Sharp skill! It makes Sharpness last longer! With that, you could just attack, attack, attack!
+lobby:0x619CC0	ba0e44f7	n t	It's called the Honeycomber! An upgraded version of the Bowgun called the Flechette Gun!
+lobby:0x619F50	6bc6b525	t	You really are strong! Beating that giant dragon three times...
+lobby:0x619FA0	f3ced246	t	You must be really skilled.
+lobby:0x619FD0	03748426	n t	I know! Here's a tip for you. I hear there's a skill called Rapid Fire.
+lobby:0x61A020	8545f8a8	t	They say it's a skill that lets you fire a Bowgun without reloading.
+lobby:0x61A060	04316605	t	A hunter as skilled as you could surely give it a try.
+lobby:0x61A0B0	7ea8578e	n t	I hear the Rapid Fire skill lets you fire a Bowgun without reloading. I'm sure you could give it a try.
+lobby:0x61A930	8cf43b64	t	It seems that in what they call top-rank quests, once in a great while, you get dropped into a special place.
+lobby:0x61A9A0	798bdeab	t	You can find rare items in that special place. It's a bit of a rumor among hunters.
+lobby:0x61AA10	fe7399f5	t	A special place you can reach, very rarely, in top-rank quests...
+lobby:0x61AA50	5566f12f	t	What kind of items do you think you can get there?
+lobby:0x61B0B0	e4730fdb	t	What's more, one combination of Bowgun ammo makes several shots, like 5 to 10.
+lobby:0x61B110	cbd8a01b	t	If you want to be a top Gunner, you have to combine your own ammo!
+lobby:0x61B160	95dbdd59	t	Bowgun ammo, see... One combination makes several shots, like 5 to 10.
+lobby:0x61B1C0	cbd8a01b	t	If you want to be a top Gunner, you have to combine your own ammo!
+lobby:0x61B210	824dcd08	t	How about that? Combining is really simple, and really deep, isn't it?
+lobby:0x61B6F0	95dbdd59	t	Bowgun ammo, see... One combination makes several shots, like 5 to 10.
+lobby:0x61B750	08b13752	n t	And by combining ammo, you can also make Flaming S, Water S and Thunder S. Amazing, huh!?
+lobby:0x61B7C0	95dbdd59	t	Bowgun ammo, see... One combination makes several shots, like 5 to 10.
+lobby:0x61B820	08b13752	n t	And by combining ammo, you can also make Flaming S, Water S and Thunder S. Amazing, huh!?
+lobby:0x61C270	771b9e36	t	Hey, I heard! You slew the Cephadrome in the desert. That's amazing!
+lobby:0x61C2C0	d1ede84c	t	But we're not slacking either. We just got in new armor called Silver Metal Boots!
+lobby:0x61C330	1487ff93	t	Their Defense is second to none! Be sure to buy some! ...Now then, again.
+lobby:0x61C380	b7531196	t	Whoa! You slew Rathalos!? I'm really amazed!
+lobby:0x61C3D0	5592b08a	t	Of course, we've got new armor in, too. Dark Metal Boots and Pink Metal Boots!
+lobby:0x61C430	bcc2c4fd	t	Both are strong leg gear for fighting wyverns. Pink is for women only, so I can't sell it to men! ...Now then, again.
+lobby:0x61C4A0	9972f60e	t	Oh, wow! The hero who beat Monoblos is back! Well then, rob me blind!
+lobby:0x61C500	5b8f0656	t	I'll make a special deal on our secret top armor, Chrome Metal Coil and Chrome Metal Boots!
+lobby:0x61C560	50cb0baa	t	This is amazing armor you can only get here, so take good care of it! ...Now then, again.
+lobby:0x61CCC0	cf721efc	t	I finally got a letter from my brother! He couldn't write because he was chasing bigger monsters.
+lobby:0x61CD30	d2f909fd	t	It's in his letter: Familiar monsters aren't always the same size! Today's prey is a thrilling size! ...he says.
+lobby:0x61CDB0	b14f02ea	t	I don't care how big monsters are... What a pain my brother is.
+lobby:0x61CE00	da7fad32	t	I finally got a letter from my brother. It says monsters aren't all the same size! ...and so on.
+lobby:0x61CE70	b14f02ea	t	I don't care how big monsters are... What a pain my brother is.
+lobby:0x61CEC0	d45466f2	t	His letter says now he's after monsters even bigger than wyverns. Honestly! I give up.
+lobby:0x61D410	da5fd897	t	If only the legendary hunter who vanished would show up... He'd use Herbs and Potions and slay those things.
+lobby:0x61D490	e57ba22a	t	You need healing items when you fight carnivores. Sigh, if only the legendary hunter who vanished were here...
+lobby:0x61DA90	a142de33	t	They saw a poisonous bird wyvern near the Swamp!
+lobby:0x61DAC0	894d7d22	t	The Village Chief says you'll need Antidotes to stand up to that monster.
+lobby:0x61DB10	67773ba8	t	Sigh... If only the legendary Gunner who vanished years ago were here.
+lobby:0x61DB60	1f8966d9	t	If only the legendary hunter who vanished would show up, he'd use Antidotes and slay that poisonous monster...
+lobby:0x61F220	36f62c40	t	But you know, I think giving her a rare fish you caught would work too.
+lobby:0x61F280	770c954a	t	I heard that once in a while, you can catch a fish that shines like gold...
+lobby:0x61F2C0	57167a52	n t	If you're after golden fish, get a certain bait. You can make it by combining a Burrowing Bee and a Firefly.
+lobby:0x61FA40	9a3b4571	t	Look at my buddy. All worked up over one letter.
+lobby:0x61FF90	32baa62d	t	Hm... What do you want? Oh, you again. Coming to me for info... Hunting's tough, huh?
+# --- town talk 2
+# --- town / village talk 4
+lobby:0x620000	4185ca70	t	Speaking of tough, getting Bowgun ammo costs a lot of money, too.
+lobby:0x620050	0b05dccd	t	When that happens, make your ammo by combining. Using up one set of materials should get you several shots. Trust me and try it.
+lobby:0x6200E0	113401a0	t	But how long do you plan to keep hunting? I'd quit before you get badly hurt.
+lobby:0x620140	41fa3162	t	If you want ammo cheaply, make your shots by combining.
+lobby:0x620740	4bf7d3e8	n t	Crag S, Clust S, Flaming, Water and Thunder S. Hm... How do I know so much?
+lobby:0x6207C0	703089af	n t	Crag S, Clust S, Flaming, Water, Thunder S. You can combine special ammo, too.
+lobby:0x620970	9c50be21	t	The weapon shop sometimes gets new equipment. When you feel you've grown, go talk to them.
+lobby:0x620A20	edd7bb67	t	He'll even sell you rare items this village doesn't have.
+lobby:0x620A60	12ae0c11	t	And the trader sometimes comes to this village with newer items. When you feel you've grown, go talk to him.
+lobby:0x620AE0	75042f7a	t	The town trader and our weapon shop: talk to them when you feel you've grown.
+lobby:0x620B40	2129361e	t	Don't forget to take the materials you carve from monsters to the blacksmith.
+lobby:0x620BA0	67a90b0b	t	The blacksmith uses those materials to Create equipment and Upgrade weapons for you.
+lobby:0x621060	3d3958de	t	I hear some of the gear you can put together in this village has really useful skills.
+lobby:0x6210C0	46f0e4f0	n t	One is Razor Sharp. They say it doubles how well a melee weapon holds its Sharpness.
+lobby:0x621110	b39c87bf	n t	The other is Normal S Up. They say it raises the power of a Bowgun's Normal S.
+lobby:0x621610	cb412bc5	t	You came at a good time. I just got new items in from the town.
+lobby:0x621740	bc1af37a	t	You're starting to look like a real hunter. I just got new items in from the town.
+lobby:0x621790	c6a958ee	t	I especially recommend the Cool Drink. It helps you stand the heat, a must in the desert or the volcano.
+lobby:0x621850	2dbf6500	t	I heard you slew Monoblos. Amazing! Oh, speaking of amazing, I just got the best items in from the town.
+lobby:0x621950	d51d6639	n t	And from the Storage Expert series, the Book of Power! Plus lots of useful tools! ...Now then, again.
+lobby:0x6219C0	448bc5e6	t	Is it true you slew Rathalos!? All right, then I'll show you items as good as you are.
+lobby:0x621B10	668b9b6a	t	Perfect timing! I just got new items in from the town.
+lobby:0x621B70	149540a0	n t	Today I recommend Storage Expert! The best item there is: your Item Box holds 100 more. This time it's the Book of Skill!
+lobby:0x6222B0	ebaea631	n t	Have you ever heard of a place called the Training School?
+lobby:0x622690	e36e08d0	t	Hm. So you beat Monoblos... I hate to say it, but as a hunter, you're better than me. ...I admit defeat.
+lobby:0x622700	924c22b2	t	It must have been a tough one. I ran into one once myself, and I still can't forget that horrible single horn...
+lobby:0x622790	730bf92d	t	What!? The one-horn you slew was sand-colored? I think the one I met was different... Am I mistaken?
+lobby:0x622810	7f9a2010	t	The one-horn you slew and the one I met... Somehow our stories don't match...? Is it some mistake?
+lobby:0x6228F0	ab7335f3	t	Press the R1 button to switch your attack style and press on with a storm of combos! But watch your Stamina while you do.
+lobby:0x623500	a14e7e12	t	Though they say a disaster like no other is coming to this village... That huge shadow I saw in my dream... surely it was...
+lobby:0x623580	4fbb5bdd	t	Oh, sorry! Old men do talk to themselves! Fine job slaying Monoblos, Hero of Kokoto!
+lobby:0x623620	84d53912	t	So the villagers wouldn't panic, I had quietly made up my mind to stop it all by myself.
+lobby:0x623800	0f0aa3a3	t	Lastly, I give you this blade, the most treasured of all my treasures! Well done, Hero of Kokoto!
+lobby:0x623C00	577df495	t	Of course, you'll start from Hunter Rank 1 like everyone else. I'm looking forward to seeing how far you go!
+lobby:0x623C70	2d23e1a3	t	The way out to quests is on the right side of this tavern. Don't get lost!
+lobby:0x6245D0	9b453640	t	You've grown even more. You're just one step from the top-rank quests, only for the very best hunters.
+lobby:0x624650	45e7729d	t	We hunters gain experience and hone our gear to earn our daily bread. But in doing so, we have also opened up forbidden ground.
+lobby:0x6246F0	80f284e9	t	In top-rank quests, your foes are even stronger. Is there anyone who can stand up to them, and even beat them...?
+lobby:0x624840	342d4b11	t	You repelled Lao-Shan Lung's return and climbed this high! Well done!!
+lobby:0x624880	9ada0ffb	t	I recognize you as one of the very best hunters, and allow you to take on top-rank quests.
+lobby:0x6248E0	1409d00d	t	However! In the top-rank quests from here on, the Guild cannot promise you its full support. Listen well to what I explain now.
+lobby:0x624960	213303f5	t	First, supplies. In the top rank, there's no guarantee we can deliver your supplies as before.
+lobby:0x624B80	663c0f53	t	I'm expecting great things from you!!
+lobby:0x624BB0	1705c941	t	Ho ho ho. I recognize you as one of the very best hunters, and allow you to take on top-rank quests.
+lobby:0x624C10	1bc82561	t	However, in the top-rank quests from here on, the Guild cannot promise you its full support.
+lobby:0x624CD0	78839aeb	t	Always face them ready to risk your life. I'm expecting great things from you!!
+lobby:0x625280	4f98de03	t	Driving off Lao-Shan Lung again and again...
+lobby:0x6254C0	ef8d6c6a	t	Hoo hoo! It seems you've slain at least 20 of every wyvern.
+lobby:0x625600	a5a816d9	t	Heh heh heh. Today is the market's half-price sale. I'll take combination requests at half price.
+lobby:0x625660	10ef1966	t	Heh heh heh! Could it be you've succeeded at every combination?
+lobby:0x6256B0	61ba52e7	t	I'm surprised you know so much. Perhaps I should entrust you with this book.
+lobby:0x625710	cef8da91	n t	The secret of the Book of Combos series: Book of Combos G: Alchemy. Even deeper combining that makes something from nothing awaits you. Use it with care.
+lobby:0x625AE0	942c17a3	t	By freely combining the parts of your armor, you can gain special abilities called Skills.
+lobby:0x625B50	962aa0b3	t	Head, body, arms, waist, legs: the points of one skill type on each part add up, and the skill activates.
+lobby:0x625BC0	834c9717	t	You can always check your Skills on the Status screen. *Mumble*...
+lobby:0x625CA0	942c17a3	t	By freely combining the parts of your armor, you can gain special abilities called Skills.
+lobby:0x625D10	962aa0b3	t	Head, body, arms, waist, legs: the points of one skill type on each part add up, and the skill activates.
+lobby:0x625FB0	f36d1bfa	t	Buy Monster Info, and you can record how many monsters you've slain and their size, too. *Mumble mumble*...
+lobby:0x626480	942c17a3	t	By freely combining the parts of your armor, you can gain special abilities called Skills.
+lobby:0x6264F0	962aa0b3	t	Head, body, arms, waist, legs: the points of one skill type on each part add up, and the skill activates.
+lobby:0x626560	834c9717	t	You can always check your Skills on the Status screen. *Mumble*...
+lobby:0x6265B0	b760466c	t	Head, body, arms, waist, legs: the skill points of the same skill type in each armor part are added up to activate Skills.
+lobby:0x626620	834c9717	t	You can always check your Skills on the Status screen. *Mumble*...
+lobby:0x627400	515513b9	t	Hm? This is the materials shop. The hunters have done well, so I have finer materials than usual. Take a look.
+lobby:0x627480	06c0d654	t	Hm? This is the materials shop. Seems today is half-price day, so I've made my shop half-price too.
+lobby:0x629DD0	7d32d80b	n t	How to get Melynx Tools? That's a secret, gob!
+lobby:0x629E10	4b0cebc0	t	I won't tell you it's a Catburglar, a Pawprint Stamp, a Platinum Ticket, and my favorite secret ingredient, gob!
+lobby:0x62A560	e5ddc794	t	Today, as a special treat, let me tell you about an extremely rare stone you seldom see.
+lobby:0x62B570	2985e721	t	Today, as a special treat, I'll tell you about an extremely rare material you seldom see.
+lobby:0x62C380	14fefb85	t	I feel like a big dragon is coming, meow! How do I know? Don't underestimate a Felyne's nose, meow!
+lobby:0x62C3F0	e5f6af3b	t	Do you know this, meow? If you climb onto a giant dragon's back and press the ~B00 button, you can carve materials, meow. Did you know, meow?
+lobby:0x62C4A0	766e079e	t	Climb onto a giant dragon's back and press the ~B00 button to carve materials, meow. Try it next time, meow.
+lobby:0x62C570	fa3fdb40	t	In every room but the Pawn Room, you get a ticket at your 10th, 20th, 30th, 40th, 50th, 75th and 100th stay, meow.
+lobby:0x62C5F0	ebf2f162	t	After 100 you don't get any, but you might get one by joining a certain event, meow. Got it, meow?
+lobby:0x62C660	57d49165	t	Paid rooms stop giving tickets after 100 stays, meow. But you might get one by joining a certain event, meow.
+lobby:0x62CB40	90238b60	n t	Add one more item to Pearl Hide, Albino Prime Cut and Dragonite Ore, and you can make a Khezu S Helm or Khezu S Cap, meow!
+lobby:0x62CC30	244559b0	n t	Add one more item to Rathian Ruby, Rathian Scale and Rathian Carapace, and you can make a Rathian S Helm or Rathian S Cap, meow!
+lobby:0x62CD20	59866ec2	n t	Add one more item to Rathalos Ruby, Rathalos Carapace and Rathalos Webbing, and you can make Rathalos S Mail or a Rathalos S Vest, meow!
+lobby:0x62CE00	ae7ead11	n t	Add one more item to Hellfire Stone, Crimson Horn and Monoblos Spine, and you can make Monoblos S Mail or a Monoblos S Vest, meow!
+lobby:0x62CEF0	c8a74f82	n t	Add one more item to Pure Crystal, Novacrystal and Dragonite Ore, and you can make Steel S Vambraces, meow!
+lobby:0x62D0B0	0590cfcb	n t	Add one more item to Vespoid Razorwing, Vespoid Carapace and Vespoid Wing, and you can make a Vespoid S Tasset, meow!
+lobby:0x62D190	a8f5bb53	n t	Add one more item to Hornetaur Razorwing, Hornetaur Carapace and Hornetaur Head, and you can make a Hornet S Coat, meow!
+lobby:0x62D270	b911c09b	n t	Add one item to Gravios Hardshell, Gravios Steel Wing and Gravios Shell to make Gravios S Greaves, Gravios S Leggings and more, meow!
+lobby:0x62D360	7f494d5d	n t	Add one item to Plesioth Scale+, Plesioth Dorsal Fin and Monster Broth to make Plesioth S Greaves, S Leggings, more, meow!
+lobby:0x62D450	c62526b3	n t	Add one more item to Hellfire Stone, Master's Skull and Ancient Potion, and you can make a Skull S Face, meow!
+lobby:0x62D520	87b52ae3	n t	Add one more item to a Platinum Ticket and a Hellfire Stone, and you can make the Barbaroi Blade, meow!
+lobby:0x62D5E0	5f5bc3d7	n t	Add one more item to Velociprey Hide+, Velociprey Scale+ and a Guild Ticket, and you can make the Drome Bite Dagger, meow!
+lobby:0x62D6C0	73403c8a	n t	Add one more item to Rathian Ruby and Rathian Carapace, and you can make Sieglinde G, meow!
+lobby:0x62D780	d9d0fe4c	n t	Add one more item to a Guild Ticket and a Novacrystal, and you can make the Sleepy Bear, meow!
+lobby:0x62D840	3624283e	n t	Add one more item to Rathalos Ruby and Rathalos Carapace, and you can make Siegmund G, meow!
+lobby:0x62D900	1061a5d2	n t	Add one more item to Silver Rathalos Wingtalon, Gypceros Coin and Basarios Coin, and you can make the Master Blade, meow!
+lobby:0x62D9D0	d05af3cd	n t	Add one more item to Silver Rathalos Shell, Kut-Ku Coin and Cephadrome Coin, and you can make the Master Hammer, meow!
+lobby:0x62DAA0	daffca04	n t	Add one more item to Silver Rathalos Tail, Rathalos Coin and Rathian Coin, and you can make the Master Lance, meow!
+lobby:0x62DB70	4601b519	n t	Add one more item to Hard Monster Bone, Cephadrome Coin and Basarios Coin, and you can make the Master Sword, meow!
+lobby:0x62DC40	d4a4e1af	n t	Add one more item to Vespoid Carapace, Vespoid Abdomen and Hornetaur Carapace, and you can make the Honeycomber, meow!
+lobby:0x62DD20	6a73c76b	n t	Add one more item to Inferno Sac, Kut-Ku Coin and Gypceros Coin, and you can make the Master Bowgun, meow!
+lobby:0x642570	268d4150	-	Name:
+lobby:0x6425A0	403eb4ea	-	Comment:
+lobby:0x6425E0	b69876f5	-	Players now:
+lobby:0x642600	41ae43ac	-	  Max players:
+# --- town / village talk 4
+# --- online hub: town / search / Black List screens (lobby)
+lobby:0x642618	a400c37d	-	New town
+lobby:0x642640	7d48fa6c	-	Write Short Mail
+lobby:0x642668	f94b8d24	-	Slots left:
+lobby:0x642680	9067f2e3	-	Quest Title
+lobby:0x6426A0	39437506	-	Town:
+lobby:0x6428A0	3888c848	-	...Over 100 results found.
+lobby:0x6428D0	d364ef91	-	Not available at present.
+lobby:0x6428F0	97d5aa8f	-	Name Town
+lobby:0x642900	0002dae3	-	Name now:
+lobby:0x642910	c17276cf	-	No name
+lobby:0x642920	c59aaca6	-	Result
+lobby:0x642930	b1872263	-	All in Area
+lobby:0x642940	1bfd6e96	-	Filter in Area
+lobby:0x642958	8aff1596	-	All Lands
+lobby:0x642968	6d465881	-	All Quests
+lobby:0x642980	c765bb1b	-	Filter Quests
+lobby:0x6429D0	2a922b9f	-	HR 0  - HR 12
+lobby:0x6429F0	952f851e	-	HR 13 - HR 16
+lobby:0x642A10	a9367cc5	-	HR 17 - HR 20
+lobby:0x642A30	d32e1429	-	HR 21 - HR 23
+lobby:0x642A50	f080ed44	-	HR 24 - HR 26
+lobby:0x642A70	128b1974	-	HR 27 - HR 30
+lobby:0x642AF0	4f57161f	-	Online
+lobby:0x642B00	c16f23ae	-	On Quest
+lobby:0x642B20	d2681b57	-	-----
+lobby:0x642C38	3fa1ddd7	-	New Mail
+lobby:0x642F40	bcb5fc7f	-	~C00Your Hunter Rank does not match this area.
+lobby:0x643180	7442b3ad	-	~C00Getting area information.
+lobby:0x6431B0	37eb6c2b	-	~C00Quest search failed.
+lobby:0x6432D0	e9c2a82f	-	~C00No results found.
+lobby:0x6435A0	83e401ba	-	\n\n\n~C00Add the player above to your Black List\nand refuse their mail. OK?
+lobby:0x643600	a8adb6ac	-	~C00Black List entry cancelled.
+lobby:0x643630	25b7e8f4	-	~C00Added to your Black List.
+lobby:0x643660	b31f0cff	-	~C00Black List entry overwritten.
+lobby:0x643690	f4ce4bed	-	~C00OK to overwrite this entry?
+lobby:0x6436D0	0ded01b4	-	~C00Add to your Black List?
+lobby:0x643710	750d2a8d	-	~C00Your Black List is full.\nYou need to delete some names\nto make room for new entries.
+lobby:0x643780	81670f5f	-	~C00You've chosen 8 people already.\nYou can't choose any more.
+lobby:0x643980	0fcaecf6	-	~C00Entered.
+lobby:0x6439A0	3ce59920	-	~C00Jump there?
+lobby:0x6439C0	d6d84cd9	-	~C00Enter this town?
+lobby:0x6439E0	a258d408	-	~C00The selected town has closed.
+lobby:0x643A10	336b1b79	-	~C00Preparing...
+lobby:0x643A80	19da94b0	-	~C00\n   Choose from Friend List   \n\nEnter Capcom ID\n\n\n ~B01 Back         ~B00 Confirm\n
+lobby:0x643AE0	0b46df64	-	~C00\n          Enter Name          \n\nChoose from Friend List\n\n\n ~B01 Back        ~B00 Confirm\n
+lobby:0x643B40	760dc49a	-	~C00\nEnter Capcom ID\n\n   Choose from Friend List   \n\n\n ~B01 Back         ~B00 Confirm\n
+lobby:0x643BA0	ed1d6578	-	~C00You can't pick yourself.
+lobby:0x643BC0	5e57a3b0	-	~C00\nAll in Area\n\n      Filter in Area      \n\nAll Lands\n\n\n ~B01 Back        ~B00 Confirm\n
+lobby:0x643C20	505e2183	-	~C00\nAll Quests\n\n      Filter Quests      \n\n\n ~B01 Back        ~B00 Confirm\n
+lobby:0x643C80	aaa720a3	-	~C00Searching for quests...
+lobby:0x643CB0	99eeb112	-	~C00You cannot join the quest.\nThe selected town has closed.
+lobby:0x643CF0	1ccb4e35	-	~C00Quest details are not available.\n\nThe accepted quest was cancelled\nor has already departed.
+lobby:0x643D50	e5a835a4	-	~C00You cannot jump to this town now.
+lobby:0x643D80	3844046f	-	~C00You cannot jump to this area now.
+lobby:0x643DB0	fa4c6256	-	~C00\nChat Filter\n\n      Mail Filter      \n\n\n ~B01 Back        ~B00 Confirm\n
+lobby:0x643FD0	e6f5f0b6	-	~C00Failed to download the event quest.\nYou may need to re-enter the town\nto get the event data again.
+lobby:0x644060	0be295d4	-	~C00You can't meet this quest's terms.
+lobby:0x644090	95927c1e	-	~C00You can't meet the terms to join.
+lobby:0x6440C0	e0d91e10	-	~C00You cannot accept a quest.\n\nThe Guild is busy.\nPlease wait for other hunters\nto depart on their quests.
+lobby:0x644460	3a5310e0	-	~C00No memory card (8MB)\n(for PlayStation(R)2)\nin MEMORY CARD slot ~A00.\nInsert a memory card\nwith a NET file into\nMEMORY CARD slot ~A00.\n\n~B00: Don't save\n\n\n
+lobby:0x6445B0	3a18bbc8	-	~C00No NET file on the\nmemory card (8MB) (for\nPlayStation(R)2) in\nMEMORY CARD slot ~A00.\nInsert a memory card\nwith a NET file into\nMEMORY CARD slot ~A00.\n\n~B00: Don't save\n\n\n
+lobby:0x644680	c09509a4	-	~C00Could not connect to the server.\nThe server may be busy.\nPlease select another server.\n\nIf this error keeps appearing, check\nyour network settings and network\nconnections, then reconnect from\nthe Game Menu.
+lobby:0x644780	a96cd6dd	-	~C00Releasing...
+lobby:0x6447A0	1cd40e1a	-	~C00Processing...
+# --- village elder / combination talk (sub_main)
+sub_main:0x53B070	7e3c3dfb	t	Hoo hoo! You can't fool these eyes! Those 99 BBQ Tickets you've got! Trade them for it! I won't take no for an answer!!
+sub_main:0x53B940	4b8cb150	n t	Combine a Fire Herb and a Huskberry, and you get Flaming S, ammo for your Bowgun.
+sub_main:0x53BA00	0221f6e8	n t	Combine a Flashbug and a Huskberry, and you get Thunder S, ammo for your Bowgun.
+sub_main:0x53C210	4f4b38ca	t	Combine a Potion and a Huskberry, and you get Recover S Lv2, ammo for your Bowgun.
+# --- elder tutorial: Dual Swords, bug net (game)
+game:0x6DC0B0	9fedc917	p	Upgrading a Sword can sometimes turn it\ninto Dual Swords. It's a bit early, but\nlet me teach you the Dual Swords basics.\n~C06Right analog stick: Draw weapon\nR1 button: Mode change\n~B03 or ~B00 button: Sheathe weapon\n
+game:0x6DC180	99e4b03f	p	~C00Now let's try attacking.\n~C06Right analog stick up: Slice down\nRight analog stick left/right: Spin-slice\nRight analog stick down: Side-slash\n~C00As with the Sword, press the right analog\nstick in a set pattern for ~C05combo attacks~C00.\n
+game:0x6DC280	25d16d63	p	The strength of Dual Swords is the Attack\nboost of the mode change, and the dazzling\nsword moves it unleashes.\nBut the mode change keeps using Stamina\nwhile it lasts, so be careful!\n
+game:0x6DEA00	d75e4286	p	~C05When you're close to a Bug Point,\nthe × mark next to the item icon\nwill disappear~C00, meaning you can use\nyour Bugnet. When the × mark is gone,\n~C06~B03 button: Use item~C00\nlets you swing your Bugnet.\n
+# --- G quest texts kept in lobby tables
+lobby:0x5E9330	a3f38c2e	-	Requestor: Party Host\nThere's a party at the lord's\nmanor today, but by mistake\nwe're short of food. Could\nyou bring us 10 pieces of\nfresh Raw Meat, please?
+lobby:0x5EA680	ca16a9b5	-	Swamp Trouble
+lobby:0x5EA6D0	1e63d08c	-	Requestor: Swamp Miner\nThe swamp animals are on edge\nlately. Worst are the giant\nBullfango. I'm supposed to\nhunt 15 of them. Give me a\nhand, will you?
+lobby:0x5EBDD0	e0601b40	-	Requestor: Jungle Researcher\nI got lost surveying the\njungle. The rest of my team\nis still starving! Deliver\n15 Well-Done Steaks as food\nfor the rescue!
+lobby:0x5EC030	495ca301	-	Requestor: Fortress Captain\nWe need Coal to move the\nfortress's anti-wyvern spear,\nand it's found in the jungle\ntoo. The more fuel the better.\nPlease gather 15 Coal.
+lobby:0x5FB110	967973ec	n -	Requestor: Training Instructor\nGravios is a tough foe. But\ndamage it until its chest\nshell breaks off, and its\ndefense drops, so it's easier\nto beat!! Serious, for once.
+lobby:0x5FB240	967973ec	n -	Requestor: Training Instructor\nGravios is a tough foe. But\ndamage it until its chest\nshell breaks off, and its\ndefense drops, so it's easier\nto beat!! Serious, for once.
+lobby:0x5FB370	967973ec	n -	Requestor: Training Instructor\nGravios is a tough foe. But\ndamage it until its chest\nshell breaks off, and its\ndefense drops, so it's easier\nto beat!! Serious, for once.
+lobby:0x5FB4A0	967973ec	n -	Requestor: Training Instructor\nGravios is a tough foe. But\ndamage it until its chest\nshell breaks off, and its\ndefense drops, so it's easier\nto beat!! Serious, for once.
+lobby:0x5FB5D0	967973ec	n -	Requestor: Training Instructor\nGravios is a tough foe. But\ndamage it until its chest\nshell breaks off, and its\ndefense drops, so it's easier\nto beat!! Serious, for once.
+# --- online hub screens (lobby)
+lobby:0x63EB60	946b09d0	-	Name: %s\nID: %s
+lobby:0x63EB78	c66e28a8	-	Land
+lobby:0x641500	8e81d377	-	%s is on the way to town.
+lobby:0x641520	445d1b35	-	%s has arrived.
+lobby:0x641560	c5ebfb86	-	Chat send error (check your Send Settings)
+lobby:0x641590	8015663e	-	%s has left on a quest.
+lobby:0x6415B0	27ddbfa1	-	%s has left the town.
+lobby:0x641638	f77eed79	-	Area Select
+lobby:0x641650	932529f6	-	Capcom ID Select
+lobby:0x6416A0	e73bd4dd	-	Select the ID to use.\nSelect "Not registered" to get a new ID.\n*You can get up to 3 IDs.
+lobby:0x6417A0	9caa65ed	-	Open your Friend List.\nYou can register up to 50 friends.\nYour friends' connection status is updated regularly.
+lobby:0x641850	f2550ee4	-	Search for players.
+lobby:0x641870	900eee01	-	Search for quests accepted in this area.
+lobby:0x6418E0	40e5069b	-	Go to the Hunters' Site.\nRead information and the terms of use,\nand register or change your user details.
+lobby:0x6419A0	f77d132d	-	Limit the chat and mail you receive.
+lobby:0x6419D0	31f85868	-	Check event quest information.
+lobby:0x641A00	e65c9613	-	Select where to go.\n~B03: List the players and quests in a town.
+lobby:0x641A60	29f6330e	-	Select where to go.
+lobby:0x641A80	7f40c259	-	Open "Status" with the ~B00 button to search all lands\nfor that friend and see where they are.\nIf they're in the same land, you can jump to them.
+lobby:0x641B30	fdb01771	-	Read the Short Mail you received.\nPress the R1 button to write or reply to Short Mail.\nFrom a message, you can refuse that sender's mail.
+lobby:0x641BD0	695a1cca	-	Open "Status" with the ~B00 button to see where they\nare.\nIf they're in the same land, you can jump to them.
+lobby:0x641C60	6b50b9f0	-	Open "Details" with the ~B00 button to see the quest\ndetails and members.\nYou can also jump to the town where it was accepted.
+lobby:0x641D00	db7d45b3	-	Check location, comment and equipment.
+lobby:0x641D90	faeac23c	-	Scroll the chat log window up and down\nwith the directional buttons.
+lobby:0x641DE0	02d6a2c1	-	Choose the players whose chat you want to hide.\nYou can choose up to 8 players.\nPress the ~B03 button to see who you've chosen.
+lobby:0x641E80	3608cfb9	-	Choose "Refuse Mail" on a Short Mail you received\nto add the sender to this Black List.\nUp to 8 players; their mail will be refused.
+lobby:0x641F20	bae44be1	-	Search all players in this area.
+lobby:0x641F50	1b318ae5	-	Search players in this area by conditions.
+lobby:0x641F90	6c70f15a	-	Search players in all lands.
+lobby:0x641FC0	c17630d8	-	Search for players in this area.\nA search by "Name" or "Capcom ID"\nlooks in all lands.
+lobby:0x642050	1aa3ab41	-	Name search needs an exact match: to find "MHG",\nyou must enter "MHG" and search.\nYou may find someone else with the same name.
+lobby:0x642100	c1deef69	-	Name search matches the start: if you enter "M",\nyou find not only "M" but also "MH" and "MHG".
+lobby:0x642190	e6faabfd	-	Search all quests accepted in this area.
+lobby:0x6421D0	acb17f00	-	Search quests accepted in this area\nby conditions.
+lobby:0x642210	1b591c4c	-	Open the speaker list and choose whose chat to hide.
+lobby:0x642250	8c19f150	-	Open the Black List of players whose mail\nyou refuse.
+lobby:0x642360	e19a69f6	-	Use when you'll be away for a while.
+lobby:0x642390	aadb8dc3	-	Use to hide that you're logged in.\nSearches won't find you, but you can't\nreceive mail either, so be careful.
+lobby:0x642420	c3503d15	n -	Free Hunt Zone
+lobby:0x642440	84dcb5b1	n -	Rookie Hangout
+lobby:0x642460	78800531	n -	Veterans' Base
+lobby:0x642478	0747487f	n -	Masters
+lobby:0x642490	2b5cf4d2	n -	Hunters' Lounge
+lobby:0x6424B8	ca18196e	-	Stat
+lobby:0x6424C0	fddef11f	-	ID
+lobby:0x6424C8	228827a3	-	Area
+lobby:0x6424D8	3155205e	-	Players
+lobby:0x6424E8	7c2ca104	-	Town
+lobby:0x6424F0	86a338c6	-	Town
+lobby:0x642508	55d015a3	-	Status
+lobby:0x642518	52a99da7	-	No.
+lobby:0x642520	52fe98c1	-	Read
+lobby:0x642528	72ffffb8	-	From
+lobby:0x642530	044c7459	-	Quest/Join
+lobby:0x642540	a9955947	-	Leader
+lobby:0x642548	5dea318b	-	Party
+lobby:0x6425B0	63eb7ba1	-	State:
+lobby:0x6425B8	c318b8d1	-	Area/Town:
+lobby:0x6425C8	e9a7831c	-	Area pop.:
+lobby:0x6426B0	e0e2c07d	-	Title:
+lobby:0x642710	62712f99	-	Search by: Away
+lobby:0x642730	44aa66ad	-	Search by: Capcom ID
+lobby:0x642750	a4af8d13	-	Search by:   Hunting Quest
+lobby:0x642770	c23d98f2	-	Search by:  Gathering Quest
+lobby:0x642790	b5703471	-	Search by:   Capture Quest
+lobby:0x6427B0	cd7b01a1	-	Search by: Urgent Quest
+lobby:0x6427D0	110e0db2	-	Search by: Event Quest
+lobby:0x6427F0	dffe3554	-	All
+lobby:0x6427F8	7ce059c7	-	Lv★～★★★
+lobby:0x642808	d2f3af36	-	Lv★★★★
+lobby:0x642818	bcee3c50	-	Lv★★★★★
+lobby:0x642830	e64f5c92	-	Lv★★★★★★
+lobby:0x642850	5231d2a7	-	Lv★★★★★★★
+lobby:0x642870	fa000a48	-	Lv★★★★★★★★
+lobby:0x642B60	55f67a22	-	: Close
+lobby:0x642B90	5e811732	-	Name/ID
+lobby:0x642BA8	fd38ac00	-	Quest List
+lobby:0x642BC8	6e2d337f	-	Write Mail
+lobby:0x642C08	06f52ac9	-	Reply
+lobby:0x642C18	09a545c1	-	Refuse
+lobby:0x642C70	99f726a0	-	Jump
+lobby:0x642C80	a9bb5749	-	Details
+lobby:0x642C90	c25f0bd3	-	Members
+lobby:0x642CA0	d9122c2d	-	Chosen
+lobby:0x6447C0	8195b54c	-	~C00Could not connect properly.
+lobby:0x6447F0	4d2b3440	-	~C00Searching...
+lobby:0x644810	225d0a20	-	~C00Return to the area?
+lobby:0x644830	ae7547b6	-	~C00Names longer than 8\nletters can't be chosen.
+lobby:0x645FA8	f1f99376	-	User ID
+lobby:0x645FC0	2b8b0b5a	-	A valid MMBB login ID
+# --- main / sub_main menus
+main:0x2C32D0	df1a992a	-	Dial-up connection
+main:0x2C3390	26ea6c7f	-	Outside line prefix
+main:0x2C33C0	6359d299	-	Delete
+main:0x2C33D0	fba5b4b7	-	Keep
+main:0x2E9F80	d42dfe7d	-	Stop the transfer?
+main:0x2EA990	93728158	-	Disconnected
+sub_main:0x537BA0	fe4fa008	-	<Points reduced: low-rank quest>
+sub_main:0x538DC0	d9d7f633	-	ID:
+sub_main:0x53A5D0	04c56cf2	-	Start the game without saving.
+sub_main:0x53A740	18d534ae	-	NETWORK OPTIONS
+sub_main:0x53A790	4a94776e	n -	To Training
+sub_main:0x53A930	17963512	-	Old MH Opening
+sub_main:0x53C640	d0df7e25	-	~B00:Train  ~B10:Details
+# --- Training School briefings (sub_main, the instructor; 3 lines, wide box)
+sub_main:0x53CFC0	30a783fa	n -	Brutal attack power and a body as tough as steel: it's\n~C05Monoblos~C00! A wyvern as mighty as I am!!\nGet your hands on ~C05Sonic Bombs~C00 and you'll stand a chance!
+sub_main:0x53D120	c103305f	n -	Your final trial is ~C05Gravios~C00! The battle is in the volcano,\nwhere your Health drains fast. Start by finding\n~C05Cool Drinks~C00, and when the fight heats up, use bombs!
+sub_main:0x53D1D0	57473e81	-	In these hunts, ~C05how you use your few items is key~C00.\nGather, combine, and slay Yian Kut-Ku without armor!\nYou can do it! ...Probably.
+sub_main:0x53D280	2c718ca7	n -	In Training School, monsters give very different carves!\nVelociprey give ~C05Throwing Knives~C00, for example! Why knives\nfrom Velociprey? ~C05If you have to ask, you've already lost~C00!
+sub_main:0x53D330	b7b68322	-	~C05The Hammer packs huge power~C00. Go for broke right away,\nor take time to prepare your items?\nJudgment is a vital quality for a hunter, too!
+sub_main:0x53D3C0	ad62bf26	-	Lured by your tasty scent, a ~C05Velocidrome~C00 has come too,\nbesides the Yian Kut-Ku! ~C05Combine Power Extract~C00 from\nMosswine, and let them have a Lance charge!
+sub_main:0x53D470	55981f61	-	With a Bowgun, it's ~C05a battle against your ammo count~C00!\nRestock ammo by combining and use bombs and other items.\nWhatever you do, don't run out of shots!!
+sub_main:0x53D510	e74b3d2a	-	The problem is ~C05how to drag it up out of the ground~C00!\nSearch the desert for Sonic Bombs, or, if you trust your\nsword alone, that works too. Go show it what you've got!!
+sub_main:0x53D880	00e1a174	-	Gypceros makes its own flash, so of course ~C05Flash Bombs\nwon't work~C00 on it! The ones in your pouch are to keep the\nVelociprey off you. Practice, and get a feel for ~C05distance~C00!
+sub_main:0x53D9E0	9b7c916d	-	Gypceros' rubbery hide makes it a pain for a Hammer.\nBut ~C05its head~C00 is ~C05easier to damage~C00!\nPound it with your strongest charged attacks!!
+sub_main:0x53DBE0	e401078b	n -	This time I'll even let the Sword wear armor. Add ~C05Monster\nBroth~C00 from insects to a Barrel-Bomb to make ~C05a stronger\nbomb~C00! Blowing yourself up hurts, so be careful!
+sub_main:0x53DC90	fb7cfc0c	-	Just hitting a flying Rathalos with a Paintball is hard.\nBut this time I've given you a ~C05Psychoserum~C00! Get ready,\nfind it fast, and finish the fight in one go!
+sub_main:0x53DD40	5e79afe0	-	I just took a walk in the Forest and Hills and saw a big\n~C05Velocidrome~C00. But of course, that won't make me cancel\ntraining. Now, show me your hunter's guts!!
+sub_main:0x53DDF0	c2523bbe	-	A Lance's ~C05charge loses its power~C00 fast when its\n~C05Sharpness drops~C00. Use a Whetstone to keep it sharp!\nThis time I've even hidden Whetstones near the camp!
+sub_main:0x53DEA0	b31f45d2	-	I've prepared a special Bowgun that can ~C05fire almost every\nkind of ammo~C00! Use all your power as a Gunner and take on\n~C05the King of Wyverns~C00! Good luck!
+sub_main:0x53DF40	4803b120	n -	Get used to ~C05Dual Swords~C00, a Sword variant, too! They can't\nguard, but they can use ~C05a big move called Demonize~C00.\nAlways keep an eye on your remaining Stamina!
+sub_main:0x53DFF0	8167066f	-	Dodge Basarios' poison attacks by reading its moves!\nThe three ~C05Herbal Medicines~C00 in your pouch show how kind I\nam. ~C05Thank me until your tears run dry~C00! ...Nuhahahaha!!
+sub_main:0x53E0A0	f74bc405	n -	Mix ~C05Ice Crystal~C00 with ~C05a certain insect~C00 to combine a\n~C05Cool Drink~C00! When you head for the lava, use it against\nthe heat so you don't waste Health!
+sub_main:0x53E210	c249116b	-	To a Gunner who keeps away and ~C05calmly reads its moves~C00,\nBasarios is nothing to fear! The enemy to watch out for\nmost is yourself. ~C05Don't let your guard down~C00!!
+sub_main:0x53E370	1a93ffac	n -	~C05Throwing Knives~C00 are handy for giving a huge wyvern\n~C05status effects~C00 like paralysis or poison! Hit it from its\nblind spot, and when it stops, land a heavy blow!
+sub_main:0x53E4D0	69807043	-	~C05Mastering the guard~C00 is the first step to becoming a\nLance master! Guarding long tail attacks takes a bit of\n~C05knack~C00. Practice until you can block them perfectly!
+sub_main:0x53E580	57fe6737	-	Just as you look through the scope to judge the wyvern...\n~C05a Bullfango charges in from the side~C00!! ~C05Grrr~C00!\nTaking out the small monsters first is one way to go!
+sub_main:0x53E630	87f0daca	-	As you know, ~C05Plesioth's attack is tremendous~C00! Facing\nit without armor is how a hunter proves their strength!!\nWhat, that's crazy? ...You think so too?
+sub_main:0x53E6E0	6c1b69e1	-	The weapon I, ~C05a man of taste~C00, chose this time is the\n~C05Rathalos Firesword~C00! Fire works on Plesioth!! If you lose\nwith this, start over from scratch! Go and nail it!
+sub_main:0x53E8F0	9a77f350	n -	~C05Crag S~C00 bursts as ~C05loud as a Sonic Bomb~C00! Everyone knows\nPlesioth hates noise. Use that, and you may be able to\ndrive it out of the water!
+sub_main:0x53E9A0	5f485acf	n -	Surprised? ~C05This time your Sword comes with armor~C00!\nAnd I chose earrings suited to an item-focused fight!\nVictory is yours!!
+sub_main:0x53EAF0	cf10d7a9	-	~C05Its natural enemy appears~C00! If its roar freezes your\nlegs, its next charge will surely send you flying. I'd say\nhang in there, but if you can't, ~C05mind where you stand~C00!
+sub_main:0x53ECF0	c97d2a3e	-	Seems some ~C05Felynes~C00 with bombs are frolicking around. Lure\nthose cute creatures in, ~C05harden your heart, and send them\ncharging at the wyvern~C00! Ugh... Don't you cry now!
+sub_main:0x53EDA0	1110b3c3	n -	When you fight somewhere cold, like a cave, you'll want a\nwarm drink! Combine ~C05Hot Pepper~C00 and a ~C05Worm~C00 to make\na ~C05Hot Drink~C00 that warms you to the core!
+sub_main:0x53F060	e1662768	-	A nimble Sword user should make use of the ~C05exploding\nrocks~C00 around! Memorize where they are and ~C05lure your foe\nwell~C00! This is the last stretch. Finish it off!
+sub_main:0x53F110	9a4c51ef	-	What, the ~C05Cool Drinks~C00 I put in your pouch are gone!?\n...Q-quiet! Find some yourself! Ugh, I ~C05drank too many\ncold ones~C00 and my stomach...
+sub_main:0x53F1C0	d5d77b56	-	Even tough Gravios can't stop a Hammer! Watch out\nfor its full-body ~C05pressing attack~C00 and the ~C05scorching\ngas~C00 it blows from its whole body!
+sub_main:0x53F260	108c8753	-	This time, a present: gear with the ~C05Anti-Heat~C00 skill!\nWith this, you can fight hard right next to the lava!\nHmph, I've gone soft...
+sub_main:0x53F2F0	46279232	n -	This time: ~C05earrings so you won't need to reload~C00.\nYou can fire nonstop, but ~C05the recoil gets bigger~C00!\nDon't get carried away. Fight with care!!
+# --- quest entry rules and settings (sub_main)
+sub_main:0x53FD20	db53b5d1	-	HR 9 or above
+sub_main:0x53FD40	47e48ebf	-	HR 13 or above
+sub_main:0x53FD60	b264287f	-	HR 17 or above
+sub_main:0x53FD80	9b53d66b	-	HR 21 or above
+sub_main:0x53FDA0	dcf3acbb	-	HR 24 or above
+sub_main:0x53FDC0	141323cb	-	HR 27 or above
+sub_main:0x53FDE0	ab239daa	-	HR 29 or above
+sub_main:0x53FE00	2594e378	-	HR 30 only
+sub_main:0x53FE20	148c7415	-	Accept & join:\nHR 4 or below
+sub_main:0x53FE40	e10cd2d5	-	Accept & join:\nHR 8 or below
+sub_main:0x53FE60	435d8b13	-	Accept & join:\nHR 12 or below
+sub_main:0x53FE80	b6dd2dd3	-	Accept & join:\nHR 16 or below
+sub_main:0x53FEA0	3afaa944	-	Accept & join:\nHR 20 or below
+sub_main:0x53FEC0	a28afa77	-	Accept & join:\nHR 23 or below
+sub_main:0x53FEE0	10aa2667	-	Accept & join:\nHR 26 or below
+sub_main:0x53FF00	e569d321	-	Accept & join:\nHR 1 to 12
+sub_main:0x53FF30	77e8332e	-	Accept & join:\nHR 13 to 20
+sub_main:0x53FF60	c3fa49f7	-	Accept & join:\nHR 21 to 30
+sub_main:0x53FF90	460029b3	-	Accept & join:\nHR 13 to 30
+sub_main:0x53FFC0	7a80a44a	-	Accept & join:\nHR 30!!
+sub_main:0x53FFE0	dae44337	-	Men-only quest
+sub_main:0x541490	827324ed	-	WINDOW SIZE
+sub_main:0x541688	986a24d9	-	SMALL
+sub_main:0x541698	46fb0e7d	-	MEDIUM
+sub_main:0x5416A8	9a4e8a77	-	LARGE
+# --- quest board labels (lobby)
+lobby:0x6402D0	60ec08b5	-	 Required HR: 17 - 20
+lobby:0x640310	77414515	-	 Required HR: 21 - 23
+lobby:0x640330	bfe2fb50	-	Quest Level ★★★★★★★
+lobby:0x640350	d8cdca2b	-	 Required HR: 24 - 26
+lobby:0x640370	e34f088d	-	Quest Level ★★★★★★★★
+lobby:0x640390	75d1a2af	-	 Required HR: 27 - 30
+# --- items (main)
+main:0x2C6010	d10a8138	n -	A mushroom that restores\na little Stamina.\n~C05(Account Item)
+main:0x2CBA80	ad27acfc	-	Presented to users of\nthe guest house Rook Room\nfor an extended period.
+main:0x2CBAE0	f9636d37	-	Presented to users of\nthe guest house Bishop Room\nfor an extended period.
+main:0x2CBB40	114baf9b	-	Presented to users of\nthe guest house VIP room\nfor an extended period.
+# --- quests (G quest files)
+quest:19:0x68	ca16a9b5	-	Swamp Trouble
+quest:38:0xAC	e0601b40	-	Requestor: Jungle Researcher\nI got lost surveying the\njungle. The rest of my team\nis still starving! Deliver\n15 Well-Done Steaks as food\nfor the rescue!
+quest:10029:0x68	fdd88d40	-	Gourmet's Dream
+quest:10044:0x68	5d03b6bb	-	Danger! Handle with Care!
+quest:20046:0xA4	967973ec	-	Requestor: Training Instructor\nGravios is a tough foe. But\ndamage it until its chest\nshell breaks off, and its\ndefense drops, so it's easier\nto beat!! Serious, for once.
+quest:20047:0xA4	967973ec	-	Requestor: Training Instructor\nGravios is a tough foe. But\ndamage it until its chest\nshell breaks off, and its\ndefense drops, so it's easier\nto beat!! Serious, for once.
+quest:20048:0xA4	967973ec	-	Requestor: Training Instructor\nGravios is a tough foe. But\ndamage it until its chest\nshell breaks off, and its\ndefense drops, so it's easier\nto beat!! Serious, for once.
+quest:20049:0xA4	967973ec	-	Requestor: Training Instructor\nGravios is a tough foe. But\ndamage it until its chest\nshell breaks off, and its\ndefense drops, so it's easier\nto beat!! Serious, for once.
+quest:20050:0xA4	967973ec	-	Requestor: Training Instructor\nGravios is a tough foe. But\ndamage it until its chest\nshell breaks off, and its\ndefense drops, so it's easier\nto beat!! Serious, for once.
+quest:60029:0x9C	14282a15	-	Requestor: Guildmaster\nHow terrible... The Black\nDragon Fatalis lurks near the\nvolcano's crater, gathering\nits power and moaning darkly.\nStop this evil omen!
+# --- monsters (G-only Felynes; neither MH1 US nor Portable names them)
+sub_main:0x5383C0	e2054993	-	Cart Felyne
+sub_main:0x5384D0	a373ca00	-	Whiskeru
+sub_main:0x5384E0	84eced05	-	Dyeru
+# --- weapon descriptions (one pointer per line; read as one text)
+main:0x2CF4B0	6adbf4c6	d	Venom Lance, third upgrade.
+main:0x2D1280	e7c81fc6	nd	Guild Rapier, 1st upgrade.
+main:0x2D12A0	956ee048	d	Its crystal shine catches the
+main:0x2D12C0	69dd7f77	d	eye. Guild-only Dual Swords.
+main:0x2D16A0	e85fd098	d	Dual Swords whose single hits
+main:0x2D16C0	80de183f	d	are boosted by the fire of
+main:0x2D16E0	d3b981c3	d	the Rath clan. Weak Sharpness.
+main:0x2D1700	94c42b0d	nd	Gladius, 1st upgrade.
+main:0x2D1720	b913e3fd	d	Improved all over to perfect
+main:0x2D1740	ae7075f3	d	it as a weapon.
+main:0x2D1B20	ca1bf4a3	d	A Great Sword for hunters
+main:0x2D1B40	57140cf3	d	taking a new step in high
+main:0x2D1B60	3794457a	d	rank. Great hidden potential.
+main:0x2D1B80	b6d907e5	d	Reinforced all over to stand
+main:0x2D1BA0	4340abfe	d	special treatment. Its true
+main:0x2D1BC0	8375172b	d	worth is only now showing.
+main:0x2D1BE0	3dbe8c2f	d	A bone Great Sword for high
+main:0x2D1C00	12938684	d	rank hunters. Still half
+main:0x2D1C20	cf080081	d	made; its power is unknown.
+main:0x2D1C40	3dae339c	d	A strong bone Great Sword.
+main:0x2D1C60	07263fae	d	A fine base, it gains many
+main:0x2D1C80	adc13ec0	d	powers with the right work.
+main:0x2D1D00	298c9e0d	d	A simple metal Great Sword.
+main:0x2D1D20	4f585413	d	Strong as is, but any smith
+main:0x2D1D40	7f4b6461	d	who sees it wants to improve it.
+main:0x2D1D60	97397101	nd	Iron Sword G, final upgrade.
+main:0x2D1D80	08851094	d	Ready for any battle. A
+main:0x2D1DA0	d4f099b6	d	flexible, timeless classic.
+main:0x2D24C0	9c998d2a	d	Hammer. Start here.
+main:0x2D24E0	4ec8d53c	d	A Hammer made stiffer for
+main:0x2D2500	d1c3cf7c	d	work to come. How you treat
+main:0x2D2520	5c673693	d	it next is what counts.
+main:0x2D25A0	57ec8861	nd	Atlas Hammer G, final form.
+main:0x2D25C0	7cc65e1a	d	Depending on the materials,
+main:0x2D25E0	700182b4	d	it can become anything.
+main:0x2D2AE0	90a34011	d	Lance. Easy to work. Popular.
+main:0x2D2B00	b7ac5b76	d	A Lance made stronger to
+main:0x2D2B20	39990940	d	stand much more work. Your
+main:0x2D2B40	b857fa82	d	skill decides what's next.
+main:0x2D2B60	c1de7b78	d	A bone Lance, but improved
+main:0x2D2B80	dd666df6	d	far beyond the old ones in
+main:0x2D2BA0	5af2e314	d	strength and more.
+main:0x2D2BC0	ae10024c	nd	Longhorn G, final upgrade.
+main:0x2D2BE0	4bbf6d2f	d	Combine materials well to
+main:0x2D2C00	94c197a9	d	work it even further.
+main:0x2D31C0	7a087f7e	d	Sword. Easy to use and strong.
+main:0x2D31E0	9c00f9cf	d	A Sword made stiffer all over
+main:0x2D3200	7eb47220	d	as a first step to complex
+main:0x2D3220	c3ff1cb0	d	work. More Attack, of course.
+main:0x2D3240	37859aca	d	No element, but steady power
+main:0x2D3260	8ee04e31	d	and easy to use. Easy to work
+main:0x2D3280	0a1c8c9c	d	too, which makes it popular.
+main:0x2D3580	cd4cd137	nd	Burn Edge, 1st upgrade.
+main:0x2D35A0	222762a1	d	A fire sword improved in
+main:0x2D35C0	a27ea255	d	element, Attack and Sharpness.
+main:0x2D35E0	9f4740dd	nd	Burn Edge, final upgrade.
+main:0x2D3600	0e44c75a	d	All the art of controlling
+main:0x2D3620	6bb831c1	d	extreme heat and pressure.
+main:0x2D3D00	68f5a388	d	A Great Sword of the gods.
+main:0x2D3D20	1827c18f	d	Heaven, earth and dragons
+main:0x2D3D40	accb6c86	d	bow to it. A hunter-king's.
+main:0x2D3E80	23bfbd62	d	A lance of death that brings
+main:0x2D3EA0	ab4a4123	d	the end to all life. Smashes
+main:0x2D3EC0	c83de486	d	elder dragons in one blow.
+main:0x2D3EE0	82a729f6	d	Demonic Dual Swords of living
+main:0x2D3F00	342cf9da	d	water. Tremors no smith can
+main:0x2D3F20	967ce4c3	d	explain wreck foes from inside.
+main:0x2D3F40	f47ceb4e	d	A legendary club handed down
+main:0x2D3F60	58adfe4b	d	by the Felynes. It knocks out
+main:0x2D3F80	c976237e	d	even mighty wyverns with ease.
+main:0x2D3FA0	8d2cee19	d	A Hammer made from the whole
+main:0x2D3FC0	c01dfb85	d	head of an old dragon-eater.
+main:0x2D3FE0	9e181cc7	d	Named for its howl at dragons.
+main:0x2D5B40	2b069c5a	d	The ultimate weapon, made
+main:0x2D5B60	81f08af0	d	to destroy everything. Its
+main:0x2D5B80	4cec24fa	d	blasts bloom like flowers.
+# --- armour descriptions
+main:0x2D6600	2b169d3d	d	resistance to many elements.
+main:0x2DB370	ea961d66	d	resistance to many elements.
+main:0x2D82D0	a0e82cca	d	Headgear made from lots of
+main:0x2D82F0	67187e1b	d	rare shrimp shells. The
+main:0x2D8310	ac851dbd	d	armory's pride and joy.
+main:0x2D9090	5c87db5f	d	Upgraded headgear shaped
+main:0x2D90B0	3600bdcf	d	like a Mosswine head.
+main:0x2D90C0	9b64a162	d	A Mosswine's appetite, maybe?
+main:0x2DA920	cee219d7	d	Earring given to the Guild's
+main:0x2DA940	7854017a	d	founder by a man in red. It
+main:0x2DA960	c9e4fee8	d	beats every element attack.
+main:0x2DC950	e3693b8b	d	Many wyverns breathe fire, so
+main:0x2DC970	aa9b329e	d	Fire Res matters. This one
+main:0x2DC990	9b23bbd9	d	has the finest Defense of all.
+main:0x2DD7F0	633ace30	d	Body armor from pink shell.
+main:0x2DD810	1511617e	d	This wyvern was only known
+main:0x2DD830	1e80ba1a	d	from legends, and doubted.
+main:0x2DD9F0	5a8e2651	d	Body armor shaped like a
+main:0x2DDA10	6a4e0f47	d	Mosswine head. Its nose too?
+main:0x2DE930	1045ee10	d	Armor made from the ancient
+main:0x2DE950	e1f41d6e	d	Wyvern Rex, thought extinct.
+main:0x2DE970	2d8ac514	d	A thing full of mysteries.
+main:0x2E1710	6512afc2	d	Thin, but strong arm guards
+main:0x2E1730	c9551c66	d	for the Guild Knights. Same
+main:0x2E1750	59f37746	d	as the Blademaster's version.
+main:0x2E2430	bc0000cb	d	Gauntlets said to have no
+main:0x2E2450	3134ffa8	d	equal on earth or in heaven.
+main:0x2E2470	797ba945	d	Truly invincible armor.
+main:0x2E5B60	35c138c6	d	Platinum waist armor with the
+main:0x2E5B80	28e17bee	d	power of king and queen. For
+main:0x2E5BA0	189bf13b	d	those who beat every wyvern.
+main:0x2E9230	f82f1c56	d	Armor blessed by everything
+main:0x2E9250	28ef1e36	d	from gods to dragons. A rain
+main:0x2E9270	42415506	d	of good luck falls on you.
+# --- quest entry rules (sub_main)
+sub_main:0x540000	cb6a764d	-	Women-only quest
+sub_main:0x5400C0	72d20e89	-	Accept & join: those\nwho slew Monoblos
+sub_main:0x5400F0	e1e4c566	-	Accept & join: those who\nslew the village Lao-Shan
+sub_main:0x540130	67855158	-	Accept & join:\nHR 17 to 30
+sub_main:0x540160	e87135fd	-	Accept & join:\ncarrying no items
+sub_main:0x540190	268a6bc6	-	Accept & join: carrying\nno Well-Done Steaks
+sub_main:0x5401E0	d4eb46a7	-	Accept & join: those\nusing a Hunter's Knife
+sub_main:0x540210	f5616e54	-	Accept & join: broke\nhunters, 100z or less
+sub_main:0x540250	d29f05f7	-	Accept & join:\nDefense ≧ 180
+sub_main:0x540280	6e6de1fe	-	Accept & join:\nDefense ≦ 75
+sub_main:0x5402B0	1d8c6c85	-	Accept & join:\nFire Res ≧ 40
+sub_main:0x5402E0	38b64393	-	Accept & join:\nFire Res ≦ 40
+sub_main:0x540310	8f2c81a1	-	Accept & join:\nWater Res ≧ 40
+sub_main:0x540340	aa16aeb7	-	Accept & join:\nWater Res ≦ 40
+sub_main:0x540370	100727d1	-	Accept & join:\nThunder Res ≧ 40
+sub_main:0x5403A0	353d08c7	-	Accept & join:\nThunder Res ≦ 40
+sub_main:0x5403D0	300e1fcb	-	Accept & join:\nDragon Res ≧ 40
+sub_main:0x540400	153430dd	-	Accept & join:\nDragon Res ≦ 40
+sub_main:0x540430	7c92f4e2	-	Accept & join: those\nwho slew Lao-Shan Lung
+sub_main:0x540460	0c5fd3db	-	Accept & join: those\nwho slew Fatalis
+sub_main:0x540490	34fe47b0	-	Top hunters only
+sub_main:0x5404B0	8eafb354	-	Light Bowgun only
+sub_main:0x5404D0	fa0480fb	-	Heavy Bowgun only
+sub_main:0x540510	29256fe6	-	Accept: rich hunters\nwith 50000z or more
+sub_main:0x540540	fbe387af	-	Accept: rich hunters\nwith 100000z or more
+sub_main:0x540580	4877aa6c	-	Accept: rich hunters\nwith 200000z or more
+sub_main:0x5405C0	fcb5bbe2	-	Accept & join:\nDefense ≦ 130
+sub_main:0x5405F0	96724b21	-	Accept & join:\nDefense ≦ 180
+sub_main:0x540620	70fe451b	-	Accept & join:\nHR 27 to 30
+# --- quick chat labels (main; the game cuts them with ‥)
+main:0x2A44B0	bdfad167	-	Sorry‥
+main:0x2A44D0	10821a3d	-	Accept‥
+main:0x2A44E0	78aa8227	-	Join‥
+main:0x2A44F0	8258a0f5	-	Deliver‥
+main:0x2A4500	c85daf6e	-	Found‥
+main:0x2A4510	db8daf48	-	Fought‥
+main:0x2A4520	9c3c0476	-	Ran‥
+main:0x2A4530	6547c145	-	Cover me‥
+main:0x2A4540	215cedb0	-	Take it‥
+main:0x2B1750	fd745fb9	-	X POSITION
+main:0x2B1770	beebc977	-	Y POSITION
+main:0x2B1788	f0852dfe	-	: EXIT
+main:0x2C0C30	0ba98b86	-	Error: %d
+# --- NETWORK MODE start-up messages (line-split; each line reads as a phrase)
+main:0x2C1290	21e09226	m	Game data is auto-saved to MEMORY CARD slot %t
+main:0x2C12C0	e3d95dde	m	and the NET file to MEMORY CARD slot %s.
+main:0x2C12F0	d0714033	m	Keep the memory card (8MB) (for
+main:0x2C1590	e8deb056	m	Until you leave NETWORK MODE,
+main:0x2C16D0	34e5d001	m	Press the ○ button
+main:0x2C1750	882d310b	m	Insert a memory card with a NET file:
+main:0x2C1770	7121b7d8	m	Please insert it.
+main:0x2C1780	f6777ddb	m	○ button = Continue without Saving
+main:0x2C17C0	1d19b1c3	m	Connecting by broadband.
+main:0x2C17E0	f436b829	m	A broadband connection is not possible now.
+main:0x2C1810	ffdfbade	m	To connect by broadband,
+main:0x2C1830	7c50b6fb	m	reset the console, or turn it off
+main:0x2C1860	13ecc11b	m	and on again.
+main:0x2C1880	5d902a01	m	Starting a network connection by broadband.
+main:0x2C18C0	2a4a0ec8	m	To connect by broadband,
+main:0x2C18F0	7fc133ed	m	on the <Monster Hunter G> TOP screen,
+main:0x2C1950	d9ea4344	m	on the <Monster Hunter G> MENU screen,
+main:0x2C19B0	e4726158	m	you must agree to the terms.
+main:0x2C19E0	fd246fcd	m	You'll talk with strangers. Don't do
+main:0x2C1A10	d16186e6	m	anything that would upset other users.
+main:0x2C1A50	2a1edbd0	m	Mind your manners
+main:0x2C1A68	b3dccb0d	m	Next
+main:0x2C1A80	71902c41	m	"Multi Matching BB Terms of Use"  
+main:0x2C1AB0	61aecb88	m	"Capcom Online Game Terms of Use"  
+main:0x2C1AE0	79b90bd0	m	Delete the login ID?
+main:0x2C1B10	9e5f1e7e	m	If a password is also stored,
+main:0x2C1B40	bd6efaff	m	it will be deleted too.
+main:0x2C1B58	a6af855b	m	Login ID
+main:0x2C1B68	abb9dbe9	m	 Password
+main:0x2C1B80	01121ac9	m	Login ID deleted.
+main:0x2C1BA0	c4639434	m	"DNAS" authenticating.
+main:0x2C1C10	7f22a6bb	m	Connecting the same way as last time.
+main:0x2C1C60	1b4cbdd7	m	and the password will be deleted.
+main:0x2C1C80	c51462d7	m	Network
+main:0x2C1C90	4c613ce3	m	Initializing network hardware.
+main:0x2C1E90	fda6b182	m	Online play costs 13 yen per minute
+main:0x2C1EB0	76bb70c7	m	in battle, 10 yen per 3 minutes otherwise.
+main:0x2C1EE0	48ed568f	m	Phone charges apply.
+main:0x2C1F00	a531105e	m	Don't stay connected too long.
+main:0x2C1F90	a1489eb3	m	This title's "DNAS" service has not started.
+main:0x2C1FC0	12b936cd	m	The "DNAS" service for this title has ended.
+main:0x2C2000	b135eae7	m	All "DNAS" services have ended.
+main:0x2C2060	6b408b7f	m	The server is not working properly.
+main:0x2C2090	1b695266	m	A "DNAS" error occurred.
+main:0x2C20B0	06326551	m	"DNAS" server error.
+main:0x2C20D0	1e3a72ea	m	Download error.
+main:0x2C20F0	37fbea95	m	Hardware information error.
+main:0x2C2110	a9ac2b02	m	Network connection stopped.
+main:0x2C2140	3b5dcf69	m	There is an error in the proxy settings.
+main:0x2C2190	34db2f1e	m	Could not connect to the "DNAS" server.
+main:0x2C2260	f3f9295f	m	Communication error.
+main:0x2C2280	681a785d	m	Unique ID error.
+main:0x2C22A0	5d95aa34	m	"DNAS" authentication cancelled.
+main:0x2C2350	78e09c53	m	The game version was updated to           .
+main:0x2C2390	898540ff	m	To play "NETWORK MODE",
+main:0x2C23B0	693b5287	m	save the game data of version           
+main:0x2C23E0	2939472d	m	to a memory card (8MB) (for PlayStation(R)2).
+main:0x2C2410	4bfa0d6e	m	Save to MEMORY CARD slot %s? 
+main:0x2C2440	8408ce42	m	Checking the game version.
+main:0x2C25A8	1bc19596	m	without game data.
+main:0x2C2B20	c162d035	m	"           " and "DNAS" are
+main:0x2C2B40	1bf34a88	m	trademarks of Sony Computer Entertainment Inc.
+main:0x2C2C20	d40cd2f8	m	The game data in MEMORY CARD slot %s
+main:0x2C2D90	c41f3906	m	Stop loading the NET file?
+main:0x2C2EA0	8c649ee9	m	The game data in MEMORY CARD slot %s
+main:0x2C2ED0	6d827928	m	is not the game data in use,
+main:0x2C2F10	4a9d55b8	m	Select where the login ID
+main:0x2C2F30	3439f65c	m	you want to delete is saved.
+main:0x2C2F60	921174c3	m	The loaded NET file
+main:0x2C2F80	c4c3c5e1	m	has no login ID recorded.
+main:0x2C2FB0	b6f438d9	m	Login ID deletion finished.
+main:0x2C2FE0	e53e9056	m	the NET file will be autoloaded.
+main:0x2C3010	ac4e2b5f	m	The NET file could not be
+main:0x2C3030	b2d305a4	m	autoloaded.
+main:0x2C3050	f79ebafa	m	The last connection settings
+main:0x2C3070	f7549727	m	were not found.
+main:0x2C3090	2f6d785c	m	To connect by broadband, you must agree to
+main:0x2C30B0	beec9dcf	m	the "Multi Matching BB Agreement" and
+main:0x2C30E0	eb834256	m	the "Capcom Online Game Terms of Use"
+main:0x2C3100	f0f8205f	m	shown on the screens above.
+main:0x2C3130	539c1721	m	Playing with modified data breaks the terms.
+main:0x2C3160	b741b339	m	You will be banned from connecting, so don't.
+main:0x2C3190	e58e6b84	m	The memory card (8MB) used at the start
+main:0x2C31C0	e304b87d	m	is not inserted, so you cannot save.
+main:0x2C31F0	647ea754	m	Please put it back in MEMORY CARD slot %s.
+main:0x2C3220	85bd6874	m	MEMORY CARD slot %s: no memory card (8MB)
+main:0x2C3250	1994023d	m	Insert a memory card with a NET file
+main:0x2C3280	25be9df8	m	into MEMORY CARD slot %s.
+main:0x2C3510	a297968a	m	Check that supported network hardware is connected
+main:0x2C3540	22f3a9d7	m	to the console, and that your ISP settings are right.
+main:0x2C3580	01182466	m	If this error keeps appearing,
+main:0x2C35B0	e6e18bd4	m	turn the "PlayStation 2" console off once
+main:0x2C35E0	3bdf82d9	m	and try again.
+main:0x2C3600	d0077456	m	The telephone server does not answer.
+main:0x2C3630	a052cb5d	m	is connected properly, and
+main:0x2C3650	0f82a2a9	m	try again later.
+main:0x2C3680	a7ca09f2	m	Check that the outside line prefix
+main:0x2C36A0	55b3a647	m	is set correctly.
+main:0x2C36C0	6b656bde	m	If the settings are right but
+main:0x2C36E0	3e009217	m	the problem continues,
+main:0x2C3700	9a8ca9dd	m	please contact the
+main:0x2C3730	59d49821	m	Capcom user support center.
+main:0x2C3750	60c2f027	m	Check that the phone line is connected,
+main:0x2C3780	debd2e54	m	Check that the Ethernet cable
+main:0x2C37B0	f4aadade	m	is connected to the network hardware.
+main:0x2C37D8	18770fc4	m	Getting an IP
+main:0x2C37F0	26e9ce27	m	address by DHCP failed.
+main:0x2C3820	03235e65	m	Check the DHCP settings
+main:0x2C3840	ae33f8ce	m	of your ISP settings.
+main:0x2C3860	b79f60f1	m	PPPoE authentication failed.
+main:0x2C3880	5d357cc9	m	Check the PPPoE user ID and password
+main:0x2C38B0	95ec4a18	m	in Your Network Configuration
+main:0x2C38D0	78d29aa8	m	file.
+main:0x2C3920	83194a08	m	The server may be busy.
+main:0x2C3950	55ddb29c	m	Please select another server.
+main:0x2C3980	866cb138	m	It may be a communication error.
+main:0x2C39A0	3f09ac7d	m	Please connect again
+main:0x2C39C0	fa1618be	m	from the main menu.
+main:0x2C3A50	df7093cd	m	Connection stopped.
+main:0x2C3B20	2d6655fc	m	Do not turn off the console or remove
+main:0x2C3B50	1141d8b2	m	the memory card (8MB) (for PlayStation(R)2).
+main:0x2C3B70	52a817bd	m	~B00 button = Continue without Saving
+main:0x2C3B90	903aba67	m	Press the ~B00 button
+main:0x2C3BB0	602072f9	m	~B00 button: Next
+main:0x2C3BD0	965eeb15	m	  button = Continue without Saving
+main:0x2C3BF0	54cc46cf	m	  button: press
+main:0x2C3C10	de9a19da	-	  button: Next
+main:0x2C3CA0	6f80f3a0	-	Please wait
+# --- memory card and MH1 -> G character transfer (main)
+main:0x2E93D8	d5c02004	m	CAPCOM
+main:0x2E9810	5365a0f7	m	Checking... Do not turn off the console or
+main:0x2E9840	c4d89df3	m	remove the memory card (8MB) (for PlayStation(R)2).
+main:0x2E98E0	8e783bc5	m	Formatting... Do not turn off the console or
+main:0x2E9990	fd1787ae	m	Saving... Do not turn off the console or
+main:0x2E9C10	b9cdd414	m	Loading... Do not turn off the console or
+main:0x2E9CA0	e58e6b84	m	The memory card (8MB) used at the start
+main:0x2E9CD0	e304b87d	m	is not inserted, so you cannot save.
+main:0x2E9D00	5d83d07c	m	Please put it back in MEMORY CARD slot ~A00.
+main:0x2E9F00	9d454d36	m	Continue the game without saving?
+main:0x2E9FA0	9d299bce	m	On the memory card (8MB) in MEMORY CARD slot 1 or 2,
+main:0x2E9FE0	413a6eb0	m	"Monster Hunter" game data
+main:0x2EA010	1b9e4a82	m	was found.
+main:0x2EA030	b75b3eff	m	You can convert your character to
+main:0x2EA060	1a24a194	m	"Monster Hunter G" data and keep playing with it.
+main:0x2EA0A0	1214ca6b	m	- Some values of weapons, armor, items and so on
+main:0x2EA0D0	96edc43c	m	  are adjusted for "Monster Hunter G".
+main:0x2EA100	b3699041	m	- Cleared quests carry over up to Quest Level 1 offline
+main:0x2EA140	0fc2c619	m	  and up to Quest Level 3 online.
+main:0x2EA180	084d0013	m	- Hunter Rank carries over up to HR 13.
+main:0x2EA1C0	8a909f29	m	- Hunter Points start at each rank's first value.
+main:0x2EA200	04eec73f	m	- Items of Rarity 1 to 3, "Special Mushrooms" and "Goldenfish"
+main:0x2EA240	27be3d2e	m	  do not carry over.
+main:0x2EA260	6454606b	m	  *Items that do not carry over become money (zenny)
+main:0x2EA2A0	7dc7b1b6	m	   worth twice their shop price.
+main:0x2EA2D0	60c36166	m	- The combination list does not carry over.
+main:0x2EA300	aa5d3757	m	- Invalid characters do not carry over.
+main:0x2EA330	a36c2413	m	- Part of the gallery does not carry over.
+main:0x2EA390	dff04c39	m	No "Monster Hunter" game data.
+main:0x2EA3D0	14cc9bd7	m	"Monster Hunter"
+main:0x2EA3F0	f324fdbe	m	No "Monster Hunter" character.
+main:0x2EA430	5e3b2fea	m	Load the game data that holds
+main:0x2EA460	4dcbaa4f	m	the character to transfer.
+main:0x2EA480	d86ebd75	m	Save the transferred character to
+main:0x2EA4B0	3cc47f60	m	"Monster Hunter G" game data.
+main:0x2EA4E0	0bb35df2	m	*The transferred character can only
+main:0x2EA500	1155de5e	m	be saved to the memory card (8MB) that holds
+main:0x2EA530	41eb4711	m	the original "Monster Hunter"
+main:0x2EA560	033182f8	m	game data.
+main:0x2EA580	0f2b4645	m	The memory card (8MB) used for character select
+main:0x2EA5B0	d9f46051	m	Use the transferred character by choosing
+main:0x2EA5E0	c1291b61	m	"CONTINUE" on the game menu screen.
+main:0x2EA610	ca2fb65f	m	Until the transfer is done, in MEMORY CARD slot ~A00,
+main:0x2EA650	6c9c07dd	m	game data loaded.
+main:0x2EF0E8	395cc1ef	-	Close
+# --- fallbacks for lines whose US English is only right in one message slot
+main:0x2E9C40	700672d3	m	In MEMORY CARD slot ~A00, the memory card (8MB):
+main:0x2E9C70	2f03fadb	m	On the memory card (8MB) in MEMORY CARD slot ~A00,
+main:0x2E9590	5f690e54	m	On the memory card (8MB) in MEMORY CARD slot ~A00,
+main:0x2E9520	49d9219b	m	From MEMORY CARD slot ~A00,
+main:0x2E9540	18a64198	m	from the memory card (8MB),
+main:0x2E9B80	61062f48	m	Insert the memory card (8MB) with the
+main:0x2E9BB0	735303f3	m	game data your character was saved in.
+main:0x2E95C0	1b6ef472	m	The game data may be damaged.
+main:0x2E95F0	9458a2b4	m	It could not be loaded.
+main:0x2E99E0	c9a43c33	m	It could not be saved.
+main:0x2E9A00	399ceec8	m	Select where to load from.
+main:0x2E9AC0	0da8f28e	m	Is this OK?
+main:0x2E99C0	3eb6511a	m	Saved.
+main:0x2E9E20	fe2a7fea	m	Character selected.
+main:0x2E9B30	d20ee346	m	never remove the memory card (8MB).
+main:0x2EA360	fede363a	m	Transfer the character?
+# --- elder tutorial pages G edited (game)
+game:0x6DB9E0	259389ca	p	First, learn how to use your weapon, and hunt\nthe herbivores, ~C05Apceros~C00!\nThey ~C05run away~C00 when they sense danger.\nUse the L1 button to keep them in sight.\n~C06L1 button: Turn camera to the front\nLeft analog stick + ~B01 button: Roll\n
+game:0x6DEBC0	3a465acf	p	~C05When you're close to a Mining Point,\nthe × mark next to the item icon\nwill disappear~C00, meaning you can use\nyour Pickaxe. When the × mark is gone,\n~C06~B03 button: Use item~C00\nlets you swing your Pickaxe.\n
+# --- Multi Matching BB login and NET file screens (lobby)
+lobby:0x637EB0	7fa5ae19	-	 You can record your Multi Matching BB login ID\n   and password in your NET file.\n\n If you do, they will be entered automatically\n   when you connect to the network.\n\n       Record the login ID and password\n       Record the login ID only\n       Do not record\n\n   If you record your login ID and password on a\n  memory card (8MB) (for PlayStation(R)2),\n   please take care of it.\n
+lobby:0x638050	00d55ee4	-	\n\n               Your NET file shows\n          that you have registered\n               before.\n\n                Register?\n\n                    Yes\n                    No\n
+lobby:0x638110	494b8a54	-	\n          Delete the Multi Matching BB\n          login ID and password\n          saved in your NET file?\n\n\n  If you delete them, they will not be entered\n  automatically when you connect. Be careful.\n\n       Delete the login ID and password\n       Do not delete\n
+lobby:0x638240	61cce1c2	-	\n\n     Checking the memory card...\n\n\n    Do not turn off the console or remove\n          the memory card.\n
+lobby:0x6382C0	f318ba05	-	\n\n     Saving to the memory card...\n\n\n    Do not turn off the console or remove\n          the memory card.\n
+lobby:0x638340	60178f3c	-	\n\n  Deleting the Multi Matching BB\n  login ID and password from the\n  memory card (8MB) (for PlayStation(R)2)...\n\n\n    Do not turn off the console or remove\n          the memory card.\n
+lobby:0x638500	e4e1a4c4	-	Connection failed.
+lobby:0x638520	dcf549ce	-	The server is very busy right now. Sorry for the trouble, but please try again later.
+lobby:0x6385A0	aae75db1	-	There was no answer from the server.
+lobby:0x6385D0	7834be6b	-	Connection failed.<br>Please try again in about 5 minutes.
+lobby:0x638630	5e690b4d	-	You have exceeded the limit of your "Game Bargain Plan Limit" or "Overuse Warning Plan".
+lobby:0x638690	319386c3	-	The lobby server information is not valid.
+lobby:0x638700	3c60b359	-	Register these details?
+lobby:0x638720	8178fd6e	-	 Some fields are empty
+lobby:0x638760	7f69be83	-	 A communication error occurred.\nPlease connect again.\n
+lobby:0x6387A0	0f997fcc	-	Could not connect to the server.\n       Reconnect?\n
+lobby:0x63AE80	17b02bbb	-	<br><br>Error code:
+lobby:0x642CB0	4183093f	-	Speakers
+lobby:0x642CD0	41730e96	-	Off
+lobby:0x642DA0	fafb12b0	-	\n\n\n\n~C00Log in with the ID above.\n~C02If another name is registered,\nit is overwritten with the character name.\n~C00Is this OK?
+lobby:0x642E30	29e5a430	-	~C00Get a new Capcom ID?\nIs this OK?
+lobby:0x642FB0	ced1282d	-	~C00Moving to area.
+lobby:0x642FD0	e91886da	-	~C00Could not move to the area.\nDisconnecting from the network.
+lobby:0x6430C0	4aacb5c7	-	~C00Could not return to the area.
+lobby:0x6432A0	d496d486	-	~C00Searching for players...
+lobby:0x643310	6a253b9a	-	~C06Enter a 6-digit Capcom ID.
+lobby:0x643340	b5caeceb	-	~C06Enter a name of at least 1 letter.
+lobby:0x643410	ed6247fd	-	~C00Added to your Friend List.
+lobby:0x643440	7bcaa3f6	-	~C00Friend List entry overwritten.
+lobby:0x643560	deb1c601	-	~C00Could not save to the memory card.
+lobby:0x6437C0	977859b8	-	~C00Mail sent.
+lobby:0x643860	2c4cba5c	-	~C00The player with that ID\nis not online.
+lobby:0x6438A0	2858556c	-	~C00Send this Short Mail?\nIs this OK?
+lobby:0x643900	c4994c55	-	~C00Invalid ID.
+lobby:0x643920	e31b95ca	-	~C00Sending mail...
+lobby:0x643950	78e6b26e	-	~C00You can't send mail to yourself.
+lobby:0x643E60	eed64cd6	-	~C00You joined the quest.\nPress the ~B03 button at the exit\nto get ready to depart.
+# --- network settings screens (yn)
+yn:0xA10938	1909182c	-	Not usable
+yn:0xA10948	eb99812f	-	Hardware
+yn:0xA10958	726219fe	-	Hardware details
+yn:0xA10978	91692fcd	-	Auto
+yn:0xA10980	2be074ab	-	Host name
+yn:0xA109D0	fd31ee64	-	Primary DNS
+yn:0xA109F0	3374e3f2	-	Secondary DNS
+yn:0xA10A08	9709a83b	-	L1: change
+yn:0xA10A20	fdf8d663	-	* Edit network settings
+yn:0xA10A40	2e60f865	-	* Proxy settings
+yn:0xA10BE0	b4c51fcd	m	There is no network hardware for a broadband
+yn:0xA10C10	4cbc22d0	m	connection, or no ISP settings.
+yn:0xA10C40	8db21ff8	m	Check your network hardware and
+yn:0xA10C70	cc5f6516	m	ISP settings.
+yn:0xA10C90	60a69628	m	No memory card (8MB) is inserted.
+yn:0xA10CC0	3f0f7e50	m	Please insert a memory card (8MB).
+yn:0xA10CF0	58e59fb2	m	The memory card (8MB) in use was removed.
+yn:0xA10D20	eeb26433	m	Returning to the network settings menu.
+yn:0xA10DC0	d35bb56f	m	Finishing the proxy settings.
+yn:0xA10DE0	393cc088	m	Register these settings?
+yn:0xA10E00	46a01afe	-	Details
+yn:0xA10E10	aa1502ae	m	Quit?
+yn:0xA10E30	eb992340	m	If a memory card (8MB) is inserted,
+yn:0xA10E60	1dabd831	m	do not remove it while quitting.
+yn:0xA10EA0	d44ee8f9	m	You cannot connect with this combination
+yn:0xA10ED0	6d97fa59	m	of hardware and ISP settings.
+yn:0xA10EF0	ab78b9cb	m	On the memory card (8MB) in MEMORY CARD slot %d,
+yn:0xA10F20	68e9264b	m	"Your Network Configuration file" was made
+yn:0xA10F60	40feb19e	m	on another "PlayStation 2" console,
+yn:0xA10F90	96c51b07	m	so it cannot be used.
+yn:0xA10FB0	52191b65	-	AOL settings cannot be edited or deleted.
+yn:0xA10FE0	411e7f6b	m	Could not connect.
+yn:0xA11000	593213ad	m	Your network settings
+yn:0xA11030	2c43c5a2	m	may have been changed.
+yn:0xA11050	48223853	m	Please check the settings again.
+yn:0xA11080	476839a6	-	Registration complete.
+yn:0xA11110	2e68c811	m	From MEMORY CARD slot %d,
+yn:0xA11130	b1f5e562	m	"Your Network Configuration file"
+yn:0xA11160	00cbc345	m	was loaded.
+yn:0xA11180	fa9bac81	m	Press the ~B00 button.
+yn:0xA11250	d5689563	m	Returning to the network.
+yn:0xA11340	42c36886	-	Select the settings to connect to the network.
+yn:0xA11380	8c0b6e9a	m	Until the setup is done, do not remove
+yn:0xA113B0	27034510	m	the memory card (8MB).
+yn:0xA113D0	6b4554f4	m	If your ISP has no proxy settings,
+yn:0xA11400	1e7a9f74	m	select "Not needed".
+yn:0xA11430	9110cac3	-	Enter the proxy server address (HTTP).
+yn:0xA11470	198fb1d7	-	Enter the port number.
+# --- quest board labels (lobby)
+# --- items (main)
+# --- quests (G quest files)
+# --- monsters (G-only Felynes; neither MH1 US nor Portable names them)
+# --- leftover developer messages
+lobby:0x63E920	b6a285d4	-	No talk data!!!!!
+sub_main:0x52C3E0	ae684e89	-	More than 15 enemies
+sub_main:0x52C400	2c921b6b	-	Press START to continue

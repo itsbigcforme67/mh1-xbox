@@ -36,6 +36,7 @@ import re
 import struct
 import sys
 import time
+import zlib
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 ROOT = os.path.dirname(HERE)
@@ -2845,6 +2846,11 @@ def main():
     for kind, k in man_drop:
         if kind == "g":
             en_g.pop(k, None)
+    own_g, own_fb, own_talk, own_st, own_repl = run_own(g, Gq, en_g, fr_g, gk_slot)
+    en_g.update(own_g)
+    log("G: our own English (text/mhg_en_own.tsv): %d strings %s" % (len(own_g), dict(own_st)))
+    if own_repl:
+        log("G: own lines Freedom replaced: %s" % " ".join(own_repl))
     log("G: same Japanese text elsewhere: %d more G strings" % len(same_g))
     log("G: rules: %d more G strings %s; %d ambiguous" % (len(rule_g), dict(gstat_rules), len(amb_g)))
     log("G: %d G strings with English; %s; %.0fs" % (len(en_g), dict(gstat), time.time() - t0))
@@ -2856,14 +2862,121 @@ def main():
     talk_g = {gk for gk in en_g if gk[0] not in ("quest", "slot") and TALK_TABLES.match(g_owner(gk) or "")}
     log("talk window layout: %d MH1 lines, %d G lines" % (len(talk_jp), len(talk_g)))
     write_table(os.path.join(args.out, "en_mhg.txt"), {(("main",) + k[1:]) if k[0] == "sub_main" else k:
-                                                      (talk_layout(v) if k in talk_g else v)
-                                                      for k, v in merged(en_g, gk_slot, slot_g).items()}, hdr)
+                                                      (talk_layout(own_wrap(v)) if k in own_talk else
+                                                       talk_layout(v) if k in talk_g else v)
+                                                      for k, v in merged(en_g, gk_slot, {**slot_g, **own_fb}).items()}, hdr)
 
-    summary = dict(jp_strings=len(S), jp_en=len(en_jp), g_strings=len(GS), g_en=len(en_g), gstat=gstat, drop=drop)
+    summary = dict(jp_strings=len(S), jp_en=len(en_jp), g_strings=len(GS), g_en=len(en_g), g_own=len(own_g), gstat=gstat, drop=drop)
     if args.report or args.ids:
         write_report(args, jp, us, g, S, GS, cells, owner, omu, rowsu, omg, rowsg, en_jp, en_g, gmap, gstat, drop,
-                     Jq, Uq, Gq, qm, gqmatch, funcs, objs, len(same_g), gstat_rules, amb_g, set(rule_g), cache)
+                     Jq, Uq, Gq, qm, gqmatch, funcs, objs, len(same_g), gstat_rules, amb_g, set(rule_g), cache,
+                     own=(set(own_g), own_repl))
     return summary
+
+
+# ---------------------------------------------------------------- our own English for G (text/mhg_en_own.tsv)
+OWN = os.path.join(ROOT, "text", "mhg_en_own.tsv")
+OWN_TOKEN = re.compile(rb"~[A-Z][0-9]{2}")
+
+
+def own_stray_tilde(b):
+    """a ~ byte outside the ~Xnn codes and outside two-byte characters (whose second byte may be 0x7E, as in ×)"""
+    i = 0
+    while i < len(b):
+        if OWN_TOKEN.match(b, i):
+            i += 4
+        elif _sjis_at(b, i):
+            i += 2
+        elif b[i:i + 1] == b"~":
+            return True
+        else:
+            i += 1
+    return False
+
+
+def own_crc(b):
+    return "%08x" % (zlib.crc32(b) & 0xFFFFFFFF)
+
+
+def own_lines(path=OWN):
+    """our own English for G strings no official release has: `ID<TAB>CRC<TAB>FLAGS<TAB>ENGLISH` per line ('#' comment
+    lines and blank lines skipped). ID as in docs/survey/mhg_text_untranslated.txt (space:0xADDR, quest:N:0xOFF), CRC the
+    crc32 of the Japanese bytes the line was written for (never the Japanese itself), FLAGS '-' or letters (n: uses a
+    G-only name Freedom will decide, provisional; t: talk window line, word-wrapped to its rows by the tool; p: tutorial
+    page, checked at the US pages' 40 columns by tools/text_own.py; d: one line of a description, 30 columns; m: one line of a line-split message, 50 columns), ENGLISH in
+    the table's escaping (\n line feed, \\ backslash). Returns [(lineno, key, crc, flags, bytes)]."""
+    out = []
+    if not os.path.exists(path):
+        return out
+    for no, line in enumerate(open(path, encoding="utf-8"), 1):
+        line = line.rstrip("\n")
+        if not line.strip() or line.lstrip().startswith("#"):
+            continue
+        f = line.split("\t")
+        if len(f) != 4:
+            log("own: %s:%d: needs 4 tab-separated fields" % (path, no))
+            continue
+        i, crc, flags, en = f
+        k = i.split(":")
+        key = ("quest", int(k[1]), int(k[2], 16)) if k[0] == "quest" else (k[0], int(k[1], 16))
+        en = en.replace("\\\\", "\0").replace("\\n", "\n").replace("\0", "\\").encode("cp932")
+        if not en.strip():
+            log("own: %s:%d: empty English, skipped (an empty table value keeps the Japanese)" % (path, no))
+            continue
+        out.append((no, key, crc.lower(), "" if flags == "-" else flags, en))
+    return out
+
+
+def own_wrap(xb, width=22):
+    """word-wrap each line of a talk text to the talk window's rows (talk_layout then pads the rows)"""
+    rows = []
+    for para in xb.split(b"\n"):
+        cur = b""
+        for w in para.split(b" "):
+            if cur and len(cur) + 1 + len(w) > width:
+                rows.append(cur)
+                cur = w
+            else:
+                cur = cur + b" " + w if cur else w
+        rows.append(cur)
+    return b"\n".join(rows)
+
+
+def run_own(g, Gq, en_g, fr_g, slot_only=(), path=OWN):
+    """our own English for G strings still without English after the official sources (MH1 US, Freedom): official
+    English always wins. A string whose official English is only right in one message slot (slot_only: a line of a
+    re-flowed US message) takes our line as its fallback for the other messages that use it; the slot keeps the US
+    line. Returns ({key: bytes} added, {key: bytes} slot fallbacks, set of talk-flagged keys, stats Counter,
+    [ids Freedom replaced])"""
+    add, fallback, talk, st, replaced = {}, {}, set(), collections.Counter(), []
+    for no, key, crc, flags, en in own_lines(path):
+        jb = cstr_at(Gq[key[1]], key[2]) if key[0] == "quest" and key[1] in Gq else (
+            g.cstr(*key) if key[0] in g.mod else None)
+        if not jb or own_crc(jb) != crc:
+            st["stale (the Japanese at that id is not what the line was written for)"] += 1
+            log("own: line %d %s: stale, skipped" % (no, key_id(key)))
+            continue
+        if (conv_sig(jb) != conv_sig(en) or sorted(OWN_TOKEN.findall(jb)) != sorted(OWN_TOKEN.findall(en))
+                or own_stray_tilde(en)):
+            st["printf conversions or ~ codes differ"] += 1
+            log("own: line %d %s: printf conversions or ~ codes differ from the Japanese, skipped" % (no, key_id(key)))
+            continue
+        if key in fr_g:
+            replaced.append(key_id(key))
+            st["replaced by Freedom"] += 1
+            continue
+        if key in slot_only:
+            fallback[key] = en
+            st["fallback beside a US message slot"] += 1
+            continue
+        if key in en_g:
+            st["official English already"] += 1
+            continue
+        add[key] = en
+        if "t" in flags:
+            talk.add(key)
+        st["used" + (" (provisional G-only name)" if "n" in flags else "")] += 1
+    return add, fallback, talk, st, replaced
 
 
 FREEDOM_IDS = ("ULUS-10084",)        # Monster Hunter Freedom, US UMD (the European ULES-00318 is untested)
@@ -3053,8 +3166,10 @@ def _sjis_at(b, k):
 
 
 def write_report(args, jp, us, g, S, GS, cells, owner, omu, rowsu, omg, rowsg, en_jp, en_g, gmap, gstat, drop,
-                 Jq, Uq, Gq, qm, gqmatch, funcs, objs, n_same=0, gstat_rules=None, amb_g=(), rule_keys=(), cache=None):
+                 Jq, Uq, Gq, qm, gqmatch, funcs, objs, n_same=0, gstat_rules=None, amb_g=(), rule_keys=(), cache=None,
+                 own=(set(), [])):
     gtwin, g_area = g_area_fn(g, gmap, owner)
+    own_keys, own_repl = own
 
     # all G strings: scanned ones plus quest fields
     gall = {}
@@ -3068,7 +3183,9 @@ def write_report(args, jp, us, g, S, GS, cells, owner, omu, rowsu, omg, rowsg, e
     notlist, perg = [], []
     for gk in sorted(gall, key=lambda k: (str(k[0]),) + tuple(k[1:])):
         area = g_area(gk)
-        if gk in en_g:
+        if gk in own_keys:
+            st = "ours"
+        elif gk in en_g:
             st = "english"
         elif gk in gtwin:
             jk, same = gtwin[gk]
@@ -3109,7 +3226,7 @@ def write_report(args, jp, us, g, S, GS, cells, owner, omu, rowsu, omg, rowsg, e
                                                                  " | ".join(str(tot[x]) for x in cols)))
         return "\n".join(lines), tot
 
-    gtab, gtot = table(rows, ["twin without US English", "edited in G", "G only"])
+    gtab, gtot = table(rows, ["ours", "twin without US English", "edited in G", "G only"])
     # ---- per category, with the new rules and the Portable estimate
     mhp = cached(cache and cache + "_mhp2.pkl", lambda: mhp_texts(args.mhp)) if getattr(args, "mhp", None) else {}
     amb = dict(amb_g)
@@ -3129,23 +3246,29 @@ def write_report(args, jp, us, g, S, GS, cells, owner, omu, rowsu, omg, rowsg, e
             if gk in rule_keys:
                 crow[c]["rule"] += 1
             continue
+        if st == "ours":
+            crow[c]["own"] += 1
+            continue
         crow[c]["left"] += 1
         if gk in amb:
             crow[c]["amb"] += 1
         if gk in in_mhp:
             crow[c]["mhp"] += 1
-    ctab = ["| category | G strings | official English | of which by the text rules | left | left, ambiguous for a rule | "
-            "left, same Japanese in Portable | left, not in Portable |", "|---|---:|---:|---:|---:|---:|---:|---:|"]
+    ctab = ["| category | G strings | official English | of which by the text rules | ours (own translation) | left | "
+            "left, ambiguous for a rule | left, same Japanese in Portable | left, not in Portable |",
+            "|---|---:|---:|---:|---:|---:|---:|---:|---:|"]
     ctot = collections.Counter()
     for c in G_CATEGORIES + ["keyboard kana tables (not text)", "other"]:
         r = crow.get(c)
         if not r:
             continue
         ctot.update(r)
-        ctab.append("| %s | %d | %d (%d%%) | %d | %d | %d | %d | %d |" % (c, r["n"], r["en"], 100 * r["en"] // max(r["n"], 1), r["rule"],
-                                                                     r["left"], r["amb"], r["mhp"], r["left"] - r["mhp"]))
-    ctab.append("| **total** | **%d** | **%d (%d%%)** | %d | %d | %d | %d | %d |" % (ctot["n"], ctot["en"], 100 * ctot["en"] // max(ctot["n"], 1),
-                                                                         ctot["rule"], ctot["left"], ctot["amb"], ctot["mhp"], ctot["left"] - ctot["mhp"]))
+        ctab.append("| %s | %d | %d (%d%%) | %d | %d | %d | %d | %d | %d |" % (
+            c, r["n"], r["en"], 100 * r["en"] // max(r["n"], 1), r["rule"], r["own"], r["left"], r["amb"], r["mhp"],
+            r["left"] - r["mhp"]))
+    ctab.append("| **total** | **%d** | **%d (%d%%)** | %d | %d | %d | %d | %d | %d |" % (
+        ctot["n"], ctot["en"], 100 * ctot["en"] // max(ctot["n"], 1), ctot["rule"], ctot["own"], ctot["left"], ctot["amb"],
+        ctot["mhp"], ctot["left"] - ctot["mhp"]))
     amb_why = collections.Counter(r for _k, r in amb_g)
     jtab, jtot = table(jrows, ["none"])
     unf_us = collections.Counter()
@@ -3233,6 +3356,10 @@ def write_report(args, jp, us, g, S, GS, cells, owner, omu, rowsu, omg, rowsg, e
                              ", ".join("%s %d" % kv for kv in amb_why.most_common()) or "none", len(mhp)),
            "",
            "\n".join(ctab),
+           "",
+           "*Ours* is our own English (text/mhg_en_own.tsv, docs/english_g.md \"Our own translation\"), only for strings no "
+           "official source has; official English always wins, and Freedom's replaces ours where it has a line (%d own lines "
+           "replaced%s)." % (len(own_repl), (": " + " ".join(own_repl)) if own_repl else ""),
            "",
            "## MH1 JP strings with official US English",
            "",

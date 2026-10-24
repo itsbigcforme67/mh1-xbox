@@ -371,13 +371,29 @@ static void measure_ascii(void)
     rt_text_font_ready(asc_adv);
 }
 
+/* a full-width digit or Latin letter (SJIS 0x824F-0x8258, 0x8260-0x8279, 0x8281-0x829A) as its ASCII character, else 0.
+ * The game's own number fill-ins (G's shop "$z" price, counts) put full-width digits into English lines; drawn as
+ * full cells they read "2 0z". In English text (pure_ascii below) they are drawn as the half-width digit instead. */
+static unsigned fw_ascii(unsigned code)
+{
+    if (code >= 0x824F && code <= 0x8258) return '0' + code - 0x824F;
+    if (code >= 0x8260 && code <= 0x8279) return 'A' + code - 0x8260;
+    if (code >= 0x8281 && code <= 0x829A) return 'a' + code - 0x8281;
+    return 0;
+}
+
 /* proportional ASCII only for text with a letter in it: numbers, brackets and blanks keep the game's fixed grid, so
- * values the game draws over each other line up (G's shop count "~C00%2d(%3d)" and its red "   ~C02%3d" over it) */
+ * values the game draws over each other line up (G's shop count "~C00%2d(%3d)" and its red "   ~C02%3d" over it).
+ * Full-width digits and letters count as ASCII here (fw_ascii); any other double-byte character makes it Japanese. */
 static int pure_ascii(const u8 *p)
 {
     int letter = 0;
     u8 prev = 0;
     for (; *p; prev = *p++) {
+        if (((*p >= 0x80 && *p < 0xA0) || *p >= 0xE0) && p[1] && fw_ascii((unsigned)*p << 8 | p[1])) {
+            prev = *p++;
+            continue;
+        }
         if ((*p >= 0x80 && *p < 0xA0) || (*p >= 0xE0 && *p < 0x100) || (*p >= 0xA1 && *p <= 0xDF))
             return 0;
         if ((*p | 0x20) >= 'a' && (*p | 0x20) <= 'z' && !(*p == 'C' && prev == '~'))
@@ -416,6 +432,11 @@ static void font_puts(const char *s, const FNT_ENT *e0)
                 break;
             code = c << 8 | *p++;
             ascii = 0;
+            if (prop && fw_ascii(code)) {       /* a full-width digit in English text: the half-width one */
+                c = fw_ascii(code);
+                code = ascii2sjis(c);
+                ascii = 1;
+            }
         } else {
             code = ascii2sjis(c);
             ascii = 1;

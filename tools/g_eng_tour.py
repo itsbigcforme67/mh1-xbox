@@ -21,7 +21,7 @@ import sys
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 GAME = "mh1" if "--mh1" in sys.argv else "mhg"      # --mh1: MH1 JP with its table (build/pc/mhview, build/B/eng_mh1/)
-OUT = os.path.join(ROOT, "build", "B", "eng_mh1" if GAME == "mh1" else "eng")
+OUT = os.environ.get("G_ENG_OUT") or os.path.join(ROOT, "build", "B", "eng_mh1" if GAME == "mh1" else "eng")   # G_ENG_OUT: another folder
 SCRIPTS = os.path.join(ROOT, "tools", "pc_scripts")
 
 SHOP, WSHOP, FORGE, ELDER = "10000,13425", "9860,12076", "9960,11920", "11100,12150"

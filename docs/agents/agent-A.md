@@ -1264,3 +1264,25 @@ check.py needs wibo, which this round could not run (PC-only round). Commits on 
   status cleared, ISR clears them too. Waiting for the owner's log of a hung second start.
 - Open: quest supply box cursor (camp box at stage 21 spot kind 3, 9500,9500: RT_PL_WARP's angle did not turn the
   hunter, box not opened in a scripted run yet); reward screen stuck on its timer (not looked at).
+
+## G English, own translation (23 Oct 2026)
+- **Numbers:** G official English (MH1 US) 7087 of 13263 (53.4%, unchanged by this round apart from the refresh);
+  **ours 1043** (+15 fallbacks); left 5133 = 4703 waiting for Freedom (same Japanese in Portable) + 430 not in
+  Portable: 275 keyboard kana tables, 31 G-only weapon/armour names left for Freedom's naming, ~124 non-text
+  (character tables, scan false hits such as `ｑ\n` runs and strings starting mid-character, debug prints).
+  The ~1090 "our own translation" strings of docs/english_g.md are all done.
+- **Design** (docs/english_g.md "Our own translation"): text/mhg_en_own.tsv keyed by id + crc32 of the Japanese (no
+  game text in the repo), flags t/p/d/m/n, applied last by text_map.py `run_own` (official always wins; Freedom's
+  replacements are listed). tools/text_own.py adds batches and checks the fit. .gitignore: `text/*` +
+  `!text/mhg_en_own.tsv`.
+- **Lessons:** (1) A G line-split message often reuses MH1 lines whose US English is kept to MH1's message slot
+  (gk_slot); the report counts those strings as English, but in G's new messages they show Japanese. Own lines for
+  such ids become the string's fallback while the slot keeps the US line. The report's "official English" therefore
+  over-counts slightly for line-split dialogs. (2) cp932 × is 0x81 0x7E: a byte-level '~' check must skip two-byte
+  characters. (3) An empty table value means "keep the Japanese": own lines must never be empty. (4) My scratch
+  context tool (pointer runs that use a string, with each slot's Japanese and English) was the only way to translate
+  line-split messages sensibly; worth turning into a tool if someone continues (kept out of the repo for now: it
+  prints Japanese).
+- **Display:** rt_font.c draws full-width digits/letters inside English lines as half-width (item shop price). Hidden
+  before/after tours: build/A/eng/before, build/A/eng/after (tools/g_eng_tour.py, new `G_ENG_OUT`).
+- **Not checked on screen:** the town talk and online-hub lines (no G online client in the tour).
