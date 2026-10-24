@@ -727,7 +727,7 @@ build compiles them), the MH1 branch kept in `#else`; MH1's own C is unchanged, 
 
 **Checks** (23 Oct 2026): `tools/rebuild.sh` 5 OK, `VERSION=mhg tools/rebuild.sh` 7 OK, tools/test_all_quests_g.sh, tools/full_check.sh: see the result lines in docs/agents/agent-D.md "GB6 eighth pass".
 
-## 16. GB6, ninth pass (agent D, 23 Oct 2026)
+## 16. GB6, ninth pass, partial (agent D, 23 Oct 2026)
 The "not looked at in detail" list of section 15, same method (tools/mhg_fdiff.py for the asm, tools/gdraft.py for G's m2c, a per-case
 call-list diff of G's draft against the PC's C for the long animation scripts). All code is `VERSION_MHG` (matched files also
 `!__MWERKS__`, so PS2 builds keep their bytes), MH1's C is unchanged; G tables the PC reads at ten / sixteen entries are sized in
@@ -783,4 +783,4 @@ without drawing: eft04 (the whole monster-attack effect family), eft01's shadow 
 a trace in eft04_t during the forced spawn printed eight NULL entries] A platform task: bind each loaded monster's effect model
 (eft04 reads clay[0..9] of it, eft20 and shell08 their own clays) the way load_eft does for ef_00.
 
-**Checks** (23 Oct 2026): see docs/agents/agent-D.md "GB6 ninth pass".
+**Checks** (23 Oct 2026): quest suite 98 + carts + Dual PASS, rebuild 5 OK / G 7 OK, full_check stopped at 25 ok steps (no FAIL) on the coordinator's request. **Left: em02** (whole), the area_mdlw platform gap.

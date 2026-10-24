@@ -1575,3 +1575,6 @@ set14_trans). Write-up with evidence tags: docs/RELEASE_G.md section 16.
   complete.
 - Not done: **em02** (kind 2 / 36): seven new G functions, acts 11-18, ~14 edited functions; no offline quest spawns it, nothing to verify;
   list of the pieces in RELEASE_G section 16. Next candidates from section 15's list: em03_init / main, em16_init2.
+- Results (23 Oct 2026, partial: coordinator asked to stop): tools/test_all_quests_g.sh 98 quests + carts + Dual Swords all PASS; tools/rebuild.sh 5 OK;
+  VERSION=mhg tools/rebuild.sh 7 OK; tools/full_check.sh stopped early on request: 25 steps ok (rebuild, builds, kr_returns, Xbox online, PC tests up to
+  test_online), no FAIL, the rest not run (coordinator runs it at merge). Status: PARTIAL (em02 not started, by evidence; see RELEASE_G section 16).
