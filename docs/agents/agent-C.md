@@ -2128,3 +2128,12 @@ Result: G matched 19.8% -> 20.1% (4124 -> about 4230 functions), all in src/lobb
   NPCs placed and drawn, then the counter menu (G's talk conditions 0x542A60), a room, a quest.
 - **Cosmetic, open:** town name tags draw a white square next to the name (an icon texture, G and MH1 slots differ?).
 - tools/full_check.sh: test_ps2_g_online.sh is an emulator test (skipped), the G online PC build is a step.
+- **full_check (23 Oct) found and fixed:** kr_returns (m2c's `s32` declarations of u16 / s8 callees in the gen files:
+  check_kr_returns --fix, mhg_gonl.py runs it after generating); the plain G village crashed (test_save_g / urgent_g /
+  all_quests_g) because a g_main_2EFA6C import had hidden G's key_quest name, making it a stand-in function: tools/mhg_c.py
+  now takes config/mhg/data_map.txt's high / medium names first, except the two lobby pointer tables 2EEE70 / 2EF078
+  (under G's names the plaza menu crashed); the G online link after a plain G build (CallBack_Result_SearchUserPlace_o:
+  now a hand-written call in src/lobby/gonl/gonl_g.c; gen_rt_auto.py back to main's). The BMATCH W rule in build_pc.sh
+  only counts what a G online build weakened (build/pc/.gsyms).
+- **Lesson:** never edit tools/build_pc.sh while a build or full_check runs (sh reads the script as it goes: "Syntax
+  error: } unexpected" and the steps after it fail).
