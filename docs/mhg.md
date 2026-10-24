@@ -161,7 +161,7 @@ MH1's pace, not measurements.
 
 ## 5. G on the PC: runtime (agent B; shared list of what blocks G at run time)
 
-Build: `tools/build_pc_mhg.sh` -> build/mhg/pc/mhview_g (own tree build/mhg/pctree, so build/pc stays MH1's).
+Build: `tools/build_pc_mhg.sh` -> build/mhg/pc/mhview_g (own tree build/mhg/pctree, so build/pc stays MH1's; `ONLINE=1` builds in build/mhg/pctree_online, its objects are compiled with -DMHG_ONLINE).
 Run (always hidden: a G build opens no window and no real controller unless MH1_SHOW=1 is set by hand, and
 refuses to start without `--shot`):
 `MH1_SAVE_DIR=$PWD/build/mhg/x/card RT_NOMOVIE=1 RT_NAME=TEST build/mhg/pc/mhview_g disc/mhg --boot --input "$(cat tools/pc_scripts/newgame.txt),idle*1500" --shot build/mhg/x/s.png --time 110`

@@ -9,7 +9,11 @@ set -e
 cd "$(dirname "$0")/.."
 TOP=$PWD
 python3 tools/mhg_pcmeta.py
-T=build/mhg/pctree
+# ONLINE=1 builds in its own tree (build/mhg/pctree_online): its game objects are compiled with -DMHG_ONLINE, and
+# build_pc.sh keeps an object that is newer than its source whatever flags made it, so in one shared tree a plain
+# build after an online one linked the online objects (24 Oct 2026: the offline village's Elder then refused the urgent
+# quest, test_urgent_g). build/mhg/pctree stays the plain G build (build_xbox.py --version mhg, check_kr_returns).
+T=build/mhg/pctree${ONLINE:+_online}
 mkdir -p $T/build
 # the last build's generated aliases (rt_gen.defsym, reused by build_pc.sh to save compiling) went stale when
 # G code started defining one of them itself: "multiple definition of D_3F360A" until a second run. G changes

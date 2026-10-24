@@ -2179,3 +2179,17 @@ VERSION_MHG / MHG_ONLINE / MHG_NET / LBNET_G (MH1 builds unchanged). Test: `ROOM
 - **Lesson:** in the G online build a name can mean three things: MH1's C, G's code at the split's address of that name
   (often other code), or an abs MH1 translation with MH1 cw / pNet / callback addresses. When G code misbehaves, check
   each call's target with `nm -l build/mhg/pc/mhview_g_online` first.
+
+### Offline G village regression after round 5 (24 Oct 2026): a build-tree mix-up, not the code
+- **Symptom:** full_check: test_urgent_g failed (the Elder's urgent quest 10001 not accepted). The `quest list (key 00)`
+  line full of odd bytes is NOT the cause: it is the same on main (lb_quest_info has no G import yet, the trace prints a
+  stand-in's code bytes).
+- **Cause:** the plain and the ONLINE=1 G builds shared build/mhg/pctree/build/pc. G's online build compiles the game C
+  with -DMHG_ONLINE (MH1's online build does not add a game flag), and build_pc.sh keeps any object newer than its
+  source and the headers, whatever flags made it. After an ONLINE=1 G build, the next plain G build linked the online
+  objects (round 5's MHG_ONLINE blocks in lb_guild_g.c: the counter's pNet at G's offsets 0x22 / 0x2D / 0x32, the online
+  Lb_guild steps) next to plain ones: the Elder's quest select ran with the wrong pNet fields. Touching a header
+  (a rebuild of everything) made the same source pass; the round 5 code itself is fine offline.
+- **Fix:** tools/build_pc_mhg.sh builds ONLINE=1 in its own tree, build/mhg/pctree_online; build/mhg/pctree is always
+  the plain G build (build_xbox.py --version mhg and check_kr_returns read it: the G Xbox build had also refused with
+  "run tools/build_pc.sh first" because the online build had rewritten pctree's objs.txt last).
