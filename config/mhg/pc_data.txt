@@ -22,6 +22,9 @@ set_model_data = 0x00259690; // size:0x170 noptr
 STAGE_TEX = 0x0025ABD0; // size:0x170 noptr
 SET_TEX = 0x0025CF70; // size:0x170 noptr
 gsave_fmt = 0x002EA6B0; // size:0x58 noptr                # save slot screen formats (NO DATA, slot:name, TIME, MONEY / HR, MONEY), G disp_savesel_moji
+em20_sub_contents_g24 = 0x002EDDB8; // size:0x8 noptr   # three more em20 sub contents (G only, after d23), named so the game.bin
+em20_sub_contents_g25 = 0x002EDDC0; // size:0x8 noptr   # table at 0x6B0274 that points at them gets its pointer words (the
+em20_sub_contents_g26 = 0x002EDDC8; // size:0x8 noptr   # scan takes only label starts from an overlay): em_cmd_ck read 0x2EDDC0 raw and crashed (24 Oct 2026, online G hunt)
 [main]
 set14_st90_mask_tbl_g = 0x002EE948; // size:0x8 noptr      # stage 90's mist layers (set14, G only)
 Eft_blood_rgb = 0x00253EC0; // size:0x1C noptr       # a seventh row (kinds 8 / 34's dark blood, G eft16_col_type_sel)

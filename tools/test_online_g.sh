@@ -13,8 +13,9 @@
 # HUNT=1 (two clients, ~20 min): ROOM=1 on mh1-server with --lobby-mcs (an account each, the game's own in-hunt protocol
 # through the mcs relay, as MH1's tools/test_online_mcs.sh KUTKU=1): ANNA posts quest 4 (the Kut-Ku, card 4 of level 1,
 # fee 200z: RT_MONEY), both log in to the relay, ANNA fights alone, then BOB, then both (owner ANNA -> BOB -> ANNA,
-# tools/hunt_sync.py), the kill, both carve, the clear, the result screens, the relogin (the test cards hold no G save:
-# "continue without saving?" yes) and both back in G's guild hall. GDB=FILE runs the clients under gdb -x FILE.
+# tools/hunt_sync.py), the kill, both carve, the clear, the result screens, the relogin (each client starts from its own G
+# card, made once at the village bed: the save writes) and both back in G's guild hall; then each card loads back
+# offline (CONTINUE) with the hunt's money. GDB=FILE runs the clients under gdb -x FILE.
 # Screenshots in build/show/g_online_pc (never committed). Build first: ONLINE=1 tools/build_pc_mhg.sh
 cd "$(dirname "$0")/.."
 BIN=${BIN:-build/mhg/pc/mhview_g_online}
@@ -59,10 +60,39 @@ acct() {    # NAME: RT_NET_ID / RT_NET_PASS of its account (HUNT=1)
 # input: circle through login, the Capcom ID ("new ID", yes), the class menu, the plaza menu (街に入る) and the town
 # list (town 1); then "yes" (left, circle) on the town's confirmation
 IN="idle*200$(for i in $(seq 14); do printf ',circle*2,idle*150'; done)$(for i in $(seq 12); do printf ',circle*2,idle*120,dleft*2,idle*30,circle*2,idle*150'; done),idle*${HOLD:-900}${TAIL:+,$TAIL}"
+# a G card with one hunter named NAME, saved at the village bed (offline, the same binary; tools/test_save_g.sh's steps):
+# build/show/g_online_pc_cards/NAME, remade when the binary is newer. The online runs start from a copy, so G's relogin
+# save after a quest (lbc_login_finish_after, McOperationSet(7)) writes the card instead of "continue without saving?".
+CARDS=build/show/g_online_pc_cards
+mkgsave() {
+    f=$CARDS/$1/BISLPM-65869MHG/BISLPM-65869MHG
+    [ -f "$f" ] && [ "$f" -nt "$BIN" ] && return 0
+    rm -rf $CARDS/$1; mkdir -p $CARDS/$1
+    S=$(python3 - <<'PY'
+def evs(d, end):
+    out, t = [], 0
+    for k in sorted(d):
+        if k > t: out.append("idle*%d" % (k - t)); t = k
+        out.append(d[k]); t += int(d[k].split("*")[1])
+    out.append("idle*%d" % (end - t)); return out
+# house door, then (warped to the bed) square, the save prompts (yes), "create game data" yes
+print(",".join(["@village1"] + evs({45: 'square*2', 650: 'square*2', 750: 'circle*2', 850: 'circle*2', 950: 'circle*2',
+                                     1050: 'circle*2', 1100: 'dleft*2', 1130: 'circle*2', 1250: 'circle*2'}, 1500)))
+PY
+)
+    ( ulimit -v 3000000 2>/dev/null
+      env MH1_HIDDEN=1 MH1_SAVE_DIR="$PWD/$CARDS/$1" MH1_LOG_DIR="$PWD/$CARDS/$1.logs" RT_NOMOVIE=1 RT_VILLAGE_START=1 \
+          RT_VILLAGE_SKIP_INTRO=1 RT_NAME=$1 RT_LB_WARP="30,11225,14400,0;600,2259,745,4001" \
+          timeout 300 $BIN disc/mhg --quest 1 --play --mute --input "$S" --shot $CARDS/$1.png --time 60 > $CARDS/$1.log 2>&1 )
+    grep -aqs "memory card: saved BISLPM-65869MHG/BISLPM-65869MHG" $CARDS/$1.logs/*.log && [ -f "$f" ] ||
+        fail "could not make $1's G card (see $CARDS/$1.log)"
+    touch "$f"
+}
 run() {     # name seconds extra-env...
     nm=$1; t=$2; shift 2
-    rm -rf $OUT/card_$nm
-    env MH1_HIDDEN=1 MH1_SAVE_DIR="$PWD/$OUT/card_$nm" RT_NAME=$nm RT_VILLAGE_START=1 RT_VILLAGE_SKIP_INTRO=1 RT_ONLINE_TRACE=1 \
+    rm -rf $OUT/card_$nm $OUT/logs_$nm
+    if [ -n "$HUNT" ]; then mkgsave $nm; mkdir -p $OUT/card_$nm; cp -r $CARDS/$nm/. $OUT/card_$nm/; fi
+    env MH1_HIDDEN=1 MH1_SAVE_DIR="$PWD/$OUT/card_$nm" MH1_LOG_DIR="$PWD/$OUT/logs_$nm" RT_NAME=$nm RT_VILLAGE_START=1 RT_VILLAGE_SKIP_INTRO=1 RT_ONLINE_TRACE=1 \
         RT_NET_PORT=$PORT RT_SHOTS=${SHOTS:-1500,2300,3200,4200} "$@" timeout ${TMO:-400} ${GDB:+gdb -q -batch -x $GDB --args} $BIN disc/mhg --quest 10 --play --online --mute \
         --input "$IN" --shot $OUT/$nm.png --time $t --size 640x480 > $OUT/$nm.log 2>&1
 }
@@ -92,10 +122,10 @@ print(','.join(o))")
     if [ -n "$HUNT" ]; then
         END=$(rep ${HUNTN:-36} ',circle*2,idle*13,cam_u*2,idle*13,circle*2,idle*13,cam_u*2,idle*13,circle*2,idle*13,cam_u*2,idle*13,circle*2,idle*13,cam_u*2,idle*13,circle*2,idle*13,cam_u*2,idle*13,circle*2,idle*13,cam_u*2,idle*13,cross*2,idle*18,ddown*2,idle*18,circle*2,idle*13,cam_u*2,idle*13')
         SA=900; SB=898; TMOH=1100
-        # back to the town: the login saves the hunter (lbc_login_finish_after, McOperationSet(7)); the test cards hold no G
-        # save, so the card screen says the save failed and asks "continue without saving?" (cursor on no): left (yes,
-        # pressed often: it only moves the cursor to yes), circle
-        END="$END$(rep ${TAILN:-60} ',dleft*2,idle*13,dleft*2,idle*13,dleft*2,idle*13,dleft*2,idle*13,dleft*2,idle*13,dleft*2,idle*13,circle*2,idle*13')"
+        # back to the town: the login saves the hunter to the card (lbc_login_finish_after, McOperationSet(7)); each client
+        # starts from its own G card (mkgsave), so the save writes; circles take the card screen's messages (before round 7
+        # the cards held no G save and the test answered "continue without saving?" with left + circle)
+        END="$END$(rep ${TAILN:-60} ',circle*2,idle*91')"
         # quest ticks (as KUTKU=1): both follow the Kut-Ku; ANNA fights alone (600-1500) and goes back to the camp so the
         # monster passes to BOB, who fights alone (1600-2600) and goes back in turn; then both fight to the kill and carve
         F="RT_PL_GOD=1 RT_PL_TARGET=k${KIND:-6} RT_PL_GOTO=60,f RT_DMG_MUL=${MUL:-2} RT_GOTO_TRACE=1 RT_PL_CARVE=10 RT_QUEST_TRACE=1 RT_NOMOVIE=1 RT_NP_POS=150 RT_NP_EM=30 RT_MONEY=5000"
@@ -163,6 +193,20 @@ if [ -n "$HUNT" ]; then
     grep -q "mcs: match room 1" $OUT/server.log || fail "the lobby did not hand the match to the mcs relay"
     grep -q "mcs: login .*: player 0 of match" $OUT/server.log || fail "ANNA did not log in to the mcs relay"
     grep -q "mcs: login .*: player 1 of match" $OUT/server.log || fail "BOB did not log in to the mcs relay"
+    # the relogin's save went to the card (the card started with the fresh hunter's 0z), and the card loads back (offline,
+    # CONTINUE as tools/test_save_g.sh) with the money of the hunt (RT_MONEY=5000 - the fee + the reward)
+    C="idle*80,circle*2,idle*600,start*2,idle*80,circle*2,idle*100,circle*2,idle*100,circle*2,idle*100,circle*2,idle*100,circle*2,idle*250,ddown*2,idle*20,circle*2,idle*100,circle*2,idle*100,circle*2,idle*400"
+    for nm in ANNA BOB; do
+        grep -aqs "memory card: saved BISLPM-65869MHG/BISLPM-65869MHG" $OUT/logs_$nm/*.log ||
+            fail "$nm: the relogin did not save the hunter to the card"
+        ( ulimit -v 3000000 2>/dev/null
+          env MH1_HIDDEN=1 MH1_SAVE_DIR="$PWD/$OUT/card_$nm" MH1_LOG_DIR="$PWD/$OUT/logs_${nm}_reload" RT_NOMOVIE=1 RT_QUEST_TRACE=1 \
+              timeout 300 $BIN disc/mhg --boot --mute --input "$C" --shot $OUT/${nm}_reload.png --time 75 > $OUT/${nm}_reload.log 2>&1 )
+        r=$(grep -a "rt_village: tick [0-9]* ud" $OUT/${nm}_reload.log | head -1)
+        [ -n "$r" ] || fail "$nm: the saved card did not load back into the village (see $OUT/${nm}_reload.log)"
+        echo "$r" | grep -q "ud money [1-9]" || fail "$nm: the reloaded hunter has not the hunt's money: $r"
+        echo "$nm reloaded: $(echo "$r" | sed 's/ pouch.*//')"
+    done
     # the HP from its owner on both, the owner ANNA -> BOB -> ANNA, the kill, both carve (as test_online_mcs.sh KUTKU=1)
     python3 tools/hunt_sync.py --kind ${KIND:-6} --masters 0,1,0 --kill --carve ANNA,BOB ANNA=$OUT/ANNA.log BOB=$OUT/BOB.log \
         > $OUT/sync.txt; r=$?; cat $OUT/sync.txt; [ $r = 0 ] || fail "the hunt was not the same on both"
@@ -172,4 +216,4 @@ grep -q "cmd 6882" $OUT/server.log || fail "no info file download (6882)"
 grep -q "cmd 6207" $OUT/server.log || fail "no plaza entry (6207)"
 grep -q "cmd 630D" $OUT/server.log || fail "no town list (630D)"
 grep -q "cmd 6305" $OUT/server.log || fail "no town entry (6305)"
-echo "G online PC test: OK ($NAMES: G's login, Capcom ID, info file, plaza, town list, in the town${TWO:+, each sees the other}${ROOM:+, the guild hall counter: a room for 2, BOB joins, the match, both start quest $QN}${HUNT:+ on mh1-server's mcs relay: the Kut-Ku handed ANNA -> BOB -> ANNA, HP the same on both, killed, both carved, the clear, both back in G's guild hall}; server 127.0.0.1:$PORT)"
+echo "G online PC test: OK ($NAMES: G's login, Capcom ID, info file, plaza, town list, in the town${TWO:+, each sees the other}${ROOM:+, the guild hall counter: a room for 2, BOB joins, the match, both start quest $QN}${HUNT:+ on mh1-server's mcs relay: the Kut-Ku handed ANNA -> BOB -> ANNA, HP the same on both, killed, both carved, the clear, both back in G's guild hall, the relogin saved to each G card and it loads back}; server 127.0.0.1:$PORT)"

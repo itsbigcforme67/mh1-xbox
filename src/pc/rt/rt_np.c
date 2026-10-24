@@ -373,14 +373,25 @@ static int ask_coop(int *quest_no)
 
 /* ------------------------------------------------ the player's own save
  * A co-op player uses the hunter of his own memory card (the PC's card directory, rt_mc.c):
- * the save image BISLPM-65495MH is decoded as decode_data does (mccomb.c; header u16 0x100,
+ * the save image BISLPM-65495MH (G: BISLPM-65869MHG, 0x130D0 bytes, 0xE00-byte slots) is decoded as decode_data does (mccomb.c; header u16 0x100,
  * key, checksum, 0x5963, then 0x8A20 words XORed with key = key * 0xB0 % 65363), the options
  * and the three hunter slots go into option_w as a Continue does (save_data_sub(0, ...)),
  * and the slot's data into User_data (Load_userdata); select_w[0xB6] = the slot, as the
  * Continue screen sets it, so the village's bed save writes the right slot. After the quest
  * the slot is written back to the card (rt_np_session_end). --hunter N picks the slot (1-3),
  * else the first used one. Without a save the hunter comes from RT_WEAPON / RT_PL_LOOK. */
+#ifdef VERSION_MHG      /* G's card file on the PC: 0x130D0 bytes, encoded as MH1's image (0x8A20 words: the PC runs MH1's
+                         * card layout code on G's memory, mccomb.c MC_GL), hunter slots of UD_SLOT 0xE00 in option_w */
+#define SAVE_SIZE 0x130D0
+#define SAVE_WORDS 0x8A20
+#define SAVE_FILE "BISLPM-65869MHG/BISLPM-65869MHG"
+#define SAVE_SLOT 0xE00
+#else
 #define SAVE_SIZE 0x11450
+#define SAVE_WORDS 0x8A20
+#define SAVE_FILE "BISLPM-65495MH/BISLPM-65495MH"
+#define SAVE_SLOT 0x480
+#endif
 extern u8 *data_load_ptr;
 extern u8 option_w[];
 extern u8 select_w[];
@@ -394,7 +405,7 @@ static int save_slot = -1;          /* the card slot this player's hunter came f
 
 static void save_path(char *out, size_t n)
 {
-    snprintf(out, n, "%s/BISLPM-65495MH/BISLPM-65495MH", rt_mc_root());
+    snprintf(out, n, "%s/" SAVE_FILE, rt_mc_root());
 }
 
 static int save_decode(u8 *b)
@@ -405,7 +416,7 @@ static int save_decode(u8 *b)
         return -1;
     key = w[1];
     stored = w[2];
-    for (i = 0; i < 0x8A20; i++) {
+    for (i = 0; i < SAVE_WORDS; i++) {
         w[4 + i] ^= key;
         sum = (u16)(sum + w[4 + i]);
         if (key == 0)
@@ -423,7 +434,7 @@ static u8 *save_read(void)
     save_path(path, sizeof path);
     if (!(f = fopen(path, "rb")))
         return NULL;
-    b = calloc(1, 0x12000);
+    b = calloc(1, SAVE_SIZE + 0x1000);
     if (fread(b, 1, SAVE_SIZE, f) != SAVE_SIZE || save_decode(b) != 0) {
         fprintf(stderr, "co-op: %s is not a readable save\n", path);
         free(b);
@@ -451,7 +462,7 @@ static int load_own_hunter(void)
     data_load_ptr = keep;
     free(b);
     for (s = 0; s < 3; s++)
-        if ((want_hunter < 0 || want_hunter == s) && option_w[0x10 + s * 0x480] != 0)
+        if ((want_hunter < 0 || want_hunter == s) && option_w[0x10 + s * SAVE_SLOT] != 0)
             break;
     if (s == 3) {
         fprintf(stderr, "co-op: no hunter in %s slot %d\n", want_hunter < 0 ? "any" : "the chosen", want_hunter + 1);
