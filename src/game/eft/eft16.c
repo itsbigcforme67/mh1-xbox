@@ -52,6 +52,13 @@ typedef struct EFT16_NECK {
 #define CHR_ANG3EC(c) (*(u16 *)((u8 *)(c) + 0x3EC))
 #define CHR_X4D8(c) (*(u8 **)((u8 *)(c) + 0x4D8))
 
+/* G on the PC (agent D, 23 Oct 2026, ninth pass): the VERSION_MHG branches below are G's code (game 0x576C60..0x57A250); G drops the
+ * neck spray's callers (types 3 / 4 stay as stubs), adds type 15 (type 8's rising puffs without the owner's joint), a blood colour row
+ * for kinds 8 / 34 and render state 0x6C around more types. */
+#if defined(VERSION_MHG) && !defined(__MWERKS__)
+#define EFT16_G 1
+#endif
+
 #define ANG2DEG(a) (360.0f * (f32)(a) / 65536.0f)
 #define DEG2RAD(d) (2.0f * (3.1415927f * ((d) / 360.0f)))
 
@@ -206,6 +213,14 @@ static void eft16_i(EFTW *ew) {
                 p->lag = -ew->stg * i;
                 p->size = ew->scale * (0.5f + 0.5f * (0.001f * (f32)((u16)ran_suu(1) & 0x3FF)));
                 break;
+#ifdef EFT16_G
+            case 15:            /* G (game 0x577108) */
+                p->no = i;
+                p->lag = 0;
+                p->size = ew->scale * (0.5f + 0.5f * (0.001f * (f32)((u16)ran_suu(1) & 0x3FF)));
+                p->uv = 0;
+                break;
+#endif
             case 14:
                 p->no = i;
                 p->uv = (u16)ran_suu(1) & 3;
@@ -423,6 +438,9 @@ static void eft16_m(EFTW *ew) {
         case 9:
         case 12:
         case 13:
+#ifdef EFT16_G
+        case 15:
+#endif
             idx = eft16_index[ew->arg];
             break;
         case 2:
@@ -458,7 +476,11 @@ static void eft16_m(EFTW *ew) {
             p++;
             continue;
         }
+#ifdef EFT16_G
+        if (p->lag == 1 && ew->arg != 2 && ew->arg != 5 && ew->arg != 6 && ew->arg != 14 && ew->arg != 15) {
+#else
         if (p->lag == 1 && ew->arg != 2 && ew->arg != 5 && ew->arg != 6 && ew->arg != 14) {
+#endif
             if (ew->x07 != 0xFF) {
                 if (p->no == 0xFF) {
                     p++;
@@ -592,6 +614,9 @@ static void eft16_m(EFTW *ew) {
                 p->prim->pos[2] = p->pos[2] + v[2];
                 break;
             case 8:
+#ifdef EFT16_G
+            case 15:
+#endif
                 switch (i) {
                 case 6:
                     p->scale[0] *= 0.8f;
@@ -703,6 +728,9 @@ static void eft16_t(PRIM *pr) {
         b = 0xFF;
         switch (ew->arg) {
         case 0:
+#ifdef EFT16_G
+            flSetRenderState(0x6C, 0);
+#endif
             rot[2] = DEG2RAD(ANG2DEG(p->rot));
             sc[0] = p->scale[0] * (p->size * eft16_scale_tbl[ew->mode2 & 0xF]);
             sc[1] = p->scale[1] * (p->size * eft16_scale_tbl[ew->mode2 & 0xF]);
@@ -723,6 +751,9 @@ static void eft16_t(PRIM *pr) {
             }
             break;
         case 2:
+#ifdef EFT16_G
+            flSetRenderState(0x6C, 0);
+#endif
             sc[0] = p->size * p->scale[0];
             sc[1] = p->size * p->scale[1];
             sc[2] = p->size * p->scale[2];
@@ -757,6 +788,9 @@ static void eft16_t(PRIM *pr) {
             flSetRenderState(0x19, (u32)&uv);
             break;
         case 5:
+#ifdef EFT16_G
+            flSetRenderState(0x6C, 0);
+#endif
             sc[0] = p->size * p->scale[0];
             sc[1] = p->size * p->scale[1];
             sc[2] = p->size * p->scale[2];
@@ -803,6 +837,9 @@ static void eft16_t(PRIM *pr) {
             }
             break;
         case 8:
+#ifdef EFT16_G
+        case 15:
+#endif
             flag |= 2;
             sc[0] = 0.5f * p->size * p->scale[0];
             sc[1] = 0.5f * p->size * p->scale[1];
@@ -890,6 +927,11 @@ static s16 eft16_col_type_sel(u8 flag) {
     case 0x80:
         c = 2;
         break;
+#ifdef EFT16_G
+    case 0x40:          /* G: kinds 8 / 34's dark blood (Eft_blood_rgb row 6) */
+        c = 6;
+        break;
+#endif
     default:
         c = 0;
         break;
@@ -981,6 +1023,12 @@ void Eft16_set(PLW *pl, int arg, s16 hit, f32 *pos, f32 scale) {
                 case 0x18:
                     ew->mode2 |= 0x82;
                     break;
+#ifdef EFT16_G
+                case 0x22:
+                case 8:
+                    ew->mode2 |= 0x40;
+                    break;
+#endif
                 }
                 if (CHR_X4D8(pl) != 0 && (jl = *(s16 **)(CHR_X4D8(pl) + 0xA0)) != 0) {
                     ew->x07 = *jl;
@@ -1103,6 +1151,11 @@ void Eft16_set_impact(PLW *pl, f32 *pos, int arg, s16 hit, s16 wpn, f32 scale) {
                 if (pl->x10 != 0 && (pl->kind == 0x13 || pl->kind == 0x18)) {
                     ew->mode2 |= 0x80;
                 }
+#ifdef EFT16_G
+                else if (pl->x10 != 0 && (pl->kind == 8 || pl->kind == 0x22)) {
+                    ew->mode2 |= 0x40;
+                }
+#endif
                 break;
             }
             ew->scale = scale;

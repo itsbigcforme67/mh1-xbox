@@ -5191,12 +5191,14 @@ block_150:
         if (em_frame_check(em, 0, 172.0f) != 0) {
             Eft04_set(em, 4);
         }
+#ifndef VERSION_MHG     /* G (game 0x5F8FEC..) has no three-shot fan at frame 176 */
         if (em_frame_check(em, 0, 176.0f) != 0) {
             Shell08_set_ang(em, 0x22, 6, 0, 0, 0);
             Shell08_set_ang(em, 0x22, 6, 0, 0, 0xE39);
             Shell08_set_ang(em, 0x22, 6, 0, 0, 0xF1C8);
             return;
         }
+#endif
         break;
     case 0x41B:
         sound_call_005CBAA0(em, 4, 0x23, 0x23);
@@ -5498,7 +5500,11 @@ block_259:
         }
         break;
     case 0x451:
+#ifdef VERSION_MHG      /* G: another sound */
+        sound_call_005CBAA0(em, 0x40, 0x5B, 0x23);
+#else
         sound_call_005CBAA0(em, 0x40, 0x33, 0x23);
+#endif
         sound_call_005CBAA0(em, 0x2C, 0x16, 0);
         if (em_frame_check(em, 0, 66.0f) != 0) {
             shell16_set(em, 2);
@@ -5590,6 +5596,26 @@ block_259:
         }
         break;
     case 0x459:
+#ifdef VERSION_MHG
+        if (em->kind != 15) {   /* G (game 0x5FA848): the subspecies' roar: its own sounds, shots and the debris of Eft04 type 9 */
+            sound_call_005CBAA0(em, 0x20, 0, 0x1A);
+            sound_call_005CBAA0(em, 0xBA, 0, 0x1A);
+            sound_call_005CBAA0(em, 0x14, 0x22, 0x23);
+            sound_call_005CBAA0(em, 0x20, 0x24, 0x23);
+            sound_call_005CBAA0(em, 0x38, 0x23, 0x23);
+            sound_call_005CBAA0(em, 0x2C, 0x15, 0x23);
+            sound_call_005CBAA0(em, 0x56, 2, 0x23);
+            if (em_frame_check(em, 0, 16.0f) != 0) {
+                shell16_set(em, 0x27);
+            }
+            if (em_frame_check(em, 0, 130.0f) != 0) {
+                shell16_set(em, 0x28);
+            }
+            if ((em_frame_check3(em, 0, 120.0f, 180.0f) != 0) && ((GAME_X1E16 % 5) == 0)) {
+                Eft04_set(em, 9);
+            }
+        } else {
+#endif
         sound_call_005CBAA0(em, 4, 0x20, 0x23);
         sound_call_005CBAA0(em, 0x40, 0x22, 0x23);
         sound_call_005CBAA0(em, 0x64, 0x21, 0x23);
@@ -5598,6 +5624,9 @@ block_259:
         if (em_frame_check(em, 0, 66.0f) != 0) {
             shell16_set(em, 1);
         }
+#ifdef VERSION_MHG
+        }
+#endif
         if (em->x8B6 != 0) {
             if ((em_frame_check3(em, 0, 40.0f, 72.0f) != 0) && !(GAME_X1E16 & 3)) {
                 Eft20_set(1.0f, em, 0x1A, (s16)((u16)ran_suu(1) & 1));

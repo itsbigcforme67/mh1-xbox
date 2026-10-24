@@ -22,6 +22,10 @@ set_model_data = 0x00259690; // size:0x170 noptr
 STAGE_TEX = 0x0025ABD0; // size:0x170 noptr
 SET_TEX = 0x0025CF70; // size:0x170 noptr
 gsave_fmt = 0x002EA6B0; // size:0x58 noptr                # save slot screen formats (NO DATA, slot:name, TIME, MONEY / HR, MONEY), G disp_savesel_moji
+[main]
+set14_st90_mask_tbl_g = 0x002EE948; // size:0x8 noptr      # stage 90's mist layers (set14, G only)
+Eft_blood_rgb = 0x00253EC0; // size:0x1C noptr       # a seventh row (kinds 8 / 34's dark blood, G eft16_col_type_sel)
+eft15_type9_time_g = 0x002EC774; // size:0x4 noptr       # eft15 type 9's time table (G only)
 [sub_main]
 eft20_fade13_g = 0x00506990; // size:0x20 noptr        # G only: eft20 arg 13's fade keys {s32 time, rgba}.., -1 (eft20_t)
 eft20_fade21_g = 0x005073E0; // size:0x30 noptr        # G only: eft20 arg 21's fade keys (eft20_t)
@@ -76,6 +80,27 @@ shell08_ofs_tbl = 0x006C5F20; // size:0xA8 noptr
 shell08_time_g = 0x006C5D20; // size:0x1C noptr
 shell08_step_g = 0x006C5D80; // size:0x1C noptr
 shell08_type12_ofs_g = 0x006C6130; // size:0x120 noptr
+[game]
+set14_st90_pos_tbl_g = 0x006BFCF0; // size:0x3C noptr      # stage 90's layer positions (set14, G only)
+# eft04 has ten types in G (9 = debris thrown around em15's roar): its per-type tables get a tenth entry. Agent D, 23 Oct 2026.
+eft04_num = 0x00679F50; // size:0x14 noptr
+eft04_all_time = 0x00679F70; // size:0x14 noptr
+eft04_index = 0x00679F90; // size:0x14 noptr
+eft04_param = 0x00679FB0; // size:0x14 noptr
+eft04_time_tbl = 0x00679FD0; // size:0x28
+# eft15 likewise (type 9: one sprite, uses time table 0x2EC774 in main)
+eft15_num = 0x0067BF60; // size:0x14 noptr
+eft15_all_time = 0x0067BF80; // size:0x14 noptr
+eft15_param = 0x0067BFA0; // size:0x14 noptr
+eft15_index = 0x0067BFC0; // size:0x14 noptr
+eft15_time = 0x0067BFE0; // size:0x14 noptr
+eft15_time_tbl = 0x0067C000; // size:0x28
+# eft16 has sixteen types in G (15 = a second spurt like type 8)
+eft16_num = 0x0067C490; // size:0x20 noptr
+eft16_all_time = 0x0067C4B0; // size:0x20 noptr
+eft16_index = 0x0067C4D0; // size:0x20 noptr
+eft16_time = 0x0067C4F0; // size:0x20 noptr
+eft16_param = 0x0067C510; // size:0x20 noptr
 # em01's flight height curves (G em01_fly_adjy2_init has types 15 and 16; agent A, 20 Oct 2026)
 [game]
 fly_adjy2_hosei_tbl_00653E40 = 0x006955D0; // size:0x44    # 17 curve pointers per type (MH1 15)

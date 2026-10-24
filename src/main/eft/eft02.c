@@ -26,7 +26,13 @@ typedef struct EFT_MDLW {
 
 extern EFT_MDLW *eft_mdlw[5];
 extern FLMAT rview_mat;
+#if defined(VERSION_MHG) && !defined(__MWERKS__)
+/* G (sub_main 0x4C2A70): the blood row of an effect, x1E 2 = kinds 0x13 / 0x18 (row 2), x1E 3 = kinds 8 / 0x22 (row 6) */
+extern u8 Eft_blood_rgb[7][4];
+#define EFT02_COL(ew) ((ew)->x1E == 2 ? 2 : ((ew)->x1E == 3 ? 6 : 0))
+#else
 extern u8 Eft_blood_rgb[6][4];
+#endif
 extern f32 scale32_34_00354E00[];
 
 u32 ran_suu(int);
@@ -260,11 +266,17 @@ void eft02_t(PRIM *pr) {
                 col = -1;
                 g = r;
                 b = r;
+#if defined(VERSION_MHG) && !defined(__MWERKS__)
+            } else {
+                col = EFT02_COL(ew);
+            }
+#else
             } else if (ew->x1E == 2) {
                 col = 2;
             } else {
                 col = 0;
             }
+#endif
             break;
         case 2:
             SetFilterMode(0);
@@ -291,11 +303,15 @@ void eft02_t(PRIM *pr) {
             } else {
                 flmatSetTrans(&uv, 0.0f, 0.0f, 0.0f);
             }
+#if defined(VERSION_MHG) && !defined(__MWERKS__)
+            col = EFT02_COL(ew);
+#else
             if (ew->x1E == 2) {
                 col = 2;
             } else {
                 col = 0;
             }
+#endif
             break;
         case 4:
             flSetRenderState(0x60, 0);
@@ -308,11 +324,15 @@ void eft02_t(PRIM *pr) {
                 col = -1;
                 flmatSetTrans(&uv, 0.125f, 0.0f, 0.0f);
             } else {
+#if defined(VERSION_MHG) && !defined(__MWERKS__)
+                col = EFT02_COL(ew);
+#else
                 if (ew->x1E == 2) {
                     col = 2;
                 } else {
                     col = 0;
                 }
+#endif
                 flmatSetTrans(&uv, 0.0f, 0.0f, 0.0f);
             }
             break;

@@ -40,12 +40,17 @@ typedef struct EFT15_PIECE {
 extern EFT_MDLW *eft_mdlw[5];
 extern FLMAT rview_mat;
 extern void *eft15_data[];
-extern s16 eft15_num[9];
-extern s16 eft15_all_time[9];
-extern s16 eft15_param[9];
-extern s16 eft15_index[9];
-extern s16 eft15_time[9];
-extern s16 *eft15_time_tbl[9];
+#if defined(VERSION_MHG) && !defined(__MWERKS__)       /* G has a tenth type (9; pc_data.txt sizes the tables) */
+#define EFT15_TYPES 10
+#else
+#define EFT15_TYPES 9
+#endif
+extern s16 eft15_num[EFT15_TYPES];
+extern s16 eft15_all_time[EFT15_TYPES];
+extern s16 eft15_param[EFT15_TYPES];
+extern s16 eft15_index[EFT15_TYPES];
+extern s16 eft15_time[EFT15_TYPES];
+extern s16 *eft15_time_tbl[EFT15_TYPES];
 extern s16 eft15_type0_lag[3];
 extern s16 eft15_type2_lag[3];
 extern s16 eft15_type4_lag[7];
@@ -152,7 +157,13 @@ static void eft15_i(EFTW *ew) {
             break;
         case 2:
             w[i].rot = ran_suu(1);
+#if defined(VERSION_MHG) && !defined(__MWERKS__)       /* G (game 0x575100): x07 1 starts at once */
+            if (ew->x07 != 1) {
+                w[i].lag = eft15_type2_lag[i] - 5;
+            }
+#else
             w[i].lag = eft15_type2_lag[i] - 5;
+#endif
             flvecCopy(w[i].pos, ew->pos);
             switch (w[i].no) {
             case 0:
@@ -169,7 +180,13 @@ static void eft15_i(EFTW *ew) {
         case 3:
         case 7:
         case 8:
+#if defined(VERSION_MHG) && !defined(__MWERKS__)
+            if (ew->x07 != 1) {
+                w[i].lag -= 5;
+            }
+#else
             w[i].lag -= 5;
+#endif
             w[i].rot = ran_suu(1);
             flvecCopy(w[i].pos, ew->pos);
             if (ew->arg == 8 && w[i].no == 1) {
@@ -190,6 +207,13 @@ static void eft15_i(EFTW *ew) {
             }
             flvecCopy(w[i].pos, ew->pos);
             break;
+#if defined(VERSION_MHG) && !defined(__MWERKS__)
+        case 9:                 /* G (game 0x575198): one sprite, the second one's look */
+            w[i].no = 1;
+            w[i].rot = ran_suu(1);
+            flvecCopy(w[i].pos, ew->pos);
+            break;
+#endif
         }
         if (w[i].prim_no != -1) {
             w[i].prim = get_prim_ptr(w[i].prim_no);
@@ -409,6 +433,9 @@ static void eft15_m(EFTW *ew) {
         case 3:
         case 7:
         case 8:
+#if defined(VERSION_MHG) && !defined(__MWERKS__)
+        case 9:
+#endif
             d = eft15_data[idx++];
             eft_vec_linear(p->lag, d, p->scale);
             d = eft15_data[idx++];
@@ -532,6 +559,9 @@ static void eft15_t(PRIM *pr) {
                 eft_rgba_linear(fade_type2_94_1, p->lag, &col);
                 break;
             }
+#if defined(VERSION_MHG) && !defined(__MWERKS__)       /* G (game 0x576348): render state 0x6C off while drawn, on again after */
+            flSetRenderState(0x6C, 0);
+#endif
             flSetRenderState(0x19, (u32)&uv);
             rot[2] = DEG2RAD(ANG2DEG(p->rot));
             order = 2;
@@ -539,6 +569,9 @@ static void eft15_t(PRIM *pr) {
         case 3:
         case 7:
         case 8:
+#if defined(VERSION_MHG) && !defined(__MWERKS__)
+        case 9:
+#endif
             if (ew->arg == 8) {
                 flag |= 8;
             } else {
@@ -546,19 +579,30 @@ static void eft15_t(PRIM *pr) {
             }
             if (p->no == 0) {
                 cl = &mw->clay[66];
+#if defined(VERSION_MHG) && !defined(__MWERKS__)
+                if (ew->arg == 3 || ew->arg == 8 || ew->arg == 9) {
+#else
                 if (ew->arg == 3 || ew->arg == 8) {
+#endif
                     flmatMakeTrans(&uv, 0.25f, 0.75f, 0.0f);
                 } else {
                     flmatMakeTrans(&uv, 0.0f, 0.75f, 0.0f);
                 }
             } else {
                 cl = &mw->clay[75];
+#if defined(VERSION_MHG) && !defined(__MWERKS__)
+                if (ew->arg == 3 || ew->arg == 8 || ew->arg == 9) {
+#else
                 if (ew->arg == 3 || ew->arg == 8) {
+#endif
                     flmatMakeTrans(&uv, 0.0f, 0.046875f * (f32)p->lag, 0.0f);
                 } else {
                     flmatMakeTrans(&uv, 0.0625f, 0.5f + 0.046875f * (f32)p->lag, 0.0f);
                 }
             }
+#if defined(VERSION_MHG) && !defined(__MWERKS__)
+            flSetRenderState(0x6C, 0);
+#endif
             flSetRenderState(0x19, (u32)&uv);
             rot[2] = DEG2RAD(ANG2DEG(p->rot));
             order = 2;
@@ -597,6 +641,9 @@ static void eft15_t(PRIM *pr) {
         make_mat_srt(sc, rot, pr->pos, order, &m);
         flmatMul33_2(&m, &rview_mat);
         eft_trans_sub_col(cl, &m, col, flag, mats);
+#if defined(VERSION_MHG) && !defined(__MWERKS__)
+        flSetRenderState(0x6C, 1);
+#endif
     }
 }
 #endif
@@ -631,6 +678,32 @@ static asm void eft15_se_req(EFTW *ew)
 }
 #else
 static void eft15_se_req(EFTW *ew) {
+#if defined(VERSION_MHG) && !defined(__MWERKS__)       /* G (game 0x576830): own sounds, none for x07 1 */
+    switch (ew->arg) {
+    case 0:
+        se_req2(1, 0x5E, 0, ew->pos, 1, 0);
+        break;
+    case 2:
+        if (ew->x07 != 1) {
+            se_req2(1, 0x5F, 0, ew->pos, 1, 0);
+        }
+        break;
+    case 3:
+    case 7:
+        if (ew->x07 != 1) {
+            se_req2(1, 0x61, 0, ew->pos, 1, 0);
+        }
+        break;
+    case 8:
+        if (ew->x07 != 1) {
+            se_req2(1, 0x62, 0, ew->pos, 1, 0);
+        }
+        break;
+    case 4:
+        se_req2(1, 0x75, 0, ew->pos, 3, 0);
+        break;
+    }
+#else
     switch (ew->arg) {
     case 0:
     case 2:
@@ -643,6 +716,7 @@ static void eft15_se_req(EFTW *ew) {
         se_req2(1, 0x75, 0, ew->pos, 3, 0);
         break;
     }
+#endif
 }
 #endif
 

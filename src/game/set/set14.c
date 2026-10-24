@@ -37,6 +37,11 @@ extern s16 set14_st42_mask_tbl[4];
 extern s16 set14_st51_mask_tbl[4];
 extern s16 set14_st52_mask_tbl[4];
 extern s16 set14_st53_mask_tbl[4];
+#if defined(VERSION_MHG) && !defined(__MWERKS__)
+/* G's stage 90 (game 0x5A): the same two-of-five mist layers as stages 51-53 (pc_data.txt) */
+extern s16 set14_st90_mask_tbl_g[4];
+extern f32 set14_st90_pos_tbl_g[5][3];
+#endif
 extern s16 st00_mdl_tbl[4];
 extern s16 st01_mdl_tbl[4];
 extern s16 st04_mdl_tbl[4];
@@ -161,6 +166,23 @@ static void set14_i(SETW *sw) {
         sw->cnt = (u16)ran_suu(1) & 0xF;
         sw->x1E = (u16)ran_suu(1) % 10 + 0x37;
         break;
+#if defined(VERSION_MHG) && !defined(__MWERKS__)
+    case 0x5A:                  /* G (game 0x653A68): stage 90 */
+        sw->pos[0] = 9400.0f;
+        sw->pos[1] = 18.0f;
+        sw->pos[2] = 9780.0f;
+        sw->mode2 = (u16)ran_suu(1) % 5;
+        sw->timer = (u16)ran_suu(1) & 0xF;
+        sw->se1 = (u16)ran_suu(1) % 10 + 0x37;
+        sw->se0 = (u16)ran_suu(1) % 4 + 1;
+        sw->se0 += sw->mode2;
+        if (sw->se0 >= 5) {
+            sw->se0 -= 5;
+        }
+        sw->cnt = (u16)ran_suu(1) & 0xF;
+        sw->x1E = (u16)ran_suu(1) % 10 + 0x37;
+        break;
+#endif
     }
     sw->work14 = 0;
     sw->prim = get_prim_ptr(get_prim());
@@ -229,6 +251,9 @@ static void set14_m(SETW *sw) {
             sw->x1E = (u16)ran_suu(1) % 10 + 0x37;
         }
         break;
+#if defined(VERSION_MHG) && !defined(__MWERKS__)
+    case 0x5A:                  /* G (game 0x653C00): stage 90 likewise */
+#endif
     case 0x35:
         if (++sw->timer > sw->se1) {
             sw->mode2 = (u16)ran_suu(1) % 4 + 1;
@@ -324,6 +349,12 @@ static void set14_trans(PRIM *pr) {
             flSetRenderState(0x6C, 0);
             mask = set14_st53_mask_tbl;
             break;
+#if defined(VERSION_MHG) && !defined(__MWERKS__)
+        case 0x5A:
+            flSetRenderState(0x6C, 0);
+            mask = set14_st90_mask_tbl_g;
+            break;
+#endif
         }
         flSetRenderState(0x60, 0);
         for (i = 0; i < 4; i++) {
@@ -338,7 +369,11 @@ static void set14_trans(PRIM *pr) {
                 } else if (game_w.stage == 3) {
                     u = 1.0f - 0.0078125f * (f32)(stw->timer & 0x7F);
                     v = 0.0f;
+#if defined(VERSION_MHG) && !defined(__MWERKS__)
+                } else if (game_w.stage == 0x33 || game_w.stage == 0x34 || game_w.stage == 0x35 || game_w.stage == 0x5A) {
+#else
                 } else if (game_w.stage == 0x33 || game_w.stage == 0x34 || game_w.stage == 0x35) {
+#endif
                     u = 0.0f;
                     v = u;
                 } else {
@@ -347,7 +382,11 @@ static void set14_trans(PRIM *pr) {
                 }
                 break;
             case 1:
+#if defined(VERSION_MHG) && !defined(__MWERKS__)
+                if (game_w.stage == 0x33 || game_w.stage == 0x34 || game_w.stage == 0x35 || game_w.stage == 0x5A) {
+#else
                 if (game_w.stage == 0x33 || game_w.stage == 0x34 || game_w.stage == 0x35) {
+#endif
                     u = 0.0f;
                     v = u;
                 } else if (game_w.stage == 4) {
@@ -472,6 +511,32 @@ static void set14_trans(PRIM *pr) {
                 cl = mw->clay;
                 flSetRenderState(0x67, (a << 24) | 0xFFFFFF);
                 break;
+#if defined(VERSION_MHG) && !defined(__MWERKS__)
+            case 0x5A:          /* G (game 0x654498): stage 90, layer model 5 */
+                if (i == 0) {
+                    lim = sw->se1;
+                    t = sw->timer;
+                    u = (f32)t * (1000.0f / (f32)lim) + set14_st90_pos_tbl_g[sw->mode2][0];
+                    v = set14_st90_pos_tbl_g[sw->mode2][1];
+                    w = set14_st90_pos_tbl_g[sw->mode2][2];
+                } else {
+                    lim = sw->x1E;
+                    t = sw->cnt;
+                    u = (f32)t * (1000.0f / (f32)lim) + set14_st90_pos_tbl_g[sw->se0][0];
+                    v = set14_st90_pos_tbl_g[sw->se0][1];
+                    w = set14_st90_pos_tbl_g[sw->se0][2];
+                }
+                if (t < 20) {
+                    a = 255.0f * (0.05f * (f32)t);
+                } else if (lim - 20 < t) {
+                    a = 255.0f * ((f32)(lim - t) / 20.0f);
+                } else {
+                    a = 0xFF;
+                }
+                cl = &mw->clay[5];
+                flSetRenderState(0x67, (a << 24) | 0xFFFFFF);
+                break;
+#endif
             }
             flmatMakeTrans(&m, u, v, w);
             flSetRenderState(0x1A, (u32)&m);

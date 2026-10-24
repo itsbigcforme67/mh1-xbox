@@ -107,6 +107,10 @@ void Eft02_set3(EMW *em, int ang, int arg, int joint, f32 *pos, f32 scale) {
             ew->u0A.joint = ang;
             if (em->x10 != 0 && (em->kind == 0x13 || em->kind == 0x18)) {
                 ew->x1E = 2;
+#if defined(VERSION_MHG) && !defined(__MWERKS__)       /* G (sub_main 0x4C3900): kinds 8 / 34 bleed dark (x1E 3) */
+            } else if (em->x10 != 0 && (em->kind == 8 || em->kind == 0x22)) {
+                ew->x1E = 3;
+#endif
             } else {
                 ew->x1E = 0;
             }

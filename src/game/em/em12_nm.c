@@ -972,10 +972,13 @@ static void em_dm00_005B1880(EMW *em) {
         if (em->x194 == 0) {
             em_act_set(em, 0, 1);
             em->x302 = 0x40;
-        } else if (em_frame_check(em, 2.0f, 0) != 0) {
+        }
+#ifndef VERSION_MHG     /* G (game 0x5DD150) has no neck spray (Eft16_set_ex is gone) */
+        else if (em_frame_check(em, 2.0f, 0) != 0) {
             Eft16_set_ex(em, 3, 0xD);
             Eft16_set_ex(em, 4, 0xE);
         }
+#endif
         break;
     }
 }
@@ -2022,6 +2025,7 @@ static void ef_move_sub_005B4190(EMW *em, EM12W *w) {
         sound_call_005B5150(em, 0x18, 1, 6);
         sound_call_005B5150(em, 0x42, 1, 6);
         break;
+#ifndef VERSION_MHG     /* G (game 0x5DFA90): no neck spray script for animation 0x424 */
     case 0x424:
         if (em_frame_check(em, 2.0f, 0) != 0) {
             Eft16_set_ex(em, 3, 0xD);
@@ -2029,6 +2033,7 @@ static void ef_move_sub_005B4190(EMW *em, EM12W *w) {
             break;
         }
         break;
+#endif
     case 0x425:
         sound_call_005B5150(em, 4, 0x11, 0x10);
         sound_call_005B5150(em, 0x10, 1, 6);

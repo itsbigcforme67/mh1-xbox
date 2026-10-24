@@ -37,6 +37,9 @@ typedef struct EFT04_PIECE {
     u8 joint;           /* 0x2D type 0: entry in eft04_em15_pos */
     u8 alpha;           /* 0x2E */
     u8 speed;           /* 0x2F type 2: rise per frame times time */
+#ifdef VERSION_MHG
+    f32 vel[3];         /* 0x30 G only (60-byte pieces): type 9's velocity */
+#endif
 } EFT04_PIECE;
 
 /* Joint offsets for type 0 (0x14 bytes each). */
@@ -53,11 +56,16 @@ extern EFT_MDLW *eft_mdlw[5];
 extern FLMAT rview_mat;
 extern f32 D_3F2090[3];
 extern void *eft04_data[];
-extern s16 eft04_num[9];
-extern s16 eft04_all_time[9];
-extern s16 eft04_param[9];
-extern s16 eft04_index[9];
-extern s16 *eft04_time_tbl[9];
+#ifdef VERSION_MHG      /* G has ten types (9 = debris thrown around em15's roar), the tables ten entries (pc_data.txt) */
+#define EFT04_TYPES 10
+#else
+#define EFT04_TYPES 9
+#endif
+extern s16 eft04_num[EFT04_TYPES];
+extern s16 eft04_all_time[EFT04_TYPES];
+extern s16 eft04_param[EFT04_TYPES];
+extern s16 eft04_index[EFT04_TYPES];
+extern s16 *eft04_time_tbl[EFT04_TYPES];
 extern EFT04_JPOS eft04_em15_pos[];
 extern u8 *eft04_type4_fade_data[];
 extern u8 *eft04_type5_fade_data[2];
@@ -89,6 +97,12 @@ void make_mat_srt(f32 *, f32 *, f32 *, u16, FLMAT *);
 void eft_trans_sub_col(CLAY *, FLMAT *, u32, u16, void *);
 void eft_trans_sub_opa(CLAY *, FLMAT *, void *);
 void Eft13_set_pos(f32, f32 *, int);
+#ifdef VERSION_MHG
+f32 GetGroundShellHit(f32 *);
+void Em_se_req2(EMW *, int, int, f32 *, int, int);
+void Eft04_set_pos(f32 *pos, int arg, int kind, f32 scale);
+extern FLMAT rview_matY;
+#endif
 
 static void eft04_move(EFTW *ew);
 static void eft04_i(EFTW *ew);
@@ -140,6 +154,14 @@ static void eft04_i(EFTW *ew) {
         v[2] = 100.0f;
         eft04_pos_calc(ew->pos, em, v, 0x22);
         break;
+#ifdef VERSION_MHG
+    case 9:                     /* G (game 0x568A98): starts 80 in front of joint 0x22 */
+        v[0] = 0.0f;
+        v[1] = 0.0f;
+        v[2] = 80.0f;
+        eft04_pos_calc(ew->pos, em, v, 0x22);
+        break;
+#endif
     }
     for (i = 0; i < n; p++, i++) {
         p->prim_no = get_prim();
@@ -152,6 +174,21 @@ static void eft04_i(EFTW *ew) {
             p->size = ew->scale;
             switch (ew->arg) {
             case 0:
+#ifdef VERSION_MHG      /* G (game 0x568B40): the sizes follow the monster's size percent */
+                if (i == 0) {
+                    p->no = 0;
+                    p->rot[0] = ran_suu(1);
+                    p->rot[1] = ran_suu(1);
+                    p->rot[2] = ran_suu(1);
+                    p->size = 6.0f * ((f32)em->size / 100.0f);
+                    p->col = 0;
+                } else {
+                    p->no = 1;
+                    p->rot[2] = ran_suu(1);
+                    p->size = 2.0f * ((f32)em->size / 100.0f);
+                    p->col = 1;
+                }
+#else
                 if (i == 0) {
                     p->no = 0;
                     p->rot[0] = ran_suu(1);
@@ -164,6 +201,7 @@ static void eft04_i(EFTW *ew) {
                     p->rot[2] = ran_suu(1);
                     p->col = 1;
                 }
+#endif
                 break;
             case 1:
                 p->rot[2] = ran_suu(1);
@@ -178,7 +216,11 @@ static void eft04_i(EFTW *ew) {
                 p->pos[1] = ew->pos[1] + 0.010000001f * (f32)(((u16)ran_suu(1) & 0x3FF) - 0x200);
                 p->pos[2] = ew->pos[2] + 0.010000001f * (f32)(((u16)ran_suu(1) & 0x3FF) - 0x200);
                 flvecCopy(p->pos, ew->pos);
+#ifdef VERSION_MHG      /* G: times the effect's scale */
+                p->size = p->size * (1.2f - 0.2f * (f32)i);
+#else
                 p->size = 1.2f - 0.2f * (f32)i;
+#endif
                 p->speed = ((u16)ran_suu(1) & 0x1F) + 0x4B;
                 break;
             case 3:
@@ -268,6 +310,19 @@ static void eft04_i(EFTW *ew) {
                     break;
                 }
                 break;
+#ifdef VERSION_MHG
+            case 9:             /* G (game 0x569060): a piece of debris around joint 0x22, thrown by eft04_m */
+                p->scale[1] = p->scale[1] * 0.33f;
+                p->vel[0] = 0.0f;
+                p->vel[1] = 0.0f;
+                p->vel[2] = 0.0f;
+                flvecCopy(p->pos, ew->pos);
+                p->pos[0] = p->pos[0] + 30.0f * (0.001f * (f32)((u16)ran_suu(1) & 0x3FF) - 0.5f);
+                p->pos[1] = p->pos[1] + 30.0f * (0.001f * (f32)((u16)ran_suu(1) & 0x3FF) - 0.5f);
+                p->pos[2] = p->pos[2] + 30.0f * (0.001f * (f32)((u16)ran_suu(1) & 0x3FF) - 0.5f);
+                p->col = 1;
+                break;
+#endif
             }
             p->prim = get_prim_ptr(p->prim_no);
             p->prim->owner = ew;
@@ -363,6 +418,20 @@ static void eft04_m(EFTW *ew) {
         v[2] = 24.0f;
         eft04_pos_calc(ew->pos, em, v, 0x17);
         break;
+#ifdef VERSION_MHG
+    case 9:                     /* G (game 0x5694E0): done once every piece has landed (no 0xFF) */
+        for (k = 0; k < num; k++) {
+            if (p[k].no != 0xFF) {
+                break;
+            }
+        }
+        if (k >= num) {
+            ew->mode++;
+            ew->be_flag = 0;
+            return;
+        }
+        break;
+#endif
     }
     n = num;
     for (i = 0; i < n; i++, p++) {
@@ -433,7 +502,11 @@ static void eft04_m(EFTW *ew) {
             idx += 2;
             eft_alpha_linear(p->lag, eft04_data[(s16)(k + 1)], &a);
             p->alpha = 255.0f * a;
+#ifdef VERSION_MHG      /* G (game 0x569920): times the effect's scale */
+            p->pos[1] += ew->scale * ((f32)p->speed / (f32)time);
+#else
             p->pos[1] += (f32)p->speed / (f32)time;
+#endif
             break;
         case 3:
             if (p->lag <= 0) {
@@ -525,6 +598,28 @@ static void eft04_m(EFTW *ew) {
             }
             flvecCopy(p->pos, ew->pos);
             break;
+#ifdef VERSION_MHG
+        case 9:                 /* G (game 0x569CF8): thrown debris, falls and bursts on the ground */
+            if (p->no == 0xFF) {
+                continue;
+            }
+            p->vel[1] += -8.0f;
+            p->pos[0] += p->vel[0];
+            p->pos[1] += p->vel[1];
+            p->pos[2] += p->vel[2];
+            a = GetGroundShellHit(p->pos);
+            if (p->pos[1] <= a) {
+                p->pos[1] = a;
+                if (em->be_flag != 0 && em->kind == ew->x07) {
+                    Em_se_req2(em, 30, 0, p->pos, 1, 0);
+                }
+                Eft04_set_pos(p->pos, 1, ew->x07, 0.3f * ew->scale);
+                Eft04_set_pos(p->pos, 2, ew->x07, 0.3f * ew->scale);
+                p->no = 0xFF;
+                continue;
+            }
+            break;
+#endif
         }
         if (p->prim != 0) {
             p->prim->pos[0] = p->pos[0] + v[0];
@@ -578,7 +673,11 @@ static void eft04_t(PRIM *pr) {
     CLAY *cl;
     u16 flag = 0;
 
+#ifdef VERSION_MHG      /* G (game 0x569FA0) does not look at eft_mdlw[0] */
+    if (1) {
+#else
     if (eft_mdlw[0] != 0 && eft_mdlw[0]->flag != 0) {
+#endif
         sc[0] = p->size * p->scale[0];
         sc[1] = p->size * p->scale[1];
         sc[2] = p->size * p->scale[2];
@@ -794,6 +893,10 @@ static void eft04_t(PRIM *pr) {
                 rot[2] = DEG2RAD(ANG2DEG(p->rot[2]));
                 order = 0xE;
                 mul = 0;
+#ifdef VERSION_MHG      /* G (game 0x56B1A0): the texture scrolls */
+                flmatMakeTrans(&uv, 0.0f, 0.1875f * (f32)p->lag / 10.0f, 0.0f);
+                flSetRenderState(0x19, (u32)&uv);
+#endif
                 break;
             default:
                 flag |= 2;
@@ -807,10 +910,27 @@ static void eft04_t(PRIM *pr) {
             col = -1;
             make_mat_srt(sc, rot, pr->pos, order, &m);
             break;
+#ifdef VERSION_MHG
+        case 9:                 /* G (game 0x56B300): debris, an upright billboard (rview_matY) */
+            cl = &mw->clay[9];
+            rot[0] = rot[1] = rot[2] = 0.0f;
+            make_mat_srt(sc, rot, pr->pos, 0, &m);
+            mul = 2;
+            col = -1;
+            break;
+#endif
         }
+#ifdef VERSION_MHG
+        if (mul == 2) {
+            flmatMul33_2(&m, &rview_matY);
+        } else if (mul) {
+            flmatMul33_2(&m, &rview_mat);
+        }
+#else
         if (mul) {
             flmatMul33_2(&m, &rview_mat);
         }
+#endif
         if (p->col != 0) {
             eft_trans_sub_col(cl, &m, col, flag, mats);
         } else {
@@ -967,6 +1087,11 @@ void Eft04_set_time(EMW *em, int arg, int time, f32 scale) {
             ew->x07 = em->kind;
             ew->prim = 0;
             ew->scale = scale;
+#ifdef VERSION_MHG      /* G (game 0x56BAAC): the callers' time is clamped by the owner's act speed */
+            if (em->act_spd < 0.001f || time > 200) {
+                time = 100;
+            }
+#endif
             ew->u0A.joint = time;
         }
     }
