@@ -1,0 +1,88 @@
+# Our own English for Monster Hunter G (PS2): only strings no official release has (not MH1 US, not in Monster Hunter
+# Portable, so Freedom will not have them either). Read by tools/text_map.py after the official sources; official English
+# always wins. Format and rules: docs/english_g.md "Our own translation". Add lines with tools/text_own.py.
+# ID <TAB> crc32 of the Japanese it was written for <TAB> flags (- none; t talk window; p tutorial page;
+#   n provisional G-only name, Freedom decides) <TAB> English (\n line feed). No Japanese text in this file.
+# Style: MH1 US terms and names exactly as MH1 US writes them; written by Claude (agent A), not a native translator.
+# --- elder tutorial pages G edited (US line structure, G's buttons)
+game:0x6DBC40	7afda796	p	Of course, you can use items like the\n~C05Mini Whetstone~C00 to ~C05sharpen a dull weapon~C00.\n~C06 L2 button + ~B03 or ~B00: Select item\n~B03 button: Use item\n
+game:0x6DC630	2923a807	p	~C00Now let's try attacking.\n~C06Right analog stick up: Medium thrust\nRight analog stick down: Upper thrust\nR3 button: Charge\n~C00With your weapon drawn, ~C05press the\n~B01 button~C00 to perform a ~C05back-step~C00.\n
+game:0x6DC9F0	2df09aed	p	To become a hunter you must hunt!\nYou won't last long if you don't master\nhunting. Let's try using a Bowgun.\n~C06Right analog stick: Ready Bowgun\n~B03 or ~B00 button: Put Bowgun away\n
+game:0x6DD170	be359abd	p	Your hunting skills are improving! Now,\ncarve up your kill and ~C05cook the Raw Meat\non your Portable Spit~C00!\n~C06 L2 button + ~B03 or ~B00: Select item\n~B03 button: Use item\n
+# --- town: Hunter's shoppe, armory, guest house, market (talk window)
+lobby:0x5FE140	44cf554a	t	Welcome to the hunter's shoppe! We offer all kinds of goods to match your Hunter Rank!\n...What can I get for you?
+lobby:0x5FE230	a2185925	t	Oh, it's you! I see you've been working hard to raise your HR.
+lobby:0x5FE270	635a0def	t	So, as a special treat, I'm revealing our secret monster info! Put it to good use against unknown wyverns, and in your Monster Records!
+lobby:0x5FE300	24a1ee1b	t	Huh? You don't know about Monster Records? That's when you log a monster's length in your Monster List. Every hunter knows that!
+lobby:0x5FE3F0	8da3789f	t	As a special treat, we've got charms with amazing effects! And info on the monsters everyone's talking about. Use it well!
+lobby:0x5FE490	79df84ba	t	Um... excuse me? I heard you drove off Lao-Shan Lung twice. You're joking, right?
+lobby:0x5FE650	8c3967bd	t	Buy it together with the Storage Expert book that's already a hit, and your storage goes up by a whole 200! You just have to buy it, right?
+lobby:0x5FE6F0	4291816a	t	Welcome to the armory. We offer all kinds of equipment to match your Hunter Rank.\nWhat can I get for you?
+lobby:0x5FE7B0	fa503618	t	Congratulations on slaying the Gypceros!
+lobby:0x5FE7E0	bb7bd475	t	Under Guild rules, you may now buy Silver Metal Boots.
+lobby:0x5FE830	41173db2	t	Boots made of a special alloy. They're sure to serve you well. Please, try them!
+lobby:0x5FE8A0	1bf4373c	t	Good work slaying the Rathalos!
+lobby:0x5FE8D0	35c8f6ea	t	Under Guild rules, you may now buy Dark Metal Boots and Pink Metal Boots.
+lobby:0x5FE930	5f676cb3	t	Lovely new colors to put a little style in your step! Please, try them!
+lobby:0x5FE9B0	fb7987a0	t	Congratulations on slaying two Diablos!
+lobby:0x5FE9E0	17f7d116	t	Under Guild rules, you may now buy the upgraded alloy boots.
+lobby:0x5FEA30	67421c33	t	A new offer from the Hunter's Guild, made with your legs' health in mind! Please, try them!
+lobby:0x5FEAB0	20aa1b94	t	Splendid work repelling Lao-Shan Lung!
+lobby:0x5FEAE0	e71ee1ba	t	Under Guild rules, you may now buy Chrome Metal G Boots and Chrome Metal G Coil.
+lobby:0x5FEB40	cfa60278	t	Black alloy set off by an elegant gold pattern. Perfect for the mature hunter, and the Guild's own pick! Please, try them!
+lobby:0x5FEBD0	b83a5ee9	t	Congratulations on slaying both Rathalos and Rathian!
+lobby:0x5FEC10	eab87dcf	t	Under Guild rules, you may now buy the strongest alloy boots.
+lobby:0x5FEC60	e92d905b	t	It's all about the S! S for Super! Special!! Spectacular!!!
+lobby:0x5FECB0	1a4edcbc	t	...Ahem. Er, let me start over.
+lobby:0x5FECE0	20aa1b94	t	Splendid work repelling Lao-Shan Lung!
+lobby:0x5FED10	adde98f7	t	Under Guild rules, you may now buy Chrome Metal S Boots and Chrome Metal S Coil.
+lobby:0x5FED70	c810e0b1	t	Refined design. Refined Defense. You'll never want any other armor... Please, try them!
+lobby:0x5FEE80	a0da7b2f	t	...*Gulp!* Oh, uh, welcome! Today's a big sales day! My shop's always well stocked, and today we've got loads of special goods! Don't miss out!
+lobby:0x5FEF10	48ecdfb5	t	...*Gulp!* Oh, uh, welcome! Today's half-price day. If you buy too much I won't make a profit, so go easy on me!
+lobby:0x5FF750	1122fda6	t	Even at the Bishop Room level, we give fancy tickets to our regular customers.
+lobby:0x5FF830	1122fda6	t	Even at the Bishop Room level, we give fancy tickets to our regular customers.
+lobby:0x5FF910	3614cfbf	t	I hear you drove off the giant dragon that attacked the fortress! I can smell the money from here!
+lobby:0x5FF970	bda9430e	t	For a customer like you, we can offer the Queen Room! Please, take your time and relax.
+lobby:0x5FF9E0	5a9f16b0	t	You drove off the giant dragon! Splendid! Please, make yourself at home in the Queen Room.
+lobby:0x5FFDF0	e5488827	t	Well, well! Welcome! I hear you slew both Rathian and Rathalos!
+lobby:0x5FFE60	ae9f5e1d	t	You carry yourself like royalty, so we'd be honored to offer you rooms up to the King Room!
+lobby:0x5FFF40	9b36525c	t	You carry yourself like royalty, so we'd be honored to offer you rooms up to the King Room! Please, enjoy your stay!
+lobby:0x600040	00055a14	t	Come again anytime.
+lobby:0x600060	b111eab4	t	Come on, buy whatever you like! It's half-price day! Fresh food is a bargain, too!
+lobby:0x6000C0	f91d0de7	t	Lucky you! We've got special goods today! Come on, buy whatever you like!
+lobby:0x600120	f2027160	t	Come on in! Oh? You've got a hunter's eyes now! How can I tell? Remembering customers is the first rule of business!
+lobby:0x6001A0	ca606bc0	t	I've got something nice for you! Take this to the armory!
+lobby:0x6006F0	4ba33736	t	Also, from here on, in the top-rank quests, the Guild can't promise you its full support.
+lobby:0x600750	84747b49	t	Before you head out on one of those, be sure to hear the details from the Guildmaster.
+lobby:0x600A60	ef5d546a	t	By the way, if you buy Storage Expert, you can store 100 more items. It's a bit pricey, though.
+lobby:0x600AC0	f5eec2b2	t	The Master Craftsman Triplets' armory has an Item Box, too. Buy Storage Expert and you can store 100 more items!
+lobby:0x600FB0	8425d304	t	The Elders at our armory were saying that it helps to have a Gunner with you when you fight a giant dragon.
+lobby:0x601030	2213a664	t	They say a giant dragon's weak spot is on its back. A Gunner can hit it there more easily. Is that true?
+lobby:0x6010B0	f97898d9	t	They say giant dragons have a weak spot on the back, and a Gunner can hit it there more easily. Is that true?
+lobby:0x601160	6f353dd6	t	I hear the G-rank monsters in top-rank quests give the very best materials.
+lobby:0x6011C0	26c2c934	t	With those materials, you can make gear more powerful than anything before!
+lobby:0x601230	0c32941e	t	To stand up to G-rank monsters, you'll need to power up your gear, of course.
+lobby:0x601290	56ba1101	t	I hear the G-rank monsters in top-rank quests give the very best materials.
+lobby:0x6012F0	0c32941e	t	To stand up to G-rank monsters, you'll need to power up your gear, of course.
+lobby:0x601A70	2e4e1fcc	t	You'll find Item Boxes in your Guest House room and at the armory.
+lobby:0x601F20	45875dd7	t	But they won't always make the same trade, so be careful.
+lobby:0x601F60	eaa4c330	t	For example, you might trade them Iron Ore and get Sm Monster Bone or Mystery Bone back.
+lobby:0x601FD0	afbcd8fe	t	The Veggie Elders in the Forest and Hills, Swamp, and Jungle won't always make the same trade, so be careful.
+lobby:0x602050	eaa4c330	t	For example, you might trade them Iron Ore and get Sm Monster Bone or Mystery Bone back.
+lobby:0x6020F0	cef29380	t	Last time I visited the Elder in the Swamp, I think... he traded me something really good for a Vespoid Abdomen.
+lobby:0x602170	c217efe0	t	But be careful. The Veggie Elders won't always trade you the same thing.
+lobby:0x6021D0	cef29380	t	Last time I visited the Elder in the Swamp, I think... he traded me something really good for a Vespoid Abdomen.
+lobby:0x602250	c217efe0	t	But be careful. The Veggie Elders won't always trade you the same thing.
+lobby:0x602320	d46c7f4d	n t	He traded me Carbalite Ore for a Hornetaur Razorwing!
+lobby:0x602360	a5bb362d	n t	Oh, but the other day, he gave me Dragonite Ore for a Hornetaur Razorwing! I guess he's moody.
+lobby:0x602440	a5bb362d	n t	Oh, but the other day, he gave me Dragonite Ore for a Hornetaur Razorwing! I guess he's moody.
+lobby:0x6029F0	bb20fa9f	n t	He traded me Albino Prime Cut for a Hellfire Stone!
+lobby:0x602A30	7f128649	n t	Oh, but the other day, I gave him a Hellfire Stone and got a Gravios Carapace! I guess he's moody.
+lobby:0x602AA0	144af095	t	The Veggie Elders are really moody, but if you use them well, you can get lots of good deals. Good luck!
+lobby:0x603590	43c2431d	t	Fishing is fun, but nothing beats hunting.
+lobby:0x6035C0	a2b73eec	t	The other day I was out enjoying a hunt in all sorts of places, when...
+lobby:0x603610	847cdecc	t	a Yian Kut-Ku in a strange color showed up! What a shock!
+lobby:0x603640	52df332d	t	It's a bird every hunter knows, right? But... that color... Were my eyes playing tricks?
+lobby:0x6036A0	cb539f1d	t	That strange-colored Kut-Ku I saw... Armor in that color would look lovely.
+lobby:0x6036E0	f677fbd6	t	Or were my eyes playing tricks?
+lobby:0x603C00	3b0354b2	t	Press the L1 button to open or close the List of all players in town.

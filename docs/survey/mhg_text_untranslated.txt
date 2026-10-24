@@ -13,16 +13,16 @@ game:0x6D1FE0	code literals (game)	G only
 game:0x6D2000	code literals (game)	G only
 game:0x6DB0D4	code literals (game)	G only	in Portable
 game:0x6DB9E0	code literals (game)	G only	ambiguous: the English names a button the Japanese does not
-game:0x6DBC40	tutorial pages	edited in G	ambiguous: the English names a button the Japanese does not
+game:0x6DBC40	tutorial pages	ours	ambiguous: the English names a button the Japanese does not
 game:0x6DC0B0	other tables (lit_190_0068ED) [G table]	G only
 game:0x6DC180	other tables (lit_190_0068ED) [G table]	G only
 game:0x6DC280	other tables (lit_190_0068ED) [G table]	G only
-game:0x6DC630	tutorial pages	edited in G
-game:0x6DC9F0	tutorial pages	edited in G
+game:0x6DC630	tutorial pages	ours
+game:0x6DC9F0	tutorial pages	ours
 game:0x6DCC50	tutorial pages	edited in G	in Portable
 game:0x6DCD50	code literals (game)	G only	in Portable
 game:0x6DCE00	code literals (game)	G only	in Portable
-game:0x6DD170	tutorial pages	edited in G	ambiguous: the English names a button the Japanese does not
+game:0x6DD170	tutorial pages	ours	ambiguous: the English names a button the Japanese does not
 game:0x6DD410	code literals (game)	G only	in Portable
 game:0x6DE510	other tables (lit_205_0068EEE) [G table]	G only	in Portable
 game:0x6DE590	other tables (lit_205_0068EEE) [G table]	G only	in Portable
@@ -215,100 +215,100 @@ lobby:0x5FDB00	code literals (lobby)	G only
 lobby:0x5FDB20	code literals (lobby)	G only
 lobby:0x5FDB40	code literals (lobby)	G only
 lobby:0x5FDCC0	code literals (lobby)	G only
-lobby:0x5FE140	village NPC lines and talk	edited in G
-lobby:0x5FE230	village NPC lines and talk [G table]	G only
-lobby:0x5FE270	village NPC lines and talk [G table]	G only
-lobby:0x5FE300	village NPC lines and talk [G table]	G only
+lobby:0x5FE140	village NPC lines and talk	ours
+lobby:0x5FE230	village NPC lines and talk [G table]	ours
+lobby:0x5FE270	village NPC lines and talk [G table]	ours
+lobby:0x5FE300	village NPC lines and talk [G table]	ours
 lobby:0x5FE380	village NPC lines and talk [G table]	G only	in Portable
 lobby:0x5FE3A0	village NPC lines and talk [G table]	G only	in Portable
-lobby:0x5FE3F0	village NPC lines and talk [G table]	G only
+lobby:0x5FE3F0	village NPC lines and talk [G table]	ours
 lobby:0x5FE470	village NPC lines and talk [G table]	G only	in Portable
-lobby:0x5FE490	village NPC lines and talk [G table]	G only
+lobby:0x5FE490	village NPC lines and talk [G table]	ours
 lobby:0x5FE4F0	village NPC lines and talk [G table]	G only	in Portable
 lobby:0x5FE570	village NPC lines and talk [G table]	G only	in Portable
 lobby:0x5FE590	village NPC lines and talk [G table]	G only	in Portable
 lobby:0x5FE5E0	village NPC lines and talk [G table]	G only	in Portable
-lobby:0x5FE650	village NPC lines and talk [G table]	G only
+lobby:0x5FE650	village NPC lines and talk [G table]	ours
 lobby:0x5FE6D0	village NPC lines and talk [G table]	G only	in Portable
-lobby:0x5FE6F0	village NPC lines and talk	edited in G
-lobby:0x5FE7B0	village NPC lines and talk [G table]	G only
-lobby:0x5FE7E0	village NPC lines and talk [G table]	G only
-lobby:0x5FE830	village NPC lines and talk [G table]	G only
+lobby:0x5FE6F0	village NPC lines and talk	ours
+lobby:0x5FE7B0	village NPC lines and talk [G table]	ours
+lobby:0x5FE7E0	village NPC lines and talk [G table]	ours
+lobby:0x5FE830	village NPC lines and talk [G table]	ours
 lobby:0x5FE880	village NPC lines and talk [G table]	G only	in Portable
-lobby:0x5FE8A0	village NPC lines and talk [G table]	G only
-lobby:0x5FE8D0	village NPC lines and talk [G table]	G only
-lobby:0x5FE930	village NPC lines and talk [G table]	G only
+lobby:0x5FE8A0	village NPC lines and talk [G table]	ours
+lobby:0x5FE8D0	village NPC lines and talk [G table]	ours
+lobby:0x5FE930	village NPC lines and talk [G table]	ours
 lobby:0x5FE990	village NPC lines and talk [G table]	G only	in Portable
-lobby:0x5FE9B0	village NPC lines and talk [G table]	G only
-lobby:0x5FE9E0	village NPC lines and talk [G table]	G only
-lobby:0x5FEA30	village NPC lines and talk [G table]	G only
+lobby:0x5FE9B0	village NPC lines and talk [G table]	ours
+lobby:0x5FE9E0	village NPC lines and talk [G table]	ours
+lobby:0x5FEA30	village NPC lines and talk [G table]	ours
 lobby:0x5FEA90	village NPC lines and talk [G table]	G only	in Portable
-lobby:0x5FEAB0	village NPC lines and talk [G table]	G only
-lobby:0x5FEAE0	village NPC lines and talk [G table]	G only
-lobby:0x5FEB40	village NPC lines and talk [G table]	G only
+lobby:0x5FEAB0	village NPC lines and talk [G table]	ours
+lobby:0x5FEAE0	village NPC lines and talk [G table]	ours
+lobby:0x5FEB40	village NPC lines and talk [G table]	ours
 lobby:0x5FEBB0	village NPC lines and talk [G table]	G only	in Portable
-lobby:0x5FEBD0	village NPC lines and talk [G table]	G only
-lobby:0x5FEC10	village NPC lines and talk [G table]	G only
-lobby:0x5FEC60	village NPC lines and talk [G table]	G only
-lobby:0x5FECB0	village NPC lines and talk [G table]	G only
-lobby:0x5FECE0	village NPC lines and talk [G table]	G only
-lobby:0x5FED10	village NPC lines and talk [G table]	G only
-lobby:0x5FED70	village NPC lines and talk [G table]	G only
+lobby:0x5FEBD0	village NPC lines and talk [G table]	ours
+lobby:0x5FEC10	village NPC lines and talk [G table]	ours
+lobby:0x5FEC60	village NPC lines and talk [G table]	ours
+lobby:0x5FECB0	village NPC lines and talk [G table]	ours
+lobby:0x5FECE0	village NPC lines and talk [G table]	ours
+lobby:0x5FED10	village NPC lines and talk [G table]	ours
+lobby:0x5FED70	village NPC lines and talk [G table]	ours
 lobby:0x5FEDD0	village NPC lines and talk [G table]	G only	in Portable
-lobby:0x5FEE80	village NPC lines and talk [G table]	G only
-lobby:0x5FEF10	village NPC lines and talk [G table]	G only
-lobby:0x5FF750	village NPC lines and talk [G table]	G only
-lobby:0x5FF830	village NPC lines and talk [G table]	G only
-lobby:0x5FF910	village NPC lines and talk	edited in G
-lobby:0x5FF970	village NPC lines and talk	edited in G
-lobby:0x5FF9E0	village NPC lines and talk [G table]	G only
-lobby:0x5FFDF0	village NPC lines and talk	edited in G
-lobby:0x5FFE60	village NPC lines and talk [G table]	G only
-lobby:0x5FFF40	village NPC lines and talk	edited in G
-lobby:0x600040	village NPC lines and talk	twin without US English
-lobby:0x600060	village NPC lines and talk	twin without US English
-lobby:0x6000C0	village NPC lines and talk [G table]	G only
-lobby:0x600120	village NPC lines and talk	twin without US English
-lobby:0x6001A0	village NPC lines and talk	twin without US English
+lobby:0x5FEE80	village NPC lines and talk [G table]	ours
+lobby:0x5FEF10	village NPC lines and talk [G table]	ours
+lobby:0x5FF750	village NPC lines and talk [G table]	ours
+lobby:0x5FF830	village NPC lines and talk [G table]	ours
+lobby:0x5FF910	village NPC lines and talk	ours
+lobby:0x5FF970	village NPC lines and talk	ours
+lobby:0x5FF9E0	village NPC lines and talk [G table]	ours
+lobby:0x5FFDF0	village NPC lines and talk	ours
+lobby:0x5FFE60	village NPC lines and talk [G table]	ours
+lobby:0x5FFF40	village NPC lines and talk	ours
+lobby:0x600040	village NPC lines and talk	ours
+lobby:0x600060	village NPC lines and talk	ours
+lobby:0x6000C0	village NPC lines and talk [G table]	ours
+lobby:0x600120	village NPC lines and talk	ours
+lobby:0x6001A0	village NPC lines and talk	ours
 lobby:0x6001F0	village NPC lines and talk [G table]	G only	in Portable
 lobby:0x6005A0	village NPC lines and talk [G table]	G only	in Portable
 lobby:0x6005E0	village NPC lines and talk [G table]	G only	in Portable
 lobby:0x600630	village NPC lines and talk [G table]	G only	in Portable
 lobby:0x600680	village NPC lines and talk [G table]	G only	in Portable
-lobby:0x6006F0	village NPC lines and talk [G table]	G only
-lobby:0x600750	village NPC lines and talk [G table]	G only
-lobby:0x600A60	village NPC lines and talk [G table]	G only
-lobby:0x600AC0	village NPC lines and talk	edited in G
-lobby:0x600FB0	village NPC lines and talk	edited in G
-lobby:0x601030	village NPC lines and talk	edited in G
-lobby:0x6010B0	village NPC lines and talk [G table]	G only
-lobby:0x601160	village NPC lines and talk [G table]	G only
-lobby:0x6011C0	village NPC lines and talk [G table]	G only
-lobby:0x601230	village NPC lines and talk [G table]	G only
-lobby:0x601290	village NPC lines and talk [G table]	G only
-lobby:0x6012F0	village NPC lines and talk [G table]	G only
-lobby:0x601A70	village NPC lines and talk [G table]	G only
-lobby:0x601F20	village NPC lines and talk [G table]	G only
-lobby:0x601F60	village NPC lines and talk [G table]	G only
-lobby:0x601FD0	village NPC lines and talk	edited in G
-lobby:0x602050	village NPC lines and talk [G table]	G only
-lobby:0x6020F0	village NPC lines and talk	edited in G
-lobby:0x602170	village NPC lines and talk [G table]	G only
-lobby:0x6021D0	village NPC lines and talk	edited in G
-lobby:0x602250	village NPC lines and talk [G table]	G only
-lobby:0x602320	village NPC lines and talk	edited in G
-lobby:0x602360	village NPC lines and talk	edited in G
-lobby:0x602440	village NPC lines and talk	edited in G
-lobby:0x6029F0	village NPC lines and talk	edited in G
-lobby:0x602A30	village NPC lines and talk [G table]	G only
-lobby:0x602AA0	village NPC lines and talk [G table]	G only
-lobby:0x603590	village NPC lines and talk [G table]	G only
-lobby:0x6035C0	village NPC lines and talk [G table]	G only
-lobby:0x603610	village NPC lines and talk [G table]	G only
-lobby:0x603640	village NPC lines and talk [G table]	G only
-lobby:0x6036A0	village NPC lines and talk [G table]	G only
-lobby:0x6036E0	village NPC lines and talk [G table]	G only
-lobby:0x603C00	village NPC lines and talk [G table]	G only
+lobby:0x6006F0	village NPC lines and talk [G table]	ours
+lobby:0x600750	village NPC lines and talk [G table]	ours
+lobby:0x600A60	village NPC lines and talk [G table]	ours
+lobby:0x600AC0	village NPC lines and talk	ours
+lobby:0x600FB0	village NPC lines and talk	ours
+lobby:0x601030	village NPC lines and talk	ours
+lobby:0x6010B0	village NPC lines and talk [G table]	ours
+lobby:0x601160	village NPC lines and talk [G table]	ours
+lobby:0x6011C0	village NPC lines and talk [G table]	ours
+lobby:0x601230	village NPC lines and talk [G table]	ours
+lobby:0x601290	village NPC lines and talk [G table]	ours
+lobby:0x6012F0	village NPC lines and talk [G table]	ours
+lobby:0x601A70	village NPC lines and talk [G table]	ours
+lobby:0x601F20	village NPC lines and talk [G table]	ours
+lobby:0x601F60	village NPC lines and talk [G table]	ours
+lobby:0x601FD0	village NPC lines and talk	ours
+lobby:0x602050	village NPC lines and talk [G table]	ours
+lobby:0x6020F0	village NPC lines and talk	ours
+lobby:0x602170	village NPC lines and talk [G table]	ours
+lobby:0x6021D0	village NPC lines and talk	ours
+lobby:0x602250	village NPC lines and talk [G table]	ours
+lobby:0x602320	village NPC lines and talk	ours
+lobby:0x602360	village NPC lines and talk	ours
+lobby:0x602440	village NPC lines and talk	ours
+lobby:0x6029F0	village NPC lines and talk	ours
+lobby:0x602A30	village NPC lines and talk [G table]	ours
+lobby:0x602AA0	village NPC lines and talk [G table]	ours
+lobby:0x603590	village NPC lines and talk [G table]	ours
+lobby:0x6035C0	village NPC lines and talk [G table]	ours
+lobby:0x603610	village NPC lines and talk [G table]	ours
+lobby:0x603640	village NPC lines and talk [G table]	ours
+lobby:0x6036A0	village NPC lines and talk [G table]	ours
+lobby:0x6036E0	village NPC lines and talk [G table]	ours
+lobby:0x603C00	village NPC lines and talk [G table]	ours
 lobby:0x603C60	village NPC lines and talk [G table]	G only
 lobby:0x603CC0	village NPC lines and talk [G table]	G only
 lobby:0x603D60	village NPC lines and talk [G table]	G only

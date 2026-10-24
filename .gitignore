@@ -37,7 +37,9 @@ tools/ps2recomp/
 xbox_files*
 
 # translation tables made by tools/text_dump.py (hold the game text)
-text/
+text/*
+!text/mhg_en_own.tsv
+# (our own English: ids + crc32 only, no game text; docs/english_g.md "Our own translation")
 
 # output of ./mh1 (holds the player's copy of the game files)
 dist/
