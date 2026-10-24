@@ -638,7 +638,7 @@ main:0x2CBB40	114baf9b	-	Presented to users of\nthe guest house VIP room\nfor an
 # --- quests (G quest files)
 quest:19:0x68	ca16a9b5	-	Swamp Trouble
 quest:38:0xAC	e0601b40	-	Requestor: Jungle Researcher\nI got lost surveying the\njungle. The rest of my team\nis still starving! Deliver\n15 Well-Done Steaks as food\nfor the rescue!
-quest:10029:0x68	fdd88d40	-	The Gourmet's Dream
+quest:10029:0x68	fdd88d40	-	Gourmet's Dream
 quest:10044:0x68	5d03b6bb	-	Danger! Handle with Care!
 quest:20046:0xA4	967973ec	-	Requestor: Training Instructor\nGravios is a tough foe. But\ndamage it until its chest\nshell breaks off, and its\ndefense drops, so it's easier\nto beat!! Serious, for once.
 quest:20047:0xA4	967973ec	-	Requestor: Training Instructor\nGravios is a tough foe. But\ndamage it until its chest\nshell breaks off, and its\ndefense drops, so it's easier\nto beat!! Serious, for once.
@@ -998,3 +998,101 @@ main:0x2E99C0	3eb6511a	m	Saved.
 main:0x2E9E20	fe2a7fea	m	Character selected.
 main:0x2E9B30	d20ee346	m	never remove the memory card (8MB).
 main:0x2EA360	fede363a	m	Transfer the character?
+# --- elder tutorial pages G edited (game)
+game:0x6DB9E0	259389ca	p	First, learn how to use your weapon, and hunt\nthe herbivores, ~C05Apceros~C00!\nThey ~C05run away~C00 when they sense danger.\nUse the L1 button to keep them in sight.\n~C06L1 button: Turn camera to the front\nLeft analog stick + ~B01 button: Roll\n
+game:0x6DEBC0	3a465acf	p	~C05When you're close to a Mining Point,\nthe × mark next to the item icon\nwill disappear~C00, meaning you can use\nyour Pickaxe. When the × mark is gone,\n~C06~B03 button: Use item~C00\nlets you swing your Pickaxe.\n
+# --- Multi Matching BB login and NET file screens (lobby)
+lobby:0x637EB0	7fa5ae19	-	 You can record your Multi Matching BB login ID\n   and password in your NET file.\n\n If you do, they will be entered automatically\n   when you connect to the network.\n\n       Record the login ID and password\n       Record the login ID only\n       Do not record\n\n   If you record your login ID and password on a\n  memory card (8MB) (for PlayStation(R)2),\n   please take care of it.\n
+lobby:0x638050	00d55ee4	-	\n\n               Your NET file shows\n          that you have registered\n               before.\n\n                Register?\n\n                    Yes\n                    No\n
+lobby:0x638110	494b8a54	-	\n          Delete the Multi Matching BB\n          login ID and password\n          saved in your NET file?\n\n\n  If you delete them, they will not be entered\n  automatically when you connect. Be careful.\n\n       Delete the login ID and password\n       Do not delete\n
+lobby:0x638240	61cce1c2	-	\n\n     Checking the memory card...\n\n\n    Do not turn off the console or remove\n          the memory card.\n
+lobby:0x6382C0	f318ba05	-	\n\n     Saving to the memory card...\n\n\n    Do not turn off the console or remove\n          the memory card.\n
+lobby:0x638340	60178f3c	-	\n\n  Deleting the Multi Matching BB\n  login ID and password from the\n  memory card (8MB) (for PlayStation(R)2)...\n\n\n    Do not turn off the console or remove\n          the memory card.\n
+lobby:0x638500	e4e1a4c4	-	Connection failed.
+lobby:0x638520	dcf549ce	-	The server is very busy right now. Sorry for the trouble, but please try again later.
+lobby:0x6385A0	aae75db1	-	There was no answer from the server.
+lobby:0x6385D0	7834be6b	-	Connection failed.<br>Please try again in about 5 minutes.
+lobby:0x638630	5e690b4d	-	You have exceeded the limit of your "Game Bargain Plan Limit" or "Overuse Warning Plan".
+lobby:0x638690	319386c3	-	The lobby server information is not valid.
+lobby:0x638700	3c60b359	-	Register these details?
+lobby:0x638720	8178fd6e	-	 Some fields are empty
+lobby:0x638760	7f69be83	-	 A communication error occurred.\nPlease connect again.\n
+lobby:0x6387A0	0f997fcc	-	Could not connect to the server.\n       Reconnect?\n
+lobby:0x63AE80	17b02bbb	-	<br><br>Error code:
+lobby:0x642CB0	4183093f	-	Speakers
+lobby:0x642CD0	41730e96	-	Off
+lobby:0x642DA0	fafb12b0	-	\n\n\n\n~C00Log in with the ID above.\n~C02If another name is registered,\nit is overwritten with the character name.\n~C00Is this OK?
+lobby:0x642E30	29e5a430	-	~C00Get a new Capcom ID?\nIs this OK?
+lobby:0x642FB0	ced1282d	-	~C00Moving to area.
+lobby:0x642FD0	e91886da	-	~C00Could not move to the area.\nDisconnecting from the network.
+lobby:0x6430C0	4aacb5c7	-	~C00Could not return to the area.
+lobby:0x6432A0	d496d486	-	~C00Searching for players...
+lobby:0x643310	6a253b9a	-	~C06Enter a 6-digit Capcom ID.
+lobby:0x643340	b5caeceb	-	~C06Enter a name of at least 1 letter.
+lobby:0x643410	ed6247fd	-	~C00Added to your Friend List.
+lobby:0x643440	7bcaa3f6	-	~C00Friend List entry overwritten.
+lobby:0x643560	deb1c601	-	~C00Could not save to the memory card.
+lobby:0x6437C0	977859b8	-	~C00Mail sent.
+lobby:0x643860	2c4cba5c	-	~C00The player with that ID\nis not online.
+lobby:0x6438A0	2858556c	-	~C00Send this Short Mail?\nIs this OK?
+lobby:0x643900	c4994c55	-	~C00Invalid ID.
+lobby:0x643920	e31b95ca	-	~C00Sending mail...
+lobby:0x643950	78e6b26e	-	~C00You can't send mail to yourself.
+lobby:0x643E60	eed64cd6	-	~C00You joined the quest.\nPress the ~B03 button at the exit\nto get ready to depart.
+# --- network settings screens (yn)
+yn:0xA10938	1909182c	-	Not usable
+yn:0xA10948	eb99812f	-	Hardware
+yn:0xA10958	726219fe	-	Hardware details
+yn:0xA10978	91692fcd	-	Auto
+yn:0xA10980	2be074ab	-	Host name
+yn:0xA109D0	fd31ee64	-	Primary DNS
+yn:0xA109F0	3374e3f2	-	Secondary DNS
+yn:0xA10A08	9709a83b	-	L1: change
+yn:0xA10A20	fdf8d663	-	* Edit network settings
+yn:0xA10A40	2e60f865	-	* Proxy settings
+yn:0xA10BE0	b4c51fcd	m	There is no network hardware for a broadband
+yn:0xA10C10	4cbc22d0	m	connection, or no ISP settings.
+yn:0xA10C40	8db21ff8	m	Check your network hardware and
+yn:0xA10C70	cc5f6516	m	ISP settings.
+yn:0xA10C90	60a69628	m	No memory card (8MB) is inserted.
+yn:0xA10CC0	3f0f7e50	m	Please insert a memory card (8MB).
+yn:0xA10CF0	58e59fb2	m	The memory card (8MB) in use was removed.
+yn:0xA10D20	eeb26433	m	Returning to the network settings menu.
+yn:0xA10DC0	d35bb56f	m	Finishing the proxy settings.
+yn:0xA10DE0	393cc088	m	Register these settings?
+yn:0xA10E00	46a01afe	-	Details
+yn:0xA10E10	aa1502ae	m	Quit?
+yn:0xA10E30	eb992340	m	If a memory card (8MB) is inserted,
+yn:0xA10E60	1dabd831	m	do not remove it while quitting.
+yn:0xA10EA0	d44ee8f9	m	You cannot connect with this combination
+yn:0xA10ED0	6d97fa59	m	of hardware and ISP settings.
+yn:0xA10EF0	ab78b9cb	m	On the memory card (8MB) in MEMORY CARD slot %d,
+yn:0xA10F20	68e9264b	m	"Your Network Configuration file" was made
+yn:0xA10F60	40feb19e	m	on another "PlayStation 2" console,
+yn:0xA10F90	96c51b07	m	so it cannot be used.
+yn:0xA10FB0	52191b65	-	AOL settings cannot be edited or deleted.
+yn:0xA10FE0	411e7f6b	m	Could not connect.
+yn:0xA11000	593213ad	m	Your network settings
+yn:0xA11030	2c43c5a2	m	may have been changed.
+yn:0xA11050	48223853	m	Please check the settings again.
+yn:0xA11080	476839a6	-	Registration complete.
+yn:0xA11110	2e68c811	m	From MEMORY CARD slot %d,
+yn:0xA11130	b1f5e562	m	"Your Network Configuration file"
+yn:0xA11160	00cbc345	m	was loaded.
+yn:0xA11180	fa9bac81	m	Press the ~B00 button.
+yn:0xA11250	d5689563	m	Returning to the network.
+yn:0xA11340	42c36886	-	Select the settings to connect to the network.
+yn:0xA11380	8c0b6e9a	m	Until the setup is done, do not remove
+yn:0xA113B0	27034510	m	the memory card (8MB).
+yn:0xA113D0	6b4554f4	m	If your ISP has no proxy settings,
+yn:0xA11400	1e7a9f74	m	select "Not needed".
+yn:0xA11430	9110cac3	-	Enter the proxy server address (HTTP).
+yn:0xA11470	198fb1d7	-	Enter the port number.
+# --- quest board labels (lobby)
+# --- items (main)
+# --- quests (G quest files)
+# --- monsters (G-only Felynes; neither MH1 US nor Portable names them)
+# --- leftover developer messages
+lobby:0x63E920	b6a285d4	-	No talk data!!!!!
+sub_main:0x52C3E0	ae684e89	-	More than 15 enemies
+sub_main:0x52C400	2c921b6b	-	Press START to continue
