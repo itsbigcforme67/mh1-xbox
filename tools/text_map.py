@@ -2459,6 +2459,19 @@ def merged(entries, skip, extra):
     return d
 
 
+# G's English uses the series' later standard names where MH1 US differs (owner, 25 Oct 2026, docs/DECISIONS.md):
+# MH1 US wrote the weapon class "Dual Swords"; Freedom and every later release say "Dual Blades". Same length, so
+# box widths and talk-window wrapping are unchanged. The separator (blank or line break) is kept.
+G_TERMS = [(re.compile(rb"\b([Dd])ual([ \n])([Ss])word(s?)\b"),
+            lambda m: m.group(1) + b"ual" + m.group(2) + (b"B" if m.group(3) == b"S" else b"b") + b"lade" + m.group(4))]
+
+
+def g_terms(v):
+    for rx, rep in G_TERMS:
+        v = rx.sub(rep, v)
+    return v
+
+
 def write_table(path, entries, header):
     """entries {key: bytes}; bytes are written as they are (ASCII, a few single high bytes)"""
     os.makedirs(os.path.dirname(path), exist_ok=True)
@@ -3169,8 +3182,8 @@ def main():
     talk_g = {gk for gk in en_g if gk[0] not in ("quest", "slot") and TALK_TABLES.match(g_owner(gk) or "")}
     log("talk window layout: %d MH1 lines, %d G lines" % (len(talk_jp), len(talk_g)))
     write_table(os.path.join(args.out, "en_mhg.txt"), {(("main",) + k[1:]) if k[0] == "sub_main" else k:
-                                                      (talk_layout(own_wrap(v)) if k in own_talk else
-                                                       talk_layout(v) if k in talk_g else v)
+                                                      g_terms(talk_layout(own_wrap(v)) if k in own_talk else
+                                                              talk_layout(v) if k in talk_g else v)
                                                       for k, v in merged(en_g, gk_slot, {**slot_g, **own_fb}).items()}, hdr)
 
     summary = dict(jp_strings=len(S), jp_en=len(en_jp), g_strings=len(GS), g_en=len(en_g), g_own=len(own_g), gstat=gstat, drop=drop)

@@ -326,3 +326,7 @@ PAD LINK/) and Xbox pad dongle (MULTI KM/xboxpad/) replay one script into each c
 the same save and quest, from power-on (no memory pokes on a real PS2). Video: capture both consoles (the capture card
 used before for the Xbox), make a side-by-side and a per-frame difference to find the first divergence. Later, after the
 current Xbox bug round.
+
+- **G: "Dual Blades", not "Dual Swords"** (owner, 25 Oct 2026). MH1 US named the class Dual Swords; Freedom and the
+  later series use Dual Blades, and a US G could have gone either way, so G follows what most players know. G's text
+  table rewrites the term (tools/text_map.py G_TERMS); MH1's English keeps its own disc's wording.

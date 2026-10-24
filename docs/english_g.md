@@ -109,7 +109,9 @@ already matched lost the `n` flag; 24 lines keep it, now meaning "a G-only name 
 Plus, Guard +1, Crag S, Demonize, Normal S Up, the online room names, ...). The 31 G-only weapon / armour names are
 now ours too (flag `n`), in Freedom's style: Freedom writes 改 as "+" and a G version as "+" (Seiglinde+, Silver
 Boots+); where Freedom already has "X+" for X改 (Iron Sword+, Longhorn+), the G version is "X G" and its 改 "X G+".
-"Dual Swords" stays as MH1 US writes it (Freedom: Dual Blades) because G's menus take MH1 US's word.
+"Dual Blades" everywhere in G (owner, 25 Oct 2026): MH1 US wrote "Dual Swords", Freedom and later releases "Dual Blades";
+the series standard wins. tools/text_map.py G_TERMS rewrites MH1 US-sourced lines when it writes en_mhg.txt; our own lines
+say Dual Blades directly. Same length, so no box or wrapping changes. MH1's own English keeps the US disc's word.
 
 **Waiting for Freedom** (as written before Freedom arrived; kept for the record):
 - 31 G-only weapon / armour **names** left untranslated on purpose (G-rank "G" and "改" versions: Guild Rapier, Gladius,

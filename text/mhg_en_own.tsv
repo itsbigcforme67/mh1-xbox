@@ -183,11 +183,11 @@ lobby:0x613340	7882ee99	t	But I don't really know which skill type activates it.
 lobby:0x613390	221efb0a	t	But I bet you can find out!
 lobby:0x6133C0	5bce5ae3	t	With the Sharpness +1 skill, you can add one level to your Sharpness gauge!
 lobby:0x613420	ce8f0971	t	I don't know which skill type activates it... But I bet you can find out!
-lobby:0x613660	6b98e494	t	Do you know the secret of making Swords? Depending on how you make them, you can create Dual Swords, a pair of blades!
+lobby:0x613660	6b98e494	t	Do you know the secret of making Swords? Depending on how you make them, you can create Dual Blades, a pair of blades!
 lobby:0x6136D0	b3940d8d	t	With no shield you can't guard, but you'd get in so many more hits...
 lobby:0x613730	4fa89101	t	And I heard pressing R1 lets you unleash a fierce attack for a while, until your Stamina runs out.
 lobby:0x6137A0	31c769c1	t	Wow, just thinking about it gets my heart racing!
-lobby:0x6137D0	6b98e494	t	Do you know the secret of making Swords? Depending on how you make them, you can create Dual Swords, a pair of blades!
+lobby:0x6137D0	6b98e494	t	Do you know the secret of making Swords? Depending on how you make them, you can create Dual Blades, a pair of blades!
 lobby:0x613D60	db7eae7f	t	Forest Elder: monster parts. Swamp Elder: ores. Jungle... I forget! Try it yourself.
 lobby:0x613E10	db7eae7f	t	Forest Elder: monster parts. Swamp Elder: ores. Jungle... I forget! Try it yourself.
 lobby:0x613F10	61b3217a	t	You've slain Lao-Shan Lung twice, and you're aiming even higher.
@@ -441,10 +441,10 @@ sub_main:0x53B070	7e3c3dfb	t	Hoo hoo! You can't fool these eyes! Those 99 BBQ Ti
 sub_main:0x53B940	4b8cb150	t	Combine a Fire Herb and a Huskberry, and you get Flaming S, ammo for your Bowgun.
 sub_main:0x53BA00	0221f6e8	t	Combine a Flashbug and a Huskberry, and you get Thunder S, ammo for your Bowgun.
 sub_main:0x53C210	4f4b38ca	t	Combine a Potion and a Huskberry, and you get Recover S Lv2, ammo for your Bowgun.
-# --- elder tutorial: Dual Swords, bug net (game)
-game:0x6DC0B0	9fedc917	p	Upgrading a Sword can sometimes turn it\ninto Dual Swords. It's a bit early, but\nlet me teach you the Dual Swords basics.\n~C06Right analog stick: Draw weapon\nR1 button: Mode change\n~B03 or ~B00 button: Sheathe weapon\n
+# --- elder tutorial: Dual Blades, bug net (game)
+game:0x6DC0B0	9fedc917	p	Upgrading a Sword can sometimes turn it\ninto Dual Blades. It's a bit early, but\nlet me teach you the Dual Blades basics.\n~C06Right analog stick: Draw weapon\nR1 button: Mode change\n~B03 or ~B00 button: Sheathe weapon\n
 game:0x6DC180	99e4b03f	p	~C00Now let's try attacking.\n~C06Right analog stick up: Slice down\nRight analog stick left/right: Spin-slice\nRight analog stick down: Side-slash\n~C00As with the Sword, press the right analog\nstick in a set pattern for ~C05combo attacks~C00.\n
-game:0x6DC280	25d16d63	p	The strength of Dual Swords is the Attack\nboost of the mode change, and the dazzling\nsword moves it unleashes.\nBut the mode change keeps using Stamina\nwhile it lasts, so be careful!\n
+game:0x6DC280	25d16d63	p	The strength of Dual Blades is the Attack\nboost of the mode change, and the dazzling\nsword moves it unleashes.\nBut the mode change keeps using Stamina\nwhile it lasts, so be careful!\n
 game:0x6DEA00	d75e4286	p	~C05When you're close to a Bug Point,\nthe × mark next to the item icon\nwill disappear~C00, meaning you can use\nyour Bugnet. When the × mark is gone,\n~C06~B03 button: Use item~C00\nlets you swing your Bugnet.\n
 # --- G quest texts kept in lobby tables
 lobby:0x5E9330	a3f38c2e	-	Requestor: Party Host\nThere's a party at the lord's\nmanor today, but by mistake\nwe're short of food. Could\nyou bring us 10 pieces of\nfresh Raw Meat, please?
@@ -578,7 +578,7 @@ sub_main:0x53DC90	fb7cfc0c	-	Just hitting a flying Rathalos with a Paintball is 
 sub_main:0x53DD40	5e79afe0	-	I just took a walk in the Forest and Hills and saw a big\n~C05Velocidrome~C00. But of course, that won't make me cancel\ntraining. Now, show me your hunter's guts!!
 sub_main:0x53DDF0	c2523bbe	-	A Lance's ~C05charge loses its power~C00 fast when its\n~C05Sharpness drops~C00. Use a Whetstone to keep it sharp!\nThis time I've even hidden Whetstones near the camp!
 sub_main:0x53DEA0	b31f45d2	-	I've prepared a special Bowgun that can ~C05fire almost every\nkind of ammo~C00! Use all your power as a Gunner and take on\n~C05the King of Wyverns~C00! Good luck!
-sub_main:0x53DF40	4803b120	n	Get used to ~C05Dual Swords~C00, a Sword variant, too! They can't\nguard, but they can use ~C05a big move called Demonize~C00.\nAlways keep an eye on your remaining Stamina!
+sub_main:0x53DF40	4803b120	n	Get used to ~C05Dual Blades~C00, a Sword variant, too! They can't\nguard, but they can use ~C05a big move called Demonize~C00.\nAlways keep an eye on your remaining Stamina!
 sub_main:0x53DFF0	8167066f	-	Dodge Basarios' poison attacks by reading its moves!\nThe three ~C05Herbal Medicines~C00 in your pouch show how kind I\nam. ~C05Thank me until your tears run dry~C00! ...Nuhahahaha!!
 sub_main:0x53E0A0	f74bc405	-	Mix ~C05Ice Crystal~C00 with ~C05a certain insect~C00 to combine a\n~C05Cool Drink~C00! When you head for the lava, use it against\nthe heat so you don't waste Health!
 sub_main:0x53E210	c249116b	-	To a Gunner who keeps away and ~C05calmly reads its moves~C00,\nBasarios is nothing to fear! The enemy to watch out for\nmost is yourself. ~C05Don't let your guard down~C00!!
@@ -654,8 +654,8 @@ sub_main:0x5384E0	84eced05	-	Dyeru
 main:0x2CF4B0	6adbf4c6	d	Venom Lance, third upgrade.
 main:0x2D1280	e7c81fc6	d	Guild Rapier, 1st upgrade.
 main:0x2D12A0	956ee048	d	Its crystal shine catches the
-main:0x2D12C0	69dd7f77	d	eye. Guild-only Dual Swords.
-main:0x2D16A0	e85fd098	d	Dual Swords whose single hits
+main:0x2D12C0	69dd7f77	d	eye. Guild-only Dual Blades.
+main:0x2D16A0	e85fd098	d	Dual Blades whose single hits
 main:0x2D16C0	80de183f	d	are boosted by the fire of
 main:0x2D16E0	d3b981c3	d	the Rath clan. Weak Sharpness.
 main:0x2D1700	94c42b0d	d	Gradios, 1st upgrade.
@@ -715,7 +715,7 @@ main:0x2D3D40	accb6c86	d	bow to it. A hunter-king's.
 main:0x2D3E80	23bfbd62	d	A lance of death that brings
 main:0x2D3EA0	ab4a4123	d	the end to all life. Smashes
 main:0x2D3EC0	c83de486	d	elder dragons in one blow.
-main:0x2D3EE0	82a729f6	d	Demonic Dual Swords of living
+main:0x2D3EE0	82a729f6	d	Demonic Dual Blades of living
 main:0x2D3F00	342cf9da	d	water. Tremors no smith can
 main:0x2D3F20	967ce4c3	d	explain wreck foes from inside.
 main:0x2D3F40	f47ceb4e	d	A legendary club handed down
