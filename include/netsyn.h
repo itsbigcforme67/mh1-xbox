@@ -227,6 +227,7 @@ typedef struct NGW {
                                * guess at 0x1B6 before 24 Oct 2026) */
     u8  x1CA_[0x1D6 - 0x1CA];
     u8     x108[8];           /* 0x1D6 (MH1 0x108) */
+    u8  x1DE_[0x1E0 - 0x1DE];
     u8     x110[4];           /* 0x1E0 (MH1 0x110: net_game_w_clear G 0x4FBD50; was a guess at 0x1DE) */
     u8  x1E4_[0x1EA - 0x1E4];
     u16    x1E2;              /* 0x1EA (MH1 0x1E2) */
