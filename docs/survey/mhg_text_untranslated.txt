@@ -12,11 +12,11 @@ game:0x6CD748	code literals (game)	G only
 game:0x6D1FE0	code literals (game)	G only
 game:0x6D2000	code literals (game)	G only
 game:0x6DB0D4	code literals (game)	G only	in Portable
-game:0x6DB9E0	code literals (game)	G only	ambiguous: the English names a button the Japanese does not
+game:0x6DB9E0	code literals (game)	ours	ambiguous: the English names a button the Japanese does not
 game:0x6DBC40	tutorial pages	ours	ambiguous: the English names a button the Japanese does not
-game:0x6DC0B0	other tables (lit_190_0068ED) [G table]	G only
-game:0x6DC180	other tables (lit_190_0068ED) [G table]	G only
-game:0x6DC280	other tables (lit_190_0068ED) [G table]	G only
+game:0x6DC0B0	other tables (lit_190_0068ED) [G table]	ours
+game:0x6DC180	other tables (lit_190_0068ED) [G table]	ours
+game:0x6DC280	other tables (lit_190_0068ED) [G table]	ours
 game:0x6DC630	tutorial pages	ours
 game:0x6DC9F0	tutorial pages	ours
 game:0x6DCC50	tutorial pages	edited in G	in Portable
@@ -32,10 +32,10 @@ game:0x6DE740	code literals (game)	G only	in Portable
 game:0x6DE810	code literals (game)	G only	in Portable
 game:0x6DE860	code literals (game)	G only	in Portable
 game:0x6DE940	code literals (game)	G only	in Portable
-game:0x6DEA00	other tables (lit_205_0068EEE) [G table]	G only
+game:0x6DEA00	other tables (lit_205_0068EEE) [G table]	ours
 game:0x6DEAC0	other tables (lit_205_0068EEE) [G table]	G only	in Portable
 game:0x6DEB60	other tables (lit_205_0068EEE) [G table]	G only	in Portable
-game:0x6DEBC0	code literals (game)	G only
+game:0x6DEBC0	code literals (game)	ours
 game:0x6DEC80	code literals (game)	G only	in Portable
 game:0x6DEF00	code literals (game)	G only	in Portable
 game:0x6DEF70	code literals (game)	G only	in Portable
@@ -92,13 +92,13 @@ lobby:0x5E8F20	code literals (lobby)	G only
 lobby:0x5E8F38	code literals (lobby)	G only
 lobby:0x5E8F80	code literals (lobby)	G only
 lobby:0x5E8FA0	code literals (lobby)	G only
-lobby:0x5E9330	other tables (lit_188_0065EF) [G table]	G only
+lobby:0x5E9330	other tables (lit_188_0065EF) [G table]	ours
 lobby:0x5E9E30	other tables (lit_198_0065F) [G table]	G only	in Portable
 lobby:0x5EA460	other tables (lit_224_0065FA) [G table]	G only	in Portable
-lobby:0x5EA680	other tables (lit_232_0065FCD) [G table]	G only
-lobby:0x5EA6D0	other tables (lit_232_0065FCD) [G table]	G only
-lobby:0x5EBDD0	other tables (lit_281_00660C) [G table]	G only
-lobby:0x5EC030	other tables (lit_285_00660DF) [G table]	G only
+lobby:0x5EA680	other tables (lit_232_0065FCD) [G table]	ours
+lobby:0x5EA6D0	other tables (lit_232_0065FCD) [G table]	ours
+lobby:0x5EBDD0	other tables (lit_281_00660C) [G table]	ours
+lobby:0x5EC030	other tables (lit_285_00660DF) [G table]	ours
 lobby:0x5ED560	other tables (lit_309) [G table]	G only	in Portable
 lobby:0x5EE7B0	other tables (lit_326_00661B) [G table]	G only	in Portable
 lobby:0x5EF9C0	other tables (lit_333_00661DF) [G table]	G only	in Portable
@@ -205,11 +205,11 @@ lobby:0x5FAC50	other tables (lit_445) [G table]	G only	in Portable
 lobby:0x5FAD80	other tables (lit_445) [G table]	G only	in Portable
 lobby:0x5FAEB0	other tables (lit_445) [G table]	G only	in Portable
 lobby:0x5FAFE0	other tables (lit_445) [G table]	G only	in Portable
-lobby:0x5FB110	other tables (lit_445) [G table]	G only
-lobby:0x5FB240	other tables (lit_445) [G table]	G only
-lobby:0x5FB370	other tables (lit_445) [G table]	G only
-lobby:0x5FB4A0	other tables (lit_445) [G table]	G only
-lobby:0x5FB5D0	other tables (lit_445) [G table]	G only
+lobby:0x5FB110	other tables (lit_445) [G table]	ours
+lobby:0x5FB240	other tables (lit_445) [G table]	ours
+lobby:0x5FB370	other tables (lit_445) [G table]	ours
+lobby:0x5FB4A0	other tables (lit_445) [G table]	ours
+lobby:0x5FB5D0	other tables (lit_445) [G table]	ours
 lobby:0x5FBD00	code literals (lobby)	G only
 lobby:0x5FDB00	code literals (lobby)	G only
 lobby:0x5FDB20	code literals (lobby)	G only
@@ -309,184 +309,184 @@ lobby:0x603640	village NPC lines and talk [G table]	ours
 lobby:0x6036A0	village NPC lines and talk [G table]	ours
 lobby:0x6036E0	village NPC lines and talk [G table]	ours
 lobby:0x603C00	village NPC lines and talk [G table]	ours
-lobby:0x603C60	village NPC lines and talk [G table]	G only
-lobby:0x603CC0	village NPC lines and talk [G table]	G only
-lobby:0x603D60	village NPC lines and talk [G table]	G only
-lobby:0x603E10	village NPC lines and talk	edited in G
-lobby:0x603FF0	village NPC lines and talk [G table]	G only
-lobby:0x604140	village NPC lines and talk [G table]	G only
-lobby:0x604190	village NPC lines and talk [G table]	G only
-lobby:0x6041E0	village NPC lines and talk [G table]	G only
-lobby:0x604260	village NPC lines and talk [G table]	G only
-lobby:0x604460	village NPC lines and talk [G table]	G only
-lobby:0x6044D0	village NPC lines and talk [G table]	G only
-lobby:0x604520	village NPC lines and talk [G table]	G only
-lobby:0x604580	village NPC lines and talk [G table]	G only
+lobby:0x603C60	village NPC lines and talk [G table]	ours
+lobby:0x603CC0	village NPC lines and talk [G table]	ours
+lobby:0x603D60	village NPC lines and talk [G table]	ours
+lobby:0x603E10	village NPC lines and talk	ours
+lobby:0x603FF0	village NPC lines and talk [G table]	ours
+lobby:0x604140	village NPC lines and talk [G table]	ours
+lobby:0x604190	village NPC lines and talk [G table]	ours
+lobby:0x6041E0	village NPC lines and talk [G table]	ours
+lobby:0x604260	village NPC lines and talk [G table]	ours
+lobby:0x604460	village NPC lines and talk [G table]	ours
+lobby:0x6044D0	village NPC lines and talk [G table]	ours
+lobby:0x604520	village NPC lines and talk [G table]	ours
+lobby:0x604580	village NPC lines and talk [G table]	ours
 lobby:0x6045F0	village NPC lines and talk	edited in G	in Portable
 lobby:0x604730	village NPC lines and talk	edited in G	in Portable
-lobby:0x604C90	village NPC lines and talk [G table]	G only
-lobby:0x604D00	village NPC lines and talk [G table]	G only
-lobby:0x604D70	village NPC lines and talk [G table]	G only
-lobby:0x604DE0	village NPC lines and talk [G table]	G only
-lobby:0x605060	village NPC lines and talk	edited in G
-lobby:0x605270	village NPC lines and talk [G table]	G only
-lobby:0x6052C0	village NPC lines and talk [G table]	G only
-lobby:0x605320	village NPC lines and talk [G table]	G only
-lobby:0x605430	village NPC lines and talk	edited in G
-lobby:0x605470	village NPC lines and talk [G table]	G only
-lobby:0x6054F0	village NPC lines and talk [G table]	G only
-lobby:0x605A00	village NPC lines and talk	edited in G	ambiguous: numbers: number not written as digits in the English
-lobby:0x606100	village NPC lines and talk	edited in G	ambiguous: numbers: number not written as digits in the English
-lobby:0x606170	village NPC lines and talk	edited in G
-lobby:0x6061D0	village NPC lines and talk [G table]	G only
-lobby:0x606230	village NPC lines and talk [G table]	G only
-lobby:0x608670	village NPC lines and talk [G table]	G only
-lobby:0x609410	village NPC lines and talk [G table]	G only
-lobby:0x609450	village NPC lines and talk [G table]	G only
-lobby:0x6094C0	village NPC lines and talk [G table]	G only
-lobby:0x609E30	village NPC lines and talk [G table]	G only
-lobby:0x60B550	village NPC lines and talk [G table]	G only
-lobby:0x60C1B0	village NPC lines and talk	edited in G
-lobby:0x60C1F0	village NPC lines and talk [G table]	G only
-lobby:0x60C260	village NPC lines and talk	edited in G
-lobby:0x60D2D0	village NPC lines and talk [G table]	G only
-lobby:0x60DBA0	village NPC lines and talk	edited in G
-lobby:0x60DBF0	village NPC lines and talk [G table]	G only
-lobby:0x60DC40	village NPC lines and talk [G table]	G only
-lobby:0x60DCD0	village NPC lines and talk [G table]	G only
-lobby:0x60E110	village NPC lines and talk	edited in G
-lobby:0x60EA80	village NPC lines and talk [G table]	G only
-lobby:0x60EAE0	village NPC lines and talk [G table]	G only
-lobby:0x60EB40	village NPC lines and talk [G table]	G only
-lobby:0x60EBB0	village NPC lines and talk [G table]	G only
-lobby:0x60EC10	village NPC lines and talk [G table]	G only
-lobby:0x60EC60	village NPC lines and talk [G table]	G only
-lobby:0x60ED10	village NPC lines and talk	edited in G
-lobby:0x60ED50	village NPC lines and talk [G table]	G only
-lobby:0x60EDA0	village NPC lines and talk [G table]	G only
-lobby:0x60EDD0	village NPC lines and talk [G table]	G only
-lobby:0x60EE40	village NPC lines and talk [G table]	G only
-lobby:0x60EEA0	village NPC lines and talk [G table]	G only
-lobby:0x60EEF0	village NPC lines and talk [G table]	G only
-lobby:0x60EF40	village NPC lines and talk [G table]	G only
-lobby:0x60EFC0	village NPC lines and talk [G table]	G only
-lobby:0x60F350	village NPC lines and talk	edited in G
-lobby:0x60F3B0	village NPC lines and talk	edited in G
-lobby:0x60F400	village NPC lines and talk [G table]	G only
-lobby:0x60F470	village NPC lines and talk	edited in G
-lobby:0x60F520	village NPC lines and talk	edited in G
-lobby:0x60F560	village NPC lines and talk	edited in G
-lobby:0x60FB40	village NPC lines and talk	edited in G
-lobby:0x6100C0	village NPC lines and talk	edited in G
-lobby:0x610160	village NPC lines and talk	edited in G
-lobby:0x6101A0	village NPC lines and talk	edited in G
-lobby:0x610320	village NPC lines and talk [G table]	G only
-lobby:0x610BC0	village NPC lines and talk [G table]	G only
-lobby:0x610BF0	village NPC lines and talk [G table]	G only
-lobby:0x610D30	village NPC lines and talk	edited in G
-lobby:0x611090	village NPC lines and talk	edited in G
-lobby:0x6110E0	village NPC lines and talk	edited in G
-lobby:0x612A10	village NPC lines and talk	edited in G
-lobby:0x612A50	village NPC lines and talk [G table]	G only
-lobby:0x612AB0	village NPC lines and talk [G table]	G only
-lobby:0x612B10	village NPC lines and talk [G table]	G only
-lobby:0x612B60	village NPC lines and talk [G table]	G only
-lobby:0x612BC0	village NPC lines and talk [G table]	G only
-lobby:0x612C10	village NPC lines and talk	edited in G
-lobby:0x612C60	village NPC lines and talk [G table]	G only
-lobby:0x612CA0	village NPC lines and talk [G table]	G only
-lobby:0x612CE0	village NPC lines and talk	edited in G
-lobby:0x612D50	village NPC lines and talk	edited in G
-lobby:0x612E00	village NPC lines and talk	edited in G
-lobby:0x612E70	village NPC lines and talk	edited in G
-lobby:0x612EC0	village NPC lines and talk [G table]	G only
-lobby:0x613250	village NPC lines and talk	edited in G
-lobby:0x6132D0	village NPC lines and talk	edited in G
-lobby:0x613340	village NPC lines and talk [G table]	G only
-lobby:0x613390	village NPC lines and talk [G table]	G only
-lobby:0x6133C0	village NPC lines and talk	edited in G
-lobby:0x613420	village NPC lines and talk [G table]	G only
-lobby:0x613660	village NPC lines and talk [G table]	G only
-lobby:0x6136D0	village NPC lines and talk [G table]	G only
-lobby:0x613730	village NPC lines and talk [G table]	G only
-lobby:0x6137A0	village NPC lines and talk [G table]	G only
-lobby:0x6137D0	village NPC lines and talk [G table]	G only
-lobby:0x613D60	village NPC lines and talk	edited in G
-lobby:0x613E10	village NPC lines and talk	edited in G
-lobby:0x613F10	village NPC lines and talk [G table]	G only
-lobby:0x6142F0	village NPC lines and talk	edited in G
-lobby:0x614350	village NPC lines and talk [G table]	G only
-lobby:0x6143A0	village NPC lines and talk	edited in G
-lobby:0x6143E0	village NPC lines and talk [G table]	G only
-lobby:0x614F20	village NPC lines and talk	edited in G
-lobby:0x614F60	village NPC lines and talk [G table]	G only
-lobby:0x614FC0	village NPC lines and talk [G table]	G only
-lobby:0x615020	village NPC lines and talk [G table]	G only
-lobby:0x615080	village NPC lines and talk [G table]	G only
-lobby:0x6150E0	village NPC lines and talk [G table]	G only
-lobby:0x6153D0	village NPC lines and talk [G table]	G only
-lobby:0x615410	village NPC lines and talk	edited in G
-lobby:0x6155B0	village NPC lines and talk [G table]	G only
-lobby:0x6156A0	village NPC lines and talk	edited in G
-lobby:0x615FF0	village NPC lines and talk [G table]	G only
-lobby:0x616030	village NPC lines and talk [G table]	G only
-lobby:0x616060	village NPC lines and talk [G table]	G only
-lobby:0x6160B0	village NPC lines and talk [G table]	G only
-lobby:0x616110	village NPC lines and talk [G table]	G only
-lobby:0x616F20	village NPC lines and talk	edited in G
-lobby:0x616FE0	village NPC lines and talk [G table]	G only
-lobby:0x617020	village NPC lines and talk [G table]	G only
-lobby:0x617080	village NPC lines and talk [G table]	G only
-lobby:0x6170D0	village NPC lines and talk [G table]	G only
-lobby:0x617130	village NPC lines and talk [G table]	G only
-lobby:0x619790	village NPC lines and talk	edited in G
-lobby:0x619890	village NPC lines and talk [G table]	G only
-lobby:0x619950	village NPC lines and talk [G table]	G only
-lobby:0x619980	village NPC lines and talk [G table]	G only
-lobby:0x619A30	village NPC lines and talk	edited in G
-lobby:0x619AF0	village NPC lines and talk	edited in G
-lobby:0x619CC0	village NPC lines and talk [G table]	G only
-lobby:0x619F50	village NPC lines and talk	edited in G	ambiguous: numbers: number not written as digits in the English
-lobby:0x619FA0	village NPC lines and talk	edited in G
-lobby:0x619FD0	village NPC lines and talk	edited in G
-lobby:0x61A020	village NPC lines and talk [G table]	G only
-lobby:0x61A060	village NPC lines and talk [G table]	G only
-lobby:0x61A0B0	village NPC lines and talk [G table]	G only
-lobby:0x61A930	village NPC lines and talk [G table]	G only
-lobby:0x61A9A0	village NPC lines and talk [G table]	G only
-lobby:0x61AA10	village NPC lines and talk [G table]	G only
-lobby:0x61AA50	village NPC lines and talk	edited in G
-lobby:0x61B0B0	village NPC lines and talk [G table]	G only
-lobby:0x61B110	village NPC lines and talk [G table]	G only
-lobby:0x61B160	village NPC lines and talk [G table]	G only
-lobby:0x61B1C0	village NPC lines and talk [G table]	G only
-lobby:0x61B210	village NPC lines and talk [G table]	G only
-lobby:0x61B6F0	village NPC lines and talk [G table]	G only
-lobby:0x61B750	village NPC lines and talk [G table]	G only
-lobby:0x61B7C0	village NPC lines and talk [G table]	G only
-lobby:0x61B820	village NPC lines and talk [G table]	G only
-lobby:0x61C270	village NPC lines and talk [G table]	G only
-lobby:0x61C2C0	village NPC lines and talk [G table]	G only
-lobby:0x61C330	village NPC lines and talk [G table]	G only
-lobby:0x61C380	village NPC lines and talk [G table]	G only
-lobby:0x61C3D0	village NPC lines and talk [G table]	G only
-lobby:0x61C430	village NPC lines and talk [G table]	G only
-lobby:0x61C4A0	village NPC lines and talk [G table]	G only
-lobby:0x61C500	village NPC lines and talk [G table]	G only
-lobby:0x61C560	village NPC lines and talk [G table]	G only
-lobby:0x61CCC0	village NPC lines and talk [G table]	G only
-lobby:0x61CD30	village NPC lines and talk [G table]	G only
-lobby:0x61CDB0	village NPC lines and talk [G table]	G only
-lobby:0x61CE00	village NPC lines and talk [G table]	G only
-lobby:0x61CE70	village NPC lines and talk [G table]	G only
-lobby:0x61CEC0	village NPC lines and talk [G table]	G only
+lobby:0x604C90	village NPC lines and talk [G table]	ours
+lobby:0x604D00	village NPC lines and talk [G table]	ours
+lobby:0x604D70	village NPC lines and talk [G table]	ours
+lobby:0x604DE0	village NPC lines and talk [G table]	ours
+lobby:0x605060	village NPC lines and talk	ours
+lobby:0x605270	village NPC lines and talk [G table]	ours
+lobby:0x6052C0	village NPC lines and talk [G table]	ours
+lobby:0x605320	village NPC lines and talk [G table]	ours
+lobby:0x605430	village NPC lines and talk	ours
+lobby:0x605470	village NPC lines and talk [G table]	ours
+lobby:0x6054F0	village NPC lines and talk [G table]	ours
+lobby:0x605A00	village NPC lines and talk	ours	ambiguous: numbers: number not written as digits in the English
+lobby:0x606100	village NPC lines and talk	ours	ambiguous: numbers: number not written as digits in the English
+lobby:0x606170	village NPC lines and talk	ours
+lobby:0x6061D0	village NPC lines and talk [G table]	ours
+lobby:0x606230	village NPC lines and talk [G table]	ours
+lobby:0x608670	village NPC lines and talk [G table]	ours
+lobby:0x609410	village NPC lines and talk [G table]	ours
+lobby:0x609450	village NPC lines and talk [G table]	ours
+lobby:0x6094C0	village NPC lines and talk [G table]	ours
+lobby:0x609E30	village NPC lines and talk [G table]	ours
+lobby:0x60B550	village NPC lines and talk [G table]	ours
+lobby:0x60C1B0	village NPC lines and talk	ours
+lobby:0x60C1F0	village NPC lines and talk [G table]	ours
+lobby:0x60C260	village NPC lines and talk	ours
+lobby:0x60D2D0	village NPC lines and talk [G table]	ours
+lobby:0x60DBA0	village NPC lines and talk	ours
+lobby:0x60DBF0	village NPC lines and talk [G table]	ours
+lobby:0x60DC40	village NPC lines and talk [G table]	ours
+lobby:0x60DCD0	village NPC lines and talk [G table]	ours
+lobby:0x60E110	village NPC lines and talk	ours
+lobby:0x60EA80	village NPC lines and talk [G table]	ours
+lobby:0x60EAE0	village NPC lines and talk [G table]	ours
+lobby:0x60EB40	village NPC lines and talk [G table]	ours
+lobby:0x60EBB0	village NPC lines and talk [G table]	ours
+lobby:0x60EC10	village NPC lines and talk [G table]	ours
+lobby:0x60EC60	village NPC lines and talk [G table]	ours
+lobby:0x60ED10	village NPC lines and talk	ours
+lobby:0x60ED50	village NPC lines and talk [G table]	ours
+lobby:0x60EDA0	village NPC lines and talk [G table]	ours
+lobby:0x60EDD0	village NPC lines and talk [G table]	ours
+lobby:0x60EE40	village NPC lines and talk [G table]	ours
+lobby:0x60EEA0	village NPC lines and talk [G table]	ours
+lobby:0x60EEF0	village NPC lines and talk [G table]	ours
+lobby:0x60EF40	village NPC lines and talk [G table]	ours
+lobby:0x60EFC0	village NPC lines and talk [G table]	ours
+lobby:0x60F350	village NPC lines and talk	ours
+lobby:0x60F3B0	village NPC lines and talk	ours
+lobby:0x60F400	village NPC lines and talk [G table]	ours
+lobby:0x60F470	village NPC lines and talk	ours
+lobby:0x60F520	village NPC lines and talk	ours
+lobby:0x60F560	village NPC lines and talk	ours
+lobby:0x60FB40	village NPC lines and talk	ours
+lobby:0x6100C0	village NPC lines and talk	ours
+lobby:0x610160	village NPC lines and talk	ours
+lobby:0x6101A0	village NPC lines and talk	ours
+lobby:0x610320	village NPC lines and talk [G table]	ours
+lobby:0x610BC0	village NPC lines and talk [G table]	ours
+lobby:0x610BF0	village NPC lines and talk [G table]	ours
+lobby:0x610D30	village NPC lines and talk	ours
+lobby:0x611090	village NPC lines and talk	ours
+lobby:0x6110E0	village NPC lines and talk	ours
+lobby:0x612A10	village NPC lines and talk	ours
+lobby:0x612A50	village NPC lines and talk [G table]	ours
+lobby:0x612AB0	village NPC lines and talk [G table]	ours
+lobby:0x612B10	village NPC lines and talk [G table]	ours
+lobby:0x612B60	village NPC lines and talk [G table]	ours
+lobby:0x612BC0	village NPC lines and talk [G table]	ours
+lobby:0x612C10	village NPC lines and talk	ours
+lobby:0x612C60	village NPC lines and talk [G table]	ours
+lobby:0x612CA0	village NPC lines and talk [G table]	ours
+lobby:0x612CE0	village NPC lines and talk	ours
+lobby:0x612D50	village NPC lines and talk	ours
+lobby:0x612E00	village NPC lines and talk	ours
+lobby:0x612E70	village NPC lines and talk	ours
+lobby:0x612EC0	village NPC lines and talk [G table]	ours
+lobby:0x613250	village NPC lines and talk	ours
+lobby:0x6132D0	village NPC lines and talk	ours
+lobby:0x613340	village NPC lines and talk [G table]	ours
+lobby:0x613390	village NPC lines and talk [G table]	ours
+lobby:0x6133C0	village NPC lines and talk	ours
+lobby:0x613420	village NPC lines and talk [G table]	ours
+lobby:0x613660	village NPC lines and talk [G table]	ours
+lobby:0x6136D0	village NPC lines and talk [G table]	ours
+lobby:0x613730	village NPC lines and talk [G table]	ours
+lobby:0x6137A0	village NPC lines and talk [G table]	ours
+lobby:0x6137D0	village NPC lines and talk [G table]	ours
+lobby:0x613D60	village NPC lines and talk	ours
+lobby:0x613E10	village NPC lines and talk	ours
+lobby:0x613F10	village NPC lines and talk [G table]	ours
+lobby:0x6142F0	village NPC lines and talk	ours
+lobby:0x614350	village NPC lines and talk [G table]	ours
+lobby:0x6143A0	village NPC lines and talk	ours
+lobby:0x6143E0	village NPC lines and talk [G table]	ours
+lobby:0x614F20	village NPC lines and talk	ours
+lobby:0x614F60	village NPC lines and talk [G table]	ours
+lobby:0x614FC0	village NPC lines and talk [G table]	ours
+lobby:0x615020	village NPC lines and talk [G table]	ours
+lobby:0x615080	village NPC lines and talk [G table]	ours
+lobby:0x6150E0	village NPC lines and talk [G table]	ours
+lobby:0x6153D0	village NPC lines and talk [G table]	ours
+lobby:0x615410	village NPC lines and talk	ours
+lobby:0x6155B0	village NPC lines and talk [G table]	ours
+lobby:0x6156A0	village NPC lines and talk	ours
+lobby:0x615FF0	village NPC lines and talk [G table]	ours
+lobby:0x616030	village NPC lines and talk [G table]	ours
+lobby:0x616060	village NPC lines and talk [G table]	ours
+lobby:0x6160B0	village NPC lines and talk [G table]	ours
+lobby:0x616110	village NPC lines and talk [G table]	ours
+lobby:0x616F20	village NPC lines and talk	ours
+lobby:0x616FE0	village NPC lines and talk [G table]	ours
+lobby:0x617020	village NPC lines and talk [G table]	ours
+lobby:0x617080	village NPC lines and talk [G table]	ours
+lobby:0x6170D0	village NPC lines and talk [G table]	ours
+lobby:0x617130	village NPC lines and talk [G table]	ours
+lobby:0x619790	village NPC lines and talk	ours
+lobby:0x619890	village NPC lines and talk [G table]	ours
+lobby:0x619950	village NPC lines and talk [G table]	ours
+lobby:0x619980	village NPC lines and talk [G table]	ours
+lobby:0x619A30	village NPC lines and talk	ours
+lobby:0x619AF0	village NPC lines and talk	ours
+lobby:0x619CC0	village NPC lines and talk [G table]	ours
+lobby:0x619F50	village NPC lines and talk	ours	ambiguous: numbers: number not written as digits in the English
+lobby:0x619FA0	village NPC lines and talk	ours
+lobby:0x619FD0	village NPC lines and talk	ours
+lobby:0x61A020	village NPC lines and talk [G table]	ours
+lobby:0x61A060	village NPC lines and talk [G table]	ours
+lobby:0x61A0B0	village NPC lines and talk [G table]	ours
+lobby:0x61A930	village NPC lines and talk [G table]	ours
+lobby:0x61A9A0	village NPC lines and talk [G table]	ours
+lobby:0x61AA10	village NPC lines and talk [G table]	ours
+lobby:0x61AA50	village NPC lines and talk	ours
+lobby:0x61B0B0	village NPC lines and talk [G table]	ours
+lobby:0x61B110	village NPC lines and talk [G table]	ours
+lobby:0x61B160	village NPC lines and talk [G table]	ours
+lobby:0x61B1C0	village NPC lines and talk [G table]	ours
+lobby:0x61B210	village NPC lines and talk [G table]	ours
+lobby:0x61B6F0	village NPC lines and talk [G table]	ours
+lobby:0x61B750	village NPC lines and talk [G table]	ours
+lobby:0x61B7C0	village NPC lines and talk [G table]	ours
+lobby:0x61B820	village NPC lines and talk [G table]	ours
+lobby:0x61C270	village NPC lines and talk [G table]	ours
+lobby:0x61C2C0	village NPC lines and talk [G table]	ours
+lobby:0x61C330	village NPC lines and talk [G table]	ours
+lobby:0x61C380	village NPC lines and talk [G table]	ours
+lobby:0x61C3D0	village NPC lines and talk [G table]	ours
+lobby:0x61C430	village NPC lines and talk [G table]	ours
+lobby:0x61C4A0	village NPC lines and talk [G table]	ours
+lobby:0x61C500	village NPC lines and talk [G table]	ours
+lobby:0x61C560	village NPC lines and talk [G table]	ours
+lobby:0x61CCC0	village NPC lines and talk [G table]	ours
+lobby:0x61CD30	village NPC lines and talk [G table]	ours
+lobby:0x61CDB0	village NPC lines and talk [G table]	ours
+lobby:0x61CE00	village NPC lines and talk [G table]	ours
+lobby:0x61CE70	village NPC lines and talk [G table]	ours
+lobby:0x61CEC0	village NPC lines and talk [G table]	ours
 lobby:0x61D300	village NPC lines and talk	edited in G	in Portable
-lobby:0x61D410	village NPC lines and talk	edited in G
-lobby:0x61D490	village NPC lines and talk [G table]	G only
-lobby:0x61DA90	village NPC lines and talk [G table]	G only
-lobby:0x61DAC0	village NPC lines and talk [G table]	G only
-lobby:0x61DB10	village NPC lines and talk [G table]	G only
-lobby:0x61DB60	village NPC lines and talk [G table]	G only
+lobby:0x61D410	village NPC lines and talk	ours
+lobby:0x61D490	village NPC lines and talk [G table]	ours
+lobby:0x61DA90	village NPC lines and talk [G table]	ours
+lobby:0x61DAC0	village NPC lines and talk [G table]	ours
+lobby:0x61DB10	village NPC lines and talk [G table]	ours
+lobby:0x61DB60	village NPC lines and talk [G table]	ours
 lobby:0x61E410	village NPC lines and talk [G table]	G only	in Portable
 lobby:0x61E480	village NPC lines and talk [G table]	G only	in Portable
 lobby:0x61E4D0	village NPC lines and talk [G table]	G only	in Portable
@@ -496,30 +496,30 @@ lobby:0x61EC60	village NPC lines and talk [G table]	G only	in Portable
 lobby:0x61ECB0	village NPC lines and talk	edited in G	in Portable
 lobby:0x61ED10	village NPC lines and talk	edited in G	in Portable
 lobby:0x61ED50	village NPC lines and talk [G table]	G only	in Portable
-lobby:0x61F220	village NPC lines and talk	edited in G
-lobby:0x61F280	village NPC lines and talk	edited in G
-lobby:0x61F2C0	village NPC lines and talk [G table]	G only
+lobby:0x61F220	village NPC lines and talk	ours
+lobby:0x61F280	village NPC lines and talk	ours
+lobby:0x61F2C0	village NPC lines and talk [G table]	ours
 lobby:0x61F400	village NPC lines and talk	edited in G	in Portable
 lobby:0x61F740	village NPC lines and talk	edited in G	in Portable
 lobby:0x61F780	village NPC lines and talk [G table]	G only	in Portable
 lobby:0x61F7E0	village NPC lines and talk [G table]	G only	in Portable
 lobby:0x61F850	village NPC lines and talk [G table]	G only	in Portable
-lobby:0x61FA40	village NPC lines and talk [G table]	G only
+lobby:0x61FA40	village NPC lines and talk [G table]	ours
 lobby:0x61FAF0	village NPC lines and talk [G table]	G only	in Portable
 lobby:0x61FB50	village NPC lines and talk [G table]	G only	in Portable
-lobby:0x61FF90	village NPC lines and talk [G table]	G only
-lobby:0x620000	village NPC lines and talk [G table]	G only
-lobby:0x620050	village NPC lines and talk [G table]	G only
-lobby:0x6200E0	village NPC lines and talk [G table]	G only
-lobby:0x620140	village NPC lines and talk [G table]	G only
-lobby:0x620740	village NPC lines and talk [G table]	G only
-lobby:0x6207C0	village NPC lines and talk [G table]	G only
-lobby:0x620970	village NPC lines and talk [G table]	G only
-lobby:0x620A20	village NPC lines and talk [G table]	G only
-lobby:0x620A60	village NPC lines and talk [G table]	G only
-lobby:0x620AE0	village NPC lines and talk [G table]	G only
-lobby:0x620B40	village NPC lines and talk [G table]	G only
-lobby:0x620BA0	village NPC lines and talk	edited in G
+lobby:0x61FF90	village NPC lines and talk [G table]	ours
+lobby:0x620000	village NPC lines and talk [G table]	ours
+lobby:0x620050	village NPC lines and talk [G table]	ours
+lobby:0x6200E0	village NPC lines and talk [G table]	ours
+lobby:0x620140	village NPC lines and talk [G table]	ours
+lobby:0x620740	village NPC lines and talk [G table]	ours
+lobby:0x6207C0	village NPC lines and talk [G table]	ours
+lobby:0x620970	village NPC lines and talk [G table]	ours
+lobby:0x620A20	village NPC lines and talk [G table]	ours
+lobby:0x620A60	village NPC lines and talk [G table]	ours
+lobby:0x620AE0	village NPC lines and talk [G table]	ours
+lobby:0x620B40	village NPC lines and talk [G table]	ours
+lobby:0x620BA0	village NPC lines and talk	ours
 lobby:0x620C00	village NPC lines and talk [G table]	G only	in Portable
 lobby:0x620C70	village NPC lines and talk [G table]	G only	in Portable
 lobby:0x620CD0	village NPC lines and talk [G table]	G only	in Portable
@@ -531,9 +531,9 @@ lobby:0x620ED0	village NPC lines and talk [G table]	G only	in Portable
 lobby:0x620F40	village NPC lines and talk [G table]	G only	in Portable
 lobby:0x620FB0	village NPC lines and talk [G table]	G only	in Portable
 lobby:0x621020	village NPC lines and talk [G table]	G only	in Portable
-lobby:0x621060	village NPC lines and talk [G table]	G only
-lobby:0x6210C0	village NPC lines and talk [G table]	G only
-lobby:0x621110	village NPC lines and talk [G table]	G only
+lobby:0x621060	village NPC lines and talk [G table]	ours
+lobby:0x6210C0	village NPC lines and talk [G table]	ours
+lobby:0x621110	village NPC lines and talk [G table]	ours
 lobby:0x621170	village NPC lines and talk [G table]	G only	in Portable
 lobby:0x6212D0	village NPC lines and talk [G table]	G only	in Portable
 lobby:0x621420	village NPC lines and talk [G table]	G only	in Portable
@@ -541,32 +541,32 @@ lobby:0x621470	village NPC lines and talk [G table]	G only	in Portable
 lobby:0x6214B0	village NPC lines and talk [G table]	G only	in Portable
 lobby:0x621500	village NPC lines and talk [G table]	G only	in Portable
 lobby:0x621570	village NPC lines and talk [G table]	G only	in Portable
-lobby:0x621610	village NPC lines and talk [G table]	G only
+lobby:0x621610	village NPC lines and talk [G table]	ours
 lobby:0x621670	village NPC lines and talk [G table]	G only	in Portable
 lobby:0x621700	village NPC lines and talk [G table]	G only	in Portable
-lobby:0x621740	village NPC lines and talk [G table]	G only
-lobby:0x621790	village NPC lines and talk [G table]	G only
+lobby:0x621740	village NPC lines and talk [G table]	ours
+lobby:0x621790	village NPC lines and talk [G table]	ours
 lobby:0x621800	village NPC lines and talk [G table]	G only	in Portable
-lobby:0x621850	village NPC lines and talk [G table]	G only
+lobby:0x621850	village NPC lines and talk [G table]	ours
 lobby:0x6218E0	village NPC lines and talk [G table]	G only	in Portable
-lobby:0x621950	village NPC lines and talk [G table]	G only
-lobby:0x6219C0	village NPC lines and talk [G table]	G only
+lobby:0x621950	village NPC lines and talk [G table]	ours
+lobby:0x6219C0	village NPC lines and talk [G table]	ours
 lobby:0x621AC0	village NPC lines and talk [G table]	G only	in Portable
-lobby:0x621B10	village NPC lines and talk [G table]	G only
-lobby:0x621B70	village NPC lines and talk [G table]	G only
+lobby:0x621B10	village NPC lines and talk [G table]	ours
+lobby:0x621B70	village NPC lines and talk [G table]	ours
 lobby:0x621BF0	village NPC lines and talk [G table]	G only	in Portable
-lobby:0x6222B0	village NPC lines and talk [G table]	G only
+lobby:0x6222B0	village NPC lines and talk [G table]	ours
 lobby:0x6222F0	village NPC lines and talk [G table]	G only	in Portable
 lobby:0x622350	village NPC lines and talk [G table]	G only	in Portable
 lobby:0x6223B0	village NPC lines and talk [G table]	G only	in Portable
 lobby:0x622410	village NPC lines and talk [G table]	G only	in Portable
 lobby:0x622470	village NPC lines and talk	twin without US English	in Portable
-lobby:0x622690	village NPC lines and talk	edited in G
-lobby:0x622700	village NPC lines and talk [G table]	G only
-lobby:0x622790	village NPC lines and talk [G table]	G only
-lobby:0x622810	village NPC lines and talk [G table]	G only
+lobby:0x622690	village NPC lines and talk	ours
+lobby:0x622700	village NPC lines and talk [G table]	ours
+lobby:0x622790	village NPC lines and talk [G table]	ours
+lobby:0x622810	village NPC lines and talk [G table]	ours
 lobby:0x622880	village NPC lines and talk [G table]	G only	in Portable
-lobby:0x6228F0	village NPC lines and talk [G table]	G only
+lobby:0x6228F0	village NPC lines and talk [G table]	ours
 lobby:0x622960	village NPC lines and talk [G table]	G only	in Portable
 lobby:0x6229D0	village NPC lines and talk [G table]	G only	in Portable
 lobby:0x622A30	village NPC lines and talk [G table]	G only	in Portable
@@ -574,86 +574,86 @@ lobby:0x622A90	village NPC lines and talk [G table]	G only	in Portable
 lobby:0x623350	village NPC lines and talk [G table]	G only	in Portable
 lobby:0x6233A0	village NPC lines and talk [G table]	G only	in Portable
 lobby:0x6234A0	village NPC lines and talk	edited in G	in Portable
-lobby:0x623500	village NPC lines and talk [G table]	G only
-lobby:0x623580	village NPC lines and talk [G table]	G only
+lobby:0x623500	village NPC lines and talk [G table]	ours
+lobby:0x623580	village NPC lines and talk [G table]	ours
 lobby:0x6235F0	village NPC lines and talk [G table]	G only	in Portable
-lobby:0x623620	village NPC lines and talk [G table]	G only
+lobby:0x623620	village NPC lines and talk [G table]	ours
 lobby:0x623680	village NPC lines and talk [G table]	G only	in Portable
 lobby:0x6236D0	village NPC lines and talk [G table]	G only	in Portable
 lobby:0x623770	village NPC lines and talk [G table]	G only	in Portable
 lobby:0x6237B0	village NPC lines and talk [G table]	G only	in Portable
-lobby:0x623800	village NPC lines and talk	edited in G
+lobby:0x623800	village NPC lines and talk	ours
 lobby:0x623AA0	village NPC lines and talk	edited in G	in Portable
 lobby:0x623B10	village NPC lines and talk	edited in G	in Portable
-lobby:0x623C00	village NPC lines and talk	edited in G
-lobby:0x623C70	village NPC lines and talk [G table]	G only
-lobby:0x6245D0	village NPC lines and talk [G table]	G only
-lobby:0x624650	village NPC lines and talk [G table]	G only
-lobby:0x6246F0	village NPC lines and talk [G table]	G only
-lobby:0x624840	village NPC lines and talk [G table]	G only
-lobby:0x624880	village NPC lines and talk [G table]	G only
-lobby:0x6248E0	village NPC lines and talk [G table]	G only
-lobby:0x624960	village NPC lines and talk [G table]	G only
+lobby:0x623C00	village NPC lines and talk	ours
+lobby:0x623C70	village NPC lines and talk [G table]	ours
+lobby:0x6245D0	village NPC lines and talk [G table]	ours
+lobby:0x624650	village NPC lines and talk [G table]	ours
+lobby:0x6246F0	village NPC lines and talk [G table]	ours
+lobby:0x624840	village NPC lines and talk [G table]	ours
+lobby:0x624880	village NPC lines and talk [G table]	ours
+lobby:0x6248E0	village NPC lines and talk [G table]	ours
+lobby:0x624960	village NPC lines and talk [G table]	ours
 lobby:0x6249C0	village NPC lines and talk [G table]	G only	in Portable
 lobby:0x624A40	village NPC lines and talk [G table]	G only	in Portable
 lobby:0x624AA0	village NPC lines and talk [G table]	G only	in Portable
 lobby:0x624B10	village NPC lines and talk [G table]	G only	in Portable
-lobby:0x624B80	village NPC lines and talk [G table]	G only
-lobby:0x624BB0	village NPC lines and talk [G table]	G only
-lobby:0x624C10	village NPC lines and talk [G table]	G only
+lobby:0x624B80	village NPC lines and talk [G table]	ours
+lobby:0x624BB0	village NPC lines and talk [G table]	ours
+lobby:0x624C10	village NPC lines and talk [G table]	ours
 lobby:0x624C70	village NPC lines and talk [G table]	G only	in Portable
-lobby:0x624CD0	village NPC lines and talk [G table]	G only
-lobby:0x625280	village NPC lines and talk	edited in G
-lobby:0x6254C0	village NPC lines and talk [G table]	G only
+lobby:0x624CD0	village NPC lines and talk [G table]	ours
+lobby:0x625280	village NPC lines and talk	ours
+lobby:0x6254C0	village NPC lines and talk [G table]	ours
 lobby:0x625510	village NPC lines and talk [G table]	G only	in Portable
-lobby:0x625600	village NPC lines and talk [G table]	G only
-lobby:0x625660	village NPC lines and talk [G table]	G only
-lobby:0x6256B0	village NPC lines and talk [G table]	G only
-lobby:0x625710	village NPC lines and talk [G table]	G only
-lobby:0x625AE0	village NPC lines and talk [G table]	G only
-lobby:0x625B50	village NPC lines and talk [G table]	G only
-lobby:0x625BC0	village NPC lines and talk [G table]	G only
-lobby:0x625CA0	village NPC lines and talk [G table]	G only
-lobby:0x625D10	village NPC lines and talk [G table]	G only
-lobby:0x625FB0	village NPC lines and talk [G table]	G only
-lobby:0x626480	village NPC lines and talk [G table]	G only
-lobby:0x6264F0	village NPC lines and talk [G table]	G only
-lobby:0x626560	village NPC lines and talk [G table]	G only
-lobby:0x6265B0	village NPC lines and talk [G table]	G only
-lobby:0x626620	village NPC lines and talk [G table]	G only
-lobby:0x627400	village NPC lines and talk [G table]	G only
-lobby:0x627480	village NPC lines and talk [G table]	G only
-lobby:0x629DD0	village NPC lines and talk	edited in G
-lobby:0x629E10	village NPC lines and talk	edited in G
-lobby:0x62A560	village NPC lines and talk [G table]	G only
-lobby:0x62B570	village NPC lines and talk [G table]	G only
-lobby:0x62C380	village NPC lines and talk	edited in G
-lobby:0x62C3F0	village NPC lines and talk	edited in G
-lobby:0x62C4A0	village NPC lines and talk	edited in G
-lobby:0x62C570	village NPC lines and talk	twin without US English
-lobby:0x62C5F0	village NPC lines and talk	edited in G
-lobby:0x62C660	village NPC lines and talk [G table]	G only
-lobby:0x62CB40	village NPC lines and talk	edited in G
-lobby:0x62CC30	village NPC lines and talk	edited in G
-lobby:0x62CD20	village NPC lines and talk	edited in G
-lobby:0x62CE00	village NPC lines and talk [G table]	G only
-lobby:0x62CEF0	village NPC lines and talk	edited in G
-lobby:0x62D0B0	village NPC lines and talk	edited in G
-lobby:0x62D190	village NPC lines and talk	edited in G
-lobby:0x62D270	village NPC lines and talk [G table]	G only
-lobby:0x62D360	village NPC lines and talk [G table]	G only
-lobby:0x62D450	village NPC lines and talk	edited in G
-lobby:0x62D520	village NPC lines and talk	edited in G
-lobby:0x62D5E0	village NPC lines and talk	edited in G
-lobby:0x62D6C0	village NPC lines and talk	edited in G
-lobby:0x62D780	village NPC lines and talk	edited in G
-lobby:0x62D840	village NPC lines and talk	edited in G
-lobby:0x62D900	village NPC lines and talk	edited in G
-lobby:0x62D9D0	village NPC lines and talk	edited in G
-lobby:0x62DAA0	village NPC lines and talk	edited in G
-lobby:0x62DB70	village NPC lines and talk	edited in G
-lobby:0x62DC40	village NPC lines and talk	edited in G
-lobby:0x62DD20	village NPC lines and talk [G table]	G only
+lobby:0x625600	village NPC lines and talk [G table]	ours
+lobby:0x625660	village NPC lines and talk [G table]	ours
+lobby:0x6256B0	village NPC lines and talk [G table]	ours
+lobby:0x625710	village NPC lines and talk [G table]	ours
+lobby:0x625AE0	village NPC lines and talk [G table]	ours
+lobby:0x625B50	village NPC lines and talk [G table]	ours
+lobby:0x625BC0	village NPC lines and talk [G table]	ours
+lobby:0x625CA0	village NPC lines and talk [G table]	ours
+lobby:0x625D10	village NPC lines and talk [G table]	ours
+lobby:0x625FB0	village NPC lines and talk [G table]	ours
+lobby:0x626480	village NPC lines and talk [G table]	ours
+lobby:0x6264F0	village NPC lines and talk [G table]	ours
+lobby:0x626560	village NPC lines and talk [G table]	ours
+lobby:0x6265B0	village NPC lines and talk [G table]	ours
+lobby:0x626620	village NPC lines and talk [G table]	ours
+lobby:0x627400	village NPC lines and talk [G table]	ours
+lobby:0x627480	village NPC lines and talk [G table]	ours
+lobby:0x629DD0	village NPC lines and talk	ours
+lobby:0x629E10	village NPC lines and talk	ours
+lobby:0x62A560	village NPC lines and talk [G table]	ours
+lobby:0x62B570	village NPC lines and talk [G table]	ours
+lobby:0x62C380	village NPC lines and talk	ours
+lobby:0x62C3F0	village NPC lines and talk	ours
+lobby:0x62C4A0	village NPC lines and talk	ours
+lobby:0x62C570	village NPC lines and talk	ours
+lobby:0x62C5F0	village NPC lines and talk	ours
+lobby:0x62C660	village NPC lines and talk [G table]	ours
+lobby:0x62CB40	village NPC lines and talk	ours
+lobby:0x62CC30	village NPC lines and talk	ours
+lobby:0x62CD20	village NPC lines and talk	ours
+lobby:0x62CE00	village NPC lines and talk [G table]	ours
+lobby:0x62CEF0	village NPC lines and talk	ours
+lobby:0x62D0B0	village NPC lines and talk	ours
+lobby:0x62D190	village NPC lines and talk	ours
+lobby:0x62D270	village NPC lines and talk [G table]	ours
+lobby:0x62D360	village NPC lines and talk [G table]	ours
+lobby:0x62D450	village NPC lines and talk	ours
+lobby:0x62D520	village NPC lines and talk	ours
+lobby:0x62D5E0	village NPC lines and talk	ours
+lobby:0x62D6C0	village NPC lines and talk	ours
+lobby:0x62D780	village NPC lines and talk	ours
+lobby:0x62D840	village NPC lines and talk	ours
+lobby:0x62D900	village NPC lines and talk	ours
+lobby:0x62D9D0	village NPC lines and talk	ours
+lobby:0x62DAA0	village NPC lines and talk	ours
+lobby:0x62DB70	village NPC lines and talk	ours
+lobby:0x62DC40	village NPC lines and talk	ours
+lobby:0x62DD20	village NPC lines and talk [G table]	ours
 lobby:0x62F15C	code literals (lobby)	G only	in Portable
 lobby:0x631E6C	code literals (lobby)	G only	in Portable
 lobby:0x6373C0	code literals (lobby)	G only
@@ -669,28 +669,28 @@ lobby:0x637C70	online, keyboard, word filter	twin without US English	in Portable
 lobby:0x637D80	online, keyboard, word filter	twin without US English	in Portable
 lobby:0x637E68	online, keyboard, word filter	twin without US English	in Portable
 lobby:0x637E78	online, keyboard, word filter	twin without US English	in Portable
-lobby:0x637EB0	online, keyboard, word filter	twin without US English
-lobby:0x638050	online, keyboard, word filter	twin without US English
-lobby:0x638110	online, keyboard, word filter	twin without US English
-lobby:0x638240	online, keyboard, word filter	twin without US English
-lobby:0x6382C0	online, keyboard, word filter	twin without US English
-lobby:0x638340	online, keyboard, word filter	edited in G
-lobby:0x638500	online, keyboard, word filter	twin without US English
-lobby:0x638520	online, keyboard, word filter	twin without US English
-lobby:0x6385A0	online, keyboard, word filter	twin without US English
-lobby:0x6385D0	online, keyboard, word filter	twin without US English
-lobby:0x638630	online, keyboard, word filter	twin without US English
-lobby:0x638690	online, keyboard, word filter	twin without US English
-lobby:0x638700	online, keyboard, word filter	twin without US English
-lobby:0x638720	online, keyboard, word filter	twin without US English
-lobby:0x638760	online, keyboard, word filter [G table]	G only
-lobby:0x6387A0	online, keyboard, word filter [G table]	G only
-lobby:0x63AE80	code literals (lobby)	G only
-lobby:0x63E920	code literals (lobby)	G only
+lobby:0x637EB0	online, keyboard, word filter	ours
+lobby:0x638050	online, keyboard, word filter	ours
+lobby:0x638110	online, keyboard, word filter	ours
+lobby:0x638240	online, keyboard, word filter	ours
+lobby:0x6382C0	online, keyboard, word filter	ours
+lobby:0x638340	online, keyboard, word filter	ours
+lobby:0x638500	online, keyboard, word filter	ours
+lobby:0x638520	online, keyboard, word filter	ours
+lobby:0x6385A0	online, keyboard, word filter	ours
+lobby:0x6385D0	online, keyboard, word filter	ours
+lobby:0x638630	online, keyboard, word filter	ours
+lobby:0x638690	online, keyboard, word filter	ours
+lobby:0x638700	online, keyboard, word filter	ours
+lobby:0x638720	online, keyboard, word filter	ours
+lobby:0x638760	online, keyboard, word filter [G table]	ours
+lobby:0x6387A0	online, keyboard, word filter [G table]	ours
+lobby:0x63AE80	code literals (lobby)	ours
+lobby:0x63E920	code literals (lobby)	ours
 lobby:0x63EB28	village / plaza / guild / shop UI [G table]	G only	in Portable
 lobby:0x63EB38	village / plaza / guild / shop UI [G table]	G only	in Portable
-lobby:0x63EB60	village / plaza / guild / shop UI [G table]	G only
-lobby:0x63EB78	village / plaza / guild / shop UI [G table]	G only
+lobby:0x63EB60	village / plaza / guild / shop UI [G table]	ours
+lobby:0x63EB78	village / plaza / guild / shop UI [G table]	ours
 lobby:0x63EB88	village / plaza / guild / shop UI [G table]	G only	in Portable
 lobby:0x63EB90	village / plaza / guild / shop UI [G table]	G only	in Portable
 lobby:0x63EBF0	village / plaza / guild / shop UI	edited in G	in Portable
@@ -735,12 +735,12 @@ lobby:0x6400D8	village / plaza / guild / shop UI [G table]	G only	in Portable
 lobby:0x6400E0	village / plaza / guild / shop UI [G table]	G only	in Portable
 lobby:0x6400F0	village / plaza / guild / shop UI [G table]	G only	in Portable
 lobby:0x640158	village / plaza / guild / shop UI [G table]	G only	in Portable
-lobby:0x6402D0	quest board / quest text tables	edited in G	ambiguous: numbers: number changed to or from 1 (singular/plural)
-lobby:0x640310	quest board / quest text tables [G table]	G only	ambiguous: numbers: number changed to or from 1 (singular/plural)
-lobby:0x640330	quest board / quest text tables [G table]	G only
-lobby:0x640350	quest board / quest text tables [G table]	G only	ambiguous: numbers: number changed to or from 1 (singular/plural)
-lobby:0x640370	quest board / quest text tables [G table]	G only
-lobby:0x640390	quest board / quest text tables	edited in G	ambiguous: numbers: number changed to or from 1 (singular/plural)
+lobby:0x6402D0	quest board / quest text tables	ours	ambiguous: numbers: number changed to or from 1 (singular/plural)
+lobby:0x640310	quest board / quest text tables [G table]	ours	ambiguous: numbers: number changed to or from 1 (singular/plural)
+lobby:0x640330	quest board / quest text tables [G table]	ours
+lobby:0x640350	quest board / quest text tables [G table]	ours	ambiguous: numbers: number changed to or from 1 (singular/plural)
+lobby:0x640370	quest board / quest text tables [G table]	ours
+lobby:0x640390	quest board / quest text tables	ours	ambiguous: numbers: number changed to or from 1 (singular/plural)
 lobby:0x640640	village / plaza / guild / shop UI	edited in G	in Portable
 lobby:0x640660	village / plaza / guild / shop UI	twin without US English	in Portable
 lobby:0x640720	village / plaza / guild / shop UI	twin without US English	in Portable
@@ -755,192 +755,192 @@ lobby:0x641200	village / plaza / guild / shop UI [G table]	G only	in Portable
 lobby:0x641340	village / plaza / guild / shop UI [G table]	G only	in Portable
 lobby:0x641390	village / plaza / guild / shop UI [G table]	G only	in Portable
 lobby:0x641440	village / plaza / guild / shop UI [G table]	G only	in Portable
-lobby:0x641500	village / plaza / guild / shop UI [G table]	G only
-lobby:0x641520	village / plaza / guild / shop UI [G table]	G only
-lobby:0x641560	village / plaza / guild / shop UI [G table]	G only
-lobby:0x641590	village / plaza / guild / shop UI [G table]	G only
-lobby:0x6415B0	village / plaza / guild / shop UI [G table]	G only
-lobby:0x641638	village / plaza / guild / shop UI	edited in G
-lobby:0x641650	other tables (select_id_msg)	twin without US English
-lobby:0x6416A0	other tables (select_id_msg)	twin without US English
-lobby:0x6417A0	village / plaza / guild / shop UI [G table]	G only
+lobby:0x641500	village / plaza / guild / shop UI [G table]	ours
+lobby:0x641520	village / plaza / guild / shop UI [G table]	ours
+lobby:0x641560	village / plaza / guild / shop UI [G table]	ours
+lobby:0x641590	village / plaza / guild / shop UI [G table]	ours
+lobby:0x6415B0	village / plaza / guild / shop UI [G table]	ours
+lobby:0x641638	village / plaza / guild / shop UI	ours
+lobby:0x641650	other tables (select_id_msg)	ours
+lobby:0x6416A0	other tables (select_id_msg)	ours
+lobby:0x6417A0	village / plaza / guild / shop UI [G table]	ours
 lobby:0x641820	village / plaza / guild / shop UI	twin without US English	in Portable
-lobby:0x641850	village / plaza / guild / shop UI	edited in G
-lobby:0x641870	village / plaza / guild / shop UI	twin without US English
-lobby:0x6418E0	village / plaza / guild / shop UI	twin without US English
-lobby:0x6419A0	village / plaza / guild / shop UI [G table]	G only
-lobby:0x6419D0	village / plaza / guild / shop UI [G table]	G only
-lobby:0x641A00	village / plaza / guild / shop UI	twin without US English
-lobby:0x641A60	village / plaza / guild / shop UI [G table]	G only
-lobby:0x641A80	village / plaza / guild / shop UI [G table]	G only
-lobby:0x641B30	village / plaza / guild / shop UI	twin without US English
-lobby:0x641BD0	village / plaza / guild / shop UI [G table]	G only
-lobby:0x641C60	village / plaza / guild / shop UI [G table]	G only
-lobby:0x641D00	village / plaza / guild / shop UI	edited in G
-lobby:0x641D90	village / plaza / guild / shop UI	edited in G
-lobby:0x641DE0	village / plaza / guild / shop UI [G table]	G only
-lobby:0x641E80	village / plaza / guild / shop UI [G table]	G only
-lobby:0x641F20	village / plaza / guild / shop UI [G table]	G only
-lobby:0x641F50	village / plaza / guild / shop UI [G table]	G only
-lobby:0x641F90	village / plaza / guild / shop UI [G table]	G only
-lobby:0x641FC0	village / plaza / guild / shop UI [G table]	G only
-lobby:0x642050	village / plaza / guild / shop UI [G table]	G only
-lobby:0x642100	village / plaza / guild / shop UI [G table]	G only
-lobby:0x642190	village / plaza / guild / shop UI [G table]	G only
-lobby:0x6421D0	village / plaza / guild / shop UI [G table]	G only
-lobby:0x642210	village / plaza / guild / shop UI [G table]	G only
-lobby:0x642250	village / plaza / guild / shop UI [G table]	G only
+lobby:0x641850	village / plaza / guild / shop UI	ours
+lobby:0x641870	village / plaza / guild / shop UI	ours
+lobby:0x6418E0	village / plaza / guild / shop UI	ours
+lobby:0x6419A0	village / plaza / guild / shop UI [G table]	ours
+lobby:0x6419D0	village / plaza / guild / shop UI [G table]	ours
+lobby:0x641A00	village / plaza / guild / shop UI	ours
+lobby:0x641A60	village / plaza / guild / shop UI [G table]	ours
+lobby:0x641A80	village / plaza / guild / shop UI [G table]	ours
+lobby:0x641B30	village / plaza / guild / shop UI	ours
+lobby:0x641BD0	village / plaza / guild / shop UI [G table]	ours
+lobby:0x641C60	village / plaza / guild / shop UI [G table]	ours
+lobby:0x641D00	village / plaza / guild / shop UI	ours
+lobby:0x641D90	village / plaza / guild / shop UI	ours
+lobby:0x641DE0	village / plaza / guild / shop UI [G table]	ours
+lobby:0x641E80	village / plaza / guild / shop UI [G table]	ours
+lobby:0x641F20	village / plaza / guild / shop UI [G table]	ours
+lobby:0x641F50	village / plaza / guild / shop UI [G table]	ours
+lobby:0x641F90	village / plaza / guild / shop UI [G table]	ours
+lobby:0x641FC0	village / plaza / guild / shop UI [G table]	ours
+lobby:0x642050	village / plaza / guild / shop UI [G table]	ours
+lobby:0x642100	village / plaza / guild / shop UI [G table]	ours
+lobby:0x642190	village / plaza / guild / shop UI [G table]	ours
+lobby:0x6421D0	village / plaza / guild / shop UI [G table]	ours
+lobby:0x642210	village / plaza / guild / shop UI [G table]	ours
+lobby:0x642250	village / plaza / guild / shop UI [G table]	ours
 lobby:0x6422A0	village / plaza / guild / shop UI [G table]	G only	in Portable
 lobby:0x6422E0	village / plaza / guild / shop UI [G table]	G only	in Portable
 lobby:0x642320	village / plaza / guild / shop UI [G table]	G only	in Portable
-lobby:0x642360	village / plaza / guild / shop UI [G table]	G only
-lobby:0x642390	village / plaza / guild / shop UI [G table]	G only
-lobby:0x642420	village / plaza / guild / shop UI [G table]	G only
-lobby:0x642440	village / plaza / guild / shop UI [G table]	G only
-lobby:0x642460	village / plaza / guild / shop UI [G table]	G only
-lobby:0x642478	village / plaza / guild / shop UI [G table]	G only
-lobby:0x642490	village / plaza / guild / shop UI [G table]	G only
+lobby:0x642360	village / plaza / guild / shop UI [G table]	ours
+lobby:0x642390	village / plaza / guild / shop UI [G table]	ours
+lobby:0x642420	village / plaza / guild / shop UI [G table]	ours
+lobby:0x642440	village / plaza / guild / shop UI [G table]	ours
+lobby:0x642460	village / plaza / guild / shop UI [G table]	ours
+lobby:0x642478	village / plaza / guild / shop UI [G table]	ours
+lobby:0x642490	village / plaza / guild / shop UI [G table]	ours
 lobby:0x6424A8	village / plaza / guild / shop UI [G table]	G only	in Portable
-lobby:0x6424B8	village / plaza / guild / shop UI [G table]	G only
-lobby:0x6424C0	village / plaza / guild / shop UI [G table]	G only
-lobby:0x6424C8	village / plaza / guild / shop UI [G table]	G only
-lobby:0x6424D8	village / plaza / guild / shop UI [G table]	G only
-lobby:0x6424E8	village / plaza / guild / shop UI [G table]	G only
-lobby:0x6424F0	village / plaza / guild / shop UI [G table]	G only
+lobby:0x6424B8	village / plaza / guild / shop UI [G table]	ours
+lobby:0x6424C0	village / plaza / guild / shop UI [G table]	ours
+lobby:0x6424C8	village / plaza / guild / shop UI [G table]	ours
+lobby:0x6424D8	village / plaza / guild / shop UI [G table]	ours
+lobby:0x6424E8	village / plaza / guild / shop UI [G table]	ours
+lobby:0x6424F0	village / plaza / guild / shop UI [G table]	ours
 lobby:0x6424F8	village / plaza / guild / shop UI [G table]	G only	in Portable
-lobby:0x642508	village / plaza / guild / shop UI [G table]	G only
-lobby:0x642518	village / plaza / guild / shop UI [G table]	G only
-lobby:0x642520	village / plaza / guild / shop UI [G table]	G only
-lobby:0x642528	village / plaza / guild / shop UI [G table]	G only
-lobby:0x642530	village / plaza / guild / shop UI [G table]	G only
-lobby:0x642540	village / plaza / guild / shop UI [G table]	G only
-lobby:0x642548	village / plaza / guild / shop UI	twin without US English
-lobby:0x642570	village NPC lines and talk [G table]	G only
-lobby:0x6425A0	village NPC lines and talk [G table]	G only
-lobby:0x6425B0	village / plaza / guild / shop UI [G table]	G only
-lobby:0x6425B8	village / plaza / guild / shop UI [G table]	G only
-lobby:0x6425C8	village / plaza / guild / shop UI [G table]	G only
-lobby:0x6425E0	village NPC lines and talk [G table]	G only
-lobby:0x642600	village NPC lines and talk [G table]	G only
-lobby:0x642618	village NPC lines and talk [G table]	G only
-lobby:0x642640	village NPC lines and talk	twin without US English
-lobby:0x642668	village NPC lines and talk [G table]	G only
-lobby:0x642680	village NPC lines and talk [G table]	G only
-lobby:0x6426A0	village NPC lines and talk [G table]	G only
-lobby:0x6426B0	village / plaza / guild / shop UI [G table]	G only
+lobby:0x642508	village / plaza / guild / shop UI [G table]	ours
+lobby:0x642518	village / plaza / guild / shop UI [G table]	ours
+lobby:0x642520	village / plaza / guild / shop UI [G table]	ours
+lobby:0x642528	village / plaza / guild / shop UI [G table]	ours
+lobby:0x642530	village / plaza / guild / shop UI [G table]	ours
+lobby:0x642540	village / plaza / guild / shop UI [G table]	ours
+lobby:0x642548	village / plaza / guild / shop UI	ours
+lobby:0x642570	village NPC lines and talk [G table]	ours
+lobby:0x6425A0	village NPC lines and talk [G table]	ours
+lobby:0x6425B0	village / plaza / guild / shop UI [G table]	ours
+lobby:0x6425B8	village / plaza / guild / shop UI [G table]	ours
+lobby:0x6425C8	village / plaza / guild / shop UI [G table]	ours
+lobby:0x6425E0	village NPC lines and talk [G table]	ours
+lobby:0x642600	village NPC lines and talk [G table]	ours
+lobby:0x642618	village NPC lines and talk [G table]	ours
+lobby:0x642640	village NPC lines and talk	ours
+lobby:0x642668	village NPC lines and talk [G table]	ours
+lobby:0x642680	village NPC lines and talk [G table]	ours
+lobby:0x6426A0	village NPC lines and talk [G table]	ours
+lobby:0x6426B0	village / plaza / guild / shop UI [G table]	ours
 lobby:0x6426C0	village / plaza / guild / shop UI [G table]	G only	in Portable
-lobby:0x642710	village / plaza / guild / shop UI [G table]	G only
-lobby:0x642730	village / plaza / guild / shop UI	twin without US English
-lobby:0x642750	village / plaza / guild / shop UI [G table]	G only
-lobby:0x642770	village / plaza / guild / shop UI [G table]	G only
-lobby:0x642790	village / plaza / guild / shop UI [G table]	G only
-lobby:0x6427B0	village / plaza / guild / shop UI [G table]	G only
-lobby:0x6427D0	village / plaza / guild / shop UI [G table]	G only
-lobby:0x6427F0	village / plaza / guild / shop UI [G table]	G only
-lobby:0x6427F8	village / plaza / guild / shop UI [G table]	G only
-lobby:0x642808	village / plaza / guild / shop UI [G table]	G only
-lobby:0x642818	village / plaza / guild / shop UI [G table]	G only
-lobby:0x642830	village / plaza / guild / shop UI [G table]	G only
-lobby:0x642850	village / plaza / guild / shop UI [G table]	G only
-lobby:0x642870	village / plaza / guild / shop UI [G table]	G only
-lobby:0x6428A0	village NPC lines and talk	edited in G
-lobby:0x6428D0	village NPC lines and talk [G table]	G only
-lobby:0x6428F0	village NPC lines and talk [G table]	G only
-lobby:0x642900	village NPC lines and talk [G table]	G only
-lobby:0x642910	village NPC lines and talk [G table]	G only
-lobby:0x642920	village NPC lines and talk [G table]	G only
-lobby:0x642930	village NPC lines and talk [G table]	G only
-lobby:0x642940	village NPC lines and talk [G table]	G only
-lobby:0x642958	village NPC lines and talk [G table]	G only
-lobby:0x642968	village NPC lines and talk [G table]	G only
-lobby:0x642980	village NPC lines and talk [G table]	G only
-lobby:0x6429D0	village NPC lines and talk	twin without US English
-lobby:0x6429F0	village NPC lines and talk	twin without US English
-lobby:0x642A10	village NPC lines and talk	twin without US English
-lobby:0x642A30	village NPC lines and talk [G table]	G only
-lobby:0x642A50	village NPC lines and talk [G table]	G only
-lobby:0x642A70	village NPC lines and talk [G table]	G only
-lobby:0x642AF0	village NPC lines and talk [G table]	G only
-lobby:0x642B00	village NPC lines and talk [G table]	G only
+lobby:0x642710	village / plaza / guild / shop UI [G table]	ours
+lobby:0x642730	village / plaza / guild / shop UI	ours
+lobby:0x642750	village / plaza / guild / shop UI [G table]	ours
+lobby:0x642770	village / plaza / guild / shop UI [G table]	ours
+lobby:0x642790	village / plaza / guild / shop UI [G table]	ours
+lobby:0x6427B0	village / plaza / guild / shop UI [G table]	ours
+lobby:0x6427D0	village / plaza / guild / shop UI [G table]	ours
+lobby:0x6427F0	village / plaza / guild / shop UI [G table]	ours
+lobby:0x6427F8	village / plaza / guild / shop UI [G table]	ours
+lobby:0x642808	village / plaza / guild / shop UI [G table]	ours
+lobby:0x642818	village / plaza / guild / shop UI [G table]	ours
+lobby:0x642830	village / plaza / guild / shop UI [G table]	ours
+lobby:0x642850	village / plaza / guild / shop UI [G table]	ours
+lobby:0x642870	village / plaza / guild / shop UI [G table]	ours
+lobby:0x6428A0	village NPC lines and talk	ours
+lobby:0x6428D0	village NPC lines and talk [G table]	ours
+lobby:0x6428F0	village NPC lines and talk [G table]	ours
+lobby:0x642900	village NPC lines and talk [G table]	ours
+lobby:0x642910	village NPC lines and talk [G table]	ours
+lobby:0x642920	village NPC lines and talk [G table]	ours
+lobby:0x642930	village NPC lines and talk [G table]	ours
+lobby:0x642940	village NPC lines and talk [G table]	ours
+lobby:0x642958	village NPC lines and talk [G table]	ours
+lobby:0x642968	village NPC lines and talk [G table]	ours
+lobby:0x642980	village NPC lines and talk [G table]	ours
+lobby:0x6429D0	village NPC lines and talk	ours
+lobby:0x6429F0	village NPC lines and talk	ours
+lobby:0x642A10	village NPC lines and talk	ours
+lobby:0x642A30	village NPC lines and talk [G table]	ours
+lobby:0x642A50	village NPC lines and talk [G table]	ours
+lobby:0x642A70	village NPC lines and talk [G table]	ours
+lobby:0x642AF0	village NPC lines and talk [G table]	ours
+lobby:0x642B00	village NPC lines and talk [G table]	ours
 lobby:0x642B10	village NPC lines and talk [G table]	G only	in Portable
-lobby:0x642B20	village NPC lines and talk [G table]	G only
+lobby:0x642B20	village NPC lines and talk [G table]	ours
 lobby:0x642B30	village NPC lines and talk [G table]	G only	in Portable
-lobby:0x642B60	village / plaza / guild / shop UI [G table]	G only
-lobby:0x642B90	village / plaza / guild / shop UI	twin without US English
-lobby:0x642BA8	village / plaza / guild / shop UI [G table]	G only
-lobby:0x642BC8	village / plaza / guild / shop UI	twin without US English
-lobby:0x642C08	village / plaza / guild / shop UI	twin without US English
-lobby:0x642C18	village / plaza / guild / shop UI [G table]	G only
-lobby:0x642C38	village NPC lines and talk	twin without US English
-lobby:0x642C70	village / plaza / guild / shop UI [G table]	G only
-lobby:0x642C80	village / plaza / guild / shop UI [G table]	G only
-lobby:0x642C90	village / plaza / guild / shop UI [G table]	G only
-lobby:0x642CA0	village / plaza / guild / shop UI [G table]	G only
-lobby:0x642CB0	online, keyboard, word filter [G table]	G only
-lobby:0x642CD0	online, keyboard, word filter [G table]	G only
-lobby:0x642DA0	online, keyboard, word filter	twin without US English
-lobby:0x642E30	online, keyboard, word filter	twin without US English
-lobby:0x642F40	village NPC lines and talk [G table]	G only
-lobby:0x642FB0	online, keyboard, word filter	twin without US English
-lobby:0x642FD0	online, keyboard, word filter	twin without US English
-lobby:0x6430C0	online, keyboard, word filter	twin without US English
-lobby:0x643180	village NPC lines and talk [G table]	G only
-lobby:0x6431B0	village NPC lines and talk [G table]	G only
-lobby:0x6432A0	online, keyboard, word filter	edited in G
-lobby:0x6432D0	village NPC lines and talk [G table]	G only
-lobby:0x643310	online, keyboard, word filter	twin without US English
-lobby:0x643340	online, keyboard, word filter	twin without US English
-lobby:0x643410	online, keyboard, word filter	twin without US English
-lobby:0x643440	online, keyboard, word filter	twin without US English
-lobby:0x643560	online, keyboard, word filter	twin without US English
-lobby:0x6435A0	village NPC lines and talk [G table]	G only
-lobby:0x643600	village NPC lines and talk [G table]	G only
-lobby:0x643630	village NPC lines and talk [G table]	G only
-lobby:0x643660	village NPC lines and talk [G table]	G only
-lobby:0x643690	village NPC lines and talk [G table]	G only
-lobby:0x6436D0	village NPC lines and talk [G table]	G only
-lobby:0x643710	village NPC lines and talk [G table]	G only
-lobby:0x643780	village NPC lines and talk [G table]	G only
-lobby:0x6437C0	online, keyboard, word filter	twin without US English
-lobby:0x643860	online, keyboard, word filter	twin without US English
-lobby:0x6438A0	online, keyboard, word filter	twin without US English
-lobby:0x643900	online, keyboard, word filter	twin without US English
-lobby:0x643920	online, keyboard, word filter	twin without US English
-lobby:0x643950	online, keyboard, word filter	twin without US English
-lobby:0x643980	village NPC lines and talk [G table]	G only
-lobby:0x6439A0	village NPC lines and talk [G table]	G only
-lobby:0x6439C0	village NPC lines and talk [G table]	G only
-lobby:0x6439E0	village NPC lines and talk [G table]	G only
-lobby:0x643A10	village NPC lines and talk [G table]	G only
-lobby:0x643A80	village NPC lines and talk [G table]	G only
-lobby:0x643AE0	village NPC lines and talk [G table]	G only
-lobby:0x643B40	village NPC lines and talk [G table]	G only
-lobby:0x643BA0	village NPC lines and talk [G table]	G only
-lobby:0x643BC0	village NPC lines and talk [G table]	G only
-lobby:0x643C20	village NPC lines and talk [G table]	G only
-lobby:0x643C80	village NPC lines and talk [G table]	G only
-lobby:0x643CB0	village NPC lines and talk [G table]	G only
-lobby:0x643CF0	village NPC lines and talk [G table]	G only
-lobby:0x643D50	village NPC lines and talk [G table]	G only
-lobby:0x643D80	village NPC lines and talk [G table]	G only
-lobby:0x643DB0	village NPC lines and talk [G table]	G only
-lobby:0x643E60	online, keyboard, word filter	edited in G
-lobby:0x643FD0	village NPC lines and talk [G table]	G only
-lobby:0x644060	village NPC lines and talk [G table]	G only
-lobby:0x644090	village NPC lines and talk [G table]	G only
-lobby:0x6440C0	village NPC lines and talk [G table]	G only
-lobby:0x644460	village NPC lines and talk [G table]	G only
-lobby:0x6445B0	village NPC lines and talk [G table]	G only
-lobby:0x644680	village NPC lines and talk [G table]	G only
-lobby:0x644780	village NPC lines and talk [G table]	G only
-lobby:0x6447A0	village NPC lines and talk [G table]	G only
-lobby:0x6447C0	village / plaza / guild / shop UI [G table]	G only
-lobby:0x6447F0	village / plaza / guild / shop UI [G table]	G only
-lobby:0x644810	village / plaza / guild / shop UI [G table]	G only
-lobby:0x644830	village / plaza / guild / shop UI [G table]	G only
+lobby:0x642B60	village / plaza / guild / shop UI [G table]	ours
+lobby:0x642B90	village / plaza / guild / shop UI	ours
+lobby:0x642BA8	village / plaza / guild / shop UI [G table]	ours
+lobby:0x642BC8	village / plaza / guild / shop UI	ours
+lobby:0x642C08	village / plaza / guild / shop UI	ours
+lobby:0x642C18	village / plaza / guild / shop UI [G table]	ours
+lobby:0x642C38	village NPC lines and talk	ours
+lobby:0x642C70	village / plaza / guild / shop UI [G table]	ours
+lobby:0x642C80	village / plaza / guild / shop UI [G table]	ours
+lobby:0x642C90	village / plaza / guild / shop UI [G table]	ours
+lobby:0x642CA0	village / plaza / guild / shop UI [G table]	ours
+lobby:0x642CB0	online, keyboard, word filter [G table]	ours
+lobby:0x642CD0	online, keyboard, word filter [G table]	ours
+lobby:0x642DA0	online, keyboard, word filter	ours
+lobby:0x642E30	online, keyboard, word filter	ours
+lobby:0x642F40	village NPC lines and talk [G table]	ours
+lobby:0x642FB0	online, keyboard, word filter	ours
+lobby:0x642FD0	online, keyboard, word filter	ours
+lobby:0x6430C0	online, keyboard, word filter	ours
+lobby:0x643180	village NPC lines and talk [G table]	ours
+lobby:0x6431B0	village NPC lines and talk [G table]	ours
+lobby:0x6432A0	online, keyboard, word filter	ours
+lobby:0x6432D0	village NPC lines and talk [G table]	ours
+lobby:0x643310	online, keyboard, word filter	ours
+lobby:0x643340	online, keyboard, word filter	ours
+lobby:0x643410	online, keyboard, word filter	ours
+lobby:0x643440	online, keyboard, word filter	ours
+lobby:0x643560	online, keyboard, word filter	ours
+lobby:0x6435A0	village NPC lines and talk [G table]	ours
+lobby:0x643600	village NPC lines and talk [G table]	ours
+lobby:0x643630	village NPC lines and talk [G table]	ours
+lobby:0x643660	village NPC lines and talk [G table]	ours
+lobby:0x643690	village NPC lines and talk [G table]	ours
+lobby:0x6436D0	village NPC lines and talk [G table]	ours
+lobby:0x643710	village NPC lines and talk [G table]	ours
+lobby:0x643780	village NPC lines and talk [G table]	ours
+lobby:0x6437C0	online, keyboard, word filter	ours
+lobby:0x643860	online, keyboard, word filter	ours
+lobby:0x6438A0	online, keyboard, word filter	ours
+lobby:0x643900	online, keyboard, word filter	ours
+lobby:0x643920	online, keyboard, word filter	ours
+lobby:0x643950	online, keyboard, word filter	ours
+lobby:0x643980	village NPC lines and talk [G table]	ours
+lobby:0x6439A0	village NPC lines and talk [G table]	ours
+lobby:0x6439C0	village NPC lines and talk [G table]	ours
+lobby:0x6439E0	village NPC lines and talk [G table]	ours
+lobby:0x643A10	village NPC lines and talk [G table]	ours
+lobby:0x643A80	village NPC lines and talk [G table]	ours
+lobby:0x643AE0	village NPC lines and talk [G table]	ours
+lobby:0x643B40	village NPC lines and talk [G table]	ours
+lobby:0x643BA0	village NPC lines and talk [G table]	ours
+lobby:0x643BC0	village NPC lines and talk [G table]	ours
+lobby:0x643C20	village NPC lines and talk [G table]	ours
+lobby:0x643C80	village NPC lines and talk [G table]	ours
+lobby:0x643CB0	village NPC lines and talk [G table]	ours
+lobby:0x643CF0	village NPC lines and talk [G table]	ours
+lobby:0x643D50	village NPC lines and talk [G table]	ours
+lobby:0x643D80	village NPC lines and talk [G table]	ours
+lobby:0x643DB0	village NPC lines and talk [G table]	ours
+lobby:0x643E60	online, keyboard, word filter	ours
+lobby:0x643FD0	village NPC lines and talk [G table]	ours
+lobby:0x644060	village NPC lines and talk [G table]	ours
+lobby:0x644090	village NPC lines and talk [G table]	ours
+lobby:0x6440C0	village NPC lines and talk [G table]	ours
+lobby:0x644460	village NPC lines and talk [G table]	ours
+lobby:0x6445B0	village NPC lines and talk [G table]	ours
+lobby:0x644680	village NPC lines and talk [G table]	ours
+lobby:0x644780	village NPC lines and talk [G table]	ours
+lobby:0x6447A0	village NPC lines and talk [G table]	ours
+lobby:0x6447C0	village / plaza / guild / shop UI [G table]	ours
+lobby:0x6447F0	village / plaza / guild / shop UI [G table]	ours
+lobby:0x644810	village / plaza / guild / shop UI [G table]	ours
+lobby:0x644830	village / plaza / guild / shop UI [G table]	ours
 lobby:0x644B90	code literals (lobby)	G only	in Portable
-lobby:0x645FA8	other tables (special_tag_dat)	twin without US English
-lobby:0x645FC0	other tables (special_tag_dat)	twin without US English
+lobby:0x645FA8	other tables (special_tag_dat)	ours
+lobby:0x645FC0	other tables (special_tag_dat)	ours
 main:0x25D810	code literals (main)	G only
 main:0x25D82C	code literals (main)	G only
 main:0x25D862	code literals (main)	G only	in Portable
@@ -983,16 +983,16 @@ main:0x2A4450	code literals (main)	G only	in Portable
 main:0x2A4460	code literals (main)	G only	in Portable
 main:0x2A4490	online, keyboard, word filter	twin without US English	in Portable
 main:0x2A44A0	code literals (main)	G only	in Portable
-main:0x2A44B0	code literals (main)	G only
+main:0x2A44B0	code literals (main)	ours
 main:0x2A44C0	code literals (main)	G only	in Portable
-main:0x2A44D0	code literals (main)	G only
-main:0x2A44E0	code literals (main)	G only
-main:0x2A44F0	code literals (main)	G only
-main:0x2A4500	code literals (main)	G only
-main:0x2A4510	code literals (main)	G only
-main:0x2A4520	code literals (main)	G only
-main:0x2A4530	code literals (main)	G only
-main:0x2A4540	code literals (main)	G only
+main:0x2A44D0	code literals (main)	ours
+main:0x2A44E0	code literals (main)	ours
+main:0x2A44F0	code literals (main)	ours
+main:0x2A4500	code literals (main)	ours
+main:0x2A4510	code literals (main)	ours
+main:0x2A4520	code literals (main)	ours
+main:0x2A4530	code literals (main)	ours
+main:0x2A4540	code literals (main)	ours
 main:0x2A4A0E	code literals (main)	G only
 main:0x2A7060	code literals (main)	G only
 main:0x2B0200	code literals (main)	G only
@@ -1005,9 +1005,9 @@ main:0x2B0C70	code literals (main)	G only
 main:0x2B0C90	code literals (main)	G only
 main:0x2B0CB0	code literals (main)	G only
 main:0x2B0CD0	code literals (main)	G only
-main:0x2B1750	code literals (main)	G only
-main:0x2B1770	code literals (main)	G only
-main:0x2B1788	code literals (main)	G only
+main:0x2B1750	code literals (main)	ours
+main:0x2B1770	code literals (main)	ours
+main:0x2B1788	code literals (main)	ours
 main:0x2B18D0	other tables (zen_tbl)	twin without US English
 main:0x2BE3B0	other tables (num_chars)	twin without US English
 main:0x2BE3D0	other tables (num_chars)	twin without US English
@@ -1396,142 +1396,142 @@ main:0x2C0700	online, keyboard, word filter	twin without US English
 main:0x2C0780	online, keyboard, word filter	twin without US English
 main:0x2C0800	other tables (num_tbl) [G table]	G only
 main:0x2C09E0	code literals (main)	G only	in Portable
-main:0x2C0C30	code literals (main)	G only
-main:0x2C1290	online, keyboard, word filter [G table]	G only
-main:0x2C12C0	online, keyboard, word filter	edited in G
-main:0x2C12F0	online, keyboard, word filter	edited in G
-main:0x2C1590	online, keyboard, word filter [G table]	G only
-main:0x2C16D0	online, keyboard, word filter	twin without US English
-main:0x2C1750	online, keyboard, word filter	twin without US English
-main:0x2C1770	online, keyboard, word filter	twin without US English
-main:0x2C1780	online, keyboard, word filter	twin without US English
-main:0x2C17C0	online, keyboard, word filter	twin without US English
-main:0x2C17E0	online, keyboard, word filter	twin without US English
-main:0x2C1810	online, keyboard, word filter	twin without US English
-main:0x2C1830	online, keyboard, word filter	twin without US English
-main:0x2C1860	online, keyboard, word filter	twin without US English
-main:0x2C1880	online, keyboard, word filter	twin without US English
-main:0x2C18C0	online, keyboard, word filter	twin without US English
-main:0x2C18F0	online, keyboard, word filter	twin without US English
+main:0x2C0C30	code literals (main)	ours
+main:0x2C1290	online, keyboard, word filter [G table]	ours
+main:0x2C12C0	online, keyboard, word filter	ours
+main:0x2C12F0	online, keyboard, word filter	ours
+main:0x2C1590	online, keyboard, word filter [G table]	ours
+main:0x2C16D0	online, keyboard, word filter	ours
+main:0x2C1750	online, keyboard, word filter	ours
+main:0x2C1770	online, keyboard, word filter	ours
+main:0x2C1780	online, keyboard, word filter	ours
+main:0x2C17C0	online, keyboard, word filter	ours
+main:0x2C17E0	online, keyboard, word filter	ours
+main:0x2C1810	online, keyboard, word filter	ours
+main:0x2C1830	online, keyboard, word filter	ours
+main:0x2C1860	online, keyboard, word filter	ours
+main:0x2C1880	online, keyboard, word filter	ours
+main:0x2C18C0	online, keyboard, word filter	ours
+main:0x2C18F0	online, keyboard, word filter	ours
 main:0x2C1920	online, keyboard, word filter	twin without US English	in Portable
-main:0x2C1950	online, keyboard, word filter	twin without US English
+main:0x2C1950	online, keyboard, word filter	ours
 main:0x2C1980	online, keyboard, word filter	twin without US English	in Portable
-main:0x2C19B0	online, keyboard, word filter	twin without US English
-main:0x2C19E0	online, keyboard, word filter	twin without US English
-main:0x2C1A10	online, keyboard, word filter	twin without US English
-main:0x2C1A50	online, keyboard, word filter	twin without US English
-main:0x2C1A68	online, keyboard, word filter	twin without US English
-main:0x2C1A80	online, keyboard, word filter	twin without US English
-main:0x2C1AB0	online, keyboard, word filter	twin without US English
-main:0x2C1AE0	online, keyboard, word filter	twin without US English
-main:0x2C1B10	online, keyboard, word filter	twin without US English
-main:0x2C1B40	online, keyboard, word filter	twin without US English
-main:0x2C1B58	online, keyboard, word filter	twin without US English
-main:0x2C1B68	online, keyboard, word filter	twin without US English
-main:0x2C1B80	online, keyboard, word filter	twin without US English
-main:0x2C1BA0	online, keyboard, word filter	twin without US English
-main:0x2C1C10	online, keyboard, word filter	twin without US English
-main:0x2C1C60	online, keyboard, word filter	edited in G
-main:0x2C1C80	online, keyboard, word filter	twin without US English
-main:0x2C1C90	online, keyboard, word filter	twin without US English
-main:0x2C1E90	online, keyboard, word filter	twin without US English
-main:0x2C1EB0	online, keyboard, word filter	twin without US English
-main:0x2C1EE0	online, keyboard, word filter	twin without US English
-main:0x2C1F00	online, keyboard, word filter	twin without US English
-main:0x2C1F90	online, keyboard, word filter	twin without US English
-main:0x2C1FC0	online, keyboard, word filter	twin without US English
-main:0x2C2000	online, keyboard, word filter	twin without US English
-main:0x2C2060	online, keyboard, word filter	twin without US English
-main:0x2C2090	online, keyboard, word filter	twin without US English
-main:0x2C20B0	online, keyboard, word filter	twin without US English
-main:0x2C20D0	online, keyboard, word filter	twin without US English
-main:0x2C20F0	online, keyboard, word filter	twin without US English
-main:0x2C2110	online, keyboard, word filter	twin without US English
-main:0x2C2140	online, keyboard, word filter	twin without US English
-main:0x2C2190	online, keyboard, word filter	twin without US English
-main:0x2C2260	online, keyboard, word filter	twin without US English
-main:0x2C2280	online, keyboard, word filter	twin without US English
-main:0x2C22A0	online, keyboard, word filter	twin without US English
-main:0x2C2350	online, keyboard, word filter	twin without US English
-main:0x2C2390	online, keyboard, word filter	twin without US English
-main:0x2C23B0	online, keyboard, word filter	twin without US English
-main:0x2C23E0	online, keyboard, word filter	twin without US English
-main:0x2C2410	online, keyboard, word filter	twin without US English
-main:0x2C2440	online, keyboard, word filter	edited in G
-main:0x2C25A8	online, keyboard, word filter	edited in G
-main:0x2C2B20	online, keyboard, word filter	twin without US English
-main:0x2C2B40	online, keyboard, word filter	twin without US English
-main:0x2C2C20	online, keyboard, word filter	twin without US English
-main:0x2C2D90	online, keyboard, word filter	twin without US English
-main:0x2C2EA0	online, keyboard, word filter	twin without US English
-main:0x2C2ED0	online, keyboard, word filter	twin without US English
+main:0x2C19B0	online, keyboard, word filter	ours
+main:0x2C19E0	online, keyboard, word filter	ours
+main:0x2C1A10	online, keyboard, word filter	ours
+main:0x2C1A50	online, keyboard, word filter	ours
+main:0x2C1A68	online, keyboard, word filter	ours
+main:0x2C1A80	online, keyboard, word filter	ours
+main:0x2C1AB0	online, keyboard, word filter	ours
+main:0x2C1AE0	online, keyboard, word filter	ours
+main:0x2C1B10	online, keyboard, word filter	ours
+main:0x2C1B40	online, keyboard, word filter	ours
+main:0x2C1B58	online, keyboard, word filter	ours
+main:0x2C1B68	online, keyboard, word filter	ours
+main:0x2C1B80	online, keyboard, word filter	ours
+main:0x2C1BA0	online, keyboard, word filter	ours
+main:0x2C1C10	online, keyboard, word filter	ours
+main:0x2C1C60	online, keyboard, word filter	ours
+main:0x2C1C80	online, keyboard, word filter	ours
+main:0x2C1C90	online, keyboard, word filter	ours
+main:0x2C1E90	online, keyboard, word filter	ours
+main:0x2C1EB0	online, keyboard, word filter	ours
+main:0x2C1EE0	online, keyboard, word filter	ours
+main:0x2C1F00	online, keyboard, word filter	ours
+main:0x2C1F90	online, keyboard, word filter	ours
+main:0x2C1FC0	online, keyboard, word filter	ours
+main:0x2C2000	online, keyboard, word filter	ours
+main:0x2C2060	online, keyboard, word filter	ours
+main:0x2C2090	online, keyboard, word filter	ours
+main:0x2C20B0	online, keyboard, word filter	ours
+main:0x2C20D0	online, keyboard, word filter	ours
+main:0x2C20F0	online, keyboard, word filter	ours
+main:0x2C2110	online, keyboard, word filter	ours
+main:0x2C2140	online, keyboard, word filter	ours
+main:0x2C2190	online, keyboard, word filter	ours
+main:0x2C2260	online, keyboard, word filter	ours
+main:0x2C2280	online, keyboard, word filter	ours
+main:0x2C22A0	online, keyboard, word filter	ours
+main:0x2C2350	online, keyboard, word filter	ours
+main:0x2C2390	online, keyboard, word filter	ours
+main:0x2C23B0	online, keyboard, word filter	ours
+main:0x2C23E0	online, keyboard, word filter	ours
+main:0x2C2410	online, keyboard, word filter	ours
+main:0x2C2440	online, keyboard, word filter	ours
+main:0x2C25A8	online, keyboard, word filter	ours
+main:0x2C2B20	online, keyboard, word filter	ours
+main:0x2C2B40	online, keyboard, word filter	ours
+main:0x2C2C20	online, keyboard, word filter	ours
+main:0x2C2D90	online, keyboard, word filter	ours
+main:0x2C2EA0	online, keyboard, word filter	ours
+main:0x2C2ED0	online, keyboard, word filter	ours
 main:0x2C2EF0	online, keyboard, word filter	twin without US English	in Portable
-main:0x2C2F10	online, keyboard, word filter [G table]	G only
-main:0x2C2F30	online, keyboard, word filter [G table]	G only
-main:0x2C2F60	online, keyboard, word filter [G table]	G only
-main:0x2C2F80	online, keyboard, word filter [G table]	G only
-main:0x2C2FB0	online, keyboard, word filter [G table]	G only
-main:0x2C2FE0	online, keyboard, word filter [G table]	G only
-main:0x2C3010	online, keyboard, word filter [G table]	G only
-main:0x2C3030	online, keyboard, word filter [G table]	G only
-main:0x2C3050	online, keyboard, word filter [G table]	G only
-main:0x2C3070	online, keyboard, word filter [G table]	G only
-main:0x2C3090	online, keyboard, word filter [G table]	G only
-main:0x2C30B0	online, keyboard, word filter [G table]	G only
-main:0x2C30E0	online, keyboard, word filter [G table]	G only
-main:0x2C3100	online, keyboard, word filter [G table]	G only
-main:0x2C3130	online, keyboard, word filter [G table]	G only
-main:0x2C3160	online, keyboard, word filter [G table]	G only
-main:0x2C3190	online, keyboard, word filter [G table]	G only
-main:0x2C31C0	online, keyboard, word filter [G table]	G only
-main:0x2C31F0	online, keyboard, word filter [G table]	G only
-main:0x2C3220	online, keyboard, word filter [G table]	G only
-main:0x2C3250	online, keyboard, word filter [G table]	G only
-main:0x2C3280	online, keyboard, word filter [G table]	G only
-main:0x2C32D0	other tables (menu00_str_tbl)	twin without US English
-main:0x2C3390	other tables (menu02_str_tbl)	twin without US English
-main:0x2C33C0	other tables (menu05_str_tbl)	twin without US English
-main:0x2C33D0	other tables (menu05_str_tbl)	twin without US English
-main:0x2C3510	memory card and yes/no dialogs	twin without US English
-main:0x2C3540	memory card and yes/no dialogs	twin without US English
-main:0x2C3580	memory card and yes/no dialogs	twin without US English
-main:0x2C35B0	memory card and yes/no dialogs	twin without US English
-main:0x2C35E0	memory card and yes/no dialogs	twin without US English
-main:0x2C3600	memory card and yes/no dialogs	twin without US English
-main:0x2C3630	memory card and yes/no dialogs	twin without US English
-main:0x2C3650	memory card and yes/no dialogs	twin without US English
-main:0x2C3680	memory card and yes/no dialogs	twin without US English
-main:0x2C36A0	memory card and yes/no dialogs	twin without US English
-main:0x2C36C0	memory card and yes/no dialogs	twin without US English
-main:0x2C36E0	memory card and yes/no dialogs	twin without US English
-main:0x2C3700	memory card and yes/no dialogs	twin without US English
-main:0x2C3730	memory card and yes/no dialogs	twin without US English
-main:0x2C3750	memory card and yes/no dialogs	twin without US English
-main:0x2C3780	memory card and yes/no dialogs	twin without US English
-main:0x2C37B0	memory card and yes/no dialogs	twin without US English
-main:0x2C37D8	memory card and yes/no dialogs	twin without US English
-main:0x2C37F0	memory card and yes/no dialogs	twin without US English
-main:0x2C3820	memory card and yes/no dialogs	twin without US English
-main:0x2C3840	memory card and yes/no dialogs	twin without US English
-main:0x2C3860	memory card and yes/no dialogs	twin without US English
-main:0x2C3880	memory card and yes/no dialogs	twin without US English
-main:0x2C38B0	memory card and yes/no dialogs	twin without US English
-main:0x2C38D0	memory card and yes/no dialogs	twin without US English
-main:0x2C3920	memory card and yes/no dialogs	twin without US English
-main:0x2C3950	memory card and yes/no dialogs	twin without US English
-main:0x2C3980	memory card and yes/no dialogs	twin without US English
-main:0x2C39A0	memory card and yes/no dialogs	twin without US English
-main:0x2C39C0	memory card and yes/no dialogs	twin without US English
-main:0x2C3A50	memory card and yes/no dialogs	twin without US English
-main:0x2C3B20	memory card and yes/no dialogs	twin without US English
-main:0x2C3B50	memory card and yes/no dialogs	twin without US English
-main:0x2C3B70	memory card and yes/no dialogs [G table]	G only
-main:0x2C3B90	online, keyboard, word filter [G table]	G only
-main:0x2C3BB0	online, keyboard, word filter [G table]	G only
-main:0x2C3BD0	online, keyboard, word filter	twin without US English
-main:0x2C3BF0	online, keyboard, word filter	twin without US English
-main:0x2C3C10	memory card and yes/no dialogs	twin without US English
-main:0x2C3CA0	code literals (main)	G only
+main:0x2C2F10	online, keyboard, word filter [G table]	ours
+main:0x2C2F30	online, keyboard, word filter [G table]	ours
+main:0x2C2F60	online, keyboard, word filter [G table]	ours
+main:0x2C2F80	online, keyboard, word filter [G table]	ours
+main:0x2C2FB0	online, keyboard, word filter [G table]	ours
+main:0x2C2FE0	online, keyboard, word filter [G table]	ours
+main:0x2C3010	online, keyboard, word filter [G table]	ours
+main:0x2C3030	online, keyboard, word filter [G table]	ours
+main:0x2C3050	online, keyboard, word filter [G table]	ours
+main:0x2C3070	online, keyboard, word filter [G table]	ours
+main:0x2C3090	online, keyboard, word filter [G table]	ours
+main:0x2C30B0	online, keyboard, word filter [G table]	ours
+main:0x2C30E0	online, keyboard, word filter [G table]	ours
+main:0x2C3100	online, keyboard, word filter [G table]	ours
+main:0x2C3130	online, keyboard, word filter [G table]	ours
+main:0x2C3160	online, keyboard, word filter [G table]	ours
+main:0x2C3190	online, keyboard, word filter [G table]	ours
+main:0x2C31C0	online, keyboard, word filter [G table]	ours
+main:0x2C31F0	online, keyboard, word filter [G table]	ours
+main:0x2C3220	online, keyboard, word filter [G table]	ours
+main:0x2C3250	online, keyboard, word filter [G table]	ours
+main:0x2C3280	online, keyboard, word filter [G table]	ours
+main:0x2C32D0	other tables (menu00_str_tbl)	ours
+main:0x2C3390	other tables (menu02_str_tbl)	ours
+main:0x2C33C0	other tables (menu05_str_tbl)	ours
+main:0x2C33D0	other tables (menu05_str_tbl)	ours
+main:0x2C3510	memory card and yes/no dialogs	ours
+main:0x2C3540	memory card and yes/no dialogs	ours
+main:0x2C3580	memory card and yes/no dialogs	ours
+main:0x2C35B0	memory card and yes/no dialogs	ours
+main:0x2C35E0	memory card and yes/no dialogs	ours
+main:0x2C3600	memory card and yes/no dialogs	ours
+main:0x2C3630	memory card and yes/no dialogs	ours
+main:0x2C3650	memory card and yes/no dialogs	ours
+main:0x2C3680	memory card and yes/no dialogs	ours
+main:0x2C36A0	memory card and yes/no dialogs	ours
+main:0x2C36C0	memory card and yes/no dialogs	ours
+main:0x2C36E0	memory card and yes/no dialogs	ours
+main:0x2C3700	memory card and yes/no dialogs	ours
+main:0x2C3730	memory card and yes/no dialogs	ours
+main:0x2C3750	memory card and yes/no dialogs	ours
+main:0x2C3780	memory card and yes/no dialogs	ours
+main:0x2C37B0	memory card and yes/no dialogs	ours
+main:0x2C37D8	memory card and yes/no dialogs	ours
+main:0x2C37F0	memory card and yes/no dialogs	ours
+main:0x2C3820	memory card and yes/no dialogs	ours
+main:0x2C3840	memory card and yes/no dialogs	ours
+main:0x2C3860	memory card and yes/no dialogs	ours
+main:0x2C3880	memory card and yes/no dialogs	ours
+main:0x2C38B0	memory card and yes/no dialogs	ours
+main:0x2C38D0	memory card and yes/no dialogs	ours
+main:0x2C3920	memory card and yes/no dialogs	ours
+main:0x2C3950	memory card and yes/no dialogs	ours
+main:0x2C3980	memory card and yes/no dialogs	ours
+main:0x2C39A0	memory card and yes/no dialogs	ours
+main:0x2C39C0	memory card and yes/no dialogs	ours
+main:0x2C3A50	memory card and yes/no dialogs	ours
+main:0x2C3B20	memory card and yes/no dialogs	ours
+main:0x2C3B50	memory card and yes/no dialogs	ours
+main:0x2C3B70	memory card and yes/no dialogs [G table]	ours
+main:0x2C3B90	online, keyboard, word filter [G table]	ours
+main:0x2C3BB0	online, keyboard, word filter [G table]	ours
+main:0x2C3BD0	online, keyboard, word filter	ours
+main:0x2C3BF0	online, keyboard, word filter	ours
+main:0x2C3C10	memory card and yes/no dialogs	ours
+main:0x2C3CA0	code literals (main)	ours
 main:0x2C3D94	code literals (main)	G only
 main:0x2C3DE6	code literals (main)	G only
 main:0x2C3E48	code literals (main)	G only
@@ -1583,7 +1583,7 @@ main:0x2C5890	items (names, help) [G table]	G only	in Portable
 main:0x2C5A50	items (names, help) [G table]	G only	in Portable
 main:0x2C5EA0	items (names, help) [G table]	G only	in Portable
 main:0x2C5EF0	items (names, help) [G table]	G only	in Portable
-main:0x2C6010	items (names, help) [G table]	G only
+main:0x2C6010	items (names, help) [G table]	ours
 main:0x2C63A0	items (names, help) [G table]	G only	in Portable
 main:0x2C6400	items (names, help) [G table]	G only	in Portable
 main:0x2C64F0	items (names, help) [G table]	G only	in Portable
@@ -1738,9 +1738,9 @@ main:0x2CB780	items (names, help) [G table]	G only	in Portable
 main:0x2CB7E0	items (names, help) [G table]	G only	in Portable
 main:0x2CB830	items (names, help) [G table]	G only	in Portable
 main:0x2CB880	items (names, help) [G table]	G only	in Portable
-main:0x2CBA80	items (names, help) [G table]	G only
-main:0x2CBAE0	items (names, help) [G table]	G only
-main:0x2CBB40	items (names, help) [G table]	G only
+main:0x2CBA80	items (names, help) [G table]	ours
+main:0x2CBAE0	items (names, help) [G table]	ours
+main:0x2CBB40	items (names, help) [G table]	ours
 main:0x2CBC20	items (names, help) [G table]	G only	in Portable
 main:0x2CBC60	items (names, help) [G table]	G only	in Portable
 main:0x2CBCA0	items (names, help) [G table]	G only	in Portable
@@ -1758,7 +1758,7 @@ main:0x2CC190	items (names, help) [G table]	G only	in Portable
 main:0x2CCE20	weapons	edited in G	in Portable
 main:0x2CCE40	weapons [G table]	G only	in Portable
 main:0x2CD120	weapons	edited in G	in Portable
-main:0x2CF4B0	weapons	edited in G
+main:0x2CF4B0	weapons	ours
 main:0x2CFE30	weapons	edited in G	in Portable	ambiguous: number not written as digits in the English
 main:0x2D0820	weapons [G table]	G only	in Portable
 main:0x2D0840	weapons [G table]	G only	in Portable
@@ -1790,9 +1790,9 @@ main:0x2D1200	weapons [G table]	G only	in Portable
 main:0x2D1220	weapons [G table]	G only	in Portable
 main:0x2D1240	weapons [G table]	G only	in Portable
 main:0x2D1260	weapons [G table]	G only	in Portable
-main:0x2D1280	weapons [G table]	G only
-main:0x2D12A0	weapons [G table]	G only
-main:0x2D12C0	weapons [G table]	G only
+main:0x2D1280	weapons [G table]	ours
+main:0x2D12A0	weapons [G table]	ours
+main:0x2D12C0	weapons [G table]	ours
 main:0x2D12E0	weapons [G table]	G only	in Portable
 main:0x2D1300	weapons [G table]	G only	in Portable
 main:0x2D1320	weapons [G table]	G only	in Portable
@@ -1823,12 +1823,12 @@ main:0x2D1620	weapons [G table]	G only	in Portable
 main:0x2D1640	weapons [G table]	G only	in Portable
 main:0x2D1660	weapons [G table]	G only	in Portable
 main:0x2D1680	weapons [G table]	G only	in Portable
-main:0x2D16A0	weapons [G table]	G only
-main:0x2D16C0	weapons [G table]	G only
-main:0x2D16E0	weapons [G table]	G only
-main:0x2D1700	weapons [G table]	G only
-main:0x2D1720	weapons [G table]	G only
-main:0x2D1740	weapons [G table]	G only
+main:0x2D16A0	weapons [G table]	ours
+main:0x2D16C0	weapons [G table]	ours
+main:0x2D16E0	weapons [G table]	ours
+main:0x2D1700	weapons [G table]	ours
+main:0x2D1720	weapons [G table]	ours
+main:0x2D1740	weapons [G table]	ours
 main:0x2D1760	weapons [G table]	G only	in Portable
 main:0x2D1780	weapons [G table]	G only	in Portable
 main:0x2D17A0	weapons [G table]	G only	in Portable
@@ -1859,27 +1859,27 @@ main:0x2D1AA0	weapons [G table]	G only	in Portable
 main:0x2D1AC0	weapons [G table]	G only	in Portable
 main:0x2D1AE0	weapons [G table]	G only	in Portable
 main:0x2D1B00	weapons [G table]	G only	in Portable
-main:0x2D1B20	weapons [G table]	G only
-main:0x2D1B40	weapons [G table]	G only
-main:0x2D1B60	weapons [G table]	G only
-main:0x2D1B80	weapons [G table]	G only
-main:0x2D1BA0	weapons [G table]	G only
-main:0x2D1BC0	weapons [G table]	G only
-main:0x2D1BE0	weapons [G table]	G only
-main:0x2D1C00	weapons [G table]	G only
-main:0x2D1C20	weapons [G table]	G only
-main:0x2D1C40	weapons [G table]	G only
-main:0x2D1C60	weapons [G table]	G only
-main:0x2D1C80	weapons [G table]	G only
+main:0x2D1B20	weapons [G table]	ours
+main:0x2D1B40	weapons [G table]	ours
+main:0x2D1B60	weapons [G table]	ours
+main:0x2D1B80	weapons [G table]	ours
+main:0x2D1BA0	weapons [G table]	ours
+main:0x2D1BC0	weapons [G table]	ours
+main:0x2D1BE0	weapons [G table]	ours
+main:0x2D1C00	weapons [G table]	ours
+main:0x2D1C20	weapons [G table]	ours
+main:0x2D1C40	weapons [G table]	ours
+main:0x2D1C60	weapons [G table]	ours
+main:0x2D1C80	weapons [G table]	ours
 main:0x2D1CA0	weapons [G table]	G only	in Portable
 main:0x2D1CC0	weapons [G table]	G only	in Portable
 main:0x2D1CE0	weapons [G table]	G only	in Portable
-main:0x2D1D00	weapons [G table]	G only
-main:0x2D1D20	weapons [G table]	G only
-main:0x2D1D40	weapons [G table]	G only
-main:0x2D1D60	weapons [G table]	G only
-main:0x2D1D80	weapons [G table]	G only
-main:0x2D1DA0	weapons [G table]	G only
+main:0x2D1D00	weapons [G table]	ours
+main:0x2D1D20	weapons [G table]	ours
+main:0x2D1D40	weapons [G table]	ours
+main:0x2D1D60	weapons [G table]	ours
+main:0x2D1D80	weapons [G table]	ours
+main:0x2D1DA0	weapons [G table]	ours
 main:0x2D1DC0	weapons [G table]	G only	in Portable
 main:0x2D1DE0	weapons [G table]	G only	in Portable
 main:0x2D1E00	weapons [G table]	G only	in Portable
@@ -1936,16 +1936,16 @@ main:0x2D2440	weapons [G table]	G only	in Portable
 main:0x2D2460	weapons [G table]	G only	in Portable
 main:0x2D2480	weapons [G table]	G only	in Portable
 main:0x2D24A0	weapons [G table]	G only	in Portable
-main:0x2D24C0	weapons [G table]	G only
-main:0x2D24E0	weapons [G table]	G only
-main:0x2D2500	weapons [G table]	G only
-main:0x2D2520	weapons [G table]	G only
+main:0x2D24C0	weapons [G table]	ours
+main:0x2D24E0	weapons [G table]	ours
+main:0x2D2500	weapons [G table]	ours
+main:0x2D2520	weapons [G table]	ours
 main:0x2D2540	weapons [G table]	G only	in Portable
 main:0x2D2560	weapons [G table]	G only	in Portable
 main:0x2D2580	weapons [G table]	G only	in Portable
-main:0x2D25A0	weapons [G table]	G only
-main:0x2D25C0	weapons [G table]	G only
-main:0x2D25E0	weapons [G table]	G only
+main:0x2D25A0	weapons [G table]	ours
+main:0x2D25C0	weapons [G table]	ours
+main:0x2D25E0	weapons [G table]	ours
 main:0x2D2600	weapons [G table]	G only	in Portable
 main:0x2D2620	weapons [G table]	G only	in Portable
 main:0x2D2640	weapons [G table]	G only	in Portable
@@ -1985,16 +1985,16 @@ main:0x2D2A60	weapons [G table]	G only	in Portable
 main:0x2D2A80	weapons [G table]	G only	in Portable
 main:0x2D2AA0	weapons [G table]	G only	in Portable
 main:0x2D2AC0	weapons [G table]	G only	in Portable
-main:0x2D2AE0	weapons [G table]	G only
-main:0x2D2B00	weapons [G table]	G only
-main:0x2D2B20	weapons [G table]	G only
-main:0x2D2B40	weapons [G table]	G only
-main:0x2D2B60	weapons [G table]	G only
-main:0x2D2B80	weapons [G table]	G only
-main:0x2D2BA0	weapons [G table]	G only
-main:0x2D2BC0	weapons [G table]	G only
-main:0x2D2BE0	weapons [G table]	G only
-main:0x2D2C00	weapons [G table]	G only
+main:0x2D2AE0	weapons [G table]	ours
+main:0x2D2B00	weapons [G table]	ours
+main:0x2D2B20	weapons [G table]	ours
+main:0x2D2B40	weapons [G table]	ours
+main:0x2D2B60	weapons [G table]	ours
+main:0x2D2B80	weapons [G table]	ours
+main:0x2D2BA0	weapons [G table]	ours
+main:0x2D2BC0	weapons [G table]	ours
+main:0x2D2BE0	weapons [G table]	ours
+main:0x2D2C00	weapons [G table]	ours
 main:0x2D2C20	weapons [G table]	G only	in Portable
 main:0x2D2C40	weapons [G table]	G only	in Portable
 main:0x2D2C60	weapons [G table]	G only	in Portable
@@ -2040,13 +2040,13 @@ main:0x2D3140	weapons [G table]	G only	in Portable
 main:0x2D3160	weapons [G table]	G only	in Portable
 main:0x2D3180	weapons [G table]	G only	in Portable
 main:0x2D31A0	weapons [G table]	G only	in Portable
-main:0x2D31C0	weapons [G table]	G only
-main:0x2D31E0	weapons [G table]	G only
-main:0x2D3200	weapons [G table]	G only
-main:0x2D3220	weapons [G table]	G only
-main:0x2D3240	weapons [G table]	G only
-main:0x2D3260	weapons [G table]	G only
-main:0x2D3280	weapons [G table]	G only
+main:0x2D31C0	weapons [G table]	ours
+main:0x2D31E0	weapons [G table]	ours
+main:0x2D3200	weapons [G table]	ours
+main:0x2D3220	weapons [G table]	ours
+main:0x2D3240	weapons [G table]	ours
+main:0x2D3260	weapons [G table]	ours
+main:0x2D3280	weapons [G table]	ours
 main:0x2D32A0	weapons [G table]	G only	in Portable
 main:0x2D32C0	weapons [G table]	G only	in Portable
 main:0x2D32E0	weapons [G table]	G only	in Portable
@@ -2070,12 +2070,12 @@ main:0x2D3500	weapons [G table]	G only	in Portable
 main:0x2D3520	weapons [G table]	G only	in Portable
 main:0x2D3540	weapons [G table]	G only	in Portable
 main:0x2D3560	weapons [G table]	G only	in Portable
-main:0x2D3580	weapons [G table]	G only
-main:0x2D35A0	weapons [G table]	G only
-main:0x2D35C0	weapons [G table]	G only
-main:0x2D35E0	weapons [G table]	G only
-main:0x2D3600	weapons [G table]	G only
-main:0x2D3620	weapons [G table]	G only
+main:0x2D3580	weapons [G table]	ours
+main:0x2D35A0	weapons [G table]	ours
+main:0x2D35C0	weapons [G table]	ours
+main:0x2D35E0	weapons [G table]	ours
+main:0x2D3600	weapons [G table]	ours
+main:0x2D3620	weapons [G table]	ours
 main:0x2D3640	weapons [G table]	G only	in Portable
 main:0x2D3660	weapons [G table]	G only	in Portable
 main:0x2D3680	weapons [G table]	G only	in Portable
@@ -2130,9 +2130,9 @@ main:0x2D3C80	weapons [G table]	G only	in Portable
 main:0x2D3CA0	weapons [G table]	G only	in Portable
 main:0x2D3CC0	weapons [G table]	G only	in Portable
 main:0x2D3CE0	weapons [G table]	G only	in Portable
-main:0x2D3D00	weapons [G table]	G only
-main:0x2D3D20	weapons [G table]	G only
-main:0x2D3D40	weapons [G table]	G only
+main:0x2D3D00	weapons [G table]	ours
+main:0x2D3D20	weapons [G table]	ours
+main:0x2D3D40	weapons [G table]	ours
 main:0x2D3D60	weapons [G table]	G only	in Portable
 main:0x2D3D80	weapons [G table]	G only	in Portable
 main:0x2D3DA0	weapons [G table]	G only	in Portable
@@ -2142,18 +2142,18 @@ main:0x2D3E00	weapons [G table]	G only	in Portable
 main:0x2D3E20	weapons [G table]	G only	in Portable
 main:0x2D3E40	weapons [G table]	G only	in Portable
 main:0x2D3E60	weapons [G table]	G only	in Portable
-main:0x2D3E80	weapons [G table]	G only
-main:0x2D3EA0	weapons [G table]	G only
-main:0x2D3EC0	weapons [G table]	G only
-main:0x2D3EE0	weapons [G table]	G only
-main:0x2D3F00	weapons [G table]	G only
-main:0x2D3F20	weapons [G table]	G only
-main:0x2D3F40	weapons [G table]	G only
-main:0x2D3F60	weapons [G table]	G only
-main:0x2D3F80	weapons [G table]	G only
-main:0x2D3FA0	weapons [G table]	G only
-main:0x2D3FC0	weapons [G table]	G only
-main:0x2D3FE0	weapons [G table]	G only
+main:0x2D3E80	weapons [G table]	ours
+main:0x2D3EA0	weapons [G table]	ours
+main:0x2D3EC0	weapons [G table]	ours
+main:0x2D3EE0	weapons [G table]	ours
+main:0x2D3F00	weapons [G table]	ours
+main:0x2D3F20	weapons [G table]	ours
+main:0x2D3F40	weapons [G table]	ours
+main:0x2D3F60	weapons [G table]	ours
+main:0x2D3F80	weapons [G table]	ours
+main:0x2D3FA0	weapons [G table]	ours
+main:0x2D3FC0	weapons [G table]	ours
+main:0x2D3FE0	weapons [G table]	ours
 main:0x2D4000	weapons [G table]	G only	in Portable
 main:0x2D4020	weapons [G table]	G only	in Portable
 main:0x2D4040	weapons [G table]	G only	in Portable
@@ -2303,13 +2303,13 @@ main:0x2D5AC0	weapons [G table]	G only	in Portable
 main:0x2D5AE0	weapons [G table]	G only	in Portable
 main:0x2D5B00	weapons [G table]	G only	in Portable
 main:0x2D5B20	weapons [G table]	G only	in Portable
-main:0x2D5B40	weapons [G table]	G only
-main:0x2D5B60	weapons [G table]	G only
-main:0x2D5B80	weapons [G table]	G only
+main:0x2D5B40	weapons [G table]	ours
+main:0x2D5B60	weapons [G table]	ours
+main:0x2D5B80	weapons [G table]	ours
 main:0x2D5DA0	armour	edited in G	in Portable
 main:0x2D6130	armour	edited in G	in Portable
 main:0x2D6280	armour	edited in G	in Portable
-main:0x2D6600	armour	edited in G
+main:0x2D6600	armour	ours
 main:0x2D6A60	armour [G table]	G only	in Portable
 main:0x2D6A80	armour [G table]	G only	in Portable
 main:0x2D6AA0	armour [G table]	G only	in Portable
@@ -2456,9 +2456,9 @@ main:0x2D8250	armour [G table]	G only	in Portable
 main:0x2D8270	armour [G table]	G only	in Portable
 main:0x2D8290	armour [G table]	G only	in Portable
 main:0x2D82B0	armour [G table]	G only	in Portable
-main:0x2D82D0	armour [G table]	G only
-main:0x2D82F0	armour [G table]	G only
-main:0x2D8310	armour [G table]	G only
+main:0x2D82D0	armour [G table]	ours
+main:0x2D82F0	armour [G table]	ours
+main:0x2D8310	armour [G table]	ours
 main:0x2D8330	armour [G table]	G only	in Portable
 main:0x2D8350	armour [G table]	G only	in Portable
 main:0x2D8370	armour [G table]	G only	in Portable
@@ -2566,9 +2566,9 @@ main:0x2D9010	armour [G table]	G only	in Portable
 main:0x2D9030	armour [G table]	G only	in Portable
 main:0x2D9050	armour [G table]	G only	in Portable
 main:0x2D9070	armour [G table]	G only	in Portable
-main:0x2D9090	armour [G table]	G only
-main:0x2D90B0	armour [G table]	G only
-main:0x2D90C0	armour [G table]	G only
+main:0x2D9090	armour [G table]	ours
+main:0x2D90B0	armour [G table]	ours
+main:0x2D90C0	armour [G table]	ours
 main:0x2D90E0	armour [G table]	G only	in Portable
 main:0x2D9100	armour [G table]	G only	in Portable
 main:0x2D9120	armour [G table]	G only	in Portable
@@ -2763,12 +2763,12 @@ main:0x2DA8A0	weapons [G table]	G only	in Portable
 main:0x2DA8C0	weapons [G table]	G only	in Portable
 main:0x2DA8E0	armour [G table]	G only	in Portable
 main:0x2DA900	weapons [G table]	G only	in Portable
-main:0x2DA920	weapons [G table]	G only
-main:0x2DA940	armour [G table]	G only
-main:0x2DA960	weapons [G table]	G only
+main:0x2DA920	weapons [G table]	ours
+main:0x2DA940	armour [G table]	ours
+main:0x2DA960	weapons [G table]	ours
 main:0x2DAB00	armour	edited in G	in Portable
 main:0x2DB090	armour	edited in G	in Portable
-main:0x2DB370	armour	edited in G
+main:0x2DB370	armour	ours
 main:0x2DB440	armour [G table]	G only	in Portable
 main:0x2DB460	armour [G table]	G only	in Portable
 main:0x2DB7E0	armour [G table]	G only	in Portable
@@ -2870,9 +2870,9 @@ main:0x2DC8D0	armour [G table]	G only	in Portable
 main:0x2DC8F0	armour [G table]	G only	in Portable
 main:0x2DC910	armour [G table]	G only	in Portable
 main:0x2DC930	armour [G table]	G only	in Portable
-main:0x2DC950	armour [G table]	G only
-main:0x2DC970	armour [G table]	G only
-main:0x2DC990	armour [G table]	G only
+main:0x2DC950	armour [G table]	ours
+main:0x2DC970	armour [G table]	ours
+main:0x2DC990	armour [G table]	ours
 main:0x2DC9B0	armour [G table]	G only	in Portable
 main:0x2DC9D0	armour [G table]	G only	in Portable
 main:0x2DC9F0	armour [G table]	G only	in Portable
@@ -2987,9 +2987,9 @@ main:0x2DD770	armour [G table]	G only	in Portable
 main:0x2DD790	armour [G table]	G only	in Portable
 main:0x2DD7B0	armour [G table]	G only	in Portable
 main:0x2DD7D0	armour [G table]	G only	in Portable
-main:0x2DD7F0	armour [G table]	G only
-main:0x2DD810	armour [G table]	G only
-main:0x2DD830	armour [G table]	G only
+main:0x2DD7F0	armour [G table]	ours
+main:0x2DD810	armour [G table]	ours
+main:0x2DD830	armour [G table]	ours
 main:0x2DD850	armour [G table]	G only	in Portable
 main:0x2DD870	armour [G table]	G only	in Portable
 main:0x2DD890	armour [G table]	G only	in Portable
@@ -3003,8 +3003,8 @@ main:0x2DD970	armour [G table]	G only	in Portable
 main:0x2DD990	armour [G table]	G only	in Portable
 main:0x2DD9B0	armour [G table]	G only	in Portable
 main:0x2DD9D0	armour [G table]	G only	in Portable
-main:0x2DD9F0	armour [G table]	G only
-main:0x2DDA10	armour [G table]	G only
+main:0x2DD9F0	armour [G table]	ours
+main:0x2DDA10	armour [G table]	ours
 main:0x2DDA30	armour [G table]	G only	in Portable
 main:0x2DDA50	armour [G table]	G only	in Portable
 main:0x2DDA70	armour [G table]	G only	in Portable
@@ -3125,9 +3125,9 @@ main:0x2DE8B0	weapons [G table]	G only	in Portable
 main:0x2DE8D0	weapons [G table]	G only	in Portable
 main:0x2DE8F0	armour [G table]	G only	in Portable
 main:0x2DE910	weapons [G table]	G only	in Portable
-main:0x2DE930	weapons [G table]	G only
-main:0x2DE950	armour [G table]	G only
-main:0x2DE970	weapons [G table]	G only
+main:0x2DE930	weapons [G table]	ours
+main:0x2DE950	armour [G table]	ours
+main:0x2DE970	weapons [G table]	ours
 main:0x2DF270	armour	edited in G	in Portable
 main:0x2DF290	armour	edited in G	in Portable
 main:0x2DF540	armour [G table]	G only	in Portable
@@ -3360,9 +3360,9 @@ main:0x2E1690	armour [G table]	G only	in Portable
 main:0x2E16B0	armour [G table]	G only	in Portable
 main:0x2E16D0	armour [G table]	G only	in Portable
 main:0x2E16F0	armour [G table]	G only	in Portable
-main:0x2E1710	armour [G table]	G only
-main:0x2E1730	armour [G table]	G only
-main:0x2E1750	armour [G table]	G only
+main:0x2E1710	armour [G table]	ours
+main:0x2E1730	armour [G table]	ours
+main:0x2E1750	armour [G table]	ours
 main:0x2E1770	armour [G table]	G only	in Portable
 main:0x2E1790	armour [G table]	G only	in Portable
 main:0x2E17B0	armour [G table]	G only	in Portable
@@ -3465,9 +3465,9 @@ main:0x2E23B0	weapons [G table]	G only	in Portable
 main:0x2E23D0	weapons [G table]	G only	in Portable
 main:0x2E23F0	armour [G table]	G only	in Portable
 main:0x2E2410	weapons [G table]	G only	in Portable
-main:0x2E2430	weapons [G table]	G only
-main:0x2E2450	armour [G table]	G only
-main:0x2E2470	weapons [G table]	G only
+main:0x2E2430	weapons [G table]	ours
+main:0x2E2450	armour [G table]	ours
+main:0x2E2470	weapons [G table]	ours
 main:0x2E29F0	armour	edited in G	in Portable
 main:0x2E2A10	armour [G table]	G only	in Portable
 main:0x2E2A50	armour	edited in G	in Portable
@@ -3803,9 +3803,9 @@ main:0x2E5AE0	weapons [G table]	G only	in Portable
 main:0x2E5B00	weapons [G table]	G only	in Portable
 main:0x2E5B20	armour [G table]	G only	in Portable
 main:0x2E5B40	weapons [G table]	G only	in Portable
-main:0x2E5B60	weapons [G table]	G only
-main:0x2E5B80	armour [G table]	G only
-main:0x2E5BA0	weapons [G table]	G only
+main:0x2E5B60	weapons [G table]	ours
+main:0x2E5B80	armour [G table]	ours
+main:0x2E5BA0	weapons [G table]	ours
 main:0x2E6170	armour	edited in G	in Portable
 main:0x2E6190	armour	edited in G	in Portable
 main:0x2E6440	armour	edited in G	in Portable
@@ -4133,60 +4133,60 @@ main:0x2E91B0	armour [G table]	G only	in Portable
 main:0x2E91D0	armour [G table]	G only	in Portable
 main:0x2E91F0	armour [G table]	G only	in Portable
 main:0x2E9210	armour [G table]	G only	in Portable
-main:0x2E9230	armour [G table]	G only
-main:0x2E9250	armour [G table]	G only
-main:0x2E9270	armour [G table]	G only
+main:0x2E9230	armour [G table]	ours
+main:0x2E9250	armour [G table]	ours
+main:0x2E9270	armour [G table]	ours
 main:0x2E9350	memory card and yes/no dialogs [G table]	G only	in Portable	ambiguous: MH1 name plus a G-rank suffix (naming left for Freedom)
-main:0x2E93D8	memory card and yes/no dialogs	twin without US English
+main:0x2E93D8	memory card and yes/no dialogs	ours
 main:0x2E97D0	memory card and yes/no dialogs	twin without US English	in Portable
-main:0x2E9810	memory card and yes/no dialogs	twin without US English
-main:0x2E9840	memory card and yes/no dialogs	twin without US English
-main:0x2E98E0	memory card and yes/no dialogs	twin without US English
-main:0x2E9990	memory card and yes/no dialogs	twin without US English
-main:0x2E9C10	memory card and yes/no dialogs	twin without US English
-main:0x2E9CA0	memory card and yes/no dialogs	twin without US English
-main:0x2E9CD0	memory card and yes/no dialogs	twin without US English
-main:0x2E9D00	memory card and yes/no dialogs	twin without US English
-main:0x2E9F00	memory card and yes/no dialogs	twin without US English
-main:0x2E9F80	other tables (equip_icon_u_tbl) [G table]	G only
-main:0x2E9FA0	memory card and yes/no dialogs [G table]	G only
-main:0x2E9FE0	memory card and yes/no dialogs [G table]	G only
-main:0x2EA010	memory card and yes/no dialogs [G table]	G only
-main:0x2EA030	memory card and yes/no dialogs [G table]	G only
-main:0x2EA060	memory card and yes/no dialogs [G table]	G only
-main:0x2EA0A0	memory card and yes/no dialogs [G table]	G only
-main:0x2EA0D0	memory card and yes/no dialogs [G table]	G only
-main:0x2EA100	memory card and yes/no dialogs [G table]	G only
-main:0x2EA140	memory card and yes/no dialogs [G table]	G only
-main:0x2EA180	memory card and yes/no dialogs [G table]	G only
-main:0x2EA1C0	memory card and yes/no dialogs [G table]	G only
-main:0x2EA200	memory card and yes/no dialogs [G table]	G only
-main:0x2EA240	memory card and yes/no dialogs [G table]	G only
-main:0x2EA260	memory card and yes/no dialogs [G table]	G only
-main:0x2EA2A0	memory card and yes/no dialogs [G table]	G only
-main:0x2EA2D0	memory card and yes/no dialogs [G table]	G only
-main:0x2EA300	memory card and yes/no dialogs [G table]	G only
-main:0x2EA330	memory card and yes/no dialogs [G table]	G only
-main:0x2EA360	memory card and yes/no dialogs [G table]	G only	in Portable
-main:0x2EA390	memory card and yes/no dialogs [G table]	G only
-main:0x2EA3D0	memory card and yes/no dialogs [G table]	G only
-main:0x2EA3F0	memory card and yes/no dialogs [G table]	G only
-main:0x2EA430	memory card and yes/no dialogs [G table]	G only
-main:0x2EA460	memory card and yes/no dialogs [G table]	G only
-main:0x2EA480	memory card and yes/no dialogs [G table]	G only
-main:0x2EA4B0	memory card and yes/no dialogs [G table]	G only
-main:0x2EA4E0	memory card and yes/no dialogs [G table]	G only
-main:0x2EA500	memory card and yes/no dialogs [G table]	G only
-main:0x2EA530	memory card and yes/no dialogs [G table]	G only
-main:0x2EA560	memory card and yes/no dialogs [G table]	G only
-main:0x2EA580	memory card and yes/no dialogs [G table]	G only
-main:0x2EA5B0	memory card and yes/no dialogs [G table]	G only
-main:0x2EA5E0	memory card and yes/no dialogs [G table]	G only
-main:0x2EA610	memory card and yes/no dialogs [G table]	G only
-main:0x2EA650	memory card and yes/no dialogs [G table]	G only
+main:0x2E9810	memory card and yes/no dialogs	ours
+main:0x2E9840	memory card and yes/no dialogs	ours
+main:0x2E98E0	memory card and yes/no dialogs	ours
+main:0x2E9990	memory card and yes/no dialogs	ours
+main:0x2E9C10	memory card and yes/no dialogs	ours
+main:0x2E9CA0	memory card and yes/no dialogs	ours
+main:0x2E9CD0	memory card and yes/no dialogs	ours
+main:0x2E9D00	memory card and yes/no dialogs	ours
+main:0x2E9F00	memory card and yes/no dialogs	ours
+main:0x2E9F80	other tables (equip_icon_u_tbl) [G table]	ours
+main:0x2E9FA0	memory card and yes/no dialogs [G table]	ours
+main:0x2E9FE0	memory card and yes/no dialogs [G table]	ours
+main:0x2EA010	memory card and yes/no dialogs [G table]	ours
+main:0x2EA030	memory card and yes/no dialogs [G table]	ours
+main:0x2EA060	memory card and yes/no dialogs [G table]	ours
+main:0x2EA0A0	memory card and yes/no dialogs [G table]	ours
+main:0x2EA0D0	memory card and yes/no dialogs [G table]	ours
+main:0x2EA100	memory card and yes/no dialogs [G table]	ours
+main:0x2EA140	memory card and yes/no dialogs [G table]	ours
+main:0x2EA180	memory card and yes/no dialogs [G table]	ours
+main:0x2EA1C0	memory card and yes/no dialogs [G table]	ours
+main:0x2EA200	memory card and yes/no dialogs [G table]	ours
+main:0x2EA240	memory card and yes/no dialogs [G table]	ours
+main:0x2EA260	memory card and yes/no dialogs [G table]	ours
+main:0x2EA2A0	memory card and yes/no dialogs [G table]	ours
+main:0x2EA2D0	memory card and yes/no dialogs [G table]	ours
+main:0x2EA300	memory card and yes/no dialogs [G table]	ours
+main:0x2EA330	memory card and yes/no dialogs [G table]	ours
+main:0x2EA360	memory card and yes/no dialogs [G table]	ours	in Portable
+main:0x2EA390	memory card and yes/no dialogs [G table]	ours
+main:0x2EA3D0	memory card and yes/no dialogs [G table]	ours
+main:0x2EA3F0	memory card and yes/no dialogs [G table]	ours
+main:0x2EA430	memory card and yes/no dialogs [G table]	ours
+main:0x2EA460	memory card and yes/no dialogs [G table]	ours
+main:0x2EA480	memory card and yes/no dialogs [G table]	ours
+main:0x2EA4B0	memory card and yes/no dialogs [G table]	ours
+main:0x2EA4E0	memory card and yes/no dialogs [G table]	ours
+main:0x2EA500	memory card and yes/no dialogs [G table]	ours
+main:0x2EA530	memory card and yes/no dialogs [G table]	ours
+main:0x2EA560	memory card and yes/no dialogs [G table]	ours
+main:0x2EA580	memory card and yes/no dialogs [G table]	ours
+main:0x2EA5B0	memory card and yes/no dialogs [G table]	ours
+main:0x2EA5E0	memory card and yes/no dialogs [G table]	ours
+main:0x2EA610	memory card and yes/no dialogs [G table]	ours
+main:0x2EA650	memory card and yes/no dialogs [G table]	ours
 main:0x2EA670	memory card and yes/no dialogs [G table]	G only	in Portable
 main:0x2EA910	other tables (zen_num)	twin without US English
-main:0x2EA990	other tables (zen_num) [G table]	G only
+main:0x2EA990	other tables (zen_num) [G table]	ours
 main:0x2EA9A8	other tables (zen_num) [G table]	G only	in Portable
 main:0x2EEE58	other tables (lit_329_00661C) [G table]	G only	in Portable
 main:0x2EEE60	other tables (lit_329_00661C) [G table]	G only	in Portable
@@ -4223,10 +4223,10 @@ main:0x2EF010	village NPC lines and talk [G table]	G only	in Portable
 main:0x2EF018	village NPC lines and talk [G table]	G only	in Portable
 main:0x2EF020	village NPC lines and talk [G table]	G only	in Portable
 main:0x2EF0B8	online, keyboard, word filter [G table]	G only	in Portable
-main:0x2EF0E8	code literals (main)	G only
+main:0x2EF0E8	code literals (main)	ours
 quest:12:0xA0	quests	G only	in Portable
-quest:19:0x68	quests	edited in G
-quest:38:0xAC	quests	edited in G
+quest:19:0x68	quests	ours
+quest:38:0xAC	quests	ours
 quest:1002:0x7D	quests	G only	in Portable	ambiguous: the same Japanese has two different English texts
 quest:1007:0xA0	quests	G only	in Portable
 quest:1010:0xA4	quests	G only	in Portable
@@ -4275,7 +4275,7 @@ quest:10021:0xAC	quests	twin without US English	in Portable
 quest:10024:0xA8	quests	twin without US English	in Portable
 quest:10025:0xA8	quests	G only	in Portable
 quest:10028:0xA4	quests	G only	in Portable
-quest:10029:0x68	quests	G only
+quest:10029:0x68	quests	ours
 quest:10029:0x79	quests	G only	in Portable	ambiguous: the same Japanese has two different English texts
 quest:10029:0xA4	quests	G only	in Portable	ambiguous: numbers: number changed to or from 1 (singular/plural)
 quest:10030:0x68	quests	G only	in Portable
@@ -4284,7 +4284,7 @@ quest:10030:0xAB	quests	G only	in Portable
 quest:10030:0xE1	quests	G only	in Portable
 quest:10035:0x68	quests	G only	in Portable
 quest:10035:0x9C	quests	G only	in Portable
-quest:10044:0x68	quests	G only
+quest:10044:0x68	quests	ours
 quest:10044:0x7F	quests	G only	in Portable	ambiguous: numbers: number changed to or from 1 (singular/plural)
 quest:10044:0xA8	quests	G only	in Portable
 quest:10048:0xB2	quests	G only	in Portable
@@ -4384,18 +4384,18 @@ quest:20044:0xA4	quests	G only	in Portable
 quest:20045:0x68	quests	G only	in Portable
 quest:20045:0xA4	quests	G only	in Portable
 quest:20046:0x68	quests	G only	in Portable
-quest:20046:0xA4	quests	G only
+quest:20046:0xA4	quests	ours
 quest:20047:0x68	quests	G only	in Portable
-quest:20047:0xA4	quests	G only
+quest:20047:0xA4	quests	ours
 quest:20048:0x68	quests	G only	in Portable
-quest:20048:0xA4	quests	G only
+quest:20048:0xA4	quests	ours
 quest:20049:0x68	quests	G only	in Portable
-quest:20049:0xA4	quests	G only
+quest:20049:0xA4	quests	ours
 quest:20050:0x68	quests	G only	in Portable
-quest:20050:0xA4	quests	G only
+quest:20050:0xA4	quests	ours
 quest:60029:0x68	quests	G only	in Portable
 quest:60029:0x71	quests	G only	in Portable
-quest:60029:0x9C	quests	G only
+quest:60029:0x9C	quests	ours
 sub_main:0x4DFB60	code literals (sub_main)	G only
 sub_main:0x4DFEB0	code literals (sub_main)	G only
 sub_main:0x4E014C	code literals (sub_main)	G only	in Portable
@@ -4612,8 +4612,8 @@ sub_main:0x52BAB8	items (names, help) [G table]	G only	in Portable
 sub_main:0x52C340	code literals (sub_main)	G only
 sub_main:0x52C360	code literals (sub_main)	G only
 sub_main:0x52C3A0	code literals (sub_main)	G only
-sub_main:0x52C3E0	code literals (sub_main)	G only
-sub_main:0x52C400	code literals (sub_main)	G only
+sub_main:0x52C3E0	code literals (sub_main)	ours
+sub_main:0x52C400	code literals (sub_main)	ours
 sub_main:0x52E9A8	weapons	twin without US English	in Portable
 sub_main:0x52E9B8	weapons [G table]	G only	in Portable
 sub_main:0x52E9C8	weapons [G table]	G only	in Portable
@@ -5550,7 +5550,7 @@ sub_main:0x5376E0	other tables (pit_help_reward_str) [G table]	G only	in Portabl
 sub_main:0x537700	other tables (pit_help_reward_str) [G table]	G only	in Portable
 sub_main:0x537710	other tables (pit_help_reward_str) [G table]	G only	in Portable
 sub_main:0x537718	other tables (pit_help_reward_str) [G table]	G only	in Portable
-sub_main:0x537BA0	other tables (reward_menu_str) [G table]	G only
+sub_main:0x537BA0	other tables (reward_menu_str) [G table]	ours
 sub_main:0x537C40	quest board / quest text tables	twin without US English	in Portable
 sub_main:0x537C60	quest board / quest text tables	twin without US English	in Portable
 sub_main:0x537C70	quest board / quest text tables	twin without US English	in Portable
@@ -5559,12 +5559,12 @@ sub_main:0x537DE0	menus, options, HUD [G table]	G only	in Portable
 sub_main:0x538280	other tables (mix_list_str) [G table]	G only	in Portable
 sub_main:0x5382B8	monsters	twin without US English	in Portable
 sub_main:0x538348	monsters	twin without US English	in Portable
-sub_main:0x5383C0	monsters	twin without US English
+sub_main:0x5383C0	monsters	ours
 sub_main:0x538478	monsters	twin without US English	in Portable
 sub_main:0x5384A0	monsters	twin without US English	in Portable
 sub_main:0x5384C0	monsters	twin without US English	in Portable
-sub_main:0x5384D0	monsters	twin without US English
-sub_main:0x5384E0	monsters [G table]	G only
+sub_main:0x5384D0	monsters	ours
+sub_main:0x5384E0	monsters [G table]	ours
 sub_main:0x5384F0	monsters	twin without US English	in Portable
 sub_main:0x538500	monsters [G table]	G only	in Portable
 sub_main:0x538538	monsters [G table]	G only	in Portable
@@ -5589,7 +5589,7 @@ sub_main:0x538C80	menus, options, HUD [G table]	G only	in Portable
 sub_main:0x538CD0	other tables (data_list_str) [G table]	G only	in Portable
 sub_main:0x538D18	menus, options, HUD [G table]	G only	in Portable
 sub_main:0x538D90	menus, options, HUD [G table]	G only	in Portable
-sub_main:0x538DC0	menus, options, HUD	twin without US English
+sub_main:0x538DC0	menus, options, HUD	ours
 sub_main:0x538FF0	weapons [G table]	G only	in Portable
 sub_main:0x539000	weapons [G table]	G only	in Portable
 sub_main:0x539040	menus, options, HUD [G table]	G only	in Portable
@@ -5759,20 +5759,20 @@ sub_main:0x53A380	menus, options, HUD [G table]	G only	in Portable
 sub_main:0x53A438	other tables (yes_or_no_str) [G table]	G only	in Portable
 sub_main:0x53A550	menus, options, HUD [G table]	G only	in Portable
 sub_main:0x53A570	menus, options, HUD [G table]	G only	in Portable
-sub_main:0x53A5D0	menus, options, HUD [G table]	G only
+sub_main:0x53A5D0	menus, options, HUD [G table]	ours
 sub_main:0x53A600	menus, options, HUD [G table]	G only	in Portable
 sub_main:0x53A630	menus, options, HUD [G table]	G only	in Portable
 sub_main:0x53A640	menus, options, HUD [G table]	G only	in Portable
 sub_main:0x53A670	other tables (edit_menu_msg) [G table]	G only	in Portable	ambiguous: numbers: two different English texts
 sub_main:0x53A690	other tables (edit_menu_msg) [G table]	G only	in Portable
 sub_main:0x53A6B0	menus, options, HUD [G table]	G only	in Portable
-sub_main:0x53A740	menus, options, HUD [G table]	G only
-sub_main:0x53A790	menus, options, HUD [G table]	G only
+sub_main:0x53A740	menus, options, HUD [G table]	ours
+sub_main:0x53A790	menus, options, HUD [G table]	ours
 sub_main:0x53A830	other tables (game_menu_msg) [G table]	G only	in Portable
 sub_main:0x53A870	other tables (game_menu_msg) [G table]	G only	in Portable
 sub_main:0x53A890	other tables (game_menu_msg) [G table]	G only	in Portable
 sub_main:0x53A8C0	menus, options, HUD [G table]	G only	in Portable
-sub_main:0x53A930	menus, options, HUD	edited in G
+sub_main:0x53A930	menus, options, HUD	ours
 sub_main:0x53AA10	menus, options, HUD [G table]	G only	in Portable
 sub_main:0x53AA30	menus, options, HUD [G table]	G only	in Portable
 sub_main:0x53AA50	menus, options, HUD [G table]	G only	in Portable
@@ -5804,11 +5804,11 @@ sub_main:0x53AC80	village NPC lines and talk [G table]	G only	in Portable
 sub_main:0x53ACA0	village NPC lines and talk	twin without US English	in Portable
 sub_main:0x53ACE0	village NPC lines and talk	twin without US English	in Portable
 sub_main:0x53AD10	village NPC lines and talk	twin without US English	in Portable
-sub_main:0x53B070	village NPC lines and talk [G table]	G only
+sub_main:0x53B070	village NPC lines and talk [G table]	ours
 sub_main:0x53B0F0	village NPC lines and talk [G table]	G only	in Portable
-sub_main:0x53B940	village NPC lines and talk [G table]	G only
-sub_main:0x53BA00	village NPC lines and talk [G table]	G only
-sub_main:0x53C210	village NPC lines and talk	edited in G
+sub_main:0x53B940	village NPC lines and talk [G table]	ours
+sub_main:0x53BA00	village NPC lines and talk [G table]	ours
+sub_main:0x53C210	village NPC lines and talk	ours
 sub_main:0x53C440	village NPC lines and talk [G table]	G only	in Portable
 sub_main:0x53C470	village NPC lines and talk [G table]	G only	in Portable
 sub_main:0x53C490	village NPC lines and talk [G table]	G only	in Portable
@@ -5817,7 +5817,7 @@ sub_main:0x53C518	other tables (map_name) [G table]	G only	in Portable
 sub_main:0x53C528	other tables (map_name) [G table]	G only	in Portable
 sub_main:0x53C530	other tables (map_name) [G table]	G only	in Portable
 sub_main:0x53C5B0	other tables (map_name) [G table]	G only	in Portable
-sub_main:0x53C640	other tables (map_name) [G table]	G only
+sub_main:0x53C640	other tables (map_name) [G table]	ours
 sub_main:0x53C660	other tables (map_name) [G table]	G only	in Portable
 sub_main:0x53C670	other tables (map_name) [G table]	G only	in Portable
 sub_main:0x53C680	other tables (map_name) [G table]	G only	in Portable	ambiguous: the same Japanese has two different English texts
@@ -5850,59 +5850,59 @@ sub_main:0x53CD00	other tables (map_name) [G table]	G only	in Portable
 sub_main:0x53CDB0	other tables (map_name) [G table]	G only	in Portable
 sub_main:0x53CE60	other tables (map_name) [G table]	G only	in Portable
 sub_main:0x53CF10	other tables (map_name) [G table]	G only	in Portable
-sub_main:0x53CFC0	other tables (map_name) [G table]	G only
+sub_main:0x53CFC0	other tables (map_name) [G table]	ours
 sub_main:0x53D070	other tables (map_name) [G table]	G only	in Portable
-sub_main:0x53D120	other tables (map_name) [G table]	G only
-sub_main:0x53D1D0	other tables (map_name) [G table]	G only
-sub_main:0x53D280	other tables (map_name) [G table]	G only
-sub_main:0x53D330	other tables (map_name) [G table]	G only
-sub_main:0x53D3C0	other tables (map_name) [G table]	G only
-sub_main:0x53D470	other tables (map_name) [G table]	G only
-sub_main:0x53D510	other tables (map_name) [G table]	G only
+sub_main:0x53D120	other tables (map_name) [G table]	ours
+sub_main:0x53D1D0	other tables (map_name) [G table]	ours
+sub_main:0x53D280	other tables (map_name) [G table]	ours
+sub_main:0x53D330	other tables (map_name) [G table]	ours
+sub_main:0x53D3C0	other tables (map_name) [G table]	ours
+sub_main:0x53D470	other tables (map_name) [G table]	ours
+sub_main:0x53D510	other tables (map_name) [G table]	ours
 sub_main:0x53D5C0	other tables (map_name) [G table]	G only	in Portable
 sub_main:0x53D670	other tables (map_name) [G table]	G only	in Portable
 sub_main:0x53D720	other tables (map_name) [G table]	G only	in Portable
 sub_main:0x53D7D0	other tables (map_name) [G table]	G only	in Portable
-sub_main:0x53D880	other tables (map_name) [G table]	G only
+sub_main:0x53D880	other tables (map_name) [G table]	ours
 sub_main:0x53D930	other tables (map_name) [G table]	G only	in Portable
-sub_main:0x53D9E0	other tables (map_name) [G table]	G only
+sub_main:0x53D9E0	other tables (map_name) [G table]	ours
 sub_main:0x53DA90	other tables (map_name) [G table]	G only	in Portable
 sub_main:0x53DB40	other tables (map_name) [G table]	G only	in Portable
-sub_main:0x53DBE0	other tables (map_name) [G table]	G only
-sub_main:0x53DC90	other tables (map_name) [G table]	G only
-sub_main:0x53DD40	other tables (map_name) [G table]	G only
-sub_main:0x53DDF0	other tables (map_name) [G table]	G only
-sub_main:0x53DEA0	other tables (map_name) [G table]	G only
-sub_main:0x53DF40	other tables (map_name) [G table]	G only
-sub_main:0x53DFF0	other tables (map_name) [G table]	G only
-sub_main:0x53E0A0	other tables (map_name) [G table]	G only
+sub_main:0x53DBE0	other tables (map_name) [G table]	ours
+sub_main:0x53DC90	other tables (map_name) [G table]	ours
+sub_main:0x53DD40	other tables (map_name) [G table]	ours
+sub_main:0x53DDF0	other tables (map_name) [G table]	ours
+sub_main:0x53DEA0	other tables (map_name) [G table]	ours
+sub_main:0x53DF40	other tables (map_name) [G table]	ours
+sub_main:0x53DFF0	other tables (map_name) [G table]	ours
+sub_main:0x53E0A0	other tables (map_name) [G table]	ours
 sub_main:0x53E160	other tables (map_name) [G table]	G only	in Portable
-sub_main:0x53E210	other tables (map_name) [G table]	G only
+sub_main:0x53E210	other tables (map_name) [G table]	ours
 sub_main:0x53E2C0	other tables (map_name) [G table]	G only	in Portable
-sub_main:0x53E370	menus, options, HUD [G table]	G only
+sub_main:0x53E370	menus, options, HUD [G table]	ours
 sub_main:0x53E420	menus, options, HUD [G table]	G only	in Portable
-sub_main:0x53E4D0	other tables (map_name) [G table]	G only
-sub_main:0x53E580	other tables (map_name) [G table]	G only
-sub_main:0x53E630	menus, options, HUD [G table]	G only
-sub_main:0x53E6E0	menus, options, HUD [G table]	G only
+sub_main:0x53E4D0	other tables (map_name) [G table]	ours
+sub_main:0x53E580	other tables (map_name) [G table]	ours
+sub_main:0x53E630	menus, options, HUD [G table]	ours
+sub_main:0x53E6E0	menus, options, HUD [G table]	ours
 sub_main:0x53E790	menus, options, HUD [G table]	G only	in Portable
 sub_main:0x53E840	menus, options, HUD [G table]	G only	in Portable
-sub_main:0x53E8F0	menus, options, HUD [G table]	G only
-sub_main:0x53E9A0	menus, options, HUD [G table]	G only
+sub_main:0x53E8F0	menus, options, HUD [G table]	ours
+sub_main:0x53E9A0	menus, options, HUD [G table]	ours
 sub_main:0x53EA40	other tables (map_name) [G table]	G only	in Portable
-sub_main:0x53EAF0	other tables (map_name) [G table]	G only
+sub_main:0x53EAF0	other tables (map_name) [G table]	ours
 sub_main:0x53EBA0	menus, options, HUD [G table]	G only	in Portable
 sub_main:0x53EC50	menus, options, HUD [G table]	G only	in Portable
-sub_main:0x53ECF0	menus, options, HUD [G table]	G only
-sub_main:0x53EDA0	menus, options, HUD [G table]	G only
+sub_main:0x53ECF0	menus, options, HUD [G table]	ours
+sub_main:0x53EDA0	menus, options, HUD [G table]	ours
 sub_main:0x53EE50	other tables (map_name) [G table]	G only	in Portable
 sub_main:0x53EF00	other tables (map_name) [G table]	G only	in Portable
 sub_main:0x53EFB0	menus, options, HUD [G table]	G only	in Portable
-sub_main:0x53F060	menus, options, HUD [G table]	G only
-sub_main:0x53F110	menus, options, HUD [G table]	G only
-sub_main:0x53F1C0	menus, options, HUD [G table]	G only
-sub_main:0x53F260	menus, options, HUD [G table]	G only
-sub_main:0x53F2F0	menus, options, HUD [G table]	G only
+sub_main:0x53F060	menus, options, HUD [G table]	ours
+sub_main:0x53F110	menus, options, HUD [G table]	ours
+sub_main:0x53F1C0	menus, options, HUD [G table]	ours
+sub_main:0x53F260	menus, options, HUD [G table]	ours
+sub_main:0x53F2F0	menus, options, HUD [G table]	ours
 sub_main:0x53F3A0	menus, options, HUD [G table]	G only	in Portable
 sub_main:0x53F3A8	other tables (map_name) [G table]	G only	in Portable
 sub_main:0x53F3B0	other tables (map_name) [G table]	G only	in Portable
@@ -5937,63 +5937,63 @@ sub_main:0x53FC40	other tables (map_name) [G table]	G only	in Portable
 sub_main:0x53FC80	other tables (map_name) [G table]	G only	in Portable
 sub_main:0x53FCC0	menus, options, HUD [G table]	G only	in Portable
 sub_main:0x53FD00	menus, options, HUD [G table]	G only	in Portable
-sub_main:0x53FD20	menus, options, HUD [G table]	G only
-sub_main:0x53FD40	menus, options, HUD [G table]	G only
-sub_main:0x53FD60	menus, options, HUD [G table]	G only
-sub_main:0x53FD80	menus, options, HUD [G table]	G only
-sub_main:0x53FDA0	menus, options, HUD [G table]	G only
-sub_main:0x53FDC0	menus, options, HUD [G table]	G only
-sub_main:0x53FDE0	menus, options, HUD [G table]	G only
-sub_main:0x53FE00	menus, options, HUD [G table]	G only
-sub_main:0x53FE20	menus, options, HUD [G table]	G only
-sub_main:0x53FE40	menus, options, HUD [G table]	G only
-sub_main:0x53FE60	menus, options, HUD [G table]	G only
-sub_main:0x53FE80	menus, options, HUD [G table]	G only
-sub_main:0x53FEA0	menus, options, HUD [G table]	G only
-sub_main:0x53FEC0	menus, options, HUD [G table]	G only
-sub_main:0x53FEE0	menus, options, HUD [G table]	G only
-sub_main:0x53FF00	menus, options, HUD [G table]	G only
-sub_main:0x53FF30	menus, options, HUD [G table]	G only
-sub_main:0x53FF60	menus, options, HUD [G table]	G only
-sub_main:0x53FF90	menus, options, HUD [G table]	G only
-sub_main:0x53FFC0	menus, options, HUD [G table]	G only
-sub_main:0x53FFE0	menus, options, HUD [G table]	G only
-sub_main:0x540000	weapons [G table]	G only
+sub_main:0x53FD20	menus, options, HUD [G table]	ours
+sub_main:0x53FD40	menus, options, HUD [G table]	ours
+sub_main:0x53FD60	menus, options, HUD [G table]	ours
+sub_main:0x53FD80	menus, options, HUD [G table]	ours
+sub_main:0x53FDA0	menus, options, HUD [G table]	ours
+sub_main:0x53FDC0	menus, options, HUD [G table]	ours
+sub_main:0x53FDE0	menus, options, HUD [G table]	ours
+sub_main:0x53FE00	menus, options, HUD [G table]	ours
+sub_main:0x53FE20	menus, options, HUD [G table]	ours
+sub_main:0x53FE40	menus, options, HUD [G table]	ours
+sub_main:0x53FE60	menus, options, HUD [G table]	ours
+sub_main:0x53FE80	menus, options, HUD [G table]	ours
+sub_main:0x53FEA0	menus, options, HUD [G table]	ours
+sub_main:0x53FEC0	menus, options, HUD [G table]	ours
+sub_main:0x53FEE0	menus, options, HUD [G table]	ours
+sub_main:0x53FF00	menus, options, HUD [G table]	ours
+sub_main:0x53FF30	menus, options, HUD [G table]	ours
+sub_main:0x53FF60	menus, options, HUD [G table]	ours
+sub_main:0x53FF90	menus, options, HUD [G table]	ours
+sub_main:0x53FFC0	menus, options, HUD [G table]	ours
+sub_main:0x53FFE0	menus, options, HUD [G table]	ours
+sub_main:0x540000	weapons [G table]	ours
 sub_main:0x540020	menus, options, HUD [G table]	G only	in Portable
 sub_main:0x540040	menus, options, HUD [G table]	G only	in Portable
 sub_main:0x540060	menus, options, HUD [G table]	G only	in Portable
 sub_main:0x540080	other tables (Snd_weapon_tbl) [G table]	G only	in Portable
 sub_main:0x5400A0	skills [G table]	G only	in Portable
-sub_main:0x5400C0	skills [G table]	G only
-sub_main:0x5400F0	skills [G table]	G only
-sub_main:0x540130	skills [G table]	G only
-sub_main:0x540160	skills [G table]	G only
-sub_main:0x540190	skills [G table]	G only
+sub_main:0x5400C0	skills [G table]	ours
+sub_main:0x5400F0	skills [G table]	ours
+sub_main:0x540130	skills [G table]	ours
+sub_main:0x540160	skills [G table]	ours
+sub_main:0x540190	skills [G table]	ours
 sub_main:0x5401C0	skills [G table]	G only	in Portable
-sub_main:0x5401E0	skills [G table]	G only
-sub_main:0x540210	skills [G table]	G only
-sub_main:0x540250	skills [G table]	G only
-sub_main:0x540280	skills [G table]	G only
-sub_main:0x5402B0	skills [G table]	G only
-sub_main:0x5402E0	skills [G table]	G only
-sub_main:0x540310	skills [G table]	G only
-sub_main:0x540340	skills [G table]	G only
-sub_main:0x540370	skills [G table]	G only
-sub_main:0x5403A0	skills [G table]	G only
-sub_main:0x5403D0	skills [G table]	G only
-sub_main:0x540400	skills [G table]	G only
-sub_main:0x540430	skills [G table]	G only
-sub_main:0x540460	skills [G table]	G only
-sub_main:0x540490	skills [G table]	G only
-sub_main:0x5404B0	skills [G table]	G only
-sub_main:0x5404D0	skills [G table]	G only
+sub_main:0x5401E0	skills [G table]	ours
+sub_main:0x540210	skills [G table]	ours
+sub_main:0x540250	skills [G table]	ours
+sub_main:0x540280	skills [G table]	ours
+sub_main:0x5402B0	skills [G table]	ours
+sub_main:0x5402E0	skills [G table]	ours
+sub_main:0x540310	skills [G table]	ours
+sub_main:0x540340	skills [G table]	ours
+sub_main:0x540370	skills [G table]	ours
+sub_main:0x5403A0	skills [G table]	ours
+sub_main:0x5403D0	skills [G table]	ours
+sub_main:0x540400	skills [G table]	ours
+sub_main:0x540430	skills [G table]	ours
+sub_main:0x540460	skills [G table]	ours
+sub_main:0x540490	skills [G table]	ours
+sub_main:0x5404B0	skills [G table]	ours
+sub_main:0x5404D0	skills [G table]	ours
 sub_main:0x5404F0	skills [G table]	G only	in Portable
-sub_main:0x540510	skills [G table]	G only
-sub_main:0x540540	skills [G table]	G only
-sub_main:0x540580	skills [G table]	G only
-sub_main:0x5405C0	skills [G table]	G only
-sub_main:0x5405F0	skills [G table]	G only
-sub_main:0x540620	skills [G table]	G only
+sub_main:0x540510	skills [G table]	ours
+sub_main:0x540540	skills [G table]	ours
+sub_main:0x540580	skills [G table]	ours
+sub_main:0x5405C0	skills [G table]	ours
+sub_main:0x5405F0	skills [G table]	ours
+sub_main:0x540620	skills [G table]	ours
 sub_main:0x5407B0	skills	edited in G	in Portable
 sub_main:0x540800	skills	edited in G	in Portable
 sub_main:0x540860	skills	edited in G	in Portable
@@ -6112,10 +6112,10 @@ sub_main:0x5413A8	skills [G table]	G only	in Portable
 sub_main:0x5413B0	menus, options, HUD [G table]	G only	in Portable
 sub_main:0x5413C8	menus, options, HUD [G table]	G only	in Portable
 sub_main:0x541470	menus, options, HUD [G table]	G only	in Portable
-sub_main:0x541490	menus, options, HUD [G table]	G only
-sub_main:0x541688	menus, options, HUD [G table]	G only
-sub_main:0x541698	menus, options, HUD [G table]	G only
-sub_main:0x5416A8	menus, options, HUD [G table]	G only
+sub_main:0x541490	menus, options, HUD [G table]	ours
+sub_main:0x541688	menus, options, HUD [G table]	ours
+sub_main:0x541698	menus, options, HUD [G table]	ours
+sub_main:0x5416A8	menus, options, HUD [G table]	ours
 sub_main:0x5416C0	menus, options, HUD [G table]	G only	in Portable
 sub_main:0x5416E0	menus, options, HUD [G table]	G only	in Portable
 sub_main:0x541700	menus, options, HUD [G table]	G only	in Portable
@@ -6127,51 +6127,51 @@ sub_main:0x541870	menus, options, HUD [G table]	G only	in Portable
 sub_main:0x5418E0	menus, options, HUD [G table]	G only	in Portable
 sub_main:0x541900	menus, options, HUD [G table]	G only	in Portable
 yn:0xA0AF94	code literals (yn)	G only
-yn:0xA10938	memory card and yes/no dialogs [G table]	G only
-yn:0xA10948	memory card and yes/no dialogs [G table]	G only
-yn:0xA10958	memory card and yes/no dialogs [G table]	G only
-yn:0xA10978	memory card and yes/no dialogs [G table]	G only
-yn:0xA10980	memory card and yes/no dialogs	edited in G
-yn:0xA109D0	memory card and yes/no dialogs [G table]	G only
-yn:0xA109F0	memory card and yes/no dialogs [G table]	G only
-yn:0xA10A08	memory card and yes/no dialogs	twin without US English
-yn:0xA10A20	memory card and yes/no dialogs	twin without US English
-yn:0xA10A40	memory card and yes/no dialogs	twin without US English
-yn:0xA10BE0	memory card and yes/no dialogs	twin without US English
-yn:0xA10C10	memory card and yes/no dialogs	twin without US English
-yn:0xA10C40	memory card and yes/no dialogs	twin without US English
-yn:0xA10C70	memory card and yes/no dialogs	twin without US English
-yn:0xA10C90	memory card and yes/no dialogs	twin without US English
-yn:0xA10CC0	memory card and yes/no dialogs	twin without US English
-yn:0xA10CF0	memory card and yes/no dialogs	twin without US English
-yn:0xA10D20	memory card and yes/no dialogs	twin without US English
-yn:0xA10DC0	memory card and yes/no dialogs	twin without US English
-yn:0xA10DE0	memory card and yes/no dialogs	edited in G
-yn:0xA10E00	code literals (yn)	G only
-yn:0xA10E10	memory card and yes/no dialogs	twin without US English
-yn:0xA10E30	memory card and yes/no dialogs	twin without US English
-yn:0xA10E60	memory card and yes/no dialogs	twin without US English
-yn:0xA10EA0	memory card and yes/no dialogs [G table]	G only
-yn:0xA10ED0	memory card and yes/no dialogs [G table]	G only
-yn:0xA10EF0	memory card and yes/no dialogs	twin without US English
-yn:0xA10F20	memory card and yes/no dialogs	twin without US English
-yn:0xA10F60	memory card and yes/no dialogs	twin without US English
-yn:0xA10F90	memory card and yes/no dialogs	twin without US English
-yn:0xA10FB0	code literals (yn)	G only
-yn:0xA10FE0	memory card and yes/no dialogs	edited in G
-yn:0xA11000	memory card and yes/no dialogs	edited in G
-yn:0xA11030	memory card and yes/no dialogs	twin without US English
-yn:0xA11050	memory card and yes/no dialogs	edited in G
-yn:0xA11080	code literals (yn)	G only
-yn:0xA11110	memory card and yes/no dialogs	twin without US English
-yn:0xA11130	memory card and yes/no dialogs	twin without US English
-yn:0xA11160	memory card and yes/no dialogs	edited in G
-yn:0xA11180	memory card and yes/no dialogs [G table]	G only
-yn:0xA11250	memory card and yes/no dialogs	twin without US English
-yn:0xA11340	code literals (yn)	G only
-yn:0xA11380	memory card and yes/no dialogs	twin without US English
-yn:0xA113B0	memory card and yes/no dialogs	edited in G
-yn:0xA113D0	memory card and yes/no dialogs	edited in G
-yn:0xA11400	memory card and yes/no dialogs	edited in G
-yn:0xA11430	code literals (yn)	G only
-yn:0xA11470	code literals (yn)	G only
+yn:0xA10938	memory card and yes/no dialogs [G table]	ours
+yn:0xA10948	memory card and yes/no dialogs [G table]	ours
+yn:0xA10958	memory card and yes/no dialogs [G table]	ours
+yn:0xA10978	memory card and yes/no dialogs [G table]	ours
+yn:0xA10980	memory card and yes/no dialogs	ours
+yn:0xA109D0	memory card and yes/no dialogs [G table]	ours
+yn:0xA109F0	memory card and yes/no dialogs [G table]	ours
+yn:0xA10A08	memory card and yes/no dialogs	ours
+yn:0xA10A20	memory card and yes/no dialogs	ours
+yn:0xA10A40	memory card and yes/no dialogs	ours
+yn:0xA10BE0	memory card and yes/no dialogs	ours
+yn:0xA10C10	memory card and yes/no dialogs	ours
+yn:0xA10C40	memory card and yes/no dialogs	ours
+yn:0xA10C70	memory card and yes/no dialogs	ours
+yn:0xA10C90	memory card and yes/no dialogs	ours
+yn:0xA10CC0	memory card and yes/no dialogs	ours
+yn:0xA10CF0	memory card and yes/no dialogs	ours
+yn:0xA10D20	memory card and yes/no dialogs	ours
+yn:0xA10DC0	memory card and yes/no dialogs	ours
+yn:0xA10DE0	memory card and yes/no dialogs	ours
+yn:0xA10E00	code literals (yn)	ours
+yn:0xA10E10	memory card and yes/no dialogs	ours
+yn:0xA10E30	memory card and yes/no dialogs	ours
+yn:0xA10E60	memory card and yes/no dialogs	ours
+yn:0xA10EA0	memory card and yes/no dialogs [G table]	ours
+yn:0xA10ED0	memory card and yes/no dialogs [G table]	ours
+yn:0xA10EF0	memory card and yes/no dialogs	ours
+yn:0xA10F20	memory card and yes/no dialogs	ours
+yn:0xA10F60	memory card and yes/no dialogs	ours
+yn:0xA10F90	memory card and yes/no dialogs	ours
+yn:0xA10FB0	code literals (yn)	ours
+yn:0xA10FE0	memory card and yes/no dialogs	ours
+yn:0xA11000	memory card and yes/no dialogs	ours
+yn:0xA11030	memory card and yes/no dialogs	ours
+yn:0xA11050	memory card and yes/no dialogs	ours
+yn:0xA11080	code literals (yn)	ours
+yn:0xA11110	memory card and yes/no dialogs	ours
+yn:0xA11130	memory card and yes/no dialogs	ours
+yn:0xA11160	memory card and yes/no dialogs	ours
+yn:0xA11180	memory card and yes/no dialogs [G table]	ours
+yn:0xA11250	memory card and yes/no dialogs	ours
+yn:0xA11340	code literals (yn)	ours
+yn:0xA11380	memory card and yes/no dialogs	ours
+yn:0xA113B0	memory card and yes/no dialogs	ours
+yn:0xA113D0	memory card and yes/no dialogs	ours
+yn:0xA11400	memory card and yes/no dialogs	ours
+yn:0xA11430	code literals (yn)	ours
+yn:0xA11470	code literals (yn)	ours

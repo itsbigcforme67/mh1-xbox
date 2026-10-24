@@ -21,6 +21,12 @@ or one line of a description, which G stores one pointer per line).
 | left, but the same Japanese is in Monster Hunter Portable (so Freedom should have it) | 4730 | 36% |
 | left, not in Portable either | 1469 | 11% |
 
+**Update 23 Oct 2026 (agent A):** official English (MH1 US) 7087 (53.4%), **our own translation 1043 (7.9%)**, left
+5133: 4703 wait for Freedom (same Japanese in Portable), 430 are not in Portable: 275 keyboard kana tables, 31 G-only
+weapon/armour names left for Freedom's naming, about 124 that are not text (character tables, scan false hits, debug
+prints). Every string the plan called "our own translation" (town talk, online-hub menus, memory-card / network
+messages, weapon/armour lines) now has English. Section "Our own translation" below.
+
 Of the 1469 "neither", 275 are the software keyboard's romaji-to-kana tables and about 100 the online chat's
 bad-word filter (neither is text to translate), so about **1090 strings** would have to be written by us: mostly
 town (online hub) NPC talk (~430), online-hub menus (~185), memory-card and system messages (~220) and weapon/armour
@@ -34,6 +40,87 @@ MH1 JP's own table (the same tool) went from 6272 to 6629 strings with US Englis
 the owner's own Freedom UMD in `disc/mhfr/` and run `python3 tools/text_map.py`. The step is written and tested
 (self-test on Portable: 4624 G strings would receive a line), so G should go from 53% to about 88-90% official
 English in that one run, if Freedom's DATA.BIN mirrors Portable's as expected.
+
+## Our own translation (agent A, 23 Oct 2026)
+
+What the owner's plan (docs/DECISIONS.md) calls "our own translation in Freedom's style": English written by us for
+the G strings that no official release has, because they are neither on the MH1 US disc nor (as Japanese) in Monster
+Hunter Portable, so Freedom will not have them either.
+
+**File:** `text/mhg_en_own.tsv` (committed; the rest of text/ stays ignored because tools/text_dump.py puts game text
+there). One line per string: `ID <TAB> CRC <TAB> FLAGS <TAB> ENGLISH`.
+- `ID` is the tool's string id (`space:0xADDRESS`, `quest:N:0xOFFSET`), as in docs/survey/mhg_text_untranslated.txt.
+- `CRC` is the crc32 of the Japanese bytes the line was written for. It stands in for the Japanese (which is never
+  committed) and lets text_map.py refuse a line whose id no longer holds that text ("stale").
+- `FLAGS`: `-` none; `t` a talk-window line (text_map.py word-wraps it at the window's 22 columns, then talk_layout pads
+  the rows); `p` a tutorial page line (40 columns, as the US pages); `d` one line of a description (30 columns); `m` one
+  line of a line-split dialog message (50 columns); `n` the line uses a G-only name that Freedom will decide
+  (provisional, see below).
+- `ENGLISH` uses the table escaping (`\n` line feed). No Japanese anywhere in the file.
+
+**How it is applied** (`run_own` in tools/text_map.py): after MH1 US, the text rules and the Freedom step. Official
+English always wins: a line whose id already has official English is not used, and when Freedom is added, every own
+line it replaces is named in the log and in docs/text_coverage.md ("*Ours* ... own lines replaced"). A line is
+refused when its printf conversions or `~Xnn` codes differ from the Japanese, or when it holds a stray `~` (the game
+reads `~` as a code; two-byte characters like × whose second byte is 0x7E are fine). The report has a column *ours*
+and the ids file marks own lines `ours`.
+One special case: a string whose US English is only right in one slot of a re-flowed US message (`gk_slot`, see the
+memory-card fix above) keeps that US line in its slot, and our line becomes the string's text everywhere else (15
+such fallbacks, the MH1-to-G transfer and NET-file dialogs, where G reuses MH1's lines in new messages).
+
+**Adding lines:** write a batch file `ID<TAB>FLAGS<TAB>ENGLISH` and run `python3 tools/text_own.py add BATCH` (it reads
+the Japanese from disc/mhg only to compute the crc and to check the fit; `--dry` checks only). `tools/text_own.py check`
+re-checks the whole file. The fit check: no more lines than the Japanese, each line no wider than the Japanese box
+(two-byte character = 2 columns, ~Bnn icon = 2, other ~ codes 0; 15% extra for boxes of 8 columns or more, because the
+English is drawn proportionally); talk lines no more rows than the Japanese takes in the window plus one, and at most 7.
+Then re-run text_map.py.
+
+**What was translated (1043 strings, 15 more as fallbacks):**
+
+| batch | strings |
+|---|---:|
+| town (online hub) and village NPC talk, Felyne recipe hints, guild / shop talk | 428 |
+| online-hub menus, help lines, search / Friend List / Black List / Short Mail screens and messages | 176 |
+| NETWORK MODE, NET file, memory-card, MH1-to-G character transfer and network-settings messages | 277 |
+| weapon and armour descriptions G added (one pointer per line), quest entry rules | 139 |
+| Training School briefings, quest-board labels, G quest texts, items, three Felyne names, tutorial pages | rest |
+
+**Style:** MH1 US's terms and names exactly as MH1 US writes them (Bishop / Queen / King Room, hunter's shoppe, Veggie
+Elders, Farcaster, Rathalos Webbing, Lao-Shan Lung, Fatalis), MH1 US's button wording
+("~B03 or ~B00: Select item"), MH1 US's NET-file and memory-card wording ("memory card (8MB) (for PlayStation(R)2)",
+"MEMORY CARD slot"), the US quest form ("Requestor: ..."). NPC voices kept: the Felynes say "meow", the Melynx "gob",
+the Red / Black Ogres laugh "Dohahaha" / "Bahahaha". Written by Claude (agent A), not a native translator: worth a
+person's read before release, like the hand-checked pairs.
+
+**Waiting for Freedom** (names Freedom's English decides; Portable has the Japanese):
+- 31 G-only weapon / armour **names** left untranslated on purpose (G-rank "G" and "改" versions: Guild Rapier, Gladius,
+  G Sword/Hammer/Lance/Knife Origin, Bone Sword G, Iron Sword G, Atlas Hammer G, Longhorn G, and six other new
+  weapons, five armour pieces). Their ids are the `weapons` /
+  `armour and skills` rows of docs/survey/mhg_text_untranslated.txt that are neither `ours` nor `in Portable`.
+- 97 own lines carry flag `n`: they use a provisional English name for a G-only item, skill, weapon, armour piece or
+  ammo (e.g. Carbalite Ore, Hellfire Stone, Razorwing, Carapace, Ruby, "S" armour, Sieglinde G, Honeycomber, the
+  Master weapons, Sharpness +1, Razor Sharp, Rapid Fire, Guard +1, Alchemy, Glutton, Divine Protection, Torso Up,
+  Storage Expert, Throwing Knife, Ice Crystal, Hot Pepper, Crag S / Clust S, Felyne Cart Ticket, Training School,
+  Azure Rathalos, Pink Rathian). When Freedom is in, `awk -F'\t' '$3 ~ /n/' text/mhg_en_own.tsv` lists them; replace
+  each provisional name with Freedom's (the line stays ours, only the name changes).
+- Everything "in Portable" (4703 strings, including the gallery labels, NETWORK OPTIONS rows, the monster-record
+  window, the combine window and the item shop's count label seen on screen) is left for Freedom, as planned.
+
+**Display fixes in this round:**
+- PC font (src/pc/rt/rt_font.c, both games): the game fills numbers into English lines as full-width digits (the
+  item shop's "The price is $z." showed "2 0z"). In English text (a line with a half-width letter and no other
+  two-byte character) full-width digits and letters are drawn as the half-width ones, proportionally. Japanese text
+  and number-only prints keep the fixed grid. Seen fixed in G's item shop (build/A/eng/after/item_shop).
+- Line-split messages that reuse an MH1 line in a new G message showed Japanese for the reused lines (their US line is
+  kept to its own slot since agent B's memory-card fix): own fallbacks (above). Seen: the save message
+  ("Saving... Do not turn off the console or / remove the memory card (8MB) (for PlayStation(R)2).") fits its box.
+- Checked on screen (hidden runs, build/A/eng/before and after, tools/g_eng_tour.py with `G_ENG_OUT`): title, game
+  menu, character select / save, item and weapon shop, forge, item box, elder talk, quest board and card, pause menu,
+  quest info, quest clear and reward. The town talk and the online-hub screens are not reachable on the PC for G yet
+  (no G online client in the tour), so the 600 own lines there were checked by the fit rules and the talk-row
+  layout in the written table (all 356 talk lines: even-length rows of at most 22 bytes), not on screen.
+- Still open (not changed: official English, owner decides): the quest-info values that overlap "Total Reward" /
+  "Reward Remaining" / "Time Remaining", and the other short-form proposals in the table at the end of this file.
 
 ## What MH1 US covers (by category)
 
