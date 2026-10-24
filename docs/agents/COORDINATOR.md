@@ -96,7 +96,7 @@ always been a struct field type or a lost field.
 ## Current assignments (update when they change)
 
 ### Running, 23 Oct 2026 evening
-- agent C: G online round 5 merged 25 Oct: guild hall NPCs, counter, room for 2 -> both start quest 1 (ROOM=1 tools/test_online_g.sh), town name tags. Plain and ONLINE=1 G PC builds now use separate trees (build/mhg/pctree_online): mixed objects broke the offline Elder. Next: hunt + return to town in G online, quest sheet fee shows 'z' with no number, remaining MH1 lb_cli functions m2c could not convert, then PS2 G + PC G, Xbox G online.
+- agent C: G online round 6 merged 25 Oct: two PC G hunters hunt the Kut-Ku together (HUNT=1 tools/test_online_g.sh, ~20 min): hand-overs, HP in sync, kill, carves, clear, back in G's guild hall. Fee 'z' not reproduced (needs the screen). Next: G's character-select net packet layout (PCs send MH1's) for a PS2 G in the hunt; an offset map for MH1 lobby C writing MH1 network-state offsets; G save cards for the tests.
 - agent D: GB6 ninth pass merged 24 Oct (eft04/15/16/02, set14, em12/em15; full check 42 ok). Left: em02 Fatalis rewrite (RELEASE_G 16; no offline quest spawns it). area_mdlw (monster sub models) fixed and merged 24 Oct (both games). Red line in Kirin shots: god-mode aid left vital_red at ~15000 (fixed, test aid only).
 - agent A: G English merged 24 Oct: 7087 official (53.4%) + 1043 own (text/mhg_en_own.tsv, tools/text_own.py); 4703 wait for Freedom (owner asked for an image of their ULUS-10084 in disc/mhfr/); 97 own lines flagged n use provisional names. Town / online screens not seen on screen yet. Own text is Claude's: a person should read it before release.
 - agent B: G gaps GN8/GN12/GM4/GM5 done and merged 23 Oct (full check passed on agent-B).
