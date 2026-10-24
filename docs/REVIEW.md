@@ -975,3 +975,14 @@ Both games unless marked.
 - **Changed (G builds):** include/lbsys_g.h CW_OFS maps MH1 cw 0x32BE..0x35CF to G (+0xC48C). **Why:** G's owner flag /
   ready count / server message sit there (checked against G's lb_guild_make_room, lb_basic_master); identity before.
 - **To revert:** the agent-C commits of 24 Oct 2026 "G online (PC): ..." (eight commits from "Lb_move_common walks em_work").
+
+## G online, round 6 (agent C, 24 Oct 2026)
+- **Replaced (G online build only):** MH1's text_lobby_trans_ot3, Set_ErrorDialog and lbc_logout_01 (lb_cli.c).
+  **Now:** G's code, generated (src/lobby/gonl/gen/gn_*.c). **Why:** G's Lbc_init_network_work (generated) puts prim
+  pointers at pNet+0..0x10 and G keeps the dialog flag at pNet+0x2D; MH1's ot3 read +0xC (a pointer byte), so G's system
+  dialogs were not drawn; G's error dialogs have other numbers. MH1 builds keep the MH1 C.
+- **Changed (G builds):** include/lbsys_g.h CW_OFS also maps 0x35E0..0x35FF (+0xC48C; identity before). **Why:** G's cmcs_03
+  and Lbc_connect use cw+0xFA6C / 0xFA80 there.
+- **Changed (G PC only):** netsyn08.c / netsyn09.c quest messages at G's quest_w 0x280 block; aq_nm.c pl_state via GWX
+  (identity in MH1); hunter_appellation / mcsls_swin_minus_init in config/mhg/pc_data.txt.
+- **To revert:** the agent-C commits of 24 Oct 2026 from "G online (PC): the hunt on mh1-server's mcs relay (WIP)".

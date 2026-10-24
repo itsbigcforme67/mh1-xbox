@@ -1100,7 +1100,7 @@ sending it: harmless, and closer to the original if it was the login's answer.
   "hostleave" through the relay (the room's leader leaving) is a case to repeat on mcs before step 2: there, drop-outs
   of the owner were tested (above), not of the room leader (slot 0) with three players left.
 
-### 3.12 Monster Hunter G online (agent C, 18-24 Oct 2026; GB7, in progress)
+### 3.12 Monster Hunter G online (agent C, 18-24 Oct 2026, round 6; GB7, in progress)
 
 G (SLPM-65869) uses the same lobby-server protocol as MH1 (same framing, login, obfuscation, `LOCKROCK`, sequence
 rules; `cnLBS_LoginLobbyServer`, `mmbbc_encode`, `tcp_init`, `create_server_table` are identical), with a command table
@@ -1244,8 +1244,26 @@ The PC parts: src/lobby/cnet/cnet_g.c (G's room handlers, getters and sends), G'
 in src/lobby/gonl/gen (tools/mhg_gonl.py: G_RENAME for G code under MH1 names, FIXUPS, tex_slots), lb_guild_g.c (the
 counter's online steps), lb_village_nm.c (departure), config/mhg/pc_data.txt (LobbyInfo / PlazaInfo / quest_title at G's
 sizes). Details and the list of fixes: docs/agents/agent-C.md "G online, round 5".
-Next: two G PCs on mh1-server's mcs relay (the game's own in-hunt protocol), the hunt and the return to the town, the
-PS2 G disc with a PC, the Xbox.
+State (24 Oct, round 6): **two G PCs hunt the Kut-Ku together on mh1-server's mcs relay and return to G's guild hall**
+[checked: `HUNT=1 tools/test_online_g.sh`, mh1-server `--lobby-mcs` with accounts: quest 4 posted at the counter, the
+mcs login of both, the monster handed ANNA -> BOB -> ANNA with the same HP on both (tools/hunt_sync.py), the kill, both
+carve, the clear, the result screens incl. G's online hunter point screen, the relogin, both standing in stage 0x4D].
+G's in-hunt protocol on the wire is MH1's (the PC runs MH1's mcsls / AQ C for G and the relay is unchanged); what G
+does differently, found on the way (all [code only] unless the test shows it):
+- G's mcsls keeps MCSLS_SWIN_MINUS in bss and sets it at session start from the word 8 bytes after MCSLS_SWIN_LIMIT
+  (G 0x1E56F0: 100; MH1 stores 8 in MINUS itself). With 0 the send-window check counts up every tick and the session
+  ends with error 0x10 after MCSLS_SWIN_LIMIT (450) ticks [checked: the PC's sessions died so before the fix].
+- G's AQ_init calls CngNetAQInit instead of MH1's CnInetNetworkAveTcpConfigSet (no ave_cnf in G).
+- G's quest_w moved MH1's 0x180.. block (the quest messages of sys 6: clear, everyone's end bits) to 0x280; the room
+  owner waits at quest command 0x2D until every member's bit came [checked: the owner hung there with MH1's offsets].
+- G's sys 2 (select) packet has another layout than MH1's: the ready flag goes to select_w+0xAC, the quest to +0xD0,
+  the hunter id from byte 18 (net_receive_sys G 0x4FB210, net_send_sys G 0x4FAE40). The PC G client still sends MH1's
+  layout (fine between PCs); a PS2 G in the party needs G's.
+- cmcs_03 takes the player count from cw+0xBB1 and the game-server ticket from cw+0xFA6C (MH1 0x2C47 / 0x35E0).
+- After the quest G logs in again and saves the hunter to the card (lbc_login_finish_after, McOperationSet(7)); then the
+  party stands in the guild hall (stage 0x4D), not in the town.
+Next: the PS2 G disc with a PC G in one hunt (G's sys 2 layout first), the Xbox, G save cards for the tests, G's pNet
+layout for the MH1 lobby C still linked in the G online build.
 
 ## 4. Run it
 
@@ -1261,6 +1279,7 @@ PS2 G disc with a PC, the Xbox.
     tools/test_online_event.sh                       # an event quest downloaded, posted, cleared; a patch refused (~4.5 min)
     tools/test_online_server.sh                      # login to town to quest to town against mh1-server (relay) (~4 min)
     tools/test_online_mcs.sh                         # the same on the game's own in-hunt protocol (mcs relay, 3.10) (~4 min)
+    HUNT=1 tools/test_online_g.sh                    # two PC G clients: room, Kut-Ku on the mcs relay, back to the hall (3.12, ~20 min)
     tools/test_ps2_hunt.sh                           # a PS2 (PCSX2) and a PC hunt together (3.10; uncapped, ~20 min)
     XBOX=1 tools/test_ps2_hunt.sh                    # PS2 + PC + Xbox (xemu) in one hunt (~25 min)
     tools/xemu_mcs_hunt.sh                           # the Xbox and a PC (~10 min)
