@@ -1012,3 +1012,12 @@ Both games unless marked.
 - **Changed:** text/mhg_en_own.tsv: 48 provisional names replaced by Freedom's (Firecell Stone, Paw Pass Ticket,
   Expert Blade, Gradios, Djinn, Seiglinde+, Great Golem+, "Helm S" suffix order, ...); 31 G-only weapon / armour names
   added in Freedom's style. **To revert:** the agent-A commits of 24 Oct 2026 "text_map: pair Freedom by structure ...".
+
+## One host object for quest_rnd_host / quest_size_lim in the G online build (agent C, 25 Oct 2026)
+- **Dropped:** config/mhg/pc_data.txt's g_sub_541E30 / g_sub_541E40 (tools/mhg_gonl.py's names for G 0x541E30 / 0x541E40).
+  **Now:** the generated gn_lbc_game_ready_00.c / gn_lobby_func_0059A210.c write quest_rnd_host / quest_size_lim, the names
+  Quest_start reads; mhg_gonl.py's gen_name takes pc_data's existing name for an address. **Why:** two names were two host
+  copies on the PC, so the match's random numbers (from the battle code) never reached the quest; a real PS2 G started
+  the Kut-Ku at 2200 HP, the PC at 2000 (tools/test_ps2_g_hunt.sh). **To revert:** commit "G online: one quest_rnd_host /
+  quest_size_lim on the PC; one battle code per match".
+- **Changed:** tools/mh1_testserver.py's battle code (6915) is made once per match instead of per request.
