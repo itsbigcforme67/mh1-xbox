@@ -147,6 +147,10 @@ class Aid:
             if 0 < v < 100:
                 self.p.write('w16', pl + 0x302, 100)
         s, e = self.monster()
+        if e is not None and self.rd('r8', e + 0x38D):    # hit this frame (dm_flag): np-dmg as the PC's RT_NP_RXEM
+            dm = [struct.unpack('<h', struct.pack('<H', self.rd('r16', e + 0x766 + 2 * i)))[0] for i in range(4)]
+            print('np-dmg: tick %d hp %d damage %d %d %d %d owner %d' % ((self.tick, struct.unpack('<h', struct.pack(
+                '<H', self.rd('r16', e + 0x302)))[0]) + tuple(dm) + (-1 if self.rd('r8', e + 0x8C3) else me,)), flush=True)
         if e is not None:       # every change of its HP (np-hp, as the PC's RT_NP_EM)
             hp = struct.unpack('<h', struct.pack('<H', self.rd('r16', e + 0x302)))[0]
             if hp != self.last_hp:
@@ -235,6 +239,9 @@ class Aid:
                 self.tick, me, s, self.kind, self.rd('r8', e + 0x736), hp, -1 if self.rd('r8', e + 0x8C3) else me,
                 self.rd('r8', e + G['em_net']), self.rd('r8', e + 0x14), self.rd('r8', e + 0x15), self.rf(e + 0xAC),
                 self.rf(e + 0xB4), struct.unpack('<b', struct.pack('<B', self.rd('r8', e + 0x88E)))[0]), flush=True)
+            print('np-emx: tick %d me %d x56A %d x572 %d x7C0 %d x88B %d x827 %d x8C3 %d' % (
+                self.tick, me, self.rd('r8', e + 0x56A), self.rd('r16', e + 0x572), self.rd('r16', e + 0x7C0),
+                self.rd('r8', e + 0x88B), self.rd('r8', e + 0x827), self.rd('r8', e + 0x8C3)), flush=True)
         for k in range(4):
             p = PLW + 0xA00 * k
             if not self.rd('r8', p):

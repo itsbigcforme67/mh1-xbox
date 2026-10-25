@@ -163,7 +163,7 @@ cp "$MCD" $O/ps2_card_before.ps2
 # the PS2's test aid from here on (PINE serves one client at a time: the warps above used pine.py on their own; from
 # here on only the aid talks to PCSX2, and stage() reads its trace)
 echo idle > $O/ps2_ctl
-python3 tools/pcsx2/ps2_hunt_aid.py --game mhg --slot $PSLOT --ctl $O/ps2_ctl --kind 6 --exits $O/pc.log > $O/ps2_trace.txt 2>&1 &
+python3 tools/pcsx2/ps2_hunt_aid.py --game mhg --slot $PSLOT --ctl $O/ps2_ctl --kind 6 --radius ${AIDR:-300} --exits $O/pc.log > $O/ps2_trace.txt 2>&1 &
 AP=$!
 
 # ---- the hunt: the PS2's part, timed from the PC's quest start (30 ticks a second)

@@ -995,6 +995,9 @@ void rt_np_tick(void)
                 fprintf(stderr, "np-em: tick %d me %d em %d kind %d stg %d hp %d owner %d net %d act %d/%d pos %.0f %.0f master %d\n", k,
                         game_w.master, s, e[2], e[0x736], *(s16 *)(e + 0x302), e[0x8C3] ? -1 : game_w.master, e[0x9E2], e[0x14],
                         e[0x15], *(f32 *)(e + 0xAC), *(f32 *)(e + 0xB4), (s8)e[0x88E]);   /* master: the owner slot, EMW+0x88E */
+                if (s == 0 && getenv("RT_NP_RXEM"))     /* a few state bytes the hand-over packet (kind 4) carries */
+                    fprintf(stderr, "np-emx: tick %d me %d x56A %d x572 %d x7C0 %d x88B %d x827 %d x8C3 %d\n", k, game_w.master,
+                            e[0x56A], *(u16 *)(e + 0x572), *(u16 *)(e + 0x7C0), e[0x88B], e[0x827], e[0x8C3]);
             }
         }
         if (getenv("RT_NP_POS") && rt_online && k % atoi(getenv("RT_NP_POS")) == 0)   /* test aid: every player's position as this machine sees it */
