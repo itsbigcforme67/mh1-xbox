@@ -23,7 +23,7 @@ Every frame or so (about 30 times a second):
   * a trace in the PC's formats (np-hp at every change of the monster's HP; np-em / np-pos, tools/hunt_sync.py) every --every frames: the monster as the PS2 has it
     (HP, whether the PS2 runs it, the owner slot) and every hunter as the PS2 sees it.
 
-usage: ps2_hunt_aid.py --slot PINE --ctl FILE [--game mh1|mhg] [--kind 6] [--radius 300] [--every 30] [--exits LOG ...]
+usage: ps2_hunt_aid.py --slot PINE --ctl FILE [--game mh1|mhg] [--kind 6] [--radius 300] [--every 30] [--exits LOG ...] [--dump DIR]
        > trace
 PS2 addresses (SLPM_654.95): game_w 0x3F33F0 (master +0xD1), player_work 0x3E4BF0 (0xA00 each), em_work 0x3D82A0
 (0xA10 each), StiEM_data 0x3C75D0 (0x1C each). --game mhg, Monster Hunter G (SLPM-65869, config/mhg/main_aliases.txt):
@@ -60,10 +60,12 @@ class Aid:
         self.tick = 0
         self.last_exit = 0
         self.last_hp = None
+        self.last_size_em = None
         self.last_flow = None
         self.last_stage = None
         self.last_mode = None
         self.ntrace = 0
+        self.dump_dir = None    # --dump DIR: DIR/req holding a tag -> DIR/TAG.bin (game_w, the PLWs, every EMW; never committed)
 
     def rd(self, kind, a):
         return self.p.read(kind, a)
@@ -115,8 +117,22 @@ class Aid:
                 return i, e
         return None, None
 
+    def dump(self):
+        req = os.path.join(self.dump_dir, 'req')
+        try:
+            tag = open(req).read().strip()
+        except OSError:
+            return
+        os.unlink(req)
+        rb = self.p.read_bytes
+        with open(os.path.join(self.dump_dir, (tag or 'dump') + '.bin'), 'wb') as f:
+            f.write(rb(GAME_W, 0x400) + rb(PLW, 0xA00 * 4) + rb(EMW, G['em_n'] * 20))
+        print('ps2-aid: tick %d dump %s' % (self.tick, tag), flush=True)
+
     def step(self):
         self.tick += 1
+        if self.dump_dir:
+            self.dump()
         flow = (self.rd('r8', GAME_W), self.rd('r8', GAME_W + 1), self.rd('r8', GAME_W + G['d5']))
         if flow != self.last_flow:
             print('rt_flow: tick %d mode %d step %d D5 %d quest %d' % ((self.tick,) + flow + (self.rd('r16', GAME_W + 0x2C),)),
@@ -151,6 +167,11 @@ class Aid:
             dm = [struct.unpack('<h', struct.pack('<H', self.rd('r16', e + 0x766 + 2 * i)))[0] for i in range(4)]
             print('np-dmg: tick %d hp %d damage %d %d %d %d owner %d' % ((self.tick, struct.unpack('<h', struct.pack(
                 '<H', self.rd('r16', e + 0x302)))[0]) + tuple(dm) + (-1 if self.rd('r8', e + 0x8C3) else me,)), flush=True)
+        if e is not None and GAME_W == GAMES['mhg']['game_w'] and s != self.last_size_em:
+            # G: the monster's size in percent (EMW 0x9F8) and its scale (+0xB8), as the PC's np-size line
+            print('np-size: tick %d me %d em %d kind %d size %d scale %.3f' % (
+                self.tick, me, s, self.kind, self.rd('r16', e + 0x9F8), self.rf(e + 0xB8)), flush=True)
+            self.last_size_em = s
         if e is not None:       # every change of its HP (np-hp, as the PC's RT_NP_EM)
             hp = struct.unpack('<h', struct.pack('<H', self.rd('r16', e + 0x302)))[0]
             if hp != self.last_hp:
@@ -282,6 +303,8 @@ def main(argv):
             a['radius'] = float(argv.pop(0))
         elif k == '--every':
             a['every'] = int(argv.pop(0))
+        elif k == '--dump':
+            a['dump'] = argv.pop(0)
         elif k == '--exits':
             while argv and not argv[0].startswith('--'):
                 a['exits'].append(argv.pop(0))
@@ -293,6 +316,7 @@ def main(argv):
     while aid is None:      # PCSX2 may not have opened its socket yet
         try:
             aid = Aid(a['slot'], a['ctl'], a['kind'], a['radius'], a['every'], a['exits'])
+            aid.dump_dir = a.get('dump')
         except OSError:
             time.sleep(2)
     while True:

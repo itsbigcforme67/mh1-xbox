@@ -394,6 +394,10 @@ int rt_online_tick(void)
             net_ToNetworkLobby();       /* cw = client_work, pNet = network_work, the client's state */
             rt_np_set_online(1);        /* Online_ck() = 1 (system_w+0x10) */
             system_w[0x10] = 1;
+#ifdef VERSION_MHG
+            system_w[0x44] = 1;         /* G's title menu, network mode (mode_sel_end choice 2): every online quest rolls its
+                                         * monsters' sizes (func_0012D1B0), as on the PS2 */
+#endif
             phase = O_LOBBY;
         } else if (r == -1 || ticks > 30 * 30) {
             fprintf(stderr, "online: tcp_init %d (step %d)\n", r, COM_R_No_2);
@@ -531,6 +535,9 @@ int rt_online_tick(void)
         back = 0;
         rt_np_set_online(0);
         system_w[0x10] = 0;
+#ifdef VERSION_MHG
+        system_w[0x44] = 0;
+#endif
         say("back to the village%s (offline, %d)", "", 0);
         return 0;                       /* the next tick runs the village */
     }

@@ -982,6 +982,11 @@ void rt_np_tick(void)
                 if (last_kind[s] != e[2] || last_hp[s] != hp)
                     fprintf(stderr, "np-hp: tick %d me %d em %d kind %d hp %d owner %d master %d\n", k, game_w.master, s, e[2], hp,
                             e[0x8C3] ? -1 : game_w.master, (s8)e[0x88E]);
+#ifdef VERSION_MHG
+                if (last_kind[s] != e[2])   /* G: the monster's size (percent, EMW G 0x9F8) and scale; the PS2 aid prints the same */
+                    fprintf(stderr, "np-size: tick %d me %d em %d kind %d size %d scale %.3f\n", k, game_w.master, s, e[2],
+                            *(u16 *)(e + 0xA02), *(f32 *)(e + 0xB8));   /* EMW size (PC layout 0xA02) / scale[0] */
+#endif
                 last_kind[s] = e[2];
                 last_hp[s] = hp;
             }
