@@ -62,6 +62,7 @@ class Aid:
         self.last_hp = None
         self.last_flow = None
         self.last_stage = None
+        self.last_mode = None
         self.ntrace = 0
 
     def rd(self, kind, a):
@@ -136,6 +137,9 @@ class Aid:
         except OSError:
             mode = ['idle']
         mode = mode or ['idle']
+        if mode != self.last_mode:
+            print('ps2-aid: tick %d mode %s (time %.1f)' % (self.tick, ' '.join(mode), time.time()), flush=True)
+            self.last_mode = mode
         if mode[0] == 'gone':
             return
         if on_quest:

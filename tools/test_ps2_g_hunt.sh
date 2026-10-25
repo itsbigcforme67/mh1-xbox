@@ -120,10 +120,11 @@ rep() { i=0; while [ $i -lt $1 ]; do printf "%s" "$2"; i=$((i + 1)); done; }
 BASE="idle*200$(rep 14 ',circle*2,idle*150')$(rep 1 ',circle*2,idle*120,dleft*2,idle*30,circle*2,idle*136')"
 IA="$BASE,square*2,idle*270$(rep 4 ',circle*2,idle*148')$(rep 3 ',dright*2,idle*48')$(rep 5 ',circle*2,idle*148')"
 for key in circle circle dleft dleft ddown ddown ddown circle circle circle; do IA="$IA,$key*2,idle*100"; done
-IA="$IA,idle*${AWAIT:-3000}$(rep 5 ',square*2,idle*120,circle*2,idle*120,circle*2,idle*160')"
+# (each try ends with attacks: the quest may start during the later tries, and its first fight must have them)
+IA="$IA,idle*${AWAIT:-3000}$(rep 5 ',square*2,idle*120,circle*2,idle*120,circle*2,idle*40,cam_u*2,idle*28,cam_u*2,idle*28,cam_u*2,idle*28,cam_u*2,idle*28')"
 IA="$IA$(rep 36 ',circle*2,idle*13,cam_u*2,idle*13,circle*2,idle*13,cam_u*2,idle*13,circle*2,idle*13,cam_u*2,idle*13,circle*2,idle*13,cam_u*2,idle*13,circle*2,idle*13,cam_u*2,idle*13,circle*2,idle*13,cam_u*2,idle*13,cross*2,idle*18,ddown*2,idle*18,circle*2,idle*13,cam_u*2,idle*13')"
 IA="$IA$(rep 60 ',circle*2,idle*91')"
-F="RT_PL_GOD=1 RT_PL_TARGET=k6 RT_PL_GOTO=60,f RT_DMG_MUL=${MUL:-6} RT_GOTO_TRACE=1 RT_PL_CARVE=10 RT_QUEST_TRACE=1 RT_NOMOVIE=1 RT_NP_TRACE=1 RT_NP_POS=150 RT_NP_EM=30 RT_MONEY=5000"
+F="RT_PL_GOD=1 RT_PL_TARGET=k6 RT_PL_GOTO=60,f RT_DMG_MUL=${MUL:-6} RT_GOTO_TRACE=1 RT_PL_CARVE=10 RT_QUEST_TRACE=1 RT_NOMOVIE=1 RT_NP_TRACE=1 RT_NP_POS=150 RT_NP_EM=30 RT_NP_RXEM=1 RT_MONEY=5000"
 (env MH1_HIDDEN=1 MH1_SAVE_DIR="$PWD/$O/card_ANNA" MH1_LOG_DIR="$PWD/$O/logs_ANNA" RT_NAME=ANNA RT_VILLAGE_START=1 \
     RT_VILLAGE_SKIP_INTRO=1 RT_ONLINE_TRACE=1 RT_NET_REGISTERED=1 RT_NET_HOST=$IP RT_NET_PORT=10200 \
     RT_NET_ID=$(id_of pc) RT_NET_PASS=$(pw_of pc) RT_LB_WARP="60,5545,2750,0;300,1120,1950;2850,2920,1840,8000" \
@@ -169,7 +170,7 @@ AP=$!
 i=0
 while [ $i -lt 400 ] && ! grep -aq "village: quest 4 starts" $O/pc.log; do sleep 2; i=$((i + 2)); done
 grep -aq "village: quest 4 starts" $O/pc.log || fail "the PC did not start the Kut-Ku quest (quest 4)"
-T0=$(date +%s)
+T0=$(date +%s); echo "quest start at $T0 (PC's quest tick 0)" > $O/ps2_t0.txt
 atq() { while [ $(( ($(date +%s) - T0) * 30 )) -lt $1 ]; do sleep 1; done; }
 ( while :; do       # keys while $O/ps2_atk exists (t = right stick up: attack); circle only once the monster is dead
     if [ -f $O/ps2_atk ]; then
@@ -183,7 +184,7 @@ echo follow > $O/ps2_ctl
 atq 300; shot kk_0300
 atq 1200; shot kk_1200_pc_fights
 atq 1600; echo fight > $O/ps2_ctl; echo t > $O/ps2_atk
-for q in 1800 1830 1860 1890; do atq $q; shot kk_${q}_ps2_fights; done
+for q in 1700 1750 1800 1850 1900 1950 2000 2050; do atq $q; shot kk_${q}_ps2_fights; done
 atq 2100; shot kk_2100_ps2_fights
 atq 2600; echo "goto 21" > $O/ps2_ctl; rm -f $O/ps2_atk
 atq 3000; shot kk_3000_ps2_camp

@@ -940,6 +940,9 @@ void rt_hit_check(void)
         for (k = 0; k < 8; k++)
             PF(e, s16, 0x766 + 2 * k) = (s16)(PF(e, s16, 0x766 + 2 * k) * m);
     }
+    if (e[0x38D] && getenv("RT_NP_RXEM"))       /* test aid: a hit on monster 0 this tick (with the enemy packet trace) */
+        fprintf(stderr, "np-dmg: tick %d hp %d damage %d %d %d %d owner %d\n", aid_tick(), PF(e, s16, 0x302), PF(e, s16, 0x766),
+                PF(e, s16, 0x768), PF(e, s16, 0x76A), PF(e, s16, 0x76C), e[0x8C3] ? -1 : game_w.master);
     rt_dbg_hits();              /* the debug menu's damage multiplier / one-hit kills: every monster hit this tick (rt_dbg.c) */
     if (tr < 0) tr = getenv("RT_HIT_DM") != NULL;
     if (tr > 1 || (tr && getenv("RT_HIT_DM")[0] == '2')) {   /* RT_HIT_DM=2: live shells each tick */
