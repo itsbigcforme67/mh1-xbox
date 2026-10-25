@@ -15,12 +15,20 @@ Every frame or so (about 30 times a second):
       gone            nothing (the PS2 is being closed)
     The exits come from PC logs with RT_GOTO_TRACE (--exits LOG..., re-read every few seconds: "stage A -> exit to B"
     and the "exit kind ..." line after it), so no stage data is copied here.
+  * "rt_flow: tick T mode M step S D5 D quest Q" at every change of game_w's mode / step / x0D5 (the PC's rt_flow line
+    starts the same: D5 3 = the quest cleared) and the quest number game_w+0x2C;
+  * "ps2-stage: tick T stage 0xNN" at every change of game_w.stage (+0x14; 0x4C town, 0x4D guild hall);
+  * "np-look: ..." every 10th trace: each hunter's equipment as Set_userdata / Set_mini_data_to_pl leave it in its PLW
+    (+0x34C weapon id, +0x35E/+0x360/+0x362 the weapon's kind / ids, +0x8D3, +0x352 the 6 look bytes), as the PC prints;
   * a trace in the PC's formats (np-hp at every change of the monster's HP; np-em / np-pos, tools/hunt_sync.py) every --every frames: the monster as the PS2 has it
     (HP, whether the PS2 runs it, the owner slot) and every hunter as the PS2 sees it.
 
-usage: ps2_hunt_aid.py --slot PINE --ctl FILE [--kind 6] [--radius 300] [--every 30] [--exits LOG ...] > trace
+usage: ps2_hunt_aid.py --slot PINE --ctl FILE [--game mh1|mhg] [--kind 6] [--radius 300] [--every 30] [--exits LOG ...]
+       > trace
 PS2 addresses (SLPM_654.95): game_w 0x3F33F0 (master +0xD1), player_work 0x3E4BF0 (0xA00 each), em_work 0x3D82A0
-(0xA10 each), StiEM_data 0x3C75D0 (0x1C each)."""
+(0xA10 each), StiEM_data 0x3C75D0 (0x1C each). --game mhg, Monster Hunter G (SLPM-65869, config/mhg/main_aliases.txt):
+game_w 0x35ED20 (master +0x3A, include/game.h), player_work 0x34D450 (0xA00 each, MH1's PLW layout), em_work 0x340C40
+(0xA00 each: MH1's EMW layout below 0x960, 8 bytes lower from there, include/em.h), StiEM_data 0x32D2A0."""
 import math
 import os
 import re
@@ -31,7 +39,12 @@ import time
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from pine import Pine  # noqa: E402
 
-GAME_W, PLW, EMW, STI = 0x3F33F0, 0x3E4BF0, 0x3D82A0, 0x3C75D0
+GAMES = {
+    'mh1': dict(game_w=0x3F33F0, master=0xD1, d5=0xD5, plw=0x3E4BF0, emw=0x3D82A0, em_n=0xA10, sti=0x3C75D0, em_net=0x9E2),
+    'mhg': dict(game_w=0x35ED20, master=0x3A, d5=0x3E, plw=0x34D450, emw=0x340C40, em_n=0xA00, sti=0x32D2A0, em_net=0x9DA),
+}
+G = GAMES['mh1']
+GAME_W, PLW, EMW, STI = G['game_w'], G['plw'], G['emw'], G['sti']
 
 
 def f2u(v):
@@ -43,9 +56,13 @@ class Aid:
         self.p = Pine(slot)
         self.ctl, self.kind, self.radius, self.every, self.exit_logs = ctl, kind, radius, every, exit_logs
         self.exits, self.exits_t = {}, 0
+        self.zones = {}         # stage -> {dest: (kind, numbers of the exit line)}: the exits' zones (warp_to keeps clear)
         self.tick = 0
         self.last_exit = 0
         self.last_hp = None
+        self.last_flow = None
+        self.last_stage = None
+        self.ntrace = 0
 
     def rd(self, kind, a):
         return self.p.read(kind, a)
@@ -73,6 +90,7 @@ class Aid:
                 x = (e[0] + e[5]) * 0.5 if k == 1 else e[0]
                 z = (e[2] + e[7]) * 0.5 if k == 1 else e[2]
                 self.exits[(int(m[1]), int(m[2]))] = (x, e[1] + 1.0, z)
+                self.zones.setdefault(int(m[1]), {})[int(m[2])] = (k, e)
 
     def route_next(self, at, goal):
         prev, q = {at: at}, [at]
@@ -91,14 +109,23 @@ class Aid:
 
     def monster(self):
         for i in range(20):
-            e = EMW + 0xA10 * i
+            e = EMW + G['em_n'] * i
             if self.rd('r8', e) and self.rd('r8', e + 2) == self.kind:
                 return i, e
         return None, None
 
     def step(self):
         self.tick += 1
-        me = self.rd('r8', GAME_W + 0xD1)
+        flow = (self.rd('r8', GAME_W), self.rd('r8', GAME_W + 1), self.rd('r8', GAME_W + G['d5']))
+        if flow != self.last_flow:
+            print('rt_flow: tick %d mode %d step %d D5 %d quest %d' % ((self.tick,) + flow + (self.rd('r16', GAME_W + 0x2C),)),
+                  flush=True)
+            self.last_flow = flow
+        gs = self.rd('r8', GAME_W + 0x14)
+        if gs != self.last_stage:
+            print('ps2-stage: tick %d stage 0x%X' % (self.tick, gs), flush=True)
+            self.last_stage = gs
+        me = self.rd('r8', GAME_W + G['master'])
         if me > 3:
             return
         pl = PLW + 0xA00 * me
@@ -148,6 +175,12 @@ class Aid:
         if self.tick % self.every == 0:
             self.trace(me, s, e)
 
+    @staticmethod
+    def near_exit(x, z, kind, e):
+        if kind == 1:
+            return min(e[0], e[5]) - 500 < x < max(e[0], e[5]) + 500 and min(e[2], e[7]) - 500 < z < max(e[2], e[7]) + 500
+        return (x - e[0]) ** 2 + (z - e[2]) ** 2 < (e[3] + 500) ** 2
+
     def warp_to(self, pl, e):
         hp = struct.unpack('<h', struct.pack('<H', self.rd('r16', e + 0x302)))[0]
         cp = struct.unpack('<b', struct.pack('<B', self.rd('r8', e + 0x88D)))[0]
@@ -162,6 +195,17 @@ class Aid:
         if l < 1.0:
             dx, l = 1.0, 1.0
         nx, nz = tx + dx / l * r, tz + dz / l * r
+        # not on (or within 500 of) an exit of the stage the PC logs know (a monster by an exit had the hunter walk out of
+        # the area and back with each swing): the first of 16 directions around the target, from the hunter's own, clear
+        self.load_exits()
+        zs = list(self.zones.get(self.rd('r8', pl + 0x736), {}).values())
+        for k in range(16):
+            a = ((k + 1) // 2) * (0.3927 if k & 1 else -0.3927)
+            c, sn = math.cos(a), math.sin(a)
+            x, z = tx + (dx * c - dz * sn) / l * r, tz + (dx * sn + dz * c) / l * r
+            if not any(self.near_exit(x, z, kd, e) for kd, e in zs):
+                nx, nz = x, z
+                break
         self.p.write('w32', pl + 0xAC, f2u(nx))
         self.p.write('w32', pl + 0xB4, f2u(nz))
         if ty is not None:
@@ -173,11 +217,12 @@ class Aid:
         self.p.write('w16', pl + 0xE, ang)
 
     def trace(self, me, s, e):
+        self.ntrace += 1
         if e is not None:
             hp = struct.unpack('<h', struct.pack('<H', self.rd('r16', e + 0x302)))[0]
             print('np-em: tick %d me %d em %d kind %d stg %d hp %d owner %d net %d act %d/%d pos %.0f %.0f master %d' % (
                 self.tick, me, s, self.kind, self.rd('r8', e + 0x736), hp, -1 if self.rd('r8', e + 0x8C3) else me,
-                self.rd('r8', e + 0x9E2), self.rd('r8', e + 0x14), self.rd('r8', e + 0x15), self.rf(e + 0xAC),
+                self.rd('r8', e + G['em_net']), self.rd('r8', e + 0x14), self.rd('r8', e + 0x15), self.rf(e + 0xAC),
                 self.rf(e + 0xB4), struct.unpack('<b', struct.pack('<B', self.rd('r8', e + 0x88E)))[0]), flush=True)
         for k in range(4):
             p = PLW + 0xA00 * k
@@ -192,9 +237,17 @@ class Aid:
                                          self.rf(p + 0xB4), self.rd('r32', p + 0xA4) & 0xFFFF, self.rd('r16', p + 0xE),
                                          self.rd('r8', p + 0x14), self.rd('r8', p + 0x15), items,
                                          struct.unpack('<h', struct.pack('<H', self.rd('r16', p + 0x302)))[0]), flush=True)
+            if self.ntrace % 10 == 1:
+                h = lambda o: struct.unpack('<h', struct.pack('<H', self.rd('r16', p + o)))[0]
+                print('np-look: tick %d me %d slot %d stg %d weapon %d eq %d %d %d x8D3 %d look %s' % (
+                    self.tick, me, k, self.rd('r8', p + 0x736),
+                    struct.unpack('<b', struct.pack('<B', self.rd('r8', p + 0x34C)))[0], h(0x35E), h(0x360), h(0x362),
+                    self.rd('r8', p + 0x8D3), ''.join('%02X' % self.rd('r8', p + 0x352 + i) for i in range(6))),
+                      flush=True)
 
 
 def main(argv):
+    global G, GAME_W, PLW, EMW, STI
     a = dict(slot=28011, ctl=None, kind=6, radius=300.0, every=30, exits=[])
     while argv:
         k = argv.pop(0)
@@ -202,6 +255,9 @@ def main(argv):
             a['slot'] = int(argv.pop(0))
         elif k == '--ctl':
             a['ctl'] = argv.pop(0)
+        elif k == '--game':
+            G = GAMES[argv.pop(0)]
+            GAME_W, PLW, EMW, STI = G['game_w'], G['plw'], G['emw'], G['sti']
         elif k == '--kind':
             a['kind'] = int(argv.pop(0))
         elif k == '--radius':

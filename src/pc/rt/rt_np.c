@@ -1007,6 +1007,13 @@ void rt_np_tick(void)
                         " vital %d\n", k, game_w.master, s, p->stg, p->pos[0], p->pos[1], p->pos[2], p->ang[1] & 0xFFFF,
                         p->ang_y & 0xFFFF, p->flag14, p->flag15, *(u32 *)((u8 *)&game_w + GWX(0x1A8)), PF(p, s16, 0x828),
                         PF(p, s16, 0x82A), items, PF(p, s16, 0x302));
+                if (k % (10 * atoi(getenv("RT_NP_POS"))) == 0)   /* each hunter's equipment (Set_userdata /
+                                                                  * Set_mini_data_to_pl), as tools/pcsx2/ps2_hunt_aid.py */
+                    fprintf(stderr, "np-look: tick %d me %d slot %d stg %d weapon %d eq %d %d %d x8D3 %d look "
+                            "%02X%02X%02X%02X%02X%02X\n", k, game_w.master, s, p->stg, PF(p, s8, 0x34C),
+                            PF(p, s16, 0x35E), PF(p, s16, 0x360), PF(p, s16, 0x362), PF(p, u8, 0x8D3),
+                            PF(p, u8, 0x352), PF(p, u8, 0x353), PF(p, u8, 0x354), PF(p, u8, 0x355), PF(p, u8, 0x356),
+                            PF(p, u8, 0x357));
             }
     }
 }
