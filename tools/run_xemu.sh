@@ -24,12 +24,15 @@
 #             instead of the controller (viewer.c).
 #   --env     a file of NAME=VALUE lines (with --data): D:\data\env.txt, the environment the
 #             Xbox build's getenv sees (RT_* test aids and traces, docs/pc.md; xbox_env.c)
+#   --file    FILE (with --data, repeatable): also put FILE on the ISO as D:\data\<its name> (e.g. the
+#             referee's pad / User_data files that RT_REF_* in the env file name; tools/render_score.py)
 #   --shot    after --after seconds (default 60) save a screenshot and quit (ffmpeg x11grab of
 #             the hidden display; xemu 0.8.136 has no QMP screendump).
 #   --record  FILE.mp4: also record the hidden display from start to the last --after time
 #             (10 fps, REC_FPS=n for another rate; 640x480; needs --shot)
 #   --after   one time, or a list ("36 40 45 60"): one screenshot at each time since start,
 #             named out_36s.png ... when more than one is given; quits after the last.
+#   XEMU_DNUM=N (env) the hidden display's number (default 70 + PID % 20)
 #   --show    run on the desktop instead of hidden (debugging by hand only)
 #   --xbe     FILE: boot this XBE instead of the game build (e.g. the network loader,
 #             build/xbox/loader/default.xbe); --gfx is then ignored
@@ -46,7 +49,7 @@ set -e
 cd "$(dirname "$0")/.."
 XF=$(realpath -m "${XBOX_FILES:-xbox_files}")
 XEMU=${XEMU:-$HOME/xboxdev/xemu/xemu-0.8.136-x86_64.AppImage}
-VER=${VERSION:-mh1}; GFX=null; DATA=""; SHOT=""; AFTER=60; SHOW=; INPUT=""; ENVF=""; XBE=""; NET=; ONL=
+VER=${VERSION:-mh1}; GFX=null; DATA=""; SHOT=""; AFTER=60; SHOW=; INPUT=""; ENVF=""; XBE=""; NET=; ONL=; EXTRA=""
 while [ $# -gt 0 ]; do
     case "$1" in
     --gfx) GFX=$2; shift 2 ;;
@@ -54,6 +57,8 @@ while [ $# -gt 0 ]; do
     --data) DATA=$2; shift 2 ;;
     --input) INPUT=$2; shift 2 ;;
     --env) ENVF=$2; shift 2 ;;
+    --file) EXTRA="$EXTRA
+$2"; shift 2 ;;
     --shot) SHOT=$2; shift 2 ;;
     --after) AFTER=$2; shift 2 ;;
     --record) REC=$2; shift 2 ;;
@@ -73,7 +78,7 @@ if [ -n "$miss" ]; then
     echo "(MCPX ROM and BIOS dumps from the owner's own console; docs/xbox.md, 'Running in xemu')"
     exit 1
 fi
-[ -z "$INPUT$ENVF" ] || [ -n "$DATA" ] || { echo "--input / --env need --data"; exit 2; }
+[ -z "$INPUT$ENVF$EXTRA" ] || [ -n "$DATA" ] || { echo "--input / --env / --file need --data"; exit 2; }
 case "$VER" in
 mh1) XB=build/xbox; VFLAG=; NAME=mh1; FILES="AFS_DATA.AFS AFS00.AFS AFS01.AFS SLPM_654.95" ;;
 mhg) XB=build/mhg/xbox; VFLAG="--version mhg "; NAME=mhg; FILES="AFS_DATA.AFS AFS00.AFS AFS01.AFS SLPM_658.69" ;;
@@ -97,6 +102,7 @@ elif [ -n "$DATA" ]; then
     for f in $FILES; do ln -s "$(cd "$DATA" && pwd)/$f" $D/data/$f 2>/dev/null || cp "$DATA/$f" $D/data/; done
     if [ -f "$INPUT" ]; then cp "$INPUT" $D/data/input.txt; elif [ -n "$INPUT" ]; then printf '%s\n' "$INPUT" > $D/data/input.txt; fi
     [ -z "$ENVF" ] || cp "$ENVF" $D/data/env.txt
+    printf '%s\n' "$EXTRA" | while IFS= read -r f; do [ -z "$f" ] || cp "$f" $D/data/; done
     ISO=$B/${NAME}_data.iso; rm -f $ISO
     ~/xboxdev/nxdk/tools/extract-xiso/build/extract-xiso -c $D $ISO >/dev/null
 fi
@@ -136,7 +142,7 @@ stop() {
 emu_traps stop
 if [ -z "$SHOW" ]; then
     [ -x "$XVFB" ] || { echo "no Xvfb at $XVFB (see the header; or --show to use the desktop)"; exit 1; }
-    DNUM=$(( 70 + $$ % 20 ))
+    DNUM=${XEMU_DNUM:-$(( 70 + $$ % 20 ))}
     "$XVFB" :$DNUM -screen 0 1280x960x24 -nolisten tcp >/dev/null 2>&1 &
     XPID=$!
     export DISPLAY=:$DNUM

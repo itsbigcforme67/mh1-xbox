@@ -932,7 +932,7 @@ def ud_report(out, gname):
     open(os.path.join(out, 'report.txt'), 'a').write('\n'.join(lines) + '\n')
 
 
-def run_pc(gname, out, pads, pokes, ud_file, rnd, ticks, shots=None, rsync=None):
+def run_pc(gname, out, pads, pokes, ud_file, rnd, ticks, shots=None, rsync=None, extra_args=()):
     g = GAMES[gname]
     with open(os.path.join(out, 'pad.txt'), 'w') as f:
         for p in pads:
@@ -964,7 +964,7 @@ def run_pc(gname, out, pads, pokes, ud_file, rnd, ticks, shots=None, rsync=None)
         env['RT_REF_RNG'] = os.path.join(out, 'pc_shots_rng.txt')
     cmd = 'ulimit -v 1500000; exec "$0" "$@"'
     r = subprocess.run(['sh', '-c', cmd, os.path.join(ROOT, g['pc']), g['disc'], '--quest', str(SCN_QUEST[0]),
-                        '--input', 'idle*1', '--size', '640x480', '--shot', shot, '--time', '%.1f' % secs],
+                        '--input', 'idle*1', '--size', '640x480', '--shot', shot, '--time', '%.1f' % secs] + list(extra_args),
                        cwd=ROOT, env=env, stdout=open(os.path.join(out, 'pc.log' if not shots else 'pc_shots.log'), 'w'),
                        stderr=subprocess.STDOUT, timeout=1800)
     return r.returncode
@@ -976,7 +976,9 @@ SCN_VILLAGE = [False]
 
 def lock_path():
     common = subprocess.run(['git', 'rev-parse', '--git-common-dir'], cwd=ROOT, capture_output=True, text=True).stdout.strip()
-    return os.environ.get('EMU_LOCK') or os.path.join(os.path.dirname(os.path.abspath(os.path.join(ROOT, common))), 'xemu.lock')
+    # next to the main checkout (common = <main>/.git): the lock g_ref_shot.sh, xemu runs and the PS2 tests share
+    return os.environ.get('EMU_LOCK') or os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(os.path.join(ROOT, common)))),
+                                                      'xemu.lock')
 
 
 def run(name, out, ticks=None):
@@ -1081,18 +1083,8 @@ def run(name, out, ticks=None):
     return pc_side(name, out)
 
 
-def pc_side(name, out, rng_sync=True):
-    """the PC run against the PS2 trace in out (again after a PC change: `referee.py pc SCENARIO`), the comparison,
-    the pictures"""
-    sc = SCENARIOS[name]
-    gname = sc['game']
-    pads = expand_pad(sc['pad'])
-    pokes = sc.get('pokes', [])
-    SCN_QUEST[0] = sc.get('quest', 10001)
-    SCN_VILLAGE[0] = bool(sc.get('village'))
-    _, r0, r1, n = open(os.path.join(out, 'run.txt')).read().split()
-    rnd, n = (int(r0), int(r1)), int(n)
-    ps = Trace(os.path.join(out, 'ps2.ref'))
+def lineup_pokes(ps, sc, gname, pokes):
+    """the scenario's pokes plus the line-up aids from the PS2 trace's play tick 0 (also tools/render_score.py)"""
     # line-up aid (like Rnd_w at play tick 0): each monster's random number of its last action set (EMW+0x39A) as the
     # PS2 has it at play tick 0. The monsters spawn and set their first action while the area loads, before play tick
     # 0, when the PC's random state is not the PS2's yet; without this a Gypceros picked another move at tick 49
@@ -1110,6 +1102,22 @@ def pc_side(name, out, rng_sync=True):
                     pokes = pokes + [(0, 'em%d' % i, 0xA02, 'u16', struct.unpack_from('<H', e, 0x9F8)[0])]
                     for off in (0xB8, 0xBC, 0xC0, 0x600):
                         pokes = pokes + [(0, 'em%d' % i, off, 'f32', struct.unpack_from('<f', e, off)[0])]
+    return pokes
+
+
+def pc_side(name, out, rng_sync=True):
+    """the PC run against the PS2 trace in out (again after a PC change: `referee.py pc SCENARIO`), the comparison,
+    the pictures"""
+    sc = SCENARIOS[name]
+    gname = sc['game']
+    pads = expand_pad(sc['pad'])
+    pokes = sc.get('pokes', [])
+    SCN_QUEST[0] = sc.get('quest', 10001)
+    SCN_VILLAGE[0] = bool(sc.get('village'))
+    _, r0, r1, n = open(os.path.join(out, 'run.txt')).read().split()
+    rnd, n = (int(r0), int(r1)), int(n)
+    ps = Trace(os.path.join(out, 'ps2.ref'))
+    pokes = lineup_pokes(ps, sc, gname, pokes)
     rsync = None
     if rng_sync:        # the PS2's Rnd_w at the start of each play tick, set on the PC after its record of the tick
         rsync = os.path.join(out, 'ps2_rnd.txt')

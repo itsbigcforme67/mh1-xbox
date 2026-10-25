@@ -70,6 +70,15 @@ void rt_player_game_init(int no)
             wid = id;
         }
     }
+    if (getenv("RT_REF_UD")) {
+        /* referee / render score runs (--quest with the PS2's save, RT_REF_UD): init_pl_work's offline master path also
+         * runs Set_userdata (name, pouch, weapon, armour) and the quest load builds the armour model, so the hunter
+         * looks and is named as the save's; a plain --quest run keeps the default hunter (N-R6, RELEASE_G section 11) */
+        void Set_userdata(PLW *);
+        void armor_create_model(void *);
+        Set_userdata(pl);
+        armor_create_model(pl);     /* the look the viewer draws (rt_pl.c; pl_create_model's part of the quest load) */
+    }
     type = gun ? 7 : 6;
     if (gun && (wid < 0 || wid >= ngun)) gun = 0, type = 6, wid = 156;
     if (!gun && (wid < 0 || wid >= nken)) wid = 156;
