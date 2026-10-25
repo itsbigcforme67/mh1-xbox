@@ -3,6 +3,10 @@
  * Load widths of kinds 3 and 4 (HP +0x302, +0x08, +0x7C0, +0x881..0x883, +0x828) corrected against the asm (agent E, co-op). */
 #include "types.h"
 #include "netsyn.h"
+#ifndef __MWERKS__
+#include <stdio.h>
+#include <stdlib.h>
+#endif
 
 extern NGW game_w;
 extern u8 em_work[];
@@ -98,6 +102,15 @@ void net_receive_em(int slot0, u8 *buf) {
     p = buf + 4;
     if (Online_ck() != 0 && Now_Game_ck() != 0) {
         kind = buf[0];
+#ifndef __MWERKS__
+        if (getenv("RT_NP_RXEM") && kind >= 1 && kind <= 4) {   /* test aid: an enemy packet that changes a monster's HP */
+            int e = kind <= 2 ? PU8(0x14) : PU8(0x15), h = kind <= 2 ? PS16(0x1E) : kind == 3 ? PS16(0x16) : PS16(0x12);
+            if (e < 20 && h != *(s16 *)(em_work + e * 0xA10 + 0x302))
+                fprintf(stderr, "np-rx-em: kind %d em %d hp %d -> %d (from slot %d) me %d\n", kind, e,
+                        *(s16 *)(em_work + e * 0xA10 + 0x302), h, kind <= 2 ? PU8(0x23) : kind == 3 ? PU8(0x22) : -1,
+                        game_w.master);
+        }
+#endif
         switch (kind) {
         case 0:
             break;

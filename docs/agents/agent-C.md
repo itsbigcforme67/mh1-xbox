@@ -2286,3 +2286,40 @@ PC-only work for a real PS2 G (later the Xbox) in a party with PC G players; G-o
   u16 at 14) and show the PC hunter with its own weapon and look (mini data), sys 3 must agree ("mcs: start agreed",
   the PS2 past "クエストを開始します"), then the Kut-Ku's HP / owner hand-overs the same on both, the clear (sys 6),
   and after the quest both back in the guild hall with the PS2's and the PC's relogin saves written.
+
+## G online, round 8: real PS2 G (25 Oct 2026)
+The first hunt of the owner's real G disc (PCSX2, hidden, through MH1LAUNCH) with a PC G online client, on mh1-server
+`--lobby-mcs` (this machine's LAN address, an account each). Test: **tools/test_ps2_g_hunt.sh** (~30 min, takes the
+emulator lock, uncapped; on full_check's emulator skip list). The PC (ANNA) posts quest 4 (the Kut-Ku) for 2 at the middle
+counter, the PS2 joins at the left counter (square, circles) and gets ready at the departure spot (square, yes), ANNA
+departs; quest ticks as test_online_g.sh HUNT=1 (PC alone 600-1500, then the PS2 alone, then the PC, then both).
+The PS2 is driven through PINE only: tools/pcsx2/ps2_hunt_aid.py `--game mhg` (G addresses: game_w 0x35ED20 master +0x3A,
+x0D5 +0x3E; player_work 0x34D450 / 0xA00; em_work 0x340C40 / 0xA00 with EMW's 8-byte shift above 0x960; StiEM_data
+0x32D2A0). PINE serves one client at a time: the lobby warps use pine.py, the aid starts only after the mcs login.
+- **Passed on the real G (checklist of round 7):** the select completes ("mcs: every player is in", the PS2 reaches the
+  quest's stages); the PS2 loads quest 4 from slot 0 (its game_w+0x2C); each machine has the other's hunter with its own
+  equipment (np-look lines: weapon id, +0x35E.. and the look bytes the same on both); the start round agrees ("mcs: start
+  agreed after 340 frames", the PS2 plays); the Kut-Ku's HP and owner the same on both, owner PC -> PS2 -> PC
+  (hunt_sync), the kill, both carve; the clear on both (x0D5 3); both back in G's guild hall (0x4D); the PC's card save
+  and the PS2's memory card written after the relogin. Runs 4-9 passed (six in a row; 7-9 after the quest_rnd_host fix).
+- **Fixed (G online, PC):** two host objects for one G address. G's lobby (lbc_game_ready_00, lobby 0x583C14) copies the
+  match's battle code (6915, cw+0xFA6C) into quest_rnd_host, the quest's random numbers online (Quest_start: start area,
+  the monster level bonus, sizes); the info file's size limits go to quest_size_lim (lobby 0x59A258). pc_data.txt had
+  agent A's quest_rnd_host / quest_size_lim (read by Quest_start) and mhg_gonl's g_sub_541E30 / g_sub_541E40 (written by
+  the lobby): separate copies, so the PC's online quests never got the match's numbers. Seen as the real G starting the
+  Kut-Ku at 2200 HP (its level bonus) and the PC at 2000; both 2000 after the fix [checked: run 7, the PS2's first np-hp
+  before any packet]. mhg_gonl.py now takes pc_data's name for an address (other doubled addresses, read-only tables:
+  em_species_tbl / hunt_group_tbl / g_sub_4FEE90, equip_set_tbl / g_sub_4FF1D0, gstat_appel / hunter_appellation).
+- **Fixed (server, both games):** mh1_testserver.py made the battle code per request from the clock, so two members could
+  get different seconds (different random numbers in G); now one per match.
+- **Test aids:** RT_GOTO_TRACE lists every exit of each stage entered ("exit list"); RT_PL_WARP_EM (PC, both games) and the
+  PS2 aid keep the hunter 500 clear of exits (the Kut-Ku stands by the 36 -> 35 exit: each swing walked the hunter out of
+  the area and back); RT_NP_RXEM: np-rx-em (an enemy packet that changes a monster's HP), np-dmg (a hit on monster 0),
+  np-emx; np-look with RT_NP_POS (both games); test_online_g.sh `mkgsave NAME`. The PC's departure tries end with attacks
+  (the quest started during the later tries and the first fight had no attack input).
+- **Open:** the PS2's own hunter never hurt the Kut-Ku while the PS2 ran it (np-dmg from the PS2's RAM: no hit flag in
+  runs 8-9, radius 300 and 170): the monster stays in its 3/x states at one spot (11330, 14100 in area 36) and Vespoids
+  knock the PS2's hunter down (pictures ps2_kk_1700..2100); while the PC runs it, both machines' hits count. Test-aid or
+  AI question, not settled. Also open: a PS2 G as the room leader (the PC joining), the Xbox G build in the party, a G
+  player dropping mid-hunt, G's select_w 0xE4 / 0xE6 / 0xE8 (only net_send_sys / net_receive_sys touch them in main,
+  sub_main, game, lobby, select).

@@ -34,10 +34,22 @@ def module_of(a):
 NEW_NAMES = {}
 
 
+PC_DATA_NAMES = {}
+
+
 def gen_name(a):
     m = module_of(a)
     if m is None:
         return None
+    if not PC_DATA_NAMES:   # a name config/mhg/pc_data.txt already gives this address: the same host object (two names
+        # for one address are two host copies on the PC; a write through one is lost to the other: quest_rnd_host)
+        for ln in open(os.path.join(ROOT, 'config/mhg/pc_data.txt')):
+            mm = re.match(r'(\S+) = 0x([0-9A-Fa-f]+);', ln)
+            if mm and not mm[1].startswith('g_'):
+                PC_DATA_NAMES.setdefault(int(mm[2], 16), mm[1])
+        PC_DATA_NAMES.setdefault(-1, None)
+    if a in PC_DATA_NAMES:
+        return PC_DATA_NAMES[a]
     n = 'g_%s_%06X' % ({'main': 'main', 'sub_main': 'sub', 'lobby': 'lb'}[m], a)
     NEW_NAMES[n] = (m, a)
     return n

@@ -995,6 +995,9 @@ void rt_np_tick(void)
                 fprintf(stderr, "np-em: tick %d me %d em %d kind %d stg %d hp %d owner %d net %d act %d/%d pos %.0f %.0f master %d\n", k,
                         game_w.master, s, e[2], e[0x736], *(s16 *)(e + 0x302), e[0x8C3] ? -1 : game_w.master, e[0x9E2], e[0x14],
                         e[0x15], *(f32 *)(e + 0xAC), *(f32 *)(e + 0xB4), (s8)e[0x88E]);   /* master: the owner slot, EMW+0x88E */
+                if (s == 0 && getenv("RT_NP_RXEM"))     /* a few state bytes the hand-over packet (kind 4) carries */
+                    fprintf(stderr, "np-emx: tick %d me %d x56A %d x572 %d x7C0 %d x88B %d x827 %d x8C3 %d\n", k, game_w.master,
+                            e[0x56A], *(u16 *)(e + 0x572), *(u16 *)(e + 0x7C0), e[0x88B], e[0x827], e[0x8C3]);
             }
         }
         if (getenv("RT_NP_POS") && rt_online && k % atoi(getenv("RT_NP_POS")) == 0)   /* test aid: every player's position as this machine sees it */
@@ -1007,6 +1010,13 @@ void rt_np_tick(void)
                         " vital %d\n", k, game_w.master, s, p->stg, p->pos[0], p->pos[1], p->pos[2], p->ang[1] & 0xFFFF,
                         p->ang_y & 0xFFFF, p->flag14, p->flag15, *(u32 *)((u8 *)&game_w + GWX(0x1A8)), PF(p, s16, 0x828),
                         PF(p, s16, 0x82A), items, PF(p, s16, 0x302));
+                if (k % (10 * atoi(getenv("RT_NP_POS"))) == 0)   /* each hunter's equipment (Set_userdata /
+                                                                  * Set_mini_data_to_pl), as tools/pcsx2/ps2_hunt_aid.py */
+                    fprintf(stderr, "np-look: tick %d me %d slot %d stg %d weapon %d eq %d %d %d x8D3 %d look "
+                            "%02X%02X%02X%02X%02X%02X\n", k, game_w.master, s, p->stg, PF(p, s8, 0x34C),
+                            PF(p, s16, 0x35E), PF(p, s16, 0x360), PF(p, s16, 0x362), PF(p, u8, 0x8D3),
+                            PF(p, u8, 0x352), PF(p, u8, 0x353), PF(p, u8, 0x354), PF(p, u8, 0x355), PF(p, u8, 0x356),
+                            PF(p, u8, 0x357));
             }
     }
 }

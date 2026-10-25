@@ -9,7 +9,7 @@ extern u8 g_main_2EFAD8;
 extern u8 g_main_2EFADC;
 extern u8 lbSendInterval;
 s32 memcpy();                  /* extern */
-extern s32 g_sub_541E40;
+extern s32 quest_size_lim;
 
 void lobby_func_0059A210(void) {
     u16 temp_v0_2;
@@ -37,6 +37,6 @@ void lobby_func_0059A210(void) {
     if (temp_v0_5 != 0) {
         (*(u16 *)&g_main_2EFADC) = temp_v0_5;
     }
-    memcpy(&g_sub_541E40, temp_v1 + 0x998, 0xA);   /* HAND-FIXED: the length is set in the tail jump's delay slot */
+    memcpy(&quest_size_lim, temp_v1 + 0x998, 0xA);   /* HAND-FIXED: the length is set in the tail jump's delay slot */
 }
 
