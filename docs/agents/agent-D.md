@@ -1599,3 +1599,33 @@ Hidden shots of MH1 quest 41 with a Kirin (RT_QEM_KIND=30:33) showed a red horiz
 - Fix: rt_player.c's after-pl_move god block now also sets vital_red to the maximum, with the vital. Checked: before / after hidden shots
   (the line is gone, rest identical), PC builds of MH1 and G compile. The real game's HUD code is untouched. Test aid / debug menu only,
   nothing player-visible in normal play, so no RELEASE.md entry.
+
+## Xbox fog vs PS2 (agent D, Opus, 25 Oct 2026)
+Owner: the Xbox fog is too thick in Forest and Hills (the first quest, deliver 2 Raw Meat: G 10001, MH1 131; camp = stage 21,
+area 1 = stage 39). Write-up: docs/RELEASE_G.md section 17; pictures in build/D/fog/ (gitignored).
+- Cause 1 (the owner's bug, both games, Xbox and the PC in a window): **a stage's fog never reached the renderer after an area
+  change.** game_flip (viewer.c) records the draws of a load tick from its first flip (gfx_rec.c) and flip_tick_end drops that list
+  unshown; stage_fog_set runs inside the load, after a flip, so its colour / start / end (fl states 0x0F-0x11) were only recorded and
+  thrown away. The backend kept the camp's fog (4F4F49, 0-9000) in area 1 (506060, 0-90000): the far cliffs a flat 4F4F49 grey, the
+  grass 10-30% fogged. Headless --shot runs return early in game_flip (no recording), so every PC comparison picture was right.
+  Fix: gfx_rec_state records the three fog states AND returns 0 (the backend applies them now). Shown: RT_FLIP_SHOT makes a headless PC
+  run record like a window: before / after build/D/fog/q/pcwin_before_after_39.png; the Xbox log's new "nv2a fog:" line showed only
+  the camp's values before the fix.
+- Cause 2 (latent, Xbox only): COLOR1.a carries the fog factor (vs.vs.cg / skin.vs.cg), and the NV2A forces the specular alpha to 1
+  unless SET_LIGHT_CONTROL has ALPHA_FROM_MATERIAL_SPECULAR (xemu since commit 7a34eedd6f, from hardware tests; CSV0_C bit 17).
+  Nothing set it: the result depended on the register's power-on value. With RT_NV2A_LC=0 xemu draws the whole screen in the fog colour,
+  HUD included (build/D/fog/cmp4_s21b.png, bottom left). Now set explicitly (ALPHA_FROM_MATERIAL_SPECULAR | SEPARATE_SPECULAR). Not the
+  owner's bug (his HUD was not grey), but a real-hardware risk removed. [xemu-vs-hardware doubt: the power-on value on a real NV2A is
+  unknown; with the explicit value it no longer matters.]
+- The fog maths itself (factor = saturate((w - start) / (end - start)), w = clip w = eye depth, lerp in the pixel shader) gives the same
+  picture as GL's linear eye fog: xemu --view shots of stage 21 match the PC within ~5 levels everywhere (near ground too, so not fog).
+- Test aids added: RT_FIXED_CAM=1 (with --view / --cam: keep that camera; the Xbox always plays, so its host camera followed the hunter),
+  RT_NV2A_LC=hex (the LIGHT_CONTROL value), RT_FOG_TRACE now also prints what each backend got ("gl fog: ..." / "nv2a fog: ...") and
+  the rt_fl lines reach the Xbox debug log (rt_fog_trace; stderr on the Xbox is the HDD log file only). Note rt_fl.c had no rt_plat.h:
+  `#ifdef XBOX` is only defined for the SDL-side files; use MH1_XBOX from rt_plat.h in rt/.
+- How the shots were taken: the Xbox with RT_ARGS="--stage N --view ..." + RT_HOST_CAM=1 RT_FIXED_CAM=1, or RT_ARGS="--quest 10001
+  --input idle*2000" + RT_AREA_GO=100,N RT_NOMOVIE=1 (the same as g_ref_shot.sh's PCQUEST runs on the PC); xemu wrapped in
+  flock xemu.lock + unshare (empty /dev/input). Script: a copy of the wrapper is not kept (scratch); the env files are in build/D/fog/.
+- Open: tools/g_ref_shot.sh's stage-39 PS2 camera (13190,-606,9735) does not give the same view on the PC (PS2 sees the river, PC the
+  cliffs): the lpView read may be mid-move after the area change; the 21 views match. The PS2 area-1 picture is still useful for the
+  look (cliffs clear, light haze).

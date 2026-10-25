@@ -800,3 +800,32 @@ b_mh1_k33). Not seen on screen: eft04 type 9 (G subspecies roar), eft20, shell08
 another area). Memory (RT_MEM, G quest 41, tick 200): +57 KB CPU heap ("monster sub models" category, 291 KB peak while the file
 copies are live), +65 KB textures as the Xbox keeps them; per kind 107-123 KB of files. A red horizontal line at the top-left in
 the Kirin shots is in both before and after (not from this fix, not looked at).
+
+## 17. Xbox fog vs PS2: Forest and Hills area 1 "too thick" (agent D, 25 Oct 2026)
+
+Owner (Xbox, G): the fog in the first quest (deliver 2 Raw Meat, 10001; MH1's 131 uses the same stages) is too thick.
+Camp = stage 21, area 1 (the Aptonoth) = stage 39. **Fixed, both games.**
+
+- **Cause: after an area change the new stage's fog never reached the renderer**, so area 1 was drawn with the camp's fog
+  (colour 4F4F49, start 0, end 9000) instead of its own (506060, 0-90000, the same values G's PS2 memory holds there): the far cliffs
+  came out a flat 4F4F49 grey and the near grass 10-30% fogged. A load tick records its draws from its first flip (the loading
+  picture, viewer.c game_flip) and drops that list unshown; stage_fog_set runs inside the load, so its three fl states were only
+  recorded. Not an NV2A problem: the PC in a window had it too (hidden --shot runs record nothing, which is why the PC comparison
+  pictures matched the real G). gfx_rec.c now records the fog states and applies them at once [verified: RT_FOG_TRACE in xemu, G and
+  MH1: before only "nv2a fog: colour 4F4F49 start 0 end 9000" at the quest start; after also "colour 506060 start 0 end 90000" at the
+  area change; PC with RT_FLIP_SHOT (records like a window): same before / after].
+- Fog inputs per stage, PC and Xbox the same (RT_FOG_TRACE, both games): stage 21 colour 4F4F49 start 0 end 9000; stage 39 506060,
+  0, 90000. G's PS2 (PCSX2 memory, tools/g_ref_shot.sh): 21 0x804F4F49 9000/0, 39 0x80506060 90000/0.
+- Also fixed (Xbox, latent): the vertex programs pass the fog factor in COLOR1's alpha, and the NV2A forces that alpha to 1 unless
+  SET_LIGHT_CONTROL has ALPHA_FROM_MATERIAL_SPECULAR (xemu models this from hardware tests). It was never set, so the picture
+  depended on the register's power-on value; with the bit clear the whole screen, HUD included, is the fog colour (xemu, test aid
+  RT_NV2A_LC=0). Now set explicitly. [xemu vs hardware: the real power-on value is unknown; set explicitly it no longer matters.]
+- The fog formula itself matches: xemu shots of the camp from the PS2's camera (--view, RT_FIXED_CAM) agree with the PC within a few
+  levels, near and far alike.
+- Pictures (gitignored, build/D/fog/): G_area1_ps2_pc_xbbefore_xbafter.png (PS2 | PC / Xbox before | Xbox after; the PS2 camera of
+  this area is not the PC's, see below), MH1_area1_pc_xbbefore_xbafter.png, G_camp_ps2_pc_xb.png, difference pictures q/diff_*.png,
+  PC window before / after q/pcwin_before_after_39.png. Mean colour difference Xbox to PC, area 1, HUD left out: 6.1 before, 3.3 after
+  (G; MH1 5.8 -> 3.4).
+- Open: g_ref_shot.sh's PS2 camera for stage 39 (eye 13190,-606,9735) does not give the PS2's view on the PC (river vs cliffs), so area 1
+  has no exact PS2 pair; the PS2 picture shows the cliffs clear with a light haze, as the PC and the fixed Xbox draw them. Not yet seen
+  on the owner's hardware.

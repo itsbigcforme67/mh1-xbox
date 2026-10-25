@@ -140,8 +140,9 @@ near-plane clipping on the CPU (only clays with a triangle behind w = 1;
 the cut is done in object space with the shared gfx_clip_tri, checked on
 200k random triangles), linear fog in the shaders (the vertex program
 writes COLOR1 = fog colour + factor from the clip w, the pixel shader
-lerps; NV2A's own fog unit is not used). Guesses to check on xemu: the
-palette's DMA context bit, whether COLOR1 needs SPECULAR_ENABLE. Missing:
+lerps; NV2A's own fog unit is not used; COLOR1's alpha needs SPECULAR_ENABLE and LIGHT_CONTROL's
+ALPHA_FROM_MATERIAL_SPECULAR, see "Fog" below). Guesses to check on xemu: the
+palette's DMA context bit. Missing:
 GPU skinning. It compiles without warnings; nothing about it has been
 seen on a screen.
 
@@ -1851,3 +1852,17 @@ src/pc/xbox/xbox_watch.c, started from main once the log is open (both games, ev
   report, flush and screen ("crashed - sending the report") and the loader. Exceptions in other threads (audio,
   the watchdog) are not caught.
 - Not run on hardware or in xemu yet (21 Oct 2026: no memory for an emulator); both nv2a builds link.
+
+## Fog: the camp's fog in every area; COLOR1 alpha (agent D, 25 Oct 2026)
+
+Owner: Forest and Hills area 1 fog too thick on the Xbox. Two causes, both fixed (details docs/RELEASE_G.md section 17):
+- A stage's fog (stage_fog_set, fl states 0x0F-0x11) is set during the stage load, and a load tick's draws are recorded from its
+  first flip and dropped (viewer.c game_flip / flip_tick_end): the fog states went with them and every area kept the quest start's
+  fog (area 1: the camp's end 9000 instead of 90000, far cliffs flat grey). gfx_rec.c now applies the fog states at once too.
+  Shared code: MH1 and G, and the PC in a window.
+- gfx_nv2a.c passes the fog factor in COLOR1.a. The NV2A replaces the specular alpha with 1 unless NV097_SET_LIGHT_CONTROL has
+  ALPHA_FROM_MATERIAL_SPECULAR (bit 17), also with vertex programs (xemu: vsh.c ignore_specular_alpha, commit 7a34eedd6f, written
+  from hardware tests). fixed_state now sets LIGHT_CONTROL = ALPHA_FROM_MATERIAL_SPECULAR | SEPARATE_SPECULAR; RT_NV2A_LC=hex
+  overrides it (RT_NV2A_LC=0 in xemu: the whole screen in the fog colour). The real console's power-on value is not known.
+- Test aids: RT_FIXED_CAM=1 with --view/--cam in RT_ARGS keeps that camera (the Xbox build always plays, so the host camera
+  followed the hunter); RT_FOG_TRACE now reaches the Xbox log, with a "nv2a fog: colour .. start .. end .." line per change.
