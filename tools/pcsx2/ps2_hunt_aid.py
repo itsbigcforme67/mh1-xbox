@@ -210,6 +210,13 @@ class Aid:
             if not any(self.near_exit(x, z, kd, e) for kd, e in zs):
                 nx, nz = x, z
                 break
+        else:   # the target stands in an exit's zone: just outside that zone (+150), on the side towards the target
+            for kd, e in zs:
+                if kd != 1 and self.near_exit(nx, nz, kd, e):
+                    vx, vz = tx - e[0], tz - e[2]
+                    vl = math.hypot(vx, vz) or 1.0
+                    nx, nz = e[0] + vx / vl * (e[3] + 150), e[2] + vz / vl * (e[3] + 150)
+                    break
         self.p.write('w32', pl + 0xAC, f2u(nx))
         self.p.write('w32', pl + 0xB4, f2u(nz))
         if ty is not None:

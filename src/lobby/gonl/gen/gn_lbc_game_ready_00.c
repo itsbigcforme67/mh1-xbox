@@ -11,7 +11,7 @@ void * memcpy();
 void * memset();
 extern u8 USER_PL_ID;
 extern u8 cw;
-extern s32 g_sub_541E30;
+extern s32 quest_rnd_host;
 extern s32 room_member_handle;
 extern s32 room_member_id;
 extern s32 room_member_mini_data;
@@ -60,7 +60,7 @@ void lbc_game_ready_00(s32 unused_a0, s32 unused_a1, s32 unused_a2, s32 arg3) {
         (*(u8 *)((u8 *)((*(void **)&cw)) + 0xBB1)) = sp70;
         (*(u8 *)&USER_PL_ID) = sp71;
         memcpy((*(void **)&cw) + 0xFA6C, &sp72, 0x10);
-        memcpy(&g_sub_541E30, (*(void **)&cw) + 0xFA6C, 0xF);
+        memcpy(&quest_rnd_host, (*(void **)&cw) + 0xFA6C, 0xF);
         var_s1 = 0;
         if ((s32) (*(u8 *)((u8 *)((*(void **)&cw)) + 0xBB1)) > 0) {
             var_s0 = 0;
