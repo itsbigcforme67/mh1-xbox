@@ -129,7 +129,15 @@ int gfx_rec_state(int state, uintptr_t v)
     case GFX_RS_FOG_START: case GFX_RS_FOG_END:
         c->m[0] = *(const float *)v;
         c->ptr = 1;
-        break;
+        /* fall through */
+    case GFX_RS_FOG_COLOR:
+        /* the stage's fog (stage_fog_set) is set once, during the stage load, not per frame. A load tick records
+         * from its first flip (viewer.c game_flip) and its list is dropped unshown at the tick's end
+         * (flip_tick_end), so recorded only, the new stage's fog never reached the backend: the area kept the last
+         * one's (Forest and Hills area 1, fog end 90000, drawn with the camp's 9000 and colour: its far cliffs a flat
+         * grey on the Xbox; the PC in a window too; headless --shot runs record nothing). Recorded for the replay
+         * and passed on now (25 Oct 2026, docs/RELEASE_G.md section 17) */
+        return 0;
     }
     return 1;
 }

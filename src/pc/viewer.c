@@ -3371,7 +3371,8 @@ int main(int argc, char **argv)
             int a;
             rt_player_get(lp, p, &a);
             place(pl.world, p[0], p[1] + hunter_yoff, p[2], (float)(a & 0xFFFF) * (6.2831853f / 65536.0f));
-            if (!game_cam) {
+            if (!game_cam && !(cam_given && getenv("RT_FIXED_CAM"))) {   /* RT_FIXED_CAM: keep --view / --cam (xemu
+                                                                             * picture tests: the Xbox always plays) */
             cam[0] = p[0] + sinf(cam[3]) * follow[0];
             cam[1] = p[1] + follow[1];
             cam[2] = p[2] + cosf(cam[3]) * follow[0];

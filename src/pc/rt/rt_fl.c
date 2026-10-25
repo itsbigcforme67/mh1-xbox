@@ -17,6 +17,9 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
+#include <stdarg.h>
+#include "rt_log.h"
+#include "rt_plat.h"
 
 gfx_clay *rt_clay(int handle);
 unsigned char rt_light_blk[3][0x68];       /* flLIGHT[0..2] as flSetRenderState(0x5A + i) last got them */
@@ -38,6 +41,22 @@ void rt_fl_reset_states(void)
     gfx_set_render_state(GFX_RS_BLEND_OP, 0);
     gfx_set_render_state(GFX_RS_FILTER, 0);
     gfx_set_render_state(GFX_RS_TEX_CLAMP, 0);
+}
+
+/* RT_FOG_TRACE lines: stderr on the PC, the debug log on the Xbox (its stderr is the log file only, rt_log also
+ * reaches xemu's serial port), so PC and Xbox runs show the same fog inputs */
+void rt_fog_trace(const char *fmt, ...)
+{
+    char buf[160];
+    va_list ap;
+    va_start(ap, fmt);
+    vsnprintf(buf, sizeof buf, fmt, ap);
+    va_end(ap);
+#ifdef MH1_XBOX
+    rt_log("%s", buf);
+#else
+    fprintf(stderr, "%s\n", buf);
+#endif
 }
 
 int rt_fog_set;                     /* bit 0 / 1: fog start / end were set (rt_fog_scene) */
@@ -84,14 +103,14 @@ void flSetRenderState(int state, u32 value)
                   * (0x12 at clay creation: gfx_clay_desc.fog), switched on for the scene by rt_fog_scene */
         gfx_set_render_state(GFX_RS_FOG_COLOR, value & 0xFFFFFF);
         if (getenv("RT_FOG_TRACE"))
-            fprintf(stderr, "fog colour %06X\n", value & 0xFFFFFF);
+            rt_fog_trace("fog colour %06X", value & 0xFFFFFF);
         break;
     case 0x10:   /* fog start / end: the float's bits */
     case 0x11: {
         static float fog[2];
         memcpy(&fog[state - 0x10], &value, 4);
         if (getenv("RT_FOG_TRACE"))
-            fprintf(stderr, "fog %s %g\n", state == 0x10 ? "start" : "end", fog[state - 0x10]);
+            rt_fog_trace("fog %s %g", state == 0x10 ? "start" : "end", fog[state - 0x10]);
         rt_fog_set |= 1 << (state - 0x10);     /* both set (stage_fog_set, InitRenderState): the scene may use fog */
         gfx_set_render_state(state == 0x10 ? GFX_RS_FOG_START : GFX_RS_FOG_END, (uintptr_t)&fog[state - 0x10]);
         break;

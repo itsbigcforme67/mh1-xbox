@@ -127,7 +127,7 @@ void rt_stage_env(const unsigned char *p, size_t n)
         }
     }
     if (getenv("RT_FOG_TRACE"))
-        fprintf(stderr, "stage environment block version %d\n", v);
+        rt_fog_trace("stage environment block version %d", v);
 }
 #endif
 RT_SET_MDLW *set_mdlw;               /* 0x38A184 */

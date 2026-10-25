@@ -33,6 +33,7 @@
 #include <string.h>
 #include <strings.h>
 #include "../rt/rt_prof.h"
+#include "../rt/rt_log.h"
 
 #define MASK(mask, val) (((val) << (ffs(mask) - 1)) & (mask))
 #define GPU_MAXRAM 0x03FFAFFF
@@ -228,6 +229,16 @@ static void fixed_state(void)
     p = pb_push1(p, NV097_SET_BLEND_EQUATION, NV097_SET_BLEND_EQUATION_V_FUNC_ADD);
     p = pb_push1(p, NV097_SET_FOG_ENABLE, 0);     /* fog is done in the shaders (COLOR1) */
     p = pb_push1(p, NV097_SET_SPECULAR_ENABLE, 1);  /* let COLOR1 through [guess: needed with vertex programs] */
+    /* COLOR1's alpha is the fog factor (vs.vs.cg, skin.vs.cg). The NV2A forces the specular alpha to 1 unless
+     * LIGHT_CONTROL has ALPHA_FROM_MATERIAL_SPECULAR, also with vertex programs (xemu models it so from hardware
+     * tests: CSV0_C bit 17, xemu commit 7a34eedd6f); with alpha 1 every fogged clay is drawn in the fog colour.
+     * Nothing set it before 25 Oct 2026, so the fog depended on the register's power-on value. RT_NV2A_LC=hex
+     * overrides the value (test aid). */
+    {
+        const char *lc = getenv("RT_NV2A_LC");
+        p = pb_push1(p, NV097_SET_LIGHT_CONTROL, lc ? (uint32_t)strtoul(lc, NULL, 16)
+                     : NV097_SET_LIGHT_CONTROL_V_ALPHA_FROM_MATERIAL_SPECULAR | NV097_SET_LIGHT_CONTROL_V_SEPARATE_SPECULAR);
+    }
     pb_end(p);
     /* texture stages 1-3 off */
     p = pb_begin();
@@ -635,6 +646,9 @@ void gfx_set_render_state(int state, uintptr_t v)
         break;
     case GFX_RS_FOG_END:
         G.fog_end = *(const float *)v;
+        if (getenv("RT_FOG_TRACE"))     /* what the backend got (the PC's gfx_gl.c prints the same) */
+            rt_log("nv2a fog: colour %02X%02X%02X start %g end %g", (int)(G.fog_col[0] * 255.0f + 0.5f),
+                   (int)(G.fog_col[1] * 255.0f + 0.5f), (int)(G.fog_col[2] * 255.0f + 0.5f), G.fog_start, G.fog_end);
         break;
     case GFX_RS_FOG_ENABLE:
         G.fog_on = v != 0;

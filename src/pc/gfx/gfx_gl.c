@@ -599,6 +599,13 @@ void gfx_set_render_state(int state, uintptr_t v)
         break;
     case GFX_RS_FOG_END:
         glFogf(GL_FOG_END, *(const float *)v);
+        if (getenv("RT_FOG_TRACE")) {   /* what the backend got (gfx_nv2a.c prints the same) */
+            float c[4], st;
+            glGetFloatv(GL_FOG_COLOR, c);
+            glGetFloatv(GL_FOG_START, &st);
+            fprintf(stderr, "gl fog: colour %02X%02X%02X start %g end %g\n", (int)(c[0] * 255.0f + 0.5f),
+                    (int)(c[1] * 255.0f + 0.5f), (int)(c[2] * 255.0f + 0.5f), st, *(const float *)v);
+        }
         break;
     case GFX_RS_FOG_ENABLE:
         G.fog = v != 0;                 /* GL_FOG is switched per clay (gfx_execute_clay) */
