@@ -2301,7 +2301,7 @@ x0D5 +0x3E; player_work 0x34D450 / 0xA00; em_work 0x340C40 / 0xA00 with EMW's 8-
   equipment (np-look lines: weapon id, +0x35E.. and the look bytes the same on both); the start round agrees ("mcs: start
   agreed after 340 frames", the PS2 plays); the Kut-Ku's HP and owner the same on both, owner PC -> PS2 -> PC
   (hunt_sync), the kill, both carve; the clear on both (x0D5 3); both back in G's guild hall (0x4D); the PC's card save
-  and the PS2's memory card written after the relogin. Runs 4-7 passed (four in a row).
+  and the PS2's memory card written after the relogin. Runs 4-9 passed (six in a row; 7-9 after the quest_rnd_host fix).
 - **Fixed (G online, PC):** two host objects for one G address. G's lobby (lbc_game_ready_00, lobby 0x583C14) copies the
   match's battle code (6915, cw+0xFA6C) into quest_rnd_host, the quest's random numbers online (Quest_start: start area,
   the monster level bonus, sizes); the info file's size limits go to quest_size_lim (lobby 0x59A258). pc_data.txt had
@@ -2317,3 +2317,9 @@ x0D5 +0x3E; player_work 0x34D450 / 0xA00; em_work 0x340C40 / 0xA00 with EMW's 8-
   the area and back); RT_NP_RXEM: np-rx-em (an enemy packet that changes a monster's HP), np-dmg (a hit on monster 0),
   np-emx; np-look with RT_NP_POS (both games); test_online_g.sh `mkgsave NAME`. The PC's departure tries end with attacks
   (the quest started during the later tries and the first fight had no attack input).
+- **Open:** the PS2's own hunter never hurt the Kut-Ku while the PS2 ran it (np-dmg from the PS2's RAM: no hit flag in
+  runs 8-9, radius 300 and 170): the monster stays in its 3/x states at one spot (11330, 14100 in area 36) and Vespoids
+  knock the PS2's hunter down (pictures ps2_kk_1700..2100); while the PC runs it, both machines' hits count. Test-aid or
+  AI question, not settled. Also open: a PS2 G as the room leader (the PC joining), the Xbox G build in the party, a G
+  player dropping mid-hunt, G's select_w 0xE4 / 0xE6 / 0xE8 (only net_send_sys / net_receive_sys touch them in main,
+  sub_main, game, lobby, select).
