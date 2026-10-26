@@ -2323,3 +2323,18 @@ x0D5 +0x3E; player_work 0x34D450 / 0xA00; em_work 0x340C40 / 0xA00 with EMW's 8-
   AI question, not settled. Also open: a PS2 G as the room leader (the PC joining), the Xbox G build in the party, a G
   player dropping mid-hunt, G's select_w 0xE4 / 0xE6 / 0xE8 (only net_send_sys / net_receive_sys touch them in main,
   sub_main, game, lobby, select).
+
+## G online, round 9 (26 Oct 2026): the monster's size, a PS2 G leading, the Xbox G in the party
+- **Round 8's open question settled: a server bug, not the test aid.** A RAM dump of the real PS2 G mid-hunt (new
+  `ps2_hunt_aid.py --dump DIR`: game_w, the four PLWs, the 20 EMWs to DIR/TAG.bin on request; local files, never
+  committed) showed the Kut-Ku at size 0 / scale 0.0 (EMW+0x9F8, +0xB8). G's network mode (system_w+0x44, set by the
+  title menu's choice 2) rolls a size for every online quest's big monsters, clamped to quest_size_lim, which online
+  comes from the info file (lobby 0x59A210 copies bytes 0x998..0x9A1); tools/g_info.py had them 0. Scale 0: not drawn
+  (none of round 8's PS2 pictures shows the Kut-Ku), no hit spheres (the PS2 checks its own hunter's hits while it runs
+  the monster), no movement from its motions (it stood at one spot). Compared with MH1's PS2 + PC hunt (no sizes in MH1):
+  its PS2 pictures show the Kut-Ku and its PS2 hits landed. Fix: g_info.py {0, 255} per class (no clamp; our choice),
+  the PC G online sets system_w+0x44 too. After it: size 115 on both (np-size lines), the Kut-Ku visible on the PS2,
+  np-dmg with the PS2 as owner [checked: test_ps2_g_hunt.sh run 2 of round 9, passing, which now checks both].
+- How it was found: the PS2 trace showed the monster frozen at one point while the PS2 owned it; pictures of the PS2
+  never showed it (MH1's did); the dump's EMW fields then pointed at the scale. Lesson: when a monster "does nothing"
+  on one machine, dump its EMW there before blaming the AI or the aid.

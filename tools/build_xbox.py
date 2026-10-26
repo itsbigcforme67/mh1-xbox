@@ -13,6 +13,8 @@ then linked with nxdk-link and turned into build/xbox/default.xbe by cxbe.
                                                           # build (build/mhg/pctree) -> build/mhg/xbox/
     python3 tools/build_xbox.py --online --gfx nv2a       # MH1 online (the town, rooms, co-op): from an
                                                           # ONLINE=1 tools/build_pc.sh -> build/xbox/online/nv2a/
+    python3 tools/build_xbox.py --version mhg --online --gfx nv2a   # G online: from ONLINE=1 tools/build_pc_mhg.sh
+                                                          # -> build/mhg/xbox/online/nv2a/
                                                           # (nxdk lwIP; docs/xbox.md "Online on the Xbox")
 Standard library only.
 """
@@ -135,27 +137,27 @@ def main():
     # tree of symlinks to src/ include/ tools/ ... with its own build/pc; the same steps run there, the
     # output goes to build/mhg/xbox (through the tree's build/mhg link).
     version = sys.argv[sys.argv.index('--version') + 1] if '--version' in sys.argv else os.environ.get('VERSION', 'mh1')
+    online = '--online' in sys.argv
     if version == 'mhg':
-        if not os.path.isdir('build/mhg/pctree/build/pc'):
-            sys.exit('build_xbox: no G PC build (build/mhg/pctree); run tools/build_pc_mhg.sh first')
-        os.chdir('build/mhg/pctree')
+        # --online with G: the ONLINE=1 G PC build's tree (build/mhg/pctree_online, objects made with -DMHG_ONLINE)
+        tree = 'build/mhg/pctree_online' if online else 'build/mhg/pctree'
+        if not os.path.isdir(tree + '/build/pc'):
+            sys.exit('build_xbox: no G PC build (%s); run %stools/build_pc_mhg.sh first' % (tree, 'ONLINE=1 ' if online else ''))
+        os.chdir(tree)
         OUT = 'build/mhg/xbox'
         OBJ = OUT + '/obj'
     elif version != 'mh1':
         sys.exit('build_xbox: --version mh1 or mhg')
-    # --online (MH1): the objects of an ONLINE=1 PC build (build/pc holds one variant at a time, build/pc/.variant),
-    # compiled into their own tree build/xbox/online so the plain Xbox build's objects stay as they are
-    online = '--online' in sys.argv
+    # --online: the objects of an ONLINE=1 PC build (build/pc holds one variant at a time, build/pc/.variant),
+    # compiled into their own tree (build/xbox/online, G: build/mhg/xbox/online) so the plain Xbox build's objects stay
     exe = 'mhview'
     if online:
-        if version != 'mh1':
-            sys.exit('build_xbox: --online is MH1 only for now')
         exe = 'mhview_online'
         variant = open('build/pc/.variant').read().strip() if os.path.exists('build/pc/.variant') else ''
         if variant != exe:
-            sys.exit('build_xbox: --online needs the ONLINE=1 PC build in build/pc (it holds %s); run ONLINE=1 tools/build_pc.sh'
-                     % (variant or 'nothing'))
-        OUT = 'build/xbox/online'
+            sys.exit('build_xbox: --online needs the ONLINE=1 PC build in build/pc (it holds %s); run ONLINE=1 tools/build_pc%s.sh'
+                     % (variant or 'nothing', '_mhg' if version == 'mhg' else ''))
+        OUT = OUT + '/online'
         OBJ = OUT + '/obj'
         FRONT.extend(NET_FRONT)
     iso_name = 'mhg.iso' if version == 'mhg' else 'mh1.iso'
@@ -208,6 +210,8 @@ def main():
         args = ['nxdk-cc', '-std=gnu99', '-O2', '-Iinclude', '-Isrc/pc'] + RELAX + sdl
         if version == 'mhg':
             args.append('-DVERSION_MHG')     # as tools/build_pc.sh's CFLAGS for VERSION=mhg
+            if online:
+                args.append('-DMHG_ONLINE=1')   # as build_pc.sh's CFLAGS for G ONLINE=1
         if os.environ.get('MH1_RELEASE', '0') != '0':
             args.append('-DMH1_RELEASE')     # a release build: the debug menu off unless asked for (dbgmenu.c)
         if f != 'src/pc/rt/rt_memstat.c':
