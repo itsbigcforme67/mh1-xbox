@@ -1629,3 +1629,50 @@ area 1 = stage 39). Write-up: docs/RELEASE_G.md section 17; pictures in build/D/
 - Open: tools/g_ref_shot.sh's stage-39 PS2 camera (13190,-606,9735) does not give the same view on the PC (PS2 sees the river, PC the
   cliffs): the lpView read may be mid-move after the area change; the 21 views match. The PS2 area-1 picture is still useful for the
   look (cliffs clear, light haze).
+
+## Renderer score (agent D, Opus, 25-26 Oct 2026)
+Owner (for fun, but solid and rerunnable): how close do our renderers draw the PS2's picture? `tools/render_score.sh`
+(+ render_score.py, stdlib + ffmpeg), scenes in `config/render_scenes.json`, scoreboard `docs/render_score.md` (numbers
+only), pictures in build/D/score/<date>/ (sbs_<id>.png = PS2 | PC | Xbox, heat_<id>.png = |PC-PS2| | |Xbox-PS2|, never
+committed). Not in full_check (emulators).
+- **Determinism = the referee's lockstep**, not frozen RNG / forced cameras: the PS2 (PCSX2 software renderer, hidden)
+  is stopped at the start of each tick by referee.py's hook; the PC and the Xbox play the same play ticks with the PS2's
+  User_data, Rnd_w per tick, pad and pokes (area changes as exits do), so hunter, monsters, camera and random numbers
+  are the PS2's own. The picture: PS2 grabbed while held at play tick N; PC RT_SHOTS at the matching game tick; Xbox
+  RT_HOLD at that tick + an x11grab of xemu's display (the Xbox's referee inputs go on the data ISO: run_xemu.sh
+  --file, paths D:/data/...). All scaled to 640x448 (ffmpeg area), PC --no-ini (no widescreen / MSAA / options).
+  Every platform plays every scene twice; self-difference now >= 99.4 SSIM everywhere.
+- Metrics: SSIM (Wang 2004, luma, 8x8 windows every 4 px, windows touching the mask dropped), mean |diff| per pixel
+  (0-255), % pixels with a channel off by > 16. Overall = mean SSIM. Neighbour ticks (N-1 / N+1) are scored too: no
+  scene is better a tick off, so the PS2/port tick mapping is right.
+- Fixed on the way (all verified by the self-difference / the pictures):
+  - MH1's held PS2 frame depended on the interlace field: ticks released at random points gave self-difference SSIM
+    83-93 in 4 scenes (fine differences everywhere, HUD too, no shift; same game state and camera, lpView compared).
+    Now each tick is released right after an even vertical blank (adxm_vsync_cnt, MH1 0x312F70, G 0x26E9B0): 100.
+    (PCSX2's deinterlace mode alone did not help; run_pcsx2.sh PCSX2_DEINTERLACE is kept, render_score uses blend.)
+  - referee.py's lock_path pointed at <main checkout>/xemu.lock, not the shared "MH XBOX/xemu.lock" that
+    g_ref_shot.sh, the PS2 tests and `flock` users take: the referee could run next to another emulator. Fixed.
+  - rt_ref.c read RT_REF_POKE with fscanf("%lf"): pdclib's fscanf converts no floats, so on the Xbox no poke ever
+    loaded (no area change). Now fgets + sscanf (the Xbox's own float sscanf).
+  - N-R6 (referee path): with RT_REF_UD the PC/Xbox hunter now gets Set_userdata + armor_create_model (the save's name
+    and look) instead of the default armour.
+  - PCSX2's start-up toast ("Compatibility Patches are not enabled") was in a picture: 15 s wait after each start;
+    "start" positions are read after the save state is loaded (a read on a fresh PCSX2 gave 0,0).
+  - The emulator lock is taken once per platform phase (flock is not fair: other agents' tests took it between scenes).
+- First scoreboard (current main + these fixes): G PC 55.9 %, Xbox (xemu) 59.2 %; MH1 PC 46.6 %, Xbox 50.1 %.
+  Worst scenes, causes (guesses marked):
+  - g_desert / m_desert (30-33): the far sand: the ports draw it sharp and noisy, the PS2 blurred (mip level / LOD
+    choice: GS K/L LOD vs GL's derivative LOD) [guess from a crop, not traced].
+  - g_village (36-39): the village camera is ~5-6 px off (shift search) and village NPCs stand elsewhere (the lockstep
+    does not compare the village camera or NPCs) [measured shift; cause not traced].
+  - m_forest1 (38-39): an Aptonoth's body fills the view; it is darker on the PS2 (actor lighting) [guess].
+  - g_camp / m_camp / menus (45-56): dense foliage at the PS2's sharper, higher-contrast texture look; the hunter's skin
+    lighter on the ports (the open "hunter brightness" item, RELEASE_G section 10) [seen in the pictures].
+  - The Xbox scores ~3 points above the PC everywhere [guess: xemu draws 1280x960, scaled down = supersampled, softer
+    like the PS2; the PC draws 640x480 directly].
+- SSIM punishes texture detail hard: scenes that look the same to the eye score 45-75. Use it to compare runs (before /
+  after a renderer change), not as an absolute "percent the same".
+- Hook for a real Xbox: put capture-card frames as DIR/<game>/<id>/hw_r1.png (hw_r2.png) and run `render_score.py score
+  DIR`: scored as a fourth platform. A pad-script to drive the console to the same tick is not there yet.
+- Cost: one full run ~1.5 h of emulator time (PS2 ~10 s / scene, Xbox ~60 s / scene / run), more while other agents
+  hold the lock.

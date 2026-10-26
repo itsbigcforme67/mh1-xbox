@@ -563,6 +563,8 @@ em16 act set); N-R12 the village day (shops, box, forge) is not compared: the lo
    flSndChange (channel 1 only; sound pitch variation; no gameplay effect).
 4. N-R6 (both) *referee path only*: `--quest` runs show a default hunter (armour, no name in the HUD) instead of the
    save's look; the real village -> quest path uses the save. Not a player bug; it makes the referee's pictures differ.
+   **Fixed 25 Oct 2026 (agent D)**: with RT_REF_UD (referee and tools/render_score.py runs) rt_player_game_init runs
+   Set_userdata + armor_create_model: the save's name and look [verified: render score pictures, G and MH1].
 (N-R1..N-R4 of the first round are fixed: R-F9, R-F8, R-F10, R-F11.)
 
 ## 12. Cross-game audit (agent A, 18 Oct 2026; docs/audit_cross_game.md)

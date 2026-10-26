@@ -156,7 +156,6 @@ def ps2_scene(ps2, sc, sdir, rep):
     want = {shot - 1: '_m1', shot: '', shot + 1: '_p1'}
     n = shot + 2
     pads = R.expand_pad(sc.get('pad') or 'idle*%d' % n)
-    pokes = scene_pokes(sc, ps2)
     R.SCN_VILLAGE[0] = bool(sc.get('village'))
     rsc = dict(quest=sc['quest'], village=sc.get('village'))
     if sc.get('village'):
@@ -164,6 +163,10 @@ def ps2_scene(ps2, sc, sdir, rep):
     else:
         ps2.vmode = 2
         ps2.depart(rsc, pads)
+    # the area pokes: run 1's again in later runs; computed once the save state is loaded (a "start" position read
+    # from a freshly started PCSX2 before the load gave 0, 0: a later run went to the wrong place)
+    rj = os.path.join(sdir, 'run.json')
+    pokes = [tuple(p) for p in json.load(open(rj))['pokes']] if rep > 1 and os.path.exists(rj) else scene_pokes(sc, ps2)
     tag = 'r%d' % rep
     ud = ps2.p.read_bytes(g['ud'], g['ud_n'])
     rnd = struct.unpack('<HH', ps2.p.read_bytes(g['rnd'], 4))
@@ -203,6 +206,11 @@ def ps2_scene(ps2, sc, sdir, rep):
         log('  %s: the PS2 did not reach play tick %d' % (sc['id'], n))
 
 
+def ps2_start(ps2):
+    ps2.start()
+    time.sleep(15)      # PCSX2's start-up notes ("Compatibility Patches are not enabled") fade out (one was in a picture)
+
+
 def run_ps2(gname, scenes, out, reps):
     # PCSX2's deinterlacing: blend (both fields). With "automatic" a held MH1 frame came out as one field or the other
     # from run to run (self-difference SSIM 83-93 on 4 scenes, every edge, the HUD's too)
@@ -213,7 +221,7 @@ def run_ps2(gname, scenes, out, reps):
             ps2 = R.PS2(gname, os.path.join(out, gname))
             os.makedirs(ps2.out, exist_ok=True)
             try:
-                ps2.start()
+                ps2_start(ps2)
                 log('%s: PCSX2 up (run %d)' % (gname, rep))
                 if not ps2.have_state():
                     ps2.make_state()
@@ -225,7 +233,7 @@ def run_ps2(gname, scenes, out, reps):
                         except (RuntimeError, SystemExit, OSError) as e:
                             log('  %s PS2 run %d failed: %s%s' % (sc['id'], rep, e, ', again' if attempt == 1 else ''))
                             ps2.stop()
-                            ps2.start()
+                            ps2_start(ps2)
             finally:
                 ps2.stop()
 
