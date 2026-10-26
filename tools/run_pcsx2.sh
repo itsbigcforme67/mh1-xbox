@@ -31,6 +31,8 @@
 # PINE=SLOT (env): PCSX2's PINE socket on (memory read/write, save states; tools/pcsx2/pine.py), at
 # $XDG_RUNTIME_DIR/pcsx2.sock.SLOT (pcsx2.sock for slot 28011). Used by tools/g_ref_shot.sh.
 # Fast boot (no BIOS logo), EE/IOP console logging on, the software renderer (no GPU needed), audio off.
+# PCSX2_DEINTERLACE=N (env): PCSX2's deinterlace mode (0 automatic, the default; 6 blend: tools/render_score.py, whose
+# held frames otherwise come out as either field from run to run in MH1)
 set -e
 cd "$(dirname "$0")/.."
 PCSX2=${PCSX2:-$HOME/ps2dev/pcsx2/pcsx2-v2.8.2.AppImage}
@@ -117,6 +119,7 @@ PINESlot = ${PINE:-28011}
 Renderer = 13
 VsyncEnable = 0
 OsdShowMessages = false
+deinterlace_mode = ${PCSX2_DEINTERLACE:-0}
 [SPU2/Output]
 Backend = Null
 OutputModule = nullout

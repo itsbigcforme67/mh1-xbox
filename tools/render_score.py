@@ -38,6 +38,8 @@ import referee as R  # noqa: E402
 W, H = 640, 448         # the PS2's frame (4:3 on the TV); every capture is scaled to it
 THRESH = 16             # "differs": largest channel difference over this
 START_POS = {'mhg': 0x520A30, 'mh1': 0x2F2620}     # stage_start_pos (x, y, z per stage)
+LPVIEW = {'mhg': 0x2EF28C, 'mh1': 0x38A110}         # lpView (the game camera: eye, target, ... ; g_ref_shot.sh)
+VSYNC = {'mhg': 0x26E9B0, 'mh1': 0x312F70}          # adxm_vsync_cnt (CRI ADX's count of vertical blanks)
 DEFQ = {'mhg': 10001, 'mh1': 131}
 PLATS = ['pc', 'xbox', 'hw']
 PNAME = {'ps2': 'PS2', 'pc': 'PC', 'xbox': 'Xbox (xemu)', 'hw': 'Xbox (hardware)'}
@@ -134,6 +136,20 @@ def scene_pokes(sc, ps2):
     return R.area(sc.get('area_tick', 30), st, float(x), float(y), float(z), int(ang))
 
 
+def field_sync(ps2, timeout=0.2):
+    """release the next tick right after an even vertical blank. The PS2 output is interlaced and the picture a held
+    tick shows depends on the field the tick's frame went out on: with ticks released at random points (the PINE reads
+    take varying time) a held MH1 frame differed from run to run (self-difference SSIM 83-93 in 4 scenes, fine
+    differences over the whole picture, HUD included, no shift). The ADX library counts vertical blanks in RAM."""
+    a = VSYNC[ps2.gname]
+    v0 = ps2.r32(a)
+    t0 = time.time()
+    while time.time() - t0 < timeout:
+        v = ps2.r32(a)
+        if v != v0 and not v & 1:
+            return
+
+
 def ps2_scene(ps2, sc, sdir, rep):
     g = ps2.g
     shot = sc['shot']
@@ -167,13 +183,17 @@ def ps2_scene(ps2, sc, sdir, rep):
             pt += 1
         f.write(R.ps2_record(g, parts, pt if play else -1, k))
         if play and pt in want:
-            time.sleep(0.6)             # the game is stopped at the start of play tick pt: its last frame is shown
+            time.sleep(float(os.environ.get("SCORE_PS2_WAIT", "0.6")))  # the game is stopped at the start of play tick pt
             p = os.path.join(sdir, 'ps2_%s%s.png' % (tag, want[pt]))
             grab(ps2.dnum, p, '640x480')
             if pt == shot:              # the same held frame again: the capture's own stability
+                vp = ps2.r32(LPVIEW[ps2.gname])
+                cam = struct.unpack('<12f', ps2.p.read_bytes(vp, 48)) if 0x100000 <= vp < 0x2000000 else ()
+                open(os.path.join(sdir, 'ps2_%s_cam.txt' % tag), 'w').write(' '.join('%.3f' % v for v in cam) + '\n')
                 time.sleep(0.4)
                 grab(ps2.dnum, os.path.join(sdir, 'ps2_%s_again.png' % tag), '640x480')
         pad = pads[pt] if play and 0 <= pt < len(pads) else (0, 0, 0, 0, 0)
+        field_sync(ps2)
         ps2.go(k, R.fpad_words(pad), [(r, o, t, v) for (p_, r, o, t, v) in pokes if play and p_ == pt])
         k += 1
     f.close()
@@ -184,8 +204,12 @@ def ps2_scene(ps2, sc, sdir, rep):
 
 
 def run_ps2(gname, scenes, out, reps):
-    for rep in range(1, reps + 1):
-        with EmuLock():
+    # PCSX2's deinterlacing: blend (both fields). With "automatic" a held MH1 frame came out as one field or the other
+    # from run to run (self-difference SSIM 83-93 on 4 scenes, every edge, the HUD's too)
+    os.environ.setdefault('PCSX2_DEINTERLACE', '6')
+    with EmuLock():
+        for rep in range(1, reps + 1):     # each run its own PCSX2 session
+            emu_ready()
             ps2 = R.PS2(gname, os.path.join(out, gname))
             os.makedirs(ps2.out, exist_ok=True)
             try:
@@ -194,12 +218,14 @@ def run_ps2(gname, scenes, out, reps):
                 if not ps2.have_state():
                     ps2.make_state()
                 for sc in scenes:
-                    try:
-                        ps2_scene(ps2, sc, sdir_of(out, sc), rep)
-                    except (RuntimeError, SystemExit, OSError) as e:
-                        log('  %s PS2 run %d failed: %s' % (sc['id'], rep, e))
-                        ps2.stop()
-                        ps2.start()
+                    for attempt in (1, 2):      # (a missed departure key or a stalled PINE call: PCSX2 again, once)
+                        try:
+                            ps2_scene(ps2, sc, sdir_of(out, sc), rep)
+                            break
+                        except (RuntimeError, SystemExit, OSError) as e:
+                            log('  %s PS2 run %d failed: %s%s' % (sc['id'], rep, e, ', again' if attempt == 1 else ''))
+                            ps2.stop()
+                            ps2.start()
             finally:
                 ps2.stop()
 
