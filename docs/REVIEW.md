@@ -1021,3 +1021,10 @@ Both games unless marked.
   the Kut-Ku at 2200 HP, the PC at 2000 (tools/test_ps2_g_hunt.sh). **To revert:** commit "G online: one quest_rnd_host /
   quest_size_lim on the PC; one battle code per match".
 - **Changed:** tools/mh1_testserver.py's battle code (6915) is made once per match instead of per request.
+
+## rt_code_ptr on Windows / Xbox (agent C, 26 Oct 2026)
+- **Dropped:** rt_game.c's non-Linux rt_code_ptr that accepted every pointer (`return 1`). **Now:** a 2D prim's draw
+  function must be the exact start of a symbol of the build's own table (rt_host_symname, offset 0). **Why:** in the G
+  online town a prim's draw word that is not code (0x1DD921; the Linux PC already skipped it) lies inside the Xbox XBE's
+  text, so the Xbox called it and crashed 10 s after connecting. **To revert:** commit "Xbox: a 2D prim's draw function
+  must start at a symbol (rt_code_ptr), full_check builds the G Xbox online".
