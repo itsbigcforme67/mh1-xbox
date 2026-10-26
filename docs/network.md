@@ -1100,7 +1100,7 @@ sending it: harmless, and closer to the original if it was the login's answer.
   "hostleave" through the relay (the room's leader leaving) is a case to repeat on mcs before step 2: there, drop-outs
   of the owner were tested (above), not of the room leader (slot 0) with three players left.
 
-### 3.12 Monster Hunter G online (agent C, 18-24 Oct 2026, round 7; GB7, in progress)
+### 3.12 Monster Hunter G online (agent C, 18-26 Oct 2026, round 9; GB7, in progress)
 
 G (SLPM-65869) uses the same lobby-server protocol as MH1 (same framing, login, obfuscation, `LOCKROCK`, sequence
 rules; `cnLBS_LoginLobbyServer`, `mmbbc_encode`, `tcp_init`, `create_server_table` are identical), with a command table
@@ -1298,7 +1298,74 @@ LBNETW_B take G's layout there. The plain G and the PS2 builds keep the identity
 copy, so G's relogin save after the quest writes the card [checked: "memory card: saved", the card loads back with the
 hunt's money].
 
-Next: the PS2 G disc with a PC G in one hunt (tools/test_ps2_g_online.sh, the coordinator's), the Xbox, event quests.
+
+State (25 Oct, round 8): **the real PS2 G and a PC G hunt the Kut-Ku together** [checked: `tools/test_ps2_g_hunt.sh`, the
+owner's G disc in PCSX2 through MH1LAUNCH and the PC G online client on mh1-server `--lobby-mcs`, five passing runs]: the
+PC posts quest 4 for 2, the PS2 joins it at the left counter and gets ready, the match, both on the mcs relay; the
+character select completes on both, the PS2 loads quest 4 from slot 0, each machine gives the other's hunter its own
+equipment and look (np-look: the PLW fields Set_mini_data_to_pl / Set_userdata fill, the same on both), the start round
+agrees, the Kut-Ku's HP and owner (PC -> PS2 -> PC) the same on both (tools/hunt_sync.py), the kill, both carve, the clear
+on both, both back in G's guild hall, the PC's card and the PS2's memory card saved after the relogin. Found by the real G:
+- **G's online quests take their random numbers from the match's battle code** (6915, kept at cw+0xFA6C; lobby 0x583C14
+  copies its first 15 characters to quest_rnd_host, which Quest_start uses online instead of its own: the start area, the
+  monsters' level bonus, sizes); the info file's size limits go to quest_size_lim (lobby 0x59A258). The PC G online
+  build had two host copies at each address (one written by the lobby, the other read by Quest_start); the real G started
+  the Kut-Ku at 2200 HP, the PC at 2000. Fixed (one object; tools/mhg_gonl.py reuses pc_data's names). A server must give
+  every member of a match the same battle code: mh1_testserver.py made it per request from the clock, now per match.
+- (round 8, open then) the PS2's own hunter never hurt the Kut-Ku while the PS2 ran it: settled in round 9 below, a server
+  bug (the info file's size limits), not the test aid.
+
+**Round 9 (26 Oct 2026): the monster's size online.** The open question of round 8 was a real bug, in our server's G info
+file [checked: a RAM dump of the real PS2 G mid-hunt (ps2_hunt_aid.py `--dump`): the Kut-Ku's EMW+0x9F8 (size) = 0 and
++0xB8 (scale) = 0.0, the Vespoids / Hornetaurs 100 / their base scale]. A monster of scale 0 is not drawn (the PS2's
+pictures never showed the Kut-Ku, only its HP bar and the minimap), its hit spheres have no size (the PS2's hunter, which
+the PS2 checks against its own monster, never hit), and its motions do not move it (it stood at one spot in whatever
+state the AI picked while the PS2 ran it). While the PC ran it, the PC did the hit checks with its own copy, so both
+machines' hits counted then. The chain:
+- G's title menu "network mode" (mode_sel_end choice 2) sets system_w+0x44; with it set, every online quest rolls a size
+  for each big monster (sub_main 0x4B7920 kinds; quest set-up in f_quest.c: header size x random size / 100), where offline
+  only quests outside quest_size_flag_tbl (or with its event flag) do.
+- The random size (sub_main 0x4B7810) is clamped to quest_size_lim[class] {min, max}; online, quest_size_lim is not reset
+  from the offline table but comes from the info file: lobby 0x59A210 copies its bytes 0x998..0x9A1 there unconditionally
+  after the download (also: 0x988 u16 = lbSendInterval, 0x98A / 0x98E / 0x992 three more u16 client values, each kept when
+  0). tools/g_info.py left them 0, so max 0: size 0.
+- Fixed: g_info.py fills 0x998 with {0, 255} for each class, i.e. no clamp: the game's own size distributions (75-125 %)
+  decide. Our choice; what Capcom's server sent is not known. The PC G online build now sets system_w+0x44 with the network
+  flag as G's title menu does (it only changed the training quests of quest_size_flag_tbl, which roll online on the PS2).
+- Checked after the fix (`tools/test_ps2_g_hunt.sh`, which now also checks these): the Kut-Ku size 115 on both machines
+  (np-size lines: the PC's RT_NP_EM, the PS2 aid's from RAM), visible on the PS2, the PS2's hit flag set by its own
+  hunter while the PS2 runs it (np-dmg with the PS2 as owner, HP 926 -> 919 in that phase), owner PC -> PS2 -> PC, kill,
+  carves, clear, saves, back in the hall. MH1 has no monster sizes and no such info file field: not affected.
+
+**Round 9: a PS2 G as the room's leader** (`LEAD=ps2 tools/test_ps2_g_hunt.sh`): the PS2 posts quest 4 for 2 at the
+middle counter (it needs the 200z fee: the test gives its hunter 5000z through PINE, as RT_MONEY does on the PC), the
+PC joins at the left counter and gets ready, the PS2 starts the match from the departure spot; the PS2 is player 0 on
+the mcs relay and runs the Kut-Ku first (its own hits land: np-dmg with owner 0), then the PC, then the PS2 again.
+Learned on the way (test timing, not bugs): the first hunter on the monster's area runs it, whoever leads the room (the
+PC, following at once, took it from the leader PS2); a monster whose owner leaves its area passes only to a hunter
+already on that area, else the owner keeps it; the PC G client runs at about half speed in the guild hall while PCSX2
+runs (the joiner's waits are long).
+
+**Round 9: the Xbox G in the party** (`XBOX=1 tools/test_ps2_g_hunt.sh`): the G Xbox online build
+(`tools/build_xbox.py --version mhg --online --gfx nv2a`, from the ONLINE=1 G PC build's tree; `tools/run_xemu.sh
+--version mhg --online`) joins ANNA's room for 3 at the left counter: PS2 G + PC G + Xbox G in one Kut-Ku hunt, PCSX2 and
+xemu at once under the emulator lock [checked: passing run; size 104 on all three, owners PC -> PS2 -> PC, HP the same on
+the three, kill, three carves, the clear on all]. Fixed on the way (both games' runtime): a G lobby prim whose draw word
+is not code (the PC already skipped it) held 0x1DD921, which on the Xbox is inside the XBE's text: the Xbox called it and
+crashed 10 s after connecting. rt_code_ptr (rt_game.c) on Windows / Xbox now wants the exact start of a symbol of the
+build. Seen: the G Xbox online build has about 12-17 MB free in xemu and draws at 7.5 fps in the guild hall (the game
+ticks at 30); no card on its disk, so it plays a new hunter and its relogin save is not checked.
+
+**Round 9: a G player leaving mid-hunt** (quest tick 4200): `XBOX=1 DROP=xbox` (xemu stopped; the PC and the PS2 kill,
+carve, clear) and `DROP=ps2` (PCSX2 closed; the PC alone finishes, "mcs: player 1 dropped out") pass. A PC G leaving is
+`test_online_g.sh`'s part (with the real PS2 left alone at 1x damage the Kut-Ku takes too long).
+
+Open after round 9: the PC G client crashed twice (of 8 runs) in lb_select_set_data's map name sprintf (fault address
+0x32) joining the real PS2 G's room; the server's answers were byte-identical to passing runs, so it is something on the
+PC side (an RT_ONLINE_TRACE line there now prints the room / quest data for the next time). G's select_w 0xE4 / 0xE6 /
+0xE8, sys 3's s16, event quests, real hardware.
+
+Next: a PS2 G as the room leader, the Xbox G build in the party, event quests.
 
 ## 4. Run it
 
@@ -1316,6 +1383,10 @@ Next: the PS2 G disc with a PC G in one hunt (tools/test_ps2_g_online.sh, the co
     tools/test_online_mcs.sh                         # the same on the game's own in-hunt protocol (mcs relay, 3.10) (~4 min)
     HUNT=1 tools/test_online_g.sh                    # two PC G clients: room, Kut-Ku on the mcs relay, back to the hall (3.12, ~20 min)
     tools/test_ps2_hunt.sh                           # a PS2 (PCSX2) and a PC hunt together (3.10; uncapped, ~20 min)
+    tools/test_ps2_g_hunt.sh                         # the real PS2 G and a PC G: room, Kut-Ku, clear, back in the hall (3.12, ~30 min)
+    LEAD=ps2 tools/test_ps2_g_hunt.sh                # the same with the PS2 G as the room's leader (~35 min)
+    XBOX=1 tools/test_ps2_g_hunt.sh                  # PS2 G + PC G + Xbox G (xemu) in one hunt (~40 min, 3.5 GB free)
+    XBOX=1 DROP=xbox tools/test_ps2_g_hunt.sh        # the same, xemu stopped mid-fight (DROP=ps2: PCSX2 closed, PS2 + PC)
     XBOX=1 tools/test_ps2_hunt.sh                    # PS2 + PC + Xbox (xemu) in one hunt (~25 min)
     tools/xemu_mcs_hunt.sh                           # the Xbox and a PC (~10 min)
     HUNT=kutku tools/test_ps2_hunt.sh                # PS2 + PC fight the Kut-Ku: hand-overs, HP, damage, carves (3.11, ~25 min)

@@ -19,12 +19,42 @@
 # Screenshots in build/show/g_online_pc (never committed). Build first: ONLINE=1 tools/build_pc_mhg.sh
 cd "$(dirname "$0")/.."
 BIN=${BIN:-build/mhg/pc/mhview_g_online}
-OUT=build/show/g_online_pc; mkdir -p $OUT; rm -f $OUT/*.log
+OUT=build/show/g_online_pc; mkdir -p $OUT; [ "$1" = mkgsave ] || rm -f $OUT/*.log
 SP=""; PA=""
 fail() { echo "G online PC test FAILED: $1 (see $OUT)"; [ -n "$PA" ] && kill $PA 2>/dev/null; [ -n "$SP" ] && kill $SP 2>/dev/null; exit 1; }
 [ -x "$BIN" ] || fail "$BIN is missing: run ONLINE=1 tools/build_pc_mhg.sh"
 [ -d disc/mhg ] || fail "no disc/mhg (the owner's G disc files)"
 QN=1; [ -n "$HUNT" ] && QN=4
+# a G card with one hunter named NAME, saved at the village bed (offline, the same binary; tools/test_save_g.sh's steps):
+# build/show/g_online_pc_cards/NAME, remade when the binary is newer. The online runs start from a copy, so G's relogin
+# save after a quest (lbc_login_finish_after, McOperationSet(7)) writes the card instead of "continue without saving?".
+CARDS=build/show/g_online_pc_cards
+mkgsave() {
+    f=$CARDS/$1/BISLPM-65869MHG/BISLPM-65869MHG
+    [ -f "$f" ] && [ "$f" -nt "$BIN" ] && return 0
+    rm -rf $CARDS/$1; mkdir -p $CARDS/$1
+    S=$(python3 - <<'PY'
+def evs(d, end):
+    out, t = [], 0
+    for k in sorted(d):
+        if k > t: out.append("idle*%d" % (k - t)); t = k
+        out.append(d[k]); t += int(d[k].split("*")[1])
+    out.append("idle*%d" % (end - t)); return out
+# house door, then (warped to the bed) square, the save prompts (yes), "create game data" yes
+print(",".join(["@village1"] + evs({45: 'square*2', 650: 'square*2', 750: 'circle*2', 850: 'circle*2', 950: 'circle*2',
+                                     1050: 'circle*2', 1100: 'dleft*2', 1130: 'circle*2', 1250: 'circle*2'}, 1500)))
+PY
+)
+    ( ulimit -v 3000000 2>/dev/null
+      env MH1_HIDDEN=1 MH1_SAVE_DIR="$PWD/$CARDS/$1" MH1_LOG_DIR="$PWD/$CARDS/$1.logs" RT_NOMOVIE=1 RT_VILLAGE_START=1 \
+          RT_VILLAGE_SKIP_INTRO=1 RT_NAME=$1 RT_LB_WARP="30,11225,14400,0;600,2259,745,4001" \
+          timeout 300 $BIN disc/mhg --quest 1 --play --mute --input "$S" --shot $CARDS/$1.png --time 60 > $CARDS/$1.log 2>&1 )
+    grep -aqs "memory card: saved BISLPM-65869MHG/BISLPM-65869MHG" $CARDS/$1.logs/*.log && [ -f "$f" ] ||
+        fail "could not make $1's G card (see $CARDS/$1.log)"
+    touch "$f"
+}
+# tools/test_online_g.sh mkgsave NAME: only that card (tools/test_ps2_g_hunt.sh uses it)
+if [ "$1" = mkgsave ]; then mkgsave "$2"; echo "$CARDS/$2"; exit 0; fi
 if [ -n "$HUNT" ]; then     # HUNT=1: mh1-server with the game server of the game's own in-hunt protocol (mcs relay), as
     # tools/test_online_mcs.sh; an account per hunter (the relay knows the match's players by their logins)
     ROOM=1
@@ -60,34 +90,6 @@ acct() {    # NAME: RT_NET_ID / RT_NET_PASS of its account (HUNT=1)
 # input: circle through login, the Capcom ID ("new ID", yes), the class menu, the plaza menu (街に入る) and the town
 # list (town 1); then "yes" (left, circle) on the town's confirmation
 IN="idle*200$(for i in $(seq 14); do printf ',circle*2,idle*150'; done)$(for i in $(seq 12); do printf ',circle*2,idle*120,dleft*2,idle*30,circle*2,idle*150'; done),idle*${HOLD:-900}${TAIL:+,$TAIL}"
-# a G card with one hunter named NAME, saved at the village bed (offline, the same binary; tools/test_save_g.sh's steps):
-# build/show/g_online_pc_cards/NAME, remade when the binary is newer. The online runs start from a copy, so G's relogin
-# save after a quest (lbc_login_finish_after, McOperationSet(7)) writes the card instead of "continue without saving?".
-CARDS=build/show/g_online_pc_cards
-mkgsave() {
-    f=$CARDS/$1/BISLPM-65869MHG/BISLPM-65869MHG
-    [ -f "$f" ] && [ "$f" -nt "$BIN" ] && return 0
-    rm -rf $CARDS/$1; mkdir -p $CARDS/$1
-    S=$(python3 - <<'PY'
-def evs(d, end):
-    out, t = [], 0
-    for k in sorted(d):
-        if k > t: out.append("idle*%d" % (k - t)); t = k
-        out.append(d[k]); t += int(d[k].split("*")[1])
-    out.append("idle*%d" % (end - t)); return out
-# house door, then (warped to the bed) square, the save prompts (yes), "create game data" yes
-print(",".join(["@village1"] + evs({45: 'square*2', 650: 'square*2', 750: 'circle*2', 850: 'circle*2', 950: 'circle*2',
-                                     1050: 'circle*2', 1100: 'dleft*2', 1130: 'circle*2', 1250: 'circle*2'}, 1500)))
-PY
-)
-    ( ulimit -v 3000000 2>/dev/null
-      env MH1_HIDDEN=1 MH1_SAVE_DIR="$PWD/$CARDS/$1" MH1_LOG_DIR="$PWD/$CARDS/$1.logs" RT_NOMOVIE=1 RT_VILLAGE_START=1 \
-          RT_VILLAGE_SKIP_INTRO=1 RT_NAME=$1 RT_LB_WARP="30,11225,14400,0;600,2259,745,4001" \
-          timeout 300 $BIN disc/mhg --quest 1 --play --mute --input "$S" --shot $CARDS/$1.png --time 60 > $CARDS/$1.log 2>&1 )
-    grep -aqs "memory card: saved BISLPM-65869MHG/BISLPM-65869MHG" $CARDS/$1.logs/*.log && [ -f "$f" ] ||
-        fail "could not make $1's G card (see $CARDS/$1.log)"
-    touch "$f"
-}
 run() {     # name seconds extra-env...
     nm=$1; t=$2; shift 2
     rm -rf $OUT/card_$nm $OUT/logs_$nm

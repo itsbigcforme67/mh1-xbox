@@ -124,8 +124,8 @@ box() {
     p1=$!
     wait $p0 || { echo "coop box: host failed"; return 1; }
     wait $p1 || { echo "coop box: joiner failed"; return 1; }
-    h=$(grep "me 0 slot 0 " $OUT/box_0.log | tail -1 | sed 's/.*box \([0-9A-F]*\) pouch \([0-9]*:[0-9]*\).*/\1 \2/')
-    j=$(grep "me 1 slot 1 " $OUT/box_1.log | tail -1 | sed 's/.*box \([0-9A-F]*\) pouch \([0-9]*:[0-9]*\).*/\1 \2/')
+    h=$(grep "np-pos: .* me 0 slot 0 " $OUT/box_0.log | tail -1 | sed 's/.*box \([0-9A-F]*\) pouch \([0-9]*:[0-9]*\).*/\1 \2/')
+    j=$(grep "np-pos: .* me 1 slot 1 " $OUT/box_1.log | tail -1 | sed 's/.*box \([0-9A-F]*\) pouch \([0-9]*:[0-9]*\).*/\1 \2/')
     echo "coop box: host sees box bits / own first pouch slot: $h; joiner: $j"
     [ "$h" = "00000001 0:0" ] && [ "${j%% *}" = "00000001" ] && [ "${j#* }" != "0:0" ] || { echo "coop box: FAILED"; return 1; }
     echo "coop box: OK"

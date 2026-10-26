@@ -740,6 +740,9 @@ class Client(socketserver.BaseRequestHandler):
         if not r:
             return
         r.match = list(r.members)
+        # the battle code (6915), one per match: G copies its first 15 characters into quest_rnd_host, the quest's random
+        # numbers (start area, monster level bonus, sizes: lobby 0x583C14, Quest_start), so every member must get the same
+        r.battle_code = "ROOM%02d%010d" % (r.id, int(time.time()) % 10 ** 10)
         log("match start in room %d: %s" % (r.id, ", ".join(m.user_handle for m in r.match)))
         for o in r.match:
             o.safe_send(NOTE, 0x6910, b"")
@@ -772,7 +775,8 @@ class Client(socketserver.BaseRequestHandler):
 
     def on_6915_1(self, seq, p):            # MatchBattleCode: str (16 characters kept at cw+0x35E0)
         r = self.match_room()
-        self.send(ANS, 0x6915, str16("ROOM%02d%010d" % (r.id if r else 0, int(time.time()) % 10 ** 10)), seq=seq)
+        code = getattr(r, "battle_code", None) or "ROOM%02d%010d" % (r.id if r else 0, int(time.time()) % 10 ** 10)
+        self.send(ANS, 0x6915, str16(code), seq=seq)
 
     def on_6914_1(self, seq, p):            # MatchGameRule: str
         self.send(ANS, 0x6914, str16(""), seq=seq)

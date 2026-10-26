@@ -6,7 +6,7 @@ mkdir -p build/check
 fail=0
 export MH1_HIDDEN=1   # every game run hidden (no window on the owner's screen, no real controller), even a test that forgets
 # tests that start an emulator (PCSX2) are not run here: emulators run alone, by hand (docs/agents/BRIEF.md)
-EMU_TESTS="test_pdtest test_ps2_online test_three_way test_ps2_hunt test_ps2_g_online"
+EMU_TESTS="test_pdtest test_ps2_online test_three_way test_ps2_hunt test_ps2_g_online test_ps2_g_hunt"
 # memory caps per step (docs/agents/BRIEF.md): 1.5 GB for PC builds/tests, 3 GB for the PS2 rebuild (wibo),
 # none for test_save (AddressSanitizer). Don't run this script itself under a cap: a cap can't be raised again.
 step() {  # step NAME CMD...
@@ -26,6 +26,7 @@ step xbox_online bash -c ". ~/xboxdev/env.sh && python3 tools/build_xbox.py --on
 step build_pc_mhg tools/build_pc_mhg.sh   # tests that also run G use this binary
 step kr_returns_g python3 tools/check_kr_returns.py --implicit build/mhg/pctree/build/pc/cmd --mwcc mhg
 step build_pc_mhg_online env ONLINE=1 tools/build_pc_mhg.sh   # test_online_g.sh (G online PC client)
+step xbox_g_online bash -c ". ~/xboxdev/env.sh && python3 tools/build_xbox.py --version mhg --online --gfx nv2a"   # (build/mhg/pctree_online's objects)
 for t in tools/test_*.sh; do
     n=$(basename "$t" .sh)
     case " $EMU_TESTS " in *" $n "*) echo "skip $n (starts an emulator: run it alone by hand)"; continue ;; esac

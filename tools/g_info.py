@@ -23,7 +23,16 @@ SIZE = 0x9C8            # 2504: G puts the 68A1 news texts right after it (missi
 #   0x288  5 x 256 bytes: per plaza class, the help text under the class menu (lobby 0x57DDC0)
 #   0x788  256 bytes, 0x888 256 bytes: two more texts of the plaza menu (lobby 0x569610: the first when the plaza's
 #          class is '1' (ClassInfo -> PlazaInfo+91), else the second) [what the menu entry is: not seen yet]
-#   0x988  64 bytes: not read by anything we found
+#   0x988  u16: lbSendInterval when non-zero (lobby 0x59A210, run after the download; 0 keeps the client's own)
+#   0x98A, 0x98E, 0x992  u16 each: three more client values (main 0x2EFAD4 / 0x2EFAD8 / 0x2EFADC), each kept when 0
+#          [meaning not looked at]
+#   0x998  5 x 2 bytes: per size class (mission header byte 0x44) the smallest and the largest monster size in percent;
+#          copied as they are to quest_size_lim (lobby 0x59A210), which clamps the random size of each big monster of an
+#          online quest (sub_main 0x4B7810; G's network mode sets system_w+0x44, so every online quest rolls a size).
+#          Offline G uses its own table instead. All zero (this file before 26 Oct 2026) made every online big monster
+#          size 0: scale 0, so on the real PS2 G the Kut-Ku was invisible, could not be hit and did not move while the PS2
+#          ran it (docs/network.md 3.12 "round 9").
+#   0x9A2  not read by anything we found
 CLASSES = [     # (help text, lowest, highest)
     ("どなたでも入れる街です。", 0, 127),
     ("どなたでも入れる街です。（２）", 0, 127),
@@ -31,6 +40,9 @@ CLASSES = [     # (help text, lowest, highest)
     ("どなたでも入れる街です。（４）", 0, 127),
     ("どなたでも入れる街です。（５）", 0, 127),
 ]
+# The size limits this server hands out: no limit (0..255), so the game's own size distributions (75-125 %) decide.
+# Our choice: what Capcom's server sent is not known.
+SIZE_LIMITS = [(0, 255)] * 5
 TOWN_TYPES = ["街%s" % "１２３４５６７８９"[i] if i < 9 else "街１%s" % "０１２３４５６"[i - 9] for i in range(16)]
 
 
@@ -52,6 +64,9 @@ def info_file():
         put(b, 0x288 + 256 * k, text.encode("cp932"), 256)
     put(b, 0x788, "ここはテスト用の街です。".encode("cp932"), 256)
     put(b, 0x888, "ここはテスト用の街です。".encode("cp932"), 256)
+    for k, (lo, hi) in enumerate(SIZE_LIMITS):
+        b[0x998 + 2 * k] = lo
+        b[0x998 + 2 * k + 1] = hi
     return bytes(b)
 
 

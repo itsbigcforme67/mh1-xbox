@@ -1,6 +1,6 @@
 /* G online (PC): lb_select_set_data, written from Monster Hunter G's code at lobby 0x58A6C0 by tools/mhg_gonl.py (an m2c draft with
  * G's names; docs/network.md 3.12). Not compared with anything; the G online PC build links it (ONLINE=1
- * tools/build_pc_mhg.sh). HAND-FIXED: a string pointer m2c cut to 16 bits (the third %s of the room count line). */
+ * tools/build_pc_mhg.sh). HAND-FIXED: a test trace (RT_ONLINE_TRACE) at the start; a string pointer m2c cut to 16 bits (the third %s of the room count line). */
 #include "../gonl.h"
 
 s32 KinshiYogo_chk();
@@ -62,6 +62,15 @@ void lb_select_set_data(s32 arg0, s32 arg1, s32 arg2, s32 arg3) {
     temp_s2 = Lbs_GetRoomInfo((s32) (*(u8 *)((u8 *)((*(u8 **)&pNet)) + 0x28)), arg1, arg2, arg3);
     temp_s1 = Lbs_GetClassAdd(M2C_ERROR(/* Read from unset register $a0 */), M2C_ERROR(/* Read from unset register $a1 */), M2C_ERROR(/* Read from unset register $a2 */), M2C_ERROR(/* Read from unset register $a3 */)) & 0xFFFF;
     temp_v0 = lobby_func_00559C30(arg0, M2C_ERROR(/* Read from unset register $a1 */), M2C_ERROR(/* Read from unset register $a2 */), M2C_ERROR(/* Read from unset register $a3 */));
+    if (getenv("RT_ONLINE_TRACE")) {   /* HAND-FIXED test trace (round 9): the PC crashed twice in the map name sprintf
+                                         * below (fault address 0x32) joining a real PS2 G's room; not understood yet */
+        extern u8 lb_sys[];
+        extern void *stderr;
+        int fprintf();
+        fprintf(stderr, "online: lb_select_set_data quest %d sel %d room %p (%04X %04X %04X %04X %04X) quest data %p map %d\n",
+                arg0 & 0xFFFF, lb_sys[0x7E], (void *)temp_s2, ((u16 *)temp_s2)[0], ((u16 *)temp_s2)[1], ((u16 *)temp_s2)[2],
+                ((u16 *)temp_s2)[3], ((u16 *)temp_s2)[4], (void *)(long)temp_v0, temp_v0 ? *(s32 *)((u8 *)(long)temp_v0 + 0x14) : -1);
+    }
     temp_v0_2 = Lb_get_quest_type(temp_v0);
     temp_a1 = temp_v0_2 * 8;
     temp_a0 = (u8 *)&lb_quest_color_tex + temp_a1;

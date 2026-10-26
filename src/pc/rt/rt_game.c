@@ -15,7 +15,10 @@
 extern char __executable_start[], etext[];
 static int rt_code_ptr(const void *f) { return (const char *)f >= __executable_start && (const char *)f < etext; }
 #else
-static int rt_code_ptr(const void *f) { (void)f; return 1; }
+/* (Windows / Xbox: no etext; the Xbox's code sits at low addresses, where a stray table word (0x1DD921 in the G online
+ * town, round 9) landed inside a function and crashed: a draw function must start at one of the build's symbols) */
+const char *rt_host_symname(const void *addr, unsigned *off);   /* rt_symtab.c (tools/gen_symtab.py) */
+static int rt_code_ptr(const void *f) { unsigned off = 1; return rt_host_symname(f, &off) && off == 0; }
 #endif
 #include "rt.h"
 #include "rt_prof.h"

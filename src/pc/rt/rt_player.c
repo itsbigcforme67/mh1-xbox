@@ -268,6 +268,25 @@ void rt_player_tick(int no)
         if (tg[0] && (p->flag14 == 0 || p->flag14 == 1) && (p->flag15 == 0 || p->flag15 == 2 || p->flag15 == 3 || p->flag15 == 4))
             p->ang[1] = Em_Calc_angY(p->pos, (f32 *)(tg + 0xAC));
     }
+    if (getenv("RT_GOTO_TRACE")) {    /* every exit of each stage this hunter enters, in the goto trace's format
+                                                   * (tools/pcsx2/ps2_hunt_aid.py reads them: routes and the zones to keep
+                                                   * clear of) */
+        static int listed = -1;
+        void *Stage_mv_data_get(int st, int pl);
+        PLW *p = &player_work[no];
+        if (p->stg != listed && p->stg < 0x4C) {
+            u8 *m = Stage_mv_data_get(p->stg, 0);
+            listed = p->stg;
+            for (; m && *(u16 *)m != 0xFFFF; m += 0x34) {
+                f32 *e = (f32 *)(m + 4);
+                if (*(u16 *)m >= 0x60)
+                    continue;
+                fprintf(stderr, "rt_player: stage %d -> exit to %d (exit list)\n", p->stg, *(u16 *)m);
+                fprintf(stderr, "  exit kind %d pos %.0f %.0f %.0f r/h %.0f %.0f box %.0f %.0f %.0f dest %.0f %.0f %.0f\n",
+                        *(s16 *)(m + 2), e[0], e[1], e[2], e[3], e[4], e[5], e[6], e[7], e[8], e[9], e[10]);
+            }
+        }
+    }
     if (getenv("RT_PL_WARP_EM") || rt_dbg.warp_em_slot >= 0) {  /* test aid: at ticks "t1,t2-t3,..", next to monster 0's carve point (or its
                                          * first body volume), facing it; the debug menu's "warp to monster" (rt_dbg.c) asks for one slot once */
         static int tk;
@@ -347,6 +366,32 @@ void rt_player_tick(int no)
                 p->pos[1] = t[1];
             p->pos[0] = t[0] + d[0] / l * r;     /* (alive: just outside its first body sphere, r = radius + 40; body_hit then only nudges) */
             p->pos[2] = t[2] + d[1] / l * r;
+            {   /* not on (or within 500 of) one of the stage's exits: a monster standing next to one (the Kut-Ku by the 36 -> 35
+                 * exit of the Forest and Hills) had the hunter walk out of the area with each swing and back in (seen with a
+                 * PS2 G in tools/test_ps2_g_hunt.sh): the first of 16 directions around the target, starting from the
+                 * hunter's own, that keeps clear */
+                void *Stage_mv_data_get(int st, int pl);
+                int k;
+                for (k = 0; k < 16; k++) {
+                    f32 a = (f32)((k + 1) / 2) * ((k & 1) ? 0.3927f : -0.3927f), c = cosf(a), sn = sinf(a);
+                    f32 x = t[0] + (d[0] * c - d[1] * sn) / l * r, z = t[2] + (d[0] * sn + d[1] * c) / l * r;
+                    u8 *m = Stage_mv_data_get(p->stg, 0);
+                    int bad = 0;
+                    for (; m && *(u16 *)m != 0xFFFF && !bad; m += 0x34) {
+                        f32 *e = (f32 *)(m + 4);
+                        if (*(s16 *)(m + 2) == 1)
+                            bad = x > fminf(e[0], e[5]) - 500 && x < fmaxf(e[0], e[5]) + 500 &&
+                                  z > fminf(e[2], e[7]) - 500 && z < fmaxf(e[2], e[7]) + 500;
+                        else
+                            bad = (x - e[0]) * (x - e[0]) + (z - e[2]) * (z - e[2]) < (e[3] + 500) * (e[3] + 500);
+                    }
+                    if (!bad) {
+                        p->pos[0] = x;
+                        p->pos[2] = z;
+                        break;
+                    }
+                }
+            }
             p->ang[1] = Em_Calc_angY(p->pos, t);
             if (getenv("RT_PL_TRACE") || getenv("RT_QUEST_TRACE"))
             fprintf(stderr, "rt_player: tick %d warped to %.0f %.0f (carve point %d at %.0f %.0f %.0f)\n",
@@ -904,6 +949,9 @@ void rt_hit_check(void)
         for (k = 0; k < 8; k++)
             PF(e, s16, 0x766 + 2 * k) = (s16)(PF(e, s16, 0x766 + 2 * k) * m);
     }
+    if (e[0x38D] && getenv("RT_NP_RXEM"))       /* test aid: a hit on monster 0 this tick (with the enemy packet trace) */
+        fprintf(stderr, "np-dmg: tick %d hp %d damage %d %d %d %d owner %d\n", aid_tick(), PF(e, s16, 0x302), PF(e, s16, 0x766),
+                PF(e, s16, 0x768), PF(e, s16, 0x76A), PF(e, s16, 0x76C), e[0x8C3] ? -1 : game_w.master);
     rt_dbg_hits();              /* the debug menu's damage multiplier / one-hit kills: every monster hit this tick (rt_dbg.c) */
     if (tr < 0) tr = getenv("RT_HIT_DM") != NULL;
     if (tr > 1 || (tr && getenv("RT_HIT_DM")[0] == '2')) {   /* RT_HIT_DM=2: live shells each tick */
