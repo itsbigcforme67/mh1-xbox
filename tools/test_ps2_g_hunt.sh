@@ -234,7 +234,7 @@ else
             "$JOINW" ${XMUL:-6} > $O/xbox_env.txt
         printf '%s\n' "$JOINK$(rep 6 ',square*2,idle*100,circle*2,idle*100')$ATK" > $O/xbox_input.txt
         XBOX_FILES=$XF tools/run_xemu.sh --version mhg --online --gfx nv2a --data disc/mhg --env $O/xbox_env.txt \
-            --input $O/xbox_input.txt --shot $O/xbox.png --after "240 400 600 800 1000 1150" > $O/xemu_run.log 2>&1 &
+            --input $O/xbox_input.txt --shot $O/xbox.png --after "240 600 900 1200 1500 1800" > $O/xemu_run.log 2>&1 &
         XP=$!
         ( while :; do      # memory watchdog: xemu stops when the machine's available memory drops under 800 MB
             a=$(awk '/MemAvailable/ {print $2}' /proc/meminfo)
@@ -329,7 +329,12 @@ while [ -n "$PCP" ] && [ $i -lt 600 ] && emu_alive $PCP && ! grep -aqs "memory c
     sleep 5; i=$((i + 5))
 done
 [ -z "$PCP" ] || { sleep 20; emu_stop $PCP; PCP=; }
-[ -z "$XP" ] || { wait $XP; XP=; }
+# the Xbox: until it is back in the town after the quest (its serial log), then stopped
+i=0
+while [ -n "$XP" ] && [ $i -lt 600 ] && emu_alive $XP && ! grep -aqs "back to the town after the quest" $XF/xemu_debug.txt; do
+    sleep 5; i=$((i + 5))
+done
+[ -z "$XP" ] || { sleep 30; emu_stop $XP; XP=; }
 if [ -n "$XBOX" ]; then
     cp $XF/xemu_debug.txt $O/xbox_serial.txt 2>/dev/null
     python3 tools/xbox_fatx.py get $XF/hdd.img Games/MHG/mh1log.txt $O/xbox_stderr.txt >/dev/null 2>&1
