@@ -80,23 +80,33 @@ def mem_avail():
     return 0
 
 
+def emu_ready():
+    """before each emulator start (lock held): > 2.5 GB available and no other pcsx2 / xemu process; waits up to
+    30 min instead of starting next to someone else's emulator"""
+    t0 = time.time()
+    while True:
+        fe, ma = foreign_emus(), mem_avail()
+        if not fe and ma > 2500:
+            return
+        if time.time() - t0 > 1800:
+            raise SystemExit('gave up: other emulators %s, %d MB available' % (fe, ma))
+        log('  waiting: other emulators %s, %d MB available' % (fe, ma))
+        time.sleep(20)
+
+
 class EmuLock:
-    """the shared emulator lock (flock on xemu.lock, as `flock xemu.lock CMD`), then the memory and other-emulator
-    checks; waits (up to 30 min) instead of starting next to someone else's emulator"""
+    """the shared emulator lock (flock on xemu.lock, as `flock xemu.lock CMD`), held for one platform phase of one
+    game (one acquisition, not one per scene: the lock is not fair, and other agents' tests took it between scenes)"""
     def __enter__(self):
         self.f = open(R.lock_path(), 'a')
         log('  waiting for the emulator lock %s' % R.lock_path())
         fcntl.flock(self.f, fcntl.LOCK_EX)
-        t0 = time.time()
-        while True:
-            fe, ma = foreign_emus(), mem_avail()
-            if not fe and ma > 2500:
-                return self
-            if time.time() - t0 > 1800:
-                fcntl.flock(self.f, fcntl.LOCK_UN)
-                raise SystemExit('gave up: other emulators %s, %d MB available' % (fe, ma))
-            log('  waiting: other emulators %s, %d MB available' % (fe, ma))
-            time.sleep(20)
+        try:
+            emu_ready()
+        except SystemExit:
+            fcntl.flock(self.f, fcntl.LOCK_UN)
+            raise
+        return self
 
     def __exit__(self, *a):
         fcntl.flock(self.f, fcntl.LOCK_UN)
@@ -297,12 +307,15 @@ def run_xbox(sc, sdir, reps):
     files = [os.path.join(sdir, f) for f in ('pad.txt', 'pokes.txt', 'user_data.bin', 'ps2_rnd.txt')]
     dnum = 88
     for rep in range(1, reps + 1):
-        with EmuLock():
+        emu_ready()
+        if True:    # (the caller holds the emulator lock for the whole Xbox phase)
             cmd = ['sh', 'tools/run_xemu.sh', '--version', gname, '--gfx', 'nv2a', '--data', 'disc/' + gname,
                    '--env', envf]
             for f in files:
                 cmd += ['--file', f]
             env = dict(os.environ, XBOX_FILES=xf, XEMU_DNUM=str(dnum))
+            if os.path.exists(dbg):
+                os.remove(dbg)      # (the last run's hold lines must not count: run_xemu.sh empties it only later)
             p = subprocess.Popen(cmd, cwd=ROOT, env=env, stdout=open(os.path.join(sdir, 'xb_r%d.log' % rep), 'w'),
                                  stderr=subprocess.STDOUT)
             t0 = time.time()
@@ -569,8 +582,9 @@ def main(argv):
             for sc in gs:
                 run_pc(sc, sdir_of(out, sc), reps)
         if 'xbox' in plats:
-            for sc in gs:
-                run_xbox(sc, sdir_of(out, sc), reps)
+            with EmuLock():
+                for sc in gs:
+                    run_xbox(sc, sdir_of(out, sc), reps)
     score(out, scenes, md)
 
 

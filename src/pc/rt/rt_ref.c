@@ -82,9 +82,12 @@ static void load_pokes(const char *path)
     FILE *f = fopen(path, "r");
     int cap = 0;
     poke p;
+    char line[128];
     if (!f)
         return;
-    while (fscanf(f, "%d %7s %i %3s %lf", &p.pt, p.reg, &p.off, p.type, &p.v) == 5) {
+    /* fgets + sscanf: the Xbox's fscanf (pdclib) converts no floats (src/pc/xbox/xbox_scanf.c has the sscanf that
+     * does), so no poke loaded there before 25 Oct 2026 (tools/render_score.py's area changes) */
+    while (fgets(line, sizeof line, f) && sscanf(line, "%d %7s %i %3s %lf", &p.pt, p.reg, &p.off, p.type, &p.v) == 5) {
         if (npokes == cap)
             pokes = realloc(pokes, sizeof *pokes * (size_t)(cap = cap ? cap * 2 : 64));
         pokes[npokes++] = p;
