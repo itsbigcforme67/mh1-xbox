@@ -2338,3 +2338,18 @@ x0D5 +0x3E; player_work 0x34D450 / 0xA00; em_work 0x340C40 / 0xA00 with EMW's 8-
 - How it was found: the PS2 trace showed the monster frozen at one point while the PS2 owned it; pictures of the PS2
   never showed it (MH1's did); the dump's EMW fields then pointed at the scale. Lesson: when a monster "does nothing"
   on one machine, dump its EMW there before blaming the AI or the aid.
+- **A PS2 G as the room's leader (LEAD=ps2): passes.** The PS2 posts quest 4 (it needed the 200z fee: 5000z poked into
+  User_data+0x20 = G 0x32C230), the PC joins with BOB's keys, the PS2 departs. Timing lessons: the first hunter on the
+  monster's area runs it (the PC got there before the leader), an owner leaving passes the monster only to someone already
+  on its area, the PS2 runs it most of the time so the PC's hits count at 1x (RT_DMG_MUL is owner-side): the test now
+  fights on until the kill; the PS2 aid's routes come from the PC's exit list, so the PC must walk the areas first (it
+  waits on 35). The PC G client crashed in 2 of 8 runs in lb_select_set_data (map name sprintf, fault 0x32) joining the
+  PS2's room, server answers identical to passing runs: open, an RT_ONLINE_TRACE line is in place.
+- **The Xbox G in the party (XBOX=1): passes** (PS2 G + PC G + Xbox G, PCSX2 and xemu together). New: build_xbox.py
+  `--version mhg --online`, run_xemu.sh `--version mhg --online`, full_check builds it. Fix: rt_code_ptr on Windows / Xbox
+  (a non-code draw word 0x1DD921 fell inside the XBE's text and was called: crash 10 s after connecting).
+- **Drop-outs: DROP=xbox (with XBOX=1) and DROP=ps2 pass**; a PC G dropping stays test_online_g.sh's.
+- Checks (26 Oct): full_check all ok (43 steps, emulator tests skipped); `VERSION=mhg tools/rebuild.sh` 7 OK; G Xbox nv2a
+  and G Xbox online nv2a built; test_ps2_g_hunt.sh passes plain, LEAD=ps2, XBOX=1, XBOX=1 DROP=xbox, DROP=ps2.
+- Fix coverage: the info-file size limits and system_w+0x44 are G only (MH1 has no sizes); rt_code_ptr is the shared
+  runtime (both games, MH1's online Xbox had no such prim; full_check's MH1 Xbox builds pass).

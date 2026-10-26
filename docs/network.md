@@ -1100,7 +1100,7 @@ sending it: harmless, and closer to the original if it was the login's answer.
   "hostleave" through the relay (the room's leader leaving) is a case to repeat on mcs before step 2: there, drop-outs
   of the owner were tested (above), not of the room leader (slot 0) with three players left.
 
-### 3.12 Monster Hunter G online (agent C, 18-25 Oct 2026, round 8; GB7, in progress)
+### 3.12 Monster Hunter G online (agent C, 18-26 Oct 2026, round 9; GB7, in progress)
 
 G (SLPM-65869) uses the same lobby-server protocol as MH1 (same framing, login, obfuscation, `LOCKROCK`, sequence
 rules; `cnLBS_LoginLobbyServer`, `mmbbc_encode`, `tcp_init`, `create_server_table` are identical), with a command table
@@ -1346,6 +1346,25 @@ PC, following at once, took it from the leader PS2); a monster whose owner leave
 already on that area, else the owner keeps it; the PC G client runs at about half speed in the guild hall while PCSX2
 runs (the joiner's waits are long).
 
+**Round 9: the Xbox G in the party** (`XBOX=1 tools/test_ps2_g_hunt.sh`): the G Xbox online build
+(`tools/build_xbox.py --version mhg --online --gfx nv2a`, from the ONLINE=1 G PC build's tree; `tools/run_xemu.sh
+--version mhg --online`) joins ANNA's room for 3 at the left counter: PS2 G + PC G + Xbox G in one Kut-Ku hunt, PCSX2 and
+xemu at once under the emulator lock [checked: passing run; size 104 on all three, owners PC -> PS2 -> PC, HP the same on
+the three, kill, three carves, the clear on all]. Fixed on the way (both games' runtime): a G lobby prim whose draw word
+is not code (the PC already skipped it) held 0x1DD921, which on the Xbox is inside the XBE's text: the Xbox called it and
+crashed 10 s after connecting. rt_code_ptr (rt_game.c) on Windows / Xbox now wants the exact start of a symbol of the
+build. Seen: the G Xbox online build has about 12-17 MB free in xemu and draws at 7.5 fps in the guild hall (the game
+ticks at 30); no card on its disk, so it plays a new hunter and its relogin save is not checked.
+
+**Round 9: a G player leaving mid-hunt** (quest tick 4200): `XBOX=1 DROP=xbox` (xemu stopped; the PC and the PS2 kill,
+carve, clear) and `DROP=ps2` (PCSX2 closed; the PC alone finishes, "mcs: player 1 dropped out") pass. A PC G leaving is
+`test_online_g.sh`'s part (with the real PS2 left alone at 1x damage the Kut-Ku takes too long).
+
+Open after round 9: the PC G client crashed twice (of 8 runs) in lb_select_set_data's map name sprintf (fault address
+0x32) joining the real PS2 G's room; the server's answers were byte-identical to passing runs, so it is something on the
+PC side (an RT_ONLINE_TRACE line there now prints the room / quest data for the next time). G's select_w 0xE4 / 0xE6 /
+0xE8, sys 3's s16, event quests, real hardware.
+
 Next: a PS2 G as the room leader, the Xbox G build in the party, event quests.
 
 ## 4. Run it
@@ -1367,6 +1386,7 @@ Next: a PS2 G as the room leader, the Xbox G build in the party, event quests.
     tools/test_ps2_g_hunt.sh                         # the real PS2 G and a PC G: room, Kut-Ku, clear, back in the hall (3.12, ~30 min)
     LEAD=ps2 tools/test_ps2_g_hunt.sh                # the same with the PS2 G as the room's leader (~35 min)
     XBOX=1 tools/test_ps2_g_hunt.sh                  # PS2 G + PC G + Xbox G (xemu) in one hunt (~40 min, 3.5 GB free)
+    XBOX=1 DROP=xbox tools/test_ps2_g_hunt.sh        # the same, xemu stopped mid-fight (DROP=ps2: PCSX2 closed, PS2 + PC)
     XBOX=1 tools/test_ps2_hunt.sh                    # PS2 + PC + Xbox (xemu) in one hunt (~25 min)
     tools/xemu_mcs_hunt.sh                           # the Xbox and a PC (~10 min)
     HUNT=kutku tools/test_ps2_hunt.sh                # PS2 + PC fight the Kut-Ku: hand-overs, HP, damage, carves (3.11, ~25 min)
