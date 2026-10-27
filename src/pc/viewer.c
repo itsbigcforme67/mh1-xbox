@@ -901,7 +901,24 @@ void rt_light_tick(void);
 void light_move(void);
 void *rt_player_ptr(int no);
 static fl_light light_game;          /* the game's lights for the actor asked about, else the fixed default above */
-static const fl_light *light_for(void *actor, int hunter)
+static const fl_light *light_mul(const fl_light *L)
+{
+    /* test aid RT_LIGHT_MUL=AMB,COL: the ambient and the three light colours scaled (renderer score: the actors' pixels
+     * are the ones that change between two runs; a lighting model is compared with the PS2's actors) */
+    static fl_light m;
+    float a, c;
+    int i, k;
+    if (!getenv("RT_LIGHT_MUL") || sscanf(getenv("RT_LIGHT_MUL"), "%f,%f", &a, &c) != 2)
+        return L;
+    m = *L;
+    for (k = 0; k < 3; k++) {
+        m.ambient[k] *= a;
+        for (i = 0; i < 3; i++)
+            m.col[i][k] *= c;
+    }
+    return &m;
+}
+static const fl_light *light_for_(void *actor, int hunter)
 {
     static int on = -1;
     if (on < 0)
@@ -920,6 +937,7 @@ static const fl_light *light_for(void *actor, int hunter)
     }
     return &light;
 }
+static const fl_light *light_for(void *actor, int hunter) { return light_mul(light_for_(actor, hunter)); }
 static const fl_light *light_cur(void) { return light_for(NULL, 0); }
 static const fl_light *light_hunter(int no) { return light_for(rt_player_ptr(no), 1); }
 static const int parts[HUNTER_PARTS] = { 1, 0, 1, 1, 1, 1 };
