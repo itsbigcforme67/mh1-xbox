@@ -11,6 +11,7 @@
  */
 #include "fmt.h"
 
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
@@ -59,6 +60,8 @@ static int apx_decode(apx_image *img, fmt_blob f, int be)
     img->w = (int)w;
     img->h = (int)h;
     img->rgba = malloc((size_t)w * h * 4);
+    if (getenv("RT_APX_TRACE"))
+        fprintf(stderr, "apx: %ux%u bpp %u mips %u pixel bytes %u\n", w, h, bpp, fmt_u16(f.p + 0x12, be), (unsigned)pix);
     img->src_bytes = (int)(w * h * bpp / 8) + (bpp == 4 ? 16 : bpp == 8 ? 256 : 0) * (int)pbpp / 8;
 
     if (bpp == 4 || bpp == 8) {

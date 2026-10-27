@@ -365,6 +365,11 @@ channel, HUD corners left out; the hunters still differ: the PS2 hunter wears no
   brighter because of the environment block, now matched. Not looked at from other cameras.
 - **Hunter brightness** (the PS2 hunter is darker on 27): RT_LIGHT_GAME=1 (the game's own stage lights) makes the PC
   hunter darker too (build/A/look/lg/cmp27.png); the PS2 hunter has no armour, so not settled [open].
+  27 Oct (agent D, lockstep pictures with the same armour): the PS2 lights equal the PC's RT_LIGHT_GAME lights (read in
+  PCSX2); the fixed default light is too bright at the camp and too dark in the desert, the game lights match the desert
+  and are too dark / directional at the camp. Still open; findings and the lead (the VU program's per-bone light matrix)
+  in docs/agents/agent-D.md "Renderer score: fixes". The far-sand softness of the same scoreboard was the PS2's 512x448
+  frame and line merge, not lighting or mip levels (docs/pc.md "PS2 output").
 - G action 0x67 (Dual Swords) now runs G's pl_at024 arg 3 (matches G).
 
 **GB6 quest lane** (section 8's list), done this pass:

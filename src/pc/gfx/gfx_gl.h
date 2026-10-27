@@ -17,6 +17,8 @@ typedef struct {
     int filter2d;        /* the 2D art (HUD, menus, text): F2D_LINEAR bilinear, F2D_NEAREST, F2D_SHARP nearest at an integer scale + bilinear for the rest */
     int win_x, win_y;    /* the remembered windowed position (-1: centred) and size (0: default) */
     int win_w, win_h;
+    int ps2_output;      /* 1: the PS2's picture: the game's 512 x 448 frame, the line merge the game sets up (PCRTC: each line
+                          * mixed 50 % with the one above, flPS2SwapDBuff), stretched to 4:3 (docs/pc.md "PS2 output") */
 } gfx_options;
 extern gfx_options gfx_opt;
 
