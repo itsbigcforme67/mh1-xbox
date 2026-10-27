@@ -1028,3 +1028,16 @@ Both games unless marked.
   online town a prim's draw word that is not code (0x1DD921; the Linux PC already skipped it) lies inside the Xbox XBE's
   text, so the Xbox called it and crashed 10 s after connecting. **To revert:** commit "Xbox: a 2D prim's draw function
   must start at a symbol (rt_code_ptr), full_check builds the G Xbox online".
+
+## G online round 10: memory and the PS2's quest card (agent C, 27 Oct 2026)
+- **Dropped:** net_peer.c's static `peer[4]` (4 x 64 KB receive buffers) and its 512-packet queue `q` (470 KB of .bss).
+  **Now:** allocated by np_host / np_join / the first queued packet. **Why:** a game on the server's relay (rt_mcs.c,
+  every real-server game) never uses the direct-connect transport; the Xbox G online build is short of memory.
+  **To revert:** commit "Online memory: net_peer's buffers on first use, one rule-table buffer ...".
+- **Dropped:** the three static 0x2A000-byte rule-table buffers (MH1's Lbc_GetRoomRule in lb_online_nm.c, G's
+  Lbc_GetRoomRule and Lbc_GuestReadRoom in src/lobby/gonl/gen). **Now:** one `lb_room_rule_buf` (lb_online_nm.c).
+  **Why:** 336 KB of the G online build; each use is one step's copy into RoomRule. Same commit.
+- **Dropped:** tools/test_ps2_g_hunt.sh LEAD=ps2's three fixed Right presses on the PS2's quest board. **Now:** one right
+  at a time until the PS2's mhRule+0x52 (G 0x6533C2) reads quest 4 and still does 3 s later; the room's property must be
+  quest 4. **Why:** the PS2 posted quests 20 / 36 / 37 / 6 in 4 of 10 runs (lost or late presses); that is also what
+  showed the PC's map_name crash. **To revert:** commit "test_ps2_g_hunt LEAD=ps2: pick the quest card ...".

@@ -168,12 +168,19 @@ if [ "$LEAD" = ps2 ]; then
     # card 4 (the Kut-Ku): rights until the card shown is quest 4 (mhRule+0x52, G 0x6533C2: the quest shown / chosen,
     # src/lobby/f/lb_guild_g.c). Three fixed rights lost one or two presses in 3 of 9 runs (the PS2 posted quest 36 /
     # 37 / 20: cards 3 / 2; round 10)
+    # (a press can also land late: one run posted quest 6, two cards on; so one right at a time, 3 s apart, and 4 must
+    # still be shown 3 s after it first is)
+    qshown() { $P r16 0x6533C2 | awk '{print $2}'; }
     i=0
-    while [ $i -lt 3 ] || { [ "$($P r16 0x6533C2 | awk '{print $2}')" != 0x4 ] && [ $i -lt 12 ]; }; do k 2 Right; i=$((i + 1)); done
-    q=$($P r16 0x6533C2 | awk '{print $2}')
+    while [ $i -lt 20 ]; do
+        if [ "$(qshown)" = 0x4 ]; then sleep 3; [ "$(qshown)" = 0x4 ] && break; continue; fi
+        k 3 Right; i=$((i + 1))
+    done
+    q=$(qshown)
     [ "$q" = 0x4 ] || fail "the PS2's quest card shows quest $q, not 4"
     k 5 c; k 5 c; k 5 c; k 5 c; k 5 c
-    for key in c c Left Left Down Down Down c c c; do k 3.4 $key; done
+    echo "the PS2's quest after the card's talk: $(qshown)" >> $O/ps2_quest.txt
+    for key in c c Left Left Down Down Down c c c; do k 3.4 $key; echo "after $key: $(qshown)" >> $O/ps2_quest.txt; done
     i=0
     while [ $i -lt 20 ] && ! grep -q "creates room 1" $O/server.log; do k 2 c; i=$((i + 1)); done
     shot 03_room
