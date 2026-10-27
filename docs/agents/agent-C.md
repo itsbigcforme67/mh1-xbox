@@ -2410,3 +2410,51 @@ x0D5 +0x3E; player_work 0x34D450 / 0xA00; em_work 0x340C40 / 0xA00 with EMW's 8-
   shared rule buffer cover both games' online builds (MH1 had net_peer's 470 KB and one rule buffer); hunt_sync.py and
   RT_PL_GOTO2 are shared test aids (MH1's hunt tests use them too; checked with G's HUNT=1 and the PS2 runs only).
 
+
+## G online, round 11 (27 Oct 2026): G tables at MH1 size, the missing banner on the Xbox
+- **The scan.** Every host data object of the PC G build (online binary, `nm -S`: 3249) whose G address has a next G
+  name farther away than the host size: 991 (round 10's "560" counted only the imported tables). Sorted by what G's
+  bytes past the host size are (G ELF / overlays, labels from the G ELFs' symbol tables, MH1's the same way):
+  - 649 data tables: G's bytes past the MH1 size are zero up to the next 16-byte boundary: alignment padding.
+  - 157 bss work areas: the gap ends at the next 16-byte boundary: padding.
+  - 101 data tables: G's bytes past the MH1 size are NOT zero and carry no label of their own, while in MH1 the next
+    label sits right at the table's end. Those bytes can only be reached through this table: **G's table is longer.**
+    Of these, 16 are already sized by hand in config/mhg/pc_data.txt (e.g. shell04/09/16_body_tbl: the bytes after them
+    are the hit tables the entries point at, MH1 has the same) and 5 are MH1 names inside a G table pc_data.txt names
+    under G's own name (gequip_str, gstat_str, hunter_appellation, tuto_str_tbl): left alone. The rest fixed.
+  - 53 data tables with zero bytes past the alignment and 31 bss areas with a gap past it: checked one by one against
+    the C / G asm that index them (table below; most are unnamed neighbours or the PC's own arrays).
+- **Evidence table** (fixed = sized to G's extent in config/mhg/pc_data.txt or rt_data.c; sizes hex):
+
+| symbol | MH1 | G | who reads / writes past the MH1 end | verdict |
+|---|---|---|---|---|
+| u10_recv_buff | 3980 | 5640 | AQ channel 10's receive pool: G's recv_buf_one[10] = 11040 (MH1 7360), init_AQWork puts the second half at +11040, so the PC wrote 0x1CC0 bytes past the host array (G online) | fixed |
+| shadow / light / diffuse / wall_tbl_add, St_unique_tbl | 160 | 170 | [game_w.stage]: G stages 88-91 (same as stage_model_data in round 9) | fixed |
+| Eft_stg_type, Stg_env_type, stage_start_ang | B0 | C0 / C0 / B8 | [game_w.stage], G stages 88-91 | fixed |
+| sun_pos_tbl, stg_eft_mdl_no, stage_sphr_tbl (rt_data.c arrays) | 88 ptrs | 92 | set13 / set09 / shell12 [game_w.stage]; stage_sphr_tbl's G rows 88-91 are NULL, the host read a neighbour's word as a sphere list | fixed (RT_NSTG) |
+| fishcam_ofs_tbl | 168 | 190 | camc.c [game_w.stage] (MH1 90 entries) | fixed |
+| ofs_x_3192 / ofs_y_3193 | 20 / 10 | 30 / 20 | disp_partial_map [game_w.x2E]: G x2E 0-10 (MH1 8 entries) | fixed |
+| eft06_num / _all_time / _index / _param / _fade_index, eft06_fade_data | 14 (F0) | 20 (F8) | eft06 [ew->arg]: G has an 11th type (MH1 s16[10]) | fixed |
+| Item_preparation_tbl, _00, tbl2 | 28E / 18C / 10C | 420 / 360 / 1B8 | item01.c by item number: G has more items (Item_preparation_tbl's G rows past MH1's are zero: the host read a neighbour) | fixed |
+| enemy_shadow_size, em_action_priority_tbl, area_move_high_y_tbl, em/fly_adj*_hosei tables | 118 / 118 / 140 ... | 130 / 1A0 / 170 ... | [guess on the index: per monster kind / area] G's bytes continue (the rule) | fixed |
+| Snd_weapon_tbl, Snd_em_id_(file_)conv_tbl, fight_bgm_tbl, stage_bgm_etc_tbl | F8 / 32 / 8 / C | 1D0 / 40 / 10 / 10 | [guess on the index: by weapon / monster / stage] G's bytes continue (the rule) | fixed |
+| lit_3440, lit_2545, lit_3772, lit_4454_0035A600 | 1B / B / 17 / 1A | 40 / 30 / 40 / 40 | text: G's string is longer; the host copy had no NUL, so a print ran into the next object | fixed |
+| 60 more (menus, UV / colour tables, talk_tbl, map trade names, quest tables, ...) | | | G data continues past the MH1 size, no label (the rule above) | fixed |
+| PitMenu, net_common_w | 1764 / 94 | 17EA / B0 | G grew the work areas; G-only code (gonl) uses them [guess: no write past MH1's size seen] | fixed (cheap, bss) |
+| set01_stack | 370 | 3C0 | G's entry is 0x30 (MH1 0x2C, seq at +1): only G's own set01 code would; the PC runs MH1's set01.c with MH1's layout, 20 entries | padding for the PC |
+| stiem_stack_tbl, aq_max_size, recv_buf_* | 14 / 2C | D0 / 50 | f_quest.c loops 20, AQ indexes 0-10: within MH1's size; the rest is unnamed G bss / zeros | padding |
+| ot0-ot2, stack, soncho_w, soncho | 20 / 40 / 20 / 4 | 40-100 / 2000 / ... | the PC's own arrays (rt_game.c prim queues), or the last object of a bss | padding |
+| CA_size_list, mc_file_tbl, equip_exp_str_gun, train_tbl | 8 / C / 10 / 7C | zeros after | no index past MH1's size found [not proven]; equip_exp_str_gun lies inside gequip_str | padding |
+
+- **Automatic check:** tools/check_g_tables.py (full_check step g_tables) applies the "G data continues, no label, MH1
+  ends at a label" rule to the G PC build's generated host tables (rt_tables.c, rt_gen.c) and fails with a list when a
+  table is smaller than G's. Checked: with round 10's pc_data.txt (PC_DATA=old file) it lists 82 tables; with this
+  round's, 0. It does not see bss areas or C-defined arrays (rt_data.c): those stay a hand check.
+- **Task 2, the banner (村長の教えが追加されました) missing on the Xbox in g_desert:** not a table size. Round 9's
+  rt_code_ptr (Windows / Xbox) accepts a 2D prim's draw function only at the start of a *global* symbol
+  (rt_symtab.c); set01_trans (the set01 message banner) is `static`, so the prim was skipped on the Xbox since 26 Oct
+  (the PC uses the text-segment range, so it drew). Fix: tools/codetab.py writes every function start of the linked
+  exe, statics included (Xbox: lld-link's map; Windows: llvm-nm on the exe, 5244 functions, statics included and
+  checked), into rt_codetab (rt_game.c); rt_code_ptr binary-searches it. [checked: render_score g_desert on the G Xbox
+  nv2a build in xemu shows the banner again, PS2 | PC | Xbox; the Windows exe's table was checked offline with
+  llvm-nm, the Windows build itself was not rebuilt.] Every static prim->trans was affected, both games.

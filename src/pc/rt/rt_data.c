@@ -118,9 +118,14 @@ static const struct {
 /* Tables of pointers (one per stage) into the game's data. Each PS2 pointer
  * is translated to the same bytes in the loaded ELF/overlay image; the
  * game C only reads through them. */
-f32 *sun_pos_tbl[88];          /* set13: sun position per stage */
-s16 *stg_eft_mdl_no[88];       /* set13: set-model clay numbers per stage */
-f32 *stage_sphr_tbl[88];       /* set13: occluding spheres r,x,y,z ... r = -1 */
+#ifdef VERSION_MHG
+#define RT_NSTG 92              /* G has 92 stages (88-91 its own); at 88 entries stage 88-91 read the next host object */
+#else
+#define RT_NSTG 88
+#endif
+f32 *sun_pos_tbl[RT_NSTG];          /* set13: sun position per stage */
+s16 *stg_eft_mdl_no[RT_NSTG];       /* set13: set-model clay numbers per stage */
+f32 *stage_sphr_tbl[RT_NSTG];       /* set13: occluding spheres r,x,y,z ... r = -1 */
 
 static const struct {
     const char *name;
