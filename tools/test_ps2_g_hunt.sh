@@ -198,7 +198,9 @@ if [ "$LEAD" = ps2 ]; then
     # ---- the PC joins (test_online_g.sh BOB's keys) and gets ready; the PS2 runs the monster first
     # (the PC waits next door, on area 35, until 1600: the first hunter on the monster's area runs it, and the PC got
     # there first when it followed at once; it still walks there, since the PS2 aid's routes come from the PC's exit list)
-    pc_run "$JOINK$ATK" "$JOINW" "60,35;1600,-1;2600,21;3400,-1" "1600-2600,3500-9000"
+    # (the warps next to the monster run to 20000, the end of the fight-on loop below: with the PS2 running the monster at
+    # 1x the kill can come after 9000, and the PC then never reached the carcass: round 10, a kill at 16620 on area 40)
+    pc_run "$JOINK$ATK" "$JOINW" "60,35;1600,-1;2600,21;3400,-1" "1600-2600,3500-20000"
     i=0
     while [ $i -lt 900 ] && ! grep -q "joins room 1" $O/server.log; do sleep 2; i=$((i + 2)); done   # (the PC runs at about half
     grep -q "joins room 1" $O/server.log || fail "the PC did not join the PS2's room"                                # speed beside PCSX2)
