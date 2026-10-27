@@ -2397,3 +2397,16 @@ x0D5 +0x3E; player_work 0x34D450 / 0xA00; em_work 0x340C40 / 0xA00 with EMW's 8-
   shipped [checked at run time: ps2_hunt_aid.py now prints select_w's quest and +0xE4/E6/E8 on change; the real PS2 G as
   slot 0 (LEAD=ps2) had 0000 / 0000 / 00 for the whole run]. What Capcom meant them for is not known (a guess: room
   rules or an event-quest id that was dropped).
+- **Proof (27-28 Oct):** LEAD=ps2 runs 71-80 all passed (10 in a row), after two test-aid fixes found on the way:
+  hunt_sync.py skips a monster's HP 0 samples before its first positive HP (the PS2 aid's first sample read 0: "the HP
+  went up"), and RT_PL_GOTO2 (rt_player.c, both games' test aid) no longer walks the hunter away while the target lies
+  dead with RT_PL_CARVE on (a kill just before a camp trip left the PC without a carve; also the PC's monster warps in
+  LEAD=ps2 now run to 20000). Before those, runs 41-67: 16 passed, failures only in the test aids (two carves, the HP
+  sample, once the PS2 not starting the match at the departure spot: its keys, not understood) and none in the PC
+  client: no crash in 33 PC joins of a PS2 room since the fix. Also passing: the plain (PC-led) run and XBOX=1.
+- Checks: full_check all ok (43 steps, emulator tests skipped); `VERSION=mhg tools/rebuild.sh` 7 OK; G Xbox nv2a plain and
+  online built; test_online_g.sh ROOM=1 / HUNT=1 pass.
+- Fix coverage: mem_tex / map_name sizes are G only (MH1's host sizes are its own); net_peer.c's lazy buffers and the
+  shared rule buffer cover both games' online builds (MH1 had net_peer's 470 KB and one rule buffer); hunt_sync.py and
+  RT_PL_GOTO2 are shared test aids (MH1's hunt tests use them too; checked with G's HUNT=1 and the PS2 runs only).
+
