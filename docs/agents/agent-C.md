@@ -2353,3 +2353,47 @@ x0D5 +0x3E; player_work 0x34D450 / 0xA00; em_work 0x340C40 / 0xA00 with EMW's 8-
   and G Xbox online nv2a built; test_ps2_g_hunt.sh passes plain, LEAD=ps2, XBOX=1, XBOX=1 DROP=xbox, DROP=ps2.
 - Fix coverage: the info-file size limits and system_w+0x44 are G only (MH1 has no sizes); rt_code_ptr is the shared
   runtime (both games, MH1's online Xbox had no such prim; full_check's MH1 Xbox builds pass).
+
+## G online, round 10 (27 Oct 2026): the join crash, the Xbox G online's memory, select_w 0xE4 / 0xE6 / 0xE8
+- **The crash (round 9's open item) found and fixed: a host array at MH1's size.** G's lobby (Lbs_load ->
+  func_0010EF50 -> load_texlist) loads its icon textures into mem_tex from slot 372; G's mem_tex has 388 slots (0x610
+  bytes to the next G symbol), the PC's host array kept MH1's 0x159. The handles ran into the next host object, map_name,
+  so map_name[4..] held small numbers (0x30, 0x31, ...) after the login. lb_select_set_data sprintf's
+  map_name[quest row +0x14] when a joiner opens a room's sheet: map 6 (the jungle) read 0x32 = the fault address. Round 9's
+  "server answers identical" was wrong: the PS2 had posted quest 37 / 36 (jungle) in the two crashing runs, 4 / 20 in the
+  passing ones (the room property 6509 in server.log). [checked: a hardware watchpoint on map_name+0x10 under gdb
+  (test_online_g.sh GDB=FILE) caught load_texlist; a probe calling lb_select_set_data(4, 20, 36, 37, 3004) in the town
+  crashed at 20 before the fix (fault 0x30), all five pass after.] Fix: config/mhg/pc_data.txt gives mem_tex G's 0x610
+  bytes and map_name G's 11 entries (0x2C; MH1 8, so maps 8-10 had read past it too), plus three bss work areas sized to
+  the gap to the next G symbol (pl_mot_han_ofs 0x140, pit_work 0xA0, sfd_tbl 0xB0: a guess, harmless). Also
+  lobby_func_00559C30 returns its row (m2c made it void; the callers got it by accident through eax).
+- Lesson: tools/gen_rt_tables.py keeps MH1's size for a G table unless config/mhg/pc_data.txt names it, so a G table
+  that grew overflows into its host neighbour. A scan (G symbol gaps vs host sizes) of the main .bss tables found only
+  the ones above; G's imported data tables with a larger gap than their MH1 size are 560 (mostly padding / unnamed
+  neighbours), not vetted.
+- **The PS2-led test's other flake:** the PS2's quest board shows a random pick of 8 of the level's quests (QLIST,
+  G 0x653510 + level * 0x10; cursor W_SEL G 0x654830; lb_guild_g.c), and right presses got lost or landed late: three
+  fixed rights posted quests 20 / 36 / 37 / 6. test_ps2_g_hunt.sh LEAD=ps2 now finds quest 4's card (or writes 4 over
+  card 1 when the pick left it out: a PINE test aid like the zenny), steps the cursor there, checks the quest taken
+  (mhRule+0x52) and the room's property.
+- **Xbox G online memory** (xemu, the guild-hall run of a scratch script: the G online XBE alone on mh1-server --open,
+  RT_LB_WARP to the hall's door, the free pages of the stage-change / alive lines):
+  - What G online keeps beyond offline G: the XBE image is 1.6 MB bigger (was 2.4 MB): .text +660 KB (the generated
+    gonl code), .rdata +70 KB, .bss: G's net buffers (u1..u10_recv_buff, AQ / mcs queues, ~450 KB), G lobby work areas
+    (g_lb_734E34 181 KB, put_main_cursor_p5 103 KB, HttpWork 60 KB, ...), rt_online's lobby_area 112 KB. The heap is the
+    same as offline on the PC's RT_MEM report in the town (the 14 MB "other" there is the PC-only clip ring, pick.c,
+    off on the Xbox); the lobby's textures and the other hunters' models come on top in the hall.
+  - Cut: net_peer.c's 470 KB of static buffers (the direct-connect transport; a game on the server's relay never uses
+    it) now allocated on first use; the room-rule copy buffer (168 KB) existed three times (MH1's and G's
+    Lbc_GetRoomRule, G's Lbc_GuestReadRoom): one now. 806 KB of .bss.
+  - Free memory, before -> after: boot 17736 -> 18584 KB, entering the town 12800 -> 13648 KB, entering the guild hall
+    12680 -> 12872 KB [measured; the hall's gain is smaller than the boot's, not understood: the hall run after the cut
+    walked in and out of the hall repeatedly]. Offline G (plain XBE, village): 19900 KB at boot, ~16.5 MB in the village.
+    Round 9's hunt (three hunters' models) saw 9.5 MB in the hall and 6.9 MB in the quest.
+- **select_w 0xE4 / 0xE6 / 0xE8 (G only):** in every G overlay's code (main, sub_main, game, lobby, select, nethttp
+  asm) only net_send_sys (slot 0 reads them for sys 2) and net_receive_sys (non-masters store them) touch them, through
+  select_w or a base register near it (checked for the bases lit_195 / lit_664 / lit_796 / D_0035ECDC / D_0035ED0C);
+  init_select_work clears all 0xF0 bytes. So nothing sets them and nothing reads them: vestigial, always 0 in G as
+  shipped [checked at run time: ps2_hunt_aid.py now prints select_w's quest and +0xE4/E6/E8 on change; the real PS2 G as
+  slot 0 (LEAD=ps2) had 0000 / 0000 / 00 for the whole run]. What Capcom meant them for is not known (a guess: room
+  rules or an event-quest id that was dropped).

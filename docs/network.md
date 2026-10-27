@@ -1367,6 +1367,24 @@ PC side (an RT_ONLINE_TRACE line there now prints the room / quest data for the 
 
 Next: a PS2 G as the room leader, the Xbox G build in the party, event quests.
 
+**Round 10 (27 Oct 2026): the join crash, the Xbox's memory, select_w 0xE4..0xE8.**
+- The PC G client's crash joining a room (round 9) was a host table at MH1's size: G's lobby loads its icon textures into
+  mem_tex from slot 372 (G has 388 slots, the PC's array had MH1's 0x159), over the next host object, map_name; a room
+  on the jungle (map 6) then printed its map name from address 0x32. The PS2 had posted jungle quests (36 / 37) in the
+  crashing runs. config/mhg/pc_data.txt now sizes mem_tex and map_name (11 maps) at G's sizes [checked: gdb watchpoint
+  on map_name, lb_select_set_data called for quests 4 / 20 / 36 / 37 / 3004 crashes before, passes after; the LEAD=ps2
+  runs below].
+- tools/test_ps2_g_hunt.sh LEAD=ps2 picks the Kut-Ku's card from the PS2's board by RAM (the board is a random pick of 8
+  quests: QLIST G 0x653510, cursor G 0x654830) instead of three fixed right presses (lost / late presses posted other
+  quests).
+- The G Xbox online build: 806 KB less .bss (net_peer's buffers on first use, one room-rule buffer instead of three);
+  free memory in xemu at boot 17.7 -> 18.6 MB, in the town 12.8 -> 13.6 MB, in the guild hall 12.7 -> 12.9 MB (alone;
+  three hunters' models take ~3 MB more, round 9). Details: docs/agents/agent-C.md "G online, round 10".
+- select_w 0xE4 / 0xE6 / 0xE8: only G's net_send_sys / net_receive_sys touch them, init_select_work clears them: always
+  0 (the real PS2 G as slot 0 sends zeros), meaning unknown.
+
+Open after round 10: sys 3's s16, event quests, real hardware; a G player dropping is covered (round 9).
+
 ## 4. Run it
 
     ONLINE=1 tools/build_pc.sh                       # build/pc/mhview_online
