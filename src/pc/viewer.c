@@ -908,9 +908,17 @@ static const fl_light *light_mul(const fl_light *L)
     static fl_light m;
     float a, c;
     int i, k;
+    if (getenv("RT_LIGHT_FLIP")) {          /* test aid: the light directions reversed */
+        m = *L;
+        for (i = 0; i < 3; i++)
+            for (k = 0; k < 3; k++)
+                m.dir[i][k] = -m.dir[i][k];
+        L = &m;
+    }
     if (!getenv("RT_LIGHT_MUL") || sscanf(getenv("RT_LIGHT_MUL"), "%f,%f", &a, &c) != 2)
         return L;
-    m = *L;
+    if (L != &m)
+        m = *L;
     for (k = 0; k < 3; k++) {
         m.ambient[k] *= a;
         for (i = 0; i < 3; i++)

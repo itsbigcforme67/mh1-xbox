@@ -310,8 +310,17 @@ static int fl_model_create_lt(fl_model *m, fmt_blob amo, fmt_blob ahi, fmt_blob 
                     lo = ap->col[k] < lo ? ap->col[k] : lo;
                     hi = ap->col[k] > hi ? ap->col[k] : hi;
                 }
-            fprintf(stderr, "lit model part %d: shader family %d, specular %d, lighting type %d, vertex rgb %.1f..%.1f\n", i, ap->attr[1], ap->attr[2],
-                    ap->attr[5], ap->col ? lo : -1.f, ap->col ? hi : -1.f);
+            float nlo = 1e9f, nhi = 0, nsum = 0;
+            for (k = 0; ap->nrm && k < ap->nvert; k++) {
+                const float *q = ap->nrm + 3 * k;
+                float l = sqrtf(q[0] * q[0] + q[1] * q[1] + q[2] * q[2]);
+                nlo = l < nlo ? l : nlo;
+                nhi = l > nhi ? l : nhi;
+                nsum += l;
+            }
+            fprintf(stderr, "lit model part %d: shader family %d, specular %d, lighting type %d, vertex rgb %.1f..%.1f, normal length %.3f..%.3f "
+                    "(mean %.3f)\n", i, ap->attr[1], ap->attr[2], ap->attr[5], ap->col ? lo : -1.f, ap->col ? hi : -1.f,
+                    ap->nrm ? nlo : 0.f, nhi, ap->nvert ? nsum / ap->nvert : 0.f);
         }
     }
     if (lit && getenv("RT_LIGHT_TRACE") && atoi(getenv("RT_LIGHT_TRACE")) >= 3) {
