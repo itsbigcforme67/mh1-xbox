@@ -1037,7 +1037,8 @@ Both games unless marked.
 - **Dropped:** the three static 0x2A000-byte rule-table buffers (MH1's Lbc_GetRoomRule in lb_online_nm.c, G's
   Lbc_GetRoomRule and Lbc_GuestReadRoom in src/lobby/gonl/gen). **Now:** one `lb_room_rule_buf` (lb_online_nm.c).
   **Why:** 336 KB of the G online build; each use is one step's copy into RoomRule. Same commit.
-- **Dropped:** tools/test_ps2_g_hunt.sh LEAD=ps2's three fixed Right presses on the PS2's quest board. **Now:** one right
-  at a time until the board's cursor (G 0x6533C2, mhRule+0x52: the card index while the board is up, the quest once a
-  card is taken) is on card 4 and still is 3 s later; the quest taken and the room's property must be 4. **Why:** the PS2 posted quests 20 / 36 / 37 / 6 in 4 of 10 runs (lost or late presses); that is also what
+- **Dropped:** tools/test_ps2_g_hunt.sh LEAD=ps2's three fixed Right presses on the PS2's quest board. **Now:** the board's 8
+  cards are a random pick (QLIST, G 0x653510): the test finds quest 4's card (or writes 4 over card 1 when the pick left
+  it out), moves the cursor (W_SEL, G 0x654830) there one right at a time, and checks the quest taken (mhRule+0x52) and
+  the room's property. **Why:** the PS2 posted quests 20 / 36 / 37 / 6 in 4 of 10 runs (lost or late presses); that is also what
   showed the PC's map_name crash. **To revert:** commit "test_ps2_g_hunt LEAD=ps2: pick the quest card ...".

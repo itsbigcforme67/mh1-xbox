@@ -165,13 +165,24 @@ if [ "$LEAD" = ps2 ]; then
     $P w32 $((0x32C230)) 5000 > /dev/null              # the hunter's zenny (User_data+0x20; the PC's RT_MONEY): the 200z fee
     warp 1120 1950 0x8000; k 4 z
     k 5 c; k 5 c; k 5 c; k 5 c
-    # card 4 (the Kut-Ku): rights until the board's cursor is on it. G 0x6533C2 (mhRule+0x52) holds the card index while
-    # the board is up (0 = card 1) and the quest once a card is taken (src/lobby/f/lb_guild_g.c MH_QUEST). Three fixed
-    # rights lost or gained a press in 4 of 10 runs (the PS2 posted quest 20 / 36 / 37 / 6: cards 2 / 3 / 3 / 5; round 10)
-    qshown() { v=$($P r16 0x6533C2 | awk '{print $2}'); echo "$(date +%T) board $v" >> $O/ps2_quest.txt; echo $v; }
+    # the Kut-Ku's card: the board's 8 cards are a random pick of the level's quests (lb_guild_g.c: QLIST(level, k) at
+    # G 0x653510 + level * 0x10, the cursor W_SEL at G 0x654830, the level mhRule+0x54 = G 0x6533C4), so the card of quest
+    # 4 is looked up and the cursor moved there one right at a time (3 s apart, checked 3 s later: presses got lost or
+    # landed late). If the pick left quest 4 out, the test writes it over the first card (a PINE test aid, as the zenny).
+    # Before (round 9/10): three fixed rights posted quests 20 / 36 / 37 / 6 in 4 of 10 runs. mhRule+0x52 (G 0x6533C2)
+    # holds the quest once a card is taken.
+    qshown() { v=$($P r16 0x6533C2 | awk '{print $2}'); echo "$(date +%T) quest $v" >> $O/ps2_quest.txt; echo $v; }
+    sel() { v=$($P r16 0x654830 | awk '{print $2}'); echo "$(date +%T) cursor $v" >> $O/ps2_quest.txt; echo $v; }
+    LV=$($P r8 0x6533C4 | awk '{print $2}')
+    QB=$((0x653510 + LV * 0x10))
+    CARDS=$($P r16 $QB 8 | cut -d' ' -f2-)
+    echo "level $LV cards $CARDS" >> $O/ps2_quest.txt
+    KI=$(echo $CARDS | tr ' ' '\n' | grep -n '^0x4$' | head -1 | cut -d: -f1)
+    if [ -z "$KI" ]; then $P w16 $QB 4 > /dev/null; KI=1; echo "quest 4 not on the board: written over card 1" >> $O/ps2_quest.txt; fi
+    KI=$((KI - 1))
     i=0
     while [ $i -lt 12 ]; do
-        if [ "$(qshown)" = 0x3 ]; then sleep 3; [ "$(qshown)" = 0x3 ] && break; continue; fi
+        if [ "$(sel)" = "$(printf 0x%X $KI)" ]; then sleep 3; [ "$(sel)" = "$(printf 0x%X $KI)" ] && break; continue; fi
         k 3 Right; i=$((i + 1))
     done
     k 5 c; k 5 c; k 5 c; k 5 c; k 5 c
