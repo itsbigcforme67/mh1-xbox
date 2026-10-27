@@ -165,22 +165,19 @@ if [ "$LEAD" = ps2 ]; then
     $P w32 $((0x32C230)) 5000 > /dev/null              # the hunter's zenny (User_data+0x20; the PC's RT_MONEY): the 200z fee
     warp 1120 1950 0x8000; k 4 z
     k 5 c; k 5 c; k 5 c; k 5 c
-    # card 4 (the Kut-Ku): rights until the card shown is quest 4 (mhRule+0x52, G 0x6533C2: the quest shown / chosen,
-    # src/lobby/f/lb_guild_g.c). Three fixed rights lost one or two presses in 3 of 9 runs (the PS2 posted quest 36 /
-    # 37 / 20: cards 3 / 2; round 10)
-    # (a press can also land late: one run posted quest 6, two cards on; so one right at a time, 3 s apart, and 4 must
-    # still be shown 3 s after it first is)
-    qshown() { $P r16 0x6533C2 | awk '{print $2}'; }
+    # card 4 (the Kut-Ku): rights until the board's cursor is on it. G 0x6533C2 (mhRule+0x52) holds the card index while
+    # the board is up (0 = card 1) and the quest once a card is taken (src/lobby/f/lb_guild_g.c MH_QUEST). Three fixed
+    # rights lost or gained a press in 4 of 10 runs (the PS2 posted quest 20 / 36 / 37 / 6: cards 2 / 3 / 3 / 5; round 10)
+    qshown() { v=$($P r16 0x6533C2 | awk '{print $2}'); echo "$(date +%T) board $v" >> $O/ps2_quest.txt; echo $v; }
     i=0
-    while [ $i -lt 20 ]; do
-        if [ "$(qshown)" = 0x4 ]; then sleep 3; [ "$(qshown)" = 0x4 ] && break; continue; fi
+    while [ $i -lt 12 ]; do
+        if [ "$(qshown)" = 0x3 ]; then sleep 3; [ "$(qshown)" = 0x3 ] && break; continue; fi
         k 3 Right; i=$((i + 1))
     done
-    q=$(qshown)
-    [ "$q" = 0x4 ] || fail "the PS2's quest card shows quest $q, not 4"
     k 5 c; k 5 c; k 5 c; k 5 c; k 5 c
-    echo "the PS2's quest after the card's talk: $(qshown)" >> $O/ps2_quest.txt
-    for key in c c Left Left Down Down Down c c c; do k 3.4 $key; echo "after $key: $(qshown)" >> $O/ps2_quest.txt; done
+    q=$(qshown)
+    [ "$q" = 0x4 ] || fail "the PS2 took quest $q, not 4 (card cursor / board keys)"
+    for key in c c Left Left Down Down Down c c c; do k 3.4 $key; done
     i=0
     while [ $i -lt 20 ] && ! grep -q "creates room 1" $O/server.log; do k 2 c; i=$((i + 1)); done
     shot 03_room

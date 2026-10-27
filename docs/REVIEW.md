@@ -1038,6 +1038,6 @@ Both games unless marked.
   Lbc_GetRoomRule and Lbc_GuestReadRoom in src/lobby/gonl/gen). **Now:** one `lb_room_rule_buf` (lb_online_nm.c).
   **Why:** 336 KB of the G online build; each use is one step's copy into RoomRule. Same commit.
 - **Dropped:** tools/test_ps2_g_hunt.sh LEAD=ps2's three fixed Right presses on the PS2's quest board. **Now:** one right
-  at a time until the PS2's mhRule+0x52 (G 0x6533C2) reads quest 4 and still does 3 s later; the room's property must be
-  quest 4. **Why:** the PS2 posted quests 20 / 36 / 37 / 6 in 4 of 10 runs (lost or late presses); that is also what
+  at a time until the board's cursor (G 0x6533C2, mhRule+0x52: the card index while the board is up, the quest once a
+  card is taken) is on card 4 and still is 3 s later; the quest taken and the room's property must be 4. **Why:** the PS2 posted quests 20 / 36 / 37 / 6 in 4 of 10 runs (lost or late presses); that is also what
   showed the PC's map_name crash. **To revert:** commit "test_ps2_g_hunt LEAD=ps2: pick the quest card ...".
