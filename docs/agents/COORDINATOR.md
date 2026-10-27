@@ -95,7 +95,13 @@ always been a struct field type or a lost field.
 
 ## Current assignments (update when they change)
 
-### Running, 23 Oct 2026 evening
+### Running, 27 Oct 2026
+- Laptop now ~16 GB RAM (owner, 27 Oct): up to 3 agents; > 4 GB available before an emulator, > 6 GB for two.
+- agent D (Opus): renderer score fixes (desert mip levels, hunter skin brightness, then village camera / MH1 Aptonoth).
+- agent C (Opus): G online round 10 (PC crash joining a PS2-led room, Xbox G online memory, select_w 0xE4-E8).
+- xbox_serve.py restarted 27 Oct (it does not survive a reboot).
+
+### Earlier, 23-26 Oct
 - agent C: G online round 9 merged 26 Oct: PS2 G + PC G + Xbox G (xemu) hunt together (tools/test_ps2_g_hunt.sh: plain, LEAD=ps2, XBOX=1, DROP=xbox, DROP=ps2). Cause of the PS2's missing hits: our server's G info file sent size limits 0 (monster scale 0; g_info.py now 0..255 per class, our choice). rt_code_ptr only calls exact symbol starts (REVIEW). Open: PC G crash 2/8 joining a PS2-led room (lb_select_set_data sprintf, trace added); Xbox G online 12-17 MB free, 7.5 fps in the guild hall (xemu).
 - agent D: fog fixed + merged 25 Oct (area change dropped stage fog: gfx_rec.c; NV2A LIGHT_CONTROL specular alpha). Now: renderer score (tools/render_score.sh, docs/render_score.md). Xbox dist rebuilt 25 Oct (MH1 + G, fog fix), xbox_serve.py restarted (build/xbox/serve.pid).
 - agent D: GB6 ninth pass merged 24 Oct (eft04/15/16/02, set14, em12/em15; full check 42 ok). Left: em02 Fatalis rewrite (RELEASE_G 16; no offline quest spawns it). area_mdlw (monster sub models) fixed and merged 24 Oct (both games). Red line in Kirin shots: god-mode aid left vital_red at ~15000 (fixed, test aid only).
