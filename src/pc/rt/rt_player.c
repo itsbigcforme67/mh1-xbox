@@ -509,8 +509,13 @@ void rt_player_tick(int no)
         tk = aid_tick();
         int goto2_active = 0;
         sscanf(getenv("RT_PL_GOTO"), "%d,%d", &t0, &goal);
-        if (getenv("RT_PL_GOTO2")) {        /* "tick,stage;tick,stage;...": from each tick on the goal is that stage (egg trips to the nest and the camp);
-                                               a stage of -1 hands back to RT_PL_GOTO (e.g. "tick,f": follow the monster again) */
+        extern u8 em_work[];
+        u8 *tgt = em_work + 0xA10 * rt_test_target();
+        if (getenv("RT_PL_GOTO2") && !(getenv("RT_PL_CARVE") && tgt[0] && *(s16 *)(tgt + 0x302) <= 0)) {
+                                            /* "tick,stage;tick,stage;...": from each tick on the goal is that stage (egg trips to the nest and the camp);
+                                               a stage of -1 hands back to RT_PL_GOTO (e.g. "tick,f": follow the monster again).
+                                               Not once the target lies dead with RT_PL_CARVE on: the hunter stays to carve
+                                               (a kill just before a camp trip walked it away from the carcass, round 10) */
             const char *g2 = getenv("RT_PL_GOTO2");
             int t2, s2;
             while (g2 && *g2) {
