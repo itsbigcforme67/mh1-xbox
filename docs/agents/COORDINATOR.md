@@ -96,6 +96,7 @@ always been a struct field type or a lost field.
 ## Current assignments (update when they change)
 
 ### Running, 27 Oct 2026
+- 27 Oct: merged agent-D renderer score work (exact 512x448 PS2 capture + line merge, `--ps2-output` on PC/Xbox; G 53.3 -> 59.0, MH1 43.6 -> 49.8 PC fair comparison). Hunter skin brightness not fixed (VU1 lighting lead in agent-D.md). Open: G Xbox build misses the 村長の教え banner in g_desert. Freed ~45 GB of regenerable build output (show/referee/ps2online) in idle worktrees A B D E F.
 - Laptop now ~16 GB RAM (owner, 27 Oct): up to 3 agents; > 4 GB available before an emulator, > 6 GB for two.
 - agent D (Opus): renderer score fixes (desert mip levels, hunter skin brightness, then village camera / MH1 Aptonoth).
 - agent C (Opus): G online round 10 (PC crash joining a PS2-led room, Xbox G online memory, select_w 0xE4-E8).
