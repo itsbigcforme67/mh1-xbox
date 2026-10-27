@@ -873,5 +873,7 @@ fi
 $CC $CFLAGS $SYS -w -c build/pc/rt_symtab.c -o build/pc/rt_symtab.o
 # shellcheck disable=SC2086
 $CC $CFLAGS $SYS $SDL_CFLAGS $MEMSTAT $PC src/pc/rt/rt_mem.c $OBJS build/pc/rt_gen.o build/pc/rt_symtab.o -o build/pc/$MHV$EXE $LIBS
+# Windows: every function start, statics included, into rt_codetab (rt_game.c rt_code_ptr; tools/codetab.py)
+[ -n "$SYMTAB_ARGS" ] && { python3 tools/codetab.py build/pc/$MHV$EXE --nm $NM || exit 1; }
 cp build/pc/rt_gen.defsym "build/pc/rt_gen.defsym.$MHV"     # for the next build of this kind (see .variant above)
 echo "built build/pc/$MHV$EXE (32-bit)"

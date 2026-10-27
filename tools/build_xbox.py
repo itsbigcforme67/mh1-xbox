@@ -272,6 +272,8 @@ def main():
         und = sorted(set(l.split('undefined symbol: ')[1] for l in (r.stdout + r.stderr).splitlines() if 'undefined symbol:' in l))
         print('link failed: %d undefined symbols (%s/link.log): %s' % (len(und), dst, ' '.join(und[:40])))
         sys.exit(1)
+    # every function start, statics included, into rt_codetab (rt_game.c rt_code_ptr: a 2D prim's draw function)
+    subprocess.run([sys.executable, 'tools/codetab.py', dst + '/main.exe', '--map', dst + '/main.map'], check=True)
     tid, tname = title_identity(version)
     subprocess.run([NXDK + '/tools/cxbe/cxbe', '-OUT:' + dst + '/default.xbe', '-TITLE:' + tname, dst + '/main.exe'],
                    check=True, capture_output=True)

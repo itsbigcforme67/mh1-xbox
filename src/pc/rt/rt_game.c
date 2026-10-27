@@ -16,9 +16,29 @@ extern char __executable_start[], etext[];
 static int rt_code_ptr(const void *f) { return (const char *)f >= __executable_start && (const char *)f < etext; }
 #else
 /* (Windows / Xbox: no etext; the Xbox's code sits at low addresses, where a stray table word (0x1DD921 in the G online
- * town, round 9) landed inside a function and crashed: a draw function must start at one of the build's symbols) */
+ * town, round 9) landed inside a function and crashed: a draw function must start at one of the build's functions.)
+ * rt_codetab: every function start of the build, file-statics included (set01_trans, the Elder's-lesson banner, is
+ * one), sorted; tools/codetab.py writes it into the linked exe (build_xbox.py, build_pc.sh for Windows). Until then
+ * (count 0) only global symbols count (rt_symtab.c), as before 27 Oct. */
+#define RT_CODETAB_CAP 16384
+unsigned rt_codetab[4 + RT_CODETAB_CAP] = { 0x4F435452, 0x42544544, RT_CODETAB_CAP, 0 };  /* 'RTCO' 'DETB' cap count */
 const char *rt_host_symname(const void *addr, unsigned *off);   /* rt_symtab.c (tools/gen_symtab.py) */
-static int rt_code_ptr(const void *f) { unsigned off = 1; return rt_host_symname(f, &off) && off == 0; }
+static int rt_code_ptr(const void *f)
+{
+    unsigned a = (unsigned)(uintptr_t)f, n = rt_codetab[3], lo = 0, hi = n;
+    if (!n) {
+        unsigned off = 1;
+        return rt_host_symname(f, &off) && off == 0;
+    }
+    while (lo < hi) {
+        unsigned m = (lo + hi) / 2;
+        if (rt_codetab[4 + m] < a)
+            lo = m + 1;
+        else
+            hi = m;
+    }
+    return lo < n && rt_codetab[4 + lo] == a;
+}
 #endif
 #include "rt.h"
 #include "rt_prof.h"
