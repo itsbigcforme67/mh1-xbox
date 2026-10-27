@@ -41,7 +41,8 @@ from pine import Pine  # noqa: E402
 
 GAMES = {
     'mh1': dict(game_w=0x3F33F0, master=0xD1, d5=0xD5, plw=0x3E4BF0, emw=0x3D82A0, em_n=0xA10, sti=0x3C75D0, em_net=0x9E2),
-    'mhg': dict(game_w=0x35ED20, master=0x3A, d5=0x3E, plw=0x34D450, emw=0x340C40, em_n=0xA00, sti=0x32D2A0, em_net=0x9DA),
+    'mhg': dict(game_w=0x35ED20, master=0x3A, d5=0x3E, plw=0x34D450, emw=0x340C40, em_n=0xA00, sti=0x32D2A0, em_net=0x9DA,
+                select_w=0x35EC30),
 }
 G = GAMES['mh1']
 GAME_W, PLW, EMW, STI = G['game_w'], G['plw'], G['emw'], G['sti']
@@ -65,6 +66,7 @@ class Aid:
         self.last_stage = None
         self.last_mode = None
         self.ntrace = 0
+        self.last_sw = None     # G: select_w's quest (+0xD0) and G-only +0xE4 / +0xE6 / +0xE8 (sys 2), printed on change
         self.dump_dir = None    # --dump DIR: DIR/req holding a tag -> DIR/TAG.bin (game_w, the PLWs, every EMW; never committed)
 
     def rd(self, kind, a):
@@ -133,6 +135,12 @@ class Aid:
         self.tick += 1
         if self.dump_dir:
             self.dump()
+        if G.get('select_w'):
+            sw = G['select_w']
+            v = (self.rd('r16', sw + 0xD0), self.rd('r16', sw + 0xE4), self.rd('r16', sw + 0xE6), self.rd('r8', sw + 0xE8))
+            if v != self.last_sw:
+                self.last_sw = v
+                print('ps2-aid: tick %d select_w quest %d e4 %04X e6 %04X e8 %02X' % ((self.tick,) + v), flush=True)
         flow = (self.rd('r8', GAME_W), self.rd('r8', GAME_W + 1), self.rd('r8', GAME_W + G['d5']))
         if flow != self.last_flow:
             print('rt_flow: tick %d mode %d step %d D5 %d quest %d' % ((self.tick,) + flow + (self.rd('r16', GAME_W + 0x2C),)),

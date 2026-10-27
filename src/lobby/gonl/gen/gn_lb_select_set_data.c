@@ -63,7 +63,10 @@ void lb_select_set_data(s32 arg0, s32 arg1, s32 arg2, s32 arg3) {
     temp_s1 = Lbs_GetClassAdd(M2C_ERROR(/* Read from unset register $a0 */), M2C_ERROR(/* Read from unset register $a1 */), M2C_ERROR(/* Read from unset register $a2 */), M2C_ERROR(/* Read from unset register $a3 */)) & 0xFFFF;
     temp_v0 = lobby_func_00559C30(arg0, M2C_ERROR(/* Read from unset register $a1 */), M2C_ERROR(/* Read from unset register $a2 */), M2C_ERROR(/* Read from unset register $a3 */));
     if (getenv("RT_ONLINE_TRACE")) {   /* HAND-FIXED test trace (round 9): the PC crashed twice in the map name sprintf
-                                         * below (fault address 0x32) joining a real PS2 G's room; not understood yet */
+                                         * below (fault address 0x32) joining a real PS2 G's room. Round 10: map_name's
+                                         * entries 4.. had been overwritten by the lobby's icon textures (load_texlist at
+                                         * mem_tex slot 372, past the MH1-sized host array); map 6 (the jungle) read 0x32.
+                                         * Fixed by G's sizes in config/mhg/pc_data.txt */
         extern u8 lb_sys[];
         extern void *stderr;
         int fprintf();

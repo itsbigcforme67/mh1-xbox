@@ -165,18 +165,42 @@ if [ "$LEAD" = ps2 ]; then
     $P w32 $((0x32C230)) 5000 > /dev/null              # the hunter's zenny (User_data+0x20; the PC's RT_MONEY): the 200z fee
     warp 1120 1950 0x8000; k 4 z
     k 5 c; k 5 c; k 5 c; k 5 c
-    k 2 Right; k 2 Right; k 2 Right
+    # the Kut-Ku's card: the board's 8 cards are a random pick of the level's quests (lb_guild_g.c: QLIST(level, k) at
+    # G 0x653510 + level * 0x10, the cursor W_SEL at G 0x654830, the level mhRule+0x54 = G 0x6533C4), so the card of quest
+    # 4 is looked up and the cursor moved there one right at a time (3 s apart, checked 3 s later: presses got lost or
+    # landed late). If the pick left quest 4 out, the test writes it over the first card (a PINE test aid, as the zenny).
+    # Before (round 9/10): three fixed rights posted quests 20 / 36 / 37 / 6 in 4 of 10 runs. mhRule+0x52 (G 0x6533C2)
+    # holds the quest once a card is taken.
+    qshown() { v=$($P r16 0x6533C2 | awk '{print $2}'); echo "$(date +%T) quest $v" >> $O/ps2_quest.txt; echo $v; }
+    sel() { v=$($P r16 0x654830 | awk '{print $2}'); echo "$(date +%T) cursor $v" >> $O/ps2_quest.txt; echo $v; }
+    LV=$($P r8 0x6533C4 | awk '{print $2}')
+    QB=$((0x653510 + LV * 0x10))
+    CARDS=$($P r16 $QB 8 | cut -d' ' -f2-)
+    echo "level $LV cards $CARDS" >> $O/ps2_quest.txt
+    KI=$(echo $CARDS | tr ' ' '\n' | grep -n '^0x4$' | head -1 | cut -d: -f1)
+    if [ -z "$KI" ]; then $P w16 $QB 4 > /dev/null; KI=1; echo "quest 4 not on the board: written over card 1" >> $O/ps2_quest.txt; fi
+    KI=$((KI - 1))
+    i=0
+    while [ $i -lt 12 ]; do
+        if [ "$(sel)" = "$(printf 0x%X $KI)" ]; then sleep 3; [ "$(sel)" = "$(printf 0x%X $KI)" ] && break; continue; fi
+        k 3 Right; i=$((i + 1))
+    done
     k 5 c; k 5 c; k 5 c; k 5 c; k 5 c
+    q=$(qshown)
+    [ "$q" = 0x4 ] || fail "the PS2 took quest $q, not 4 (card cursor / board keys)"
     for key in c c Left Left Down Down Down c c c; do k 3.4 $key; done
     i=0
     while [ $i -lt 20 ] && ! grep -q "creates room 1" $O/server.log; do k 2 c; i=$((i + 1)); done
     shot 03_room
     grep -q "creates room 1" $O/server.log || fail "the PS2 did not make a room"
+    grep -q "room 1 property 7D000004 (quest 4)" $O/server.log || fail "the PS2's room is not quest 4: $(grep -o 'room 1 property .*' $O/server.log | head -1)"
     echo "the PS2's room is up"
     # ---- the PC joins (test_online_g.sh BOB's keys) and gets ready; the PS2 runs the monster first
     # (the PC waits next door, on area 35, until 1600: the first hunter on the monster's area runs it, and the PC got
     # there first when it followed at once; it still walks there, since the PS2 aid's routes come from the PC's exit list)
-    pc_run "$JOINK$ATK" "$JOINW" "60,35;1600,-1;2600,21;3400,-1" "1600-2600,3500-9000"
+    # (the warps next to the monster run to 20000, the end of the fight-on loop below: with the PS2 running the monster at
+    # 1x the kill can come after 9000, and the PC then never reached the carcass: round 10, a kill at 16620 on area 40)
+    pc_run "$JOINK$ATK" "$JOINW" "60,35;1600,-1;2600,21;3400,-1" "1600-2600,3500-20000"
     i=0
     while [ $i -lt 900 ] && ! grep -q "joins room 1" $O/server.log; do sleep 2; i=$((i + 2)); done   # (the PC runs at about half
     grep -q "joins room 1" $O/server.log || fail "the PC did not join the PS2's room"                                # speed beside PCSX2)

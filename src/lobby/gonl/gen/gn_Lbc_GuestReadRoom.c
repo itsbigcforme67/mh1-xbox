@@ -20,7 +20,8 @@ extern u8 RoomRule;
 extern s32 join_member;
 
 s32 Lbc_GuestReadRoom(s32 arg0, s32 unused_a1, s32 arg2, s32 arg3) {
-    static u8 rbuf[0x2A000];          /* G: 0x294A4 bytes at sp+0x80 */
+    extern u8 lb_room_rule_buf[];     /* G: 0x294A4 bytes at sp+0x80; one shared buffer (lb_online_nm.c) */
+    u8 *rbuf = lb_room_rule_buf;
     u8 *var_s1_2;   /* (s32 *) */
     s32 temp_s0;
     s32 temp_s6;

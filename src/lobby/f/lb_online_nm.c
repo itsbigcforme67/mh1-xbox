@@ -172,9 +172,13 @@ int cnLbc_CheckInFloorOrder(int);
 int cnLBS_Read_RoomRuleAllocation(int val, int cb);
 int cnLBS_Get_RoomRuleAllocation(int unused, void *d);
 void CallBack_Result_RuleAllocation(CNET_RES res);
+/* the wire-side rule table while one step copies it into RoomRule (the PS2 keeps it on the stack: 0x29520-byte
+ * frames). One buffer for every copy of the PC's: this one, G's Lbc_GetRoomRule and Lbc_GuestReadRoom (src/lobby/gonl;
+ * each had its own 168 KB static, 504 KB of the Xbox G online build's memory) */
+u8 lb_room_rule_buf[0x2A000];
 s32 Lbc_GetRoomRule(void)
 {
-    static u8 buf[0x2A000];             /* the PS2 keeps it on its 0x29520-byte stack frame (sp+0x70) */
+#define buf lb_room_rule_buf
     int room = cnLbc_CheckInFloorOrder(2) & 0xFFFF;
     u8 *stp = cw + CW_OFS(0x2C35);
     int i, j, a, t;
@@ -227,6 +231,7 @@ s32 Lbc_GetRoomRule(void)
     }
     return 0;
 }
+#undef buf
 
 /* check_halfcode (0x5BFC80, asm-only in lb_cli.c, 2 lines off as C: the original has an extra `b end` after the
  * loop): at a '<' (not after a backslash) read tags with Split_TagCode / Analysis_TagCode until one of them is

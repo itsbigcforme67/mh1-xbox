@@ -32,6 +32,8 @@ def read(path, kind):
         if m and int(m[4]) == kind and int(m[3]) == 0:
             t, me, hp, master = int(m[1]), int(m[2]), int(m[6]), int(m[8])
             r['me'] = me
+            if hp <= 0 and not r['hp']:     # not set up yet (the PS2 aid's first sample at the quest start once read 0)
+                continue
             r['ticks'].append(t)
             if not r['hp'] or r['hp'][-1] != hp:
                 r['hp'].append(hp)

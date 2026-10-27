@@ -31,7 +31,12 @@ Eft_blood_rgb = 0x00253EC0; // size:0x1C noptr       # a seventh row (kinds 8 / 
 eft15_type9_time_g = 0x002EC774; // size:0x4 noptr       # eft15 type 9's time table (G only)
 fade_data = 0x00253F70; // size:0x188 noptr          # 14 fades (MH1 10: G's online screens use 11-14, e.g. fade_set(12) entering a plaza)
 fade_rgb_110 = 0x00254100; // size:0x30 noptr         # the fades' colours (G 12, MH1 10)
+mem_tex = 0x0035F2D0; // size:0x610 noptr           # G's 388 texture handle slots (MH1 0x159): G's lobby loads its icon list at slot 372 (Lbs_load, load_texlist); the MH1-sized host array let it write over map_name (round 10: the PC G client's crash joining a jungle quest's room)
+pl_mot_han_ofs = 0x00332B40; // size:0x140 noptr    # [guess: the gap to the next G symbol; MH1 0x100] work area, sized up so a G write past MH1's size stays inside
+pit_work = 0x002F7F50; // size:0xA0 noptr           # [guess: the gap to the next G symbol; MH1 0x90] work area
+sfd_tbl = 0x003EDC20; // size:0xB0 noptr            # [guess: the gap to the next G symbol; MH1 0x90] work area
 [sub_main]
+map_name = 0x00528800; // size:0x2C              # G's 11 map names (MH1 8): 8-10 the arenas / Shrine; quest rows' map +0x14 indexes it (lb_select_set_data, menu_ftime)
 eft20_fade13_g = 0x00506990; // size:0x20 noptr        # G only: eft20 arg 13's fade keys {s32 time, rgba}.., -1 (eft20_t)
 eft20_fade21_g = 0x005073E0; // size:0x30 noptr        # G only: eft20 arg 21's fade keys (eft20_t)
 quest_size_lim_def = 0x004FD8D0; // size:0xA            # monster size limits per class {min, max} x5, copied to quest_size_lim (Quest_start)

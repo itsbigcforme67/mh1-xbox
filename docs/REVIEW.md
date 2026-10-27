@@ -1029,6 +1029,20 @@ Both games unless marked.
   text, so the Xbox called it and crashed 10 s after connecting. **To revert:** commit "Xbox: a 2D prim's draw function
   must start at a symbol (rt_code_ptr), full_check builds the G Xbox online".
 
+## G online round 10: memory and the PS2's quest card (agent C, 27 Oct 2026)
+- **Dropped:** net_peer.c's static `peer[4]` (4 x 64 KB receive buffers) and its 512-packet queue `q` (470 KB of .bss).
+  **Now:** allocated by np_host / np_join / the first queued packet. **Why:** a game on the server's relay (rt_mcs.c,
+  every real-server game) never uses the direct-connect transport; the Xbox G online build is short of memory.
+  **To revert:** commit "Online memory: net_peer's buffers on first use, one rule-table buffer ...".
+- **Dropped:** the three static 0x2A000-byte rule-table buffers (MH1's Lbc_GetRoomRule in lb_online_nm.c, G's
+  Lbc_GetRoomRule and Lbc_GuestReadRoom in src/lobby/gonl/gen). **Now:** one `lb_room_rule_buf` (lb_online_nm.c).
+  **Why:** 336 KB of the G online build; each use is one step's copy into RoomRule. Same commit.
+- **Dropped:** tools/test_ps2_g_hunt.sh LEAD=ps2's three fixed Right presses on the PS2's quest board. **Now:** the board's 8
+  cards are a random pick (QLIST, G 0x653510): the test finds quest 4's card (or writes 4 over card 1 when the pick left
+  it out), moves the cursor (W_SEL, G 0x654830) there one right at a time, and checks the quest taken (mhRule+0x52) and
+  the room's property. **Why:** the PS2 posted quests 20 / 36 / 37 / 6 in 4 of 10 runs (lost or late presses); that is also what
+  showed the PC's map_name crash. **To revert:** commit "test_ps2_g_hunt LEAD=ps2: pick the quest card ...".
+
 ## The renderer score's PS2 capture (agent D, 27 Oct 2026)
 - **Dropped:** tools/render_score.py's PS2 grab of PCSX2's 640x480 window with blend deinterlacing (PCSX2_DEINTERLACE=6).
   **Now:** PCSX2's screenshot at the internal resolution without aspect correction (512x448, the game's frame buffer),
