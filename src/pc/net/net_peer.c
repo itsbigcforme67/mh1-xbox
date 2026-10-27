@@ -72,7 +72,9 @@ typedef struct {
 
 static int role;                    /* 0 off, 1 host, 2 joiner */
 static hsock lsock = HS_BAD;        /* host: listening socket */
-static PEER peer[NP_MAX];           /* host: [slot] for joiners (slot 0 unused); joiner: [0] = the host */
+static PEER *peer;                  /* [NP_MAX]; host: [slot] for joiners (slot 0 unused); joiner: [0] = the host.
+                                     * Allocated by bufs() when a direct-connect session starts: the game server's relay
+                                     * (rt_mcs.c) never uses them, and 470 KB of static buffers cost the Xbox G online build */
 static int my_slot, nplayers = 1, quest, started;
 static uint8_t minis[NP_MAX][NP_MINI];
 static int gone[NP_MAX];
@@ -80,8 +82,21 @@ static int ready[NP_MAX];          /* the last start-barrier round each player r
 
 /* received game packets, in order */
 #define QCAP 512
-static struct { uint8_t from, type; uint16_t n; uint8_t d[NP_PKT_MAX]; } q[QCAP];
+static struct NPQ { uint8_t from, type; uint16_t n; uint8_t d[NP_PKT_MAX]; } *q;    /* [QCAP], bufs() */
 static int qh, qt;
+
+static int bufs(void)
+{
+    if (!peer)
+        peer = calloc(NP_MAX, sizeof *peer);
+    if (!q)
+        q = calloc(QCAP, sizeof *q);
+    if (!peer || !q) {
+        fprintf(stderr, "net_peer: out of memory\n");
+        return -1;
+    }
+    return 0;
+}
 
 static void nonblock(hsock s)
 {
@@ -168,7 +183,7 @@ static int frame(uint8_t *out, int from, int type, const void *d, int n)
 static void enqueue(int from, int type, const uint8_t *d, int n)
 {
     int nx = (qt + 1) % QCAP;
-    if (n > NP_PKT_MAX || nx == qh)
+    if (bufs() != 0 || n > NP_PKT_MAX || nx == qh)
         return;             /* too big or the queue is full: dropped (logged by the caller's counters) */
     q[qt].from = (uint8_t)from;
     q[qt].type = (uint8_t)type;
@@ -290,7 +305,7 @@ int np_host(const char *bind_ip, int port, const uint8_t *my_mini)
     struct sockaddr_in sa;
     uint32_t a;
     int one = 1, s;
-    if (CpInetInitialize() != 0)
+    if (bufs() != 0 || CpInetInitialize() != 0)
         return -1;
     if (!bind_ip)
         bind_ip = "0.0.0.0";       /* every interface: who may join is checked per connection (net_dest_allowed) */
@@ -329,7 +344,7 @@ int np_join(const char *host_ip, int port, const uint8_t *my_mini)
     uint32_t a;
     uint8_t f[NP_MINI + 4];
     int s;
-    if (CpInetInitialize() != 0)
+    if (bufs() != 0 || CpInetInitialize() != 0)
         return -1;
     if (parse_addr(host_ip, &a) != 0) {
         fprintf(stderr, "net_peer: %s is not an IPv4 address\n", host_ip);
@@ -437,7 +452,7 @@ int np_send(int type, const void *d, int n)
 int np_recv(int *from, int *type, uint8_t *buf, int max)
 {
     int n;
-    if (qh == qt)
+    if (!q || qh == qt)
         return -1;
     n = q[qh].n < max ? q[qh].n : max;
     *from = q[qh].from;
@@ -485,7 +500,7 @@ void np_close(void)
 {
     uint8_t f[4];
     int s;
-    for (s = 0; s < NP_MAX; s++)
+    for (s = 0; peer && s < NP_MAX; s++)
         if (peer[s].up) {
             send_all(&peer[s], f, frame(f, my_slot, NP_BYE, NULL, 0));
             peer[s].up = 0;

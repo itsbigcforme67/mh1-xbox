@@ -19,7 +19,8 @@ extern u8 RoomRule[];
 
 s32 Lbc_GetRoomRule(void)
 {
-    static u8 buf[0x2A000];             /* G keeps it on its 0x29520-byte stack frame (sp+0x70) */
+    extern u8 lb_room_rule_buf[];       /* G keeps it on its 0x29520-byte stack frame (sp+0x70); one shared buffer (lb_online_nm.c) */
+    u8 *buf = lb_room_rule_buf;
     int room = cnLbc_CheckInFloorOrder(2) & 0xFFFF;
     u8 *stp = cw + 0xB9D;
     int i, j, a, t;
