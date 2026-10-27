@@ -33,6 +33,8 @@
 # Fast boot (no BIOS logo), EE/IOP console logging on, the software renderer (no GPU needed), audio off.
 # PCSX2_DEINTERLACE=N (env): PCSX2's deinterlace mode (0 automatic, the default; 6 blend: tools/render_score.py, whose
 # held frames otherwise come out as either field from run to run in MH1)
+# PCSX2_GS_EXTRA (env): more lines for the ini's [EmuCore/GS] section; PCSX2_INI_EXTRA: more sections at its end
+# (tools/render_score.py: the screenshot hotkey and the frame buffer sized screenshots)
 set -e
 cd "$(dirname "$0")/.."
 PCSX2=${PCSX2:-$HOME/ps2dev/pcsx2/pcsx2-v2.8.2.AppImage}
@@ -120,6 +122,7 @@ Renderer = 13
 VsyncEnable = 0
 OsdShowMessages = false
 deinterlace_mode = ${PCSX2_DEINTERLACE:-0}
+${PCSX2_GS_EXTRA:-}
 [SPU2/Output]
 Backend = Null
 OutputModule = nullout
@@ -177,6 +180,7 @@ RLeft = Keyboard/F
 RRight = Keyboard/H
 [Pad2]
 Type = None
+${PCSX2_INI_EXTRA:-}
 INI
 
 set -- -batch -nogui -fastboot -datapath "$PH" -logfile "$LOG" -earlyconsolelog

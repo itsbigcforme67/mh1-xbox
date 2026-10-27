@@ -56,9 +56,13 @@ static struct {
     unsigned sharp_prog;         /* the "sharp" 2D filter's program (0: no shaders) */
     int sharp_u_size, sharp_u_n; /* its uniforms */
     int sharp_tried;
+    int rw, rh;                  /* the window's drawable size (G.w / G.h are the 512 x 448 frame while ps2 is on) */
+    int ps2;                     /* this frame is drawn as the PS2's 512 x 448 frame (gfx_opt.ps2_output) */
+    int ps2_done;                /* ... and already shown on the window (ps2_present) */
+    GLuint ps2_tex;
 } G;
 
-gfx_options gfx_opt = { 0, 1, 0, 0, 1, 0, 0, -1, -1, 0, 0 };
+gfx_options gfx_opt = { 0, 1, 0, 0, 1, 0, 0, -1, -1, 0, 0, 0 };
 
 #ifndef GL_MULTISAMPLE
 #define GL_MULTISAMPLE 0x809D
@@ -78,6 +82,13 @@ static rect rc, sc;
 static void layout(void)
 {
     int w = G.w, h = G.h;
+    if (G.ps2) {                /* the PS2's frame: the 4:3 picture is the whole 512 x 448 (non-square pixels) */
+        rc.x = rc.y = 0;
+        rc.w = w;
+        rc.h = h;
+        sc = rc;
+        return;
+    }
     if (w * 3 >= h * 4) {
         rc.h = h;
         rc.w = h * 4 / 3;
@@ -95,6 +106,8 @@ static void layout(void)
 
 float gfx_scene_aspect(void)
 {
+    if (G.ps2)
+        return 4.0f / 3.0f;     /* 512 x 448 shown at 4:3, as the PS2's projection has it */
     return sc.h ? (float)sc.w / sc.h : 4.0f / 3.0f;
 }
 
@@ -387,17 +400,32 @@ void gfx_shutdown(void)
 
 void gfx_size(int *w, int *h)
 {
-    *w = G.w;
-    *h = G.h;
+    *w = G.ps2 ? G.rw : G.w;    /* the window (picture files, read-backs), also while the PS2 frame is drawn */
+    *h = G.ps2 ? G.rh : G.h;
 }
 
 static void gfx_begin_frame_gl(uint32_t c)
 {
     int w, h;
     SDL_GL_GetDrawableSize(G.win, &w, &h);
+    if (G.ps2) {                                /* the last frame was never shown (no gfx_end_frame): back to the window */
+        G.w = G.rw;
+        G.h = G.rh;
+        G.ps2 = 0;
+    }
     if (w > 0 && h > 0 && (w != G.w || h != G.h)) {         /* resized, or fullscreen toggled */
         G.w = w;
         G.h = h;
+    }
+    G.rw = G.w;
+    G.rh = G.h;
+    /* the PS2's picture: the frame is drawn in the window's bottom-left 512 x 448 and shown by ps2_present (not for the
+     * bug reporter's id pass, which works in window pixels) */
+    G.ps2_done = 0;
+    if (gfx_opt.ps2_output && !gfx_pick_pass && G.w >= 512 && G.h >= 448) {
+        G.ps2 = 1;
+        G.w = 512;
+        G.h = 448;
     }
     layout();
     glViewport(0, 0, G.w, G.h);
@@ -429,8 +457,97 @@ void gfx_begin_frame(uint32_t c)
     rt_prof_end(RTP_GFX);
 }
 
+/* The PS2's picture (gfx_opt.ps2_output): the frame (512 x 448, bottom left of the back buffer) goes into a texture and
+ * is drawn over the window's 4:3 rectangle twice, the second time one frame line lower at 50 %: the PCRTC merge the
+ * game sets up (flPS2SwapDBuff, video mode 1: PMODE 0x7F27, read circuit 1 one line below circuit 2, ALP 0x7F), so every
+ * line shown is the mean of its frame line and the one above. The stretch (512 -> the window's width, as the TV
+ * stretches the 512-wide frame to 4:3) is bilinear. The merge and the stretch are both linear, so their order does not
+ * matter. Then the window size is back for the rest (gfx_read_pixels, the swap). */
+static void ps2_present(void)
+{
+    float y0, y1, x0, x1, dy, v1 = 448.0f / 512.0f;
+    int pass;
+    if (!G.ps2 || G.ps2_done)
+        return;
+    G.ps2_done = 1;
+    glPushAttrib(GL_ALL_ATTRIB_BITS);
+    glPushClientAttrib(GL_CLIENT_ALL_ATTRIB_BITS);
+    if (!G.ps2_tex) {
+        glGenTextures(1, &G.ps2_tex);
+        glBindTexture(GL_TEXTURE_2D, G.ps2_tex);
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, 512, 512, 0, GL_RGB, GL_UNSIGNED_BYTE, NULL);
+    }
+    glBindTexture(GL_TEXTURE_2D, G.ps2_tex);
+    glCopyTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, 0, 0, 512, 448);   /* GL rows bottom-up: row 447 = the frame's top line */
+    G.w = G.rw;
+    G.h = G.rh;
+    G.ps2 = 0;
+    layout();
+    G.ps2 = 1;                  /* (gfx_size, begin_frame: still a PS2 frame until the next one starts) */
+    glDisable(GL_SCISSOR_TEST);
+    glViewport(0, 0, G.w, G.h);
+    glClearColor(0, 0, 0, 1);
+    glClear(GL_COLOR_BUFFER_BIT);
+    glDisable(GL_DEPTH_TEST);
+    glDepthMask(GL_FALSE);
+    glDisable(GL_ALPHA_TEST);
+    glDisable(GL_FOG);
+    glDisable(GL_CULL_FACE);
+    glEnable(GL_TEXTURE_2D);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+    glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
+    glMatrixMode(GL_TEXTURE);
+    glPushMatrix();
+    glLoadIdentity();
+    glMatrixMode(GL_PROJECTION);
+    glPushMatrix();
+    glLoadIdentity();
+    glOrtho(0, G.w, G.h, 0, -1, 1);             /* window pixels, top-down */
+    glMatrixMode(GL_MODELVIEW);
+    glPushMatrix();
+    glLoadIdentity();
+    glEnable(GL_SCISSOR_TEST);                  /* the shifted copy stays inside the picture */
+    glScissor(rc.x, G.h - rc.y - rc.h, rc.w, rc.h);
+    if (G.blend_eq)
+        G.blend_eq(GL_FUNC_ADD);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+    x0 = (float)rc.x;
+    x1 = (float)(rc.x + rc.w);
+    dy = rc.h / 448.0f;                         /* one frame line in window pixels */
+    for (pass = 0; pass < 2; pass++) {
+        y0 = rc.y + (pass ? dy : 0.0f);
+        y1 = y0 + rc.h;
+        if (pass)
+            glEnable(GL_BLEND);
+        else
+            glDisable(GL_BLEND);
+        glColor4f(1, 1, 1, pass ? 0.5f : 1.0f);
+        glBegin(GL_QUADS);
+        glTexCoord2f(0, v1); glVertex2f(x0, y0);
+        glTexCoord2f(1, v1); glVertex2f(x1, y0);
+        glTexCoord2f(1, 0); glVertex2f(x1, y1);
+        glTexCoord2f(0, 0); glVertex2f(x0, y1);
+        glEnd();
+    }
+    glMatrixMode(GL_MODELVIEW);
+    glPopMatrix();
+    glMatrixMode(GL_PROJECTION);
+    glPopMatrix();
+    glMatrixMode(GL_TEXTURE);
+    glPopMatrix();
+    glMatrixMode(GL_MODELVIEW);
+    glPopClientAttrib();
+    glPopAttrib();
+    if (G.blend_eq)                             /* (not part of the attribute stack in every driver) */
+        G.blend_eq((G.bop & 0xC00) == 0x400 ? GL_FUNC_SUBTRACT : (G.bop & 0xC00) == 0x800 ? GL_FUNC_REVERSE_SUBTRACT : GL_FUNC_ADD);
+}
+
 void gfx_end_frame(void)
 {
+    ps2_present();
     SDL_GL_SwapWindow(G.win);
 }
 
@@ -472,6 +589,7 @@ void gfx_window_geometry(void)
 int gfx_read_pixels(uint8_t *rgb)
 {
     int y;
+    ps2_present();          /* the PS2's picture: the window as it will be shown (gfx_size gives its size) */
     size_t row = (size_t)G.w * 3;
     uint8_t *tmp = malloc(row);
     glFinish();

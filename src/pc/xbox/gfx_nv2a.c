@@ -42,6 +42,7 @@
 
 struct gfx_texture {
     int w, h, src, rect;
+    int xrgb;                            /* a frame buffer (X8R8G8B8, linear): the PS2 output's frame (ps2_present) */
     uint8_t *mem;                        /* contiguous */
     uint32_t pitch;
     uint32_t *pal;                       /* palettised (P8): 256 x A8R8G8B8, contiguous; else NULL */
@@ -96,6 +97,9 @@ static struct {
     /* the states as set, for the bug reporter (gfx_pick_info) and to restore blending after its id pass */
     int blend_on, bsrc, bdst, bop, afunc, aref, zfunc;
     int pick_was;                   /* the last frame was an id pass */
+    int rw, rh;                     /* the back buffer (G.w / G.h are the 512 x 448 frame while ps2 is on) */
+    int ps2, ps2_done, ps2_ok;      /* this frame is the PS2's frame (gfx_opt.ps2_output) / already shown / extra buffer there */
+    gfx_texture ps2_tex;            /* pbkit's extra buffer 0, where that frame is drawn, as a texture */
     float pick_col[4];              /* the current draw's id colour (pick pass) */
 } G;
 
@@ -122,12 +126,12 @@ static void mat_mul(float *out, const float *a, const float *b)       /* out = a
  * window-sized draws cover all of it. 4:3: the 2D covers the whole frame. */
 float gfx_scene_aspect(void)
 {
-    return gfx_opt.widescreen ? 16.0f / 9.0f : 4.0f / 3.0f;
+    return gfx_opt.widescreen && !G.ps2 ? 16.0f / 9.0f : 4.0f / 3.0f;
 }
 
 static void rect43(float *x, float *w)     /* the 4:3 picture in the frame: x offset and width */
 {
-    *w = gfx_opt.widescreen ? G.w * 0.75f : (float)G.w;
+    *w = gfx_opt.widescreen && !G.ps2 ? G.w * 0.75f : (float)G.w;
     *x = (G.w - *w) * 0.5f;
 }
 
@@ -251,22 +255,9 @@ static void fixed_state(void)
     push1(NV097_SET_DEPTH_MASK, 1);
 }
 
-int gfx_init(int width, int height, const char *title, int hidden)
+/* clip space -> window: x (-1..1) -> 0..w, y (1..-1) -> 0..h, z (-1..1) -> 0..ZMAX */
+static void set_viewport(void)
 {
-    static const uint8_t white[4] = { 255, 255, 255, 255 };
-    (void)width; (void)height; (void)title; (void)hidden;
-
-    XVideoSetMode(640, 480, 32, REFRESH_DEFAULT);
-    if (pb_init() != 0)
-        return -1;
-    pb_show_front_screen();
-    G.w = pb_back_buffer_width();
-    G.h = pb_back_buffer_height();
-    memcpy(G.view, ident, sizeof ident);
-    memcpy(G.proj, ident, sizeof ident);
-    memcpy(G.world, ident, sizeof ident);
-    memcpy(G.texmat, ident, sizeof ident);
-    /* clip space -> window: x (-1..1) -> 0..w, y (1..-1) -> 0..h, z (-1..1) -> 0..ZMAX */
     memset(G.viewport, 0, sizeof G.viewport);
     G.viewport[0] = G.w / 2.0f;
     G.viewport[5] = -G.h / 2.0f;
@@ -275,6 +266,35 @@ int gfx_init(int width, int height, const char *title, int hidden)
     G.viewport[13] = G.h / 2.0f;
     G.viewport[14] = ZMAX / 2.0f;
     G.viewport[15] = 1;
+}
+
+int gfx_init(int width, int height, const char *title, int hidden)
+{
+    static const uint8_t white[4] = { 255, 255, 255, 255 };
+    (void)width; (void)height; (void)title; (void)hidden;
+
+    XVideoSetMode(640, 480, 32, REFRESH_DEFAULT);
+    if (gfx_opt.ps2_output)
+        pb_extra_buffers(1);                    /* the PS2 output's 512 x 448 frame is drawn there (ps2_present) */
+    if (pb_init() != 0)
+        return -1;
+    pb_show_front_screen();
+    G.w = G.rw = pb_back_buffer_width();
+    G.h = G.rh = pb_back_buffer_height();
+    if (gfx_opt.ps2_output && pb_extra_buffer(0) && G.w >= 512 && G.h >= 448) {
+        G.ps2_ok = 1;
+        G.ps2_tex.w = 512;
+        G.ps2_tex.h = 448;
+        G.ps2_tex.rect = 1;
+        G.ps2_tex.xrgb = 1;
+        G.ps2_tex.mem = (uint8_t *)pb_extra_buffer(0);
+        G.ps2_tex.pitch = pb_back_buffer_pitch();
+    }
+    memcpy(G.view, ident, sizeof ident);
+    memcpy(G.proj, ident, sizeof ident);
+    memcpy(G.world, ident, sizeof ident);
+    memcpy(G.texmat, ident, sizeof ident);
+    set_viewport();
     G.fade = 0xFFFFFFFFu;
     G.ring = MmAllocateContiguousMemoryEx(RING_BYTES, 0, GPU_MAXRAM, 0, PAGE_READWRITE | PAGE_WRITECOMBINE);
     if (!G.ring)
@@ -298,8 +318,8 @@ void gfx_shutdown(void)
 
 void gfx_size(int *w, int *h)
 {
-    *w = G.w;
-    *h = G.h;
+    *w = G.rw;          /* the screen, also while the PS2 output's frame is drawn */
+    *h = G.rh;
 }
 
 /* The waits for the GPU give the CPU away (SwitchToThread): spinning here starved
@@ -374,7 +394,17 @@ void gfx_begin_frame(uint32_t c)
 {
     pb_wait_for_vbl();
     pb_reset();
-    pb_target_back_buffer();
+    /* the PS2 output (gfx_opt.ps2_output): the frame is drawn at the PS2's 512 x 448 in the extra buffer and shown by
+     * ps2_present (not for the bug reporter's id pass, which works in screen pixels) */
+    G.ps2 = G.ps2_ok && gfx_opt.ps2_output && !gfx_pick_pass;
+    G.ps2_done = 0;
+    G.w = G.ps2 ? 512 : G.rw;
+    G.h = G.ps2 ? 448 : G.rh;
+    set_viewport();
+    if (G.ps2)
+        pb_target_extra_buffer(0);
+    else
+        pb_target_back_buffer();
     wait_idle();
     frame_no++;
     gpu_free_pending(0);                       /* the GPU is idle: what was released DEFER_FRAMES frames ago goes */
@@ -391,8 +421,65 @@ void gfx_begin_frame(uint32_t c)
     }
 }
 
+/* The PS2's picture (gfx_opt.ps2_output, as gfx_gl.c): the 512 x 448 frame in the extra buffer is drawn over the screen
+ * twice, the second time one frame line lower at 50 %: the PCRTC merge the game sets up (flPS2SwapDBuff, video mode 1:
+ * PMODE 0x7F27, read circuit 1 one line below circuit 2, ALP 0x7F); bilinear, 512 -> 640 as the TV stretches it to
+ * 4:3. Then the screen size is back (gfx_read_pixels, the next frame). */
+static void ps2_present(void)
+{
+    static const float st[12] = { 0, 0, 1, 0, 1, 1, 0, 0, 1, 1, 0, 1 };     /* (rect textures: scaled to texels by gfx_draw_2d) */
+    float pos[12];
+    uint8_t col[24];
+    gfx_texture *tex = G.tex;
+    int pass, i, anchor = G.anchor, fp = G.filter_point, clamp = G.clamp;
+    uint32_t *p;
+    if (!G.ps2 || G.ps2_done)
+        return;
+    G.ps2_done = 1;
+    wait_idle();                                /* the frame is finished before it is read */
+    pb_target_back_buffer();
+    G.w = G.rw;
+    G.h = G.rh;
+    set_viewport();
+    p = pb_begin();
+    p = pb_push1(p, NV097_SET_ALPHA_FUNC, 0x207);                   /* always */
+    p = pb_push1(p, NV097_SET_BLEND_EQUATION, NV097_SET_BLEND_EQUATION_V_FUNC_ADD);
+    p = pb_push1(p, NV097_SET_BLEND_FUNC_SFACTOR, 0x302);
+    p = pb_push1(p, NV097_SET_BLEND_FUNC_DFACTOR, 0x303);
+    pb_end(p);
+    G.tex = &G.ps2_tex;
+    G.anchor = GFX_A_STRETCH;
+    G.filter_point = 0;
+    G.clamp = 1;
+    for (pass = 0; pass < 2; pass++) {
+        float y0 = pass ? G.h / 448.0f : 0.0f, y1 = y0 + G.h;
+        float q[12] = { 0, y0, (float)G.w, y0, (float)G.w, y1, 0, y0, (float)G.w, y1, 0, y1 };
+        memcpy(pos, q, sizeof pos);
+        for (i = 0; i < 6; i++) {
+            col[4 * i] = col[4 * i + 1] = col[4 * i + 2] = 255;
+            col[4 * i + 3] = pass ? 128 : 255;
+        }
+        push1(NV097_SET_BLEND_ENABLE, pass);
+        gfx_draw_2d(G.w, G.h, 6, pos, st, col);
+    }
+    G.tex = tex;
+    G.anchor = anchor;
+    G.filter_point = fp;
+    G.clamp = clamp;
+    p = pb_begin();                             /* the game's states as they were */
+    p = pb_push1(p, NV097_SET_ALPHA_FUNC, 0x200 + (G.afunc & 7));
+    p = pb_push1(p, NV097_SET_BLEND_ENABLE, G.blend_on && !gfx_pick_pass);
+    p = pb_push1(p, NV097_SET_BLEND_FUNC_SFACTOR, blend_factor[G.bsrc < 6 ? G.bsrc : 2]);
+    p = pb_push1(p, NV097_SET_BLEND_FUNC_DFACTOR, blend_factor[G.bdst < 6 ? G.bdst : 3]);
+    p = pb_push1(p, NV097_SET_BLEND_EQUATION, (G.bop & 0xC00) == 0x400 ? NV097_SET_BLEND_EQUATION_V_FUNC_SUBTRACT
+                 : (G.bop & 0xC00) == 0x800 ? NV097_SET_BLEND_EQUATION_V_FUNC_REVERSE_SUBTRACT
+                 : NV097_SET_BLEND_EQUATION_V_FUNC_ADD);
+    pb_end(p);
+}
+
 void gfx_end_frame(void)
 {
+    ps2_present();
     wait_idle();
     while (pb_finished())
         SwitchToThread();               /* see wait_idle */
@@ -400,8 +487,10 @@ void gfx_end_frame(void)
 
 int gfx_read_pixels(uint8_t *rgb)
 {
-    const uint8_t *fb = (const uint8_t *)pb_back_buffer();
+    const uint8_t *fb;
     int i;
+    ps2_present();          /* the PS2 output: the screen as it will be shown */
+    fb = (const uint8_t *)pb_back_buffer();
     if (!fb)
         return -1;
     wait_idle();
@@ -600,7 +689,9 @@ static void bind_texture(gfx_texture *t)
     uint32_t fmt, *p, wrap, filt;
     if (!t)
         t = G.white;
-    if (t->rect)
+    if (t->xrgb)
+        fmt = MASK(NV097_SET_TEXTURE_FORMAT_COLOR, NV097_SET_TEXTURE_FORMAT_COLOR_LU_IMAGE_X8R8G8B8);
+    else if (t->rect)
         fmt = MASK(NV097_SET_TEXTURE_FORMAT_COLOR, NV097_SET_TEXTURE_FORMAT_COLOR_LU_IMAGE_A8B8G8R8);
     else
         fmt = MASK(NV097_SET_TEXTURE_FORMAT_COLOR, t->pal ? NV097_SET_TEXTURE_FORMAT_COLOR_SZ_I8_A8R8G8B8
@@ -1236,7 +1327,7 @@ void gfx_draw_2d(int w, int h, int nvert, const float *pos, const float *st, con
      * stretched draws (fades, a frame-sized virtual screen) over the whole frame (see gfx_scene_aspect) */
     memcpy(m, ident, sizeof m);
     m[5] = (float)G.h / h;
-    if (G.anchor == GFX_A_STRETCH || (w == G.w && h == G.h) || !gfx_opt.widescreen) {
+    if (G.anchor == GFX_A_STRETCH || (w == G.w && h == G.h) || !gfx_opt.widescreen || G.ps2) {
         m[0] = (float)G.w / w;
     } else {
         float rx, rw;

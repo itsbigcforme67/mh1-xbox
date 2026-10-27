@@ -88,6 +88,7 @@ Precedence: built-in defaults < file < command-line flags.
 | `--msaa N` | `msaa` | 0, 2 or 4 samples (falls back to 0 if the driver refuses; the bug reporter's id pass switches it off) |
 | `--aniso N` | `aniso` | 1 (off) to 16: anisotropic + trilinear for the 3D textures (mip levels are generated only when N > 1; the 2D art never uses them) |
 | `--widescreen` or `--aspect 16:9` / `--aspect 4:3` | `widescreen` | see below |
+| `--ps2-output` | `ps2_output` (1/0) | the PS2's own picture: the frame drawn at the game's 512 x 448, the PCRTC line merge the game sets up, stretched to 4:3 (softer, as on a TV; see "PS2 output" below). Off by default |
 | `--filter2d nearest\|linear\|sharp` | `filter2d` | HUD / menu / text art: nearest keeps the original pixels hard at any scale; sharp is nearest at the whole-number part of the scale and bilinear for the rest (below) |
 | `--english`, `--japanese`, `--text-table FILE` | `language` (`ja`/`en`), `text_table` | text language, see "Settings menu" |
 | `--confirm circle\|cross` | `confirm` | button layout, see "Settings menu" |
@@ -134,6 +135,32 @@ Layout (gfx_gl.c `layout()`): `rc` is the largest 4:3 rectangle in the window, `
   are plain bilinear. Compared at 1600x900: crisper window borders and glyph edges than linear, without nearest's
   uneven pixel widths.
 - RT_2D_TRACE=1 prints every 2D draw (virtual size, anchor, box, texture size) to stderr: for widescreen work.
+
+### PS2 output (agent D, 27 Oct 2026)
+What the PS2 sends to the TV, found while scoring the renderers against it (docs/render_score.md):
+- **The frame buffer is 512 x 448**, not 640: flWidth = 512, flHeight = 448 in both games (read in PCSX2 at every
+  render_score scene), video mode 1 (flPs2State+4), DISPLAY MAGH 4 (5 video clocks per pixel: the 512 pixels fill the
+  2560-clock line, the TV shows them 4:3). The HUD and menus are drawn in the same 512-wide buffer (the 640-wide 2D
+  coordinates are scaled by fl).
+- **The PCRTC merge**: flPS2SwapDBuff (src/main/fl/flswap.c), video mode 1 with flPs2State+8 = 0 (both games):
+  PMODE 0x7F27 = both read circuits on, circuit 1's DISPLAY one line lower (dy + 1), mixed with ALP 0x7F (50 %).
+  Every line on the TV is the mean of its frame line and the one above it (checked in a PCSX2 screenshot with
+  "anti-blur" off: a 210 / 54 edge row reads 132). A flicker filter for interlaced TVs; PCSX2 removes it by default
+  ("anti-blur").
+- **No mip-maps**: every texture the game loads has one level (APX header +0x12 = 1, RT_APX_TRACE=1 lists them; flTexture
+  +0x30 = 1 for every live texture in PCSX2) and flSystemRenderOperation & 0xC00000 (fl state 0x6B, which picks the GS
+  TEX1 MMIN mip modes in flPS2SetTextureRegister) is 0: nothing in the game sets 0x69 / 0x6A / 0x6B. The GS samples level 0
+  bilinear, as GL_LINEAR does. The far sand was not a LOD question: it is the resolution and the merge above.
+- `--ps2-output` / `ps2_output = 1` (gfx_gl.c, gfx_nv2a.c `ps2_present`): the frame is drawn into a 512 x 448 area (GL:
+  the back buffer's bottom-left corner, copied to a texture with glCopyTexSubImage2D; nv2a: pbkit's extra buffer 0,
+  sampled as a linear X8R8G8B8 texture), then drawn over the window's 4:3 rectangle twice, the second copy one frame
+  line lower at 50 % (the merge), bilinear (the stretch to 4:3). gfx_scene_aspect stays 4:3 (the PS2's projection);
+  widescreen is ignored in this mode; gfx_size gives the window. Not for the bug reporter's id pass (it works in window
+  pixels: a picking frame is drawn normally). G's frozen quest-clear frame (rt_cap_frame reads the window mid-frame)
+  shows the merged picture early for that one frame [not looked at].
+- Default off: players keep the full-resolution picture; render_score.py runs the ports with it (the like-for-like
+  comparison, `--port-args ''` for the default).
+
 
 ### Settings menu (agent F, 9 Oct 2026)
 

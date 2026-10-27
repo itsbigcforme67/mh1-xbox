@@ -97,6 +97,7 @@ static void set_key(const char *k, const char *v)
     else if (!strcmp(k, "msaa")) gfx_opt.msaa = snap_msaa(atoi(v));
     else if (!strcmp(k, "aniso")) gfx_opt.aniso = clampi(atoi(v), 1, 16);
     else if (!strcmp(k, "widescreen")) gfx_opt.widescreen = truth(v);
+    else if (!strcmp(k, "ps2_output")) gfx_opt.ps2_output = truth(v);
     else if (!strcmp(k, "filter2d"))
         gfx_opt.filter2d = ieq(v, "nearest") ? F2D_NEAREST : ieq(v, "sharp") ? F2D_SHARP : F2D_LINEAR;
     else if (!strcmp(k, "language")) pc_opt.lang_en = ieq(v, "en") || ieq(v, "english");
@@ -167,6 +168,7 @@ int gfx_opts_arg(int argc, char **argv, int *i)
     else if (!strcmp(a, "--msaa") && *i + 1 < argc) set_key("msaa", argv[++*i]);
     else if (!strcmp(a, "--aniso") && *i + 1 < argc) set_key("aniso", argv[++*i]);
     else if (!strcmp(a, "--widescreen")) gfx_opt.widescreen = 1;
+    else if (!strcmp(a, "--ps2-output")) gfx_opt.ps2_output = 1;
     else if (!strcmp(a, "--aspect") && *i + 1 < argc) {
         const char *v = argv[++*i];
         gfx_opt.widescreen = strcmp(v, "4:3") != 0;     /* 16:9 (or any other value): widescreen */
@@ -216,6 +218,8 @@ void gfx_opts_save(void)
     note(f, "Monster Hunter settings (Xbox). The settings menu (Back + L3) writes this file.");
     note(f, "widescreen: 0 = the original 4:3, 1 = 16:9 anamorphic (set the TV to 16:9). Without this line the dashboard decides.");
     fprintf(f, "widescreen = %d\n", gfx_opt.widescreen);
+    note(f, "ps2_output: 1 = the PS2's own picture (512 x 448, its line merge, stretched to 4:3: softer, as on a TV), 0 = full resolution.");
+    fprintf(f, "ps2_output = %d\n", gfx_opt.ps2_output);
 #else
     gfx_window_geometry();
     if (!(f = fopen(ini_path, "w")))
@@ -230,6 +234,8 @@ void gfx_opts_save(void)
     fprintf(f, "aniso = %d\n", gfx_opt.aniso);
     note(f, "widescreen: 0 = the original 4:3, 1 = 16:9 and wider (wider field of view, HUD at the screen edges).");
     fprintf(f, "widescreen = %d\n", gfx_opt.widescreen);
+    note(f, "ps2_output: 1 = the PS2's own picture: the game's 512 x 448 frame and its line merge, stretched to 4:3 (softer, as on a TV).");
+    fprintf(f, "ps2_output = %d\n", gfx_opt.ps2_output);
     note(f, "filter2d: linear, nearest, or sharp (nearest at an integer scale, bilinear for the rest) for the HUD and menu art.");
     fprintf(f, "filter2d = %s\n", gfx_opt.filter2d == F2D_NEAREST ? "nearest" : gfx_opt.filter2d == F2D_SHARP ? "sharp" : "linear");
 #endif
