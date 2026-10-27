@@ -30,7 +30,7 @@ def from_nm(nm, exe):
     out = set()
     for ln in subprocess.run([nm, '--defined-only', exe], capture_output=True, text=True, check=True).stdout.splitlines():
         p = ln.split()
-        if len(p) == 3 and p[1] in 'Tt':
+        if len(p) == 3 and p[1] in 'Tt' and not p[2].startswith('.'):    # not section symbols (.text)
             out.add(int(p[0], 16))
     return out
 
