@@ -1676,3 +1676,52 @@ committed). Not in full_check (emulators).
   DIR`: scored as a fourth platform. A pad-script to drive the console to the same tick is not there yet.
 - Cost: one full run ~1.5 h of emulator time (PS2 ~10 s / scene, Xbox ~60 s / scene / run), more while other agents
   hold the lock.
+
+## Renderer score: fixes (agent D, Opus, 27 Oct 2026)
+Assignment (COORDINATOR.md): raise the score where it lost most (desert, hunter skin), faithful to the PS2.
+- **No mip-maps on the PS2** [checked, both ways]: flPS2SetTextureRegister (src/main/fl/flsettex01.c) only writes a mip
+  TEX1 (MXL, L, K, MMIN 2-5) when flSystemRenderOperation & 0xC00000 (fl state 0x6B) is set and the texture has more than
+  one level. Nothing in main / game / G sets 0x69 / 0x6A / 0x6B (grep of every `addiu $4, $0, 0x6x` before a
+  flSetRenderState call); PCSX2 at the g_camp / g_desert shots: RenderOperation 0x0120B032 (& 0xC00000 = 0), K = L = 0,
+  every live flTexture has 1 level; the stage 53 APX files have 1 level (RT_APX_TRACE=1). So the GS samples level 0 with
+  bilinear, exactly GL_LINEAR / the nv2a's linear filter: no LOD change to make.
+- **What made the PS2 soft is its output, and the first scoreboard's capture of it** [checked]:
+  - flWidth = 512, flHeight = 448 (both games, every scene; render_score writes ps2_r1_video.txt): the 3D and the 2D are
+    drawn into a 512-wide frame buffer, shown 4:3 on the TV (DISPLAY MAGH 4).
+  - flPS2SwapDBuff video mode 1, merge on (flPs2State+4 = 1, +8 = 0): PMODE 0x7F27, circuit 1 one line below circuit 2,
+    50 %: each TV line = mean of its frame line and the one above (PCSX2 screenshot with anti-blur off: edge rows 210 /
+    132 / 54).
+  - The old capture added PCSX2's own softening on top: blend deinterlacing and its 640x480 4:3 window (512x448 scaled to
+    640x480 bilinear, then back to 640x448 by the scorer). The old PS2 picture against the exact one: SSIM 89.8 (g_desert).
+- Fixes: (1) render_score's PS2 side is the exact output now (PCSX2 screenshot at the internal resolution, not aspect
+  corrected, F8 hotkey via xkey; deinterlace off, anti-blur off; PCSX2_GS_EXTRA / PCSX2_INI_EXTRA in run_pcsx2.sh).
+  (2) `--ps2-output` / `ps2_output = 1` in both ports (docs/pc.md "PS2 output"): 512x448 frame, the merge, bilinear to
+  4:3. GL: the back buffer's corner + glCopyTexSubImage2D; nv2a: pbkit's extra buffer 0 (only allocated with the option)
+  sampled as a linear X8R8G8B8 texture. Player default off; render_score runs the ports with it (`--port-args ''` for
+  the full-resolution default).
+- First check, g_desert against the exact PS2 picture: PC full-res 27.8 -> PS2 output 32.7; Xbox full-res 28.9 -> 32.4
+  (xemu, the new build) [render_score, build/D/score/t1, t2]. The Xbox matches the PC within 0.3 with the option
+  (without it the Xbox was ~3 points above the PC: xemu draws 1280x960, a supersampled picture).
+  What is left in the desert is the sand's fine noise: same texture and camera (low-pass alignment best at 0,0), but
+  an 8x8 SSIM window of uncorrelated noise scores near 0 whatever the renderer does.
+- Seen on the way: the current Xbox build does not draw G's "村長の教えが追加されました" banner in g_desert (also without
+  --ps2-output; the 25 Oct Xbox capture had it, the PC has it) [not looked into: Xbox only, appeared between 25 and 27 Oct].
+- **Hunter skin (open, findings)**:
+  - The PS2 actors use Vu1Code_0016_0004 (skinned) / 0016_0002 (rigid) (live flPS2Clay param tables in PCSX2, m_camp /
+    m_forest1). Its lighting: colour = min(128, sum_k max(0, n . Lk) * min(128, 128 * a_k * B) + (mem15 + mem0) * A),
+    GS modulate /128; the vertex colours are not read (they are 255 in the hunter anyway); fog in the same program.
+  - The actor lights in PCSX2 (light_work set 1, flLIGHT, the hunter's eased colours at PLW+0x578) equal what the PC's
+    RT_LIGHT_GAME path computes (m_camp: L0 1.0 from +x+y+z, L1 0.3 opposite, L2 0.3 = the camera light from light_move;
+    no ambient rows; flPS2Ambient = 0; m_desert: ambient rows 0.35 / 0.25 / 0.20).
+  - Mean colour of the hunter's pixels (mask = pixels that change when RT_LIGHT_MUL=0,0 blacks the actors; PS2 shifted
+    by the best match): g_camp PS2 82,67,56 / PC fixed light 105,81,67 / game lights 57,48,42 / game lights reversed
+    101,76,59; g_desert PS2 111,79,53 (shift less sure) / fixed 88,65,50 / game 157,111,78. Visually the game lights
+    match the desert hunter well and are too dark and too directional at the camp: the PS2 hunter there is flatter.
+  - So the default fixed light is too bright at the camp and too dark in the desert (a stage-independent light cannot
+    match both), and the game lights are right in kind but something in the VU path flattens them. Lead: the program's
+    PROG_LOOP turns the light matrix (mem 9-11, PS2SHADER_ADD_LIGHTVECD3, raw asm) into each bone's space and normalises
+    its ROWS; if mem 9-11 hold one light per column (agent F's reading), that renormalisation mixes the lights. Needs
+    PS2SHADER_ADD_LIGHTVECD3 decoded and the per-bone result checked against the camp picture. Not changed (no guess
+    shipped). The MH1 forest Aptonoth (darker on the PS2) is the same actor path.
+- Test aids: RT_APX_TRACE=1 (APX headers), RT_LIGHT_TRACE=4 now prints the vertex colour and normal length ranges,
+  RT_LIGHT_MUL=AMB,COL (scales the actors' ambient and light colours), RT_LIGHT_FLIP=1 (light directions reversed).

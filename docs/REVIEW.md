@@ -1028,3 +1028,12 @@ Both games unless marked.
   online town a prim's draw word that is not code (0x1DD921; the Linux PC already skipped it) lies inside the Xbox XBE's
   text, so the Xbox called it and crashed 10 s after connecting. **To revert:** commit "Xbox: a 2D prim's draw function
   must start at a symbol (rt_code_ptr), full_check builds the G Xbox online".
+
+## The renderer score's PS2 capture (agent D, 27 Oct 2026)
+- **Dropped:** tools/render_score.py's PS2 grab of PCSX2's 640x480 window with blend deinterlacing (PCSX2_DEINTERLACE=6).
+  **Now:** PCSX2's screenshot at the internal resolution without aspect correction (512x448, the game's frame buffer),
+  deinterlacing off, PCSX2 anti-blur off (the game's PCRTC line merge stays in); the ports are scored with --ps2-output.
+  **Why:** the old capture scaled the 512x448 frame twice and blended the fields: much softer than the console, so the
+  ports' sharp pictures lost points the PS2 never had (old vs exact PS2 picture: SSIM 89.8 on g_desert). Scoreboards
+  before and after are not comparable (docs/render_score.md keeps the old one as history). **To revert:** commit
+  "render_score: grab the PS2's own picture (512x448 frame buffer + its PCRTC merge), not PCSX2's presentation".
