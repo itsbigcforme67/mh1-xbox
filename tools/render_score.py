@@ -9,7 +9,8 @@ and compared with the PS2's: SSIM (as %), mean absolute colour difference per pi
 whose largest channel difference is over 16.
 
 usage: tools/render_score.sh [run] [--game mhg|mh1|all] [--scenes ID,ID] [--platforms ps2,pc,xbox] [--reps N]
-                             [--out DIR]                               the captures, then the score
+                             [--out DIR] [--port-args 'FLAGS']         the captures, then the score
+                             (--port-args: the ports' flags, default --ps2-output; '' = their full-resolution default)
        tools/render_score.py score DIR [--md docs/render_score.md]     the score again from DIR's pictures
        tools/render_score.py list
 Default DIR build/score/<date>. Per scene DIR/<game>/<id>/: ps2_r1.png .. (captures, as grabbed), and in DIR:
@@ -39,11 +40,16 @@ W, H = 640, 448         # the PS2's frame (4:3 on the TV); every capture is scal
 THRESH = 16             # "differs": largest channel difference over this
 START_POS = {'mhg': 0x520A30, 'mh1': 0x2F2620}     # stage_start_pos (x, y, z per stage)
 LPVIEW = {'mhg': 0x2EF28C, 'mh1': 0x38A110}         # lpView (the game camera: eye, target, ... ; g_ref_shot.sh)
+FLSIZE = {'mhg': (0x2EF478, 0x2EF474), 'mh1': (0x38A2E8, 0x38A2E4)}   # flWidth, flHeight: the frame buffer the game draws in
+FLSTATE = {'mhg': 0x38F930, 'mh1': 0x4241C0}        # flPs2State (+4 video mode, +8 merge off, +0x14 MAGH: flPS2SwapDBuff)
 VSYNC = {'mhg': 0x26E9B0, 'mh1': 0x312F70}          # adxm_vsync_cnt (CRI ADX's count of vertical blanks)
 DEFQ = {'mhg': 10001, 'mh1': 131}
 PLATS = ['pc', 'xbox', 'hw']
 PNAME = {'ps2': 'PS2', 'pc': 'PC', 'xbox': 'Xbox (xemu)', 'hw': 'Xbox (hardware)'}
 PFILE = {'ps2': 'ps2', 'pc': 'pc', 'xbox': 'xb', 'hw': 'hw'}
+# flags for both ports (--port-args): by default their PS2 output (512 x 448 + the PCRTC line merge, docs/pc.md "PS2
+# output"), the like-for-like picture; --port-args '' scores the full-resolution default
+PORT_ARGS = ['--ps2-output']
 
 
 def log(*a):
@@ -123,6 +129,27 @@ def grab(dnum, path, size=None):
 
 
 # ------------------------------------------------------------------ PS2
+def grab_ps2(ps2, path):
+    """the PS2's frame buffer as the GS drew it plus the PCRTC merge the game asks for, nothing of PCSX2's presentation
+    (its window is 640x480 at 4:3, the frame 512 x 448): PCSX2's own screenshot at the internal resolution, not aspect
+    corrected (run_ps2's settings; the software renderer's internal resolution is the GS's), taken with its hotkey (F8).
+    512 x 448 in both games (flWidth / flHeight); the TV stretches it to 4:3, the scorer to 640x448"""
+    fw, fh = (ps2.r32(a) for a in FLSIZE[ps2.gname])
+    snaps = os.path.join(ps2.home, 'PCSX2', 'snaps')
+    before = set(os.listdir(snaps)) if os.path.isdir(snaps) else set()
+    ps2.keys(0, 'F8')
+    t0 = time.time()
+    while time.time() - t0 < 10:
+        new = [f for f in (os.listdir(snaps) if os.path.isdir(snaps) else []) if f not in before and f.endswith('.png')]
+        if new:
+            src = os.path.join(snaps, new[0])
+            time.sleep(0.5)                 # (written completely)
+            os.replace(src, path)
+            return fw, fh
+        time.sleep(0.2)
+    raise RuntimeError('PCSX2 wrote no screenshot (%s)' % snaps)
+
+
 def scene_pokes(sc, ps2):
     if not sc.get('area'):
         return []
@@ -188,13 +215,16 @@ def ps2_scene(ps2, sc, sdir, rep):
         if play and pt in want:
             time.sleep(float(os.environ.get("SCORE_PS2_WAIT", "0.6")))  # the game is stopped at the start of play tick pt
             p = os.path.join(sdir, 'ps2_%s%s.png' % (tag, want[pt]))
-            grab(ps2.dnum, p, '640x480')
+            fw, fh = grab_ps2(ps2, p)
             if pt == shot:              # the same held frame again: the capture's own stability
                 vp = ps2.r32(LPVIEW[ps2.gname])
                 cam = struct.unpack('<12f', ps2.p.read_bytes(vp, 48)) if 0x100000 <= vp < 0x2000000 else ()
                 open(os.path.join(sdir, 'ps2_%s_cam.txt' % tag), 'w').write(' '.join('%.3f' % v for v in cam) + '\n')
+                st = struct.unpack('<6I', ps2.p.read_bytes(FLSTATE[ps2.gname], 24))
+                open(os.path.join(sdir, 'ps2_%s_video.txt' % tag), 'w').write(
+                    'frame %dx%d video mode %d merge-off %d MAGH %d\n' % (fw, fh, st[1], st[2], st[5]))
                 time.sleep(0.4)
-                grab(ps2.dnum, os.path.join(sdir, 'ps2_%s_again.png' % tag), '640x480')
+                grab_ps2(ps2, os.path.join(sdir, 'ps2_%s_again.png' % tag))
         pad = pads[pt] if play and 0 <= pt < len(pads) else (0, 0, 0, 0, 0)
         field_sync(ps2)
         ps2.go(k, R.fpad_words(pad), [(r, o, t, v) for (p_, r, o, t, v) in pokes if play and p_ == pt])
@@ -212,9 +242,14 @@ def ps2_start(ps2):
 
 
 def run_ps2(gname, scenes, out, reps):
-    # PCSX2's deinterlacing: blend (both fields). With "automatic" a held MH1 frame came out as one field or the other
-    # from run to run (self-difference SSIM 83-93 on 4 scenes, every edge, the HUD's too)
-    os.environ.setdefault('PCSX2_DEINTERLACE', '6')
+    # The PS2's own output, not PCSX2's presentation of it (2026-10-27): no deinterlacing (both games draw whole 448-line
+    # frames, SMODE2 frame mode), PCSX2's screenshot at the internal resolution without aspect correction (grab_ps2), and
+    # PCSX2's "anti-blur" off, so the PCRTC merge the game sets up (PMODE 0x7F27: circuit 1 one line below
+    # circuit 2, mixed 50 %, flPS2SwapDBuff) is in the picture as on a TV. The first scoreboard used blend deinterlacing and
+    # a 640x480 4:3 window: 512x448 scaled twice and the fields blended, much softer than the console.
+    os.environ.setdefault('PCSX2_DEINTERLACE', '1')
+    os.environ.setdefault('PCSX2_GS_EXTRA', 'ScreenshotSize = 2\nScreenshotFormat = 0\npcrtc_antiblur = false')
+    os.environ.setdefault('PCSX2_INI_EXTRA', '[Hotkeys]\nScreenshot = Keyboard/F8')
     with EmuLock():
         for rep in range(1, reps + 1):     # each run its own PCSX2 session
             emu_ready()
@@ -272,7 +307,7 @@ def run_pc(sc, sdir, reps):
     R.SCN_QUEST[0] = sc['quest']
     R.SCN_VILLAGE[0] = bool(sc.get('village'))
     ud = os.path.join(sdir, 'user_data.bin')
-    R.run_pc(gname, sdir, pads, pokes, ud, rnd, n + 5, rsync=rsync, extra_args=['--no-ini'])
+    R.run_pc(gname, sdir, pads, pokes, ud, rnd, n + 5, rsync=rsync, extra_args=['--no-ini'] + PORT_ARGS)
     pc = R.Trace(os.path.join(sdir, 'pc.ref'))
     shot = sc['shot']
     if shot not in pc.recs:
@@ -284,7 +319,8 @@ def run_pc(sc, sdir, reps):
         for f in os.listdir(sdir):
             if f.startswith('pcshot'):
                 os.remove(os.path.join(sdir, f))
-        R.run_pc(gname, sdir, pads, pokes, ud, rnd, raw + 12, shots=set(raws), rsync=rsync, extra_args=['--no-ini'])
+        R.run_pc(gname, sdir, pads, pokes, ud, rnd, raw + 12, shots=set(raws), rsync=rsync,
+                 extra_args=['--no-ini'] + PORT_ARGS)
         for r, suf in raws.items():
             src = os.path.join(sdir, 'pcshot_%d.png' % r)
             if os.path.exists(src):
@@ -327,7 +363,7 @@ def run_xbox(sc, sdir, reps):
     xf = xbox_files_dir()
     dbg = os.path.join(xf, 'xemu_debug.txt')
     holds = [raw - 1, raw, raw + 1]
-    envs = ['RT_ARGS=--quest %d --no-ini' % sc['quest'], 'RT_NOMOVIE=1', 'RT_SEED=1', 'RT_FPU_PS2=1',
+    envs = ['RT_ARGS=--quest %d --no-ini%s' % (sc['quest'], ''.join(' ' + a for a in PORT_ARGS)), 'RT_NOMOVIE=1', 'RT_SEED=1', 'RT_FPU_PS2=1',
             'RT_REF_PAD=D:/data/pad.txt', 'RT_REF_POKE=D:/data/pokes.txt', 'RT_REF_UD=D:/data/user_data.bin',
             'RT_REF_RND=%d,%d' % rnd, 'RT_REF_RNDS=D:/data/ps2_rnd.txt',
             'RT_HOLD=%s' % ','.join(map(str, holds)), 'RT_HOLD_SECS=12']
@@ -590,6 +626,9 @@ def main(argv):
     plats = opt('--platforms', 'ps2,pc,xbox').split(',')
     reps = int(opt('--reps', '2'))
     md = opt('--md')
+    pa = opt('--port-args')
+    if pa is not None:
+        PORT_ARGS[:] = pa.split()
     scenes = [s for s in cfg['scenes'] if (game == 'all' or s['game'] == game) and
               (not ids or s['id'] in ids.split(','))]
     if cmd == 'list':
