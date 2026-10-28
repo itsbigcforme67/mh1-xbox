@@ -29,16 +29,18 @@ void xbox_watch_long(int on);           /* and a known long operation gets the l
 static const char *const zname[RTP_N] = {
     "logic (rest)", "set objects", "effects move", "sound tick + ADX", "mixer", "movie video",
     "movie audio", "draw (rest)", "skinning + light", "effects draw", "gfx backend",
-    "motion eval", "joint matrices", "stage draw code", "game prims", "2D / HUD"
+    "motion eval", "joint matrices", "stage draw code", "game prims", "2D / HUD",
+    "GPU wait", "net (sockets)"
 };
 /* per frame (draw) or per tick; motion and joints run in both and are
  * reported per tick (one frame per tick at 30 fps) */
-static const int per_frame[RTP_N] = { 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 0, 0, 1, 1, 1 };
+static const int per_frame[RTP_N] = { 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 0, 0, 1, 1, 1, 1, 0 };
 static int on = -1, stack[16], depth;
 static double last, cur[RTP_N], sum[RTP_N], mx[RTP_N], fcur[RTP_N];
 static int nticks, nframes;
 static long cnt[RTPC_N], cnt_max[RTPC_N], cnt_cur[RTPC_N];
-static const char *const cname[RTPC_N] = { "vertices skinned+lit", "vertices drawn", "triangles drawn", "draw calls", "skeleton evaluations" };
+static const char *const cname[RTPC_N] = { "vertices skinned+lit", "vertices drawn", "triangles drawn", "draw calls", "skeleton evaluations",
+    "2D draws", "pushbuffer kicks", "textures made", "texture KB", "GPU waits", "net calls" };
 
 void rt_prof_count(int c, long n)
 {
@@ -116,6 +118,8 @@ void rt_prof_end(int z)
         ;
 }
 
+static double wall_ms(void);
+
 static void fold(int frame)
 {
     int z;
@@ -153,6 +157,23 @@ void rt_prof_frame(void)
     (void)fcur;
     if (nticks < 300)
         return;
+    {   /* drawn frames per second of wall time since the last report (the game ticks at 30 regardless) */
+        static double w0;
+        double w = wall_ms();
+#ifdef MH1_XBOX     /* the game thread's own share of the CPU (its kernel tick count: the rest went to other threads) */
+        static ULONG k0, cs0;
+        PKTHREAD th = KeGetCurrentThread();
+        if (w0 > 0 && w > w0)
+            out("prof: %.1f fps (wall clock), game thread %.0f%% of the CPU, %lu thread switches\n", nframes * 1000.0 / (w - w0),
+                100.0 * (th->KernelTime - k0) / (w - w0), (unsigned long)(th->ContextSwitches - cs0));
+        k0 = th->KernelTime;
+        cs0 = th->ContextSwitches;
+#else
+        if (w0 > 0 && w > w0)
+            out("prof: %.1f fps (wall clock)\n", nframes * 1000.0 / (w - w0));
+#endif
+        w0 = w;
+    }
     out("prof: --- %d ticks, %d frames (ms: mean per tick or frame / worst) ---\n", nticks, nframes);
     for (z = 0; z < RTP_N; z++) {
         double m = sum[z] / (per_frame[z] ? (nframes ? nframes : 1) : nticks);

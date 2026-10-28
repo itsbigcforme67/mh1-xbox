@@ -23,12 +23,21 @@ enum {
     RTP_STAGE_DRAW,     /* trans_stage: area + set models (game C draw code) */
     RTP_PRIMS,          /* the game's prims (ordering tables) */
     RTP_2D,             /* HUD, text, menus, fade */
+    RTP_GPU_WAIT,       /* waiting for the GPU (idle, vblank, a free back buffer: the Xbox backend) */
+    RTP_NET,            /* the CpInet socket calls (net_cpinet.c) */
     RTP_N
 };
 void rt_prof_begin(int zone);
 void rt_prof_end(int zone);
 /* counters per drawn frame */
-enum { RTPC_SKIN_VERTS, RTPC_DRAW_VERTS, RTPC_DRAW_TRIS, RTPC_DRAWS, RTPC_SKEL_EVALS, RTPC_N };
+enum { RTPC_SKIN_VERTS, RTPC_DRAW_VERTS, RTPC_DRAW_TRIS, RTPC_DRAWS, RTPC_SKEL_EVALS,
+       RTPC_DRAWS_2D,       /* gfx_draw_2d calls (the 2D prims, text) */
+       RTPC_KICKS,          /* pushbuffer kicks (pb_end: one PUT register write each, Xbox) */
+       RTPC_TEX_NEW,        /* textures created or rewritten */
+       RTPC_TEX_KB,         /* their texels, KB */
+       RTPC_GPU_WAITS,      /* waits for the GPU (Xbox) */
+       RTPC_NET_CALLS,      /* CpInet calls (status, receive, send) */
+       RTPC_N };
 void rt_prof_count(int counter, long n);
 void rt_prof_tick(void);        /* one game tick done */
 void rt_prof_frame(void);       /* one frame drawn; prints every 300 ticks */
