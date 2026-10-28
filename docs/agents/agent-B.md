@@ -1502,3 +1502,30 @@ Owner's request: one picture of the PS2, Xbox and PC hunters together in the sam
 - GN8: faithful. G's set19 position tables for stages 67 / 73 / 75 are bss beyond game.bin (0x6E05E0..), nothing writes them
   (FINDS.md, agent A's PCSX2 read). Nothing to import.
 - MH1: none of these faults exists in MH1 (real data, sort path real).
+
+## G em02 (Fatalis) rewrite (28 Oct 2026)
+- Where Fatalis lives in G: the disc's mission files are m00001-50 (village), m01001-039 / m02001-050 / m03001-007 (online
+  groups 1-3), m10001-048 (training), m20001-050, m60029 (gallery event scene). Kind 2 is the boss of **3004-3007** only
+  (online group 3, Castle Schrade, stage 25; the PC's `--quest 3004` loads them offline). Kind 0x24 (36, crimson) is no
+  quest's boss on the disc (G's event-quest download only; the gallery's scene 13 shows it on stage 0x58). Scan: a loop of
+  `--quest N --time 0.05` reading the "quest N: monster kind K" log line (quest numbers without a file give stale data:
+  1100+, 2060+ are not real quests).
+- What G changed (mhg_fdiff / gdraft against the PC C; all ported, VERSION_MHG, MH1 C unchanged):
+  em02_fly_act_set act 11; em02_atk_act_set acts 12 (with 6), 13, 14-18 (with 0-4); em02_fly_adjy2_init types 4/5/6;
+  em02_init (kind 0x24 and quests > 50000 take game 0x5499A0's hit points, w+0x57 = -1); new 0x5A9F00 (kind 0x24 counter,
+  em02_g_tick); em02_hagi_set (carve id by the mission header's rank byte +0x42: 0xCB / 0xF3 / 0x13B (kind 2) or 0x15C / 0x119);
+  em02_main (tick first, x8B6 cleared in mode 5 instead of the anger check, case 12 kind 0x24 part carves 0x200-0x2000);
+  act05 / act06 (one motion 8 + Sleep2_End / Mahi_End; MH1 had 0x1C then 8); dmg03 (char_set 8 blend 4); die02 (frame 100,
+  MH1 134); new fly 11 (0x5AC150), atk 4/14-17 fire rain (0x5AC580: shell08 type 12 at frames 80/140/200/260/320, offset lists
+  main 0x2ECFC8 by variant), atk 12 (0x5ACFB0 rise + glide), atk 13 (0x5AD140 climb + dive + pull-out), atk 18 (0x5AD470,
+  two loops, ten shots from game 0x695EC0); move02 / move03 dispatch; ef_move_sub (tools/genef.py GENEF_G=1, then a diff
+  with the PC's MH1 script: frames 114 -> 60 in 0x3EB/0x3EC, 0x3FA's kind 0x24 branch, 0x402's sound list, 0x408 also
+  skips demo 3, new motions 0x40B-0x410). Demo 3 and the kind-36 meat_no were already there (agent E / earlier).
+- The jal names that tools/mhg_fdiff.py prints for G can be wrong (it looked up "stockEndPulldown" / "Em_Sleep2_End" where
+  the asm calls em02_to_normal): read the jal in asm/mhg/game/text/*.s when a call target matters.
+- G bug kept as is: fly 11 aims its climb at an uninitialised stack vector (Em_Calc_angY(pos, sp+0x30)); the PC climbs on its
+  current heading [guess]. Commands reach fly 11 nowhere in G's data (searched "05 02 0B"): probably unused.
+- Which acts the commands use: kind 2's tables (em02_sub_contents_d11 / e*) reach atk 12 / 13; acts 14-18 sit in kind 0x24's
+  command data (0x6BDD05.., inside the split's em33_content_i label). PC runs: kind 2 (quest 3004, 15 min) used only old acts in
+  that fight; RT_QEM_KIND=2:36 used 12 and 14-18 (no crash, 400 s); forced acts (RT_EM_POKE mode/x15) 12, 13, 14, 18, fly 11 all
+  run to their end.
