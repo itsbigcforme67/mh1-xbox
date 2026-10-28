@@ -1147,3 +1147,51 @@ main:0x2C1450	60a69628	-	No memory card (8MB) is inserted.
 main:0x2C1560	a3ac1303	-	The memory card (8MB) was removed.
 # --- G screens still in Japanese on the PC tour (24 Oct 2026): shop count label, equipment page, reward size, combo books
 lobby:0x63EBD0	7bec2656	-	min
+quest:2011:0x4450	db46980d	-	The hunt is over!
+quest:10030:0x445C	db46980d	-	The hunt is over!
+quest:10006:0x427C	b4bc48e3	-	Monsters to defeat: 1
+quest:60029:0x71	5ea664bf	-	Slay the Fatalis
+quest:10035:0x68	a2914b4e	-	The Desert Plesioth
+sub_main:0x540BB0	f6f9498e	-	Hunger ×1.5
+sub_main:0x541080	aae3ee62	-	Heat Inc ×1.5
+sub_main:0x5410B0	40383bca	-	Cold Inc ×1.5
+sub_main:0x541118	e4cef6cf	-	Torso Up
+sub_main:0x541150	60509352	-	Guard Up
+sub_main:0x5411D8	d8dda11d	-	ThunderRes
+sub_main:0x5412C0	67d89429	-	Health
+sub_main:0x529F80	dc04a8a1	-	Flaming S
+sub_main:0x529F90	7d13afe1	-	Thunder S
+sub_main:0x539420	dc04a8a1	-	Flaming S
+sub_main:0x539430	7d13afe1	-	Thunder S
+sub_main:0x539480	87eae8b6	-	Tranq S
+sub_main:0x5392D0	16a53de8	-	Load    ~C06LV 1  2
+sub_main:0x53A008	e2ebfcd0	-	 given (all).
+sub_main:0x53A550	c0e87339	-	Saving to the memory card.
+sub_main:0x53A570	720f17a6	-	Do not remove the memory card.
+sub_main:0x53A630	37fb345d	-	~B00Next
+sub_main:0x53A670	9462c555	-	~C05Yes~C00       No
+sub_main:0x53A690	cc958033	-	Yes       ~C05No~C00
+sub_main:0x53C730	4e2ff125	-	~C05[Yes]~C00    No  
+sub_main:0x53C750	e8494610	-	  Yes    ~C05[No]~C00
+sub_main:0x53C680	aa711fd8	-	Area:
+sub_main:0x53AB00	c3a173de	-	Black Dragon Legend
+lobby:0x63EED0	6bdbaeda	-	Press the ~B00 button
+lobby:0x6424F8	806ee8f5	-	Quest
+game:0x6DF660	950e7e17	p	They're costly, so I haven't supplied\nany this time, but they're a great help\nagainst large monsters.\n
+game:0x6E0290	04c845ca	p	When a wyvern is close to death, hit it\nwith this Tranq Bomb to put it to sleep,\nand that completes the capture.\n
+game:0x6E03A0	624370bd	p	When a wyvern is close to death, shoot\nit with Tranq Shells to put it to sleep,\nand that completes the capture.\n
+main:0x2C6620	8a64746a	-	A perfectly pure crystal.\nExtremely hard, it is used\nfor tools in the armory.
+main:0x2DC830	ded68c52	d	Over a hundred crafting steps
+main:0x2DC850	749b08eb	d	make this top insect armor.
+main:0x2E70E0	10037762	d	Reinforced Ioprey armor that
+main:0x2E7100	a0e4fd38	d	guards the legs. Raises
+main:0x2E7120	37fa19a0	d	Poison resistance.
+main:0x2C3D70	ebd1e43e	-	First steps in combining.\nCarry with Combos 1 to raise\nyour combining success rate.
+main:0x2C3DC0	665a6066	-	Combining fundamentals.\nCarry with Combos 1 and 2 to\nraise your success rate.
+main:0x2C3E20	015765e5	-	Advanced combining.\nCarry with Combos 1 to 3 to\nraise your success rate.
+main:0x2C3E80	cd64307a	-	All there is to combining.\nCarry with Combos 1 to 4 to\nraise your success rate.
+main:0x2E97D0	73dbb8b7	m	Save the settings to
+main:0x2EA670	2b5ad39e	m	Save the gallery to
+main:0x2E97F0	bf8ce0c8	m	the game data?
+main:0x2E97A0	7d46bd72	m	Select where to save.
+main:0x2E9780	ef1a2540	m	MEMORY CARD slot 2

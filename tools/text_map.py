@@ -1127,6 +1127,34 @@ def quest_fields_g(d):
     return out[:4]
 
 
+def quest_clear(d):
+    """[(file offset, bytes)] the quest's clear / progress lines (the reward screen's 'all monsters slain' line, the
+    'monsters to defeat: N' banners): header word 0x30 points at a table of their offsets, ended by the first entry
+    that is not a string start past the clear-condition block (word 0x0C). Same layout in MH1 JP, MH1 US and G; the
+    table's empty entries are left out."""
+    if len(d) < 0x70:
+        return []
+    t, blk = struct.unpack_from("<I", d, 0x30)[0], struct.unpack_from("<I", d, 0x0C)[0]
+    out = []
+    for w in range(t, min(t + 4 * 16, len(d) - 3), 4):
+        v = struct.unpack_from("<I", d, w)[0]
+        if not (blk < v < len(d) and d[v - 1] == 0):
+            break
+        b = cstr_at(d, v)
+        if b:
+            out.append((v, b))
+    return out
+
+
+def quest_strings_g(d):
+    """every text string of a G quest file: the four fields and the clear lines"""
+    return quest_fields_g(d) + quest_clear(d)
+
+
+def quest_strings_jp(d):
+    return quest_fields_jp(d) + quest_clear(d)
+
+
 def quest_map(d):
     """the quest's map (stage) number: word 5 of the first header section (MH1 JP, US and G alike; 2 forest and hills,
     3 desert, 4 swamp, 5 volcano, 6 jungle - checked on the JP quests whose text names the place)"""
@@ -1173,6 +1201,35 @@ def quest_pairs_us(J, U, match):
         fj, fu = quest_fields_jp(J[n]), quest_fields_jp(U[u])
         for (oj, bj), (ou, bu) in zip(fj, fu):
             out[("quest", n, oj)] = bu
+        cj, cu = quest_clear(J[n]), quest_clear(U[u])
+        if len(cj) == len(cu):                  # the clear lines, in the same order
+            for (oj, bj), (ou, bu) in zip(cj, cu):
+                out[("quest", n, oj)] = bu
+    return out
+
+
+def quest_clear_pairs_g(Jq, Gq, en_jp):
+    """{G quest key: English} for G's clear lines (reward screen, 'monsters to defeat' banners). They are a handful
+    of stock lines shared by many quests, so they are paired by text, not by quest: a G line takes the US English of
+    the MH1 line with the same Japanese, or of a near one (G dropped the final full stop and wrote "requested" for "target") with
+    the same numbers. The MH1 line's English must be one wording on every MH1 quest that has it."""
+    by = collections.defaultdict(collections.Counter)
+    for n, d in Jq.items():
+        for o, b in quest_clear(d):
+            if ("quest", n, o) in en_jp:
+                by[b][en_jp[("quest", n, o)]] += 1
+    one = {b: next(iter(c)) for b, c in by.items() if len(c) == 1}
+    out = {}
+    for n, d in Gq.items():
+        for o, b in quest_clear(d):
+            xb = one.get(b)
+            if xb is None:
+                cand = [(text_sim(b, jb), jb) for jb in one if digits_sig(jb, True) == digits_sig(b, True)]
+                cand = sorted((c for c in cand if c[0] >= 0.75), reverse=True)
+                if cand and (len(cand) == 1 or cand[0][0] > cand[1][0]):
+                    xb = one[cand[0][1]]
+            if xb is not None:
+                out[("quest", n, o)] = xb
     return out
 
 
@@ -1657,7 +1714,7 @@ def g_rules(jp, g, GS, owner, cells, en_jp, en_g, Jq, Gq, skip=()):
 
     targets = [k for k in GS if k not in en_g and k not in new]
     for n, d in Gq.items():
-        for o, b in quest_fields_g(d):
+        for o, b in quest_strings_g(d):
             if b and ("quest", n, o) not in en_g:
                 targets.append(("quest", n, o))
     for gk in targets:
@@ -2299,7 +2356,7 @@ def freedom_for_g(g, GS, Gq, en_g, idx, fpairs, runs, selftest=False):
         # replaces them, so the description is not half one translation, half Japanese
         why["whole description" + (" (replacing %s" % "MH1 US lines line by line)" if part else "")] += len(run)
     targets = [k for k in GS if k not in en_g and k not in new]
-    targets += [("quest", n, o) for n, d in Gq.items() for o, b in quest_fields_g(d) if b and ("quest", n, o) not in en_g]
+    targets += [("quest", n, o) for n, d in Gq.items() for o, b in quest_strings_g(d) if b and ("quest", n, o) not in en_g]
     for gk in targets:
         gb = gtext(gk)
         xb = english(norm_marks(gb), count=True)
@@ -3159,6 +3216,9 @@ def main():
             en_g[gk] = xb
     same_g = propagate_same_text_g(jp, g, GS, en_jp, en_g, owner, skip=slot_cov)
     en_g.update(same_g)
+    clr_g = {k: v for k, v in quest_clear_pairs_g(Jq, Gq, en_jp).items() if k not in en_g}
+    en_g.update(clr_g)
+    log("G: quest clear lines from the MH1 US quests: %d" % len(clr_g))
     rule_g, gstat_rules, amb_g = g_rules(jp, g, GS, owner, cells, en_jp, en_g, Jq, Gq, slot_cov)
     en_g.update(rule_g)
     fr_g = run_freedom(args, g, GS, Gq, en_g, cache)
@@ -3505,7 +3565,7 @@ def write_report(args, jp, us, g, S, GS, cells, owner, omu, rowsu, omg, rowsg, e
     for gk, b in GS.items():
         gall[gk] = b
     for gn, d in Gq.items():
-        for o, b in quest_fields_g(d):
+        for o, b in quest_strings_g(d):
             if b:
                 gall[("quest", gn, o)] = b
     rows = collections.defaultdict(collections.Counter)
@@ -3537,7 +3597,7 @@ def write_report(args, jp, us, g, S, GS, cells, owner, omu, rowsu, omg, rowsg, e
         area = area_of_name(o[1]) if o else "code literals"
         jrows[area]["english" if jk in en_jp else "none"] += 1
     for n, d in Jq.items():
-        for o, b in quest_fields_jp(d):
+        for o, b in quest_strings_jp(d):
             if b:
                 jrows["quests"]["english" if ("quest", n, o) in en_jp else "none"] += 1
 
