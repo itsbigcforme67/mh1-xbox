@@ -651,6 +651,31 @@ Untested: real boot, the --data ISO build (extract-xiso on a 925 MB tree), HDD f
 nv2a build. The first things to look for: the BIOS logo, then our XBE starting (title screen from
 power-on, docs above), "free memory" lines, the E:\UDATA\4D480001 folder appearing after a save.
 
+## Installed by hand, no loader: the testers' kit (agent A, 28 Oct 2026)
+
+Volunteer testers copy a folder to their Xbox and start it from the dashboard; they have no network loader and no
+laptop running tools/xbox_serve.py. `tools/make_release.sh G.iso [--mh1 MH1.iso] [--online]` makes that folder
+(dist/release/xbox/MHG: default.xbe + data/) and the PC builds; docs/TESTERS.md is the testers' page.
+How the game finds its things when started as E:\<folder>\default.xbe (code read, see the [checked] notes):
+- Disc files: `D:\data` first, then `E:\Games\MHG\data` (viewer.c; D:\data counts only when it holds the game's own
+  SLPM). nxdk's CRT mounts D: to the XBE's folder at start-up, **unless D: is already mounted** (nxdk
+  lib/nxdk/automount_d.c) [checked]. Kernels / dashboards that launch an XBE normally map D: to its folder (the
+  owner's loader relies on it, docs above) [known, not checked on other dashboards]; a dashboard that leaves D: on
+  the DVD drive falls back to E:\Games\MHG\data, which is why TESTERS.md recommends E:\Games\MHG.
+- Log: `mh1log.txt` in the XBE's folder (xbox_log.c, XeImageFileName), rewritten at each start. Reports: `reports\`
+  next to it. Saves: E:\UDATA\<title id> as always.
+- Settings: since this change `settings.ini` (and so `text\en.txt` next to it) is in the folder of a **default.xbe**
+  started from the dashboard; an XBE a loader starts (mh1.xbe / mhg.xbe) keeps E:\Games\MH1 / MHG (gfx_opts.c).
+- Leaving (Back + Start) and the watchdog / crash catcher: a default.xbe goes straight to the dashboard
+  (xbox_leave: no loader to send the log), so testers copy mh1log.txt off by FTP.
+Checked 28 Oct 2026, fresh clone (temporary directory, only the G .iso given): ./mh1 / make_release built the Xbox
+folder and the Linux build; same file list as the owner's dist/xbox/MHG (default.xbe + data/AFS_DATA.AFS, AFS00.AFS,
+AFS01.AFS, SLPM_658.69, data byte-identical) plus VERSION.txt; every Xbox object's sections equal a developer build
+of the same source except rt_log.obj (the version hash and build time; the XBE differs only through those strings'
+places). The kit's XBE booted hidden in xemu with the kit's data as D:\data (run_xemu.sh --data, no xbox_serve.py,
+RT_NOMOVIE=1): "disc directory: D:\data", logos, title screen at 150 s. MH1 from the same fresh clone: Xbox folder
+and Linux build made. Not checked: a dashboard launch from E: (xemu has no dashboard here), real hardware.
+
 ## Real Xbox bench setup (11 Oct 2026)
 
 - Console: modded, Evolution X V4.3935, HDD C: free ~328 MB, MAC 00:0D:3A:31:08:AB.

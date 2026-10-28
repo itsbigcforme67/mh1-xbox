@@ -57,9 +57,11 @@ text needs more of your own discs (the US Monster Hunter, and Monster Hunter Fre
 
 1. Copy the **whole folder** `dist/release/xbox/MHG` to the Xbox hard disk, for example as **`E:\Games\MHG`**, so
    that `E:\Games\MHG\default.xbe` and `E:\Games\MHG\data\AFS00.AFS` exist. Any FTP program works (FileZilla:
-   connect to the Xbox's address with the dashboard's FTP login, open `E:`, drag the folder in). Another folder such as
-   `E:\Apps\MHG` works too; the game always reads the `data` folder next to its `default.xbe`. Use `E:\Games\MHG` if you
-   want to test the online version.
+   connect to the Xbox's address with the dashboard's FTP login, open `E:`, drag the folder in). **`E:\Games\MHG` is
+   the safe place**: the game looks for its files in the `data` folder next to its `default.xbe` first and in
+   `E:\Games\MHG\data` second. Another folder such as `E:\Apps\MHG` works when your dashboard starts programs with
+   their own folder as drive D: (most do); if the game then says files are missing, move the folder to `E:\Games\MHG`
+   and tell us your dashboard. The online version (test 6) needs `E:\Games\MHG`.
 2. The files are big (AFS00.AFS is 884 MB). Some dashboards' FTP servers drop big files part way: afterwards check the
    sizes, `AFS_DATA.AFS` 150,759,424 bytes, `AFS00.AFS` 926,939,136, `AFS01.AFS` 25,186,304, `SLPM_658.69` 2,029,336.
    The game checks them itself at start-up and tells you which file is missing or cut short.
