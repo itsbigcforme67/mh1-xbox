@@ -17,7 +17,7 @@
 # The pad script (served by the loader's /test, played by the game from its data folder) waits, then holds
 # select + start (Back + Start, pad_script_quit_held). Checks: both starts sent a log that reached the quit; start 2
 # drew frames; no freeze / crash report; the watchdog's longest waits (RT_WATCHDOG_MS, default the hardware's 5000).
-#   --save: start 1 goes straight to the village with a fresh hunter (RT_VILLAGE_START), walks to the house bed and saves
+#   --save: start 1 goes straight to the village with a fresh hunter (RT_VILLAGE_START), is moved to the house bed (RT_LB_WARP) and saves
 #           on the empty card (MH1: tools/pc_scripts/bed_save.txt + "create game data: yes"; G: tools/test_save_g.sh's
 #           box equip + bed save), then quits; start 2 boots from power-on and CONTINUEs (tools/pc_scripts/continue.txt,
 #           G: test_save_g.sh's). Checks: the file loaded is the file saved (byte count and check sum in the logs), the
@@ -27,7 +27,7 @@
 #   --online: the online build (build/[mhg/]xbox/online/nv2a); its loader and quit stop the NIC.
 # Needs: the nv2a build, disc/mh1 or disc/mhg, the owner's mcpx.bin / bios.bin (XBOX_FILES_SRC, default the main
 # checkout's xbox_files; read only), ~1.2 GB of disk for the scratch disk (removed at the end unless KEEP=1).
-# Run it alone, under the shared emulator lock:
+# About 8-11 minutes a run. Run it alone, under the shared emulator lock:
 #   flock "/home/james/claude projects/MH XBOX/xemu.lock" tools/xemu_relaunch_test.sh --version mhg
 set -e
 cd "$(dirname "$0")/.."
