@@ -2538,3 +2538,4 @@ x0D5 +0x3E; player_work 0x34D450 / 0xA00; em_work 0x340C40 / 0xA00 with EMW's 8-
 - Slip: a stray second test of the pair once ran from the main checkout (my `cd` covered only the first command): it
   wrote build/town_par2.log (removed) and replaced the main checkout's build/show/online_town with that run's
   output (regenerable test pictures; nothing tracked touched).
+- Checks (28 Oct): full_check 46 ok, no FAIL (gwx, g_tables, test_online_town in it); VERSION=mhg rebuild 7 OK.
