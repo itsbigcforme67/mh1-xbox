@@ -1924,7 +1924,12 @@ kicks a frame) -> 13.4-14.0 fps after (119 kicks), at a higher load (13.6 vs 10-
    wait now happens only when two do (PCRTC_START, the scanned-out buffer, is neither of the last two finished
    frames). **Real on hardware.** Not yet seen on a real Xbox: worth a look for tearing or a flicker in fast menus.
 
-Rendering: hall screenshots before / after match (the walking NPC aside); render_score below.
+Rendering checked: the hall screenshots before / after match (a walking NPC aside). render_score (tools/render_score.sh
+--reps 1, against agent D's 27 Oct PS2 captures) after all four: MH1 m_camp / m_village on the Xbox (xemu) and the PC,
+G g_village / g_scene on the Xbox, G g_camp / g_village / g_scene on the PC are pixel-identical to the 27 Oct
+captures; G g_camp / g_menu on the Xbox differ only where the Elder's-lesson banner is now drawn (agent C's
+static-function fix, merged after the capture; SSIM 49.1 -> 52.2 and 54.3 -> 57.4); G g_menu on the PC differs in its
+top two pixel rows (max 12 levels), the same with the font change taken out, so from other merges.
 
 **What is left** (hall, after, xemu): GPU wait 13-15 ms a frame (mostly xemu: its NV2A runs on Mesa llvmpipe, software
 GL), "stage draw code" 10 ms (village 22 ms): the backend's work for the stage, which is the per-vertex near-plane test
