@@ -7,6 +7,9 @@
  * time on a busy laptop; RT_WATCHDOG_MS in env.txt overrides, 0 = off) it writes a freeze report into the log
  * (where the game was: mode / step / stage / quest, the last checkpoint passed, the last log lines; the kernel has no
  * call that reads another thread's registers, so no backtrace of the frozen thread), commits the log and the save files to the disk,
+ * (The boot up to the first drawn frame counts as a long operation; deliberate waits with their own time-out, such as the
+ * network start, a DNS look-up, the co-op / game-server waits (rt_np_sleep_ms) and the bug report's upload, are long
+ * operations or count as progress. The longest wait so far goes into the log: "watchdog: longest wait".)
  * stops the AC97 and goes back to the network loader, which sends the log (and the save) to the laptop.
  *
  * Crash catcher: an SEH frame at the bottom of the main thread's stack (fs:[0], the kernel's exception dispatcher
@@ -25,18 +28,47 @@
 #include "xbox_watch.h"
 
 void rt_log_crash(const char *what, void *const *frames, int nf);  /* rt_log.c: the crash report (game state, log tail) */
+void rt_log(const char *fmt, ...);
 const char *rt_host_symname(const void *addr, unsigned *off);       /* rt_symtab.c */
 void xbox_log_bail(const char *headline, int secs);                 /* xbox_log.c: flush, AC97 off, screen, loader */
 int xbox_serial_present(void);                                      /* xbox_log.c: a UART (xemu) */
 
 static volatile unsigned beat;
-static volatile int long_ops;
+static volatile int long_ops = 1;       /* 1: the boot, up to the first drawn frame (xbox_watch_frame) */
+static volatile int booting = 1;
 static const char *volatile mark = "start";
 static volatile int fired;
+/* the longest wait between two signs of progress so far (the margin under the limit; logged by the main thread,
+ * xbox_watch_report): how long, the checkpoint it waited at, the limit then */
+static volatile unsigned worst_ms, worst_lim;
+static const char *volatile worst_mark = "";
 
 void xbox_watch_alive(void) { beat++; }
 void xbox_watch_long(int on) { long_ops += on ? 1 : -1; if (long_ops < 0) long_ops = 0; }
 void xbox_watch_mark(const char *where) { mark = where; }
+void xbox_watch_stop(void) { fired = 1; }       /* leaving on purpose (xbox_log_show's 10 s exit screen): no freeze */
+
+/* a drawn frame (xbox_log_frame): progress, and the first one ends the boot's long limit */
+void xbox_watch_frame(void)
+{
+    if (booting) {
+        booting = 0;
+        xbox_watch_long(0);
+    }
+    beat++;
+}
+
+/* from the main thread once per frame: a new longest wait (1 s or more) goes into the log, so a log shows how close
+ * the game came to the limit (the owner's hardware runs: is 5 s enough?) */
+void xbox_watch_report(void)
+{
+    static unsigned said;
+    unsigned w = worst_ms;
+    if (w >= 1000 && w > said) {
+        said = w;
+        rt_log("watchdog: longest wait so far %u ms, at \"%s\" (limit there %u s)", w, worst_mark, worst_lim / 1000);
+    }
+}
 
 static int valid(const void *p, unsigned n)
 {
@@ -123,16 +155,25 @@ static DWORD WINAPI watch_thread(LPVOID arg)
         lim0 = (unsigned)atoi(e);
     if (lim0 == 0)
         return 0;
+    const char *at = mark;
+    unsigned at_lim = lim0;
     for (;;) {
         unsigned now, lim;
         Sleep(500);
         now = GetTickCount();
+        lim = long_ops ? (lim0 > 60000 ? lim0 : 60000) : lim0;
         if (beat != last || fired) {
+            if (now - since > worst_ms && !fired) {
+                worst_mark = at;
+                worst_lim = at_lim;
+                worst_ms = now - since;
+            }
             last = beat;
             since = now;
             continue;
         }
-        lim = long_ops ? (lim0 > 60000 ? lim0 : 60000) : lim0;
+        at = mark;
+        at_lim = lim;
         if (now - since < lim)
             continue;
         {
@@ -141,7 +182,7 @@ static DWORD WINAPI watch_thread(LPVOID arg)
             int n = 0;
             fired = 1;
             snprintf(what, sizeof what, "freeze: no frame and no load progress for %u s (last checkpoint: %s%s)",
-                     (now - since) / 1000, mark, long_ops ? ", in a long operation" : "");
+                     (now - since) / 1000, mark, booting ? ", booting" : long_ops ? ", in a long operation" : "");
             fprintf(stderr, "FREEZE: %s\n", what);
             rt_log_crash(what, fr, n);
             xbox_log_bail("Monster Hunter froze - sending the report (back to the loader)", 4);

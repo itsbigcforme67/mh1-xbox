@@ -113,8 +113,7 @@ static void frame(void (*between)(void))
         between();
     AQ_send();
     d = 1.0 / 30 - (rt_np_now_s() - t0);
-    if (d > 0)
-        rt_np_sleep_ms((int)(d * 1000));
+    rt_np_sleep_ms(d > 0 ? (int)(d * 1000) : 0);    /* (also when late: on the Xbox each wait counts as progress) */
 }
 
 static int ready_all(void)

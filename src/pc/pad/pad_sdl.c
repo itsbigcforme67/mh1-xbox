@@ -260,11 +260,21 @@ void pad_script_event(int ev)
         ev_count[ev]++;
 }
 
+static uint16_t script_bits;            /* the buttons of the step played last (pad_script_quit_held) */
+
+/* a pad script holds select + start (Back + Start): the Xbox build's quit combo in scripted test runs, which have no
+ * real controller pressing it (tools/xemu_relaunch_test.sh) */
+int pad_script_quit_held(void)
+{
+    return (script_bits & (PAD_SELECT | PAD_START)) == (PAD_SELECT | PAD_START);
+}
+
 int pad_script_next(pad_state *p)
 {
     while (cur < nsteps && (left <= 0 || waits[cur])) {
         if (waits[cur] && ev_count[(waits[cur] >> 16) - 1] < (waits[cur] & 0xFFFF)) {
             memset(p, 0, sizeof *p);        /* waiting for the event */
+            script_bits = 0;
             return 1;
         }
         if (waits[cur]) {
@@ -277,9 +287,11 @@ int pad_script_next(pad_state *p)
     }
     if (cur >= nsteps) {
         memset(p, 0, sizeof *p);
+        script_bits = 0;
         return 0;
     }
     *p = steps[cur];
+    script_bits = p->bits;
     left--;
     return 1;
 }

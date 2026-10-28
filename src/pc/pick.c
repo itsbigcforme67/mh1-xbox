@@ -23,6 +23,7 @@
 #include "rt/rt.h"
 #include "rt/rt_pick.h"
 #include "rt/rt_log.h"
+#include "xbox/xbox_watch.h"      /* the freeze watchdog (empty on the PC) */
 #include "fl/fl.h"
 #include "pad/pad.h"
 #ifndef XBOX
@@ -760,7 +761,17 @@ static char *report_json(const char *name)
     return o;
 }
 
+static void save_report_files(void);
+/* on the Xbox the writing is one long frame (about 80 s on the owner's console before the one-write change of 17 Oct,
+ * not measured since): a known long operation for the freeze watchdog (xbox_watch.c), not a freeze */
 static void save_report(void)
+{
+    xbox_watch_long(1);
+    save_report_files();
+    xbox_watch_long(0);
+}
+
+static void save_report_files(void)
 {
     char base[900], dir[1000], stamp[40], name[80];
     char *json, *tail, *inp;
@@ -822,7 +833,7 @@ static void save_report(void)
     snprintf(toast, sizeof toast, "Bug report saved: %.60s", name);
     toast_ms = SDL_GetTicks();
     {   /* the online build sends it now when its network is up; else the loader does at its next start */
-        int r = xbox_report_send_now(base);
+        int r = xbox_report_send_now(base);   /* (inside save_report's long operation: up to 3 s to connect, 10 s to answer) */
         if (r > 0)
             snprintf(toast, sizeof toast, "Bug report saved and sent to the laptop");
         rt_log("bug report: %s", r > 0 ? "sent to the laptop" : r == 0 ? "the network loader sends it at its next start"

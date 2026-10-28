@@ -99,6 +99,7 @@ void (*xbox_quit_hook)(void);
 
 static const char *bail_headline;       /* xbox_log_bail: the first line of the exit screen, else "... stopped" */
 static int bail_secs = 10;
+void xbox_watch_stop(void);
 static void xbox_log_show(void)
 {
     static char lines[TAIL][96];
@@ -106,6 +107,8 @@ static void xbox_log_show(void)
     int n = 0, i;
     FILE *f;
 
+    xbox_watch_stop();          /* the exit screen waits 10 s on purpose: without this the watchdog called every
+                                 * Back + Start quit a freeze 5 s into it (and left from its own thread) */
     mc_xbox_flush_all();        /* a save file still open: through to the disk before the console moves on */
     xbox_ac97_stop();           /* every way out (also main's normal end): the AC97 idle for the next program */
     fflush(stdout);
@@ -200,11 +203,13 @@ void xbox_log_note(const char *msg)
 
 /* liveness (the null-graphics build draws nothing else): once a second on the
  * text screen, every 30 s in the log */
-void xbox_watch_alive(void);
+void xbox_watch_frame(void);
+void xbox_watch_report(void);
 void xbox_log_frame(int frame, unsigned ms)
 {
     static unsigned shown, logged, dlogged;
-    xbox_watch_alive();             /* the freeze watchdog's heartbeat (xbox_watch.c) */
+    xbox_watch_frame();             /* the freeze watchdog's heartbeat (xbox_watch.c) */
+    xbox_watch_report();            /* and its longest wait so far, when there is a new one */
     if (ms / 1000 != shown) {
         shown = ms / 1000;
         xbox_log_commit(stderr);    /* the last second's lines on the disk (a crash keeps them) */
