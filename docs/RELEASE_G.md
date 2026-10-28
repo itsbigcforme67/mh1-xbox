@@ -838,3 +838,35 @@ Camp = stage 21, area 1 (the Aptonoth) = stage 39. **Fixed, both games.**
 - Open: g_ref_shot.sh's PS2 camera for stage 39 (eye 13190,-606,9735) does not give the PS2's view on the PC (river vs cliffs), so area 1
   has no exact PS2 pair; the PS2 picture shows the cliffs clear with a light haze, as the PC and the fixed Xbox draw them. Not yet seen
   on the owner's hardware.
+
+## 18. em02 Fatalis, G's version (agent B, 28 Oct 2026)
+Section 16's "Left: em02 (whole)". **Ported; checked against the real G disc with the lockstep referee.**
+- **Where G's Fatalis is**: the disc's online quests **3004-3007** (m03004-007.mib, Castle Schrade, stage 25; the PC's
+  `--quest 3004` and the referee start them offline). The crimson dragon (kind 0x24 = 36) is no quest's monster on the disc
+  (G's downloaded event quests); the gallery's scene 13 (m60029) shows it on stage 88.
+- **Ported (VERSION_MHG; MH1's C unchanged, the PS2 builds byte-identical)**: the setters (fly 11, attacks 12-18,
+  fly_adjy2 types 4-6), em02_init (kind 0x24 / event-quest hit points, the new counter), G's new tick 0x5A9F00, hagi_set's
+  carve ids by quest rank, em02_main (no anger while dying, kind 0x24's part carves), the sleep / paralysis ends, dmg03,
+  die02 (frame 100), the new acts: swoop (12), dive (13), fire rain (4 + 14-17, shell08 type 12 from G's offset lists),
+  double rain (18), fly-away (11), the dispatch, and ef_move_sub (G's motions 0x40B-0x410, kind 0x24's hits, changed
+  frames / sounds). Details: docs/agents/agent-B.md "G em02 (Fatalis) rewrite".
+- **Which acts a player meets**: kind 2's command data reaches 12 and 13; 14-18 are kind 0x24's; fly 11 is reached by no
+  command (unused, as far as the data shows).
+- **Referee against the real G** (PCSX2, tools/referee.py; build/B/em02/ref*, not committed):
+  - g_fatalis (quest 3004, 4500 play ticks: the opening demo, then the fight): the monster's mode / action / step equal on
+    every tick, HP equal (32000; no hits landed), position within 4 units after the hunter drift below.
+  - g_fatalis_acts (5200 ticks): swoop, dive, fire rain 14, double rain 18 and fly-away forced on both sides by pokes: every
+    step on the same tick, position within 4 units (the carried drift), the fly-away climbs 1127 -> 7046 on both.
+  - g_fatalis_rage (6000 ticks, HP set to 12000): same actions on every tick.
+  - Not em02: the hunter is knocked by the opening roar one tick later on the PC (PS2 1505, PC 1506); from there the hunter
+    is ~5 units apart and pushes the monster 2-4 units. Same one-tick hit lag as the kutku scenario (section 11); cause not
+    found. The PS2 makes more sound-channel random calls (cosmetic, known).
+- **Found and fixed on the way (both games' code path, G data)**: wall_tbl_add's entries for stages 84-89 / 91 point into
+  main .bss and were left as raw PS2 addresses on the PC: a monster touching a wall on stage 88 crashed (gallery scene 13
+  with the ported crimson dragon). Now `allptr` in config/mhg/pc_data.txt [verified: test_gallery_g 12 / 13 / 14 OK].
+  - g_fatalis_kill (6500 ticks, HP set to 200, the hunter moved under it and swinging): same actions on every tick, but the
+    scripted swings never connect on either side (HP stays 200), so no kill.
+- **Not done / open**: the kill, the quest clear and carving on Fatalis are not compared with the PS2 yet (needs a pad
+  script that reaches the dragon, or a poke that lands a hit); shell08 type 12's fire rain is not in the referee's records (shells are not compared): checked only on the
+  PC (acts run to their end, no crash); kind 0x24 on the PS2 was not run (no quest; the PC was tried with RT_QEM_KIND=2:36:
+  acts 12 / 14-18 from its commands, 400 s, no crash).

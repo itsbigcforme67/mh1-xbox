@@ -1192,8 +1192,9 @@ static void em_fly10_00581040(EMW *em, EM02W *w) {
 
 #ifdef VERSION_MHG
 /* G 0x5AC150 (G only), fly act 11: take off (fly_adjy2 type 6), climb at 10 per tick and leave; above 6000 it flies
- * on (em02_to_fly). G aims the climb at a stack vector it never fills (Em_Calc_angY(pos, <uninitialised>)), so its
- * heading there is whatever the stack held; the PC keeps the heading it has [guess: no PS2 trace of this act yet]. */
+ * on (em02_to_fly). G aims the climb at a stack vector it never fills (Em_Calc_angY(pos, <uninitialised>)) but the
+ * speed it adds there has no forward part (em_rate_clear), so the heading does not move it: the PC keeps its own
+ * heading. [verified: referee g_fatalis_acts, forced act 2/11: same steps, x/z unchanged, y 1127 -> 7046 on both] */
 static void em_fly11_g(EMW *em, EM02W *w) {
     switch (em->x05) {
     case 0:

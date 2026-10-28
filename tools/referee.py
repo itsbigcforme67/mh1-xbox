@@ -202,6 +202,11 @@ SCENARIOS['g_fatalis_rage'] = dict(game='mhg', quest=3004, weapon=(6, 1), pad='i
                                    pokes=area(30, 25, 11927.0, 0.0, 14444.0) + [(2150, 'em0', 0x302, 'u16', 12000)] +
                                    area(2150, 25, 11850.0, 0.0, 14900.0), ticks=6000)
 
+# the kill and the quest clear: 200 hit points left at play tick 2150, the hunter put under its head and swinging
+SCENARIOS['g_fatalis_kill'] = dict(game='mhg', quest=3004, weapon=(6, 1), pad='idle*2160,' + ','.join([FIGHT] * 4),
+                                   pokes=area(30, 25, 11927.0, 0.0, 14444.0) + [(2150, 'em0', 0x302, 'u16', 200)] +
+                                   area(2150, 25, 11850.0, 0.0, 14950.0), ticks=6500)
+
 
 def em_act(pt, mode, no, dist=None):
     """pokes that start monster 0's action mode/no at play tick pt (em02: step 0; w->dist for attacks 12 / 13)"""

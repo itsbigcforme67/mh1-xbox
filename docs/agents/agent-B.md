@@ -1523,8 +1523,9 @@ Owner's request: one picture of the PS2, Xbox and PC hunters together in the sam
   skips demo 3, new motions 0x40B-0x410). Demo 3 and the kind-36 meat_no were already there (agent E / earlier).
 - The jal names that tools/mhg_fdiff.py prints for G can be wrong (it looked up "stockEndPulldown" / "Em_Sleep2_End" where
   the asm calls em02_to_normal): read the jal in asm/mhg/game/text/*.s when a call target matters.
-- G bug kept as is: fly 11 aims its climb at an uninitialised stack vector (Em_Calc_angY(pos, sp+0x30)); the PC climbs on its
-  current heading [guess]. Commands reach fly 11 nowhere in G's data (searched "05 02 0B"): probably unused.
+- G oddity: fly 11 aims its climb at an uninitialised stack vector (Em_Calc_angY(pos, sp+0x30)); the referee shows no
+  horizontal motion on the PS2 (the added speed has no forward part), so the heading does not matter. Commands reach fly 11
+  nowhere in G's data (searched "05 02 0B"): probably unused.
 - Which acts the commands use: kind 2's tables (em02_sub_contents_d11 / e*) reach atk 12 / 13; acts 14-18 sit in kind 0x24's
   command data (0x6BDD05.., inside the split's em33_content_i label). PC runs: kind 2 (quest 3004, 15 min) used only old acts in
   that fight; RT_QEM_KIND=2:36 used 12 and 14-18 (no crash, 400 s); forced acts (RT_EM_POKE mode/x15) 12, 13, 14, 18, fly 11 all
