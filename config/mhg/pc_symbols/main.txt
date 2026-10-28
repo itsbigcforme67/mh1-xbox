@@ -11611,6 +11611,7 @@ mp05_st65_em11_data_def_q = 0x002ECFA8; // size:0x8
 mp05_st66_em11_data_def_q = 0x002ECFB0; // size:0x8
 em11_map5_st_mv_ok_dt = 0x002ECFB8; // size:0x8
 fly_adjy_hosei_tbl_00388500 = 0x002ECFC0; // size:0x28
+em02_rain_ofs_g = 0x002ECFC8; // size:0x20
 hagi_tbl_00388508 = 0x002ECFE8; // size:0x10
 em02_content_c = 0x002ECFF8; // size:0x5
 em02_content_f = 0x002ED000; // size:0x2

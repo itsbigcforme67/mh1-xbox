@@ -4207,6 +4207,7 @@ fly_adjy2_hosei33 = 0x00695AE0; // size:0xF0
 fly_adjy2_hosei_tbl_00654420 = 0x00695D70; // size:0x20
 fly_adjz2_hosei33 = 0x00695D90; // size:0x70
 fly_adjz2_hosei_tbl_006544A0 = 0x00695EA0; // size:0x20
+em02_rain2_ofs_g = 0x00695EC0; // size:0xC
 hagi_r_tbl_006544B0 = 0x00695EE8; // size:0xC
 em02_adr_tbl = 0x00695F00; // size:0x10
 em02_main_cmd00 = 0x00695F10; // size:0x3C
