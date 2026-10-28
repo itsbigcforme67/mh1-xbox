@@ -2524,3 +2524,17 @@ x0D5 +0x3E; player_work 0x34D450 / 0xA00; em_work 0x340C40 / 0xA00 with EMW's 8-
   battle music check looked at the wrong hunter and count in G).
 - The spots listed last round: BOX_ID / BOX_FLAG in the menu*.c files are macros nobody uses (nothing reaches the
   preprocessed code); plsel01.c and chat_all.c are not linked in the G build (objs.txt); camarea_nm.c fixed above.
+- **The MH1 test_online_town flake ("ANNA did not start the co-op quest"): fixed ports shared by every worktree.**
+  The room's co-op host listens on mh1_testserver's fixed --coop-port 10300 + room (10301); when another worktree's
+  full check ran the same test at the same moment, one ANNA got "net_peer: cannot listen on 0.0.0.0:10301" and its BOB
+  joined the other run's ANNA ("co-op: the host did not start a quest") [checked: reproduced by two runs at once; the
+  failing run's ANNA.log has exactly that line]. Load alone never did it (4 runs while G builds and 4 busy loops ran:
+  all passed). Fix (the tests, not the game: a player's own server keeps its predictable default ports): new
+  tools/free_ports.py N picks N free consecutive ports at random (20000-60000); test_online_town.sh uses it for the
+  co-op host and its mh1-server relay range (was 10370-79), test_online_server.sh for its relay range (was 10380-89),
+  test_online_mcs.sh / test_online_g.sh for their mcs port (were 10297 / 10296) and test_online_g.sh's room host.
+  test_online_town.sh takes OUT=DIR (a second run at the same time). Proof: 3 x two runs at once while a G PC build
+  ran: 6/6 passed. The emulator tests keep their fixed ports (they run alone, under the emulator lock).
+- Slip: a stray second test of the pair once ran from the main checkout (my `cd` covered only the first command): it
+  wrote build/town_par2.log (removed) and replaced the main checkout's build/show/online_town with that run's
+  output (regenerable test pictures; nothing tracked touched).

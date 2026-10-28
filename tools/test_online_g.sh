@@ -64,7 +64,7 @@ if [ -n "$HUNT" ]; then     # HUNT=1: mh1-server with the game server of the gam
 bind = 127.0.0.1
 lobby-port = 0
 lobby-mcs = yes
-mcs-port = ${MCSPORT:-10296}
+mcs-port = ${MCSPORT:-$(python3 tools/free_ports.py)}     # (a free one: tools/free_ports.py)
 db = accounts.sqlite3
 verbose = yes
 CONF
@@ -74,7 +74,7 @@ CONF
     python3 tools/server/mh1_server.py serve --config $OUT/mh1-server.conf > $OUT/server.log 2>&1 &
     PAT='s/^mh1-server lobby on 127.0.0.1:\([0-9]*\).*/\1/p'
 else
-    python3 tools/mh1_testserver.py -v --port 0 > $OUT/server.log 2>&1 &
+    python3 tools/mh1_testserver.py -v --port 0 --coop-port $(python3 tools/free_ports.py 12) > $OUT/server.log 2>&1 &
     PAT='s/^mh1_testserver listening on 127.0.0.1:\([0-9]*\)$/\1/p'
 fi
 SP=$!

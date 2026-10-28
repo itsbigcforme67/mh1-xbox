@@ -11,11 +11,15 @@
 cd "$(dirname "$0")/.."
 BIN=${BIN:-build/pc/mhview_online}
 RUN=${RUN:-}       # RUN=wine BIN=build/win/mhview_online.exe: the Windows build under Wine
-OUT=build/show/online_town; rm -rf $OUT; mkdir -p $OUT
+OUT=${OUT:-build/show/online_town}; rm -rf $OUT; mkdir -p $OUT     # OUT=DIR: another run at the same time
 SP=""; PA=""
 fail() { echo "online town test FAILED: $1 (see $OUT)"; [ -n "$PA" ] && kill $PA 2>/dev/null; [ -n "$SP" ] && kill $SP 2>/dev/null; exit 1; }
 [ -x "$BIN" ] || fail "$BIN is missing: run ONLINE=1 tools/build_pc.sh"
-python3 tools/mh1_testserver.py -v --port 0 > $OUT/server.log 2>&1 &
+# the co-op host's and the relay's ports: free ones, not the fixed defaults (another worktree's run of this test at the
+# same time took them: "net_peer: cannot listen on 0.0.0.0:10301", tools/free_ports.py)
+COOP=$(python3 tools/free_ports.py 12) || fail "no free ports"
+RELAY=$(python3 tools/free_ports.py 10) || fail "no free ports"
+python3 tools/mh1_testserver.py -v --port 0 --coop-port $COOP > $OUT/server.log 2>&1 &
 SP=$!
 i=0; PORT=""
 while [ $i -lt 50 ] && [ -z "$PORT" ]; do
@@ -68,7 +72,7 @@ for nm in ANNA BOB; do
     rm -rf $OUT/card_$nm; mkdir -p $OUT/card_$nm; cp -r build/coop/save_$nm/. $OUT/card_$nm/
 done
 gold0=$(python3 -c "import sys; sys.path.insert(0, 'tools'); from test_coop_hunt import card_gold; print(card_gold('$OUT/card_ANNA'))")
-python3 tools/mh1_testserver.py -v --port 0 > $OUT/server2.log 2>&1 &
+python3 tools/mh1_testserver.py -v --port 0 --coop-port $COOP > $OUT/server2.log 2>&1 &
 SP=$!
 i=0; PORT=""
 while [ $i -lt 50 ] && [ -z "$PORT" ]; do
@@ -136,7 +140,7 @@ PY
 [ "$(after BOB | grep -a 'slot [0-9] (me)' | sed 's/.* pos \([-0-9]* [-0-9]* [-0-9]*\).*/\1/' | sort -u | wc -l)" -gt 1 ] || fail "BOB did not walk after the quest"
 # the same room through mh1-server (tools/server, docs/server.md): its lobby (the test server's handling) with
 # --lobby-relay answers 6914 with "mh1-relay" and 6916 with its session relay; both players join the relay
-python3 tools/server/mh1_server.py serve --open --lobby-port 0 --lobby-relay --relay-ports 10370-10379 > $OUT/server3.log 2>&1 &
+python3 tools/server/mh1_server.py serve --open --lobby-port 0 --lobby-relay --relay-ports $RELAY-$((RELAY + 9)) > $OUT/server3.log 2>&1 &
 SP=$!
 i=0; PORT=""
 while [ $i -lt 50 ] && [ -z "$PORT" ]; do
