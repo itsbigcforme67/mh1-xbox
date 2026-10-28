@@ -37,6 +37,8 @@ enum { RTPC_SKIN_VERTS, RTPC_DRAW_VERTS, RTPC_DRAW_TRIS, RTPC_DRAWS, RTPC_SKEL_E
        RTPC_TEX_KB,         /* their texels, KB */
        RTPC_GPU_WAITS,      /* waits for the GPU (Xbox) */
        RTPC_NET_CALLS,      /* CpInet calls (status, receive, send) */
+       RTPC_CLIP_TESTS,     /* vertices tested against the near plane (Xbox backend) */
+       RTPC_RING_VERTS,     /* vertices written to the vertex ring for 3D clays (Xbox: copies, clipped triangles) */
        RTPC_N };
 void rt_prof_count(int counter, long n);
 void rt_prof_tick(void);        /* one game tick done */

@@ -1154,3 +1154,7 @@ refused, package without MH1_HIDDEN -> passes to graphics start-up, no PLAYER.tx
   mh1-server --open on 127.0.0.1:10277, TOWN=1 / OFFLINE=1 / XENV="RT_..."), pc_hall.sh (PC client, RT_PROF=1).
 - The RT_PROF report reaches xemu's serial log through stderr (xbox_log.c); no extra serial write is needed.
 - Next: the stage's near-plane test and per-frame index copies (gfx_nv2a.c execute_cpu), 10-22 ms in xemu.
+- Round 2 (28 Oct): static_clip + frame overlap (docs/xbox.md "Round 2"). A/B aids RT_NV2A_OLDCLIP=1, RT_NV2A_SYNC=1;
+  render_score RS_XBOX_ENV passes them to the Xbox runs. Scratch: build/E/ab3.sh (scenes x variants), build/E/rs_ab.sh.
+  The xemu lock is busy with agent F's runs at times: don't wrap flock in a short `timeout` (a run killed while waiting
+  leaves the last run's log in place).

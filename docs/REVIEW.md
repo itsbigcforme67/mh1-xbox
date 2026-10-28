@@ -1096,6 +1096,7 @@ Both games unless marked.
 - **Dropped:** ./mh1 xbox / windows (MH1 disc) emptying the whole output folder. **Now:** only MH1's own folders; a G
   build in dist/xbox/MHG or dist/windows/MHG stays. Same commit.
 
+
 ## G online frame rate (agent E, 28 Oct 2026; docs/xbox.md "G online frame rate")
 - **Dropped:** rt_online.c pace() / rt_np.c's per-tick sleep in real-time runs (a window, the Xbox). **Now:** only in
   fixed-time (--time) runs; viewer.c's clock paces real-time runs (rt_online_host_paced; RT_ONLINE_PACE=1 = old).
@@ -1126,3 +1127,24 @@ Both games unless marked.
   "dummy" is refused; freedom_terms puts Freedom's names into lines from other sources; man_drop also clears Freedom.
   **Why:** owner, 28 Oct 2026 (docs/DECISIONS.md). 1012 G strings change wording (docs/english_g.md "Freedom first").
   **To revert:** commit "G English: Freedom first, MH1 US as the fallback".
+
+## Actor lighting (agent D, 27 Oct 2026)
+- **Dropped:** the fixed light set as the default for hunters, monsters and NPCs (viewer.c `light`, now only the fallback
+  while light_work is empty and with RT_LIGHT_GAME=0), and rt_light.c's RT_LIGHT_VU test branch (its literal ambient of
+  about 0.002 came from a misread scale: AMB is 128 in the actors' packets). **Now:** the game's own lights (light_work
+  set 1, per actor through pl_light_change + Pl_light_set) by default, turned into each actor's own space and
+  renormalised (fl_light_local, as Vu1Code_0016_0004's PROG does per bone), light colours clamped at 1.0, ambient half the
+  summed rows (material A = 0.5). **Why:** checked per vertex against a PCSX2 GS dump of the camp (docs/pc.md "Actor
+  lighting checked against the PS2"); the host lit actors with world light directions on normals in their own space, so the
+  lights turned with the actor's facing, and no fixed light could match both camp and desert. **To revert:** commit
+  "Actor lighting: the PS2's actor program maths ...".
+
+## Xbox stage near-plane cut and frame overlap (agent E, 28 Oct 2026; docs/xbox.md "Round 2")
+- **Dropped:** gfx_nv2a.c execute_cpu's copy of a whole static clay into the vertex ring (and its per-vertex test)
+  when any of its triangles crosses the near plane. **Now:** static_clip: per-run bounding spheres, only crossing
+  triangles cut into the ring, the rest drawn from the clay's GPU buffer in the original order (RT_NV2A_OLDCLIP=1 =
+  old). **Why:** hall 7909 -> 261 copied vertices a frame, MH1 field 19770 -> ~1190; pictures identical (18 render_score
+  captures). **To revert:** commit "Xbox nv2a: static clays crossing the near plane keep their GPU buffer ...".
+- **Dropped:** gfx_end_frame's wait for the GPU before the flip. **Now:** gfx_begin_frame waits (RT_NV2A_SYNC=1 =
+  old). **Why:** the GPU draws while the next ticks run (GPU wait 18 -> 7 ms in the hall, xemu). Untested on hardware.
+  **To revert:** commit "Xbox nv2a: the GPU finishes a frame while the next ticks run ...".

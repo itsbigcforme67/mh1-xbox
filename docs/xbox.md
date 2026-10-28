@@ -2014,3 +2014,61 @@ Those are real CPU costs on hardware as well, and the next candidates: keep the 
 (only the parts near the camera), or put static index lists in GPU memory as pushbuffer subroutines (NV2A CALL)
 instead of copying them every frame. "draw (rest)" 5.5 ms and the skinning set-up are next after that. The game thread
 still gets only ~60% of the CPU: the rest is idle waits (GPU) and the audio thread.
+
+### Round 2: the stage's near-plane cost and the end-of-frame GPU wait (agent E, 28 Oct 2026)
+
+**What it was.** gfx_nv2a.c draws static clays (the stage, set models) from their own GPU buffer, but when the camera's
+near plane cut through one (always in the hall, the town, often in the village and the field), the whole clay went
+down the copy path: every vertex tested against the plane every frame (a malloc'd w array), every vertex copied into
+the vertex ring, all its triangles re-indexed. Real CPU work on the console, in offline play too.
+
+**Fix 1: only the crossing triangles are cut** (static_clip). Each batch's triangles are grouped in runs of 32 with a
+bounding sphere (made on the clay's first crossing draw, dropped by gfx_update_clay). A run wholly in front of the
+plane or wholly behind needs no test; the rest is tested per triangle, each vertex once a draw (a stamped w cache).
+Triangles in front are drawn from the clay's GPU buffer, crossing ones are cut into the ring, wholly-behind ones are
+dropped (as before), and each batch is drawn as alternating runs in the original triangle order, so blending and
+depth ties are unchanged. Same w values, the same cuts (gfx_clip_tri, vtx_lerp on the same values) and the same
+fall-back rule (more than 65535 vertices: unclipped) as the copy path. Dynamic clays keep the copy path.
+`RT_NV2A_OLDCLIP=1` = the copy path (A/B aid). RT_PROF counts it: "near-plane vertex tests", "ring vertices (3D)".
+
+**Fix 2: the GPU finishes a frame while the next game ticks run.** gfx_end_frame waited for the GPU to go idle before
+queueing the flip; gfx_begin_frame waited again. Now only the next frame's start waits (the vertex ring and the deferred
+frees need it), so the ticks between two frames overlap the GPU's drawing. The triple-buffer check (round 1) runs after
+that wait and loops up to 4 vblanks. `RT_NV2A_SYNC=1` = the old wait. Real on hardware: the GPU's time per frame no
+longer adds to the CPU's.
+
+Also: RT_PROF puts the backend's work for a clay (gfx_execute_clay) in "gfx backend", as the PC does; before, the
+stage's part of it showed as "stage draw code" and the actors' as "draw (rest)".
+
+**Counts per frame** (they do not depend on the laptop's load), the copy path -> fix 1:
+
+| scene | near-plane vertex tests | vertices copied to the ring |
+|---|---|---|
+| G guild hall (online) | 7949 -> 2780 | 7909 -> 261 |
+| G town (online) | 9765 -> 6416 | 20175 -> 660 |
+| G Kokoto village (offline) | 14283 -> 2810 | 14915 -> 588 |
+| MH1 Forest and Hills camp (quest 10) | 16325 -> ~8820 | 19770 -> ~1190 |
+
+**Time** (xemu, load average 11-17 during all of it, so milliseconds swing by 30% between runs; each scene's runs
+were made back to back). "base" = both old ways, "fix 1" = RT_NV2A_SYNC=1, "both" = this round:
+
+| scene | fps base / fix 1 / both | gfx backend ms base -> both | GPU wait ms base -> both |
+|---|---|---|---|
+| G guild hall | 15.7-16.9 / 32.2-32.4 / 33.4-34.4 | 16.9-17.4 -> 7.3-7.5 | 18.2-20.1 -> 6.7 |
+| G village | 15.3-15.4 / 17.0-17.2 / 21.8-22.1 | 25.4-27.0 -> 13.0-13.1 | 10.5-12.0 -> 5.3-5.9 |
+| G town | 15.5-18.0 / - / 20.2-20.9 | 19.0-20.7 -> 14.1-15.0 | 11.1-12.4 -> 3.4-4.4 |
+| MH1 field camp | 10.4-12.8 / - / 25.1-27.7 | 30.5-36.2 -> 13.4-15.0 | 19.9-23.4 -> 7.3-7.7 |
+
+The hall's runs came at load 9-14; fix 1 alone doubled it there (the hall's crossing stage was the whole frame's
+largest item). xemu shows more than 30 fps here because it draws more frames than the game's 30 ticks.
+
+**What is left** (hall, both): GPU wait 6.7 ms (mostly xemu's software GL), the backend 7.3 ms (indices written into the
+pushbuffer every frame, bone constants), logic 3.4-3.7 ms a tick, draw (rest) 2.8 ms (posing, joints). The village and
+the field still spend 13-15 ms in the backend: the larger stages' index lists. On hardware those index writes are a
+plain copy into write-combined memory [estimate: ~0.5 ms a frame], so they are mostly an xemu cost; NV2A pushbuffer
+subroutines (CALL) for static index lists would remove them, but were left for now (untested on hardware).
+
+**Pictures.** render_score's Xbox runs with both old ways (RS_XBOX_ENV="RT_NV2A_OLDCLIP=1 RT_NV2A_SYNC=1", a new
+render_score.py aid) against this round: g_camp, g_village, g_forest1, g_cave, m_camp, m_forest1, each at the tick and
+one tick either side: 18 pictures, all pixel-identical. (One old-way capture, g_camp one tick late, came out torn the
+first time; run again it matched: an xemu capture glitch.)
