@@ -860,13 +860,26 @@ Section 16's "Left: em02 (whole)". **Ported; checked against the real G disc wit
   - g_fatalis_rage (6000 ticks, HP set to 12000): same actions on every tick.
   - Not em02: the hunter is knocked by the opening roar one tick later on the PC (PS2 1505, PC 1506); from there the hunter
     is ~5 units apart and pushes the monster 2-4 units. Same one-tick hit lag as the kutku scenario (section 11); cause not
-    found. The PS2 makes more sound-channel random calls (cosmetic, known).
+    found. What the traces show (round 2): the hit itself is the same (PLW 0x3EB-0x3F8 attack data and the hit position
+    0x430-0x43B equal), and so is the monster's motion frame at that tick (82, motion 0x3F4, its shell04 0xD / 0xE spawned at
+    frames 26 / 40); only the tick it registers differs. body_hit's one-tick lag was the joints being posed after the hit
+    (fixed 18 Oct, rt_em.c); this one is a monster attack reaching the hunter, so the next place to look is when the PC
+    builds the attack spheres / shell04 hit data relative to the hunter's hit check [not traced]. The PS2 makes more sound-channel random calls (cosmetic, known).
 - **Found and fixed on the way (both games' code path, G data)**: wall_tbl_add's entries for stages 84-89 / 91 point into
   main .bss and were left as raw PS2 addresses on the PC: a monster touching a wall on stage 88 crashed (gallery scene 13
   with the ported crimson dragon). Now `allptr` in config/mhg/pc_data.txt [verified: test_gallery_g 12 / 13 / 14 OK].
   - g_fatalis_kill (6500 ticks, HP set to 200, the hunter moved under it and swinging): same actions on every tick, but the
     scripted swings never connect on either side (HP stays 200), so no kill.
-- **Not done / open**: the kill, the quest clear and carving on Fatalis are not compared with the PS2 yet (needs a pad
-  script that reaches the dragon, or a poke that lands a hit); shell08 type 12's fire rain is not in the referee's records (shells are not compared): checked only on the
-  PC (acts run to their end, no crash); kind 0x24 on the PS2 was not run (no quest; the PC was tried with RT_QEM_KIND=2:36:
+  - **g_fatalis_end (round 2, 28 Oct): the kill, the death motion, the quest clear and the carves, equal on every tick**
+    (4701 play ticks; the only difference in the whole run is the sound random channel; hunter distance 0.0). The scripted
+    swings never land (the dragon hovers or perches at y 1000, or knocks the hunter down first), so the hit is poked on
+    both sides as a landed hit leaves it for Em_Dmg_Sys (EMW 0x38D dm_flag, 0x766 dmg[0], 1 hit point left). Two hits are
+    needed: the first starts the damage-stock countdown (x8BB 5 -> 0, no death meanwhile), and it dies only while the
+    hunter is on its stage (x9E2). Death at play tick 2961 (die00, mode 5/0, on the ground), quest clear (game_w equal,
+    quest timer 214 / 214 at the end), three carves (hunter action 0/74 at 3311 / 3491 / 3671 on both), pouch after them
+    PS2 423 x2 + 422 x1 = PC the same (quest 3004's rank: carve set by header +0x42).
+- **Not done / open**: die02 (the flying death, whose frame G moved to 100) was not reached: the poked kill is on the
+  ground; the other ranks' carve sets (quests 3005-3007) are not compared; shell08 type 12's fire rain is not in the referee's records: shells live in a pooled heap (pull_shell_work) the
+  referee would have to walk by pointer every tick on both sides, not a cheap region read; checked only on the PC (acts
+  run to their end, no crash); kind 0x24 on the PS2 was not run (no quest; the PC was tried with RT_QEM_KIND=2:36:
   acts 12 / 14-18 from its commands, 400 s, no crash).

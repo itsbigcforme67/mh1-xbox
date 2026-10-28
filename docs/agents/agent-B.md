@@ -1530,3 +1530,15 @@ Owner's request: one picture of the PS2, Xbox and PC hunters together in the sam
   command data (0x6BDD05.., inside the split's em33_content_i label). PC runs: kind 2 (quest 3004, 15 min) used only old acts in
   that fight; RT_QEM_KIND=2:36 used 12 and 14-18 (no crash, 400 s); forced acts (RT_EM_POKE mode/x15) 12, 13, 14, 18, fly 11 all
   run to their end.
+
+## G em02 round 2: kill, clear, carve against the real G (28 Oct 2026)
+- Scenario g_fatalis_end (tools/referee.py): no fight script; the hunter carts to the camp, the dragon perches at y 1000 (out of
+  reach: 0/1 and 0/2 idles there, and position pokes on it are undone by its AI), then pokes: hit 1 at 2500 (HP 1 + dm_flag /
+  dmg[0]), the hunter back on stage 25 at 2900 (area()), hit 2 at 2960 kills (the first hit's x8BB countdown and x9E2 "only
+  with the hunter on its stage" both block a single-hit kill), the hunter put by the head's carve point at 3300 (found on the PC
+  with RT_PL_WARP_EM, carve point 0 at 11465 17430) and circle every 30 ticks.
+- Equal on every tick for 4701 play ticks; ticks=4700 because the referee waits for play ticks that never come once the quest
+  ends: the first run sat in the result screens writing a 6.6 GB ps2.ref (I stopped it and cut the trace at play tick 4700).
+  Keep a scenario's `ticks` below the quest's end.
+- `referee.py pc SCENARIO --out DIR` on a copy of an earlier run's directory is a fast way to try pokes on the PC side alone
+  (--free-rng, or keep the PS2's random sync); the hunter / carve positions above came from such runs.

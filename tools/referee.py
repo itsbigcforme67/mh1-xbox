@@ -207,6 +207,25 @@ SCENARIOS['g_fatalis_kill'] = dict(game='mhg', quest=3004, weapon=(6, 1), pad='i
                                    pokes=area(30, 25, 11927.0, 0.0, 14444.0) + [(2150, 'em0', 0x302, 'u16', 200)] +
                                    area(2150, 25, 11850.0, 0.0, 14950.0), ticks=6500)
 
+# the end of the fight. The scripted swings never land (the dragon hovers at y 1000 out of reach, or knocks the hunter down
+# first), so the hit is poked on both sides the way a landed hit leaves it (Em_Dmg_Sys: dm_flag 0x38D, dmg[0] 0x766, with 1 hit
+# point left) while it hovers with no target (the hunter carted to the camp); then the hunter is put back on stage 25 beside
+# the body, and circle carves. Play ticks: kill FAT_KILL, hunter back FAT_BACK.
+# The first hit starts the dragon's damage stock countdown (x8BB 5 -> 0, it cannot die meanwhile) and it only dies while the
+# hunter is on its stage (x9E2): the second hit, after the hunter is back, kills.
+FAT_KILL, FAT_BACK, FAT_X, FAT_Z = 2500, 2900, 11774.0, 14300.0
+FAT_CARVE = 3300            # the hunter is put by the head's carve point (11465, 17430; a PC dry run with RT_PL_WARP_EM)
+
+
+def hit(pt, d=100):
+    """monster 0 takes d damage at play tick pt, as a landed hit leaves it for Em_Dmg_Sys"""
+    return [(pt, 'em0', 0x766, 'u16', d), (pt, 'em0', 0x38D, 'u8', 1)]
+SCENARIOS['g_fatalis_end'] = dict(
+    game='mhg', quest=3004, weapon=(6, 1), ticks=4700,
+    pad='idle*%d,' % (FAT_CARVE + 10) + ','.join(['circle*2,idle*28'] * 60),
+    pokes=[(FAT_KILL, 'em0', 0x302, 'u16', 1)] + hit(FAT_KILL) + area(FAT_BACK, 25, FAT_X, 0.0, FAT_Z) + hit(FAT_BACK + 60) +
+          [(FAT_CARVE, 'plw', 0xAC, 'f32', 11371.0), (FAT_CARVE, 'plw', 0xB4, 'f32', 17356.0), (FAT_CARVE, 'plw', 0xA4, 'u32', 0x24D0)])
+
 
 def em_act(pt, mode, no, dist=None):
     """pokes that start monster 0's action mode/no at play tick pt (em02: step 0; w->dist for attacks 12 / 13)"""
