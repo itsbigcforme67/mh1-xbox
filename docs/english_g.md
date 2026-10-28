@@ -44,6 +44,33 @@ G has **11474 of 13263 strings (86.5%) in official English** (was 7087, 53%), pl
 tables, not text). How Freedom is paired and what still fails: section "Monster Hunter Freedom: what to give and what
 happens" below.
 
+**Update 28 Oct 2026, later (agent A): the screens the tour did not reach.** tools/g_eng_tour.py now also covers the
+weapon / armour description pages (shop detail window, page 2), NETWORK OPTIONS (every row's help), the pause menu's
+status and equipment pages, G's online plaza / town / guild counter (scene `town`: the G online build on the repo's test
+server, 127.0.0.1 only) and quest 10001's opening banner (`wisdom`); with RT_TEXT_JP=1 it writes jp_left.txt (Japanese
+still drawn, and the overlay ids it came from: rt_text.c's new `textsrc` trace). Found and fixed:
+- **Descriptions spliced from two items.** G points several items' descriptions at shared line strings (the Hunter's
+  Helm and Cap share their first line; the "weathered" ancient weapons share two), so one English line per string
+  read wrongly for one of them ("A Great Sword for first-time / this bone sword is capable ..." on the Iron Sword).
+  Freedom's whole description now goes into each item's own pointer words where a line is shared (rt_text.c's
+  "0xADDR[0]" slots; 1097 lines), a description line never takes Freedom's "most used wording" when MH1 US has the
+  line, and a description is not left half Freedom, half MH1 US. Five lines of the weathered weapons are ours.
+- **Village talk outside the talk tables** (lobby messages of 22-byte rows, e.g. "That bustling shop ..."): odd-length
+  rows put the next row's first character in half a cell ("dnother", "@ufront"): they now go through the talk layout
+  (275 lobby lines re-spaced, no wording change).
+- **Japanese still drawn:** the talk title 会話イベント ("Talk"), quest 10001's 村長の教えが追加されました ("Wisdom of the
+  Chief added."), the people counter 人 after "Players: 4" and "Area/Town: 0" (a blank now). NETWORK OPTIONS' last row
+  said "ADJUST SCREEN" for G's ＥＸＩＴ (now EXIT). The armour compare window's "Thunder Res:" ran under its value
+  ("Fire: / Water: / Thunder: / Dragon:" there now). All checked on screen (tour pictures).
+- Left: the town descriptions in the online plaza are the test server's own Japanese (tools/mh1_testserver.py), not
+  game text; "-" + 0x90 (lobby 0x549CA0) is a glyph code, not text; spliced US lines remain where no Freedom description
+  exists for an item (e.g. the Iron Hammer: "Can be very powerful if used / iron.").
+- **Not reached:** fishing (G's stage 54 is another place than MH1's; the bait / fishing spot need their own search),
+  the Training School's own screens (the village's exits found: spots of kind 6 at 10650,15225 and 10555,11325, kind 23
+  at 13233,14470; none led into the school with the inputs tried), the unplugged-pad message (no way found to fake a
+  missing pad on the PC; the message lines are checked only for width).
+- **Figures:** 11761 official + 1155 ours = 12916 of 13592 (95.0%).
+
 **Update 28 Oct 2026 (agent A): Freedom first** (owner's decision, docs/DECISIONS.md). G's table now takes Monster
 Hunter Freedom's line wherever a G string has a Freedom pair, MH1 US only where Freedom has none, our own lines last.
 - **Moved:** 1012 G strings changed from MH1 US to Freedom wording; 3556 more had a Freedom pair that says the same as

@@ -23,17 +23,17 @@ Categories group the areas below (armour includes skills; NPC dialogue includes 
 | category | G strings | official English | of which by the text rules | ours (own translation) | left | left, ambiguous for a rule | left, same Japanese in Portable | left, not in Portable |
 |---|---:|---:|---:|---:|---:|---:|---:|---:|
 | items | 972 | 964 (99%) | 0 | 7 | 1 | 0 | 1 | 0 |
-| weapons | 1804 | 1693 (93%) | 0 | 111 | 0 | 0 | 0 | 0 |
+| weapons | 1804 | 1688 (93%) | 0 | 116 | 0 | 0 | 0 | 0 |
 | armour and skills | 3615 | 3545 (98%) | 33 | 70 | 0 | 0 | 0 | 0 |
 | monsters | 74 | 67 (90%) | 0 | 7 | 0 | 0 | 0 | 0 |
 | quests | 1528 | 1508 (98%) | 365 | 20 | 0 | 0 | 0 | 0 |
 | NPC dialogue and tutorials | 2498 | 2038 (81%) | 54 | 428 | 32 | 0 | 32 | 0 |
-| menus and UI | 1803 | 1562 (86%) | 15 | 222 | 19 | 0 | 11 | 8 |
-| system (memory card, online, keyboard, code literals) | 877 | 387 (44%) | 6 | 281 | 209 | 0 | 93 | 116 |
+| menus and UI | 1803 | 1559 (86%) | 15 | 225 | 19 | 0 | 11 | 8 |
+| system (memory card, online, keyboard, code literals) | 877 | 386 (44%) | 6 | 282 | 209 | 0 | 93 | 116 |
 | keyboard kana tables (not text) | 421 | 6 (1%) | 0 | 0 | 415 | 0 | 140 | 275 |
-| **total** | **13592** | **11770 (86%)** | 473 | 1146 | 676 | 0 | 277 | 399 |
+| **total** | **13592** | **11761 (86%)** | 473 | 1155 | 676 | 0 | 277 | 399 |
 
-*Ours* is our own English (text/mhg_en_own.tsv, docs/english_g.md "Our own translation"), only for strings no official source has; official English always wins, and Freedom's replaces ours where it has a line (5 own lines replaced: quest:10029:0x68 quest:10044:0x68 main:0x2EA360 sub_main:0x539330 main:0x2E97A0).
+*Ours* is our own English (text/mhg_en_own.tsv, docs/english_g.md "Our own translation"), only for strings no official source has; official English always wins, and Freedom's replaces ours where it has a line (7 own lines replaced: quest:10029:0x68 quest:10044:0x68 main:0x2EA360 sub_main:0x539330 main:0x2E97A0 sub_main:0x538D18 sub_main:0x539AF0).
 
 ## MH1 JP strings with official US English
 
@@ -45,7 +45,7 @@ Categories group the areas below (armour includes skills; NPC dialogue includes 
 | quests | 868 | 712 (82%) | 156 |
 | online, keyboard, word filter | 765 | 174 (22%) | 591 |
 | items (names, help) | 601 | 597 (99%) | 4 |
-| code literals | 469 | 178 (37%) | 291 |
+| code literals | 469 | 181 (38%) | 288 |
 | memory card and yes/no dialogs | 367 | 225 (61%) | 142 |
 | quest board / quest text tables | 333 | 320 (96%) | 13 |
 | village / plaza / guild / shop UI | 236 | 188 (79%) | 48 |
@@ -103,9 +103,9 @@ Categories group the areas below (armour includes skills; NPC dialogue includes 
 | other tables (bou_sei_tbl) | 1 | 1 (100%) | 0 |
 | other tables (zen_num) | 1 | 0 (0%) | 1 |
 | other tables (sn_objs) | 1 | 0 (0%) | 1 |
-| **total** | **8404** | **7030 (83%)** | 1374 |
+| **total** | **8404** | **7033 (83%)** | 1371 |
 
-(6318 of the 7536 JP strings found in the executables and overlays, plus 712 quest fields.)
+(6321 of the 7536 JP strings found in the executables and overlays, plus 712 quest fields.)
 
 Dropped pairs: line-split dialog (needs per-message alignment) 258, same as JP 178, US changed a number (quest / talk text) 9, US rewrote the talk (Dual Swords) 7, quest US changed a number 5, format mismatch 1, still Japanese 1.
 
@@ -117,9 +117,9 @@ Dropped pairs: line-split dialog (needs per-message alignment) 258, same as JP 1
 | village NPC lines and talk | 1883 | 1777 (94%) | 106 | 0 | 0 | 0 |
 | quests | 1309 | 1296 (99%) | 13 | 0 | 0 | 0 |
 | weapons | 940 | 939 (99%) | 1 | 0 | 0 | 0 |
-| weapons [G table] | 864 | 754 (87%) | 110 | 0 | 0 | 0 |
+| weapons [G table] | 864 | 749 (86%) | 115 | 0 | 0 | 0 |
 | armour | 816 | 814 (99%) | 2 | 0 | 0 | 0 |
-| online, keyboard, word filter | 755 | 162 (21%) | 98 | 495 | 0 | 0 |
+| online, keyboard, word filter | 755 | 161 (21%) | 99 | 495 | 0 | 0 |
 | items (names, help) | 533 | 531 (99%) | 1 | 1 | 0 | 0 |
 | village NPC lines and talk [G table] | 498 | 148 (29%) | 318 | 0 | 0 | 32 |
 | items (names, help) [G table] | 439 | 433 (98%) | 6 | 0 | 0 | 0 |
@@ -129,7 +129,7 @@ Dropped pairs: line-split dialog (needs per-message alignment) 258, same as JP 1
 | menus, options, HUD [G table] | 179 | 119 (66%) | 57 | 0 | 0 | 3 |
 | quest board / quest text tables | 158 | 155 (98%) | 3 | 0 | 0 | 0 |
 | other tables (lit_445) [G table] | 153 | 148 (96%) | 5 | 0 | 0 | 0 |
-| menus, options, HUD | 134 | 121 (90%) | 13 | 0 | 0 | 0 |
+| menus, options, HUD | 134 | 120 (89%) | 14 | 0 | 0 | 0 |
 | skills [G table] | 124 | 90 (72%) | 34 | 0 | 0 | 0 |
 | tutorial pages | 117 | 113 (96%) | 4 | 0 | 0 | 0 |
 | other tables (map_name) [G table] | 100 | 69 (69%) | 29 | 0 | 0 | 2 |
@@ -204,7 +204,7 @@ Dropped pairs: line-split dialog (needs per-message alignment) 258, same as JP 1
 | other tables (movie_add_str_tbl) | 3 | 3 (100%) | 0 | 0 | 0 | 0 |
 | other tables (pit_help_reward_str) | 3 | 3 (100%) | 0 | 0 | 0 | 0 |
 | other tables (mix_list_str) | 3 | 3 (100%) | 0 | 0 | 0 | 0 |
-| other tables (equip_exp_str_armor) | 3 | 3 (100%) | 0 | 0 | 0 | 0 |
+| other tables (equip_exp_str_armor) | 3 | 1 (33%) | 2 | 0 | 0 | 0 |
 | other tables (wearable_tbl) | 3 | 3 (100%) | 0 | 0 | 0 | 0 |
 | other tables (default_reibun) [G table] | 3 | 2 (66%) | 0 | 0 | 0 | 1 |
 | other tables (load_msg) [G table] | 3 | 2 (66%) | 1 | 0 | 0 | 0 |
@@ -246,7 +246,7 @@ Dropped pairs: line-split dialog (needs per-message alignment) 258, same as JP 1
 | other tables (verify_button_00387D) [G table] | 1 | 1 (100%) | 0 | 0 | 0 | 0 |
 | other tables (Snd_weapon_tbl) [G table] | 1 | 1 (100%) | 0 | 0 | 0 | 0 |
 | other tables (pit_help_data_str) | 1 | 1 (100%) | 0 | 0 | 0 | 0 |
-| **total** | **13592** | **11770 (86%)** | 1146 | 507 | 1 | 168 |
+| **total** | **13592** | **11761 (86%)** | 1155 | 507 | 1 | 168 |
 
 G strings are counted from a scan of main and the overlays (Shift-JIS runs, as tools/text_dump.py; a few hundred false hits are possible) plus the four text fields of each quest file. Status of the pairs between a JP string and its G twin: identical text 3935, near text (edited a little) 1260, no US English for the JP string 1095, text edited in G (left out) 266.
 

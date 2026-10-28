@@ -443,6 +443,7 @@ lobby:0x637C70	online, keyboard, word filter	twin without US English	in Portable
 lobby:0x637D80	online, keyboard, word filter	twin without US English	in Portable
 lobby:0x637E68	online, keyboard, word filter	twin without US English	in Portable
 lobby:0x637E78	online, keyboard, word filter	twin without US English	in Portable
+lobby:0x637E88	online, keyboard, word filter	ours	in Portable
 lobby:0x637EB0	online, keyboard, word filter	ours
 lobby:0x638050	online, keyboard, word filter	ours
 lobby:0x638110	online, keyboard, word filter	ours
@@ -1265,6 +1266,8 @@ main:0x2D1D40	weapons [G table]	ours
 main:0x2D1D60	weapons [G table]	ours
 main:0x2D1D80	weapons [G table]	ours
 main:0x2D1DA0	weapons [G table]	ours
+main:0x2D23C0	weapons [G table]	ours	in Portable
+main:0x2D23E0	weapons [G table]	ours	in Portable
 main:0x2D24C0	weapons [G table]	ours
 main:0x2D24E0	weapons [G table]	ours
 main:0x2D2500	weapons [G table]	ours
@@ -1272,6 +1275,7 @@ main:0x2D2520	weapons [G table]	ours
 main:0x2D25A0	weapons [G table]	ours
 main:0x2D25C0	weapons [G table]	ours
 main:0x2D25E0	weapons [G table]	ours
+main:0x2D2A40	weapons [G table]	ours	in Portable
 main:0x2D2AE0	weapons [G table]	ours
 main:0x2D2B00	weapons [G table]	ours
 main:0x2D2B20	weapons [G table]	ours
@@ -1282,6 +1286,7 @@ main:0x2D2BA0	weapons [G table]	ours
 main:0x2D2BC0	weapons [G table]	ours
 main:0x2D2BE0	weapons [G table]	ours
 main:0x2D2C00	weapons [G table]	ours
+main:0x2D3120	weapons [G table]	ours	in Portable
 main:0x2D31C0	weapons [G table]	ours
 main:0x2D31E0	weapons [G table]	ours
 main:0x2D3200	weapons [G table]	ours
@@ -1295,6 +1300,7 @@ main:0x2D35C0	weapons [G table]	ours
 main:0x2D35E0	weapons [G table]	ours
 main:0x2D3600	weapons [G table]	ours
 main:0x2D3620	weapons [G table]	ours
+main:0x2D3AC0	weapons [G table]	ours	in Portable
 main:0x2D3D00	weapons [G table]	ours
 main:0x2D3D20	weapons [G table]	ours
 main:0x2D3D40	weapons [G table]	ours
@@ -1513,6 +1519,8 @@ sub_main:0x5384D0	monsters	ours
 sub_main:0x5384E0	monsters [G table]	ours
 sub_main:0x538D90	menus, options, HUD [G table]	G only	in Portable
 sub_main:0x538DC0	menus, options, HUD	ours
+sub_main:0x539160	other tables (equip_exp_str_armor)	ours
+sub_main:0x539180	other tables (equip_exp_str_armor)	ours
 sub_main:0x5392D0	other tables (wearable_tbl) [G table]	ours	in Portable
 sub_main:0x539420	other tables (wearable_tbl) [G table]	ours	in Portable
 sub_main:0x539430	other tables (wearable_tbl) [G table]	ours	in Portable
@@ -1759,6 +1767,7 @@ sub_main:0x541150	skills [G table]	ours	in Portable
 sub_main:0x5411D8	skills [G table]	ours	in Portable
 sub_main:0x5412C0	skills [G table]	ours	in Portable
 sub_main:0x541490	menus, options, HUD [G table]	ours
+sub_main:0x5414F8	menus, options, HUD	ours	in Portable
 sub_main:0x541688	menus, options, HUD [G table]	ours
 sub_main:0x541698	menus, options, HUD [G table]	ours
 sub_main:0x5416A8	menus, options, HUD [G table]	ours

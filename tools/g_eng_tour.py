@@ -9,7 +9,9 @@ address-space cap. Each scene is a pad script (the tick timing of tools/test_gvi
 pictures at the listed ticks (RT_SHOTS). Output: build/B/eng/<scene>/<scene>_<tick>.png, <scene>.log, and a contact
 sheet build/B/eng/<scene>.html (plus build/B/eng/index.html). Standard library only (the sheets are HTML pages).
 G_ENG_TABLE=/dev/null G_ENG_SUFFIX=_jp gives the same scene without the English table (build/B/eng/<scene>_jp/), to tell
-our text from what the PC port draws anyway.
+our text from what the PC port draws anyway. RT_TEXT_JP=1 also writes jp_left.txt: per scene the Japanese still drawn
+and the overlay ids it came from (rt_font.c / rt_text.c traces). The online town (scene town) uses the G online build
+(ONLINE=1 tools/build_pc_mhg.sh) and the repo's test server on 127.0.0.1 only.
 """
 import html
 import os
@@ -80,8 +82,9 @@ SCENES = {
     "newgame": boot(script("newgame.txt").replace("dup*2,idle*10,", "", 1) + ",idle*900", 110,
                     [640, 700, 760, 900, 1100, 1300, 1500, 1800, 2100, 2400, 2800, 3100]) | dict(fresh=True),
     # NETWORK OPTIONS: G's fifth row of the game menu (each ddown here moves one row more than expected: n presses -> row n+1)
-    "net_options": boot(GM + ",ddown*2,idle*10,ddown*2,idle*10,ddown*2,idle*10,circle*2,idle*60,ddown*2,idle*40,ddown*2,idle*40,ddown*2,idle*40,circle*2,idle*90,cross*2,idle*60",
-                        30, [700, 740, 790, 840, 900]),
+    # (28 Oct: four downs reach it; then each row's help: NET file, "same as last", login ID, network settings, EXIT)
+    "net_options": boot(GM + ",ddown*2,idle*30" * 4 + ",circle*2,idle*90" + ",ddown*2,idle*40" * 4 + ",circle*2,idle*120,cross*2,idle*60",
+                        45, [700, 760, 880, 920, 960, 1000, 1045, 1140], card="ncard") | dict(fresh=True),   # no save: the menu opens on NEW GAME
     # gallery (omake): third row of the game menu
     "gallery": boot(GM + ",ddown*2,idle*10,circle*2,idle*90,ddown*2,idle*30,ddown*2,idle*60,cross*2,idle*120", 40,
                     [700, 760, 800, 860, 920]),
@@ -93,11 +96,16 @@ SCENES = {
                     60, [700, 800, 900, 1000, 1100, 1250, 1400, 1600]),
     # village: item shop list and quantity / price prompt
     "item_shop": village(ev(circles(45, 5), {200: "ddown*2", 230: "circle*2"}), 330, [60, 110, 170, 210, 250, 300], warp=SHOP),
-    # weapon shop: menu, buy list, detail window (square)
-    "weapon_shop": village(ev(circles(45, 4), {200: "square*2", 260: "cross*2", 290: "ddown*2"}), 340, [60, 110, 170, 230, 280, 320], warp=WSHOP),
+    # weapon shop: menu, buy list, the detail window (square) and its description page (right), for three weapons
+    "weapon_shop": village(ev(circles(45, 5), {230: "square*2", 290: "dright*2", 330: "cross*2", 350: "ddown*2", 370: "square*2",
+                                               420: "dright*2", 460: "cross*2", 480: "ddown*2", 500: "square*2", 550: "dright*2"}),
+                           600, [60, 110, 180, 250, 300, 400, 440, 530, 580], warp=WSHOP),
     # armour shop list
-    "armour_shop": village({45: "circle*2", 75: "circle*2", 105: "circle*2", 135: "circle*2", 150: "ddown*2", 165: "circle*2", 195: "circle*2"}, 300,
-                           [120, 160, 200, 260], warp=WSHOP),
+    # armour shop list, then the detail window's description page (square, right) for six pieces down the list
+    "armour_shop": village(ev({45: "circle*2", 75: "circle*2", 105: "circle*2", 135: "circle*2", 150: "ddown*2", 165: "circle*2"},
+                              *({200 + 100 * i: "square*2", 240 + 100 * i: "dright*2", 280 + 100 * i: "cross*2", 290 + 100 * i: "ddown*2"}
+                                for i in range(6))), 820,
+                           [190, 230] + [270 + 100 * i for i in range(6)], warp=WSHOP),
     # forge: weapon list, upgrade tab
     "forge": village(ev(circles(45, 5), {220: "cross*2", 250: "ddown*2", 280: "circle*2"}), 360, [60, 110, 170, 210, 300, 340], warp=FORGE,
                      RT_POUCH="155:5"),
@@ -114,9 +122,10 @@ SCENES = {
                                                 1010: "cross*2", 1060: "ddown*2", 1090: "circle*2"}),
                            1200, [690, 740, 800, 860, 920, 980, 1040, 1080, 1130, 1180], warp=ELDER),
     # pause menu in the village: rows, status (two pages), equipment, hunting record
-    "pause": village({60: "start*2", 100: "circle*2", 160: "dright*2", 200: "cross*2", 230: "ddown*2", 250: "circle*2", 310: "cross*2",
-                      340: "ddown*2", 360: "ddown*2", 380: "circle*2", 440: "cross*2", 470: "ddown*2", 490: "ddown*2", 510: "circle*2"}, 600,
-                     [80, 130, 180, 280, 330, 420, 460, 560]),
+    # pause menu in the village: the rows' help, status (two pages), equipment details (the weapon's description page)
+    "pause": village({60: "start*2", 100: "ddown*2", 130: "ddown*2", 160: "ddown*2", 190: "ddown*2", 220: "circle*2", 280: "dright*2",
+                      330: "cross*2", 360: "ddown*2", 390: "circle*2", 450: "dright*2", 500: "dright*2"}, 560,
+                     [80, 120, 200, 250, 310, 345, 420, 480, 540]),
     # pause menu, Reference row: the data page (G's frame list, hunting log, mix list)
     "data_page": village({60: "start*2", 100: "ddown*2", 130: "ddown*2", 160: "ddown*2", 200: "circle*2", 280: "dright*2", 340: "circle*2"}, 440,
                          [90, 150, 190, 230, 260, 320, 370, 430]),
@@ -124,6 +133,12 @@ SCENES = {
     "quest_info": dict(args=["--quest", "1", "--play"], input="idle*200,start*2,idle*40,ddown*2,idle*20,ddown*2,idle*20,ddown*2,idle*20,circle*2,idle*60,dright*2,idle*60,"
                        "dright*2,idle*60,cross*2,idle*30,cross*2,idle*60,start*2,idle*40,circle*2,idle*90", time=30,
                        shots=[220, 260, 330, 400, 460, 560, 640], env=dict(RT_STEP="1", RT_QUEST_STAGE="1"), card="qcard"),
+    # quest 10001 from its start: the "Wisdom of the Chief added" banner (sub_main 0x539AF0), the field HUD; the hunter
+    # follows the monsters with the reward scene's aids
+    "wisdom": dict(args=["--quest", "10001", "--play"], input="idle*60" + (",cam_u*2,idle*30" * 4 + ",circle*2,idle*28" * 6 +
+                   ",cross*2,idle*14,ddown*2,idle*14,circle*2,idle*14") * 6, time=60, shots=[100, 160, 300, 600, 1200],
+                   env=dict(RT_STEP="1", RT_PL_GOD="1", RT_PL_GOTO="60,f", RT_PL_TARGET="k6", RT_PL_WARP_EM="900-90000",
+                            RT_DMG_MUL="40"), card="qcard"),
     # a hunt cleared with the test aids of tools/test_all_quests.py (quest 4, Yian Kut-Ku): clear banner, reward screen and list
     "reward": dict(args=["--quest", "4", "--play"], input="idle*60" + (',cam_u*2,idle*30' * 4 + ',circle*2,idle*28' * 6 + ',cross*2,idle*14,ddown*2,idle*14,circle*2,idle*14') * 40, time=430,
                    shots=[8240, 8300] + list(range(10000, 12900, 250)),   # 8240: the clear line ("All requested monsters slain.")
@@ -155,11 +170,37 @@ if GAME == "mh1":
                           env=dict(RT_STEP="1", RT_VILLAGE_START="1", RT_VILLAGE_SKIP_INTRO="1", RT_ONLINE_TRACE="1"), card="tcard")
 
 
+if GAME == "mhg":
+    # G's online side on the repo's test server (127.0.0.1 only; tools/test_online_g.sh's screens): login, Capcom ID, the
+    # info file, the plaza class menu, the plaza and its town list, town 1 (frames 0-2620 of that test's input), then the
+    # guild hall door (square, warped there) and the counter's talk, quest levels and first card (warp at town tick 300)
+    _IN = ["idle*200"] + ["circle*2", "idle*150"] * 14 + ["circle*2", "idle*120", "dleft*2", "idle*30", "circle*2", "idle*150"] * 12
+    _b, _f = [], 0
+    for _it in _IN:
+        _k, _c = _it.split("*")
+        if _f + int(_c) > 2620:
+            _b.append("idle*%d" % (2620 - _f))
+            break
+        _b.append(_it)
+        _f += int(_c)
+    SCENES["town"] = dict(args=["--quest", "10", "--play", "--online", "--mute"], online=True, time=175,
+                          input=",".join(_b) + ",square*2,idle*270" + ",circle*2,idle*148" * 9 + ",cross*2,idle*100" * 3 + ",idle*300",
+                          shots=[260, 420, 570, 720, 870, 1020, 1170, 1320, 1600, 1900, 2300, 2700, 2950, 3100, 3250, 3400, 3550,
+                                 3700, 3850, 4000, 4300],
+                          env=dict(RT_STEP="1", RT_VILLAGE_START="1", RT_VILLAGE_SKIP_INTRO="1", RT_ONLINE_TRACE="1",
+                                   RT_NET_REGISTERED="1", RT_LB_WARP="60,5545,2750,0;300,1120,1950"), card="tcard")
+
+
 def exe(sc=None):
     if GAME == "mh1":
         p = "build/pc/mhview_online" if sc and sc.get("online") else "build/pc/mhview"
         if not os.path.exists(os.path.join(ROOT, p)):
             sys.exit("g_eng_tour: no %s (tools/build_pc.sh%s)" % (p, ", ONLINE=1" if sc and sc.get("online") else ""))
+        return os.path.join(ROOT, p)
+    if sc and sc.get("online"):
+        p = "build/mhg/pc/mhview_g_online"
+        if not os.path.exists(os.path.join(ROOT, p)):
+            sys.exit("g_eng_tour: no %s (ONLINE=1 tools/build_pc_mhg.sh)" % p)
         return os.path.join(ROOT, p)
     for p in ("build/B/mhview_g", "build/mhg/pc/mhview_g"):
         if os.path.exists(os.path.join(ROOT, p)):
@@ -218,6 +259,48 @@ def sheet(name, pics, rc):
     open(os.path.join(OUT, name + ".html"), "w").write(page)
 
 
+def jp_left(b):
+    """True when a drawn string has Japanese words (kana / kanji), not only full-width marks, blanks or digits"""
+    i = 0
+    while i < len(b):
+        c = b[i]
+        if 0x81 <= c <= 0x9F or 0xE0 <= c <= 0xEF:
+            w = (c << 8) | (b[i + 1] if i + 1 < len(b) else 0)
+            if 0x829F <= w <= 0x82F1 or 0x8340 <= w <= 0x8396 or c >= 0x88:
+                return True
+            i += 2
+        else:
+            i += 1
+    return False
+
+
+def jp_report(names):
+    """RT_TEXT_JP=1: OUT/jp_left.txt, per scene the Japanese still drawn (rt_font.c 'textjp' lines, the first 64 bytes,
+    times drawn) and the overlay ids it came from without a table entry (rt_text.c 'textsrc')"""
+    out = []
+    for n in names:
+        d = os.path.join(OUT, n + os.environ.get("G_ENG_SUFFIX", ""))
+        try:
+            data = open(os.path.join(d, n + ".log"), "rb").read()
+        except OSError:
+            continue
+        seen, src = {}, {}
+        for line in data.split(b"\n"):
+            if line.startswith(b"textjp:"):
+                b = bytes(int(x, 16) for x in line.split()[1:])
+                if jp_left(b):
+                    seen[b] = seen.get(b, 0) + 1
+            elif line.startswith(b"textsrc:"):
+                k = line.split()[1].decode()
+                src[k] = src.get(k, 0) + 1
+        out.append("%s: %d Japanese strings drawn" % (n, len(seen)))
+        out += ["  %5d  %s" % (c, b.decode("cp932", "replace")) for b, c in sorted(seen.items(), key=lambda x: -x[1])]
+        if src:
+            out.append("  from overlay ids without a table entry: " + " ".join("%s(%d)" % kv for kv in sorted(src.items())))
+    open(os.path.join(OUT, "jp_left.txt"), "w").write("\n".join(out) + "\n")
+    return out
+
+
 def index():
     names = [n for n in SCENES if os.path.exists(os.path.join(OUT, n + ".html"))]
     open(os.path.join(OUT, "index.html"), "w").write(
@@ -235,3 +318,6 @@ if __name__ == "__main__":
         print("%-12s exit %d, %d pictures" % (n, rc, k))
         sys.stdout.flush()
     index()
+    if os.environ.get("RT_TEXT_JP"):
+        print("\n".join(l for l in jp_report(names) if not l.startswith(" ")))
+        print("Japanese still drawn: %s" % os.path.join(OUT, "jp_left.txt"))

@@ -1585,26 +1585,32 @@ def number_template(jt_, gt_, xb):
 
 def g_ptr_runs(g, GS):
     """runs (2..8) of consecutive G pointer words that all point at scanned strings: [(space, [g key])]"""
+    return [(sp, run) for sp, run, _pos in g_ptr_runs_pos(g, GS)]
+
+
+def g_ptr_runs_pos(g, GS):
+    """g_ptr_runs with the addresses of the pointer words: [(space, [g key], [word address])]"""
     out = []
     for sp in g.mod:
         if sp == "nethttp":
             continue
         cells = x_ptr_cells(g, sp)
-        cur, prev = [], None
+        cur, poss, prev = [], [], None
         for pos in sorted(cells):
             if prev is not None and pos != prev + 4:
                 if 2 <= len(cur) <= 8:
-                    out.append((sp, cur))
-                cur = []
+                    out.append((sp, cur, poss))
+                cur, poss = [], []
             if cells[pos] in GS:
                 cur.append(cells[pos])
+                poss.append(pos)
                 prev = pos
             else:
                 if 2 <= len(cur) <= 8:
-                    out.append((sp, cur))
-                cur, prev = [], None
+                    out.append((sp, cur, poss))
+                cur, poss, prev = [], [], None
         if 2 <= len(cur) <= 8:
-            out.append((sp, cur))
+            out.append((sp, cur, poss))
     return out
 
 
@@ -2319,12 +2325,14 @@ def freedom_for_g(g, GS, Gq, en_g, idx, fpairs, runs, selftest=False, override=T
     split at Freedom's line breaks when the line count is the same, also over lines that had MH1 US English line by
     line. Every line passes freedom_ok. Returns ({g key: English}, Counter(why))."""
     new, why = {}, collections.Counter()
+    new_slots = {}      # ("slot", pointer word): a line of a description whose string G shares with another one
+    nruns = collections.Counter(k for _sp, run, _pos in runs for k in run)
 
-    def english(norm, count=False):
+    def english(norm, count=False, line=False):
         slots = [s for s in idx.get(norm, ()) if s in fpairs]
         c = collections.Counter(fpairs[s] for s in slots)
         xb = _one_english(c) if c else None
-        if xb is None and c and len(norm) >= 16:
+        if xb is None and c and len(norm) >= 16 and not line:
             # a sentence (8+ characters) Freedom translated in two ways (the same talk line for two NPCs, a quest
             # text in two quest files): both are Freedom's English for it; the most used one, then the first slot
             xb = sorted(c, key=lambda x: (-c[x], min(str(s) for s in slots if fpairs[s] == x)))[0]
@@ -2335,12 +2343,12 @@ def freedom_for_g(g, GS, Gq, en_g, idx, fpairs, runs, selftest=False, override=T
 
     def gtext(k):
         return cstr_at(Gq[k[1]], k[2]) if k[0] == "quest" else g.cstr(*k)
-    for _sp, run in runs:
+    for sp, run, poss in runs:
         part = sum(1 for k in run if k in en_g)
         if part == len(run) and not override:
             continue
         jb = b"".join(g.cstr(*k) for k in run)
-        xb = english(norm_marks(jb))
+        xb = english(norm_marks(jb), line=part > 0)     # replacing MH1 US: only a description Freedom words one way
         if xb is None:
             continue
         ok, r = (True, "") if selftest else freedom_ok(jb, xb.replace(b"\n", b" "))
@@ -2354,17 +2362,29 @@ def freedom_for_g(g, GS, Gq, en_g, idx, fpairs, runs, selftest=False, override=T
         if part and not keeps_layout(b"\n".join(en_g.get(k, b"") for k in run), xb):
             why["description drops the MH1 US lines' ~ codes or numbers (MH1 US kept)"] += len(run)
             continue
-        for k, ln in zip(run, lines):
-            new[k] = ln
+        for k, ln, pos in zip(run, lines, poss):
+            if nruns[k] > 1 and sp in ("main", "sub_main"):
+                # G points two items' descriptions at one line string ("ハンター用に作られた頭用" opens the Hunter's
+                # Helm and the Hunter's Cap): the line is set in this item's pointer word (rt_text.c "0xADDR[0]")
+                if len(ln) <= 28:       # the description window (MH1 US runs to 28)
+                    new_slots[("slot", pos)] = ln
+                new.setdefault(k, ln)       # the string itself: the first item's line (any other pointer to it)
+                why["description line shared by two items (set per item)"] += 1
+            else:
+                new[k] = ln
         # some lines had MH1 US English line by line (a line equal to an MH1 line): Freedom's whole description
         # replaces them, so the description is not half one translation, half Japanese
         why["whole description" + (" (replacing MH1 US lines)" if part else "")] += len(run)
     skip = (lambda k: k in new) if override else (lambda k: k in en_g or k in new)
     targets = [k for k in GS if not skip(k)]
     targets += [("quest", n, o) for n, d in Gq.items() for o, b in quest_strings_g(d) if b and not skip(("quest", n, o))]
+    # a line of a description (one pointer per line) is a piece of a sentence: its Japanese recurs in other
+    # descriptions with other Freedom line breaks, so "the most used wording" would splice another item's sentence in
+    run_of = {k: tuple(run) for _sp, run, _pos in runs for k in run}
+    line_new = {}
     for gk in targets:
         gb = gtext(gk)
-        xb = english(norm_marks(gb), count=True)
+        xb = english(norm_marks(gb), count=True, line=gk in run_of and gk in en_g)
         if xb is None:
             continue
         ok, r = (True, "") if selftest else freedom_ok(gb, xb)
@@ -2372,10 +2392,20 @@ def freedom_for_g(g, GS, Gq, en_g, idx, fpairs, runs, selftest=False, override=T
             ok, r = False, "drops the MH1 US line's ~ codes or numbers: MH1 US kept"
         if ok:
             new[gk] = xb
+            if gk in run_of:
+                line_new[gk] = gk in en_g
             why["same Japanese" + (" (replacing MH1 US)" if gk in en_g else "")] += 1
         else:
             why["refused (%s)" % r] += 1
-    return new, why
+    # a description takes Freedom line by line only when every line it has gets Freedom's: never half Freedom's
+    # sentence and half MH1 US's (or another wording's)
+    for run in set(run_of[k] for k in line_new):
+        if not all(k in new or not gtext(k).strip() for k in run) and any(k in en_g for k in run):
+            for k in run:
+                if line_new.get(k) and k in new:      # (a line without MH1 US keeps Freedom's: better than Japanese)
+                    del new[k]
+                    why["description line dropped (the rest of its description is not Freedom's)"] += 1
+    return new, why, new_slots
 
 
 def freedom_fit(g, GS, Gq, us_g, fr_g, g_area):
@@ -3326,7 +3356,7 @@ def main():
     en_g.update(rule_g)
     # Freedom first, MH1 US as the fallback, our own lines last (owner, 28 Oct 2026, docs/DECISIONS.md)
     us_g = dict(en_g)
-    fr_g = run_freedom(args, g, GS, Gq, en_g, cache)
+    fr_g, fr_slots = run_freedom(args, g, GS, Gq, en_g, cache)
     log("G: Freedom's weapon class: 'Dual Swords' in %d lines, 'Dual Blades' in %d (G_TERMS writes Dual Blades)" % (
         sum(1 for v in fr_g.values() if re.search(rb"[Dd]ual[ \n][Ss]word", v)),
         sum(1 for v in fr_g.values() if re.search(rb"[Dd]ual[ \n][Bb]lade", v))))
@@ -3335,6 +3365,9 @@ def main():
     for k in unfit:
         del fr_g[k]
     moved = {k for k in fr_g if k in us_g and us_g[k] != fr_g[k]}
+    for t in filter(None, os.environ.get("TM_KEYS", "").split(",")):
+        tk = x_key(t)
+        log("  key %s: US %r, Freedom %r, unfit %s" % (t, us_g.get(tk), fr_g.get(tk), tk in unfit))
     log("G: %d Freedom lines kept out (more lines or wider than the MH1 US line, whole descriptions with them)" % len(unfit))
     log("G: Freedom replaces MH1 US English in %d strings (%d where both say the same), adds %d" % (
         len(moved), sum(1 for k in fr_g if us_g.get(k) == fr_g[k]), sum(1 for k in fr_g if k not in us_g)))
@@ -3379,11 +3412,22 @@ def main():
         w = fr_terms(v)
         nterm[w != v] += 1
         return w
+    def even_rows(k, v):
+        """a lobby message of talk-window rows (each <= 22 bytes) that no talk table names (the village NPCs' lines
+        G keeps outside the talk tables): each row padded to an even length, so the next row's first character does
+        not land in the middle of the window's two-byte cell (seen 28 Oct: 'and other small goods' + 'out front ...'
+        drew the 'o' over a half cell), and a full 22-byte row ends without its line feed: talk_layout. Lobby
+        messages with every row <= 22 bytes are the talk window's (the guild counter's run on at 22 columns too)."""
+        if k[0] != "lobby" or b"\n" not in v or any(len(r) > TALK_ROW for r in v.split(b"\n")):
+            return v
+        return talk_layout(v)
     write_table(os.path.join(args.out, "en_mhg.txt"), {(("main",) + k[1:]) if k[0] == "sub_main" else k:
                                                       g_terms(talk_layout(own_wrap(fr_names(k, v))) if k in own_talk or (
                                                           k in talk_g and k in fr_g) else
-                                                              talk_layout(fr_names(k, v)) if k in talk_g else fr_names(k, v))
-                                                      for k, v in merged(en_g, gk_slot, {**slot_g, **own_fb}).items()}, hdr)
+                                                              talk_layout(fr_names(k, v)) if k in talk_g else
+                                                              even_rows(k, fr_names(k, v)))
+                                                      for k, v in merged(en_g, gk_slot, {**slot_g, **own_fb, **fr_slots}).items()}, hdr)
+    log("G: %d description lines G shares between items set per item (Freedom, pointer slots)" % len(fr_slots))
     log("G: Freedom's names put into %d MH1 US / own lines" % nterm[True])
     # fit: Freedom's PSP lines are laid out for the PSP's windows. Talk: the PSP talk window has the same 22 columns
     # (all but 2 of about 810 Freedom talk rows are <= 22 bytes); a longer line is word-wrapped (own_wrap) before
@@ -3525,7 +3569,7 @@ def run_freedom(args, g, GS, Gq, en_g, cache):
                 sys.exit("text_map: Monster Hunter Freedom not found at %s: give an ISO of your own UMD (ULUS-10084), "
                          "or a folder with one .iso or with PSP_GAME/ (docs/english_g.md)" % path)
             log("Freedom: not found at %s; skipped (docs/english_g.md says what to put there)" % default)
-            return {}
+            return {}, {}
     if not port.exists():
         sys.exit("text_map: the Freedom step needs Monster Hunter Portable (JP) at %s" % args.mhp)
     if not selftest:
@@ -3550,9 +3594,9 @@ def run_freedom(args, g, GS, Gq, en_g, cache):
     for e in sorted(rep, key=str):
         if os.environ.get("TM_DEBUG") or (rep[e].startswith("ok") and "(" in rep[e]):
             log("  Freedom entry %s: %s" % (e, rep[e]))
-    new, why = freedom_for_g(g, GS, Gq, en_g, idx, fp, g_ptr_runs(g, GS), selftest)
+    new, why, slots = freedom_for_g(g, GS, Gq, en_g, idx, fp, g_ptr_runs_pos(g, GS), selftest)
     log("Freedom%s: %d more G strings %s" % (" self-test (would get)" if selftest else "", len(new), dict(why)))
-    return {} if selftest else new
+    return ({}, {}) if selftest else (new, slots)
 
 
 def g_data_symbols():

@@ -1338,3 +1338,11 @@ check.py needs wibo, which this round could not run (PC-only round). Commits on 
 - Proven from a fresh clone: G Xbox + Linux, G online XBE, MH1 Xbox + Linux; xemu title screen from the kit's data.
   Not run: --windows and --english through make_release (the --english path is written but untested), nxdk's own
   build from scratch (it was already built here), a dashboard launch from E:.
+
+## G English tour round (28 Oct 2026)
+- g_eng_tour.py: new/fixed scenes weapon_shop, armour_shop (description pages), net_options, pause (status, equipment),
+  wisdom (quest 10001), town (G online, test server); RT_TEXT_JP=1 -> jp_left.txt. rt_text.c: `textsrc: lobby:0xADDR`
+  trace for Japanese overlay strings without a table entry (RT_TEXT_JP).
+- Lesson: G shares description line strings between items; per-item text needs the pointer-word slots.
+- text_map.py debug aids: TM_KEYS=id,... (sources of a key), TM_FIT=n (lines freedom_fit keeps out), TM_TERMS, TM_GROW.
+- Training School / fishing / unplugged pad not reached (docs/english_g.md).

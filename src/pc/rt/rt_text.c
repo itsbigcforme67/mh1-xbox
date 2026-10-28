@@ -258,6 +258,25 @@ void rt_text_finish(void)
     qsort(regs, (size_t)nreg, sizeof *regs, cmp_reg);
 }
 
+extern uint8_t rt_lb_mem[];
+
+/* RT_TEXT_JP (hidden-tour aid, with rt_font.c's textjp lines): a Japanese string from the overlay image that has no
+ * table entry is logged with its id, "textsrc: lobby:0xADDR" (the overlays share one vram; the space is the loaded one) */
+static void jp_src(const char *p)
+{
+    static int on = -1;
+    const unsigned char *u = (const unsigned char *)p;
+    if (on < 0)
+        on = getenv("RT_TEXT_JP") != NULL;
+    if (!on || !p || (uintptr_t)p < (uintptr_t)rt_lb_mem || (uintptr_t)p >= (uintptr_t)rt_lb_mem + 0x220000u)
+        return;
+    for (; *u; u++)
+        if ((*u >= 0x81 && *u <= 0x9F) || (*u >= 0xE0 && *u <= 0xEF)) {
+            fprintf(stderr, "textsrc: lobby:0x%X\n", (unsigned)(rt_ovl_vram() + ((const uint8_t *)p - rt_lb_mem)));
+            return;
+        }
+}
+
 const char *rt_text_tr(const char *p)
 {
     int lo = 0, hi = nreg - 1;
@@ -272,6 +291,7 @@ const char *rt_text_tr(const char *p)
         else
             hi = mid - 1;
     }
+    jp_src(p);
     return p;
 }
 
