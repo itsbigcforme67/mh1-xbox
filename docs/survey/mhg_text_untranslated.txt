@@ -1503,7 +1503,12 @@ sub_main:0x536F80	armour [G table]	ours
 sub_main:0x537700	other tables (pit_help_reward_str) [G table]	ours	in Portable
 sub_main:0x537718	other tables (pit_help_reward_str) [G table]	ours	in Portable
 sub_main:0x537BA0	other tables (reward_menu_str) [G table]	ours
+sub_main:0x537C80	quest board / quest text tables	twin without US English	in Portable
+sub_main:0x538348	monsters	twin without US English	in Portable
 sub_main:0x5383C0	monsters	ours
+sub_main:0x538478	monsters	twin without US English	in Portable
+sub_main:0x5384A0	monsters	twin without US English	in Portable
+sub_main:0x5384C0	monsters	twin without US English	in Portable
 sub_main:0x5384D0	monsters	ours
 sub_main:0x5384E0	monsters [G table]	ours
 sub_main:0x538D90	menus, options, HUD [G table]	G only	in Portable
@@ -1623,7 +1628,20 @@ sub_main:0x539AC0	online, keyboard, word filter	twin without US English	in Porta
 sub_main:0x539AD0	online, keyboard, word filter	twin without US English	in Portable
 sub_main:0x539AE0	online, keyboard, word filter	twin without US English	in Portable
 sub_main:0x539B20	other tables (default_reibun) [G table]	G only	in Portable
+sub_main:0x539BA8	menus, options, HUD	twin without US English	in Portable
+sub_main:0x539C20	menus, options, HUD	twin without US English	in Portable
+sub_main:0x539C60	menus, options, HUD	twin without US English	in Portable
+sub_main:0x539C80	menus, options, HUD	twin without US English	in Portable
+sub_main:0x539EC0	menus, options, HUD	twin without US English	in Portable
+sub_main:0x539ED0	menus, options, HUD	twin without US English	in Portable
+sub_main:0x539F48	menus, options, HUD	twin without US English	in Portable
+sub_main:0x539F60	menus, options, HUD	twin without US English	in Portable
+sub_main:0x539F78	menus, options, HUD	twin without US English	in Portable
+sub_main:0x539FD0	menus, options, HUD	twin without US English	in Portable
 sub_main:0x53A008	menus, options, HUD [G table]	ours	in Portable
+sub_main:0x53A020	menus, options, HUD	twin without US English	in Portable
+sub_main:0x53A098	other tables (load_msg) [G table]	G only	in Portable
+sub_main:0x53A380	menus, options, HUD [G table]	G only	in Portable
 sub_main:0x53A550	menus, options, HUD [G table]	ours	in Portable
 sub_main:0x53A570	menus, options, HUD [G table]	ours	in Portable
 sub_main:0x53A5D0	menus, options, HUD [G table]	ours
@@ -1680,6 +1698,9 @@ sub_main:0x53F3A0	menus, options, HUD [G table]	G only	in Portable
 sub_main:0x53F3A8	other tables (map_name) [G table]	G only	in Portable
 sub_main:0x53F3B0	other tables (map_name) [G table]	G only	in Portable
 sub_main:0x53F3C0	menus, options, HUD [G table]	G only	in Portable
+sub_main:0x53FC40	other tables (map_name) [G table]	G only	in Portable
+sub_main:0x53FC80	other tables (map_name) [G table]	G only	in Portable
+sub_main:0x53FCC0	menus, options, HUD [G table]	G only	in Portable
 sub_main:0x53FD20	menus, options, HUD [G table]	ours
 sub_main:0x53FD40	menus, options, HUD [G table]	ours
 sub_main:0x53FD60	menus, options, HUD [G table]	ours
@@ -1741,6 +1762,16 @@ sub_main:0x541490	menus, options, HUD [G table]	ours
 sub_main:0x541688	menus, options, HUD [G table]	ours
 sub_main:0x541698	menus, options, HUD [G table]	ours
 sub_main:0x5416A8	menus, options, HUD [G table]	ours
+sub_main:0x5416C0	menus, options, HUD [G table]	G only	in Portable
+sub_main:0x5416E0	menus, options, HUD [G table]	G only	in Portable
+sub_main:0x541700	menus, options, HUD [G table]	G only	in Portable
+sub_main:0x541720	menus, options, HUD [G table]	G only	in Portable
+sub_main:0x541740	menus, options, HUD [G table]	G only	in Portable
+sub_main:0x5417A0	menus, options, HUD [G table]	G only	in Portable
+sub_main:0x541830	menus, options, HUD [G table]	G only	in Portable
+sub_main:0x541870	menus, options, HUD [G table]	G only	in Portable
+sub_main:0x5418E0	menus, options, HUD [G table]	G only	in Portable
+sub_main:0x541900	menus, options, HUD [G table]	G only	in Portable
 yn:0xA0AF94	code literals (yn)	G only
 yn:0xA10938	memory card and yes/no dialogs [G table]	ours
 yn:0xA10948	memory card and yes/no dialogs [G table]	ours

@@ -1098,3 +1098,11 @@ Both games unless marked.
 - **Dropped:** gfx_begin_frame's unconditional pb_wait_for_vbl. **Now:** only when two finished frames still wait for
   their flip. **Why:** 19.5 -> 23.5 fps in the hall (xemu); untested on hardware (look for tearing). **To revert:**
   commit "Xbox nv2a: wait for a vblank at frame start only when two finished frames still wait ...".
+
+## G English: Freedom first (agent A, 28 Oct 2026; owner's decision)
+- **Dropped:** MH1 US first for G's table, Freedom only for strings MH1 US lacked (tools/text_map.py freedom_for_g
+  `targets` skipped every string with English). **Now:** Freedom first (override), MH1 US as the fallback, ours last;
+  freedom_fit keeps MH1 US where a Freedom line would not fit or drops the US line's codes / page counter; Freedom's
+  "dummy" is refused; freedom_terms puts Freedom's names into lines from other sources; man_drop also clears Freedom.
+  **Why:** owner, 28 Oct 2026 (docs/DECISIONS.md). 1012 G strings change wording (docs/english_g.md "Freedom first").
+  **To revert:** commit "G English: Freedom first, MH1 US as the fallback".

@@ -327,6 +327,15 @@ the same save and quest, from power-on (no memory pokes on a real PS2). Video: c
 used before for the Xbox), make a side-by-side and a per-frame difference to find the first divergence. Later, after the
 current Xbox bug round.
 
-- **G: "Dual Blades", not "Dual Swords"** (owner, 25 Oct 2026). MH1 US named the class Dual Swords; Freedom and the
-  later series use Dual Blades, and a US G could have gone either way, so G follows what most players know. G's text
+- **G: "Dual Blades", not "Dual Swords"** (owner, 25 Oct 2026). MH1 US named the class Dual Swords; Freedom uses both
+  (checked 28 Oct: 6 of its G-paired lines say Dual Swords, 5 Dual Blades), the later series Dual Blades, and a US G could have gone either way, so G follows what most players know. G's text
   table rewrites the term (tools/text_map.py G_TERMS); MH1's English keeps its own disc's wording.
+
+- **G English: Monster Hunter Freedom first, MH1 US second, our own lines last** (owner, 28 Oct 2026). Where a G string
+  has a Freedom pair, Freedom's line is used, also where MH1 US had English (before: MH1 US first, Freedom only for
+  strings MH1 US lacked). MH1 US is the fallback, our own lines (text/mhg_en_own.tsv) fill what neither has. Freedom's
+  names for items, skills and the like replace MH1 US's in G lines from the other sources, so one thing is not named two
+  ways. Kept: G_TERMS (Dual Blades). Exceptions, by rule: a Freedom line that would not fit where the MH1 US line fits
+  (more lines, or wider than the US line, G's Japanese and the table's widest US line; talk excepted), that drops the US
+  line's colour codes or page counter, or that is Freedom's placeholder "dummy", leaves the MH1 US line in place.
+  MH1 JP keeps its own US disc text, unchanged. tools/text_map.py; numbers in docs/english_g.md.

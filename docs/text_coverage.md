@@ -25,15 +25,15 @@ Categories group the areas below (armour includes skills; NPC dialogue includes 
 | items | 972 | 964 (99%) | 0 | 7 | 1 | 0 | 1 | 0 |
 | weapons | 1804 | 1693 (93%) | 0 | 111 | 0 | 0 | 0 | 0 |
 | armour and skills | 3615 | 3545 (98%) | 33 | 70 | 0 | 0 | 0 | 0 |
-| monsters | 74 | 71 (95%) | 0 | 3 | 0 | 0 | 0 | 0 |
-| quests | 1528 | 1509 (98%) | 365 | 19 | 0 | 0 | 0 | 0 |
+| monsters | 74 | 67 (90%) | 0 | 3 | 4 | 0 | 4 | 0 |
+| quests | 1528 | 1508 (98%) | 365 | 19 | 1 | 0 | 1 | 0 |
 | NPC dialogue and tutorials | 2498 | 2038 (81%) | 54 | 428 | 32 | 0 | 32 | 0 |
-| menus and UI | 1803 | 1588 (88%) | 15 | 196 | 19 | 0 | 11 | 8 |
+| menus and UI | 1803 | 1562 (86%) | 15 | 196 | 45 | 0 | 37 | 8 |
 | system (memory card, online, keyboard, code literals) | 877 | 387 (44%) | 6 | 281 | 209 | 0 | 93 | 116 |
 | keyboard kana tables (not text) | 421 | 6 (1%) | 0 | 0 | 415 | 0 | 140 | 275 |
-| **total** | **13592** | **11801 (86%)** | 473 | 1115 | 676 | 0 | 277 | 399 |
+| **total** | **13592** | **11770 (86%)** | 473 | 1115 | 707 | 0 | 308 | 399 |
 
-*Ours* is our own English (text/mhg_en_own.tsv, docs/english_g.md "Our own translation"), only for strings no official source has; official English always wins, and Freedom's replaces ours where it has a line (4 own lines replaced: quest:10029:0x68 quest:10044:0x68 main:0x2EA360 sub_main:0x539330).
+*Ours* is our own English (text/mhg_en_own.tsv, docs/english_g.md "Our own translation"), only for strings no official source has; official English always wins, and Freedom's replaces ours where it has a line (5 own lines replaced: quest:10029:0x68 quest:10044:0x68 main:0x2EA360 sub_main:0x539330 main:0x2E97A0).
 
 ## MH1 JP strings with official US English
 
@@ -126,13 +126,13 @@ Dropped pairs: line-split dialog (needs per-message alignment) 258, same as JP 1
 | memory card and yes/no dialogs | 217 | 138 (63%) | 78 | 1 | 0 | 0 |
 | village / plaza / guild / shop UI [G table] | 182 | 106 (58%) | 75 | 0 | 0 | 1 |
 | village / plaza / guild / shop UI | 181 | 166 (91%) | 14 | 1 | 0 | 0 |
-| menus, options, HUD [G table] | 179 | 131 (73%) | 45 | 0 | 0 | 3 |
-| quest board / quest text tables | 158 | 156 (98%) | 2 | 0 | 0 | 0 |
+| menus, options, HUD [G table] | 179 | 119 (66%) | 45 | 0 | 0 | 15 |
+| quest board / quest text tables | 158 | 155 (98%) | 2 | 1 | 0 | 0 |
 | other tables (lit_445) [G table] | 153 | 148 (96%) | 5 | 0 | 0 | 0 |
-| menus, options, HUD | 134 | 132 (98%) | 2 | 0 | 0 | 0 |
+| menus, options, HUD | 134 | 121 (90%) | 2 | 11 | 0 | 0 |
 | skills [G table] | 124 | 90 (72%) | 34 | 0 | 0 | 0 |
 | tutorial pages | 117 | 113 (96%) | 4 | 0 | 0 | 0 |
-| other tables (map_name) [G table] | 100 | 71 (71%) | 27 | 0 | 0 | 2 |
+| other tables (map_name) [G table] | 100 | 69 (69%) | 27 | 0 | 0 | 4 |
 | other tables (lit_329_00661C) [G table] | 96 | 96 (100%) | 0 | 0 | 0 | 0 |
 | code literals (main) | 76 | 14 (18%) | 15 | 0 | 0 | 47 |
 | other tables (lit_333_00661DF) [G table] | 64 | 64 (100%) | 0 | 0 | 0 | 0 |
@@ -143,7 +143,7 @@ Dropped pairs: line-split dialog (needs per-message alignment) 258, same as JP 1
 | code literals (game) | 50 | 32 (64%) | 5 | 0 | 0 | 13 |
 | online, keyboard, word filter [G table] | 45 | 10 (22%) | 30 | 0 | 0 | 5 |
 | other tables (lit_326_00661B) [G table] | 40 | 40 (100%) | 0 | 0 | 0 | 0 |
-| monsters | 38 | 36 (94%) | 2 | 0 | 0 | 0 |
+| monsters | 38 | 32 (84%) | 2 | 4 | 0 | 0 |
 | other tables (lit_309) [G table] | 36 | 36 (100%) | 0 | 0 | 0 | 0 |
 | monsters [G table] | 36 | 35 (97%) | 1 | 0 | 0 | 0 |
 | skills | 34 | 34 (100%) | 0 | 0 | 0 | 0 |
@@ -207,7 +207,7 @@ Dropped pairs: line-split dialog (needs per-message alignment) 258, same as JP 1
 | other tables (equip_exp_str_armor) | 3 | 3 (100%) | 0 | 0 | 0 | 0 |
 | other tables (wearable_tbl) | 3 | 3 (100%) | 0 | 0 | 0 | 0 |
 | other tables (default_reibun) [G table] | 3 | 2 (66%) | 0 | 0 | 0 | 1 |
-| other tables (load_msg) [G table] | 3 | 3 (100%) | 0 | 0 | 0 | 0 |
+| other tables (load_msg) [G table] | 3 | 2 (66%) | 0 | 0 | 0 | 1 |
 | other tables (game_menu_msg) [G table] | 3 | 3 (100%) | 0 | 0 | 0 | 0 |
 | other tables (pit_help_chat_str) | 3 | 3 (100%) | 0 | 0 | 0 | 0 |
 | other tables (select_id_msg) | 2 | 0 (0%) | 2 | 0 | 0 | 0 |
@@ -246,7 +246,7 @@ Dropped pairs: line-split dialog (needs per-message alignment) 258, same as JP 1
 | other tables (verify_button_00387D) [G table] | 1 | 1 (100%) | 0 | 0 | 0 | 0 |
 | other tables (Snd_weapon_tbl) [G table] | 1 | 1 (100%) | 0 | 0 | 0 | 0 |
 | other tables (pit_help_data_str) | 1 | 1 (100%) | 0 | 0 | 0 | 0 |
-| **total** | **13592** | **11801 (86%)** | 1115 | 507 | 1 | 168 |
+| **total** | **13592** | **11770 (86%)** | 1115 | 523 | 1 | 183 |
 
 G strings are counted from a scan of main and the overlays (Shift-JIS runs, as tools/text_dump.py; a few hundred false hits are possible) plus the four text fields of each quest file. Status of the pairs between a JP string and its G twin: identical text 3935, near text (edited a little) 1260, no US English for the JP string 1095, text edited in G (left out) 266.
 
