@@ -44,6 +44,39 @@ G has **11474 of 13263 strings (86.5%) in official English** (was 7087, 53%), pl
 tables, not text). How Freedom is paired and what still fails: section "Monster Hunter Freedom: what to give and what
 happens" below.
 
+**Update 27 Oct 2026 (agent A): quest clear lines, last visible gaps. Now 12916 of 13592 strings (95.0%) have
+English: 11801 official (86.8%) + 1115 ours (8.2%); leaving out the 421 keyboard kana tables (not text), 12910 of
+13171 = 98.0%.** Measured the same way as before (`python3 tools/text_map.py --report docs/text_coverage.md --ids
+docs/survey/mhg_text_untranslated.txt`, "total" row of the G table: official English + *ours*), but the count now
+includes the quest clear lines, so the total grew from 13263 to 13592 (+329 strings) and the old 94.6% is not
+directly comparable (on the old 13263 strings the same work gives 12587 = 94.9%).
+- **Quest clear lines** (the banner when the quest goal is met, "All requested monsters slain." / "All requested
+  items delivered.", and the "Monsters to defeat: N" banners during slay quests): Japanese on all G quests before.
+  They sit at the end of the quest file; header word 0x30 points at a table of their offsets (same layout in MH1
+  JP, MH1 US and G: `quest_clear` in tools/text_map.py). MH1 JP now takes them from the matched US quest file by
+  position (MH1 quests 612 -> 868 strings, 507 -> 712 with English); G takes them by text from those MH1 lines
+  (`quest_clear_pairs_g`: G dropped the final full stop and wrote "requested" for "target", so exact or near text with the same
+  numbers): 326 of 329 G clear lines official MH1 US English, 3 ours (two "The hunt is over!" for the survival hunts,
+  one "Monsters to defeat: 1"). PC side: `rt_text_quest_g` (src/pc/rt/rt_text.c) now also re-points the entries of
+  that table; MH1's `rt_text_quest` already scanned it. Seen on screen (hidden run, quest 4, tick 8240,
+  build/A/eng6/reward): "All requested monsters slain." in the banner, inside the window; the same frame with the old
+  table showed the Japanese (build/A/eng7). tools/g_eng_tour.py's reward scene now takes that frame.
+- **45 more own lines** for strings the game shows: skill names (Hunger ×1.5, Heat / Cold Inc ×1.5, Torso Up,
+  Guard Up, ThunderRes, Health), Flaming S / Thunder S / Tranq S in the ammo lists and the bowgun load header,
+  Combos 2-5 item help (these four were missing from the count: the scan splits them at the circled digits), a
+  crystal and two armour descriptions, three Training School / elder lines about tranquilizers, the character-import
+  yes/no rows, the Training School yes/no and "Area:", "Press the ~B00 button", the save-in-progress lines, two quest
+  fields (10035 title "The Desert Plesioth", 60029 goal "Slay the Fatalis"), the options / gallery save questions.
+- **How often a player sees what is left:** a hidden tour of every screen tools/g_eng_tour.py reaches (title, new
+  game, options, gallery, network options, the four shops, forge, item box, elder talk, quest board, pause menu,
+  data page, quest info, quest clear and reward) with `RT_TEXT_JP=1` (logs every string still drawn with two-byte
+  characters) now finds no Japanese text at all: only full-width digits and symbols (★, ：, ×, －, "１／５"), which
+  the PC font draws half-width in English lines. The 676 strings still without English (docs/survey/mhg_text_untranslated.txt,
+  not "ours") are 415 keyboard kana tables, the online word filter, ~120 scan false hits and one-character code
+  literals, 32 "dummy" talk slots, three debug prints, and full-width digit / kanji-number tables: none is
+  text a player reads. What is not checked on screen: the online town and hub (no G online client in the tour), the
+  Training School and the memory-card error paths; their own lines were checked by the fit rules only.
+
 **The day Freedom arrives** (kept for reference; the first run gave only 201 strings, see the section below) (section "Monster Hunter Freedom: what to give and what happens" below): put an ISO of
 the owner's own Freedom UMD in `disc/mhfr/` and run `python3 tools/text_map.py`. The step is written and tested
 (self-test on Portable: 4624 G strings would receive a line), so G should go from 53% to about 88-90% official

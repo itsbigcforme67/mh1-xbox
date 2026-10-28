@@ -331,17 +331,23 @@ size_t rt_text_quest(int no, uint8_t *buf, size_t n, size_t cap)
 
 /* Monster Hunter G's mission file (mNNNNN.mib, AFS index 2934 + n in file-name order, `no` is the number in the
  * file name): a 0x48-byte header, the text strings one after the other from 0x68 up to the offset in word 0x60,
- * and AT that offset a table of the strings' file offsets (title, goal, failure, client, ...). The replacement is
- * appended and the table entry changed, as for the MH1 file; nothing after the old text moves. */
+ * and AT that offset a table of the strings' file offsets (title, goal, failure, client, ...). The clear lines
+ * (the reward screen's "All requested monsters slain.", the "Monsters to defeat: N" banners) sit at the end of
+ * the file; header word 0x30 points at a table of their offsets (MH1's file has the same table, which
+ * rt_text_quest's scan of the first part already finds). The replacement is appended and the table entry
+ * changed, as for the MH1 file; nothing after the old text moves. */
 size_t rt_text_quest_g(int no, uint8_t *buf, size_t n, size_t cap)
 {
-    int i;
-    uint32_t end;
+    int i, j;
+    uint32_t end, clr;
     if (!novr || n < 0x70)
         return n;
     memcpy(&end, buf + 0x60, 4);
+    memcpy(&clr, buf + 0x30, 4);
     if (end < 0x68 || end + 16 > n)
         return n;
+    if (clr < 0x70 || clr >= n)
+        clr = 0;
     for (i = 0; i < novr; i++) {
         uint32_t k = (uint32_t)ovrs[i].key;
         size_t len;
@@ -352,7 +358,10 @@ size_t rt_text_quest_g(int no, uint8_t *buf, size_t n, size_t cap)
         len = strlen(ovrs[i].text) + 1;
         if (n + len + 4 > cap)
             continue;
-        for (w = end; w + 4 <= n && w < end + 16; w += 4) {          /* the first four table entries */
+        for (j = 0; j < 4 + 16; j++) {      /* the first four table entries, then up to 16 clear-line entries */
+            w = j < 4 ? end + 4 * j : clr ? clr + 4 * (j - 4) : 0;
+            if (!w || w + 4 > n)
+                break;
             memcpy(&v, buf + w, 4);
             if (v == off) {
                 n = (n + 3) & ~(size_t)3;
