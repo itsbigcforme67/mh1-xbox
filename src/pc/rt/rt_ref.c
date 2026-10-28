@@ -277,13 +277,16 @@ void rt_ref_tick(int raw)
         static int mode = -1;
         if (mode < 0)
             mode = getenv("RT_REF_MODE") ? atoi(getenv("RT_REF_MODE")) : 2;
-        int rt_village_active(void);
         static int vstage = -2;
         if (vstage == -2)       /* RT_REF_STAGE: the village's stage as the PS2 has it (its play tick 0): the PC's
                                  * village counts from when it stands there (after its load) */
             vstage = getenv("RT_REF_STAGE") ? atoi(getenv("RT_REF_STAGE")) : -1;
+        /* the village counts once it runs (rt_village_ready: Local_main's main step, the NPCs placed): the PS2's play
+         * tick 0 is in a village that has been running for a while; counted from the stage's load, the PC's play
+         * ticks ran 11 ticks ahead of its NPCs and the referee's line-up pokes had no NPCs to land on */
+        int rt_village_ready(void);
         play = mode == 2 ? game_w[0] == 2 && game_w[1] <= 1
-                         : game_w[0] == mode && (mode != 6 || rt_village_active()) && (vstage < 0 || game_w[0x14] == vstage);
+                         : game_w[0] == mode && (mode != 6 || rt_village_ready()) && (vstage < 0 || game_w[0x14] == vstage);
     }
     cur_play = play;
     if (play && !started) {

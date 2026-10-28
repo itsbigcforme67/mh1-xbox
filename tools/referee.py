@@ -951,6 +951,10 @@ def run_pc(gname, out, pads, pokes, ud_file, rnd, ticks, shots=None, rsync=None,
         ps0 = Trace(os.path.join(out, 'ps2.ref')) if os.path.exists(os.path.join(out, 'ps2.ref')) else None
         if ps0 and 0 in ps0.recs:
             env['RT_REF_STAGE'] = str(ps0.region(ps0.recs[0], 'gw')[0x14])
+            # the PS2's gate state has a quest accepted (the quest flag over the hunter, PLW+0x916 = type | 0x40, and the
+            # "depart" prompt at the gate): the same on the PC (MH1; rt_village.c RT_VILLAGE_ACCEPT)
+            if gname == 'mh1' and ps0.region(ps0.recs[0], 'plw')[0x916] & 0x40:
+                env['RT_VILLAGE_ACCEPT'] = str(SCN_QUEST[0])
     if os.environ.get('REF_NODES') and not shots:
         env['RT_REF_NODES'] = os.environ['REF_NODES']
         env['RT_REF_NODES_OUT'] = os.path.join(out, 'pc_nodes.txt')
@@ -1102,6 +1106,22 @@ def lineup_pokes(ps, sc, gname, pokes):
                     pokes = pokes + [(0, 'em%d' % i, 0xA02, 'u16', struct.unpack_from('<H', e, 0x9F8)[0])]
                     for off in (0xB8, 0xBC, 0xC0, 0x600):
                         pokes = pokes + [(0, 'em%d' % i, off, 'f32', struct.unpack_from('<f', e, off)[0])]
+    # village (MH1): the PS2's NPCs have been walking for a while at play tick 0, the PC's start fresh when the village
+    # is set up; each NPC's place, facing, action and route state (LB_NPCMV at EMW+0x444: +4 a timer, +0xC waypoint,
+    # +0x10 frames waited) and its motion frame as the PS2 has them. G's NPC work is laid out differently on the PS2
+    # (not mapped yet), so G's are left as they start.
+    if 0 in ps.recs and sc.get('village') and gname == 'mh1':
+        for i in range(EM_N):
+            e = ps.region(ps.recs[0], 'em', i)
+            if not e[0]:
+                continue
+            for off, t in ((0xAC, 'f32'), (0xB0, 'f32'), (0xB4, 'f32'), (0xA0, 'u32'), (0xA4, 'u32'), (0xA8, 'u32'),
+                           (0x5, 'u8'), (0xE, 'u16'), (0x14, 'u8'), (0x15, 'u8'), (0x19C, 'f32'),
+                           (0x448, 'f32'), (0x450, 'u16'), (0x454, 'u32')):
+                v = struct.unpack_from('<' + {'f32': 'f', 'u32': 'I', 'u16': 'H', 'u8': 'B'}[t], e, off)[0]
+                if off == 0x5 and e[0x15] == 2:
+                    v = 0       # walking (npcMvWALK): its step 0 starts the walk motion, which a poke cannot load
+                pokes = pokes + [(0, 'em%d' % i, off, t, v)]
     return pokes
 
 

@@ -423,6 +423,23 @@ typedef struct SPRQ {
     u8 _pad40[0x10];
 } SPRQ;
 
+#ifndef __MWERKS__
+/* PC text layer: the banner's English (the US release's "Quest Completed!" line, still full-width letters) is
+ * centred the way the US build places it, x = (640 - strlen * 16) / 2 at size 32 (US main 0x104010). The Japanese
+ * text keeps the JP build's fixed x (0x80). */
+#include <string.h>
+const char *rt_text_tr(const char *p);
+static void game3_center(const char *s)
+{
+    const char *t = rt_text_tr(s);
+    if (t != s)
+        flfntLocate((s16)((640 - (int)strlen(t) * 16) / 2), 0xD0);
+}
+#define GAME3_CENTER(s) game3_center((const char *)(s))
+#else
+#define GAME3_CENTER(s)
+#endif
+
 /* Mode 4 (game3): fade-in then wait screen shown before the quest, ends by
  * marking this player ready.  Guess. */
 #if !defined(G_PART)
@@ -467,15 +484,18 @@ void game3(void) {
         switch (GW8(0xD5)) {
         case 4:
             font_set_palette(5);
+            GAME3_CENTER(lit_778_00358160);
             font_print(lit_778_00358160);
             break;
         case 6:
             font_set_palette(2);
+            GAME3_CENTER(lit_779_00358180);
             font_print(lit_779_00358180);
             break;
         default:
         case 7:
             font_set_palette(2);
+            GAME3_CENTER(lit_780_003581A0);
             font_print(lit_780_003581A0);
             break;
         }
