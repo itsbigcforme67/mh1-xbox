@@ -1866,3 +1866,71 @@ Owner: Forest and Hills area 1 fog too thick on the Xbox. Two causes, both fixed
   overrides it (RT_NV2A_LC=0 in xemu: the whole screen in the fog colour). The real console's power-on value is not known.
 - Test aids: RT_FIXED_CAM=1 with --view/--cam in RT_ARGS keeps that camera (the Xbox build always plays, so the host camera
   followed the hunter); RT_FOG_TRACE now reaches the Xbox log, with a "nv2a fog: colour .. start .. end .." line per change.
+
+## G online frame rate: where the time went (agent E, 27-28 Oct 2026)
+
+The G online XBE ran at 5-7.5 fps in the guild hall and the town in xemu. Measured with RT_PROF (always on on the Xbox;
+its report is in the game log every 300 ticks, and in xemu's serial log). New in the report: the zones "GPU wait"
+(waiting for the GPU idle, a vblank, a free flip slot) and "net (sockets)" (the CpInet calls), the counts per frame
+"2D draws", "pushbuffer kicks", "textures made" + "texture KB", "GPU waits", "net calls", and one line with the frames
+per second of wall clock and the game thread's own share of the CPU (its kernel tick count over the wall time: what is
+left went to other threads or to idle waits). On the PC (RT_PROF=1 RT_STEP=1) the same counts come out of gfx_gl.c.
+
+How measured: a hidden xemu (tools/run_xemu.sh, the shared xemu.lock, an empty /dev/input) booting the G online nv2a
+XBE against `mh1_server.py serve --open` on 127.0.0.1 (the Xbox reaches it as 10.0.2.2), RT_LB_WARP to the hall's door
+and square, about 8 minutes; the same with no square (the town) and the plain G XBE in Kokoto village. The laptop's
+load average was 10-13 (other agents' jobs) through all of it, so xemu's milliseconds are only good for comparing runs
+made the same hour; the counts do not depend on it.
+
+What the first run showed (hall, before): 5.7-5.9 fps, 4 game ticks per drawn frame, "logic (rest)" **31 ms per tick**
+(the PC: 0.2 ms), the game thread at **21% of the CPU** (offline village: ~50%). Net: 16 calls a frame, 0.1 ms: no
+busy waiting on sockets. 2D: 10 draws a frame (the 2D path is not a cost). Textures: 6 made every frame. GPU: 1300
+pushbuffer kicks a frame, 19 ms GPU wait, 10 ms "stage draw code".
+
+Fixes, each measured in the hall in xemu (fps, laptop load 10-12):
+
+| step | fps | logic / tick | game thread CPU | kicks / frame | textures / frame | GPU wait / frame |
+|---|---|---|---|---|---|---|
+| before | 5.6-5.9 | 31-33 ms | 21% | 1308 | 6 | 17-19 ms |
+| 1. font palettes kept | 5.6-5.8 | 31 ms | 21% | 1308 | 0 | 17-20 ms |
+| 2. no per-tick sleep | 15.3-17.9 | 3.9-4.5 ms | 52% | 1295 | 0 | 21-23 ms |
+| 3. one kick per draw | 19.2-19.6 | 3.6-3.7 ms | 54% | 88 | 0 | 21 ms |
+| 4. vblank wait only when needed | 23.0-23.7 | 3.5-3.6 ms | 62% | 88 | 0 | 13.5-14.6 ms |
+
+Town (online, same build as step 4): 21.3-22.1 fps; with `RT_ONLINE_PACE=1` (the old per-tick sleep, everything else
+the same) 5.5-5.7 fps, logic 32-33 ms/tick, game thread 21%. Offline G, Kokoto village: 8.8-10.4 fps before (1651
+kicks a frame) -> 13.4-14.0 fps after (119 kicks), at a higher load (13.6 vs 10-12).
+
+1. **Font palettes** (rt_font.c flfntSetPalData): G's lobby sets its text palettes every frame; each call threw away
+   every glyph texture made with that palette, so the hall's labels were rebuilt each frame (6-8 textures: on the Xbox
+   each a GPU allocation, a colour count, a copy). Now the glyphs stay when the palette's colours did not change.
+   Real on hardware too, but small (a few allocations a frame). PC: 8 -> 0 textures a frame in the hall.
+2. **The per-tick sleep** (rt_online.c pace, rt_np.c's quest tick): online, every tick slept until its own 33 ms slot
+   so headless test runs keep the PS2's pace. In a real-time run the viewer already ticks by the clock, running a
+   frame's ticks back to back to catch up and up to two ahead; with pace() each of those ticks waited too. Once a frame
+   took longer than one tick, every frame slept ~2 ticks: 4 ticks a frame at 33 ms each, the game thread asleep 80% of
+   the time. Now pace() only runs in fixed-time (--time, headless) runs; viewer.c tells rt_online.c
+   (rt_online_host_paced). **Not an emulator effect:** the same arithmetic holds on the console (any frame over 33 ms
+   fell into it) and on a PC window (MH1 and G online). RT_ONLINE_PACE=1 brings the old pacing back (A/B aid).
+3. **Pushbuffer kicks** (gfx_nv2a.c cmd_begin / cmd_end / cmd_kick): pbkit's pb_end sends at once (an sfence, a
+   write-combine flush that polls a GPU register, the PUT register write); the backend wrote each state change as its
+   own block. Now blocks only move a write pointer and one kick sends them after each draw (or past 4096 dwords, or
+   before any pbkit call that pushes or waits: the macros at the top of gfx_nv2a.c). Same commands, same order. In
+   xemu each register access is an exit to the emulator, so most of the gain there is emulator cost; on hardware it
+   saves ~1200 flush-and-poll rounds a frame [estimate: a few microseconds each, i.e. a few ms a frame; not measured].
+4. **The vblank wait** (gfx_begin_frame): every frame waited for a vblank before drawing, which also held the CPU until
+   the previous frame was on screen (8 ms a frame on average below 60 fps). pbkit triple-buffers (flips at the vblank
+   to finished frames, three back buffers), so the next buffer is free while one finished frame still waits; the
+   wait now happens only when two do (PCRTC_START, the scanned-out buffer, is neither of the last two finished
+   frames). **Real on hardware.** Not yet seen on a real Xbox: worth a look for tearing or a flicker in fast menus.
+
+Rendering: hall screenshots before / after match (the walking NPC aside); render_score below.
+
+**What is left** (hall, after, xemu): GPU wait 13-15 ms a frame (mostly xemu: its NV2A runs on Mesa llvmpipe, software
+GL), "stage draw code" 10 ms (village 22 ms): the backend's work for the stage, which is the per-vertex near-plane test
+(the camera is inside the hall, so the bounding-sphere shortcut fails), the copy of the whole stage into the ring when
+a triangle crosses the near plane, and the indices written into the pushbuffer (24k triangles: ~36k dwords a frame).
+Those are real CPU costs on hardware as well, and the next candidates: keep the near-clip result per stage part
+(only the parts near the camera), or put static index lists in GPU memory as pushbuffer subroutines (NV2A CALL)
+instead of copying them every frame. "draw (rest)" 5.5 ms and the skinning set-up are next after that. The game thread
+still gets only ~60% of the CPU: the rest is idle waits (GPU) and the audio thread.

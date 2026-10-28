@@ -1060,3 +1060,16 @@ Both games unless marked.
   draw functions (set01_trans: the "村長の教えが追加されました" banner in render_score's g_desert; any other static
   `prim->trans`) were skipped on the Xbox since 26 Oct. **To revert:** commit "Xbox / Windows: draw-function check knows
   static functions too ...".
+
+## G online frame rate (agent E, 28 Oct 2026; docs/xbox.md "G online frame rate")
+- **Dropped:** rt_online.c pace() / rt_np.c's per-tick sleep in real-time runs (a window, the Xbox). **Now:** only in
+  fixed-time (--time) runs; viewer.c's clock paces real-time runs (rt_online_host_paced; RT_ONLINE_PACE=1 = old).
+  **Why:** each catch-up tick slept its own 33 ms: 5.7 -> 23 fps in the guild hall (xemu, with the fixes below).
+  **To revert:** commit "Xbox online frame rate: no per-tick sleep in real-time runs, ...".
+- **Dropped:** gfx_nv2a.c's one pushbuffer kick per pb_begin / pb_end block. **Now:** one kick per draw (cmd_kick).
+  **Why:** 1300 -> 88 kicks a frame in the hall. **To revert:** the same commit.
+- **Dropped:** rt_font.c flfntSetPalData's glyph flush when the palette's colours did not change (MH1 and G).
+  **To revert:** the same commit.
+- **Dropped:** gfx_begin_frame's unconditional pb_wait_for_vbl. **Now:** only when two finished frames still wait for
+  their flip. **Why:** 19.5 -> 23.5 fps in the hall (xemu); untested on hardware (look for tearing). **To revert:**
+  commit "Xbox nv2a: wait for a vblank at frame start only when two finished frames still wait ...".
