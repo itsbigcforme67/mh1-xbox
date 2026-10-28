@@ -142,6 +142,7 @@ static struct {
     int ps2, ps2_done, ps2_ok;      /* this frame is the PS2's frame (gfx_opt.ps2_output) / already shown / extra buffer there */
     gfx_texture ps2_tex;            /* pbkit's extra buffer 0, where that frame is drawn, as a texture */
     float pick_col[4];              /* the current draw's id colour (pick pass) */
+    uint32_t shown[2];              /* the last two frames handed to pbkit's flip (pb_finished): their buffers */
 } G;
 
 static const float ident[16] = { 1,0,0,0, 0,1,0,0, 0,0,1,0, 0,0,0,1 };
@@ -438,9 +439,20 @@ static void *gpu_alloc(size_t n)
 
 void gfx_begin_frame(uint32_t c)
 {
-    rt_prof_begin(RTP_GPU_WAIT);
-    pb_wait_for_vbl();
-    rt_prof_end(RTP_GPU_WAIT);
+    /* Triple buffering: pbkit flips to a finished frame at the next vblank and rotates over three back buffers, so
+     * the next one is free to draw while at most one finished frame still waits for its vblank (the screen shows the
+     * last or the one before). Only with two waiting would it be the one on screen: then wait for a vblank. Until
+     * 27 Oct 2026 every frame waited for a vblank here, which also held the CPU until the last frame was on screen
+     * (half a 60 Hz refresh on average, 8 ms, in every frame slower than 60 fps). */
+    {
+        uint32_t front = *(volatile uint32_t *)(0xFD000000u + 0x00600800u) & 0x03FFFFFFu;     /* PCRTC_START */
+        if (front != G.shown[0] && front != G.shown[1]) {
+            rt_prof_begin(RTP_GPU_WAIT);
+            rt_prof_count(RTPC_GPU_WAITS, 1);
+            pb_wait_for_vbl();
+            rt_prof_end(RTP_GPU_WAIT);
+        }
+    }
     pb_reset();
     /* the PS2 output (gfx_opt.ps2_output): the frame is drawn at the PS2's 512 x 448 in the extra buffer and shown by
      * ps2_present (not for the bug reporter's id pass, which works in screen pixels) */
@@ -529,6 +541,8 @@ void gfx_end_frame(void)
 {
     ps2_present();
     wait_idle();
+    G.shown[1] = G.shown[0];
+    G.shown[0] = (uint32_t)(uintptr_t)pb_back_buffer() & 0x03FFFFFFu;
     rt_prof_begin(RTP_GPU_WAIT);
     while (pb_finished())
         SwitchToThread();               /* see wait_idle */
