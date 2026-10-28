@@ -1892,6 +1892,56 @@ Owner: Forest and Hills area 1 fog too thick on the Xbox. Two causes, both fixed
 - Test aids: RT_FIXED_CAM=1 with --view/--cam in RT_ARGS keeps that camera (the Xbox build always plays, so the host camera
   followed the hunter); RT_FOG_TRACE now reaches the Xbox log, with a "nv2a fog: colour .. start .. end .." line per change.
 
+## Second start, saves and the watchdog in xemu (agent F, 28 Oct 2026)
+
+Open hardware issues: the black screen when the game is started a second time without a power cycle (GB5), saves across a
+quit, and whether the freeze watchdog (21 Oct, never run on hardware) fires where it should not. Notes for agents and the
+list of questions only the real Xbox can answer: docs/agents/agent-F.md "Xbox: second start, saves, watchdog".
+
+**New test: tools/xemu_relaunch_test.sh** (`--version mh1|mhg`, `--online`, `--save`, `--powercut`; hidden, scratch disk,
+its own loader server on port 8796; run it under the emulator lock). It plays the owner's chain: loader -> game -> Back +
+Start -> loader (sends the log) -> dashboard -> loader -> game -> Back + Start. The "dashboard" is the test program
+src/pc/xbox/testlaunch installed as C:\xboxdash.xbe (tools/xbox_fatx.py `FATX_PART=c`); without a dashboard on C: xemu
+stops at the kernel's error 21 screen. The pad script quits with select+start (counts as Back + Start in scripted runs).
+The game runs with RT_WATCHDOG_MS=5000, the hardware's limit (xemu's default is 60 s).
+
+Results (xemu, nv2a builds of 28 Oct):
+
+| run | result |
+|-----|--------|
+| MH1, plain | both starts reach the opening / title and quit; start 2 drew 1167 frames, sound device opened, no FREEZE |
+| G, plain | the same; start 2 drew 1377 frames |
+| G online build, plain | the same (the loader and the game's quit both stop the NIC); start 2 drew 1185 frames |
+| MH1 online build, plain | the same; start 2 drew 1207 frames |
+| G, --save | start 1: blade 2 equipped, bed save (78032 bytes, check BA2D4597), quit; start 2 from power-on, CONTINUE: loaded 78032 bytes, check BA2D4597, village reached; the loader sent the save |
+| MH1, --save | start 1: bed save on an empty card (70736 bytes, check 65E017FC); start 2 CONTINUE: the same bytes, village reached |
+| G, --powercut | xemu killed 3 s after the save: the file on the disk has the logged size and check sum (78032, 0089AE77) |
+
+Every run: no FREEZE or CRASH line with the hardware's 5 s limit, also on the 10 s exit screen (which the old code would
+have reported as a freeze: from reading the code, not run); the longest wait was the boot's, 1.5-3.1 s. A last G run with
+the split boot / play report: boot 2.0 s, nothing of 1 s or more after the first frame (title, opening movie). The quit in the scripted runs needs select+start
+held for 60 drawn frames: in the house xemu draws ~15 a second, so the scripts hold it for 400 ticks.
+
+**Fixed:**
+- The watchdog called every Back + Start quit a freeze: the exit screen waits 10 s on the main thread and the watchdog's
+  5 s limit ran out (xemu hid it with its 60 s limit). The exit screen now stands the watchdog down.
+- The boot up to the first frame, DHCP (nxNetInit, up to 10 s), DNS look-ups and the bug report's save + upload are long
+  operations (60 s); the online town's co-op and game-server waits count as progress (they have their own time-outs).
+- "watchdog: longest wait so far N ms, at <checkpoint> (limit there S s)" in the log at each new longest wait of 1 s or more
+  after the first frame, and "watchdog: longest wait during the boot N ms" for the boot.
+- AC97: an interrupt that none of the known status bits explains no longer returns "not mine" (a level interrupt would
+  then repeat for ever: a black screen with nothing logged); all AC97 interrupt enables go off, the game runs silent and
+  "ac97 open: N interrupt(s) with no known cause" is logged. A guard, not a proven cause.
+
+**Not reproducible in xemu:** xemu's AC97 has no codec handshake (GLOB_CNT reads 0, the codec is never touched) and its
+stand-in dashboard is not an XDK program (no D3D / DirectSound set-up between the starts). Every failing hardware log so
+far stops between the controller line and "audio: driver", or at the first codec read with GLOB_STA 00308000 (codec not
+ready, read time-out). Since 21 Oct each step there is written through to the disk ("boot step:", "ac97: init:"), so the
+owner's next failing start will name the step; the questions are in docs/agents/agent-F.md.
+
+**Saves:** a corrupt or cut-short save file (PC check, both games, the same game code as the Xbox) gets the game's own
+"data may be damaged, start anyway?" after its retries, as on the PS2. Memory units are not supported (E:\UDATA only).
+
 ## G online frame rate: where the time went (agent E, 27-28 Oct 2026)
 
 The G online XBE ran at 5-7.5 fps in the guild hall and the town in xemu. Measured with RT_PROF (always on on the Xbox;

@@ -3562,7 +3562,7 @@ int main(int argc, char **argv)
         {   /* bench aids (docs/xbox.md "Network loader"): a live frame counter on the text screen,
              * and Back + Start held 2 s quits to the loader (the Xbox has no in-game reset) */
             static int held;
-            held = pad_combo_held() ? held + 1 : 0;
+            held = pad_combo_held() || pad_script_quit_held() ? held + 1 : 0;
             if (held == 60) {
                 fprintf(stderr, "Back + Start held: exit at frame %d\n", frame_no);
                 xbox_log_quit();        /* not the normal shutdown: it hung on hardware (12 Oct) */

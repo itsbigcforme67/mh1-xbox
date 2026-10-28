@@ -62,8 +62,14 @@ static double now_s(void)
 #endif
 }
 
+#ifdef NXDK
+void xbox_watch_alive(void);    /* xbox_watch.c: a deliberate wait (bounded by its own time-out) is not a freeze */
+#endif
 static void sleep_ms(int ms)
 {
+#ifdef NXDK
+    xbox_watch_alive();
+#endif
 #ifdef _WIN32
     Sleep(ms);
 #else

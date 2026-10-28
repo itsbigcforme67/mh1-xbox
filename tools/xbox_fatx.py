@@ -13,6 +13,7 @@ then the root directory cluster. Nothing else on the image is touched.
     tools/xbox_fatx.py format xbox_files/hdd.img      # E: empty (all data on E: lost)
     tools/xbox_fatx.py ls xbox_files/hdd.img [DIR]     # e.g. Games/MH1
     tools/xbox_fatx.py get xbox_files/hdd.img Games/MH1/mh1log.txt [OUT]
+    FATX_PART=c tools/xbox_fatx.py format|ls|get|put ...   # the same on C: (Partition2)
     tools/xbox_fatx.py put xbox_files/hdd.img LOCALFILE Games/MH1/loader.txt [BYTES]
         (copies LOCALFILE, or only its first BYTES, streamed; replaces a file of that name, makes the
         folders; for test set-ups such as a half-copied game folder)
@@ -22,6 +23,10 @@ Run them only while xemu is not running (it caches the disk). Standard library o
 import os, struct, sys, time
 
 E_OFFSET, E_SIZE = 0xABE80000, 0x1312D6000
+# FATX_PART=c: the C: partition (\\Device\\Harddisk0\\Partition2, 500 MB at 0x8CA80000; the dashboard's, C:\\xboxdash.xbe)
+# instead of E: (tools/xemu_relaunch_test.sh puts a stand-in dashboard there)
+if os.environ.get('FATX_PART', 'e').lower() == 'c':
+    E_OFFSET, E_SIZE = 0x8CA80000, 0x1F400000
 SECTOR, CLUSTER, PAGE = 512, 16384, 4096
 
 

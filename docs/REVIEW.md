@@ -12,6 +12,16 @@ obvious workarounds.
 
 ## Open
 
+### Xbox AC97 interrupt "not mine"; the watchdog's boot limit (28 Oct 2026, agent F)
+- **Dropped:** xbox_ac97.c's ISR answer FALSE ("not my interrupt") when no known AC97 status bit is set; the watchdog's
+  5 s limit from its start (the boot before the first frame had it) and on the Back + Start exit screen.
+- **Now:** an unexplained AC97 interrupt switches every AC97 interrupt enable off (the game runs silent, the log says
+  so); the boot to the first frame gets the 60 s long-operation limit; the exit screen stops the watchdog.
+- **Why:** a level interrupt answered "not mine" repeats for ever (a black screen with no log line), a guess at the
+  owner's warm-relaunch black screen; IRQ 6 is the AC97's alone. The exit screen sleeps 10 s, so every quit was
+  reported as a freeze on hardware.
+- **To revert:** commit "Xbox: watchdog no longer fires on the Back + Start exit screen ...".
+
 ### G gallery event scenes and credits clips; G's monster event demos (21 Oct 2026, agent E)
 - **Dropped:** the GALLERY's "closed entry" answer for its 15 event scenes (omake_g.c) and the black credits; **now**
   the host plays the scenes (viewer.c gal_scene_*: the quest's stage and monsters, the event-demo camera, no hunter) and

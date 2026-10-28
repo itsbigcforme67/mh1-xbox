@@ -148,6 +148,23 @@ static int dest_allowed(uint32_t addr)
     return 0;
 }
 
+/* getaddrinfo blocks (lwIP's DNS retries take seconds with no answer): on the Xbox a long wait for the freeze watchdog */
+#if defined(NXDK)
+void xbox_watch_long(int on);
+#endif
+static int dns_lookup(const char *name, const struct addrinfo *hints, struct addrinfo **res)
+{
+    int r;
+#if defined(NXDK)
+    xbox_watch_long(1);
+#endif
+    r = getaddrinfo(name, NULL, hints, res);
+#if defined(NXDK)
+    xbox_watch_long(0);
+#endif
+    return r;
+}
+
 /* The lobby server the player set in mh1pc.ini (online_server): a public address there is a deliberate choice, so its
  * addresses (a name is resolved now) are allowed, as --allow does for one address. MH Oldschool stays refused. */
 void net_allow_server(const char *host)
@@ -162,7 +179,7 @@ void net_allow_server(const char *host)
     memset(&hints, 0, sizeof hints);
     hints.ai_family = AF_INET;
     hints.ai_socktype = SOCK_STREAM;
-    if (getaddrinfo(host, NULL, &hints, &res) != 0)
+    if (dns_lookup(host, &hints, &res) != 0)
         return;
     for (r = res; r && n_allowed_srv < 8; r = r->ai_next)
         allowed_srv[n_allowed_srv++] = ((struct sockaddr_in *)r->ai_addr)->sin_addr.s_addr;
@@ -262,7 +279,9 @@ static int xbox_net_up(void)
     if (xnet_state)
         return xnet_state > 0 ? 0 : -1;
     rt_log("net: starting the Xbox network interface (dashboard settings, DHCP waits up to 10 s)");
+    xbox_watch_long(1);             /* up to 10 s for DHCP: longer than the watchdog's 5 s */
     r = nxNetInit(NULL);
+    xbox_watch_long(0);
     if (r != 0 && r != -2) {
         xnet_state = -1;
         rt_log("net: no network (nxNetInit %d): is the cable in, and the dashboard's network set up?", r);
@@ -602,7 +621,7 @@ int CpInetDnsGetTicket(const char *name)
     memset(&hints, 0, sizeof hints);
     hints.ai_family = AF_INET;
     hints.ai_socktype = SOCK_STREAM;
-    if (getaddrinfo(name, NULL, &hints, &res) == 0 && res) {
+    if (dns_lookup(name, &hints, &res) == 0 && res) {
         memcpy(&tickets[i].addr, &((struct sockaddr_in *)res->ai_addr)->sin_addr, 4);
         tickets[i].ok = 1;
     }

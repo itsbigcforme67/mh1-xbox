@@ -76,6 +76,13 @@ static void __stdcall dpc(PKDPC d, PVOID ctx, PVOID a1, PVOID a2)
     }
 }
 
+/* an interrupt on the AC97's line that none of the known status bits explains (IRQ 6 is the ACI's alone): with a level
+ * interrupt, "not mine" (FALSE) brings it straight back for ever and the console hangs with a black screen. So every
+ * ACI interrupt enable is switched off instead (the bus masters' CR, GIE): the game goes on silent rather than hanging,
+ * and the log says so (xbox_ac97_dump). A guard for the owner's black screen on a warm relaunch (Oct 2026), whose
+ * cause is not known. */
+static volatile unsigned long n_unknown;
+static volatile unsigned unknown_sta;
 static BOOLEAN __stdcall isr(PKINTERRUPT intr, PVOID ctx)
 {
     volatile unsigned char *pb = mmio8();
@@ -85,8 +92,18 @@ static BOOLEAN __stdcall isr(PKINTERRUPT intr, PVOID ctx)
         unsigned g = *mmio32(GLOB_STA) & 0xC01;   /* GPI change / codec resume interrupts (write 1 to clear): not ours, but a
                                                    * level interrupt nobody clears would come back for ever */
         unsigned char pi = pb[PI_SR] & 0x1C, mc = pb[MC_SR] & 0x1C;
-        if (!g && !pi && !mc)
-            return FALSE;
+        if (!g && !pi && !mc) {
+            if (n_unknown++ == 0)
+                unknown_sta = *mmio32(GLOB_STA);
+            pb[PO_CR] = 0;
+            pb[SP_CR] = 0;
+            pb[PI_CR] = 0;
+            pb[MC_CR] = 0;
+            *mmio32(GLOB_CNT) &= ~1u;
+            if (n_unknown > 100)
+                ac97_dead = true;       /* it keeps coming (XAudioPlay switches them on again): audio off for this run */
+            return TRUE;
+        }
         *mmio32(GLOB_STA) = g;
         pb[PI_SR] = pi;
         pb[MC_SR] = mc;
@@ -138,6 +155,9 @@ void xbox_ac97_dump(const char *when)
            pb[0x114], pb[PO_LVI], *(volatile unsigned short *)(pb + PO_SR), *(volatile unsigned short *)(pb + 0x118), pb[PO_CR],
            pb[0x174], pb[SP_LVI], *(volatile unsigned short *)(pb + SP_SR), *(volatile unsigned short *)(pb + 0x178), pb[SP_CR],
            n_isr, n_bcis, n_cb);
+    if (n_unknown)
+        rt_warn("ac97 %s: %lu interrupt(s) with no known cause (first with GLOB_STA %08X): the AC97's interrupts were switched "
+                "off (silent rather than a hang)", when, n_unknown, unknown_sta);
     if (!codec_access)
         rt_log("ac97 %s: codec registers not read (GLOB_CNT without the cold-reset bit: xemu)", when);
     else
@@ -271,7 +291,7 @@ void XAudioInit(int sampleSizeInBits, int numChannels, XAudioCallback callback, 
         KeConnectInterrupt(&irq_obj);
         irq_connected = true;
         XAudioPause();
-        STEP("init: done");
+        STEP("init: done (interrupts so far: %lu, unexplained %lu)", n_isr, n_unknown);
     }
 }
 

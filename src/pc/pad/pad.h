@@ -48,6 +48,7 @@ int  pad_text_take(char *out, int n);
  * dup, ddown, dleft, dright, idle. Returns 0 on a parse error. */
 int pad_script_set(const char *script);
 int pad_combo_held(void);       /* Back + Start held on the controller (in-game bug report) */
+int pad_script_quit_held(void); /* the pad script's step holds select + start (the Xbox quit in scripted runs) */
 /* Next tick of the script into p; 0 once the script has ended (p idle). */
 int pad_script_next(pad_state *p);
 /* "@villageN" / "@questN" in a script: idle until the N-th village entry / quest start of the
