@@ -717,3 +717,76 @@ font5x7.c; gfx_gl.h is included by the Xbox front end (gfx_opt / pc_opt / rt_hud
 exist only in gfx_gl.c. xemu runs that write settings.ini must use their own HDD image (XBOX_FILES=dir with a copy of
 bios/mcpx and a fresh `tools/xbox_fatx.py format`ted hdd.img), or a widescreen / gunner choice sticks for every later run
 on the shared disk. Scripts open the menu with `select+l3*3`, then one step per drawn frame (`down*2,idle*6,right*2,...`).
+
+## Xbox: second start, saves, watchdog (28 Oct 2026)
+Task: the Xbox issues waiting on the owner's hardware tests; get as far as xemu allows. Details for players/coordinator in
+docs/xbox.md "Second start, saves and the watchdog in xemu (agent F, 28 Oct 2026)".
+
+### What was found and changed (both games: all shared platform code)
+- **Watchdog false freeze on every Back + Start quit.** xbox_log_show shows the exit screen for 10 s (Sleep on the main
+  thread); the watchdog (5 s on hardware) saw no frame and wrote a FREEZE report and left from its own thread. xemu hid it
+  (60 s limit there). Now xbox_log_show stands the watchdog down first (xbox_watch_stop). Checked in xemu with
+  RT_WATCHDOG_MS=5000 (the hardware limit): both starts of each relaunch run quit with no FREEZE line.
+- **Watchdog long waits.** The boot up to the first drawn frame is a long operation (60 s; it was 5 s from thread start:
+  the owner's boot has ~3.5 s without a load step between "window" and the first frame); nxNetInit (DHCP waits up to
+  10 s), DNS look-ups (net_cpinet.c dns_lookup), the bug report's save + upload (pick.c save_report; it took ~80 s on
+  hardware before 17 Oct, not measured since) are long operations; the co-op / game-server waits in the online town
+  (rt_np.c sleep_ms, rt_mcs.c frame: up to 300 s for players, 2 min for the session) count as progress, as they have their
+  own time-outs. The log now says "watchdog: longest wait so far N ms, at "<checkpoint>" (limit there S s)" whenever a new
+  longest wait of 1 s or more happens after the first frame ("... during the boot N ms" for the boot): the owner's logs
+  will show the real margin. In xemu the boot's longest wait was 1.5-3.1 s (no load step between the window and the
+  first frame); no later wait was longer than that in any run (the first version logged only a new longest overall).
+- **AC97 interrupt guard.** An interrupt on IRQ 6 that none of the known status bits explains used to return "not mine";
+  a level interrupt then comes back for ever (black screen, nothing logged). Now every ACI interrupt enable is switched
+  off and the game goes on silent; "ac97 open: N interrupt(s) with no known cause" in the log names it. A guess at the
+  owner's warm-relaunch black screen, not a proven cause (xemu cannot show it).
+- Test aids: a pad script's select+start counts as Back + Start (pad_script_quit_held, Xbox only); testlaunch takes
+  E:\launch.txt as a queue; tools/xbox_fatx.py FATX_PART=c works on C:.
+
+### Second start in xemu (tools/xemu_relaunch_test.sh)
+- The chain is the owner's: loader -> game -> Back + Start -> loader (log sent) -> dashboard -> loader -> game. xemu
+  needs a dashboard on C: for that (without one: kernel error 21, as tools/xemu_loader_test.sh notes); testlaunch is put
+  there as C:\xboxdash.xbe (and evoxdash.xbe) and starts the next line of launch.txt.
+- Results: see the table in docs/xbox.md. xemu does not reproduce the black screen: its AC97 has no codec handshake
+  (GLOB_CNT reads 0, the codec is never accessed) and its GPU / APU state does not carry the real dashboard's (XDK D3D,
+  DirectSound) leftovers. What survives a relaunch, by part:
+  - GPU: our quit does not pb_kill (the normal shutdown hung on hardware 12 Oct); the dashboard's D3D re-initialises the
+    GPU before the next start, the same as before the first start. pb_init / "boot: window" passed in every failing
+    hardware log, so the GPU is not where the owner's starts stopped.
+  - AV mode: XVideoSetMode(640x480) at every start; the same as the first start (both come from the dashboard).
+  - HDD cache partitions (X/Y/Z): neither game nor loader mounts or writes them.
+  - Files on E: kept between starts: settings.ini, the save (E:\UDATA), mh1log.txt (sent and removed by the loader),
+    logs\, reports\. Nothing in them is read before the audio start except settings.ini.
+  - AC97: stopped on every way out since 21 Oct (DMA halted, bus masters reset, interrupt off); the codec itself stays
+    powered and set up. The failing hardware logs all stop between the controller line and "audio: driver" (or at the
+    first codec read, GLOB_STA 00308000 = codec not ready + read time-out). Since cf3c27f8 every step there is written
+    through to the disk, so the next failing start names the step.
+  - Watchdog: it could not cause a hang (it starts after the log, and on the old builds it did not exist).
+
+### Saves in xemu (tools/xemu_relaunch_test.sh --save / --powercut) and on the PC
+- --save: start 1 a fresh hunter (RT_VILLAGE_START), the house, the bed save on an empty card; Back + Start; start 2 from
+  power-on, CONTINUE. Checks: same byte count and check sum saved and loaded, the village reached, the loader's POST /save.
+- --powercut: xemu is killed 3 s after "memory card: saved" (the owner switching off); the file on the scratch disk must
+  have the logged check sum.
+- Corrupt / short save (PC, both games; the Xbox reads through the same game code, mc_xbox.c only does the file I/O): a
+  flipped byte in the data file or a file cut to 30000 bytes -> the game retries the load a few times, then its own
+  message "the game data may be damaged; start anyway? yes/no" (as the PS2). No hang.
+- Memory units: not supported by the build (mc_xbox.c: E:\UDATA only; port 1 answers "no card"). A full disk was not
+  tested (a short write logs "stored N of M bytes (disk full?)" and the game gets the short count).
+
+### For docs/TESTERS.md (only real hardware can answer these)
+1. Second start: play a minute, Back + Start, let the loader go back to the dashboard, start the game again from the
+   dashboard. Does it reach the title with sound? Do it 3 times in a row (G, then MH1). If it stops on a black screen:
+   wait 70 s (the watchdog's boot limit) - does a "froze" screen come? Then power off and on, start the game once more
+   and let the loader send the log: its last "boot step:" / "ac97: init:" line names where it stopped.
+2. Same with the online build (title -> online town -> Back + Start -> start again).
+3. A start right after a power cycle that followed a black screen: normal (expected yes)?
+4. Sound after the second start: music and effects (the 13 Oct "0 frames played" silence).
+5. Saves: save at the bed, Back + Start, start again, CONTINUE: the same hunter (money, equipment)? Then save, wait 5 s,
+   switch off at the power button, switch on, CONTINUE: the save kept? Does the dashboard's memory manager list
+   "Monster Hunter" / "Monster Hunter G" saves with a name (meta files written from memory of the format)? Can it copy
+   one to a memory unit and back (the game itself only uses the hard disk)?
+6. Watchdog: the log's "watchdog: longest wait so far" lines after a normal session (village, a quest, an area change,
+   the gallery, a bug report save, the online lobby and a co-op start): any above ~3 s, and where? No "froze" screen
+   during play, during the 10 s exit screen after Back + Start, or while saving a bug report?
+7. A save on a nearly full E: (only if easy: copy big files onto E: first): what does the game say?

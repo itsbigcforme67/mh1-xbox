@@ -40,7 +40,7 @@ static const char *volatile mark = "start";
 static volatile int fired;
 /* the longest wait between two signs of progress so far (the margin under the limit; logged by the main thread,
  * xbox_watch_report): how long, the checkpoint it waited at, the limit then */
-static volatile unsigned worst_ms, worst_lim;
+static volatile unsigned worst_ms, worst_lim, boot_ms;       /* (the boot's longest wait apart: it sets a high bar) */
 static const char *volatile worst_mark = "";
 
 void xbox_watch_alive(void) { beat++; }
@@ -62,8 +62,12 @@ void xbox_watch_frame(void)
  * the game came to the limit (the owner's hardware runs: is 5 s enough?) */
 void xbox_watch_report(void)
 {
-    static unsigned said;
-    unsigned w = worst_ms;
+    static unsigned said, said_boot;
+    unsigned w = worst_ms, b = boot_ms;
+    if (b >= 1000 && b > said_boot) {
+        said_boot = b;
+        rt_log("watchdog: longest wait during the boot %u ms (limit there 60 s)", b);
+    }
     if (w >= 1000 && w > said) {
         said = w;
         rt_log("watchdog: longest wait so far %u ms, at \"%s\" (limit there %u s)", w, worst_mark, worst_lim / 1000);
@@ -157,23 +161,31 @@ static DWORD WINAPI watch_thread(LPVOID arg)
         return 0;
     const char *at = mark;
     unsigned at_lim = lim0;
+    int at_boot = 1;
     for (;;) {
         unsigned now, lim;
         Sleep(500);
         now = GetTickCount();
         lim = long_ops ? (lim0 > 60000 ? lim0 : 60000) : lim0;
         if (beat != last || fired) {
-            if (now - since > worst_ms && !fired) {
+            if (fired)
+                ;
+            else if (at_boot) {
+                if (now - since > boot_ms)
+                    boot_ms = now - since;
+            } else if (now - since > worst_ms) {
                 worst_mark = at;
                 worst_lim = at_lim;
                 worst_ms = now - since;
             }
+            at_boot = booting;
             last = beat;
             since = now;
             continue;
         }
         at = mark;
         at_lim = lim;
+        at_boot = booting;
         if (now - since < lim)
             continue;
         {

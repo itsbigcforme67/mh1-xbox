@@ -1,11 +1,11 @@
 /* xemu test aid (tools/xemu_loader_test.sh, tools/xemu_relaunch_test.sh): boots from the test DVD and
  * starts the XBE named in the first line of E:\launch.txt (e.g. E:\Games\MHG\default.xbe), so the
  * network loader runs from its folder on the hard disk as on the real Xbox (Evolution X starts it from
- * there). It takes that line out of the file first (the file goes when it is empty): a program that goes
- * "back to the dashboard" makes xemu boot this DVD again, which then starts the next line, as the owner
- * picking the game again in the dashboard would; with no line left it only says so and waits, so a test
- * run ends there instead of looping. (The launch data type can't tell the boots apart: xemu's cold boot
- * already reports 2.) Never installed on hardware. */
+ * there). It takes that line out of the file first (the file goes when it is empty). Installed as the
+ * scratch disk's C:\xboxdash.xbe it is also the "dashboard" that a program going back to the dashboard
+ * (XLaunchXBE(NULL)) reaches: it then starts the next line, as the owner picking the game again would;
+ * with no line left it only says so and waits, so a test run ends there instead of looping. (Without a
+ * dashboard on C: xemu stops at the kernel's error 21 screen.) Never installed on hardware. */
 #include <hal/debug.h>
 #include <hal/video.h>
 #include <hal/xbox.h>

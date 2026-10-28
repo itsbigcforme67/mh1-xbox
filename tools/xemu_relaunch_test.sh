@@ -7,11 +7,13 @@
 #
 # The disk holds what the owner's Xbox has: the game's network loader as E:\Games\<MH1|MHG>\default.xbe (+ loader.txt)
 # and the game data in E:\Games\<MH1|MHG>\data. This script's own tools/xbox_serve.py (PORT, default 8796; never the
-# owner's 8765 server) serves the game build. The test DVD (src/pc/xbox/testlaunch) stands in for the dashboard: it
-# starts the next line of E:\launch.txt each time a program goes "back to the dashboard". So the chain is
+# owner's 8765 server) serves the game build. The test program src/pc/xbox/testlaunch stands in for the dashboard (the
+# DVD at power-on, C:\xboxdash.xbe after that): it starts the next line of E:\launch.txt each time a program goes "back
+# to the dashboard". So the chain is
 #   DVD -> loader (downloads the build) -> game, start 1 -> Back + Start -> loader (sends the log) -> "dashboard"
 #   -> loader -> game, start 2 -> Back + Start -> loader (sends the log) -> "dashboard" (no line left: the end)
-# as on the Xbox, except that xemu's "dashboard" is our DVD (a quick reboot of the kernel, as XLaunchXBE(NULL) does).
+# as on the Xbox, except that the "dashboard" is our stand-in (started by the kernel after XLaunchXBE(NULL)'s quick
+# reboot, as Evolution X is), not an XDK program: what the real dashboard resets or leaves (D3D, DirectSound) is missing.
 # The pad script (served by the loader's /test, played by the game from its data folder) waits, then holds
 # select + start (Back + Start, pad_script_quit_held). Checks: both starts sent a log that reached the quit; start 2
 # drew frames; no freeze / crash report; the watchdog's longest waits (RT_WATCHDOG_MS, default the hardware's 5000).
@@ -78,10 +80,15 @@ printf '10.0.2.2:%s\ngame=%s\n' "$PORT" "$GID" > "$T/loader.txt"
 $FATX put "$T/hdd.img" "$LOADER" Games/$FOLDER/default.xbe >/dev/null
 $FATX put "$T/hdd.img" "$T/loader.txt" Games/$FOLDER/loader.txt >/dev/null
 for f in AFS_DATA.AFS AFS00.AFS AFS01.AFS $PROG; do $FATX put "$T/hdd.img" "$DISC/$f" Games/$FOLDER/data/$f >/dev/null; done
+# the stand-in dashboard: XLaunchXBE(NULL) makes the kernel start C:\xboxdash.xbe (a modded BIOS may look for evoxdash.xbe);
+# without one xemu stops at the kernel's error 21 screen
+FATX_PART=c $FATX format "$T/hdd.img" >/dev/null
+for d in xboxdash.xbe evoxdash.xbe; do FATX_PART=c $FATX put "$T/hdd.img" build/xbox/testlaunch/default.xbe $d >/dev/null; done
+$FATX put "$T/hdd.img" build/xbox/testlaunch/default.xbe evoxdash.xbe >/dev/null
 L="E:\\Games\\$FOLDER\\default.xbe"
 printf '%s\n%s\n' "$L" "$L" > "$T/launch.txt"
 $FATX put "$T/hdd.img" "$T/launch.txt" launch.txt >/dev/null
-QUIT="select+start*120,idle*900"
+QUIT="select+start*400,idle*900"     # (the quit needs 60 drawn frames held; xemu draws ~15 a second in the house)
 printf 'RT_WATCHDOG_MS=%s\n' "$WD" > "$T/env2.txt"
 if [ $MODE = plain ]; then
     echo "idle*$WAIT,$QUIT" > "$T/input1.txt"
