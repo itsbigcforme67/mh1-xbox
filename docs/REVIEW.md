@@ -1073,6 +1073,7 @@ Both games unless marked.
 - **Dropped:** gfx_begin_frame's unconditional pb_wait_for_vbl. **Now:** only when two finished frames still wait for
   their flip. **Why:** 19.5 -> 23.5 fps in the hall (xemu); untested on hardware (look for tearing). **To revert:**
   commit "Xbox nv2a: wait for a vblank at frame start only when two finished frames still wait ...".
+
 ## Actor lighting (agent D, 27 Oct 2026)
 - **Dropped:** the fixed light set as the default for hunters, monsters and NPCs (viewer.c `light`, now only the fallback
   while light_work is empty and with RT_LIGHT_GAME=0), and rt_light.c's RT_LIGHT_VU test branch (its literal ambient of
