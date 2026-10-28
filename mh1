@@ -237,7 +237,8 @@ windows)
     sh tools/package_win.sh > build/mh1_win_package.log 2>&1 || { tail -20 build/mh1_win_package.log; die "packaging failed; log: build/mh1_win_package.log"; }
     PKG=$(ls -dt build/release/mh1pc-win32-*/ | head -1)
     PKG=${PKG%/}
-    rm -rf "$OUT"; mkdir -p "$OUT"
+    # empty the folder but keep a G build in it (dist/windows/MHG: the same command with the G disc)
+    mkdir -p "$OUT"; find "$OUT" -mindepth 1 -maxdepth 1 ! -name MHG -exec rm -rf {} +
     cp -r "$PKG"/. "$OUT"/
     [ -z "$ONLINE_BUILD" ] || cp build/win/mhview_online.exe "$OUT/mhview_online.exe"
     [ ! -f docs/PLAYING.md ] || cp docs/PLAYING.md "$OUT/PLAYING.md"
@@ -270,7 +271,7 @@ xbox)
     say "building the Xbox game (nxdk; 5 to 10 minutes)"
     python3 tools/build_xbox.py --gfx nv2a > build/mh1_xbox_build.log 2>&1 || { tail -20 build/mh1_xbox_build.log; die "the Xbox build failed; full log: build/mh1_xbox_build.log"; }
     [ -f build/xbox/nv2a/default.xbe ] || die "build_xbox.py did not produce build/xbox/nv2a/default.xbe (log: build/mh1_xbox_build.log)"
-    rm -rf "$OUT"; mkdir -p "$OUT/MH1"
+    rm -rf "$OUT/MH1" "$OUT/MH1-online"; mkdir -p "$OUT/MH1"     # (dist/xbox/MHG, a G build, stays)
     cp build/xbox/nv2a/default.xbe "$OUT/MH1/default.xbe"
     [ ! -f docs/PLAYING.md ] || cp docs/PLAYING.md "$OUT/PLAYING.md"
     copy_data "$OUT/MH1/data" "AFS_DATA.AFS,AFS00.AFS,AFS01.AFS,SLPM_654.95"

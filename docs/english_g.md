@@ -44,6 +44,46 @@ G has **11474 of 13263 strings (86.5%) in official English** (was 7087, 53%), pl
 tables, not text). How Freedom is paired and what still fails: section "Monster Hunter Freedom: what to give and what
 happens" below.
 
+**Update 28 Oct 2026 (agent A): Freedom first** (owner's decision, docs/DECISIONS.md). G's table now takes Monster
+Hunter Freedom's line wherever a G string has a Freedom pair, MH1 US only where Freedom has none, our own lines last.
+- **Moved:** 1012 G strings changed from MH1 US to Freedom wording; 3556 more had a Freedom pair that says the same as
+  MH1 US. The table changed in 969 of its lines (some strings share a line id). Quest clear lines follow the same rule
+  (they are quest strings; Freedom's are taken where its quest has the same Japanese).
+- **Coverage:** 11770 of 13592 official (86.6%) + 1115 ours = 12885 (94.8%). It is 31 lower than on 27 Oct only
+  because Freedom's placeholder "dummy" (the PSP left out G's network and some menu texts) no longer counts as English:
+  those 31 G strings were showing "dummy" before and now show their Japanese (MH1 US has no line for them either).
+  MH1 JP's table is byte-identical to before.
+- **Kept MH1 US (72 Freedom lines, by rule):** more lines than the US line, or wider than the US line, G's Japanese
+  (bytes) and the widest US line of the same table (a description is kept or dropped whole); talk is exempt (the PSP
+  talk window has the same 22 columns: all but 2 of about 810 Freedom talk rows are <= 22 bytes; those 2 are
+  word-wrapped, not cut).
+  Also 10 Freedom lines that drop the US line's colour codes or a page counter ("View Quest Details  1/4").
+- **Names:** Freedom's names are used in the lines that still come from MH1 US or from us. Only 2 names really differ
+  where G's Japanese is the same as MH1's (Sleep / Poison Duration Halved -> "Sleep Dur Halved", "Poison Dur Halved",
+  Freedom's short PSP forms); no other G line mentions them. 13 differences were MH1 US pairings in G tables that were
+  wrong (G inserted items and armour, and the US name came by position): Freedom corrects them (Rathalos/Rathian
+  Guards+ / Vambraces+ -> Vest+ / Mail+ for G's レジスト / メイル, Personal Hat -> Designer Glasses, Toolsaver ->
+  Spirit's Whim, Gatherer -> Gathering, CHAT WINDOW SIZE -> DEFAULT SETTINGS ...). **Conflicts left as they are (4):**
+  Worm / Bitterbug and Jewel Ticket / Commendation are swapped between MH1 US and Freedom in G's item table (G's にが虫
+  = Bitterbug, 釣りミミズ = Worm, 勇気の証 = Commendation, 宝石券 = Jewel Ticket: Freedom is right there); other lines
+  keep their own source's name, which is right for them, so no word is replaced.
+- **Follow-up (same day):** our own lines for those 31 (text/mhg_en_own.tsv): the in-quest info lines (fish caught,
+  items restocked, the name + " fell down!" / " caught!!" / " made!" endings G appends to a name [inferred from the Japanese, the calling code not read]), the controller
+  message, the NET file / network settings menu, the character carry-over prompt, and five debug names in a monster
+  table (test3, Gramps, Rock, Komos, Raptor: literal). Each is no wider than G's Japanese in bytes and has its line
+  count. G: 11770 official + 1146 ours = 12916 of 13592 (95.0%). Not seen on screen: the tour does not reach these
+  screens (fishing, the network settings menu, an unplugged pad).
+- **Typical wording changes:** "Item will be exchanged. Is this OK?" -> "Replace Item. OK?"; "This item is for
+  gunners." -> "Item for use by Gunners."; "Banquet Camera OFF" -> "Party Camera OFF"; "Sharpness Restoration +50%" ->
+  "SharpnessRestore+50%"; "~C02Weapon cannot be removed." -> "~C02Cannot remove weapon."; "Save game data" -> "Save
+  Game Data"; armour descriptions re-flowed to Freedom's lines (up to 28 bytes, as wide as MH1 US's widest line there).
+  Freedom's PSP short forms ("SharpnessRestore", "Dur Halved", "TtlReward") come with it: the owner may want a list of
+  them replaced by the MH1 US long form where the window allows.
+- Freedom writes "Dual Swords" in 6 of its G-paired lines and "Dual Blades" in 5; G_TERMS still writes Dual Blades.
+- **Checked on screen:** g_eng_tour.py (RT_TEXT_JP=1, hidden) before / after, all 16 scenes; item shop, elder talk,
+  quest board, reward and save shown side by side: no overflow, the same windows; RT_TEXT_JP lists 3 more "Japanese"
+  strings, which are Freedom's full-width spaces and ・ in English lines (they draw as blanks and a dot).
+
 **Update 27 Oct 2026 (agent A): quest clear lines, last visible gaps. Now 12916 of 13592 strings (95.0%) have
 English: 11801 official (86.8%) + 1115 ours (8.2%); leaving out the 421 keyboard kana tables (not text), 12910 of
 13171 = 98.0%.** Measured the same way as before (`python3 tools/text_map.py --report docs/text_coverage.md --ids

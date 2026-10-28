@@ -2,6 +2,8 @@
 
 **Just want to play?** With your own disc image of the Japanese PS2 game: `./mh1 linux DISC.iso` (or `windows`,
 `xbox`) builds the game and sets it up. Requirements, controls, saves and co-op: [docs/PLAYING.md](docs/PLAYING.md).
+**Testing on your own Xbox?** [docs/TESTERS.md](docs/TESTERS.md): `tools/make_release.sh G.iso` makes the Xbox folder
+and the PC build, plus what to test and how to report.
 (The rest of this file is the project's plan and the developer tools.)
 
 This is the starting point for the port, not the port. It holds the two tools

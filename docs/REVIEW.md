@@ -1072,6 +1072,20 @@ Both games unless marked.
   lights turned with the actor's facing, and no fixed light could match both camp and desert. **To revert:** commit
   "Actor lighting: the PS2's actor program maths ...".
 
+## Testers' kit (agent A, 28 Oct 2026)
+- **Dropped:** mhg_pcmeta.py's hard need for the developers' disc/mh1 (split MH1 + SLPM_654.95 relocations) and
+  disc/mhg (unpacked G) on every G build. **Now:** a full run also writes the G symbol view to config/mhg/pc_symbols/
+  (committed, names / addresses / sizes only, beside config/mhg/pc_ptrs.txt); a build without those inputs (a fresh clone
+  with only the player's disc image: ./mh1, tools/make_release.sh) copies the committed files. **Why:** a fresh clone
+  could not build G at all (FileNotFoundError disc/mhg/SLPM_658.69). Both files must be committed whenever a full run
+  changes them. **To revert:** commit "mhg_pcmeta: a player's G build works without the split MH1 disc".
+- **Dropped:** settings.ini always in E:\Games\MH1 / E:\Games\MHG on the Xbox. **Now:** a default.xbe started from the
+  dashboard (installed by hand, e.g. E:\Apps\MHG) uses its own folder; an XBE a loader starts (mh1.xbe / mhg.xbe) keeps
+  the game folder. **Why:** a hand-installed copy is self-contained (data, log, reports, settings, English table next to
+  it). **To revert:** commit "Testers' kit: tools/make_release.sh ...".
+- **Dropped:** ./mh1 xbox / windows (MH1 disc) emptying the whole output folder. **Now:** only MH1's own folders; a G
+  build in dist/xbox/MHG or dist/windows/MHG stays. Same commit.
+
 ## G online frame rate (agent E, 28 Oct 2026; docs/xbox.md "G online frame rate")
 - **Dropped:** rt_online.c pace() / rt_np.c's per-tick sleep in real-time runs (a window, the Xbox). **Now:** only in
   fixed-time (--time) runs; viewer.c's clock paces real-time runs (rt_online_host_paced; RT_ONLINE_PACE=1 = old).
@@ -1094,3 +1108,11 @@ Both games unless marked.
   rt_village_active). **Now:** the first tick after Local_main reaches its main step (rt_village_ready). **Why:** the PC's
   NPCs did not exist for the first 11 play ticks, so nothing could be lined up with the PS2's. **To revert:** commit
   "Village lockstep: play tick 0 once the village runs ...".
+
+## G English: Freedom first (agent A, 28 Oct 2026; owner's decision)
+- **Dropped:** MH1 US first for G's table, Freedom only for strings MH1 US lacked (tools/text_map.py freedom_for_g
+  `targets` skipped every string with English). **Now:** Freedom first (override), MH1 US as the fallback, ours last;
+  freedom_fit keeps MH1 US where a Freedom line would not fit or drops the US line's codes / page counter; Freedom's
+  "dummy" is refused; freedom_terms puts Freedom's names into lines from other sources; man_drop also clears Freedom.
+  **Why:** owner, 28 Oct 2026 (docs/DECISIONS.md). 1012 G strings change wording (docs/english_g.md "Freedom first").
+  **To revert:** commit "G English: Freedom first, MH1 US as the fallback".

@@ -22,6 +22,7 @@
 #ifdef XBOX
 #include <hal/video.h>
 #include "../xbox/xbox_title.h"
+#include "../xbox/xbox_path.h"
 void xbox_env_set(const char *name, const char *value);
 #else
 #include <SDL.h>
@@ -51,6 +52,11 @@ static int ieq(const char *a, const char *b)       /* strcasecmp == 0 (pdclib ha
 static void default_path(void)
 {
 #ifdef XBOX
+    /* a copy installed by hand (E:\Apps\MHG\default.xbe, started from the dashboard, docs/TESTERS.md) keeps its
+     * settings in its own folder; an XBE a network loader started (mh1.xbe / mhg.xbe) uses the game's folder */
+    char dir[260], name[64];
+    if (!ini_path[0] && xbox_image_dir(dir, sizeof dir, name, sizeof name) && xbox_is_default_xbe(name))
+        snprintf(ini_path, sizeof ini_path, "%s\\settings.ini", dir);
     if (!ini_path[0])
         snprintf(ini_path, sizeof ini_path, "%s", XBOX_GAME_DIR "\\settings.ini");
 #else
