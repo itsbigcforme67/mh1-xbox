@@ -67,6 +67,12 @@ Hunter Freedom's line wherever a G string has a Freedom pair, MH1 US only where 
   Worm / Bitterbug and Jewel Ticket / Commendation are swapped between MH1 US and Freedom in G's item table (G's にが虫
   = Bitterbug, 釣りミミズ = Worm, 勇気の証 = Commendation, 宝石券 = Jewel Ticket: Freedom is right there); other lines
   keep their own source's name, which is right for them, so no word is replaced.
+- **Follow-up (same day):** our own lines for those 31 (text/mhg_en_own.tsv): the in-quest info lines (fish caught,
+  items restocked, the name + " fell down!" / " caught!!" / " made!" endings G appends to a name [inferred from the Japanese, the calling code not read]), the controller
+  message, the NET file / network settings menu, the character carry-over prompt, and five debug names in a monster
+  table (test3, Gramps, Rock, Komos, Raptor: literal). Each is no wider than G's Japanese in bytes and has its line
+  count. G: 11770 official + 1146 ours = 12916 of 13592 (95.0%). Not seen on screen: the tour does not reach these
+  screens (fishing, the network settings menu, an unplugged pad).
 - **Typical wording changes:** "Item will be exchanged. Is this OK?" -> "Replace Item. OK?"; "This item is for
   gunners." -> "Item for use by Gunners."; "Banquet Camera OFF" -> "Party Camera OFF"; "Sharpness Restoration +50%" ->
   "SharpnessRestore+50%"; "~C02Weapon cannot be removed." -> "~C02Cannot remove weapon."; "Save game data" -> "Save

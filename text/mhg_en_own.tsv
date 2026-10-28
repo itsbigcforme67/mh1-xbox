@@ -1195,3 +1195,34 @@ main:0x2EA670	2b5ad39e	m	Save the gallery to
 main:0x2E97F0	bf8ce0c8	m	the game data?
 main:0x2E97A0	7d46bd72	m	Select where to save.
 main:0x2E9780	ef1a2540	m	MEMORY CARD slot 2
+sub_main:0x537C80	e353d9d2	-	test3
+sub_main:0x538348	bdb61eda	-	Gramps
+sub_main:0x538478	c1dda069	-	Rock
+sub_main:0x5384A0	03769f0b	-	Komos
+sub_main:0x5384C0	931ed438	-	Raptor
+sub_main:0x539BA8	03c7482b	-	Fish caught!
+sub_main:0x539C20	ce49031c	-	Please return to camp.
+sub_main:0x539C60	cf209bd2	-	Quest items have been lost.
+sub_main:0x539C80	37b47fb2	-	Items restocked.
+sub_main:0x539EC0	089d9890	-	 fell down!
+sub_main:0x539ED0	863af6f7	-	 cleared!!
+sub_main:0x539F48	10b731a2	-	 made!
+sub_main:0x539F60	1c67a856	-	 inflicted!
+sub_main:0x539F78	f7b72204	-	 caught!!
+sub_main:0x539FD0	b3a78154	-	: can't carry more. Not received.
+sub_main:0x53A020	f44a0692	-	Got an item!
+sub_main:0x53A098	66a1eaef	-	 made.
+sub_main:0x53A380	d94b0f65	-	Select the character to carry over.
+sub_main:0x53FC40	95eda5a7	-	No analog controller (DUALSHOCK 2) is connected.
+sub_main:0x53FC80	2627ff18	-	Connect an analog controller (DUALSHOCK 2) to
+sub_main:0x53FCC0	f1c15a0a	-	controller port 1 properly and press the ○ button.
+sub_main:0x5416C0	93fa5ef4	-	NET File Auto-load
+sub_main:0x5416E0	feedaba9	-	Auto-select "Same as Last"
+sub_main:0x541700	e2468803	-	Delete Login ID
+sub_main:0x541720	c183650d	-	Network Settings
+sub_main:0x541740	06a81803	-	Set up auto-loading of the NET file.\nChoose where to auto-load it from.
+sub_main:0x5417A0	3a46eea6	-	Set up auto-selection of "Same connection as last\ntime". If the NET file has no "Same as last time"\ninformation, turning it ON has no effect.
+sub_main:0x541830	bbd6db19	-	Delete the login ID and password from the\nNET file.
+sub_main:0x541870	cbb69e9c	-	Create and edit the network settings needed to\nplay online.\n(The game restarts after setting up.)
+sub_main:0x5418E0	9520037b	-	Return to the Game Menu.
+sub_main:0x541900	187459f2	-	Manual
