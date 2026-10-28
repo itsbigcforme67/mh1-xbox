@@ -1060,3 +1060,14 @@ Both games unless marked.
   draw functions (set01_trans: the "村長の教えが追加されました" banner in render_score's g_desert; any other static
   `prim->trans`) were skipped on the Xbox since 26 Oct. **To revert:** commit "Xbox / Windows: draw-function check knows
   static functions too ...".
+
+## Actor lighting (agent D, 27 Oct 2026)
+- **Dropped:** the fixed light set as the default for hunters, monsters and NPCs (viewer.c `light`, now only the fallback
+  while light_work is empty and with RT_LIGHT_GAME=0), and rt_light.c's RT_LIGHT_VU test branch (its literal ambient of
+  about 0.002 came from a misread scale: AMB is 128 in the actors' packets). **Now:** the game's own lights (light_work
+  set 1, per actor through pl_light_change + Pl_light_set) by default, turned into each actor's own space and
+  renormalised (fl_light_local, as Vu1Code_0016_0004's PROG does per bone), light colours clamped at 1.0, ambient half the
+  summed rows (material A = 0.5). **Why:** checked per vertex against a PCSX2 GS dump of the camp (docs/pc.md "Actor
+  lighting checked against the PS2"); the host lit actors with world light directions on normals in their own space, so the
+  lights turned with the actor's facing, and no fixed light could match both camp and desert. **To revert:** commit
+  "Actor lighting: the PS2's actor program maths ...".
