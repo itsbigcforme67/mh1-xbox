@@ -395,7 +395,8 @@ def main():
                 continue
             gm, ga, gsz = gpos[n]
             lo, hi = dr[gm]
-            if gsz != sz or ga & 3 != a & 3 or not (lo <= ga and ga + gsz <= hi):
+            # G may have grown the table (config/mhg/pc_data.txt sizes it): MH1's words cover MH1's part, the scan the rest
+            if gsz < sz or ga & 3 != a & 3 or not (lo <= ga and ga + gsz <= hi):
                 continue
             k = bisect.bisect_left(r32, a)
             pos, ok = [], True
@@ -414,7 +415,7 @@ def main():
             n_obj += 1
             carried[gm].update(pos)
             if n not in MAP_NAMES:      # a mapped (not twin-proven) object keeps the scan's words too
-                covered[gm].append((ga, ga + gsz))
+                covered[gm].append((ga, ga + sz))
     print("data objects with MH1's pointer layout: %d (%d left to the scan: a word is no address)" % (n_obj, n_bad))
     for m in G_MODS:
         cv = sorted(covered[m])

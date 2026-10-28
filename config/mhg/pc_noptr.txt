@@ -107,3 +107,5 @@ A0F18C  # yn_spr_data +0x4CC: sprite coordinates (s16 x/y/w/h)
 6D2700  # Item_get_tbl row 99 (pick chances / items, u16 pairs; the referee: a bug net gave item 0xF645)
 6D2720  # Item_get_tbl row 100
 6D29C0  # Item_get_tbl row 143
+[lobby]
+63571C  # s16 coordinates (0x122, 0x2B) after lb_quest_color_tex: points into button_icon_uv only by chance once round 11 sized it (agent C)

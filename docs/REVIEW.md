@@ -1051,3 +1051,12 @@ Both games unless marked.
   ports' sharp pictures lost points the PS2 never had (old vs exact PS2 picture: SSIM 89.8 on g_desert). Scoreboards
   before and after are not comparable (docs/render_score.md keeps the old one as history). **To revert:** commit
   "render_score: grab the PS2's own picture (512x448 frame buffer + its PCRTC merge), not PCSX2's presentation".
+
+## Draw-function check on the Xbox / Windows (agent C, 27 Oct 2026)
+- **Dropped:** rt_game.c's rt_code_ptr rule on Windows / Xbox "a 2D prim's draw function must be the start of a global
+  symbol" (rt_symtab.c, round 9). **Now:** tools/codetab.py writes every function start of the linked exe, file-statics
+  included, into rt_codetab (Xbox: from lld-link's map in build_xbox.py; Windows: llvm-nm on the exe in build_pc.sh);
+  rt_code_ptr looks the pointer up there (the old rule stays as the fallback when the table is empty). **Why:** static
+  draw functions (set01_trans: the "村長の教えが追加されました" banner in render_score's g_desert; any other static
+  `prim->trans`) were skipped on the Xbox since 26 Oct. **To revert:** commit "Xbox / Windows: draw-function check knows
+  static functions too ...".

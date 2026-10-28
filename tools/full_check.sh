@@ -25,6 +25,7 @@ step build_pc_online env ONLINE=1 tools/build_pc.sh
 step xbox_online bash -c ". ~/xboxdev/env.sh && python3 tools/build_xbox.py --online --gfx nv2a"   # (reads the online objs.txt)
 step build_pc_mhg tools/build_pc_mhg.sh   # tests that also run G use this binary
 step kr_returns_g python3 tools/check_kr_returns.py --implicit build/mhg/pctree/build/pc/cmd --mwcc mhg
+step g_tables python3 tools/check_g_tables.py build/mhg/pctree   # a G table kept smaller than G's own (round 10's mem_tex overflow)
 step build_pc_mhg_online env ONLINE=1 tools/build_pc_mhg.sh   # test_online_g.sh (G online PC client)
 step xbox_g_online bash -c ". ~/xboxdev/env.sh && python3 tools/build_xbox.py --version mhg --online --gfx nv2a"   # (build/mhg/pctree_online's objects)
 for t in tools/test_*.sh; do
