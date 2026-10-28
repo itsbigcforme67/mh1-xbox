@@ -1939,6 +1939,11 @@ far stops between the controller line and "audio: driver", or at the first codec
 ready, read time-out). Since 21 Oct each step there is written through to the disk ("boot step:", "ac97: init:"), so the
 owner's next failing start will name the step; the questions are in docs/agents/agent-F.md.
 
+**The testers' kit (round 2, 28 Oct):** `tools/make_release.sh G_DISC --xemu-test` runs each kit Xbox folder through
+`tools/xemu_relaunch_test.sh --kit DIR --save` (installed as testers do, the game as default.xbe, no loader). The kit of main
+842bf3cc passed: two starts, bed save, CONTINUE loads the same bytes, no freeze; after the first frame no watchdog wait
+of 1 s or more with agent E's frame overlap.
+
 **Saves:** a corrupt or cut-short save file (PC check, both games, the same game code as the Xbox) gets the game's own
 "data may be damaged, start anyway?" after its retries, as on the PS2. Memory units are not supported (E:\UDATA only).
 

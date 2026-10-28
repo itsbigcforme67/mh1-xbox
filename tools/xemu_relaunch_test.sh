@@ -156,7 +156,8 @@ if [ -z "$KIT" ]; then
     sleep 2
 fi
 SHOTS=""; for s in $(seq 30 30 "$TOTAL"); do SHOTS="$SHOTS $s"; done
-XBOX_FILES="$T" tools/run_xemu.sh --xbe build/xbox/testlaunch/default.xbe ${KIT:---net} --shot "$T/shot.png" \
+NET=--net; [ -z "$KIT" ] || NET=          # (the kit has no loader: no network needed)
+XBOX_FILES="$T" tools/run_xemu.sh --xbe build/xbox/testlaunch/default.xbe $NET --shot "$T/shot.png" \
     --after "${SHOTS# }" > "$T/run.log" 2>&1 &
 XPID=$!
 if [ -z "$KIT" ]; then

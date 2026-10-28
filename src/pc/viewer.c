@@ -3604,6 +3604,7 @@ int main(int argc, char **argv)
         rt_prof_begin(RTP_GFX);
         xbox_watch_mark("frame end (gfx_end_frame)");
         gfx_end_frame();
+        xbox_watch_mark("after the frame (pacing, input, next tick)");
         rt_prof_end(RTP_GFX);
 #ifndef XBOX
         if (!shot)

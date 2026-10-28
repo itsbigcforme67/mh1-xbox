@@ -20,6 +20,7 @@
  * vertex program as in nxdk's samples), gfx_read_pixels only reads the back
  * buffer memory as is (format assumed X8R8G8B8, untested).
  */
+#include "xbox_watch.h"
 #include "../gfx/gfx.h"
 #include "../gfx/gfx_gl.h"           /* gfx_opt.widescreen (settings menu, gfx_opts.c) */
 
@@ -449,6 +450,7 @@ void gfx_begin_frame(uint32_t c)
      * (half a 60 Hz refresh on average, 8 ms, in every frame slower than 60 fps).
      * The GPU finishes the last frame first (gfx_end_frame no longer waits for it: the game ticks in between run while
      * the GPU draws), so its flip is queued before the check; a few vblanks at most, then on as before. */
+    xbox_watch_mark("GPU wait (gfx_begin_frame)");     /* (a freeze report / longest wait then names the GPU) */
     wait_idle();
     {
         int n;
@@ -462,6 +464,7 @@ void gfx_begin_frame(uint32_t c)
             rt_prof_end(RTP_GPU_WAIT);
         }
     }
+    xbox_watch_mark("drawing (after the GPU wait)");
     pb_reset();
     /* the PS2 output (gfx_opt.ps2_output): the frame is drawn at the PS2's 512 x 448 in the extra buffer and shown by
      * ps2_present (not for the bug reporter's id pass, which works in screen pixels) */
