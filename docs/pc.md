@@ -503,6 +503,14 @@ Differences that may matter: the Win32 ABI aligns `double` / `long long` in stru
 to 4 (the Xbox build is the same as Windows here and works); clang instead of gcc compiled the game C
 (the test quests all ran under Wine, but only test_quest_loop and test_log, not all_quests / audio).
 
+Windows build again, with the code table (agent D, 28 Oct 2026): `tools/build_win.sh` and `VERSION=mhg tools/build_win.sh`
+both build as they are with agent C's tools/codetab.py (5443 MH1 / 5631 G function starts written into the exe, capacity
+16384), nothing to fix. Checked under Wine, hidden, with the renderer score's own inputs (the PS2 runs in build/D/score/new,
+the same pads, pokes and random state): G's g_desert shows the "村長の教え" banner (a static 2D draw function reached through
+rt_code_ptr) and matches the Linux PC's picture of the same tick (SSIM 99.9997 %); MH1's m_camp 99.995 %, m_village
+99.998 % against Linux. Wine cannot start under the 1.5 GB `ulimit -v` the PC runs use ("wine: could not exec"; it
+reserves address space): it needs about 6 GB of address space (`ulimit -v 6000000`), real memory use stays small.
+
 ## How to play co-op (agent E, 7 Oct 2026)
 
 Up to four players hunt one quest together, each on his own PC (Linux or Windows), connected directly: one player

@@ -1071,3 +1071,13 @@ Both games unless marked.
   lighting checked against the PS2"); the host lit actors with world light directions on normals in their own space, so the
   lights turned with the actor's facing, and no fixed light could match both camp and desert. **To revert:** commit
   "Actor lighting: the PS2's actor program maths ...".
+
+## Renderer score round 2 (agent D, 28 Oct 2026)
+- **Dropped:** text_map talk_layout's row cut test (`cut = 22; if line[21] looks like a lead byte: cut = 21`). **Now:**
+  the last character boundary at or before 22, counted from the row's start. **Why:** a full-width string's second byte
+  can look like a lead byte; the old test split a character (G's quest banner, the singer's song lines in both games got
+  a stray blank inside a character). **To revert:** commit "Quest end banner in English as the US release ...".
+- **Dropped:** the referee's village play tick 0 at the first tick on the PS2's village stage (rt_ref.c,
+  rt_village_active). **Now:** the first tick after Local_main reaches its main step (rt_village_ready). **Why:** the PC's
+  NPCs did not exist for the first 11 play ticks, so nothing could be lined up with the PS2's. **To revert:** commit
+  "Village lockstep: play tick 0 once the village runs ...".
