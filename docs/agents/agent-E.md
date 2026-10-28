@@ -1152,5 +1152,5 @@ refused, package without MH1_HIDDEN -> passes to graphics start-up, no PLAYER.tx
   emulator: rt_online.c's pace() slept every catch-up tick (the game thread at 21% of the CPU).
 - Scratch scripts (not committed, build/E/): xemu_hall.sh (hidden xemu, own xbox_files copy in build/E/xh_files,
   mh1-server --open on 127.0.0.1:10277, TOWN=1 / OFFLINE=1 / XENV="RT_..."), pc_hall.sh (PC client, RT_PROF=1).
-- The RT_PROF report is in xemu's serial log twice per line (stderr goes there and to the file): dedupe when reading.
+- The RT_PROF report reaches xemu's serial log through stderr (xbox_log.c); no extra serial write is needed.
 - Next: the stage's near-plane test and per-frame index copies (gfx_nv2a.c execute_cpu), 10-22 ms in xemu.
