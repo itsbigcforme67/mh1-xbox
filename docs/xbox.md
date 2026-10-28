@@ -1892,8 +1892,9 @@ Results (xemu, nv2a builds of 28 Oct):
 | MH1, --save | start 1: bed save on an empty card (70736 bytes, check 65E017FC); start 2 CONTINUE: the same bytes, village reached |
 | G, --powercut | xemu killed 3 s after the save: the file on the disk has the logged size and check sum (78032, 0089AE77) |
 
-Every run: no FREEZE or CRASH line with the hardware's 5 s limit (also on the 10 s exit screen, which the old code would [from reading the code; not run]
-have reported as a freeze); the longest wait was the boot's, 1.5-3.1 s. The quit in the scripted runs needs select+start
+Every run: no FREEZE or CRASH line with the hardware's 5 s limit, also on the 10 s exit screen (which the old code would
+have reported as a freeze: from reading the code, not run); the longest wait was the boot's, 1.5-3.1 s. A last G run with
+the split boot / play report: boot 2.0 s, nothing of 1 s or more after the first frame (title, opening movie). The quit in the scripted runs needs select+start
 held for 60 drawn frames: in the house xemu draws ~15 a second, so the scripts hold it for 400 ticks.
 
 **Fixed:**

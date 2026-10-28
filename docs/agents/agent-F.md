@@ -735,7 +735,8 @@ docs/xbox.md "Second start, saves and the watchdog in xemu (agent F, 28 Oct 2026
   own time-outs. The log now says "watchdog: longest wait so far N ms, at "<checkpoint>" (limit there S s)" whenever a new
   longest wait of 1 s or more happens after the first frame ("... during the boot N ms" for the boot): the owner's logs
   will show the real margin. In xemu the boot's longest wait was 1.5-3.1 s (no load step between the window and the
-  first frame); no later wait was longer than that in any run (the first version logged only a new longest overall).
+  first frame); no later wait was longer than that in any run, and in a last G run with the split report nothing after
+  the first frame reached 1 s (title, opening movie).
 - **AC97 interrupt guard.** An interrupt on IRQ 6 that none of the known status bits explains used to return "not mine";
   a level interrupt then comes back for ever (black screen, nothing logged). Now every ACI interrupt enable is switched
   off and the game goes on silent; "ac97 open: N interrupt(s) with no known cause" in the log names it. A guess at the
