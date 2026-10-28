@@ -2497,3 +2497,8 @@ x0D5 +0x3E; player_work 0x34D450 / 0xA00; em_work 0x340C40 / 0xA00 with EMW's 8-
 - Left (not built for G, or weak and overridden): the BOX_ID / BOX_FLAG macros in the menu*.c headers (unused),
   camarea_nm.c SetAreaData (camarea05.c wins), plsel01.c, chat_all.c.
 - MH1: unchanged (GWX(o) is o there; its offsets were right).
+- **The other HUNT=1 flake (ANNA's pouch did not grow), test aid:** RT_PL_WARP_EM put the hunter next to the carcass
+  but kept 500 clear of the stage's exits only when some spot allowed it; the Kut-Ku died 668 from the centre of the
+  36 -> 35 exit (radius 750), no spot was 500 clear, and the fallback (746 from it) stood inside the exit: ANNA walked
+  into stage 35 instead of carving (round-10 merge run 4, this round's fix run 3). Now 500, then 200, then 25 clear.
+  Shared test aid (rt_player.c): both games.
