@@ -140,10 +140,14 @@ void flfntSetPalData(int n, u32 a, u32 b, u32 c, u32 d)
     int i;
     (void)b;
     (void)c;
+    u32 old[4];
     if (n < 0)
         return;     /* G: n < 0 is the font's own default slot (np+0x49B8) */
     n &= 0x1F;
+    memcpy(old, pal[n], sizeof old);
     g_pal_set(n, a, d);
+    if (!memcmp(old, pal[n], sizeof old))
+        return;     /* the same colours: the glyphs made with them stay (G's lobby sets its palettes every frame) */
     if (glyph_tex)
         for (i = 0; i < NGLYPH; i++)
             if (glyph_tex[i] && glyph_tex[i][n]) {
@@ -151,10 +155,11 @@ void flfntSetPalData(int n, u32 a, u32 b, u32 c, u32 d)
                 glyph_tex[i][n] = NULL;
             }
 #else
-    u32 in[4] = { a, b, c, d };
+    u32 in[4] = { a, b, c, d }, old[4];
     u8 al = (a & 0xFF000000) ? 0xFF : 0;
     int i;
     n &= 0x1F;
+    memcpy(old, pal[n], sizeof old);
     for (i = 0; i < 4; i++) {
         u32 v = in[i];
         u8 r = (u8)(v >> 16), g = (u8)(v >> 8), bl = (u8)v, aa;
@@ -164,6 +169,8 @@ void flfntSetPalData(int n, u32 a, u32 b, u32 c, u32 d)
             aa = (r | g | bl) ? 0xFF : 0;
         pal[n][i] = r | g << 8 | bl << 16 | (u32)aa << 24;
     }
+    if (!memcmp(old, pal[n], sizeof old))
+        return;                     /* the same colours: the glyphs made with them stay */
     if (glyph_tex)                  /* this palette's glyphs are rebuilt on next use */
         for (i = 0; i < NGLYPH; i++)
             if (glyph_tex[i] && glyph_tex[i][n]) {

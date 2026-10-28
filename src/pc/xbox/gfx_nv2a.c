@@ -35,6 +35,47 @@
 #include "../rt/rt_prof.h"
 #include "../rt/rt_log.h"
 
+/* One kick per draw. pbkit's pb_end sends the commands at once (pb_start: an sfence, a write-combine flush that polls
+ * a GPU register until done, then the PUT register write): one round of uncached register accesses per block, and
+ * the backend wrote ~1300 small blocks a frame (each state change its own; 27 Oct 2026, G guild hall). In xemu every
+ * such access is a slow exit to the emulator. Here pb_begin / pb_end only move a write pointer past pbkit's put
+ * pointer (pbkit's pb_begin just returns it; its 128-dword block check is debug-only), and cmd_kick sends what was
+ * written: after each draw, when a batch grows past CMD_BATCH dwords, and before every pbkit call that writes
+ * commands itself or waits for the GPU (the macros below). Same commands in the same order, fewer PUT writes. */
+#define CMD_BATCH 4096
+static uint32_t *cmd_open, *cmd_start;
+static void cmd_kick(void)
+{
+    if (!cmd_open)
+        return;
+    pb_end(cmd_open);
+    cmd_open = NULL;
+    rt_prof_count(RTPC_KICKS, 1);
+}
+static inline uint32_t *cmd_begin(void)
+{
+    if (!cmd_open)
+        cmd_open = cmd_start = pb_begin();
+    return cmd_open;
+}
+static inline void cmd_end(uint32_t *p)
+{
+    cmd_open = p;
+    if (p - cmd_start > CMD_BATCH)
+        cmd_kick();
+}
+#define pb_begin cmd_begin
+#define pb_end cmd_end
+#define pb_busy() (cmd_kick(), pb_busy())
+#define pb_finished() (cmd_kick(), pb_finished())
+#define pb_reset() (cmd_kick(), pb_reset())
+#define pb_wait_for_vbl() (cmd_kick(), pb_wait_for_vbl())
+#define pb_target_back_buffer() (cmd_kick(), pb_target_back_buffer())
+#define pb_target_extra_buffer(...) (cmd_kick(), pb_target_extra_buffer(__VA_ARGS__))
+#define pb_fill(...) (cmd_kick(), pb_fill(__VA_ARGS__))
+#define pb_erase_depth_stencil_buffer(...) (cmd_kick(), pb_erase_depth_stencil_buffer(__VA_ARGS__))
+#define pb_kill() (cmd_kick(), pb_kill())
+#define pb_show_front_screen() (cmd_kick(), pb_show_front_screen())
 #define MASK(mask, val) (((val) << (ffs(mask) - 1)) & (mask))
 #define GPU_MAXRAM 0x03FFAFFF
 #define RING_BYTES (6u << 20)
@@ -328,8 +369,13 @@ void gfx_size(int *w, int *h)
  * played once the game also wrote every log line to the disk, which paused this thread. */
 static void wait_idle(void)
 {
+    if (!pb_busy())
+        return;
+    rt_prof_begin(RTP_GPU_WAIT);
+    rt_prof_count(RTPC_GPU_WAITS, 1);
     while (pb_busy())
         SwitchToThread();
+    rt_prof_end(RTP_GPU_WAIT);
 }
 
 /* GPU memory given back late (textures, palettes, vertex buffers): NV2A caches texels and the palette by address and
@@ -392,7 +438,9 @@ static void *gpu_alloc(size_t n)
 
 void gfx_begin_frame(uint32_t c)
 {
+    rt_prof_begin(RTP_GPU_WAIT);
     pb_wait_for_vbl();
+    rt_prof_end(RTP_GPU_WAIT);
     pb_reset();
     /* the PS2 output (gfx_opt.ps2_output): the frame is drawn at the PS2's 512 x 448 in the extra buffer and shown by
      * ps2_present (not for the bug reporter's id pass, which works in screen pixels) */
@@ -481,8 +529,10 @@ void gfx_end_frame(void)
 {
     ps2_present();
     wait_idle();
+    rt_prof_begin(RTP_GPU_WAIT);
     while (pb_finished())
         SwitchToThread();               /* see wait_idle */
+    rt_prof_end(RTP_GPU_WAIT);
 }
 
 int gfx_read_pixels(uint8_t *rgb)
@@ -640,6 +690,8 @@ int gfx_update_texture(gfx_texture *t, const uint8_t *rgba)
     int y;
     if (!t || !t->mem || t->pal)
         return -1;
+    rt_prof_count(RTPC_TEX_NEW, 1);
+    rt_prof_count(RTPC_TEX_KB, (long)t->w * t->h * 4 / 1024);
     rt_lt_begin(RTL_TEXUP);
     size = (size_t)t->pitch * t->h;
     if (t->rect) {
@@ -665,6 +717,8 @@ int gfx_update_texture(gfx_texture *t, const uint8_t *rgba)
 gfx_texture * gfx_create_texture(int w, int h, const uint8_t *rgba)
 {
     gfx_texture * r;
+    rt_prof_count(RTPC_TEX_NEW, 1);
+    rt_prof_count(RTPC_TEX_KB, (long)w * h * 4 / 1024);
     rt_lt_begin(RTL_TEXUP);
     r = gfx_create_texture_lt(w, h, rgba);
     rt_lt_end(RTL_TEXUP);
@@ -1018,6 +1072,8 @@ static void draw_indexed(const uint16_t *idx, int n)
 {
     uint32_t *p;
     int i = 0;
+    rt_prof_count(RTPC_DRAWS, 1);
+    rt_prof_count(RTPC_DRAW_TRIS, n / 3);
     p = pb_begin();
     p = pb_push1(p, NV097_SET_BEGIN_END, NV097_SET_BEGIN_END_OP_TRIANGLES);
     pb_end(p);
@@ -1036,12 +1092,16 @@ static void draw_indexed(const uint16_t *idx, int n)
         p = pb_push1(p, NV097_ARRAY_ELEMENT32, idx[i]);
     p = pb_push1(p, NV097_SET_BEGIN_END, NV097_SET_BEGIN_END_OP_END);
     pb_end(p);
+    cmd_kick();                 /* the GPU starts on the draw while the CPU sets up the next */
 }
 
 static void draw_arrays(int n)
 {
     uint32_t *p;
     int i = 0;
+    rt_prof_count(RTPC_DRAWS, 1);
+    rt_prof_count(RTPC_DRAW_TRIS, n / 3);
+    rt_prof_count(RTPC_DRAW_VERTS, n);
     p = pb_begin();
     p = pb_push1(p, NV097_SET_BEGIN_END, NV097_SET_BEGIN_END_OP_TRIANGLES);
     while (i < n) {
@@ -1052,6 +1112,7 @@ static void draw_arrays(int n)
     }
     p = pb_push1(p, NV097_SET_BEGIN_END, NV097_SET_BEGIN_END_OP_END);
     pb_end(p);
+    cmd_kick();                 /* the GPU starts on the draw while the CPU sets up the next */
 }
 
 gfx_clay *gfx_create_clay(const gfx_clay_desc *d)
@@ -1294,6 +1355,7 @@ void gfx_draw_2d(int w, int h, int nvert, const float *pos, const float *st, con
 
     if (gfx_rec_2d(w, h, nvert, pos, st, col))
         return;
+    rt_prof_count(RTPC_DRAWS_2D, 1);
     if (gfx_pick_pass) {
         gfx_pick_info gi;
         pick_fill(&gi, 1, nvert, t);
