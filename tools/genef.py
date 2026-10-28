@@ -4,17 +4,23 @@ switch on w->anim through a jump table) from asm into C. Run it BEFORE the file 
 asm/game/text/ASMFILE.s and the table from asm/game/data/data/*.s). Example (em01):
   python3 tools/genef.py f_em_566630 ef_move_sub_00574EE0 lit_4394_00685EF0 0x57A768 0x57A760 /tmp/ef_gen.c
 The output is the function body (env WTYPE = name of the monster work struct, default EM01W); fix up by hand what it
-flags with #error."""
+flags with #error.
+GENEF_G=1: read Monster Hunter G's asm (asm/mhg/game/...) instead; G's game_w.x1E accesses (lui 0x360000 / -0x12C2) are
+read as MH1's, so the output names the same fields (the PC's G build keeps MH1's EMW layout)."""
 import re, struct, sys
 import os
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 ASMFILE, FUNC, TABLE, ENDS, DEFS, OUTC = sys.argv[1:7]
-_asm = open(os.path.join(ROOT, 'asm/game/text/%s.s' % ASMFILE)).read()
+ASMDIR = 'asm/mhg/game' if os.environ.get('GENEF_G') else 'asm/game'
+_asm = open(os.path.join(ROOT, ASMDIR, 'text/%s.s' % ASMFILE)).read()
+if os.environ.get('GENEF_G'):      # G's game_w.x1E (0x35ED3E) in MH1's spelling (0x3F340E)
+    _asm = re.sub(r'lui(\s+\$\d+), \(0x360000 >> 16\)', r'lui\1, (0x3F340E >> 16)', _asm)
+    _asm = re.sub(r'(lhu\s+\$\d+), -0x12C2\(\$1\)', r'\1, (0x3F340E & 0xFFFF)($1)', _asm)
 _asm_func = re.search(r'^glabel %s\n(.*?)^endlabel %s\n' % (re.escape(FUNC), re.escape(FUNC)), _asm, re.M | re.S).group(0)
-RAW = re.search(r'^glabel %s\n(.*?)^endlabel %s\n' % (re.escape(FUNC), re.escape(FUNC)), _asm, re.M | re.S).group(0).split('\n')
+RAW = _asm_func.split('\n')
 tbl_words = []
 import glob
-for f in glob.glob(os.path.join(ROOT, 'asm/game/data/data/*.s')):
+for f in glob.glob(os.path.join(ROOT, ASMDIR, 'data/data/*.s')):
     t = open(f).read()
     m = re.search(r'dlabel %s\n(.*?)enddlabel' % TABLE, t, re.S)
     if m:

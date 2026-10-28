@@ -707,3 +707,10 @@ shell06_change_time = 0x006C4E80; // size:0x48    # round 11 scan: MH1 0x40; G d
 quest_t_stin_tbl = 0x006CCC30; // size:0x60    # round 11 scan: MH1 0x50; G data continues +0x7 past MH1 size, no label (MH1: next label right at the end)
 tuto_msg_tbl = 0x006CD6F0; // size:0x30    # round 11 scan: MH1 0x28; G data continues +0x3 past MH1 size, no label (MH1: next label right at the end)
 tuto_flag_tbl = 0x006CD770; // size:0x20    # round 11 scan: MH1 0x14; G data continues +0x2 past MH1 size, no label (MH1: next label right at the end)
+# em02 (Fatalis, G only): the fire-rain acts' shot lists (s8 indexes into shell08_type12_ofs_g). G reads variants 1-4 through a
+# pointer table at game 0x695ECC (entry 0 none) into main 0x2ECFC8 (8 bytes each; they follow fly_adjy_hosei_tbl's two
+# pointers), act 18 the ten-shot list at game 0x695EC0 (which 0x695EE0 points at). Agent B, 28 Oct 2026.
+[main]
+em02_rain_ofs_g = 0x002ECFC8; // size:0x20 noptr
+[game]
+em02_rain2_ofs_g = 0x00695EC0; // size:0xC noptr

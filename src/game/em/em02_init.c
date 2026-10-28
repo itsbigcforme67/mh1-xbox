@@ -60,10 +60,19 @@ void em02_init(EMW *em) {
             break;
         }
     }
+#ifdef VERSION_MHG
+    /* G (0x5A9CA0): the crimson dragon (kind 0x24) and event quests (numbers above 50000) take the hit points of
+     * G's level tables; MH1's quests 0xB9 / 0xCF are gone. Kind 2 in a G quest carries its hit points (game_w.x218). */
+    if (em->kind == 0x24 || (u16)quest_w.no > 50000) {
+        int game_func_005499A0(EMW *em, s16 no);
+        em->x302 = em->x792 = game_func_005499A0(em, 0);
+    } else {
+#else
     if (quest_w.no == 0xB9 || quest_w.no == 0xCF) {
         em->x302 = 20000;
         em->x792 = 20000;
     } else {
+#endif
         s16 *hp = &game_w.x218;
 
         if (*hp == 0) {
@@ -90,5 +99,8 @@ void em02_init(EMW *em) {
     em_char_set(em, 1, 0, 0);
     em->x388 = 0;
     em02_act_set(em, 0, 1, 0);
+#ifdef VERSION_MHG
+    ((s8 *)em->ex)[0x57] = -1;      /* G: em02_main's kind-0x24 counter (em02_ai_nm.c em02_g_tick) idles */
+#endif
 }
 #endif

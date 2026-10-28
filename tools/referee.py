@@ -192,6 +192,13 @@ for _n, _q, _st, _x, _z in (('g_rathalos', 10017, 40, 8943, 12232), ('g_gypceros
                          pokes=area(30, _st, float(_x), 0.0, float(_z - 600)), ticks=1500 if 'scene' in _n else 450)
 
 
+# G's Fatalis (kind 2, em02): online quest 3004 (m03004.mib, Castle Schrade, stage 25; started offline from the gate
+# state). Its opening demo (em02 demo 1) runs ~2100 play ticks, then the fight; the hunter waits 600 south of where the
+# dragon lands (11927, 15044). agent B, 28 Oct 2026
+SCENARIOS['g_fatalis'] = dict(game='mhg', quest=3004, weapon=(6, 1), pad='idle*2100,' + FIGHT + ',' + FIGHT,
+                              pokes=area(30, 25, 11927.0, 0.0, 14444.0), ticks=4500)
+
+
 def expand_pad(script):
     names = {'up': (0, 0, -127, 0, 0), 'down': (0, 0, 127, 0, 0), 'left': (0, -127, 0, 0, 0), 'right': (0, 127, 0, 0, 0),
              'cam_l': (0, 0, 0, -127, 0), 'cam_r': (0, 0, 0, 127, 0), 'cam_u': (0, 0, 0, 0, -127),
