@@ -2502,3 +2502,10 @@ x0D5 +0x3E; player_work 0x34D450 / 0xA00; em_work 0x340C40 / 0xA00 with EMW's 8-
   36 -> 35 exit (radius 750), no spot was 500 clear, and the fallback (746 from it) stood inside the exit: ANNA walked
   into stage 35 instead of carving (round-10 merge run 4, this round's fix run 3). Now 500, then 200, then 25 clear.
   Shared test aid (rt_player.c): both games.
+- **Proof (28 Oct):** with both fixes, test_online_g.sh HUNT=1 passed 10 runs in a row on agent-C (BOB now starts as a
+  follower: np-hp owner -1 at tick 1). Before: main 5/6 (run 6: the HP went up), round-10 merge 5/6 (the carve flake).
+  full_check after merging main: all ok except test_online_town (MH1, "ANNA did not start the co-op quest") once;
+  it passed twice on rerun alone (the machine was loaded by other agents' checks; untouched by this change).
+- The disk filled (0.7 GB free) during the runs from other worktrees' outputs; two proof runs died on sqlite "disk
+  I/O error" and the 10 were restarted from scratch after freeing this worktree's regenerable outputs (build/show,
+  data ISOs).
