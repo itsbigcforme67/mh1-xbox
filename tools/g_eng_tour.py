@@ -126,7 +126,7 @@ SCENES = {
                        shots=[220, 260, 330, 400, 460, 560, 640], env=dict(RT_STEP="1", RT_QUEST_STAGE="1"), card="qcard"),
     # a hunt cleared with the test aids of tools/test_all_quests.py (quest 4, Yian Kut-Ku): clear banner, reward screen and list
     "reward": dict(args=["--quest", "4", "--play"], input="idle*60" + (',cam_u*2,idle*30' * 4 + ',circle*2,idle*28' * 6 + ',cross*2,idle*14,ddown*2,idle*14,circle*2,idle*14') * 40, time=430,
-                   shots=[8300] + list(range(10000, 12900, 250)),
+                   shots=[8240, 8300] + list(range(10000, 12900, 250)),   # 8240: the clear line ("All requested monsters slain.")
                    env=dict(RT_STEP="1", RT_PL_GOD="1", RT_PL_GOTO="60,f", RT_PL_TARGET="k6", RT_PL_WARP_EM="900-90000",
                             RT_DMG_MUL="40", RT_PL_SLAY="8000"), card="qcard"),
 }

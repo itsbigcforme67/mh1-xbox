@@ -18,6 +18,10 @@ sbs_<id>.png (PS2 | PC | Xbox at 640x448), heat_<id>.png (|PC - PS2| | |Xbox - P
 Nothing under DIR goes to git (the pictures are the game's). Capture hook for a real Xbox (capture card): put the
 grabbed frame at DIR/<game>/<id>/hw_r1.png (and hw_r2.png) and run `score`: it is scored as a fourth platform.
 
+Test aids (PS2 side, run 1): SCORE_PS2_DUMP=1 writes the shot's EE RAM (ps2_ee.bin) and a PCSX2 save state (ps2_state.p2s,
+zstd zip with vu1Memory.bin) into the scene folder; SCORE_PS2_GSDUMP=1 records a PCSX2 GS dump from the tick before the
+shot (F7 held, in the PCSX2 snaps folder; tools/gs_dump_verts.py lists its vertex colours).
+
 Emulators: one at a time on this machine; every PCSX2 / xemu session takes the shared lock (xemu.lock next to the
 main checkout) and waits for > 2.5 GB available memory and for no other pcsx2 / xemu process. Run uncapped (PCSX2 and
 xemu do not start under ulimit -v); the PC runs cap themselves at 1.5 GB. Standard library only; ffmpeg for scaling.
@@ -216,6 +220,12 @@ def ps2_scene(ps2, sc, sdir, rep):
             time.sleep(float(os.environ.get("SCORE_PS2_WAIT", "0.6")))  # the game is stopped at the start of play tick pt
             p = os.path.join(sdir, 'ps2_%s%s.png' % (tag, want[pt]))
             fw, fh = grab_ps2(ps2, p)
+            if pt == shot - 1 and os.environ.get('SCORE_PS2_GSDUMP') and rep == 1:
+                # test aid: PCSX2's GS dump (multi-frame, recorded while F7 is held) over the next ticks, in its snaps
+                # folder (tools/gs_dump_verts.py lists the vertex colours the PS2 drew)
+                subprocess.Popen([os.path.join(ROOT, 'build/pcsx2/xkey'), 'F7:2500:0'],
+                                 env=dict(os.environ, DISPLAY=':%d' % ps2.dnum))
+                time.sleep(0.3)
             if pt == shot:              # the same held frame again: the capture's own stability
                 vp = ps2.r32(LPVIEW[ps2.gname])
                 cam = struct.unpack('<12f', ps2.p.read_bytes(vp, 48)) if 0x100000 <= vp < 0x2000000 else ()
@@ -225,6 +235,21 @@ def ps2_scene(ps2, sc, sdir, rep):
                     'frame %dx%d video mode %d merge-off %d MAGH %d\n' % (fw, fh, st[1], st[2], st[5]))
                 time.sleep(0.4)
                 grab_ps2(ps2, os.path.join(sdir, 'ps2_%s_again.png' % tag))
+                if os.environ.get('SCORE_PS2_DUMP') and rep == 1:
+                    # test aid: the held frame's EE RAM (32 MB) and VU1 data memory (16 KB at 0x1100C000) for
+                    # checking the ports' maths against the PS2's (tools/vu1_light.py; never committed)
+                    open(os.path.join(sdir, 'ps2_ee.bin'), 'wb').write(ps2.p.read_bytes(0, 0x2000000))
+                    d = os.path.join(ps2.home, 'PCSX2', 'sstates')
+                    [os.remove(os.path.join(d, f)) for f in os.listdir(d) if f.endswith('.06.p2s')]
+                    old = set(os.listdir(d))
+                    ps2.p.save(6)               # (VU1 memory is not readable through PINE: a save state holds it)
+                    for _ in range(100):
+                        time.sleep(0.2)
+                        new = [f for f in os.listdir(d) if f not in old and f.endswith('.06.p2s')]
+                        if new:
+                            time.sleep(2)
+                            os.replace(os.path.join(d, new[0]), os.path.join(sdir, 'ps2_state.p2s'))
+                            break
         pad = pads[pt] if play and 0 <= pt < len(pads) else (0, 0, 0, 0, 0)
         field_sync(ps2)
         ps2.go(k, R.fpad_words(pad), [(r, o, t, v) for (p_, r, o, t, v) in pokes if play and p_ == pt])
@@ -249,7 +274,7 @@ def run_ps2(gname, scenes, out, reps):
     # a 640x480 4:3 window: 512x448 scaled twice and the fields blended, much softer than the console.
     os.environ.setdefault('PCSX2_DEINTERLACE', '1')
     os.environ.setdefault('PCSX2_GS_EXTRA', 'ScreenshotSize = 2\nScreenshotFormat = 0\npcrtc_antiblur = false')
-    os.environ.setdefault('PCSX2_INI_EXTRA', '[Hotkeys]\nScreenshot = Keyboard/F8')
+    os.environ.setdefault('PCSX2_INI_EXTRA', '[Hotkeys]\nScreenshot = Keyboard/F8\nGSDumpMultiFrame = Keyboard/F7')
     with EmuLock():
         for rep in range(1, reps + 1):     # each run its own PCSX2 session
             emu_ready()

@@ -1073,3 +1073,13 @@ Both games unless marked.
 - **Dropped:** gfx_begin_frame's unconditional pb_wait_for_vbl. **Now:** only when two finished frames still wait for
   their flip. **Why:** 19.5 -> 23.5 fps in the hall (xemu); untested on hardware (look for tearing). **To revert:**
   commit "Xbox nv2a: wait for a vblank at frame start only when two finished frames still wait ...".
+## Actor lighting (agent D, 27 Oct 2026)
+- **Dropped:** the fixed light set as the default for hunters, monsters and NPCs (viewer.c `light`, now only the fallback
+  while light_work is empty and with RT_LIGHT_GAME=0), and rt_light.c's RT_LIGHT_VU test branch (its literal ambient of
+  about 0.002 came from a misread scale: AMB is 128 in the actors' packets). **Now:** the game's own lights (light_work
+  set 1, per actor through pl_light_change + Pl_light_set) by default, turned into each actor's own space and
+  renormalised (fl_light_local, as Vu1Code_0016_0004's PROG does per bone), light colours clamped at 1.0, ambient half the
+  summed rows (material A = 0.5). **Why:** checked per vertex against a PCSX2 GS dump of the camp (docs/pc.md "Actor
+  lighting checked against the PS2"); the host lit actors with world light directions on normals in their own space, so the
+  lights turned with the actor's facing, and no fixed light could match both camp and desert. **To revert:** commit
+  "Actor lighting: the PS2's actor program maths ...".

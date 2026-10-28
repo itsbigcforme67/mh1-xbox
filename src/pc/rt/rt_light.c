@@ -7,7 +7,8 @@
  * three blocks to flSetRenderState(0x5A..0x5C)), and light_change_normal puts the stage rows back afterwards. The host draws the models
  * itself, so this file runs the same game C per actor right before the host poses it and reads the three blocks back
  * (rt_fl.c keeps what flSetRenderState(0x5A + i) got in rt_light_blk).
- * Only used with RT_LIGHT_GAME=1 (viewer.c); the default is still the fixed light.
+ * The default since 27 Oct 2026 (RT_LIGHT_GAME=0: the old fixed light); viewer.c turns them into each actor's own space
+ * (fl_light_local).
  */
 #include "rt.h"
 #include "types.h"
@@ -91,16 +92,13 @@ static int blocks_out(const unsigned char *b, float dir[3][3], float col[3][3], 
             any |= c != 0.0f || a != 0.0f;
         }
     }
-    if (any && getenv("RT_LIGHT_VU")) {
-        /* the literal Vu1Code_0001 ambient (docs/pc.md "Lighting, material factors"): PS2SHADER_ADD_LIGHTCOL3 makes mem15 =
-         * min(sum of the c rows * AMB, AMB) with AMB = the model's mat+0x24 (0.5 in every model checked), the VU multiplies it by the
-         * material's ambient qword (0.5 everywhere) and adds it to a colour whose 1.0 is 128: practically zero. The diffuse
-         * qword (material colour B) is 1.0 everywhere, so the light colours need no factor. A guess whether the actors use this family. */
-        for (k = 0; k < 3; k++) {
-            float m = amb[k] * 0.5f;
-            amb[k] = (m > 0.5f ? 0.5f : m) * 0.5f / 128.0f;
-        }
-    }
+    /* The PS2's ambient term (checked against PCSX2: the flPS2AddMatrix_001E packets in EE RAM and the vertex colours of a GS
+     * dump, docs/agents/agent-D.md "Actor lighting"): PS2SHADER_ADD_LIGHTCOL3 puts min(128, sum of the +0x24 rows * 128) in
+     * mem 15, Vu1Code_0016_0004's MATERIAL adds mem 0 (flPS2Ambient * AMB, 0 for the actors) and multiplies by the material's
+     * second qword, A = 0.5 in every model checked (the AMO's colour A, RT_LIGHT_TRACE=3; the hunter's packet in PCSX2), no
+     * 128 scale: half the summed rows, clamped at 1.0 first. */
+    for (k = 0; k < 3; k++)
+        amb[k] = (amb[k] > 1.0f ? 1.0f : amb[k]) * 0.5f;
     return any;
 }
 
