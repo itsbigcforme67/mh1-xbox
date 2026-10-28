@@ -21,12 +21,13 @@ done
 gold() { python3 -c "import sys; sys.path.insert(0, 'tools'); from test_coop_hunt import card_gold; print(card_gold('$OUT/card_$1'))"; }
 a_gold0=$(gold ANNA); b_gold0=$(gold BOB)
 # the server as an operator would run it: a config file, an account store, one account per player (invite-only)
+RELAY=$(python3 tools/free_ports.py 10) || fail "no free ports"     # a free relay range (tools/free_ports.py), not a fixed one another run may hold
 cat > $OUT/mh1-server.conf <<CONF
 [server]
 bind = 127.0.0.1
 lobby-port = 0
 lobby-relay = yes
-relay-ports = 10380-10389
+relay-ports = $RELAY-$((RELAY + 9))
 db = accounts.sqlite3
 verbose = yes
 CONF

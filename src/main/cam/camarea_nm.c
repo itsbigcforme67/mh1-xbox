@@ -10,6 +10,7 @@
  * GetPanTarget / GetRailTarget / GetRailCamPos / GetNearSection /
  * GetNearPoint serve the rail cameras (area types 1-3, cam_sub_stg).
  * Field names are by offset; meanings are guesses from the code. */
+#include "gwx.h"
 #include "types.h"
 #include "cam.h"
 #include "game.h"
@@ -124,7 +125,7 @@ s32 CameraAreaCheck(CAMAREA *a, PLW *pl, s32 mask);
 /* 0x00223070: the area the camera's player is in. -1 no camera data,
  * 0 none found (area = first block), 1 found (area set). */
 s32 SetAreaData(CAMW *cw) {
-    PLW *pl = &player_work[EB(&game_w, 0xD1)];
+    PLW *pl = &player_work[EB(&game_w, GWX(0xD1))];
     u8 *d = cw->data;
     u8 *cell;
     CAMAREA **l;

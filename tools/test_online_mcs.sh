@@ -19,7 +19,7 @@ for nm in ANNA BOB; do
     [ -f build/coop/save_$nm/BISLPM-65495MH/BISLPM-65495MH ] || tools/test_coop.sh saves $nm >/dev/null || fail "could not make $nm's card"
     rm -rf $OUT/card_$nm; mkdir -p $OUT/card_$nm; cp -r build/coop/save_$nm/. $OUT/card_$nm/
 done
-MCSPORT=${MCSPORT:-10297}
+MCSPORT=${MCSPORT:-$(python3 tools/free_ports.py)}     # a free one (tools/free_ports.py), not a fixed port another run may hold
 cat > $OUT/mh1-server.conf <<CONF
 [server]
 bind = 127.0.0.1

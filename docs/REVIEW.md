@@ -1148,3 +1148,10 @@ Both games unless marked.
 - **Dropped:** gfx_end_frame's wait for the GPU before the flip. **Now:** gfx_begin_frame waits (RT_NV2A_SYNC=1 =
   old). **Why:** the GPU draws while the next ticks run (GPU wait 18 -> 7 ms in the hall, xemu). Untested on hardware.
   **To revert:** commit "Xbox nv2a: the GPU finishes a frame while the next ticks run ...".
+
+## Online tests: free ports instead of fixed ones (agent C, 28 Oct 2026)
+- **Dropped:** the fixed ports of the non-emulator online tests (test_online_town: co-op host 10300 + room, relay
+  10370-79; test_online_server: relay 10380-89; test_online_mcs / test_online_g: mcs 10297 / 10296). **Now:**
+  tools/free_ports.py picks free ones per run (MCSPORT still overrides). **Why:** two worktrees' full checks ran
+  test_online_town at once and took each other's co-op port ("ANNA did not start the co-op quest"). **To revert:**
+  commit "Online tests: free ports per run ...".
