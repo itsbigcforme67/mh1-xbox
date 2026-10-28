@@ -192,6 +192,36 @@ for _n, _q, _st, _x, _z in (('g_rathalos', 10017, 40, 8943, 12232), ('g_gypceros
                          pokes=area(30, _st, float(_x), 0.0, float(_z - 600)), ticks=1500 if 'scene' in _n else 450)
 
 
+# G's Fatalis (kind 2, em02): online quest 3004 (m03004.mib, Castle Schrade, stage 25; started offline from the gate
+# state). Its opening demo (em02 demo 1) runs ~2100 play ticks, then the fight; the hunter waits 600 south of where the
+# dragon lands (11927, 15044). agent B, 28 Oct 2026
+SCENARIOS['g_fatalis'] = dict(game='mhg', quest=3004, weapon=(6, 1), pad='idle*2100,' + FIGHT + ',' + FIGHT,
+                              pokes=area(30, 25, 11927.0, 0.0, 14444.0), ticks=4500)
+# the same, angered: hit points set to 12000 of 32000 at play tick 2150 (both sides) and the hunter put next to it
+SCENARIOS['g_fatalis_rage'] = dict(game='mhg', quest=3004, weapon=(6, 1), pad='idle*2160,' + ','.join([FIGHT] * 3),
+                                   pokes=area(30, 25, 11927.0, 0.0, 14444.0) + [(2150, 'em0', 0x302, 'u16', 12000)] +
+                                   area(2150, 25, 11850.0, 0.0, 14900.0), ticks=6000)
+
+# the kill and the quest clear: 200 hit points left at play tick 2150, the hunter put under its head and swinging
+SCENARIOS['g_fatalis_kill'] = dict(game='mhg', quest=3004, weapon=(6, 1), pad='idle*2160,' + ','.join([FIGHT] * 4),
+                                   pokes=area(30, 25, 11927.0, 0.0, 14444.0) + [(2150, 'em0', 0x302, 'u16', 200)] +
+                                   area(2150, 25, 11850.0, 0.0, 14950.0), ticks=6500)
+
+
+def em_act(pt, mode, no, dist=None):
+    """pokes that start monster 0's action mode/no at play tick pt (em02: step 0; w->dist for attacks 12 / 13)"""
+    p = [(pt, 'em0', 0x14, 'u8', mode), (pt, 'em0', 0x15, 'u8', no), (pt, 'em0', 0x5, 'u8', 0), (pt, 'em0', 0x6, 'u8', 0)]
+    return p + ([(pt, 'em0', 0x454, 'f32', dist)] if dist is not None else [])
+
+
+# G's new Fatalis acts forced on both sides (G's code on the PS2, the port on the PC): swoop 12, dive 13, fire rain 14,
+# double rain 18, fly-away 11
+SCENARIOS['g_fatalis_acts'] = dict(game='mhg', quest=3004, weapon=(6, 1), pad='idle*5200',
+                                   pokes=area(30, 25, 11927.0, 0.0, 14444.0) + em_act(2300, 3, 12, 1000.0) +
+                                   em_act(2800, 3, 13, 1000.0) + em_act(3400, 3, 14) + em_act(3900, 3, 18) +
+                                   em_act(4600, 2, 11), ticks=5200)
+
+
 def expand_pad(script):
     names = {'up': (0, 0, -127, 0, 0), 'down': (0, 0, 127, 0, 0), 'left': (0, -127, 0, 0, 0), 'right': (0, 127, 0, 0, 0),
              'cam_l': (0, 0, 0, -127, 0), 'cam_r': (0, 0, 0, 127, 0), 'cam_u': (0, 0, 0, 0, -127),

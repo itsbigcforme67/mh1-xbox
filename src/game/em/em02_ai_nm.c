@@ -44,6 +44,7 @@ typedef struct EM02W {
     s16 adj_tm;         /* 0x50 time into the table */
     u8 _pad52[2];
     s8 hagi[3];         /* 0x54 hagi pick point numbers, -1 none */
+    s8 x57;             /* 0x57 G: kind 0x24's counter (em02_g_tick), -1 idle */
 } EM02W;
 
 extern GAME_W game_w;
@@ -212,11 +213,30 @@ void em02_hagi_set(EMW *em) {
     f32 pos[3];
     int i;
 
+#ifdef VERSION_MHG
+    /* G (0x5A9FC0): the carve set by the quest's rank byte (header +0x42), kind 2 and its subspecies 0x24 differ
+     * in rank 2 */
+    switch (((s8 *)quest_w.x64)[0x42]) {
+    default:
+        s.id = 0xCB;
+        break;
+    case 1:
+        s.id = 0xF3;
+        break;
+    case 2:
+        s.id = em->kind == 2 ? 0x13B : 0x15C;
+        break;
+    case 3:
+        s.id = 0x119;
+        break;
+    }
+#else
     if (quest_w.x14E == 0) {
         s.id = 0xE6;
     } else {
         s.id = 0xE7;
     }
+#endif
     for (i = 0; i < 3; i++) {
         s.rad = hagi_r_tbl_006544B0[i];
         s.stg = em->stg;
@@ -282,15 +302,51 @@ void em02_to_fly(EMW *em, int mode) {
     }
 }
 
+#ifdef VERSION_MHG
+/* G 0x5A9F00 (G only), first thing in em02_main: kind 0x24's counter at w+0x57. While enraged (x8B6) it counts
+ * 41 ticks and moves x8B7 from 0 to 1 (then holds at 0); calm, it runs up to 51 and parks at -1 (em02_init: -1). */
+static void em02_g_tick(EMW *em, EM02W *w) {
+    if (em->kind != 0x24) {
+        return;
+    }
+    if (em->x8B6 != 0) {
+        switch (em->x8B7) {
+        case 0:
+            if (++w->x57 >= 41) {
+                em->x8B7++;
+                w->x57 = 0;
+            }
+            break;
+        case 1:
+            w->x57 = 0;
+            break;
+        }
+    } else {
+        em->x8B7 = 0;
+        if (w->x57 != -1 && ++w->x57 >= 51) {
+            w->x57 = -1;
+        }
+    }
+}
+#endif
+
 void em02_main(EMW *em) {
     EM02W *w = (EM02W *)em->ex;
     u8 dmg[4];
     int d;
 
+#ifdef VERSION_MHG
+    em02_g_tick(em, w);
+#endif
     em->x56A = 0;
     EMF(em, s16, 0x572) = 0;
     em_no_floor_ck(em);
     em_no_battle_area_ck(em, 0, 1);
+#ifdef VERSION_MHG
+    if (em->mode == 5) {        /* G: no anger while dying */
+        em->x8B6 = 0;
+    } else
+#endif
     if (em->x302 <= (s16)(0.65f * (f32)em->x792)) {
         if (em->x8B6 == 0) {
             em_ikari_add(em, em->x8B0);
@@ -355,6 +411,25 @@ void em02_main(EMW *em) {
         em02_act_set(em, 4, 4, 2);
         break;
     case 12:
+#ifdef VERSION_MHG
+        if (em->kind == 0x24) {     /* G: the crimson dragon's carves by broken parts (Quest_enemy_hagi_set bits) */
+            if (EMF(em, u8, 0x332) >= 3) {
+                Quest_enemy_hagi_set(em, 0x200);
+            }
+            if (EMF(em, u8, 0x332) > 0) {
+                Quest_enemy_hagi_set(em, 0x800);
+            }
+            if (EMF(em, u8, 0x332) >= 2) {
+                Quest_enemy_hagi_set(em, 0x400);
+            }
+            if (EMF(em, u8, 0x342) >= 10) {
+                Quest_enemy_hagi_set(em, 0x1000);
+            }
+            if (EMF(em, u8, 0x30A) > 0) {
+                Quest_enemy_hagi_set(em, 0x2000);
+            }
+        }
+#endif
         pl_flag_clr((PLW *)em, 0x20000);
         if (em->x388 == 2) {
             em02_act_set(em, 4, 3, 2);
@@ -587,6 +662,26 @@ static void em_act04_0057FCD0(EMW *em, EM02W *w) {
 }
 
 static void em_act05_0057FDF0(EMW *em, EM02W *w) {
+#ifdef VERSION_MHG
+    /* G (0x5AADF0): one waking motion (8) and the sleep-2 end, then back to normal */
+    switch (em->x05) {
+    case 0:
+        em->x05++;
+        em->x388 = 0;
+        em->x3F4 = 0;
+        em_char_set(em, 8, 0, 0);
+        em->x88B = 1;
+        Em_Sleep2_End(em);
+        break;
+    case 1:
+        if (em->x194 == 0) {
+            em->x05++;
+            em02_to_normal(em);
+        }
+        break;
+    }
+    return;
+#endif
     switch (em->x05) {
     case 0:
         em->x05++;
@@ -612,6 +707,25 @@ static void em_act05_0057FDF0(EMW *em, EM02W *w) {
 }
 
 static void em_act06_0057FEC0(EMW *em, EM02W *w) {
+#ifdef VERSION_MHG
+    /* G (0x5AAE80): as act 5, ending the paralysis */
+    switch (em->x05) {
+    case 0:
+        em->x05++;
+        em->x388 = 0;
+        em->x3F4 = 0;
+        em_char_set(em, 8, 0, 0);
+        Em_Mahi_End(em);
+        break;
+    case 1:
+        if (em->x194 == 0) {
+            em->x05++;
+            em02_to_normal(em);
+        }
+        break;
+    }
+    return;
+#endif
     switch (em->x05) {
     case 0:
         em->x05++;
@@ -1076,6 +1190,48 @@ static void em_fly10_00581040(EMW *em, EM02W *w) {
     FLY_FLOOR(em);
 }
 
+#ifdef VERSION_MHG
+/* G 0x5AC150 (G only), fly act 11: take off (fly_adjy2 type 6), climb at 10 per tick and leave; above 6000 it flies
+ * on (em02_to_fly). G aims the climb at a stack vector it never fills (Em_Calc_angY(pos, <uninitialised>)) but the
+ * speed it adds there has no forward part (em_rate_clear), so the heading does not move it: the PC keeps its own
+ * heading. [verified: referee g_fatalis_acts, forced act 2/11: same steps, x/z unchanged, y 1127 -> 7046 on both] */
+static void em_fly11_g(EMW *em, EM02W *w) {
+    switch (em->x05) {
+    case 0:
+        em->x05++;
+        em->x388 = 0;
+        em->x3F4 = 0;
+        em_char_set(em, 9, 0, 0);
+        em02_fly_adjy2_init(em, 6);
+        w->x18 = 0;
+        break;
+    case 1:
+        if (em_frame_check(em, 134.0f, 0)) {
+            em->x05++;
+            em->x388 = 2;
+            em02_fly_adjy2(em);
+        }
+        break;
+    case 2:
+        if (em02_fly_adjy2(em)) {
+            em->x05++;
+            em_rate_clear(em);
+            em->adj_y = 10.0f;
+        }
+        break;
+    case 3:
+        w->spd[1] = em->ang[1];
+        speed_add(em, w->spd);
+        if (!(em->pos[1] < 6000.0f)) {
+            em->x05++;
+            em_rate_clear(em);
+            em02_to_fly(em, 0);
+        }
+        break;
+    }
+}
+#endif
+
 #define ATK_SIMPLE(NAME, CH)                     \
     static void NAME(EMW *em, EM02W *w) {        \
         switch (em->x05) {                       \
@@ -1142,6 +1298,201 @@ static void em_atk03_005813A0(EMW *em, EM02W *w) {
 }
 
 ATK_SIMPLE(em_atk04_00581480, 0xF)
+
+#ifdef VERSION_MHG
+/* G's fire rain: shell08 type 12 shots (fall from above the hunter at one of 24 offsets, shell08_type12_ofs_g) at
+ * frames 80 / 140 / 200 / 260 / 320 of motion 0xF; the offset index comes from a list per variant (x06 counts the
+ * shots). The lists: em02_rain_ofs_g = main 0x2ECFC8 (variants 1-4, 8 bytes each; G's table of pointers to them is
+ * game 0x695ECC, entry 0 = none), em02_rain2_ofs_g = game 0x695EC0 (act 18, ten shots over two loops). */
+extern s8 em02_rain_ofs_g[4][8];
+extern s8 em02_rain2_ofs_g[12];
+
+static int em02_rain_frame_g(EMW *em) {
+    return em_frame_check(em, 80.0f, 0) || em_frame_check(em, 140.0f, 0) || em_frame_check(em, 200.0f, 0) ||
+           em_frame_check(em, 260.0f, 0) || em_frame_check(em, 320.0f, 0);
+}
+
+/* G 0x5AC580 (G only; MH1's atk04 is its variant 0): attack acts 4 (n 0, no shots) and 14-17 (n 1-4) */
+static void em_atk04_g(EMW *em, EM02W *w, int n) {
+    switch (em->x05) {
+    case 0:
+        em->x05++;
+        em->x388 = 0;
+        em->x3F4 = 0;
+        em_char_set(em, 0xF, 0, 0);
+        break;
+    case 1:
+        if ((u8)n != 0 && em02_rain_frame_g(em)) {
+            Shell08_set_ang(em, 0, 0xC, em02_rain_ofs_g[(u8)n - 1][em->x06], 0x4000, 0);
+            em->x06++;
+        }
+        if (em->x194 == 0) {
+            em->x05++;
+            em02_to_normal(em);
+        }
+        break;
+    }
+}
+
+/* G 0x5AD470 (G only): attack act 18, motion 0xF twice with five shots each */
+static void em_atk18_g(EMW *em, EM02W *w, int n) {
+    switch (em->x05) {
+    case 0:
+        em->x05++;
+        em->x388 = 0;
+        em->x3F4 = 0;
+        em_char_set(em, 0xF, 0, 0);
+        break;
+    case 1:
+    case 2:
+        if ((u8)n != 0 && em02_rain_frame_g(em)) {
+            Shell08_set_ang(em, 0, 0xC, em02_rain2_ofs_g[em->x06], 0x4000, 0);
+            em->x06++;
+        }
+        if (em->x194 == 0) {
+            em->x05++;
+            if (em->x05 == 2) {
+                em_char_set(em, 0xF, 0, 0);
+            } else {
+                em02_to_normal(em);
+            }
+        }
+        break;
+    }
+}
+
+/* G 0x5ACFB0 (G only): attack act 12, rise (motion 0x23, then 0x28 with fly_adjy2 type 4) and glide forward until
+ * the distance (w->dist, em02_atk_act_set) is used up, land (0x24), recover (8) */
+static void em_atk12_g(EMW *em, EM02W *w) {
+    switch (em->x05) {
+    case 0:
+        em->x05++;
+        em_char_set(em, 0x23, 0, 0);
+        em->x388 = 0;
+        break;
+    case 1:
+        if (em->x194 == 0) {
+            em->x05++;
+            em->x388 = 2;
+            em_char_set(em, 0x28, 0, 0);
+            em02_fly_adjy2_init(em, 4);
+        }
+        break;
+    case 2:
+        em02_fly_adjy2(em);
+        w->dist -= em->adj_z;
+        if (w->dist <= 0.0f) {
+            em->x05++;
+            em->x388 = 0;
+            em->pos[1] = em->x5AC;
+            em_char_set(em, 0x24, 0, 0);
+        }
+        break;
+    case 3:
+        if (em->x194 == 0) {
+            em->x05++;
+            em_char_set(em, 8, 0, 0);
+        }
+        break;
+    case 4:
+        if (em->x194 == 0) {
+            em->x05++;
+            em02_to_normal(em);
+        }
+        break;
+    }
+    FLY_FLOOR(em);
+}
+
+/* G 0x5AD140 (G only): attack act 13, a climbing turn (0x25, fly_adjy2 type 5, pitch +0x1A8 per tick), the dive
+ * (0x26: speed 80 down, shell04 0x1E) until 850 above the floor, the pull-out (0x27: pitch back after frame 15,
+ * pushed out of the floor), the landing (0x24), recover (8) */
+static void em_atk13_g(EMW *em, EM02W *w) {
+    FLMAT m;
+    f32 v[3];
+    f32 o[3];
+
+    switch (em->x05) {
+    case 0:
+        em->x05++;
+        em->x388 = 2;
+        em_char_set(em, 0x25, 0, 0);
+        em02_fly_adjy2_init(em, 5);
+        em->ang[0] = 0;
+        break;
+    case 1:
+        em->ang[0] += 0x1A8;
+        em02_fly_adjy2(em);
+        w->dist -= em->adj_z;
+        if (em->x194 == 0) {
+            em->x05++;
+            em_char_set(em, 0x26, 0, 0);
+            em->x388 = 2;
+            em->rate_x = 0.0f;
+            em->adj_y = 0.0f;
+            em->adj_z = 80.0f;
+            em->x3C0[0] = 0.0f;
+            em->x3C0[1] = 0.0f;
+            em->x3C0[2] = 9.0f;
+            shell04_set(em, 0x1E);
+        }
+        break;
+    case 2:
+        w->spd[0] = em->ang[0];
+        w->spd[1] = em->ang[1];
+        w->spd[2] = 0;
+        speed_add_g(em, w->spd);
+        w->dist -= em->adj_z;
+        if (em->pos[1] <= em->x5AC + 850.0f) {
+            em->x05++;
+            em_char_set(em, 0x27, 0, 0);
+            em->x3C0[2] = -4.0f;
+        }
+        break;
+    case 3:
+        if (em_frame_check2(em, 0, 15.0f) == 0) {
+            em->ang[0] -= 0x6A2;
+        }
+        w->spd[0] = em->ang[0];
+        w->spd[1] = em->ang[1];
+        w->spd[2] = 0;
+        speed_add_g(em, w->spd);
+        w->dist -= em->adj_z;
+        w->spd[0] = 0;
+        if (em->pos[1] < em->x5AC) {
+            v[0] = (em->x5AC - em->pos[1]) / 3.0f;
+            v[1] = 0.0f;
+            v[2] = 0.0f;
+            cpRotMatrixYXZ2(w->spd, &m);
+            flvecApplyMat33(o, v, (f32 *)&m);
+            em->pos[0] += o[0];
+            em->pos[1] += o[1];
+            em->pos[2] += o[2];
+        }
+        em->pos[1] -= 50.0f;
+        if (em->x194 == 0) {
+            em->x05++;
+            em_char_set(em, 0x24, 0, 0);
+            em->ang[0] = 0;
+            em->x388 = 0;
+        }
+        break;
+    case 4:
+        if (em->x194 == 0) {
+            em->x05++;
+            em_char_set(em, 8, 0, 0);
+        }
+        break;
+    case 5:
+        if (em->x194 == 0) {
+            em->x05++;
+            em02_to_normal(em);
+        }
+        break;
+    }
+    FLY_FLOOR(em);
+}
+#endif
 
 /* Shared by actions 5, 10 and 11: mode 0/1/2 picks the shell angle (move03 passes it as a third argument). */
 static void em_atk05_00581500(EMW *em, EM02W *w, int mode) {
@@ -1411,7 +1762,11 @@ static void em_dmg03_00581FA0(EMW *em, EM02W *w) {
     case 2:
         if (em->x194 == 0) {
             em->x05++;
+#ifdef VERSION_MHG
+            em_char_set(em, 8, 4, 0);       /* G (0x5AD8C0): blended in over 4 frames */
+#else
             em_char_set(em, 8, 0, 0);
+#endif
         }
         break;
     case 3:
@@ -1677,7 +2032,11 @@ static void em_die02_005828E0(EMW *em, EM02W *w) {
         }
         break;
     case 2:
+#ifdef VERSION_MHG
+        if (em_frame_check(em, 100.0f, 0)) {        /* G (0x5AE200): the body is down at frame 100 */
+#else
         if (em_frame_check(em, 134.0f, 0)) {
+#endif
             em->x05++;
             em->act_spd = 0.0f;
             em->work08 = 0;
@@ -1750,6 +2109,9 @@ static void em_move02_00582C40(EMW *em, EM02W *w) {
     case 8: em_fly08_00580E00(em, w); break;
     case 9: em_fly09_00580F10(em, w); break;
     case 10: em_fly10_00581040(em, w); break;
+#ifdef VERSION_MHG
+    case 11: em_fly11_g(em, w); break;
+#endif
     }
 }
 
@@ -1759,7 +2121,11 @@ static void em_move03_00582D30(EMW *em, EM02W *w) {
     case 1: em_atk01_00581240(em, w); break;
     case 2: em_atk02_005812C0(em, w); break;
     case 3: em_atk03_005813A0(em, w); break;
+#ifdef VERSION_MHG
+    case 4: em_atk04_g(em, w, 0); break;
+#else
     case 4: em_atk04_00581480(em, w); break;
+#endif
     case 5: em_atk05_00581500(em, w, 0); break;
     case 6: em_atk06_00581770(em, w); break;
     case 7: em_atk07_00581930(em, w); break;
@@ -1767,6 +2133,15 @@ static void em_move03_00582D30(EMW *em, EM02W *w) {
     case 9: em_atk09_00581B50(em, w); break;
     case 10: em_atk05_00581500(em, w, 1); break;
     case 11: em_atk05_00581500(em, w, 2); break;
+#ifdef VERSION_MHG
+    case 12: em_atk12_g(em, w); break;
+    case 13: em_atk13_g(em, w); break;
+    case 14: em_atk04_g(em, w, 1); break;
+    case 15: em_atk04_g(em, w, 2); break;
+    case 16: em_atk04_g(em, w, 3); break;
+    case 17: em_atk04_g(em, w, 4); break;
+    case 18: em_atk18_g(em, w, 4); break;
+#endif
     }
 }
 
@@ -2345,7 +2720,11 @@ static void ef_move_sub_00583BF0(EMW *em, EM02W *w) {
         if (em_frame_check(em, 56.0f, 0)) {
             shell04_set(em, 9);
         }
+#ifdef VERSION_MHG
+        if (em_frame_check(em, 60.0f, 0)) {         /* G: frame 60 (MH1 114) */
+#else
         if (em_frame_check(em, 114.0f, 0)) {
+#endif
             shell04_set(em, 0x17);
         }
         if (em_frame_check(em, 20.0f, 0)) {
@@ -2381,7 +2760,11 @@ static void ef_move_sub_00583BF0(EMW *em, EM02W *w) {
         if (em_frame_check(em, 56.0f, 0)) {
             shell04_set(em, 0xb);
         }
+#ifdef VERSION_MHG
+        if (em_frame_check(em, 60.0f, 0)) {         /* G: frame 60 (MH1 114) */
+#else
         if (em_frame_check(em, 114.0f, 0)) {
+#endif
             shell04_set(em, 0x17);
         }
         if (em_frame_check(em, 20.0f, 0)) {
@@ -2691,6 +3074,26 @@ static void ef_move_sub_00583BF0(EMW *em, EM02W *w) {
         sound_call_005872F0(em, 0x50, 0xf, 0xb);
         quake_call_00587230(em, 0x14, 2);
         quake_call_00587230(em, 0x92, 2);
+#ifdef VERSION_MHG
+        if (em->kind != 2) {        /* G: the crimson dragon's own hits and dust (kind 0x24) */
+            if (em_frame_check(em, 38.0f, 0)) {
+                shell04_set(em, 0x1c);
+            }
+            if (em_frame_check(em, 34.0f, 0)) {
+                shell04_set(em, 0x1d);
+            }
+            if (em_frame_check(em, 46.0f, 0)) {
+                Eft20_set(0.3f, em, 0xa, 0x8b);
+            }
+            if (em_frame_check(em, 52.0f, 0)) {
+                Eft20_set(0.3f, em, 0xa, 0x8b);
+            }
+            if (em_frame_check(em, 58.0f, 0)) {
+                Eft20_set(0.3f, em, 0xa, 0x8b);
+            }
+            break;
+        }
+#endif
         if (em_frame_check(em, 48.0f, 0)) {
             shell04_set(em, 4);
         }
@@ -2853,6 +3256,16 @@ static void ef_move_sub_00583BF0(EMW *em, EM02W *w) {
         sound_call_005872F0(em, 0xe, 8, 0);
         sound_call_005872F0(em, 0x34, 6, 0x33);
         sound_call_005872F0(em, 0xe, 0x2b, 0x34);
+#ifdef VERSION_MHG
+        /* G: motion 0x402 is shorter; its own sound list */
+        sound_call_005872F0(em, 0x78, 2, 0x18);
+        sound_call_005872F0(em, 0x86, 2, 0x1d);
+        sound_call_005872F0(em, 0x118, 4, 5);
+        sound_call_005872F0(em, 0xdc, 4, 9);
+        sound_call_005872F0(em, 0xa6, 0x15, 0);
+        sound_call_005872F0(em, 0x8a, 0x21, 0x34);
+        sound_call_005872F0(em, 0xcc, 2, 0x18);
+#else
         sound_call_005872F0(em, 0x8a, 0x21, 0x34);
         sound_call_005872F0(em, 0x112, 0x2c, 0x34);
         sound_call_005872F0(em, 0x1ba, 0x2a, 0x34);
@@ -2862,6 +3275,7 @@ static void ef_move_sub_00583BF0(EMW *em, EM02W *w) {
         sound_call_005872F0(em, 0x1fc, 4, 5);
         sound_call_005872F0(em, 0x1f2, 2, 0x1d);
         sound_call_005872F0(em, 0x19e, 2, 0x18);
+#endif
         quake_call_00587230(em, 0xc, 2);
         quake_call_00587230(em, 0x20, 2);
         if (em_frame_check(em, 10.0f, 0)) {
@@ -2947,7 +3361,11 @@ static void ef_move_sub_00583BF0(EMW *em, EM02W *w) {
         sound_call_005872F0(em, 0x78, 0x11, 0x11);
         sound_call_005872F0(em, 4, 0x18, 0xb);
         sound_call_005872F0(em, 0x34, 0x18, 0xb);
+#ifdef VERSION_MHG
+        if (!(em->mode == 6 && em->x15 == 0) && !(em->mode == 6 && em->x15 == 3)) {    /* G: not in demos 0 / 3 */
+#else
         if (em->mode != 6 || em->x15 != 0) {
+#endif
             if (em_frame_check(em, 66.0f, 0)) {
                 shell04_set(em, 0x10);
                 Eft15_set3(em, 5, 1.0f, 3);
@@ -3001,6 +3419,93 @@ static void ef_move_sub_00583BF0(EMW *em, EM02W *w) {
             Eft13_set_em_scl(em, 0x19, 1.2f, 7);
         }
         break;
+#ifdef VERSION_MHG
+    /* G's new motions 0x40B-0x410 (em_char_set 0x23-0x28: attack acts 12 / 13; tools/genef.py GENEF_G=1) */
+    case 0x40B:
+        sound_call_005872F0(em, 0x12, 0xe, 0x22);
+        sound_call_005872F0(em, 0x16, 0xe, 0x28);
+        sound_call_005872F0(em, 0x46, 0xc, 0x22);
+        sound_call_005872F0(em, 0x4a, 0xc, 0x28);
+        sound_call_005872F0(em, 0x16, 5, 9);
+        if (em_frame_check(em, 68.0f, 0)) {
+            shell04_set(em, 0x1e);
+        }
+        if (em_frame_check(em, 34.0f, 0)) {
+            if (em->pos[1] <= 1000.0f + em->x5AC) {
+                Eft20_set(3.0f, em, 0x13, 0);
+            }
+        }
+        break;
+    case 0x40C:
+        sound_call_005872F0(em, 4, 0x3f, 0x33);
+        sound_call_005872F0(em, 4, 0x40, 0x28);
+        sound_call_005872F0(em, 8, 0x40, 0x22);
+        sound_call_005872F0(em, 4, 0x22, 0x33);
+        sound_call_005872F0(em, 0x26, 0xc, 0x22);
+        sound_call_005872F0(em, 0x28, 0xc, 0x28);
+        sound_call_005872F0(em, 0x4e, 0xa, 0x22);
+        sound_call_005872F0(em, 0x52, 0xa, 0x28);
+        sound_call_005872F0(em, 0x9e, 9, 0x22);
+        sound_call_005872F0(em, 0xa2, 9, 0x28);
+        sound_call_005872F0(em, 0x2c, 0x20, 0x34);
+        sound_call_005872F0(em, 0x24, 0x12, 5);
+        sound_call_005872F0(em, 0x3e, 5, 9);
+        sound_call_005872F0(em, 0x9e, 1, 9);
+        sound_call_005872F0(em, 0x54, 6, 0);
+        if (em_frame_check3(em, 0, 30.0f, 70.0f)) {
+            if (em->pos[1] <= 1000.0f + em->x5AC) {
+                if (!(*(u16 *)&game_w.x1E & 0x3)) {
+                    Eft20_set(1.0f, em, 0xa, 0x80);
+                }
+            }
+        }
+        if (em_frame_check(em, 96.0f, 0)) {
+            if (em->pos[1] <= 1000.0f + em->x5AC) {
+                Eft20_set(2.0f, em, 0xb, 0);
+            }
+        }
+        break;
+    case 0x40D:
+        sound_call_005872F0(em, 0x10, 0x21, 0x34);
+        sound_call_005872F0(em, 0x18, 0xe, 0x22);
+        sound_call_005872F0(em, 0x1c, 0xe, 0x28);
+        sound_call_005872F0(em, 4, 0x3f, 0x33);
+        sound_call_005872F0(em, 4, 0x40, 0x28);
+        sound_call_005872F0(em, 8, 0x40, 0x22);
+        if (em_frame_check(em, 52.0f, 0)) {
+            if (em->pos[1] <= 1000.0f + em->x5AC) {
+                Eft20_set(1.5f, em, 1, 0);
+            }
+        }
+        break;
+    case 0x40E:
+        sound_call_005872F0(em, 4, 0x3f, 0x33);
+        sound_call_005872F0(em, 4, 0x40, 0x28);
+        sound_call_005872F0(em, 8, 0x40, 0x22);
+        sound_call_005872F0(em, 0x22, 0x41, 0x33);
+        sound_call_005872F0(em, 0x22, 0x40, 0x28);
+        sound_call_005872F0(em, 0x26, 0x40, 0x22);
+        break;
+    case 0x40F:
+        sound_call_005872F0(em, 4, 0x3f, 0x33);
+        sound_call_005872F0(em, 4, 0x40, 0x28);
+        sound_call_005872F0(em, 8, 0x40, 0x22);
+        sound_call_005872F0(em, 4, 0x22, 0x33);
+        break;
+    case 0x410:
+        sound_call_005872F0(em, 4, 0x3f, 0x33);
+        sound_call_005872F0(em, 4, 0x40, 0x28);
+        sound_call_005872F0(em, 8, 0x40, 0x22);
+        sound_call_005872F0(em, 0x22, 0x41, 0x33);
+        sound_call_005872F0(em, 0x22, 0x40, 0x28);
+        sound_call_005872F0(em, 0x26, 0x40, 0x22);
+        if (em->pos[1] <= 1000.0f + em->x5AC) {
+            if (!(*(u16 *)&game_w.x1E & 0x3)) {
+                Eft20_set(0.8f, em, 0xa, 0x80);
+            }
+        }
+        break;
+#endif
     default:
         move_default_00583BA0(em);
         break;
