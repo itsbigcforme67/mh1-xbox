@@ -1081,3 +1081,26 @@ Both games unless marked.
   lighting checked against the PS2"); the host lit actors with world light directions on normals in their own space, so the
   lights turned with the actor's facing, and no fixed light could match both camp and desert. **To revert:** commit
   "Actor lighting: the PS2's actor program maths ...".
+
+## G online frame rate (agent E, 28 Oct 2026; docs/xbox.md "G online frame rate")
+- **Dropped:** rt_online.c pace() / rt_np.c's per-tick sleep in real-time runs (a window, the Xbox). **Now:** only in
+  fixed-time (--time) runs; viewer.c's clock paces real-time runs (rt_online_host_paced; RT_ONLINE_PACE=1 = old).
+  **Why:** each catch-up tick slept its own 33 ms: 5.7 -> 23 fps in the guild hall (xemu, with the fixes below).
+  **To revert:** commit "Xbox online frame rate: no per-tick sleep in real-time runs, ...".
+- **Dropped:** gfx_nv2a.c's one pushbuffer kick per pb_begin / pb_end block. **Now:** one kick per draw (cmd_kick).
+  **Why:** 1300 -> 88 kicks a frame in the hall. **To revert:** the same commit.
+- **Dropped:** rt_font.c flfntSetPalData's glyph flush when the palette's colours did not change (MH1 and G).
+  **To revert:** the same commit.
+- **Dropped:** gfx_begin_frame's unconditional pb_wait_for_vbl. **Now:** only when two finished frames still wait for
+  their flip. **Why:** 19.5 -> 23.5 fps in the hall (xemu); untested on hardware (look for tearing). **To revert:**
+  commit "Xbox nv2a: wait for a vblank at frame start only when two finished frames still wait ...".
+
+## Renderer score round 2 (agent D, 28 Oct 2026)
+- **Dropped:** text_map talk_layout's row cut test (`cut = 22; if line[21] looks like a lead byte: cut = 21`). **Now:**
+  the last character boundary at or before 22, counted from the row's start. **Why:** a full-width string's second byte
+  can look like a lead byte; the old test split a character (G's quest banner, the singer's song lines in both games got
+  a stray blank inside a character). **To revert:** commit "Quest end banner in English as the US release ...".
+- **Dropped:** the referee's village play tick 0 at the first tick on the PS2's village stage (rt_ref.c,
+  rt_village_active). **Now:** the first tick after Local_main reaches its main step (rt_village_ready). **Why:** the PC's
+  NPCs did not exist for the first 11 play ticks, so nothing could be lined up with the PS2's. **To revert:** commit
+  "Village lockstep: play tick 0 once the village runs ...".

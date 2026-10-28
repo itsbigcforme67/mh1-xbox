@@ -3519,9 +3519,15 @@ def talk_layout(xb):
     rows = []
     for line in xb.split(b"\n"):
         while len(line) > TALK_ROW:
-            cut = TALK_ROW
-            if 0x81 <= line[cut - 1] <= 0xFC and _sjis_at(line, cut - 1):
-                cut -= 1
+            # the last character boundary at or before TALK_ROW, counted from the row's start (a 2-byte character's
+            # second byte can look like a lead byte: the old test at TALK_ROW - 1 split the US's full-width
+            # "Quest Completed!" banner, which G's table owner puts among the talk lines)
+            cut = k = 0
+            while k < len(line):
+                k += 2 if _sjis_at(line, k) else 1
+                if k > TALK_ROW:
+                    break
+                cut = k
             rows.append(line[:cut])
             line = line[cut:]
         rows.append(line)

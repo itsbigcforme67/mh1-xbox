@@ -1747,3 +1747,16 @@ Assignment (COORDINATOR.md): raise the score where it lost most (desert, hunter 
   restored). The dump now uses slot 6.
 - Scores: docs/render_score.md history (G PC 59.0 -> 59.3, Xbox 58.6 -> 60.2; MH1 PC 49.8 -> 50.6, Xbox 50.8 -> 51.6;
   m_forest1 +2.3 is the Aptonoth). Villages: cause found (walking NPCs start fresh on the PC), not fixed.
+
+## Polish round (28 Oct 2026)
+- Windows: both games build with the code table and run under Wine (docs/pc.md "Windows build again"); nothing needed
+  fixing. Scratch helper used: render_score's PC step with the exe swapped for a wine wrapper and the sh -c cap raised to
+  6 GB (Wine will not start under 1.5 GB of address space).
+- Quest end banner: US text and US centring (docs/english.md "Quest end banner"). JP x stays 0x80.
+- Village lockstep (MH1): rt_village_ready starts the play ticks; referee lineup_pokes copy each NPC's pos, angles, x05
+  (0 for walkers so npcMvWALK loads its motion), x0E, x14, x15, motion time 0x19C and LB_NPCMV +4/+0xC/+0x10 from the
+  PS2's tick 0. Slot 8 then matches the PS2 exactly through tick 90, slot 9 (walker) within ~20 units (one tick of walk
+  start). The "depart" prompt and quest flag were test setup (the gate state has quest 131 accepted): RT_VILLAGE_ACCEPT.
+- G village, open: the PS2's G NPC work does not have MH1's LB_NPCMV layout at EMW+0x444 (route words differ, idx not at
+  +0xC), so the G walkers are not lined up, and G has no RT_VILLAGE_ACCEPT (G's lb_quest_all is another layout): the PC's
+  G walker stands in front of the hunter at the shot and the prompt / flag are missing there.

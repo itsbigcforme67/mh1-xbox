@@ -37,7 +37,7 @@ void rt_game_move(void);
 void rt_font_tick_begin(void);
 void rt_prims_reset(void);
 
-static int active, tick, all_ticks, last_step = -1, last_x68 = -1, last_6 = -1;
+static int active, ready, tick, all_ticks, last_step = -1, last_x68 = -1, last_6 = -1;
 
 #ifdef MH1_ONLINE
 int rt_online_active(void);
@@ -178,6 +178,7 @@ void rt_village_enter(void)
     lb_sys[LBSYS_OFS(3)] = 0;                      /* vs_square_init_pre */
     lb_sys[LBSYS_OFS(4)] = 0;
     active = 1;
+    ready = 0;
     tick = 0;
     if (getenv("RT_QUEST_TRACE")) {
         extern u8 User_data[];
@@ -185,11 +186,59 @@ void rt_village_enter(void)
     }
 }
 
+/* the village is running: Local_main has reached its main step (4: the stage, the hunter and the NPCs are set up). The
+ * referee's village play ticks count from here (rt_ref.c), as the PS2's start in a village that is already running. */
+int rt_village_ready(void) { return active && ready; }
+
+/* test aid RT_VILLAGE_ACCEPT=N (MH1): quest N accepted at the counter, as the referee's gate save state has it (the
+ * "depart" prompt at the gate, the quest flag over the hunter): what lb_u.c's offline accept sets, without the fee (the
+ * PS2's User_data already paid it). G's quest table is laid out differently: not done there. */
+#ifndef VERSION_MHG
+static void village_accept(int q)
+{
+    extern u8 *cw;
+    extern u8 D_3F360A[];
+    extern s16 D_3F33DC[];
+    extern s32 quest_price;
+    extern u8 *lb_quest_all[];
+    void Lb_menu_quest_info();
+    signed char Lb_get_quest_type();
+    u8 *qq = q > 0 && q < 0xC8 ? lb_quest_all[q] : NULL;
+    if (!cw || !qq) {
+        fprintf(stderr, "rt_village: RT_VILLAGE_ACCEPT %d: no such quest in the village's table\n", q);
+        return;
+    }
+    cw[0x35D3] = 1;
+    cw[0x32C5] = 1;
+    D_3F360A[0] = 1;
+    D_3F33DC[0] = (s16)q;
+    quest_price = *(s32 *)(qq + 4);
+    Lb_menu_quest_info(qq);
+    {   /* the quest flag over the hunter: PLW+0x916 and the hunter's mini data (name plate) the lobby draws it from */
+        extern u8 lbCommer[];
+        void Lb_set_mini_data();
+        int a = game_w[GWX(0xD1)], v = (u8)(Lb_get_quest_type(qq) | 0x40);
+        player_work[0xA00 * a + 0x916] = (u8)v;
+        Lb_set_mini_data(cw + a * 0x2FC + 0x1346, v, a);
+        memcpy(lbCommer + a * 0x5C + 0x1C, cw + a * 0x2FC + 0x1346, 0x40);
+    }
+    *(s16 *)(select_w + 0xAC) = (s16)q;
+    fprintf(stderr, "rt_village: quest %d accepted (RT_VILLAGE_ACCEPT)\n", q);
+}
+#endif
+
 /* One village tick. Returns the quest number when Local_main reports an
  * accepted quest (1), -1 when it leaves the village another way, else 0. */
 int rt_village_tick(void)
 {
     s32 r;
+    if (!ready && (s8)lb_sys[LBSYS_OFS(3)] == 4) {
+        ready = 1;
+#ifndef VERSION_MHG
+        if (getenv("RT_VILLAGE_ACCEPT"))
+            village_accept(atoi(getenv("RT_VILLAGE_ACCEPT")));
+#endif
+    }
     tick++;
     all_ticks++;
     rt_font_tick_begin();
@@ -394,6 +443,7 @@ void rt_village_leave(void)
     if (!active)
         return;
     active = 0;
+    ready = 0;
     game_w[GWX(0x1DC)] = 0;
     rt_motion_em_release();         /* the NPCs' motions go with the village */
     com_motion_load(0);             /* the quest's common motions (plcom_tbl) again */
