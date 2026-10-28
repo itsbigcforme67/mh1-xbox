@@ -1084,3 +1084,13 @@ Both games unless marked.
   lighting checked against the PS2"); the host lit actors with world light directions on normals in their own space, so the
   lights turned with the actor's facing, and no fixed light could match both camp and desert. **To revert:** commit
   "Actor lighting: the PS2's actor program maths ...".
+
+## Xbox stage near-plane cut and frame overlap (agent E, 28 Oct 2026; docs/xbox.md "Round 2")
+- **Dropped:** gfx_nv2a.c execute_cpu's copy of a whole static clay into the vertex ring (and its per-vertex test)
+  when any of its triangles crosses the near plane. **Now:** static_clip: per-run bounding spheres, only crossing
+  triangles cut into the ring, the rest drawn from the clay's GPU buffer in the original order (RT_NV2A_OLDCLIP=1 =
+  old). **Why:** hall 7909 -> 261 copied vertices a frame, MH1 field 19770 -> ~1190; pictures identical (18 render_score
+  captures). **To revert:** commit "Xbox nv2a: static clays crossing the near plane keep their GPU buffer ...".
+- **Dropped:** gfx_end_frame's wait for the GPU before the flip. **Now:** gfx_begin_frame waits (RT_NV2A_SYNC=1 =
+  old). **Why:** the GPU draws while the next ticks run (GPU wait 18 -> 7 ms in the hall, xemu). Untested on hardware.
+  **To revert:** commit "Xbox nv2a: the GPU finishes a frame while the next ticks run ...".
