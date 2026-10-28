@@ -19,6 +19,7 @@
  * values m2c could not see. The large switch keeps m2c's form. */
 #include "pl.h"
 #include "game.h"
+#include "gwx.h"
 #include "plf.h"
 #include "fl.h"
 
@@ -173,7 +174,7 @@ void ef_move_sub_0024A790(PLW *pl, u8 *arg1) {
     }
     if ((Pl_master_ck(pl) != 1) && (PU8(pl, 0x14) != 3)) {
         var_s3 = 0;
-        if ((s32) PU8(&game_w, 0xD3) > 0) {
+        if ((s32) PU8(&game_w, GWX(0xD3)) > 0) {
             var_s2 = (u8 *)player_work;
             do {
                 if (((s16)var_s3 != PU16(pl, 0xC)) && (PU8(var_s2, 0x917) != 0) && (PU8(var_s2, 0x14) == 0)) {
@@ -238,7 +239,7 @@ void ef_move_sub_0024A790(PLW *pl, u8 *arg1) {
                 }
                 var_s3 = (s16)(var_s3 + 1);
                 var_s2 += 0xA00;
-            } while (var_s3 < (s32) PU8(&game_w, 0xD3));
+            } while (var_s3 < (s32) PU8(&game_w, GWX(0xD3)));
         }
     }
     temp_v0_2 = PS16(arg1, 6);

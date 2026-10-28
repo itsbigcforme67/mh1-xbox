@@ -30,7 +30,7 @@
 #include "../net/net_peer.h"
 
 #define PF(pl, T, o) (*(T *)((u8 *)(pl) + (o)))
-#define GW8(o) (((u8 *)&game_w)[o])
+#define GW8(o) (((u8 *)&game_w)[GWX(o)])     /* MH1 offsets; G's through include/gwx.h */
 
 extern u8 Ken_data[][0x18];
 extern u8 select_w[];

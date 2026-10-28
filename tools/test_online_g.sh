@@ -130,7 +130,7 @@ print(','.join(o))")
         END="$END$(rep ${TAILN:-60} ',circle*2,idle*91')"
         # quest ticks (as KUTKU=1): both follow the Kut-Ku; ANNA fights alone (600-1500) and goes back to the camp so the
         # monster passes to BOB, who fights alone (1600-2600) and goes back in turn; then both fight to the kill and carve
-        F="RT_PL_GOD=1 RT_PL_TARGET=k${KIND:-6} RT_PL_GOTO=60,f RT_DMG_MUL=${MUL:-2} RT_GOTO_TRACE=1 RT_PL_CARVE=10 RT_QUEST_TRACE=1 RT_NOMOVIE=1 RT_NP_POS=150 RT_NP_EM=30 RT_MONEY=5000"
+        F="RT_PL_GOD=1 RT_PL_TARGET=k${KIND:-6} RT_PL_GOTO=60,f RT_DMG_MUL=${MUL:-2} RT_GOTO_TRACE=1 RT_PL_CARVE=10 RT_QUEST_TRACE=1 RT_NOMOVIE=1 RT_NP_POS=150 RT_NP_EM=30 RT_NP_RXEM=1 RT_MONEY=5000"
         A_AID="$F RT_PL_GOTO2=1500,21;2500,-1 RT_PL_WARP_EM=600-1500,2600-9000"
         B_AID="$F RT_PL_GOTO2=2600,21;3400,-1 RT_PL_WARP_EM=1600-2600,3500-9000"
     fi

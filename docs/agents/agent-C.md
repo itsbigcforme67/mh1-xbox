@@ -2471,3 +2471,29 @@ x0D5 +0x3E; player_work 0x34D450 / 0xA00; em_work 0x340C40 / 0xA00 with EMW's 8-
 - Fix coverage: the table sizes are G only (MH1's host sizes are its own; rt_data.c's RT_NSTG is 88 for MH1). The
   draw-function table (codetab) is the shared runtime: both games' Xbox builds and the Windows build.
 - tools/test_ps2_g_hunt.sh LEAD=ps2 (real G disc in PCSX2 leading, PC G joining): passed.
+
+## Follow-up (28 Oct 2026): test_online_g.sh HUNT=1 "the HP went up"
+- **Is it new?** No. On the round-10 merge (efbfa31b, temporary worktree, removed afterwards) 6 HUNT=1 runs: 5 passed,
+  1 failed on ANNA's carve (pouch did not grow; a different flake), none with the HP rising; on main (round 11) 6 runs:
+  5 passed, run 6 failed with it (ANNA 1923 1895 1923 ...). It is old and rare (about 1 in 6-10 runs).
+- **Cause (a real game bug, G only):** both PCs ran the Kut-Ku's AI from the quest start. rt_em.c's
+  pull_enemy_work set the new monster's EMW+0x8C3 ("0 = this machine runs it") from game_w+0xD1, MH1's offset of
+  game_w.master; G keeps master at +0x3A (G's pull_enemy_work 0x1354E0 reads 0x35ED5A), and G's +0xD1 is 0, so every
+  machine thought it ran the monster. Each sent its own HP in its monster packets; the trace with the new
+  RT_NP_RXEM=1 (test_online_g.sh HUNT=1 sets it now) shows BOB (owner 1 at tick 1, master 0) sending kind-1 packets with
+  its stale 1923 to ANNA after ANNA's hit took it to 1895: ANNA took 1923 back. Players would see it: the monster's HP
+  (and position) jumping back to another machine's copy. On the PS2 only the host (slot 0) runs a new monster.
+  Fix: `PU8(&game_w, GWX(0xD1))`. Checked: BOB now starts as a follower (np-hp owner -1 at tick 1).
+- **Same class, fixed on the way (raw MH1 game_w offsets in code the G build runs; include/gwx.h maps them):**
+  Item_valid_chk (rt_menu.c: the master's player), Ana_ok_ck / Taru_ok_ck / Niku_ok_ck / Get_hit_id (rt_pl.c: trap,
+  barrel, meat limits and the hit id counter), rt_np.c's GW8 (0x21B, 0x1B0; the direct co-op), f_sound_nm.c (pl_num),
+  aq_nm.c / aq02.c (pl_state 0x208, 0x21B / 0x21C, pl_num), chat_nm.c (master, 0x1DC, the hunter names 0x1E8),
+  pl_nm.c box_get / Pl_box_select: **the quest's supply box read MH1's 0x128 / 0x1A8 (G 0x100 / 0x180, as G's box_get
+  0x4CD8D8)**, so on the PC G the box's items came from the wrong rows [not tested in play; maybe the "supply-box
+  cursor" report in RELEASE_G GB5]. rt_em.c's supply-box trace too.
+- Also G's own em_init step (sub_main 0x4E97E8, missing in the PC's MH1-based em_init, f_em_nm.c): a networked
+  monster made while a hunter is on its stage goes to the first such joined slot. It did not change these runs (the
+  Kut-Ku is made while both hunters are at the camp) but is G's code.
+- Left (not built for G, or weak and overridden): the BOX_ID / BOX_FLAG macros in the menu*.c headers (unused),
+  camarea_nm.c SetAreaData (camarea05.c wins), plsel01.c, chat_all.c.
+- MH1: unchanged (GWX(o) is o there; its offsets were right).

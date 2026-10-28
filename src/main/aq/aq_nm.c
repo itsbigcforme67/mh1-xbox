@@ -215,7 +215,7 @@ void AQ_exec(void) {
 
     if (system_w.x35 == 0) {
         w = &aq_work;
-        ((u8 *)&game_w)[0x21C] = ((u8 *)&game_w)[0x21B];
+        ((u8 *)&game_w)[GWX(0x21C)] = ((u8 *)&game_w)[GWX(0x21B)];
         switch (aq_work.mode) {
         case 0:
             break;
@@ -277,7 +277,7 @@ void AQ_exec_load(void) {
 
     if (Online_ck() != 0 && system_w.x34 != 0) {
         w = &aq_work;
-        ((u8 *)&game_w)[0x21C] = ((u8 *)&game_w)[0x21B];
+        ((u8 *)&game_w)[GWX(0x21C)] = ((u8 *)&game_w)[GWX(0x21B)];
         switch (aq_work.mode) {
         case 0:
             break;
@@ -741,11 +741,11 @@ void host_change(void) {
     u8 *base;
 
     i = 0;
-    if (0 < ((u8 *)&game_w)[0xD3]) {
+    if (0 < ((u8 *)&game_w)[GWX(0xD3)]) {
         p = (u8 *)&game_w;
         do {
-            if (p[0x208] == 1) {
-                ((u8 *)&game_w)[0x21B] = i;
+            if (p[GWX(0x208)] == 1) {
+                ((u8 *)&game_w)[GWX(0x21B)] = i;
                 base = player_work + 0x91F;
                 pl = base + game_w.master * 0xA00;
                 if (*pl != 0) {
@@ -755,6 +755,6 @@ void host_change(void) {
             }
             i++;
             p++;
-        } while (i < ((u8 *)&game_w)[0xD3]);
+        } while (i < ((u8 *)&game_w)[GWX(0xD3)]);
     }
 }

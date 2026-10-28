@@ -278,7 +278,7 @@ void AQ_exec(void) {
                 get_AQdata();
                 if (aq_work.session == 0) {
                     w->mode++;
-                    q = game_w + 0x208;
+                    q = game_w + GWX(0x208);
                     p = q + game_w[GWX(0xD1)];
                     v = *p;
                     if (v != 0xFF) {
@@ -342,7 +342,7 @@ void AQ_exec_load(void) {
                 get_AQdata();
                 if (aq_work.session == 0) {
                     w->mode++;
-                    q = game_w + 0x208;
+                    q = game_w + GWX(0x208);
                     p = q + game_w[GWX(0xD1)];
                     v = *p;
                     if (v != 0xFF) {
