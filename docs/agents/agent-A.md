@@ -1327,3 +1327,14 @@ check.py needs wibo, which this round could not run (PC-only round). Commits on 
 - **Still Japanese (not cheap):** the quest clear line "依頼の敵を全て討伐しました" (reward screen) lives in the quest files' later sections
   (offset 0x43AC in m00004, 185 quests have it), not in the 4 header fields rt_text_quest rewrites; player name / full-width digits and
   "：" labels are not words. Before: build/A/eng/b0, after: build/A/eng/b4.
+
+## Testers' kit (28 Oct 2026)
+- tools/make_release.sh (G disc, optional --mh1, --online, --windows, --english US --freedom --portable) wraps ./mh1;
+  docs/TESTERS.md is the testers' page; docs/xbox.md "Installed by hand, no loader" has what was checked.
+- Fresh clone finding: the G build needed disc/mh1 (split MH1 + SLPM_654.95) and disc/mhg through tools/mhg_pcmeta.py.
+  Now the G symbol view is committed (config/mhg/pc_symbols/) and used when those are missing; full_check's
+  g_player_meta step fails when a build changed it without a commit.
+- Fixed: ./mh1 with the MH1 disc deleted dist/xbox/MHG (and dist/windows/MHG).
+- Proven from a fresh clone: G Xbox + Linux, G online XBE, MH1 Xbox + Linux; xemu title screen from the kit's data.
+  Not run: --windows and --english through make_release (the --english path is written but untested), nxdk's own
+  build from scratch (it was already built here), a dashboard launch from E:.
