@@ -2,6 +2,7 @@
  * (free-slot stack, doubly linked list of live items, per-frame move and "is a player close enough to pick it up"
  * check) and the item preparation (mix recipe) tables: lookup of a recipe by its two ingredients, success rate,
  * the "known recipes" bit list in User_data+0x3D8 (66 bits). Field names are guesses from use. */
+#include "gwx.h"
 #include "types.h"
 #include "pl.h"
 
@@ -257,7 +258,7 @@ s8 Item_preparation_rate_0(IPREP *e, int mode) {
         }
         i = 0;
         p = mix_manual_tbl;
-        pl = &player_work[game_w[0xD1]];
+        pl = &player_work[game_w[GWX(0xD1)]];
         do {
             if ((s16)Pl_item_num_ck(pl, *p) == 0) {
                 break;

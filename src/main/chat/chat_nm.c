@@ -668,8 +668,8 @@ void Chat_move(int a)
   {
     if (((buf[0] != 0) && (r > 0)) && (ChatKinsoku_chk((u8 *) buf) != 0))
     {
-      pl = (void *) (&player_work[*((u8 *) (((u8 *) (&game_w)) + 0xD1))]);
-      if ((*((u8 *) (((u8 *) (&game_w)) + 0x1DC))) == 0)
+      pl = (void *) (&player_work[*((u8 *) (((u8 *) (&game_w)) + GWX(0xD1)))]);
+      if ((*((u8 *) (((u8 *) (&game_w)) + GWX(0x1DC)))) == 0)
       {
         if (PitMenu.x15 != 0)
         {

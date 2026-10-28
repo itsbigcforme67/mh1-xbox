@@ -38,9 +38,9 @@ int str_volume();
 int em_status_ck(void) {
     s16 i;
     u8 *e = em_work;
-    u8 *pp = player_work + game_w[0xD1] * 0xA00;
+    u8 *pp = player_work + game_w[GWX(0xD1)] * 0xA00;
 
-    if (game_w[0x21F] != 0) {
+    if (game_w[GWX(0x21F)] != 0) {
         return 0;
     }
     if (*(s32 *)(quest_w + 0x40) & 0x600) {
@@ -54,7 +54,7 @@ int em_status_ck(void) {
         e += 0xA10;
     }
     e = player_work;
-    for (i = 0; i < game_w[0xD3]; i++) {
+    for (i = 0; i < game_w[GWX(0xD3)]; i++) {
         if (e[0] != 0 && e[0x81E] != 0 && e[0x736] == game_w[0x14]) {
             return 1;
         }

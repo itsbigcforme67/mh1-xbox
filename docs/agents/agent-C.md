@@ -2509,3 +2509,18 @@ x0D5 +0x3E; player_work 0x34D450 / 0xA00; em_work 0x340C40 / 0xA00 with EMW's 8-
 - The disk filled (0.7 GB free) during the runs from other worktrees' outputs; two proof runs died on sqlite "disk
   I/O error" and the 10 were restarted from scratch after freeing this worktree's regenerable outputs (build/show,
   data ISOs).
+
+## Round 12 (28 Oct 2026): a check for raw MH1 game_w offsets in G code; the MH1 online-town flake
+- **tools/check_gwx.py** (full_check step `gwx`): every recorded compile command of the G PC builds
+  (build/mhg/pctree and pctree_online, linked objects only) whose source mentions game_w is run again with -E; a literal
+  right after `game_w` (`game_w) + (0xD1`, `game_w[0x208]`) that include/gwx.h maps to another G offset, and that
+  stands in that source line (so GWX(0xD6) = 0xDA is not taken for MH1's 0xDA), is reported by file and line. ~4 s.
+  Checked: with round 11's pull_enemy_work bug put back it names rt_em.c:422.
+  Not seen by it: an offset added to a pointer copied from game_w first. gwx.h is the only MH1 -> G map of raw
+  offsets in the repo; the other structs G moved (PLW, EMW, quest_w ...) are reached through G field layouts in the
+  headers, not through a map, so there is nothing to check them against yet.
+- It found 7 more, fixed with GWX(): camarea_nm.c SetAreaData (master; weak, camarea05.c's wins in G), chat_nm.c
+  (master, +0x1DC "in the lobby"), item_nm.c (master), bgm_nm.c em_status_ck (master, +0x21F info_stop, pl_num: the
+  battle music check looked at the wrong hunter and count in G).
+- The spots listed last round: BOX_ID / BOX_FLAG in the menu*.c files are macros nobody uses (nothing reaches the
+  preprocessed code); plsel01.c and chat_all.c are not linked in the G build (objs.txt); camarea_nm.c fixed above.
