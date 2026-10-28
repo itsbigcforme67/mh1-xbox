@@ -2458,3 +2458,16 @@ x0D5 +0x3E; player_work 0x34D450 / 0xA00; em_work 0x340C40 / 0xA00 with EMW's 8-
   checked), into rt_codetab (rt_game.c); rt_code_ptr binary-searches it. [checked: render_score g_desert on the G Xbox
   nv2a build in xemu shows the banner again, PS2 | PC | Xbox; the Windows exe's table was checked offline with
   llvm-nm, the Windows build itself was not rebuilt.] Every static prim->trans was affected, both games.
+- **Pointer words of a grown table:** tools/mhg_pcmeta.py carried MH1's relocations into a G object only when G's size
+  equalled MH1's; sizing the tables up dropped ~140 pointer words to the scan (wall_tbl_add's per-stage pointers among
+  them). Now MH1's words cover MH1's part, the scan the rest; the new list is the old one plus 30 words. The new ranges
+  made one s16 pair in the lobby (0x63571C) look like a pointer: config/mhg/pc_noptr.txt. Lesson: after a
+  pc_data.txt size change, diff config/mhg/pc_ptrs.txt.
+- Checks (27 Oct): full_check all ok (with the new g_tables step; emulator tests skipped); `VERSION=mhg
+  tools/rebuild.sh` 7 OK; G Xbox nv2a plain and online built (codetab: 8317 / 11168 function starts);
+  test_online_g.sh ROOM=1 passed; HUNT=1 failed once ("the HP went up": ANNA 2144 -> 2172 right at the hand-over to BOB,
+  who never showed 2144: ANNA's own hit was overwritten by the new owner's HP; a timing race of the test, not seen
+  before) and passed on the rerun.
+- Fix coverage: the table sizes are G only (MH1's host sizes are its own; rt_data.c's RT_NSTG is 88 for MH1). The
+  draw-function table (codetab) is the shared runtime: both games' Xbox builds and the Windows build.
+- tools/test_ps2_g_hunt.sh LEAD=ps2 (real G disc in PCSX2 leading, PC G joining): passed.
