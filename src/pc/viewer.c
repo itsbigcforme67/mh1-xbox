@@ -2589,6 +2589,10 @@ int main(int argc, char **argv)
 #endif
         else if (argv[i][0] != '-') disc = argv[i];
     }
+#ifdef MH1_ONLINE
+    { void rt_online_host_paced(int); rt_online_host_paced(fixed_time < 0 && !getenv("RT_ONLINE_PACE")); }  /* real time: the
+                                    * clock below paces the ticks (RT_ONLINE_PACE=1: paced per tick as before 27 Oct 2026, A/B aid) */
+#endif
 #if defined(VERSION_MHG) && !defined(XBOX)
     /* G (docs/mhg.md section 5) is a work in progress run by agents: a run from the build folder is hidden (no
      * window, no real controller, no install dialog) unless MH1_SHOW=1 is set by hand; the screenshot ends the run.

@@ -665,6 +665,8 @@ static gfx_texture *gfx_create_texture_lt(int w, int h, const uint8_t *rgba)
 gfx_texture * gfx_create_texture(int w, int h, const uint8_t *rgba)
 {
     gfx_texture * r;
+    rt_prof_count(RTPC_TEX_NEW, 1);
+    rt_prof_count(RTPC_TEX_KB, (long)w * h * 4 / 1024);
     rt_lt_begin(RTL_TEXUP);
     r = gfx_create_texture_lt(w, h, rgba);
     rt_lt_end(RTL_TEXUP);
@@ -675,6 +677,8 @@ int gfx_update_texture(gfx_texture *t, const uint8_t *rgba)
 {
     if (!t)
         return -1;
+    rt_prof_count(RTPC_TEX_NEW, 1);
+    rt_prof_count(RTPC_TEX_KB, (long)t->w * t->h * 4 / 1024);
     glBindTexture(GL_TEXTURE_2D, t->id);
     glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, t->w, t->h, GL_RGBA, GL_UNSIGNED_BYTE, rgba);
     if (G.tex)              /* the bound texture the draws expect */
@@ -1204,6 +1208,7 @@ static void gfx_draw_2d_gl(int w, int h, int nvert, const float *pos, const floa
 
 void gfx_draw_2d(int w, int h, int nvert, const float *pos, const float *st, const uint8_t *col)
 {
+    rt_prof_count(RTPC_DRAWS_2D, 1);
     rt_prof_begin(RTP_GFX);
     gfx_draw_2d_gl(w, h, nvert, pos, st, col);
     rt_prof_end(RTP_GFX);
