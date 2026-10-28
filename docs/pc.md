@@ -51,8 +51,8 @@ the scripted tests show how they combine (RT_PL_GOTO, RT_PL_TARGET=kN, RT_PL_WAR
 RT_PL_GOD, RT_EM_POKE, RT_EM_PIN, RT_SHOTS, RT_CAM_EM). Every run writes a debug log
 (`~/.local/share/mh1pc/logs`, Windows `%APPDATA%\mh1pc\logs`): see "Debug log".
 
-Known gaps: lighting uses a fixed light set by default (the game's stage lights are opt-in,
-RT_LIGHT_GAME=1, until compared with a PS2 capture); reverb is an approximation; nothing has been
+Known gaps: (lighting: the game's own lights are the default since 27 Oct 2026, checked per vertex against PCSX2,
+see "Actor lighting checked against the PS2" below; RT_LIGHT_GAME=0 gives the old fixed set); reverb is an approximation; nothing has been
 compared side by side with the PS2; ARM frame rate measured only up to round 20 (25-28 fps at 960x720).
 The sections below are in the order they were written; "History" at the end lists what was superseded.
 
@@ -1957,10 +1957,38 @@ Frog fishing, round 2 (gdb on em_cmd_pl_fishing_ck; casting at tick 14 with item
   the only lit parts are set-model parts of stages 5, 16, 25, 40, 41 (type 2, family 1). So set 0 is unused for lit geometry. Lighting those set parts would need per-instance world normals (the host draws them unlit, vertex colours): NOT done.
 - Material qwords (RT_LIGHT_TRACE=3 lists them): diffuse colour B (mat+0x04, the vf29 qword) is 1.0 in every model checked (hunter, Rathian, NPCs, weapons), so the light colours need no factor. The ambient qword A (mat+0x24) is 0.5 everywhere.
   PS2SHADER_ADD_LIGHTCOL3 (decoded again): mem15 = min(sum of c rows * AMB, AMB), AMB = the model's mat+0x24 = 0.5; Vu1Code_0001 then multiplies it by A and adds it to a colour whose 1.0 is 128, so the literal ambient is about 0.002: a nearly black shadow side.
-  `RT_LIGHT_VU=1` applies that literal formula (hunter from behind on stage 4 goes almost black). I do not believe the actors really use family 0001 (their parts carry no attribute chunk; the family comes from the render state, which Pl_light_set's flSetRenderState(1,1) clears
+  `RT_LIGHT_VU=1` (removed 27 Oct 2026) applied that literal formula (hunter from behind on stage 4 goes almost black). I do not believe the actors really use family 0001 (their parts carry no attribute chunk; the family comes from the render state, which Pl_light_set's flSetRenderState(1,1) clears
   to 0 in flrs07), so the default of RT_LIGHT_GAME stays ambient = sum of c rows. Unverified either way.
+  **Superseded 27 Oct 2026** (next section): the actors use Vu1Code_0016_0004; AMB is 128 there (mem 15 = sum of c rows * 128,
+  read in PCSX2), so the ambient is half the summed rows (A = 0.5), not 0.002 and not the full sum.
 - Shots (build/show/light/, game camera, no --follow, 960x540, before = fixed light, after = RT_LIGHT_GAME=1): stage 4 almost identical (key light 1.0 plus ambient 0.6 saturates a lot); stage 5 hunter darker (no ambient row); stages 13 and 28 slightly bluer/brighter with a cool
   tint, light 2 now follows the camera; Rathian in the stage 40 cave a bit darker and greyer; flash: hunter brighter. Monster shots are not tick-identical (different game timing), so only the overall tint is comparable.
+
+### Actor lighting checked against the PS2 (agent D, 27 Oct 2026)
+- Hunters, monsters and NPCs use Vu1Code_0016_0004 (param_0016_0004, AddMatrix = flPS2AddMatrix_001E) [checked: the DMA
+  call right after the hunter's packet in PCSX2's EE RAM]. The packet: mem 0 flPS2Ambient * AMB, mem 1-4 world -> screen,
+  5-8 world -> clip, mem 9-11 the three -flLIGHT+0x34 directions in WORLD space (one light per row), mem 12-14 the light
+  colours, mem 15 min(128, sum of the +0x24 rows * 128) (w 128), mem 16 fog end, 1/(end-start), mem 17 + 4k the bone
+  matrices (bone -> world). The packet ends with MSCALF 0: PROG runs once per draw, takes each light into each bone's space
+  (row i of the bone matrix . L) and renormalises it (mem 0x91 + 3k, one light per column), then transposes mem 9-11 for the
+  weighted path. MATERIAL: light colour k = min(128, 128 * B * col_k); ambient = min(128, (mem15 + mem0) * A); B = (1,1,1),
+  A = 0.5 (the material qwords in the hunter's DMA chain; RT_LIGHT_TRACE=3 shows the same in every model). MAIN_100 (one
+  bone per vertex): max(0, n . L_k(bone)) with the file normal; MAIN_WEIGHT: the normal through the blended bone matrix,
+  normalised, dotted with the world lights. Colour = min(128, sum + ambient); 128 = 1.0 under the GS's modulate.
+- So on the host (both backends, the shared fl_model_pose / gfx_clay_pose input): `fl_light_local` turns the world lights
+  into the space the actor is posed in (its world matrix's rows . L, renormalised) and clamps each light colour at 1.0;
+  rt_light.c's ambient = 0.5 * min(1, sum of the rows). The host had lit actors posed in their own space with the WORLD
+  light directions, so the lights turned with the actor's facing: at the camp the light hit the hunter's back from the
+  wrong side (too dark with the game lights), and the fixed default could not be right for both camp and desert.
+- Checked per vertex [checked]: PCSX2 GS dump of the m_camp shot (tools/gs_dump_verts.py; SCORE_PS2_GSDUMP=1 in
+  render_score) against the PC's lit vertices at the same tick (RT_LIGHT_DUMP / RT_LIGHT_DUMP_TICK), projected with the
+  PS2's own world -> screen matrix from the hunter's packet: 1970 of 2354 vertices matched by screen position, 78 % within
+  1/128 (the PS2 truncates: ftoi0), the rest are other parts' vertices at the same screen spot and the head, whose PS2
+  colours are the PC's times the hair colour (0.88, 0.60, 0.39: the dump is written before the tint). Hunter pixels
+  (mean RGB): m_camp PS2 74.5 64.4 54.3, old fixed light 96.0 77.7 64.9, old game lights 57.3 49.5 43.8, now 74.8 62.5 52.8;
+  m_desert PS2 121.3 87.5 62.2, fixed 75.8 58.2 45.2, now 118.1 84.9 60.9.
+- Not modelled: the hair colour on the PS2 is the material colour B (it scales each light before the clamp, not the
+  ambient); per-material A / B other than 0.5 / 1.0 (none seen); flPS2Ambient (0: the game only sets 0).
 
 ### Scrolling textures and translucent effects (agent F, round 27)
 - UV scroll (fl state 0x19) only moves parts whose attribute asks for it (attr +0x1C, aa_uvscroll -> state 0x62; on stage 60 exactly parts 4, 6, 8, the ones trans_stage gives a matrix). The PC applied the last matrix to every clay drawn after it,
@@ -2472,8 +2500,8 @@ dated sections above.
     two plaza drafts), and the PC build's dead objects (pl_normal_nm, f_rewardb_nm, option_nm, and the
     matched emsrch01 / light01 / light03, whose functions the host versions provide);
   - build_pc.sh's EXT mechanism (exporting monster C from other agents' branches, empty since 6 Oct).
-- **Flags that no longer exist**: RT_LIGHT_FIXED (the fixed light is the default again since round 25;
-  RT_LIGHT_GAME=1 opts in to the game's lights), RT_HOST_MOTION, RT_EM_STANDIN, RT_EM_FIXED,
+- **Flags that no longer exist**: RT_LIGHT_FIXED (RT_LIGHT_GAME=0 gives the fixed light since 27 Oct 2026; the game's lights
+  are the default), RT_LIGHT_VU (27 Oct 2026), RT_HOST_MOTION, RT_EM_STANDIN, RT_EM_FIXED,
   RT_PL_STANDIN, RT_NOREVERB, RT_MIXTEST, CPFILES, CP01_OFF.
 
 ## Rumble and real controllers (agent C, 13 Oct 2026)

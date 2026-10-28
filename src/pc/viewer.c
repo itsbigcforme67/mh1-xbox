@@ -651,9 +651,14 @@ static int monster_load(monster *e, const char *amh, const char *tex, const char
     return 0;
 }
 
-static void hunter_pose(hunter *h, float frame, const fl_light *L)
+static void hunter_pose(hunter *h, float frame, const fl_light *Lw)
 {
     int s, i;
+    fl_light Ll, *L = NULL;
+    if (Lw) {                           /* the lights in the hunter's own space (its parts are posed there) */
+        fl_light_local(&Ll, Lw, h->world);
+        L = &Ll;
+    }
     if (h->game)
         rt_player_pose(h->no, &h->master);   /* frame_move's motion player */
     else
@@ -894,8 +899,8 @@ extern unsigned char light_work[];
  * ambient row), +0x34 direction the light travels (the shader negates it). light_init fills them from
  * pl_light_tbl[stage], light_change_normal re-reads the stage rows, flash_move (thunder) blends the colours.
  * rt_light_get (rt_light.c) runs the game's own per-actor step (pl_light_change + Pl_light_set) for hunters and NPCs and gives
- * the stage rows to monsters and sets. Without RT_LIGHT_GAME, or while light_work is still empty (no stage lights yet): the
- * fixed default above. */
+ * the stage rows to monsters and sets; each draw turns them into the actor's own space (fl_light_local). With RT_LIGHT_GAME=0,
+ * or while light_work is still empty (no stage lights yet): the fixed default above. */
 int rt_light_get(void *actor, int hunter, float dir[3][3], float col[3][3], float amb[3]);
 void rt_light_tick(void);
 void light_move(void);
@@ -930,7 +935,7 @@ static const fl_light *light_for_(void *actor, int hunter)
 {
     static int on = -1;
     if (on < 0)
-        on = getenv("RT_LIGHT_GAME") != NULL;
+        on = !getenv("RT_LIGHT_GAME") || atoi(getenv("RT_LIGHT_GAME")) != 0;   /* RT_LIGHT_GAME=0: the fixed light */
     if (on && rt_light_get(actor, hunter, light_game.dir, light_game.col, light_game.ambient)) {
         static int shown;
         if (getenv("RT_LIGHT_TRACE") && shown++ % 600 == 0) {
@@ -1772,7 +1777,12 @@ static void em_slot_sync(int i, int draw, const fl_light *L)
                 for (c = 0; c < 3; c++)
                     lc.col[l][c] *= f[c];
         }
-        fl_model_pose(&m->model, (const flmat *)m->skel.world, light_col ? &lc : L);
+        {
+            fl_light ll;
+            if (light_col || L)
+                fl_light_local(&ll, light_col ? &lc : L, w);
+            fl_model_pose(&m->model, (const flmat *)m->skel.world, light_col || L ? &ll : NULL);
+        }
         gfx_set_render_state(GFX_RS_WORLD, (uintptr_t)w);
         pick_owner(PK_MONSTER, i, kind, &m->skel);
         draw_model_attr_em(&m->model, -1, em, light_col, -1);
@@ -1929,13 +1939,17 @@ static void npc_draw(const fl_light *L)
         }
         for (k = 0; k < m->model.npart; k++)    /* villagers: only their own parts are drawn, so only those are skinned */
             m->model.part[k].skip = kind == 0 && (k >= 0x20 || !em[0x4E6 + k]) && !getenv("RT_POSE_ALL");
-        fl_model_pose(&m->model, (const flmat *)m->skel.world, light_for(em, 0));
         memcpy(s, em + 0xB8, sizeof s);
         r[0] = 0;
         r[1] = (float)(*(int32_t *)(em + 0xA4) & 0xFFFF) * (6.2831853f / 65536.0f);
         r[2] = 0;
         memcpy(t, em + 0xAC, sizeof t);
         flmat_srt(w, s, r, t);
+        {
+            fl_light ll;
+            fl_light_local(&ll, light_for(em, 0), w);
+            fl_model_pose(&m->model, (const flmat *)m->skel.world, &ll);
+        }
         gfx_set_render_state(GFX_RS_WORLD, (uintptr_t)w);
         for (k = 0; k < m->model.npart; k++) {
             if (kind == 0 && (k >= 0x20 || !em[0x4E6 + k]))
@@ -3344,6 +3358,7 @@ int main(int argc, char **argv)
             rt_prof_tick();
         }
         rt_prof_begin(RTP_DRAW);
+        fl_light_dump_tick = ticks;     /* test aid RT_LIGHT_DUMP (fl_model.c) */
         xbox_watch_mark("drawing the frame");
         if (pick_frozen()) {            /* the bug reporter: the frozen frame, no scene */
             pick_frozen_frame();

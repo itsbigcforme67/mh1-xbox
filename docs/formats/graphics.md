@@ -249,6 +249,14 @@ Worked example, Vu1Code_0001_0002 (116 instructions) [read: disassembly]:
   perspective-correct texturing, guard-band clipping by dropping triangles
   (no real clipping). Fog: not in this program (other families) [guess].
 
+Vu1Code_0016_0004 (hunters, monsters, NPCs; param_0016_0004 -> flPS2AddMatrix_001E) [checked in PCSX2, 27 Oct 2026]:
+mem 9-11 = the three world light directions (-flLIGHT+0x34), one per ROW; PROG (MSCALF 0 at the end of every packet)
+writes, per bone k, normalise(B_k . L_i) for each light (light in bone space, bone scale removed) to mem 0x91 + 3k, then
+transposes mem 9-11. MAIN_100 dots the file normal with the bone-space lights; MAIN_WEIGHT normalises the normal blended
+through up to four bone matrices and dots it with the world lights. Colour = min(128, sum_k max(0, n.L_k) *
+min(128, 128 * B * col_k) + min(128, (mem15 + mem0) * A)), mem 15 = min(128, 128 * sum of the lights' +0x24 rows).
+Fog: F = clamp((end - w) / (end - start), 0, 1) * 255 into XYZF2. Details: docs/pc.md "Actor lighting checked against the PS2".
+
 To do: skim the other families (sizes 100-1000 instructions) and name what
 each adds (fog, specular, environment map, UV scroll, point lights...).
 PS2SHADER_ADD_* helpers (LIGHTVEC, LIGHTCOL, UVSCROLL, SVEC) in

@@ -406,8 +406,51 @@ float fl_model_min_y(const fl_model *m, const flmat *bone_world_mats)
     return lo;
 }
 
+/* The PS2 lights an actor in the space its vertices are in: Vu1Code_0016_0004's PROG (run by every flPS2AddMatrix_001E
+ * packet) takes the three world light directions (mem 9-11, -flLIGHT+0x34) and each bone matrix B (mem 17 + 4k), forms B . L
+ * (row i of B dotted with L) and renormalises it: the light in the bone's own space, with the bone's scale taken out. The host
+ * poses hunters, monsters and NPCs in their own space and draws them under a world matrix (position, facing, scale), so its
+ * lights go into that space the same way; lighting with the world directions turned the lights with the actor's facing
+ * (docs/agents/agent-D.md "Actor lighting"). MATERIAL clamps each light colour * material B (1.0 in every model) at 128. */
+static flmat dump_world;            /* (RT_LIGHT_DUMP: the last actor's world matrix, to write world positions) */
+void fl_light_local(fl_light *out, const fl_light *in, const flmat world)
+{
+    fl_light t = *in;
+    int i, j;
+    memcpy(dump_world, world, sizeof dump_world);
+    for (i = 0; i < 3; i++) {
+        float d[3], len;
+        for (j = 0; j < 3; j++)
+            d[j] = world[j * 4 + 0] * in->dir[i][0] + world[j * 4 + 1] * in->dir[i][1] + world[j * 4 + 2] * in->dir[i][2];
+        len = sqrtf(d[0] * d[0] + d[1] * d[1] + d[2] * d[2]);
+        for (j = 0; j < 3; j++) {
+            t.dir[i][j] = len > 1e-12f ? d[j] / len : 0.0f;
+            t.col[i][j] = in->col[i][j] > 1.0f ? 1.0f : in->col[i][j];
+        }
+    }
+    *out = t;
+}
+
+/* test aid RT_LIGHT_DUMP=FILE RT_LIGHT_DUMP_TICK=N: every lit vertex the CPU path poses while tick N is drawn, one line each
+ * (model, part, vertex, world position, unit normal, light factor 0..1 per channel), to check the actor lighting against the
+ * PS2's own vertex colours (tools/gs_dump_verts.py, docs/agents/agent-D.md "Actor lighting") */
+int fl_light_dump_tick = -1;
+static FILE *light_dump(void)
+{
+    static int want = -2;
+    static FILE *f;
+    if (want == -2)
+        want = getenv("RT_LIGHT_DUMP") && getenv("RT_LIGHT_DUMP_TICK") ? atoi(getenv("RT_LIGHT_DUMP_TICK")) : -1;
+    if (want < 0 || fl_light_dump_tick != want)
+        return NULL;
+    if (!f)
+        f = fopen(getenv("RT_LIGHT_DUMP"), "w");
+    return f;
+}
+
 void fl_model_pose(fl_model *m, const flmat *bone_world_mats, const fl_light *L)
 {
+    FILE *dump = light_dump();
     int pi, nb = m->skel.nbone;
     flmat *skin = NULL;
 
@@ -493,6 +536,13 @@ void fl_model_pose(fl_model *m, const flmat *bone_world_mats, const fl_light *L)
                         lc[2] += d * L->col[l][2];
                     }
                 }
+            }
+            if (dump && fp->lit && L)
+            {
+                float wp[3];
+                flmat_apply(wp, pos, dump_world);
+                fprintf(dump, "%p %d %d %.2f %.2f %.2f %.4f %.4f %.4f %.4f %.4f %.4f\n", (void *)m, pi, v, wp[0], wp[1], wp[2],
+                        n[0], n[1], n[2], lc[0], lc[1], lc[2]);
             }
             if (tint)
                 for (c = 0; c < 3; c++)
