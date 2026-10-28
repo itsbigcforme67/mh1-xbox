@@ -791,3 +791,24 @@ docs/xbox.md "Second start, saves and the watchdog in xemu (agent F, 28 Oct 2026
    the gallery, a bug report save, the online lobby and a co-op start): any above ~3 s, and where? No "froze" screen
    during play, during the 10 s exit screen after Back + Start, or while saving a bug report?
 7. A save on a nearly full E: (only if easy: copy big files onto E: first): what does the game say?
+
+## The testers' kit in xemu; G release items (28 Oct 2026, round 2)
+- `tools/make_release.sh G_DISC --xemu-test` (developers): after building the kit, each kit Xbox folder goes through
+  `tools/xemu_relaunch_test.sh --kit DIR --save` under the emulator lock. --kit installs the folder as testers do
+  (E:\Games\MHG\default.xbe = the game, data/ beside it; no loader, no laptop, no network); the quit goes straight to
+  the dashboard. The stand-in dashboard (testlaunch) now runs "copy SRC DST" lines of launch.txt before a start: it puts
+  each start's pad script / env.txt into data\ and keeps start 1's mh1log.txt (E:\t\start1.txt) for the checks.
+  make_release.sh no longer prints the Linux line with --no-pc.
+- Result, kit of main 842bf3cc (agent E's frame overlap + vblank changes in): two starts, blade 2 equipped + bed save
+  (78032 bytes, check 9921D0B5), Back + Start, start again, CONTINUE loads the same bytes and reaches the village, the save
+  on E:\UDATA; no FREEZE / CRASH with the 5 s limit. Watchdog: boot 2.5 s / 2.0 s, no wait of 1 s or more after the first
+  frame in either start (start 2 ran at 55.7 fps in the village in xemu).
+- RELEASE_G section 14 (the Elder's quest list crash): the test_urgent_g.sh script in xemu (newest G nv2a build) goes
+  Elder -> urgent 10001 accepted -> depart -> clear -> village at star level 0 with no crash: closed [verified, xemu].
+  That run (laptop loaded by three full checks) had one 2.5 s wait after the first frame, checkpoint "frame end": a 5.8 s
+  pause of 3 frames in the village, 262 ms for a 32 KB read, so the laptop, not the game [inferred]. To tell the GPU wait
+  from the rest on hardware, gfx_begin_frame now sets the checkpoint "GPU wait (gfx_begin_frame)" and the frame loop
+  "after the frame (pacing, input, next tick)".
+- RELEASE_G section 15 (save lost after Back + Start) and G5: marked verified in xemu (round 1's --save / --powercut runs).
+- Not provable in xemu, left open: the black screen on a second start (no codec handshake in xemu), music static (xemu
+  runs without audio output), frame rate and memory on hardware (GN14), fog on hardware (section 17).

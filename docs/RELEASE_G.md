@@ -21,7 +21,7 @@ nv2a, loader, hardware), **platform** (src/pc host code, packaging), **owner** (
 | G2 | Title -> NEW GAME -> character -> save -> village -> CONTINUE | hidden runs (section 3) | title, NEW GAME, creation, card save, village intro, Kokoto village: OK. CONTINUE crashed in the game menu whenever a save was on the card: **fixed today** (section 4). The 5th row crash is fixed (GB2, 15 Oct, agent C: it was NETWORK OPTIONS, not an EXTRA menu). OPTIONS opens and leaves through the card save [verified 15 Oct] |
 | G3 | Every offline quest playable from the elder to the reward | tools/test_all_quests_g.sh (98 quests + carts), the elder's lists, a human play-through | 98/98 + carts pass with test aids [verified today]. The elder's quest lists were empty ("1 / 0"): **fixed today**. No human has finished G on the port |
 | G4 | The village works: shops, forge, box, elder, counter | tools/test_gvillage.py (16 cases) | 16/16 OK [verified today]. Equipment detail / skill pages not ported (REVIEW "G village round 2") [docs] |
-| G5 | Saves reliable | card save, CONTINUE, bed save | new-game save + CONTINUE OK today [verified]; G save is 78032 bytes, own Xbox title id [docs]. No G save test script (MH1's test_save.sh is MH1 only) [verified] |
+| G5 | Saves reliable | card save, CONTINUE, bed save | new-game save + CONTINUE OK today [verified]; G save is 78032 bytes, own Xbox title id [docs]. G save tests now: tools/test_save_g.sh (PC), tools/xemu_relaunch_test.sh --save / --powercut (Xbox in xemu: bed save, quit, relaunch, CONTINUE; power cut after a save) [verified, 28 Oct]; a corrupt save gets the game's own "damaged, start anyway?" (PC) [verified] |
 | G6 | No stand-in or MH1-only logic on a path a player reaches | coverage (section 3), F8 reports | 43 distinct stand-ins reached (most harmless, section 3); 945 entered functions run MH1 logic where G's code differs; 37 zero-filled G tables still read |
 | G7 | English | official US text where it exists, own text for the rest | G 47% official English (docs/text_coverage.md): weapons (G table) 0%, armour (G table) 9%, items (G table) 2%, NPC lines (G table) 5%, quests 44% [docs]. Source for G-only text is an owner decision (Monster Hunter Freedom idea) |
 | G8 | Frame rate on the real Xbox | game log, owner's eye | not measured on hardware. xemu (software GL on the laptop, not a measure of the Xbox): G quest 10 8.1 fps, G costs the same as MH1 in the same scene [docs] |
@@ -638,7 +638,8 @@ checked by hand; "real" = G's asm differs in behaviour, not only in registers / 
 - Owner's bug (real Xbox, G, any save): the Elder's urgent quest -> next -> crash. Reproduced in xemu (access violation in
   vsprintf on the quest sheet). Cause: `int Lb_get_quest_type();` for an s8 function; clang returned garbage upper bytes
   (type 16385), the quest sheet used it as an index into its string table. Fixed (G and the MH1 callers); verified in the
-  XBE's code, xemu re-run pending. New: tools/test_urgent_g.sh (board -> depart -> clear -> star level 0) in the full
+  XBE's code, xemu re-run done 28 Oct (agent F: the test_urgent_g.sh script in xemu, G nv2a build of main 842bf3cc: Elder ->
+  urgent 10001 accepted -> departed -> cleared -> village at star level 0, no crash) [verified, xemu]. New: tools/test_urgent_g.sh (board -> depart -> clear -> star level 0) in the full
   check; tools/check_kr_returns.py lists the other declarations with the same hazard (to be gone through).
 
 ## 15. Owner's Xbox report, G build 2305c47e: saving, shop icons (agent A, 21 Oct 2026)
@@ -662,8 +663,10 @@ checked by hand; "real" = G's asm differs in behaviour, not only in registers / 
   (fflush only hands them to it) and never reached the disk before the console moved on. mc_xbox.c now writes each
   card write through (NtFlushBuffersFile, as the log), again at close, and xbox_log.c flushes any open card file
   before leaving. The save / load log lines now carry a check value (FNV-1a of the bytes moved: the next load must show
-  the save's value) and, for a save, the money and wielded weapon of the hunter in play. Both games; builds only,
-  not run on hardware or xemu.
+  the save's value) and, for a save, the money and wielded weapon of the hunter in play. Both games. **xemu, 28 Oct
+  (agent F, tools/xemu_relaunch_test.sh --save):** the owner's path (box equip, bed save, Back + Start, loader, start
+  again, CONTINUE) loads the bytes saved (same size and check value, MH1 and G), and a power cut 3 s after a G save keeps
+  it on the disk [verified, xemu]; the real console's file cache is the same kernel code, so only the owner's run is left.
 - **Follow-up 2 (owner, 20261021-200621): worn equipment and play time lost.** The save copied only MH1's 0x480 bytes
   per hunter slot, at MH1's slot stride (src/main/ud/udmisc_nm.c Load_userdata / Save_userdata, the PC's copy of
   f_ud): money, item box and equipment box (all below 0x480) came back, the pouch (+0xC24), the worn set (+0xC75..) and

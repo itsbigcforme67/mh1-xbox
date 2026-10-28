@@ -10,6 +10,10 @@
 #   --online    also the online XBE(s) (for the online lobby test; needs your own server, docs/TESTERS.md)
 #   --windows   also the Windows PC build (downloads the cross-compiler with --setup, ~100 MB)
 #   --no-pc     skip the Linux PC build
+#   --xemu-test (developers) after building, a hardware smoke test of each kit Xbox folder in xemu: installed as the
+#               testers install it, started twice through a stand-in dashboard, a bed save, then CONTINUE on the second
+#               start (tools/xemu_relaunch_test.sh --kit DIR --save; ~12 min a game, hidden; needs the owner's xemu files
+#               and waits for the shared emulator lock). The kit itself is unchanged by it.
 #   --setup     fetch missing build parts that can be fetched without root (32-bit compiler files, Windows tools)
 #   --english US_DISC [--freedom FREEDOM_ISO --portable PORTABLE_ISO]
 #               make the English text table from your own Monster Hunter (US, SLUS-20896) disc and, for most of G's
@@ -37,7 +41,7 @@ TOP=$PWD
 die() { echo "make_release: $*" >&2; exit 1; }
 say() { echo "== $*"; }
 
-GDISC=""; M1DISC=""; OUT=dist/release; ONLINE=""; WIN=""; PC=1; SETUP=""; USDISC=""; FRDISC=""; PODISC=""
+GDISC=""; M1DISC=""; OUT=dist/release; ONLINE=""; WIN=""; PC=1; SETUP=""; XTEST=""; USDISC=""; FRDISC=""; PODISC=""
 while [ $# -gt 0 ]; do
     case "$1" in
         --mh1) [ $# -ge 2 ] || die "--mh1 needs a disc image"; M1DISC=$2; shift ;;
@@ -48,8 +52,9 @@ while [ $# -gt 0 ]; do
         --online) ONLINE=1 ;;
         --windows) WIN=1 ;;
         --no-pc) PC="" ;;
+        --xemu-test) XTEST=1 ;;
         --setup) SETUP=--setup ;;
-        -h|--help) sed -n '2,33p' "$0" | sed 's/^# \{0,1\}//'; exit 0 ;;
+        -h|--help) sed -n '2,37p' "$0" | sed 's/^# \{0,1\}//'; exit 0 ;;
         -*) die "unknown option $1 (tools/make_release.sh --help)" ;;
         *) [ -z "$GDISC" ] || die "one G disc only (MH1 goes with --mh1)"; GDISC=$1 ;;
     esac
@@ -173,10 +178,24 @@ cp docs/TESTERS.md "$OUT/TESTERS.md"
 } > "$OUT/VERSION.txt"
 for x in "$OUT"/xbox/*/; do cp "$OUT/VERSION.txt" "$x/VERSION.txt"; done
 
+if [ -n "$XTEST" ]; then
+    LOCK=$(cd "$(git rev-parse --git-common-dir)/../.." && pwd)/xemu.lock     # one emulator at a time (docs/agents/BRIEF.md)
+    for x in "$OUT"/xbox/MHG "$OUT"/xbox/MH1; do
+        [ -f "$x/default.xbe" ] || continue
+        say "xemu smoke test of $(basename "$x") (two starts, a save, CONTINUE; log: $OUT/xemu_$(basename "$x").log)"
+        if flock "$LOCK" tools/xemu_relaunch_test.sh --kit "$x" --save > "$OUT/xemu_$(basename "$x").log" 2>&1; then
+            grep -E '^PASS|^   ' "$OUT/xemu_$(basename "$x").log" | sed 's/^/   /'
+        else
+            grep -E '^(PASS|FAIL)|^   ' "$OUT/xemu_$(basename "$x").log" | sed 's/^/   /'
+            die "the xemu smoke test of $(basename "$x") failed (log: $OUT/xemu_$(basename "$x").log)"
+        fi
+    done
+fi
+
 say "done. What is where:"
 for x in "$OUT"/xbox/*/ "$OUT"/linux/*/ "$OUT"/windows/*/; do
     [ -d "$x" ] || continue
     echo "   $(echo "$x" | sed "s|^$OUT/||; s|/$||")   $(du -sh "$x" 2>/dev/null | cut -f1)"
 done
 echo "   The Xbox folders: copy each one whole to your Xbox (E:\\Games\\MHG and E:\\Games\\MH1), see TESTERS.md."
-echo "   Linux: $OUT/linux/MHG/play.sh     (do not share this folder: it holds your copy of the game files)"
+[ ! -d "$OUT/linux/MHG" ] || echo "   Linux: $OUT/linux/MHG/play.sh     (do not share this folder: it holds your copy of the game files)"

@@ -14,6 +14,31 @@
 #include <stdio.h>
 #include <string.h>
 
+/* "copy SRC DST" lines before the XBE line: a file copied (written through) before that start, e.g. the next start's
+ * pad script and env.txt into the game's data folder (tools/xemu_relaunch_test.sh --kit: no loader serves them) */
+static void copy_file(const char *src, const char *dst)
+{
+    static char buf[4 << 20];       /* (a game log of a long session: a few hundred KB) */
+    FILE *f = fopen(src, "rb");
+    HANDLE h;
+    DWORD done;
+    size_t n;
+    if (!f) {
+        debugPrint("testlaunch: no %s\n", src);
+        return;
+    }
+    n = fread(buf, 1, sizeof buf, f);
+    fclose(f);
+    h = CreateFileA(dst, GENERIC_WRITE, 0, NULL, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL | FILE_FLAG_WRITE_THROUGH, NULL);
+    if (h == INVALID_HANDLE_VALUE) {
+        debugPrint("testlaunch: cannot write %s\n", dst);
+        return;
+    }
+    WriteFile(h, buf, (DWORD)n, &done, NULL);
+    CloseHandle(h);
+    debugPrint("testlaunch: copied %s to %s\n", src, dst);
+}
+
 int main(void)
 {
     static char rest[2048];
@@ -24,8 +49,17 @@ int main(void)
     XVideoSetMode(640, 480, 32, REFRESH_DEFAULT);
     nxMountDrive('E', "\\Device\\Harddisk0\\Partition1\\");
     if ((f = fopen("E:\\launch.txt", "r")) != NULL) {
-        if (fgets(path, sizeof path, f))
+        while (fgets(path, sizeof path, f)) {
+            char a[96], b[96];
             path[strcspn(path, "\r\n")] = 0;
+            if (sscanf(path, "copy %95s %95s", a, b) == 2) {
+                copy_file(a, b);
+                path[0] = 0;
+                continue;
+            }
+            if (path[0])
+                break;
+        }
         n = fread(rest, 1, sizeof rest - 1, f);
         fclose(f);
         remove("E:\\launch.txt");
