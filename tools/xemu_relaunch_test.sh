@@ -24,6 +24,11 @@
 #           loader sent the save (POST /save), the village was reached from the save.
 #   --powercut: start 1 of --save only; xemu is killed 3 s after the game logs the save (a power cut, as the owner
 #           switching off), then the save file on the scratch disk must have the check sum the game logged.
+#   --kit DIR: the testers' kit's game folder instead (tools/make_release.sh: DIR = <kit>/xbox/MHG or MH1, its default.xbe
+#           and data/), installed as the testers do: E:\Games\<MHG|MH1>\ holds default.xbe = the game itself, no loader
+#           and no laptop. The quit goes straight to the dashboard; the stand-in dashboard copies the next start's pad
+#           script / env.txt into data\ ("copy" lines of launch.txt) and keeps start 1's log (mh1log.txt) for the checks.
+#           Works with --save and --powercut. (tools/make_release.sh --xemu-test runs it.)
 #   --online: the online build (build/[mhg/]xbox/online/nv2a); its loader and quit stop the NIC.
 # Needs: the nv2a build, disc/mh1 or disc/mhg, the owner's mcpx.bin / bios.bin (XBOX_FILES_SRC, default the main
 # checkout's xbox_files; read only), ~1.2 GB of disk for the scratch disk (removed at the end unless KEEP=1).
@@ -31,16 +36,21 @@
 #   flock "/home/james/claude projects/MH XBOX/xemu.lock" tools/xemu_relaunch_test.sh --version mhg
 set -e
 cd "$(dirname "$0")/.."
-VER=mh1; ONL=; MODE=plain
+VER=mh1; ONL=; MODE=plain; KIT=
 while [ $# -gt 0 ]; do
     case "$1" in
     --version) VER=$2; shift 2 ;;
     --online) ONL=1; shift ;;
     --save) MODE=save; shift ;;
     --powercut) MODE=powercut; shift ;;
+    --kit) KIT=$(realpath "$2"); shift 2 ;;
     *) echo "unknown option $1"; exit 2 ;;
     esac
 done
+if [ -n "$KIT" ]; then
+    if [ -f "$KIT/data/SLPM_658.69" ]; then VER=mhg; elif [ -f "$KIT/data/SLPM_654.95" ]; then VER=mh1
+    else echo "--kit $KIT: no data/SLPM_658.69 or SLPM_654.95 (a kit game folder: default.xbe + data/)"; exit 2; fi
+fi
 case $VER in
 mh1) FOLDER=MH1; GID=mh1; XB=build/xbox; DISC=disc/mh1; PROG=SLPM_654.95; SERVE=--xbe; CARD=BISLPM-65495MH; TID=4D480001 ;;
 mhg) FOLDER=MHG; GID=mhg; XB=build/mhg/xbox; DISC=disc/mhg; PROG=SLPM_658.69; SERVE=--xbe-g; CARD=BISLPM-65869MHG; TID=4D480002 ;;
@@ -48,7 +58,8 @@ mhg) FOLDER=MHG; GID=mhg; XB=build/mhg/xbox; DISC=disc/mhg; PROG=SLPM_658.69; SE
 esac
 [ -z "$ONL" ] || XB=$XB/online
 XBE=$XB/nv2a/default.xbe
-T=$(realpath -m "${RELAUNCH_TEST_DIR:-build/xbox/relaunch_xemu_$GID${ONL:+_online}_$MODE}")
+[ -z "$KIT" ] || { XBE=$KIT/default.xbe; DISC=$KIT/data; }
+T=$(realpath -m "${RELAUNCH_TEST_DIR:-build/xbox/relaunch_xemu_$GID${ONL:+_online}${KIT:+_kit}_$MODE}")
 SRC=${XBOX_FILES_SRC:-$(git rev-parse --path-format=absolute --git-common-dir)/../xbox_files}
 PORT=${PORT:-8796}
 WD=${WATCHDOG_MS:-5000}
@@ -76,10 +87,15 @@ rm -rf "$T"; mkdir -p "$T"
 ln -s "$SRC/mcpx.bin" "$T/mcpx.bin"; ln -s "$SRC/bios.bin" "$T/bios.bin"
 truncate -s 8G "$T/hdd.img"
 $FATX format "$T/hdd.img" >/dev/null
-printf '10.0.2.2:%s\ngame=%s\n' "$PORT" "$GID" > "$T/loader.txt"
-$FATX put "$T/hdd.img" "$LOADER" Games/$FOLDER/default.xbe >/dev/null
-$FATX put "$T/hdd.img" "$T/loader.txt" Games/$FOLDER/loader.txt >/dev/null
-for f in AFS_DATA.AFS AFS00.AFS AFS01.AFS $PROG; do $FATX put "$T/hdd.img" "$DISC/$f" Games/$FOLDER/data/$f >/dev/null; done
+if [ -n "$KIT" ]; then           # the kit's folder as the testers copy it: the game is default.xbe, data/ all of it
+    $FATX put "$T/hdd.img" "$XBE" Games/$FOLDER/default.xbe >/dev/null
+    for f in "$KIT"/data/*; do [ -f "$f" ] && $FATX put "$T/hdd.img" "$f" "Games/$FOLDER/data/$(basename "$f")" >/dev/null; done
+else
+    printf '10.0.2.2:%s\ngame=%s\n' "$PORT" "$GID" > "$T/loader.txt"
+    $FATX put "$T/hdd.img" "$LOADER" Games/$FOLDER/default.xbe >/dev/null
+    $FATX put "$T/hdd.img" "$T/loader.txt" Games/$FOLDER/loader.txt >/dev/null
+    for f in AFS_DATA.AFS AFS00.AFS AFS01.AFS $PROG; do $FATX put "$T/hdd.img" "$DISC/$f" Games/$FOLDER/data/$f >/dev/null; done
+fi
 # the stand-in dashboard: XLaunchXBE(NULL) makes the kernel start C:\xboxdash.xbe (a modded BIOS may look for evoxdash.xbe);
 # without one xemu stops at the kernel's error 21 screen
 FATX_PART=c $FATX format "$T/hdd.img" >/dev/null
@@ -87,7 +103,6 @@ for d in xboxdash.xbe evoxdash.xbe; do FATX_PART=c $FATX put "$T/hdd.img" build/
 $FATX put "$T/hdd.img" build/xbox/testlaunch/default.xbe evoxdash.xbe >/dev/null
 L="E:\\Games\\$FOLDER\\default.xbe"
 printf '%s\n%s\n' "$L" "$L" > "$T/launch.txt"
-$FATX put "$T/hdd.img" "$T/launch.txt" launch.txt >/dev/null
 QUIT="select+start*400,idle*900"     # (the quit needs 60 drawn frames held; xemu draws ~15 a second in the house)
 printf 'RT_WATCHDOG_MS=%s\n' "$WD" > "$T/env2.txt"
 if [ $MODE = plain ]; then
@@ -115,6 +130,17 @@ else
     fi
 fi
 cp "$T/input1.txt" "$T/input.txt"; cp "$T/env1.txt" "$T/env.txt"     # what xbox_serve.py sends now (read per request)
+if [ -n "$KIT" ]; then           # no loader: the stand-in dashboard puts each start's script in place, keeps start 1's log
+    D="E:\\Games\\$FOLDER\\data"
+    for k in 1 2; do
+        $FATX put "$T/hdd.img" "$T/input$k.txt" t/input$k.txt >/dev/null
+        $FATX put "$T/hdd.img" "$T/env$k.txt" t/env$k.txt >/dev/null
+    done
+    { printf 'copy E:\\t\\input1.txt %s\\input.txt\ncopy E:\\t\\env1.txt %s\\env.txt\n%s\n' "$D" "$D" "$L"
+      printf 'copy E:\\Games\\%s\\mh1log.txt E:\\t\\start1.txt\n' "$FOLDER"
+      printf 'copy E:\\t\\input2.txt %s\\input.txt\ncopy E:\\t\\env2.txt %s\\env.txt\n%s\n' "$D" "$D" "$L"; } > "$T/launch.txt"
+fi
+$FATX put "$T/hdd.img" "$T/launch.txt" launch.txt >/dev/null
 
 SPID=
 LOGS0=$(date +%s)
@@ -123,17 +149,21 @@ cleanup() {
     [ -n "${KEEP:-}" ] || rm -f "$T/hdd.img"
 }
 emu_traps cleanup      # (and run_xemu.sh, which stops xemu and its Xvfb: tools/emu_lib.sh)
-python3 tools/xbox_serve.py --port "$PORT" $SERVE "$XBE" --input "$T/input.txt" --env "$T/env.txt" --test-game $GID \
-    > "$T/serve.log" 2>&1 &
-SPID=$!
-sleep 2
+if [ -z "$KIT" ]; then
+    python3 tools/xbox_serve.py --port "$PORT" $SERVE "$XBE" --input "$T/input.txt" --env "$T/env.txt" --test-game $GID \
+        > "$T/serve.log" 2>&1 &
+    SPID=$!
+    sleep 2
+fi
 SHOTS=""; for s in $(seq 30 30 "$TOTAL"); do SHOTS="$SHOTS $s"; done
-XBOX_FILES="$T" tools/run_xemu.sh --xbe build/xbox/testlaunch/default.xbe --net --shot "$T/shot.png" \
+XBOX_FILES="$T" tools/run_xemu.sh --xbe build/xbox/testlaunch/default.xbe ${KIT:---net} --shot "$T/shot.png" \
     --after "${SHOTS# }" > "$T/run.log" 2>&1 &
 XPID=$!
-# start 2 gets its own script: the loader asks for /test once per start; after the first, the files change
-until grep -q 'GET /test' "$T/serve.log" 2>/dev/null || ! emu_alive $XPID; do sleep 2; done
-cp "$T/input2.txt" "$T/input.txt"; cp "$T/env2.txt" "$T/env.txt"
+if [ -z "$KIT" ]; then
+    # start 2 gets its own script: the loader asks for /test once per start; after the first, the files change
+    until grep -q 'GET /test' "$T/serve.log" 2>/dev/null || ! emu_alive $XPID; do sleep 2; done
+    cp "$T/input2.txt" "$T/input.txt"; cp "$T/env2.txt" "$T/env.txt"
+fi
 if [ $MODE = powercut ]; then
     until grep -q 'memory card: saved' "$T/xemu_debug.txt" 2>/dev/null || ! emu_alive $XPID; do sleep 1; done
     sleep 3
@@ -142,15 +172,20 @@ if [ $MODE = powercut ]; then
 fi
 wait $XPID || :
 cp "$T/xemu_debug.txt" "$T/serial.txt"
-kill "$SPID" 2>/dev/null || :; wait "$SPID" 2>/dev/null || :; SPID=
+[ -z "$SPID" ] || { kill "$SPID" 2>/dev/null || :; wait "$SPID" 2>/dev/null || :; SPID=; }
 
 # the logs the loader sent (xbox_serve.py: build/xbox/logs/<time>-<game>.txt), oldest first
 mkdir -p "$T/logs"
 n=0
-for f in $(ls -tr build/xbox/logs/*-$GID.txt 2>/dev/null); do
-    [ "$(stat -c %Y "$f")" -ge "$LOGS0" ] || continue
-    n=$((n + 1)); cp "$f" "$T/logs/start$n.txt"
-done
+if [ -n "$KIT" ]; then           # start 1's log as the stand-in dashboard kept it, start 2's where the game left it
+    $FATX get "$T/hdd.img" t/start1.txt "$T/logs/start1.txt" >/dev/null 2>&1 && n=1
+    $FATX get "$T/hdd.img" Games/$FOLDER/mh1log.txt "$T/logs/start2.txt" >/dev/null 2>&1 && [ $n = 1 ] && n=2
+else
+    for f in $(ls -tr build/xbox/logs/*-$GID.txt 2>/dev/null); do
+        [ "$(stat -c %Y "$f")" -ge "$LOGS0" ] || continue
+        n=$((n + 1)); cp "$f" "$T/logs/start$n.txt"
+    done
+fi
 $FATX get "$T/hdd.img" Games/$FOLDER/mh1log.txt "$T/logs/on_disk.txt" >/dev/null 2>&1 || :
 FAILS=0
 check() { if eval "$2"; then echo "PASS $1"; else echo "FAIL $1"; FAILS=$((FAILS + 1)); fi; }
@@ -173,14 +208,18 @@ print(len(b), '%08X' % h)" "$T/card_after_cut" 2>/dev/null || :)
     [ "$FAILS" = 0 ] && echo "all checks passed" || { echo "$FAILS checks failed"; exit 1; }
     exit 0
 fi
-check "the loader downloaded the build once" "[ \"\$(grep -c 'GET /$GID.xbe' '$T/serve.log')\" = 1 ]"
-check "two game starts sent their logs (got $n)" "[ $n -ge 2 ]"
+if [ -z "$KIT" ]; then
+    check "the loader downloaded the build once" "[ \"\$(grep -c 'GET /$GID.xbe' '$T/serve.log')\" = 1 ]"
+    check "two game starts sent their logs (got $n)" "[ $n -ge 2 ]"
+else
+    check "two game starts left their logs (got $n)" "[ $n -ge 2 ]"
+fi
 for k in 1 2; do
     f="$T/logs/start$k.txt"
     check "start $k: reached the Back + Start quit" "grep -q 'Back + Start held: exit at frame' '$f' 2>/dev/null"
     check "start $k: audio opened (the warm relaunch hang was there on hardware)" "grep -q 'audio: driver' '$f' 2>/dev/null"
     check "start $k: no freeze or crash report" "! grep -qE '^FREEZE|^CRASH' '$f' 2>/dev/null"
-    grep -h 'watchdog: longest wait\|ac97: init: codec\|Back + Start held' "$f" 2>/dev/null | sed "s/^/   start $k: /" || :
+    grep -h 'watchdog: longest wait\|ac97: init: codec\|Back + Start held\|summary:' "$f" 2>/dev/null | sed "s/^/   start $k: /" || :
 done
 check "start 2 drew more than 300 frames" \
     "[ \"\$(sed -n 's/.*exit at frame \\([0-9]*\\).*/\\1/p' '$T/logs/start2.txt' 2>/dev/null | head -1)\" -gt 300 ] 2>/dev/null"
@@ -190,7 +229,11 @@ if [ $MODE = save ]; then
     check "start 1 saved the hunter" "[ -n '$SAVED' ]"
     check "start 2 loaded exactly what start 1 saved" "[ -n '$SAVED' ] && [ '$SAVED' = '$LOADED' ]"
     check "start 2 went on from the save into the village" "grep -q 'load finished' '$T/logs/start2.txt'"
-    check "the loader sent the save to the laptop" "grep -q 'POST /save?game=$GID' '$T/serve.log'"
+    if [ -z "$KIT" ]; then
+        check "the loader sent the save to the laptop" "grep -q 'POST /save?game=$GID' '$T/serve.log'"
+    else
+        check "the save is on the disk (E:\\UDATA)" "$FATX ls '$T/hdd.img' UDATA/$TID/${TID}00000001 2>/dev/null | grep -q '^$CARD '"
+    fi
 fi
 echo "screens (shot_*s.png), serial log, server log, game logs: $T"
 [ "$FAILS" = 0 ] && echo "all checks passed" || { echo "$FAILS checks failed"; exit 1; }
