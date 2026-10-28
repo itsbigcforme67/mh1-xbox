@@ -553,3 +553,11 @@ keeptail jp lobby:0x665800
 jp lobby:0x6165F4 lobby:0x68EFB4
 jp lobby:0x6167A4 lobby:0x68F144
 jp main:0x386A40 sub_main:0x5BA2B0
+# the quest end banner (clear / failed / abandoned): JP game3 prints literals, the US game3 (main 0x103EB0) takes them
+# from a pointer table in sub_main (0x5AFE54); G's own banner strings (sub_main 0x528604 table) are the JP ones (agent D, 28 Oct 2026)
+jp main:0x358160 sub_main:0x5BCBE0
+jp main:0x358180 sub_main:0x5BCC10
+jp main:0x3581A0 sub_main:0x5BCC30
+g sub_main:0x53ABE0 sub_main:0x5BCBE0
+g sub_main:0x53AC00 sub_main:0x5BCC10
+g sub_main:0x53AC20 sub_main:0x5BCC30

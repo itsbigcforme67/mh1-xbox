@@ -368,7 +368,9 @@ channel, HUD corners left out; the hunters still differ: the PS2 hunter wears no
   27 Oct (agent D, lockstep pictures with the same armour): the PS2 lights equal the PC's RT_LIGHT_GAME lights (read in
   PCSX2); the fixed default light is too bright at the camp and too dark in the desert, the game lights match the desert
   and are too dark / directional at the camp. Still open; findings and the lead (the VU program's per-bone light matrix)
-  in docs/agents/agent-D.md "Renderer score: fixes". The far-sand softness of the same scoreboard was the PS2's 512x448
+  in docs/agents/agent-D.md "Renderer score: fixes". FIXED later on 27 Oct: the host lit actors with world light
+  directions on normals in the actor's own space (lights turned with the facing); docs/pc.md "Actor lighting checked
+  against the PS2". The far-sand softness of the same scoreboard was the PS2's 512x448
   frame and line merge, not lighting or mip levels (docs/pc.md "PS2 output").
 - G action 0x67 (Dual Swords) now runs G's pl_at024 arg 3 (matches G).
 

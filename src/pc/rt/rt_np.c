@@ -889,11 +889,15 @@ void rt_np_tick(void)
         static double t0;
         static long n_ticks;
         double t;
+        int rt_online_is_host_paced(void);
         System_timer++;
         /* all players run at the PS2's 30 ticks a second, also headless runs (which
-         * otherwise run as fast as they can and leave the others behind) */
+         * otherwise run as fast as they can and leave the others behind); a real-time run
+         * is paced by viewer.c's clock already (rt_online.c pace) */
         t = now_s();
-        if (n_ticks == 0 || t - (t0 + n_ticks / 30.0) > 0.5)
+        if (rt_online_is_host_paced())
+            ;
+        else if (n_ticks == 0 || t - (t0 + n_ticks / 30.0) > 0.5)
             t0 = t - n_ticks / 30.0;            /* start, or far behind: no catching up */
         else if (t0 + n_ticks / 30.0 > t)
             sleep_ms((int)((t0 + n_ticks / 30.0 - t) * 1000.0));

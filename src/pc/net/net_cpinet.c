@@ -30,6 +30,7 @@
 #include <errno.h>
 #include <stdarg.h>
 #include "net_cpinet.h"
+#include "../rt/rt_prof.h"
 
 #if defined(NXDK)
 /* the original Xbox (tools/build_xbox.py --online): nxdk's lwIP (lib/net) with its BSD-style calls. The NIC is
@@ -362,7 +363,7 @@ int CpInetTcpOpen(CPINET_TCPOPEN *t)
     return i;
 }
 
-int CpInetTcpGetStatus(int h, int16_t *st)
+static int CpInetTcpGetStatus_(int h, int16_t *st)
 {
     NETSOCK *n = get(h);
     if (!n)
@@ -407,7 +408,17 @@ int CpInetTcpGetStatus(int h, int16_t *st)
     return 0;
 }
 
-int CpInetTcpRecv(int h, void *buf, int len)
+int CpInetTcpGetStatus(int h, int16_t *st)        /* (timed and counted for RT_PROF) */
+{
+    int r;
+    rt_prof_begin(RTP_NET);
+    rt_prof_count(RTPC_NET_CALLS, 1);
+    r = CpInetTcpGetStatus_(h, st);
+    rt_prof_end(RTP_NET);
+    return r;
+}
+
+static int CpInetTcpRecv_(int h, void *buf, int len)
 {
     NETSOCK *n = get(h);
     int k;
@@ -436,7 +447,17 @@ int CpInetTcpRecv(int h, void *buf, int len)
     return -1;
 }
 
-int CpInetTcpSend(int h, const void *buf, int len)
+int CpInetTcpRecv(int h, void *buf, int len)        /* (timed and counted for RT_PROF) */
+{
+    int r;
+    rt_prof_begin(RTP_NET);
+    rt_prof_count(RTPC_NET_CALLS, 1);
+    r = CpInetTcpRecv_(h, buf, len);
+    rt_prof_end(RTP_NET);
+    return r;
+}
+
+static int CpInetTcpSend_(int h, const void *buf, int len)
 {
     NETSOCK *n = get(h);
     int done = 0;
@@ -474,6 +495,16 @@ int CpInetTcpSend(int h, const void *buf, int len)
     }
     stat_tx += (unsigned)done;
     return done;
+}
+
+int CpInetTcpSend(int h, const void *buf, int len)        /* (timed and counted for RT_PROF) */
+{
+    int r;
+    rt_prof_begin(RTP_NET);
+    rt_prof_count(RTPC_NET_CALLS, 1);
+    r = CpInetTcpSend_(h, buf, len);
+    rt_prof_end(RTP_NET);
+    return r;
 }
 
 int CpInetTcpClose(int *h)

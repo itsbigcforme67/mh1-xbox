@@ -578,3 +578,17 @@ spacing change nothing visible in MH1's shop, forge, box and status screens.
 
 G gained from the same work: the quest card's "Quest Info", "Quest Level ★", "None" (hand pairs) and the reverse
 direction is MH1-only. Numbers: MH1 JP 6644 strings with US English (81%), G 7134.
+
+### Quest end banner (agent D, 28 Oct 2026)
+The banner over the quest's end (clear / failed / abandoned) is printed by game3 (src/main/game/f_game.c) at size 32. The US
+release did not switch it to half-width ASCII: its game3 (US main 0x103EB0, found by masked code match) takes the three
+strings from a pointer table in sub_main (0x5AFE54 -> sub_main 0x5BCBE0 / 0x5BCC10 / 0x5BCC30) and they are still
+full-width Shift-JIS letters, now in mixed case ("Quest Completed!" style, rendered from the US font: its full-width Latin
+glyphs look like the JP font's), centred at x = (640 - strlen * 16) / 2 instead of the JP build's fixed x 0x80. The
+structure pairing could not reach them (literals in JP, a table in US), so tools/text_pairs_manual.txt pairs them by hand
+(MH1 main 0x358160.., G sub_main 0x53ABE0..), and game3 centres the text on the PC when the text layer replaced it (Japanese
+unchanged). Checked: the failed banner, English and Japanese, quest 131 with RT_QUEST_TIME=30. G's own banner path (its
+game3 at 0x103400 differs; strings from a table at 0x528604) was not checked on screen; the G table has the pairs.
+Found on the way: text_map's talk_layout cut rows at byte 22 even inside a 2-byte character when the second byte looked
+like a lead byte; it now walks characters from the row start (fixed the banner in G and two lines of the singer's song in
+both games).

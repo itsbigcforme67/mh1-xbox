@@ -22,9 +22,9 @@ game:0x6DC9F0	tutorial pages	ours
 game:0x6DD170	tutorial pages	ours	ambiguous: the English names a button the Japanese does not
 game:0x6DEA00	other tables (lit_205_0068EEE) [G table]	ours
 game:0x6DEBC0	code literals (game)	ours
-game:0x6DF660	code literals (game)	G only	in Portable
-game:0x6E0290	code literals (game)	G only	in Portable
-game:0x6E03A0	code literals (game)	G only	in Portable
+game:0x6DF660	code literals (game)	ours	in Portable
+game:0x6E0290	code literals (game)	ours	in Portable
+game:0x6E03A0	code literals (game)	ours	in Portable
 lobby:0x54D2E0	code literals (lobby)	G only
 lobby:0x54D320	code literals (lobby)	G only
 lobby:0x551D00	code literals (lobby)	G only
@@ -464,8 +464,8 @@ lobby:0x63E920	code literals (lobby)	ours
 lobby:0x63EB28	village / plaza / guild / shop UI [G table]	G only	in Portable
 lobby:0x63EB60	village / plaza / guild / shop UI [G table]	ours
 lobby:0x63EB78	village / plaza / guild / shop UI [G table]	ours
-lobby:0x63EBF0	village / plaza / guild / shop UI	edited in G	in Portable
-lobby:0x63EED0	village / plaza / guild / shop UI [G table]	G only	in Portable
+lobby:0x63EBF0	village / plaza / guild / shop UI	ours	in Portable
+lobby:0x63EED0	village / plaza / guild / shop UI [G table]	ours	in Portable
 lobby:0x63F438	village / plaza / guild / shop UI	twin without US English	in Portable
 lobby:0x6402D0	quest board / quest text tables	ours	ambiguous: numbers: number changed to or from 1 (singular/plural)
 lobby:0x640310	quest board / quest text tables [G table]	ours	ambiguous: numbers: number changed to or from 1 (singular/plural)
@@ -520,7 +520,7 @@ lobby:0x6424C8	village / plaza / guild / shop UI [G table]	ours
 lobby:0x6424D8	village / plaza / guild / shop UI [G table]	ours
 lobby:0x6424E8	village / plaza / guild / shop UI [G table]	ours
 lobby:0x6424F0	village / plaza / guild / shop UI [G table]	ours
-lobby:0x6424F8	village / plaza / guild / shop UI [G table]	G only	in Portable
+lobby:0x6424F8	village / plaza / guild / shop UI [G table]	ours	in Portable
 lobby:0x642508	village / plaza / guild / shop UI [G table]	ours
 lobby:0x642518	village / plaza / guild / shop UI [G table]	ours
 lobby:0x642520	village / plaza / guild / shop UI [G table]	ours
@@ -1233,7 +1233,7 @@ main:0x2C3DE6	code literals (main)	G only
 main:0x2C3E48	code literals (main)	G only
 main:0x2C3EAA	code literals (main)	G only
 main:0x2C6010	items (names, help) [G table]	ours
-main:0x2C6620	items (names, help) [G table]	G only	in Portable
+main:0x2C6620	items (names, help) [G table]	ours	in Portable
 main:0x2CBA80	items (names, help) [G table]	ours
 main:0x2CBAE0	items (names, help) [G table]	ours
 main:0x2CBB40	items (names, help) [G table]	ours
@@ -1324,8 +1324,8 @@ main:0x2DA920	weapons [G table]	ours
 main:0x2DA940	armour [G table]	ours
 main:0x2DA960	weapons [G table]	ours
 main:0x2DB370	armour	ours
-main:0x2DC830	armour [G table]	G only	in Portable
-main:0x2DC850	armour [G table]	G only	in Portable
+main:0x2DC830	armour [G table]	ours	in Portable
+main:0x2DC850	armour [G table]	ours	in Portable
 main:0x2DC950	armour [G table]	ours
 main:0x2DC970	armour [G table]	ours
 main:0x2DC990	armour [G table]	ours
@@ -1346,14 +1346,14 @@ main:0x2E2470	weapons [G table]	ours
 main:0x2E5B60	weapons [G table]	ours
 main:0x2E5B80	armour [G table]	ours
 main:0x2E5BA0	weapons [G table]	ours
-main:0x2E70E0	armour [G table]	G only	in Portable
-main:0x2E7100	armour [G table]	G only	in Portable
-main:0x2E7120	armour [G table]	G only	in Portable
+main:0x2E70E0	armour [G table]	ours	in Portable
+main:0x2E7100	armour [G table]	ours	in Portable
+main:0x2E7120	armour [G table]	ours	in Portable
 main:0x2E9230	armour [G table]	ours
 main:0x2E9250	armour [G table]	ours
 main:0x2E9270	armour [G table]	ours
 main:0x2E93D8	memory card and yes/no dialogs	ours
-main:0x2E97D0	memory card and yes/no dialogs	twin without US English	in Portable
+main:0x2E97D0	memory card and yes/no dialogs	ours	in Portable
 main:0x2E9810	memory card and yes/no dialogs	ours
 main:0x2E9840	memory card and yes/no dialogs	ours
 main:0x2E98E0	memory card and yes/no dialogs	ours
@@ -1398,7 +1398,7 @@ main:0x2EA5B0	memory card and yes/no dialogs [G table]	ours
 main:0x2EA5E0	memory card and yes/no dialogs [G table]	ours
 main:0x2EA610	memory card and yes/no dialogs [G table]	ours
 main:0x2EA650	memory card and yes/no dialogs [G table]	ours
-main:0x2EA670	memory card and yes/no dialogs [G table]	G only	in Portable
+main:0x2EA670	memory card and yes/no dialogs [G table]	ours	in Portable
 main:0x2EA910	other tables (zen_num)	twin without US English
 main:0x2EA990	other tables (zen_num) [G table]	ours
 main:0x2EEF20	village NPC lines and talk [G table]	G only	in Portable
@@ -1437,13 +1437,16 @@ main:0x2EF0B8	online, keyboard, word filter [G table]	G only	in Portable
 main:0x2EF0E8	code literals (main)	ours
 quest:19:0x68	quests	ours
 quest:38:0xAC	quests	ours
-quest:10035:0x68	quests	G only	in Portable
+quest:2011:0x4450	quests	ours
+quest:10006:0x427C	quests	ours	ambiguous: numbers: number changed to or from 1 (singular/plural)
+quest:10030:0x445C	quests	ours
+quest:10035:0x68	quests	ours	in Portable
 quest:20046:0xA4	quests	ours
 quest:20047:0xA4	quests	ours
 quest:20048:0xA4	quests	ours
 quest:20049:0xA4	quests	ours
 quest:20050:0xA4	quests	ours
-quest:60029:0x71	quests	G only	in Portable
+quest:60029:0x71	quests	ours	in Portable
 quest:60029:0x9C	quests	ours
 sub_main:0x4DFB60	code literals (sub_main)	G only
 sub_main:0x4DFEB0	code literals (sub_main)	G only
@@ -1459,8 +1462,8 @@ sub_main:0x525F60	code literals (sub_main)	G only
 sub_main:0x526170	code literals (sub_main)	G only
 sub_main:0x5292C0	code literals (sub_main)	G only
 sub_main:0x529A70	items (names, help)	twin without US English	in Portable
-sub_main:0x529F80	items (names, help)	edited in G	in Portable
-sub_main:0x529F90	items (names, help) [G table]	G only	in Portable
+sub_main:0x529F80	items (names, help)	ours	in Portable
+sub_main:0x529F90	items (names, help) [G table]	ours	in Portable
 sub_main:0x52C340	code literals (sub_main)	G only
 sub_main:0x52C360	code literals (sub_main)	G only
 sub_main:0x52C3A0	code literals (sub_main)	G only
@@ -1497,19 +1500,18 @@ sub_main:0x532D70	armour [G table]	ours
 sub_main:0x534270	armour [G table]	ours
 sub_main:0x5358C0	armour [G table]	ours
 sub_main:0x536F80	armour [G table]	ours
-sub_main:0x537700	other tables (pit_help_reward_str) [G table]	G only	in Portable
-sub_main:0x537718	other tables (pit_help_reward_str) [G table]	G only	in Portable
+sub_main:0x537700	other tables (pit_help_reward_str) [G table]	ours	in Portable
+sub_main:0x537718	other tables (pit_help_reward_str) [G table]	ours	in Portable
 sub_main:0x537BA0	other tables (reward_menu_str) [G table]	ours
 sub_main:0x5383C0	monsters	ours
 sub_main:0x5384D0	monsters	ours
 sub_main:0x5384E0	monsters [G table]	ours
 sub_main:0x538D90	menus, options, HUD [G table]	G only	in Portable
 sub_main:0x538DC0	menus, options, HUD	ours
-sub_main:0x5392D0	other tables (wearable_tbl) [G table]	G only	in Portable
-sub_main:0x539330	other tables (wearable_tbl) [G table]	G only	in Portable
-sub_main:0x539420	other tables (wearable_tbl) [G table]	G only	in Portable
-sub_main:0x539430	other tables (wearable_tbl) [G table]	G only	in Portable
-sub_main:0x539480	other tables (wearable_tbl) [G table]	G only	in Portable	ambiguous: the same Japanese has two different English texts
+sub_main:0x5392D0	other tables (wearable_tbl) [G table]	ours	in Portable
+sub_main:0x539420	other tables (wearable_tbl) [G table]	ours	in Portable
+sub_main:0x539430	other tables (wearable_tbl) [G table]	ours	in Portable
+sub_main:0x539480	other tables (wearable_tbl) [G table]	ours	in Portable	ambiguous: the same Japanese has two different English texts
 sub_main:0x539630	online, keyboard, word filter	twin without US English	in Portable
 sub_main:0x539640	online, keyboard, word filter	twin without US English	in Portable
 sub_main:0x539650	online, keyboard, word filter	twin without US English	in Portable
@@ -1621,25 +1623,25 @@ sub_main:0x539AC0	online, keyboard, word filter	twin without US English	in Porta
 sub_main:0x539AD0	online, keyboard, word filter	twin without US English	in Portable
 sub_main:0x539AE0	online, keyboard, word filter	twin without US English	in Portable
 sub_main:0x539B20	other tables (default_reibun) [G table]	G only	in Portable
-sub_main:0x53A008	menus, options, HUD [G table]	G only	in Portable
-sub_main:0x53A550	menus, options, HUD [G table]	G only	in Portable
-sub_main:0x53A570	menus, options, HUD [G table]	G only	in Portable
+sub_main:0x53A008	menus, options, HUD [G table]	ours	in Portable
+sub_main:0x53A550	menus, options, HUD [G table]	ours	in Portable
+sub_main:0x53A570	menus, options, HUD [G table]	ours	in Portable
 sub_main:0x53A5D0	menus, options, HUD [G table]	ours
-sub_main:0x53A630	menus, options, HUD [G table]	G only	in Portable
-sub_main:0x53A670	other tables (edit_menu_msg) [G table]	G only	in Portable	ambiguous: numbers: two different English texts
-sub_main:0x53A690	other tables (edit_menu_msg) [G table]	G only	in Portable
+sub_main:0x53A630	menus, options, HUD [G table]	ours	in Portable
+sub_main:0x53A670	other tables (edit_menu_msg) [G table]	ours	in Portable	ambiguous: numbers: two different English texts
+sub_main:0x53A690	other tables (edit_menu_msg) [G table]	ours	in Portable
 sub_main:0x53A740	menus, options, HUD [G table]	ours
 sub_main:0x53A790	menus, options, HUD [G table]	ours
 sub_main:0x53A930	menus, options, HUD	ours
-sub_main:0x53AB00	menus, options, HUD [G table]	G only	in Portable
+sub_main:0x53AB00	menus, options, HUD [G table]	ours	in Portable
 sub_main:0x53B070	village NPC lines and talk [G table]	ours
 sub_main:0x53B940	village NPC lines and talk [G table]	ours
 sub_main:0x53BA00	village NPC lines and talk [G table]	ours
 sub_main:0x53C210	village NPC lines and talk	ours
 sub_main:0x53C640	other tables (map_name) [G table]	ours
-sub_main:0x53C680	other tables (map_name) [G table]	G only	in Portable	ambiguous: the same Japanese has two different English texts
-sub_main:0x53C730	other tables (map_name) [G table]	G only	in Portable	ambiguous: numbers: two different English texts
-sub_main:0x53C750	other tables (map_name) [G table]	G only	in Portable
+sub_main:0x53C680	other tables (map_name) [G table]	ours	in Portable	ambiguous: the same Japanese has two different English texts
+sub_main:0x53C730	other tables (map_name) [G table]	ours	in Portable	ambiguous: numbers: two different English texts
+sub_main:0x53C750	other tables (map_name) [G table]	ours	in Portable
 sub_main:0x53CFC0	other tables (map_name) [G table]	ours
 sub_main:0x53D120	other tables (map_name) [G table]	ours
 sub_main:0x53D1D0	other tables (map_name) [G table]	ours
@@ -1728,13 +1730,13 @@ sub_main:0x540580	skills [G table]	ours
 sub_main:0x5405C0	skills [G table]	ours
 sub_main:0x5405F0	skills [G table]	ours
 sub_main:0x540620	skills [G table]	ours
-sub_main:0x540BB0	skills [G table]	G only	in Portable
-sub_main:0x541080	other tables (map_name) [G table]	G only	in Portable
-sub_main:0x5410B0	skills [G table]	G only	in Portable
-sub_main:0x541118	skills [G table]	G only	in Portable
-sub_main:0x541150	skills [G table]	G only	in Portable
-sub_main:0x5411D8	skills [G table]	G only	in Portable
-sub_main:0x5412C0	skills [G table]	G only	in Portable
+sub_main:0x540BB0	skills [G table]	ours	in Portable
+sub_main:0x541080	other tables (map_name) [G table]	ours	in Portable
+sub_main:0x5410B0	skills [G table]	ours	in Portable
+sub_main:0x541118	skills [G table]	ours	in Portable
+sub_main:0x541150	skills [G table]	ours	in Portable
+sub_main:0x5411D8	skills [G table]	ours	in Portable
+sub_main:0x5412C0	skills [G table]	ours	in Portable
 sub_main:0x541490	menus, options, HUD [G table]	ours
 sub_main:0x541688	menus, options, HUD [G table]	ours
 sub_main:0x541698	menus, options, HUD [G table]	ours

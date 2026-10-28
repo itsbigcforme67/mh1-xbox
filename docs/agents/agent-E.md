@@ -1145,3 +1145,12 @@ refused, package without MH1_HIDDEN -> passes to graphics start-up, no PLAYER.tx
   merge. Still to do: the rest of full_check; xemu run of one scene on the Xbox build (build/E/xg/run.sh, wrapped in
   flock, only with > 2.5 GB free and no emulator running); PS2 references at scene ticks for scenes 0, 8, 12, 14 (the
   first save-state load of a PCSX2 run failed for 0 and 8; tools/g_gallery_ref.sh now retries).
+
+## G online frame rate (27-28 Oct 2026)
+- Results and method: docs/xbox.md "G online frame rate: where the time went"; REVIEW.md entry of 28 Oct.
+- Hall in xemu (load 10-12): 5.7 -> 23.5 fps; town 5.6 -> 21.7; offline village 9 -> 13.7. The big one was not the
+  emulator: rt_online.c's pace() slept every catch-up tick (the game thread at 21% of the CPU).
+- Scratch scripts (not committed, build/E/): xemu_hall.sh (hidden xemu, own xbox_files copy in build/E/xh_files,
+  mh1-server --open on 127.0.0.1:10277, TOWN=1 / OFFLINE=1 / XENV="RT_..."), pc_hall.sh (PC client, RT_PROF=1).
+- The RT_PROF report reaches xemu's serial log through stderr (xbox_log.c); no extra serial write is needed.
+- Next: the stage's near-plane test and per-frame index copies (gfx_nv2a.c execute_cpu), 10-22 ms in xemu.

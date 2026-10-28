@@ -202,12 +202,22 @@ void rt_online_enter(void)
 }
 
 /* online, every machine runs at the PS2's 30 ticks a second, also headless (screenshot) runs, which otherwise run
- * thousands of ticks while one answer is on its way (as rt_np.c does during a co-op quest) */
+ * thousands of ticks while one answer is on its way (as rt_np.c does during a co-op quest).
+ * Only for those: a real-time run (a window, the Xbox) already ticks by the clock in viewer.c, which runs a frame's
+ * ticks back to back to catch up and up to two ahead. Paced here too, each of those ticks waited for its own 33 ms
+ * slot, so a frame that took longer than a tick then also slept a tick or two (27 Oct 2026: G online on the Xbox in
+ * xemu, guild hall: 31 ms of the 33 ms per tick asleep, the game thread at 21% of the CPU, 5.7 fps). */
+static int host_paced;
+void rt_online_host_paced(int on) { host_paced = on; }
+int rt_online_is_host_paced(void) { return host_paced; }   /* (rt_np.c: the same for co-op quest ticks) */
+
 static void pace(void)
 {
     static double t0;
     static long n;
     double t;
+    if (host_paced)
+        return;
 #ifdef _WIN32
     t = GetTickCount() / 1000.0;
 #else

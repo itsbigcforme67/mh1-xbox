@@ -63,6 +63,11 @@ void fl_model_release(fl_model *m);
 /* Skin with bone world matrices (one per bone of m->skel; NULL = bind
  * pose) and light; uploads to the clays. */
 void fl_model_pose(fl_model *m, const flmat *bone_world, const fl_light *light);
+/* the lights for a model posed in its own space and drawn under `world` (row vectors): what the PS2's actor program does
+ * per bone (Vu1Code_0016_0004 PROG: each light direction into the bone's space, renormalised; light colours clamped to
+ * 1.0 = 128). out may be in. */
+void fl_light_local(fl_light *out, const fl_light *in, const flmat world);
+extern int fl_light_dump_tick;     /* the tick being drawn (test aid RT_LIGHT_DUMP=FILE, RT_LIGHT_DUMP_TICK=N) */
 /* lowest posed vertex height (y) for these bone world matrices, skinned on the CPU whatever
  * the graphics backend does (nv2a skins on the GPU and keeps no posed vertices) */
 float fl_model_min_y(const fl_model *m, const flmat *bone_world);
