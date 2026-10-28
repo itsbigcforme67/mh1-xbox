@@ -33,6 +33,8 @@ fishing, carving, the star-level progression), but expect rough edges (see "Know
 
 ## Make the game: one command
 
+Volunteer Xbox testers: docs/TESTERS.md has the short version (`tools/make_release.sh`, copy, what to test).
+
 Run it in the repository folder. `DISC` is your .iso (or the folder with the disc's files).
 
     ./mh1 linux   DISC          # result: dist/linux/     play with  dist/linux/play.sh

@@ -1071,3 +1071,17 @@ Both games unless marked.
   lighting checked against the PS2"); the host lit actors with world light directions on normals in their own space, so the
   lights turned with the actor's facing, and no fixed light could match both camp and desert. **To revert:** commit
   "Actor lighting: the PS2's actor program maths ...".
+
+## Testers' kit (agent A, 28 Oct 2026)
+- **Dropped:** mhg_pcmeta.py's hard need for the developers' disc/mh1 (split MH1 + SLPM_654.95 relocations) and
+  disc/mhg (unpacked G) on every G build. **Now:** a full run also writes the G symbol view to config/mhg/pc_symbols/
+  (committed, names / addresses / sizes only, beside config/mhg/pc_ptrs.txt); a build without those inputs (a fresh clone
+  with only the player's disc image: ./mh1, tools/make_release.sh) copies the committed files. **Why:** a fresh clone
+  could not build G at all (FileNotFoundError disc/mhg/SLPM_658.69). Both files must be committed whenever a full run
+  changes them. **To revert:** commit "mhg_pcmeta: a player's G build works without the split MH1 disc".
+- **Dropped:** settings.ini always in E:\Games\MH1 / E:\Games\MHG on the Xbox. **Now:** a default.xbe started from the
+  dashboard (installed by hand, e.g. E:\Apps\MHG) uses its own folder; an XBE a loader starts (mh1.xbe / mhg.xbe) keeps
+  the game folder. **Why:** a hand-installed copy is self-contained (data, log, reports, settings, English table next to
+  it). **To revert:** commit "Testers' kit: tools/make_release.sh ...".
+- **Dropped:** ./mh1 xbox / windows (MH1 disc) emptying the whole output folder. **Now:** only MH1's own folders; a G
+  build in dist/xbox/MHG or dist/windows/MHG stays. Same commit.
