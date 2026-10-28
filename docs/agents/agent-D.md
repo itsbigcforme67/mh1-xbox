@@ -1725,3 +1725,25 @@ Assignment (COORDINATOR.md): raise the score where it lost most (desert, hunter 
     shipped). The MH1 forest Aptonoth (darker on the PS2) is the same actor path.
 - Test aids: RT_APX_TRACE=1 (APX headers), RT_LIGHT_TRACE=4 now prints the vertex colour and normal length ranges,
   RT_LIGHT_MUL=AMB,COL (scales the actors' ambient and light colours), RT_LIGHT_FLIP=1 (light directions reversed).
+
+## Actor lighting (agent D, Opus, 27 Oct 2026, later)
+- Decoded Vu1Code_0016_0004 (the actors' program; param_0016_0004's AddMatrix is flPS2AddMatrix_001E, not _0016: the
+  Vu1Code number is not the AddMatrix number). The lead from "Renderer score: fixes" was wrong in the end: mem 9-11 hold one
+  light per ROW (world -flLIGHT+0x34) in the actors' packets, so PROG's per-bone renormalisation does not mix lights; it is
+  B . L normalised = the light in the bone's space. Full maths: docs/pc.md "Actor lighting checked against the PS2",
+  docs/formats/graphics.md.
+- The real fault was on the host: hunters / monsters / NPCs are posed in their own space and drawn under a world matrix
+  (position, facing, scale), but lit with world light directions. fl_light_local turns the lights into that space (as
+  PROG does). Ambient: mem 15 = min(128, 128 * summed rows) in MH1's packets (44.8 / 32 / 25.6 in the desert), times
+  material A 0.5: half the rows. Game lights are the default now.
+- How it was checked [checked]: SCORE_PS2_DUMP=1 render_score (EE RAM: the AddMatrix_001E packets with world matrix,
+  lights, colours, bones; the hunter's material qwords (1,1,1,128) / (0.5,0.5,0.5,0) in its DMA chain). PINE cannot read VU1
+  memory (0x1100C000 reads 0); a save state holds it (zstd zip) but at the held frame VU1 holds the last 2D program, so no
+  use. SCORE_PS2_GSDUMP=1 (multi-frame GS dump, F7 held while the ticks run; a single-frame dump while the game is held has
+  no transfers) + tools/gs_dump_verts.py gave the PS2's vertex colours; the hunter's are the ones with fog 240-242
+  (w ~ 480: F = (9000 - w) / 9000 * 255). PC side: RT_LIGHT_DUMP / RT_LIGHT_DUMP_TICK (world position + light factor per
+  vertex), projected with the PS2's own world -> screen matrix: 78 % of matched vertices within 1/128.
+- CAREFUL: the referee's gate state is PCSX2 slot 5. My first dump saved to slot 5 and overwrote it (PCSX2 kept a .backup,
+  restored). The dump now uses slot 6.
+- Scores: docs/render_score.md history (G PC 59.0 -> 59.3, Xbox 58.6 -> 60.2; MH1 PC 49.8 -> 50.6, Xbox 50.8 -> 51.6;
+  m_forest1 +2.3 is the Aptonoth). Villages: cause found (walking NPCs start fresh on the PC), not fixed.
