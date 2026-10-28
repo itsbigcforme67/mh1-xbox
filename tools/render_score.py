@@ -11,6 +11,7 @@ whose largest channel difference is over 16.
 usage: tools/render_score.sh [run] [--game mhg|mh1|all] [--scenes ID,ID] [--platforms ps2,pc,xbox] [--reps N]
                              [--out DIR] [--port-args 'FLAGS']         the captures, then the score
                              (--port-args: the ports' flags, default --ps2-output; '' = their full-resolution default)
+                             (env RS_XBOX_ENV='NAME=VALUE ...': extra environment for the Xbox runs, e.g. A/B test aids)
        tools/render_score.py score DIR [--md docs/render_score.md]     the score again from DIR's pictures
        tools/render_score.py list
 Default DIR build/score/<date>. Per scene DIR/<game>/<id>/: ps2_r1.png .. (captures, as grabbed), and in DIR:
@@ -392,6 +393,7 @@ def run_xbox(sc, sdir, reps):
             'RT_REF_PAD=D:/data/pad.txt', 'RT_REF_POKE=D:/data/pokes.txt', 'RT_REF_UD=D:/data/user_data.bin',
             'RT_REF_RND=%d,%d' % rnd, 'RT_REF_RNDS=D:/data/ps2_rnd.txt',
             'RT_HOLD=%s' % ','.join(map(str, holds)), 'RT_HOLD_SECS=12']
+    envs += [e for e in os.environ.get('RS_XBOX_ENV', '').split() if e]   # extra NAME=VALUE for the Xbox (A/B aids)
     if sc.get('village'):
         ps = R.Trace(os.path.join(sdir, 'ps2.ref'))
         envs += ['RT_VILLAGE_START=1', 'RT_VILLAGE_SKIP_INTRO=1', 'RT_REF_MODE=6']

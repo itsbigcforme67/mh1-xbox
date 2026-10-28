@@ -40,7 +40,8 @@ static double last, cur[RTP_N], sum[RTP_N], mx[RTP_N], fcur[RTP_N];
 static int nticks, nframes;
 static long cnt[RTPC_N], cnt_max[RTPC_N], cnt_cur[RTPC_N];
 static const char *const cname[RTPC_N] = { "vertices skinned+lit", "vertices drawn", "triangles drawn", "draw calls", "skeleton evaluations",
-    "2D draws", "pushbuffer kicks", "textures made", "texture KB", "GPU waits", "net calls" };
+    "2D draws", "pushbuffer kicks", "textures made", "texture KB", "GPU waits", "net calls",
+    "near-plane vertex tests", "ring vertices (3D)" };
 
 void rt_prof_count(int c, long n)
 {

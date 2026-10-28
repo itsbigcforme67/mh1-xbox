@@ -109,6 +109,9 @@ struct gfx_clay {
      * pose */
     vtx *vb;                    /* static clays: vertices in contiguous memory */
     float center[3], radius;    /* bounding sphere */
+    float *chunk;               /* static clays: per run of CHUNK_TRIS triangles of a batch, its bounding sphere
+                                 * (x, y, z, r), made on first use (static_clip) */
+    int *chunk0;                /* per batch: its first chunk (nbatch + 1 entries) */
     gfx_skin_mesh *skin;
     uint8_t *svb;
     int nbone;
@@ -1189,8 +1192,13 @@ gfx_clay *gfx_create_clay(const gfx_clay_desc *d)
 
 void gfx_update_clay(gfx_clay *c, const float *pos, const uint8_t *col)
 {
-    if (pos)
+    if (pos) {
         memcpy(c->pos, pos, sizeof(float) * 3 * c->nvert);
+        free(c->chunk);             /* the near-plane runs' spheres are made again (static_clip) */
+        free(c->chunk0);
+        c->chunk = NULL;
+        c->chunk0 = NULL;
+    }
     if (col)
         memcpy(c->col, col, 4 * (size_t)c->nvert);
     if (c->vb) {                            /* a static clay changed after all: refresh its buffer */
@@ -1238,6 +1246,244 @@ static int sphere_in_front(const gfx_clay *c, const float *mvp)
     return wc - c->radius * len >= CLIP_W;
 }
 
+/* ---- static clays crossing the near plane (the stage around the camera: 27 Oct 2026, 10-22 ms a frame in xemu).
+ * Before, one crossing triangle sent the whole clay down the copy path: every vertex tested every frame, every vertex
+ * copied into the ring. Now each batch's triangles are grouped in runs of CHUNK_TRIS with a bounding sphere (made
+ * once); a run whose sphere lies wholly in front of the plane (or wholly behind) needs no per-vertex test. Triangles
+ * in front are drawn from the clay's own GPU buffer, only the crossing ones are cut into the ring, and the batch is
+ * drawn as alternating runs in the original triangle order, so blending and depth ties come out as before. The
+ * results equal the copy path's: the same per-vertex w for every tested triangle, the same cuts (gfx_clip_tri,
+ * vtx_lerp on the same values), the same rule for falling back to an unclipped draw. RT_NV2A_OLDCLIP=1: the copy
+ * path (A/B aid). */
+#define CHUNK_TRIS 32
+static int old_clip(void)
+{
+    static int v = -1;
+    if (v < 0)
+        v = getenv("RT_NV2A_OLDCLIP") != NULL;
+    return v;
+}
+
+static void make_chunks(gfx_clay *c)
+{
+    int b, n = 0, k, i, j;
+    for (b = 0; b < c->nbatch; b++)
+        n += (c->batch[b].count / 3 + CHUNK_TRIS - 1) / CHUNK_TRIS;
+    c->chunk0 = malloc(sizeof(int) * (size_t)(c->nbatch + 1));
+    c->chunk = malloc(sizeof(float) * 4 * (size_t)(n ? n : 1));
+    if (!c->chunk0 || !c->chunk) {
+        free(c->chunk0);
+        free(c->chunk);
+        c->chunk0 = NULL;
+        c->chunk = NULL;
+        return;
+    }
+    n = 0;
+    for (b = 0; b < c->nbatch; b++) {
+        int ntri = c->batch[b].count / 3;
+        c->chunk0[b] = n;
+        for (i = 0; i < ntri; i += CHUNK_TRIS, n++) {
+            const uint16_t *t = c->index + c->batch[b].first + 3 * i;
+            int m = 3 * (ntri - i < CHUNK_TRIS ? ntri - i : CHUNK_TRIS);
+            float lo[3] = { 1e30f, 1e30f, 1e30f }, hi[3] = { -1e30f, -1e30f, -1e30f }, r2 = 0, *ch = c->chunk + 4 * n;
+            for (j = 0; j < m; j++)
+                for (k = 0; k < 3; k++) {
+                    float x = c->pos[3 * t[j] + k];
+                    if (x < lo[k]) lo[k] = x;
+                    if (x > hi[k]) hi[k] = x;
+                }
+            for (k = 0; k < 3; k++)
+                ch[k] = (lo[k] + hi[k]) * 0.5f;
+            for (j = 0; j < m; j++) {
+                const float *p = c->pos + 3 * t[j];
+                float dx = p[0] - ch[0], dy = p[1] - ch[1], dz = p[2] - ch[2];
+                if (dx * dx + dy * dy + dz * dz > r2)
+                    r2 = dx * dx + dy * dy + dz * dz;
+            }
+            ch[3] = sqrtf(r2);
+        }
+    }
+    c->chunk0[c->nbatch] = n;
+}
+
+static uint8_t *tri_cls;            /* per triangle of the clay: 0 in front, 1 crossing, 2 behind */
+static int tri_cap;
+static float *wv;                   /* per vertex: its w, valid where wv_stamp == wv_now (each vertex tested once) */
+static uint32_t *wv_stamp, wv_now;
+static int wv_cap;
+
+static float w_of(const gfx_clay *c, const float *mvp, int i, int *tests)
+{
+    if (wv_stamp[i] != wv_now) {
+        wv_stamp[i] = wv_now;
+        wv[i] = clip_w_of(mvp, c->pos + 3 * i);
+        ++*tests;
+    }
+    return wv[i];
+}
+
+static void vtx_of(const gfx_clay *c, int i, vtx *o)
+{
+    memcpy(o->pos, c->pos + 3 * i, 12);
+    memcpy(o->col, c->col + 4 * i, 4);
+    if (c->st)
+        memcpy(o->st, c->st + 2 * i, 8);
+    else
+        o->st[0] = o->st[1] = 0;
+}
+
+/* 1: drawn; 0: draw it the old way (nothing drawn yet) */
+static int static_clip(gfx_clay *c, const float *mvp)
+{
+    float tm[16], len = sqrtf(mvp[3] * mvp[3] + mvp[7] * mvp[7] + mvp[11] * mvp[11]);
+    int b, i, k, ntri = 0, ncross = 0, tri0, tests = 0;
+    if (!c->chunk && (make_chunks(c), !c->chunk))
+        return 0;
+    for (b = 0; b < c->nbatch; b++)
+        ntri += c->batch[b].count / 3;
+    if (c->nvert > wv_cap) {
+        free(wv);
+        free(wv_stamp);
+        wv = malloc(sizeof *wv * (size_t)c->nvert);
+        wv_stamp = calloc((size_t)c->nvert, sizeof *wv_stamp);
+        wv_cap = wv && wv_stamp ? c->nvert : 0;
+        wv_now = 0;
+        if (!wv_cap)
+            return 0;
+    }
+    if (++wv_now == 0) {                /* (the stamp wrapped: start the marks again) */
+        memset(wv_stamp, 0, sizeof *wv_stamp * (size_t)wv_cap);
+        wv_now = 1;
+    }
+    if (ntri > tri_cap) {
+        free(tri_cls);
+        tri_cls = malloc((size_t)ntri);
+        tri_cap = tri_cls ? ntri : 0;
+        if (!tri_cls)
+            return 0;
+    }
+    /* classify (all batches, hidden ones too: the old count included them) */
+    for (b = 0, tri0 = 0; b < c->nbatch; b++) {
+        int nt = c->batch[b].count / 3, ch;
+        for (ch = c->chunk0[b]; ch < c->chunk0[b + 1]; ch++) {
+            const float *s = c->chunk + 4 * ch;
+            float wc = clip_w_of(mvp, s), d = s[3] * len, eps = 1.0f + 1e-3f * (fabsf(wc) + d);
+            int t0 = (ch - c->chunk0[b]) * CHUNK_TRIS, t1 = t0 + CHUNK_TRIS < nt ? t0 + CHUNK_TRIS : nt;
+            if (wc - d >= CLIP_W + eps) {
+                memset(tri_cls + tri0 + t0, 0, (size_t)(t1 - t0));
+                continue;
+            }
+            if (wc + d < CLIP_W - eps) {
+                memset(tri_cls + tri0 + t0, 2, (size_t)(t1 - t0));
+                ncross += t1 - t0;
+                continue;
+            }
+            for (i = t0; i < t1; i++) {
+                const uint16_t *t = c->index + c->batch[b].first + 3 * i;
+                float w0 = w_of(c, mvp, t[0], &tests), w1 = w_of(c, mvp, t[1], &tests), w2 = w_of(c, mvp, t[2], &tests);
+                int in = (w0 >= CLIP_W) + (w1 >= CLIP_W) + (w2 >= CLIP_W);
+                tri_cls[tri0 + i] = in == 3 ? 0 : in ? 1 : 2;
+                ncross += in < 3;
+            }
+        }
+        tri0 += nt;
+    }
+    rt_prof_count(RTPC_CLIP_TESTS, tests);
+    if (!ncross || c->nvert + 2 * ncross > 65535) {      /* as the copy path: no cut needed, or too many: unclipped */
+        set_arrays(c->vb);
+        for (b = 0; b < c->nbatch; b++) {
+            gfx_texture *t = G.batch_tex ? G.batch_tex : c->batch[b].tex ? c->batch[b].tex : G.tex;
+            if (b < 32 && (G.batch_hide >> b & 1))
+                continue;
+            if (!c->st)
+                t = NULL;
+            bind_texture(t);
+            tex_matrix(t, tm, c);
+            upload_constants(mvp, tm, 1);
+            draw_indexed(c->index + c->batch[b].first, c->batch[b].count);
+        }
+        return 1;
+    }
+    if (c->nindex > clip_cap) {
+        free(clip_buf);
+        clip_buf = malloc(sizeof *clip_buf * (size_t)c->nindex);
+        clip_cap = clip_buf ? c->nindex : 0;
+        if (!clip_buf)
+            return 0;
+    }
+    {
+        const vtx *cur = NULL;                  /* the vertex array set now */
+        for (b = 0, tri0 = 0; b < c->nbatch; tri0 += c->batch[b].count / 3, b++) {
+            gfx_texture *t = G.batch_tex ? G.batch_tex : c->batch[b].tex ? c->batch[b].tex : G.tex;
+            const uint16_t *ix = c->index + c->batch[b].first;
+            int nt = c->batch[b].count / 3;
+            if (b < 32 && (G.batch_hide >> b & 1))
+                continue;
+            if (!c->st)
+                t = NULL;
+            bind_texture(t);
+            tex_matrix(t, tm, c);
+            upload_constants(mvp, tm, 1);
+            i = 0;
+            while (i < nt) {
+                int j = i;
+                if (tri_cls[tri0 + i] == 2) {           /* wholly behind: dropped */
+                    i++;
+                    continue;
+                }
+                if (tri_cls[tri0 + i] == 0) {           /* a run in front: from the clay's buffer */
+                    int n = 0;
+                    while (j < nt && tri_cls[tri0 + j] != 1) {
+                        if (!tri_cls[tri0 + j]) {
+                            memcpy(clip_buf + n, ix + 3 * j, 6);
+                            n += 3;
+                        }
+                        j++;
+                    }
+                    if (cur != c->vb)
+                        set_arrays(cur = c->vb);
+                    draw_indexed(clip_buf, n);
+                } else {                                /* a run of crossing triangles: cut into the ring */
+                    vtx *v, a[3];
+                    int n = 0;
+                    while (j < nt && tri_cls[tri0 + j] == 1)
+                        j++;
+                    if (!(v = ring_alloc(6 * (j - i))))
+                        return 1;
+                    for (k = i; k < j; k++) {
+                        const uint16_t *tt3 = ix + 3 * k;
+                        float tw[3], tt[4];
+                        vtx poly[4];
+                        int np, e, ea[4], eb[4];
+                        for (e = 0; e < 3; e++) {
+                            vtx_of(c, tt3[e], &a[e]);
+                            tw[e] = wv[tt3[e]];         /* (a crossing triangle was tested: its w are there) */
+                        }
+                        np = gfx_clip_tri(tw, CLIP_W, ea, eb, tt);
+                        for (e = 0; e < np; e++)
+                            if (tt[e] == 0.0f)
+                                poly[e] = a[ea[e]];
+                            else
+                                vtx_lerp(&poly[e], &a[ea[e]], &a[eb[e]], tt[e]);
+                        for (e = 1; e + 1 < np; e++) {
+                            v[n++] = poly[0];
+                            v[n++] = poly[e];
+                            v[n++] = poly[e + 1];
+                        }
+                    }
+                    rt_prof_count(RTPC_RING_VERTS, n);
+                    if (n) {
+                        set_arrays(cur = v);
+                        draw_arrays(n);
+                    }
+                }
+                i = j;
+            }
+        }
+    }
+    return 1;
+}
+
 static void execute_cpu(gfx_clay *c)
 {
     float mvp[16], tm[16];
@@ -1251,10 +1497,13 @@ static void execute_cpu(gfx_clay *c)
     mat_mul(mvp, G.world, G.view);          /* row vectors: v * world * view * proj * viewport */
     mat_mul(mvp, mvp, G.proj);
     mat_mul(mvp, mvp, G.viewport);
+    if (c->vb && c->nbatch <= 256 && !old_clip() && !sphere_in_front(c, mvp) && static_clip(c, mvp))
+        return;
     /* which triangles cross the near plane (w per vertex: one dot product);
      * a clay whose bounding sphere is in front of it is not checked */
     if (c->nbatch <= 256 && !sphere_in_front(c, mvp) && (w = malloc(sizeof(float) * c->nvert)) != NULL) {
         int any_out = 0;
+        rt_prof_count(RTPC_CLIP_TESTS, c->nvert);
         for (i = 0; i < c->nvert; i++)
             if ((w[i] = clip_w_of(mvp, c->pos + 3 * i)) < CLIP_W)
                 any_out = 1;
@@ -1288,6 +1537,7 @@ static void execute_cpu(gfx_clay *c)
         return;
     }
     nv = c->nvert + 2 * ncross;
+    rt_prof_count(RTPC_RING_VERTS, nv);
     if (!(v = ring_alloc(nv))) {
         free(w);
         return;
@@ -1431,6 +1681,8 @@ void gfx_release_clay(gfx_clay *c)
     if (!c)
         return;
     gpu_free_later(c->vb);
+    free(c->chunk);
+    free(c->chunk0);
     if (c->skin) {
         gfx_skin_free(c->skin);
         free(c->skin);
@@ -1625,11 +1877,13 @@ static void draw_skinned(gfx_clay *c, const float *mvp)
 }
 
 static void execute_clay(gfx_clay *c);
-void gfx_execute_clay(gfx_clay *c)
+void gfx_execute_clay(gfx_clay *c)     /* (RT_PROF: in "gfx backend", as the PC's gfx_gl.c) */
 {
     int on = G.fog_on;
     G.fog_on = on && c->fog;            /* the scene's fog, for the clays whose attribute asks for it */
+    rt_prof_begin(RTP_GFX);
     execute_clay(c);
+    rt_prof_end(RTP_GFX);
     G.fog_on = on;
 }
 
