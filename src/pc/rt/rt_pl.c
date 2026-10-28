@@ -17,6 +17,7 @@
 #include "rt.h"
 #include "types.h"
 #include "game.h"
+#include "gwx.h"
 
 #include <math.h>
 #include <stdio.h>
@@ -30,7 +31,7 @@
 #define PS32(p, o) (*(s32 *)((u8 *)(p) + (o)))
 #define PU32(p, o) (*(u32 *)((u8 *)(p) + (o)))
 #define PF32(p, o) (*(f32 *)((u8 *)(p) + (o)))
-#define GW8(o)  PU8(&game_w, o)
+#define GW8(o)  PU8(&game_w, GWX(o))     /* MH1 offsets; G's through include/gwx.h */
 #define GW16(o) PU16(&game_w, o)
 
 #define STUB(name) { static int o_; if (!o_++) rt_log_standin(name); if (o_ == 1 && rt_pl_trace()) fprintf(stderr, "rt_pl: %s not ported (stub)\n", name); }

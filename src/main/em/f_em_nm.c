@@ -409,6 +409,24 @@ void em_init(EMW *em) {
     EH(0x300) = Em_max_parts_get(em->kind) & 0xFF;
     em_init_sub(em);
     em_dur_init(em);
+#ifdef VERSION_MHG
+    /* G 0x4E97E8-0x4E9874 (MH1's em_init has no such step): a networked monster (G EMW+0x9DA = the PC's +0x9E2, the
+     * flag Em_Master_Change tests) belongs to the first joined player, in slot order, standing on its stage: +0x8C3 = 0
+     * on that machine ("it runs the monster"), 1 on the others; +0x88E / +0x949 = that slot. Without it a monster made
+     * mid-quest (the Kut-Ku once a hunter walks into its area) ran its AI on every machine (+0x8C3 0 everywhere): two
+     * owners, and at a hand-over the new owner went on from its own copy, so the HP went back up (tools/test_online_g.sh
+     * HUNT=1; agent C, 28 Oct 2026). */
+    if (EB(0x9E2) != 0 && game_w.pl_num > 0) {
+        for (i = 0; i < game_w.pl_num; i++) {
+            if (player_work[0xA00 * i + 0x736] == em->stg && game_w.pl_state[i] == 1) {
+                EB(0x8C3) = game_w.master == i ? 0 : 1;
+                EB(0x88E) = (u8)i;
+                EB(0x949) = (u8)i;
+                break;
+            }
+        }
+    }
+#endif
     World_calc(em);
 }
 

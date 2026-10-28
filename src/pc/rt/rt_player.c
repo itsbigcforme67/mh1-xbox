@@ -371,7 +371,11 @@ void rt_player_tick(int no)
                  * PS2 G in tools/test_ps2_g_hunt.sh): the first of 16 directions around the target, starting from the
                  * hunter's own, that keeps clear */
                 void *Stage_mv_data_get(int st, int pl);
-                int k;
+                int k, pass, done = 0;
+                static const f32 margin[3] = { 500, 200, 25 };     /* (a carcass right by an exit, the Kut-Ku's 668 from the
+                    * 36 -> 35 exit's centre, radius 750: no spot is 500 clear, and the fallback stood inside the exit:
+                    * the hunter left the area instead of carving; then 200, then 25 clear) */
+                for (pass = 0; pass < 3 && !done; pass++)
                 for (k = 0; k < 16; k++) {
                     f32 a = (f32)((k + 1) / 2) * ((k & 1) ? 0.3927f : -0.3927f), c = cosf(a), sn = sinf(a);
                     f32 x = t[0] + (d[0] * c - d[1] * sn) / l * r, z = t[2] + (d[0] * sn + d[1] * c) / l * r;
@@ -380,14 +384,16 @@ void rt_player_tick(int no)
                     for (; m && *(u16 *)m != 0xFFFF && !bad; m += 0x34) {
                         f32 *e = (f32 *)(m + 4);
                         if (*(s16 *)(m + 2) == 1)
-                            bad = x > fminf(e[0], e[5]) - 500 && x < fmaxf(e[0], e[5]) + 500 &&
-                                  z > fminf(e[2], e[7]) - 500 && z < fmaxf(e[2], e[7]) + 500;
+                            bad = x > fminf(e[0], e[5]) - margin[pass] && x < fmaxf(e[0], e[5]) + margin[pass] &&
+                                  z > fminf(e[2], e[7]) - margin[pass] && z < fmaxf(e[2], e[7]) + margin[pass];
                         else
-                            bad = (x - e[0]) * (x - e[0]) + (z - e[2]) * (z - e[2]) < (e[3] + 500) * (e[3] + 500);
+                            bad = (x - e[0]) * (x - e[0]) + (z - e[2]) * (z - e[2]) <
+                                  (e[3] + margin[pass]) * (e[3] + margin[pass]);
                     }
                     if (!bad) {
                         p->pos[0] = x;
                         p->pos[2] = z;
+                        done = 1;
                         break;
                     }
                 }

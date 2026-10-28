@@ -4,6 +4,7 @@
 unsigned short Item_get_ck();   /* its real return type: was implicitly int (tools/check_kr_returns.py) */
 #include "plf.h"
 #include "game.h"
+#include "gwx.h"
 #include "plst.h"
 f32 flSqrt(f32);
 #ifdef VERSION_MHG
@@ -1448,9 +1449,9 @@ void box_get(PLW *pl) {
     }
     pl->work932 = 0;
     pl->work91F = 0;
-    Pl_item_stack(pl, PU16(&game_w, 0x128 + pl->work8C3 * 4), PS16(&game_w, 0x12A + pl->work8C3 * 4));
-    PU32(&game_w, 0x1A8 + (pl->work8C3 >> 5) * 4) |= 1 << (pl->work8C3 % 32);
-    Item_box_get_item(PU16(&game_w, 0x128 + pl->work8C3 * 4), pl->work8C3);
+    Pl_item_stack(pl, PU16(&game_w, GWX(0x128) + pl->work8C3 * 4), PS16(&game_w, GWX(0x128) + 2 + pl->work8C3 * 4));
+    PU32(&game_w, GWX(0x1A8) + (pl->work8C3 >> 5) * 4) |= 1 << (pl->work8C3 % 32);
+    Item_box_get_item(PU16(&game_w, GWX(0x128) + pl->work8C3 * 4), pl->work8C3);
 }
 
 void Pl_box_select(PLW *pl) {
@@ -1514,13 +1515,13 @@ void Pl_box_select(PLW *pl) {
         }
         idx = pl->work8C3;
         bit = 1 << (idx % 32);
-        if (!(PU32(&game_w, 0x1A8 + (idx >> 5) * 4) & bit) && (trg & 0x20) && PU16(&game_w, 0x128 + idx * 4) != 0 && pl->work8F3 == 0) {
-            if (Pl_item_num_ck(pl, PU16(&game_w, 0x128 + idx * 4)) == 0) {
+        if (!(PU32(&game_w, GWX(0x1A8) + (idx >> 5) * 4) & bit) && (trg & 0x20) && PU16(&game_w, GWX(0x128) + idx * 4) != 0 && pl->work8F3 == 0) {
+            if (Pl_item_num_ck(pl, PU16(&game_w, GWX(0x128) + idx * 4)) == 0) {
                 if (Pl_item_search_space(pl) != 0) {
                     se_req(7, 0x19, 0);
                     box_get(pl);
                 }
-            } else if (Pl_item_num_ck2(pl, PU16(&game_w, 0x128 + pl->work8C3 * 4)) >= PS16(&game_w, 0x12A + pl->work8C3 * 4)) {
+            } else if (Pl_item_num_ck2(pl, PU16(&game_w, GWX(0x128) + pl->work8C3 * 4)) >= PS16(&game_w, GWX(0x128) + 2 + pl->work8C3 * 4)) {
                 se_req(7, 0x19, 0);
                 box_get(pl);
             }

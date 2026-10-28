@@ -2,6 +2,7 @@
  * windows (status, equipment), reibun (preset phrases). Near-match C, not built; matching runs are
  * built from it as chatNN.c. Field meanings are guesses. */
 #include "types.h"
+#include "gwx.h"
 unsigned char Get_weapon_job();   /* its real return type: was implicitly int (tools/check_kr_returns.py) */
 #include "menu.h"
 #include "ud.h"
@@ -515,7 +516,7 @@ int Plaza_get_chat_line_num(void) {
 extern u8 Snd_em_id_conv_tbl[];
 typedef struct PSWC { u16 x0; u8 _p2[2]; u16 x4; u8 _p6[2]; u16 x8; u8 _pA[2]; u16 xC; } PSWC;
 extern PSWC Psw;
-#define GW(o) (*(u8 *)((u8 *)&game_w + (o)))
+#define GW(o) (*(u8 *)((u8 *)&game_w + GWX(o)))     /* MH1 offsets; G's through include/gwx.h */
 
 int NPC_Message(s8 *s, u32 left, int mode, int flag) {
     s16 cnt;
@@ -1345,7 +1346,7 @@ void PlayerStatusWindow(u8 *pl, int tab) {
         if (Online_ck() == 1) {
             flfntLocate(0x17A, 0x52);
             if (GW(0x1DC) == 0) {
-                font_print_uf((u8 *)&game_w + 0x1E8 + F16(pl, 0xC) * 8);
+                font_print_uf((u8 *)&game_w + GWX(0x1E8) + F16(pl, 0xC) * 8);
             } else {
                 font_print_uf(my_user_id);
             }

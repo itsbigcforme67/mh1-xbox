@@ -10,6 +10,7 @@
 #include "pl.h"
 #include "plf.h"
 #include "game.h"
+#include "gwx.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -33,7 +34,7 @@ int UseItemChk(PLW *pl, u16 n)
  * stands (traps, meat, barrels, pickaxe/net spots, flute, return ball ...) */
 int Item_valid_chk(u16 id)
 {
-    PLW *pl = &player_work[PU8(&game_w, 0xD1)];
+    PLW *pl = &player_work[PU8(&game_w, GWX(0xD1))];
     u16 k;
     f32 pos[3];
     u32 w;

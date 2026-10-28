@@ -8,6 +8,7 @@
 #include "types.h"
 #include "em.h"
 #include "game.h"
+#include "gwx.h"
 #include "quest.h"
 #include "fl.h"
 #include "clay.h"
@@ -418,7 +419,8 @@ void *rt_pull_enemy_work(void)
             PS8(em, 0x88D) = -1;
             em->id = (u16)i;
             em->mdl = mdl;
-            PU8(em, 0x8C3) = PU8(&game_w, 0xD1);
+            PU8(em, 0x8C3) = PU8(&game_w, GWX(0xD1));     /* game_w.master: 0 = this machine runs it (the host, as the PS2); G 0x3A (it read
+                                                         * MH1's 0xD1, 0 in G: every machine ran a new monster, round 11) */
             PF(em, 0x798) = 1.0f;
 #ifdef VERSION_MHG
             em->size = 100;     /* G: every spawner sets the size (round_init 100, Em_direct_set the
@@ -623,8 +625,8 @@ int rt_quest_load(int no)
     if (getenv("RT_QUEST_TRACE")) {
         int i;
         fprintf(stderr, "rt_quest: quest %d supply box:", no);
-        for (i = 0; i < 32 && PU16(&game_w, 0x128 + 4 * i); i++)
-            fprintf(stderr, " %d:%d", PU16(&game_w, 0x128 + 4 * i), PS16(&game_w, 0x12A + 4 * i));
+        for (i = 0; i < 32 && PU16(&game_w, GWX(0x128) + 4 * i); i++)
+            fprintf(stderr, " %d:%d", PU16(&game_w, GWX(0x128) + 4 * i), PS16(&game_w, GWX(0x128) + 2 + 4 * i));
         fprintf(stderr, "\n");
         if (quest_w.x6C) {      /* the condition program (QCMD: cmd a b c), up to its end (-1 / -2) */
             QCMD *q = (QCMD *)quest_w.x6C;
