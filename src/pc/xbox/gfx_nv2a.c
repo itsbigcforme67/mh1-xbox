@@ -446,10 +446,16 @@ void gfx_begin_frame(uint32_t c)
      * the next one is free to draw while at most one finished frame still waits for its vblank (the screen shows the
      * last or the one before). Only with two waiting would it be the one on screen: then wait for a vblank. Until
      * 27 Oct 2026 every frame waited for a vblank here, which also held the CPU until the last frame was on screen
-     * (half a 60 Hz refresh on average, 8 ms, in every frame slower than 60 fps). */
+     * (half a 60 Hz refresh on average, 8 ms, in every frame slower than 60 fps).
+     * The GPU finishes the last frame first (gfx_end_frame no longer waits for it: the game ticks in between run while
+     * the GPU draws), so its flip is queued before the check; a few vblanks at most, then on as before. */
+    wait_idle();
     {
-        uint32_t front = *(volatile uint32_t *)(0xFD000000u + 0x00600800u) & 0x03FFFFFFu;     /* PCRTC_START */
-        if (front != G.shown[0] && front != G.shown[1]) {
+        int n;
+        for (n = 0; n < 4; n++) {
+            uint32_t front = *(volatile uint32_t *)(0xFD000000u + 0x00600800u) & 0x03FFFFFFu;     /* PCRTC_START */
+            if (front == G.shown[0] || front == G.shown[1])
+                break;
             rt_prof_begin(RTP_GPU_WAIT);
             rt_prof_count(RTPC_GPU_WAITS, 1);
             pb_wait_for_vbl();
@@ -540,10 +546,20 @@ static void ps2_present(void)
     pb_end(p);
 }
 
+/* RT_NV2A_SYNC=1: wait for the GPU at the frame's end too, as before 28 Oct 2026 (A/B aid) */
+static int sync_end(void)
+{
+    static int v = -1;
+    if (v < 0)
+        v = getenv("RT_NV2A_SYNC") != NULL;
+    return v;
+}
+
 void gfx_end_frame(void)
 {
     ps2_present();
-    wait_idle();
+    if (sync_end())
+        wait_idle();
     G.shown[1] = G.shown[0];
     G.shown[0] = (uint32_t)(uintptr_t)pb_back_buffer() & 0x03FFFFFFu;
     rt_prof_begin(RTP_GPU_WAIT);
