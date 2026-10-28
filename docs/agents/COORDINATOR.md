@@ -98,6 +98,13 @@ always been a struct field type or a lost field.
 
 ## Current assignments (update when they change)
 
+### Checkpoint, 28 Oct 2026 (owner: "checkpoint and slow down"; no agents running)
+- 28 Oct merged and pushed: D (actor lighting = PS2, fl_light_local; --ps2-output; MH1 US banners), E (Xbox fps: guild hall 5.7 -> ~34, village ~10 -> 22, MH1 field ~12 -> 26 in xemu; old paths behind RT_ONLINE_PACE / RT_NV2A_OLDCLIP / RT_NV2A_SYNC), A (tester kit tools/make_release.sh + docs/TESTERS.md; Freedom-first G English, 95.0%), B (Fatalis G code; referee g_fatalis / g_fatalis_end: kill, clear, carves equal every tick), F (watchdog exit-screen fix, AC97 guard, xemu relaunch test, make_release --xemu-test passes), C12 (HP flake = raw MH1 offset in pull_enemy_work), C13 (tools/check_gwx.py full_check step gwx, 7 more GWX fixes incl. bgm_nm em_status_ck; tools/free_ports.py per-run ports fixed the test_online_town flake).
+- After C13: test_online_g.sh HUNT=1 broke ("server did not start"): a comment after the mcs-port value in the generated .conf. Fixed (comment on its own line). full_check does not run HUNT=1, so run `HUNT=1 MH1_HIDDEN=1 tools/test_online_g.sh` 3x after every online merge.
+- NOT merged yet: agent-A c3fde101 (tour extended to weapon/armour pages, network options, pause pages, online plaza/town/guild; spliced item descriptions fixed, 275 lobby lines talk layout; full_check ok in its worktree). Merge it next, then full_check + mhg rebuild + 3x HUNT=1, then push.
+- Open: Xbox second-start black screen (not in xemu; hardware), Fatalis flying death + other-rank carves + roar knock 1 tick late on PC (RELEASE_G 18), G village line-up, Training School / fishing / unplugged-pad English, Iron Hammer description, hardware tests of the vblank/overlap changes.
+- Owner choices pending: PSP short forms vs US MH1 long forms; moving 6 disc images (~24 GB) to external storage. Tomorrow with the owner: capture card + Xbox control script with a lock; servo on the Xbox pad gadget for the power button.
+
 ### Running, 27 Oct 2026
 - 27 Oct: merged agent-C round 11 (G tables sized to G, rt_codetab for static draw functions, g_tables check). full_check 44 ok, mhg 7 OK. test_online_g HUNT=1 flaky: 1 of 3 here (BOB's HP 1923 -> 2000 right after the first hand-over), not yet known whether new. Running: A (G English reward line), D (actor lighting), E (Xbox G online fps).
 - 27 Oct: merged agent-C round 10: G join crash fixed (mem_tex / map_name sized to G in config/mhg/pc_data.txt), LEAD=ps2 10/10, Xbox online static buffers -806 KB (guild hall only +192 KB free, cause unknown). ~560 G tables bigger than MH1's size still unreviewed. full_check 43 ok, mhg rebuild 7 OK. No agents running.

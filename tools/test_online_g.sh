@@ -64,7 +64,8 @@ if [ -n "$HUNT" ]; then     # HUNT=1: mh1-server with the game server of the gam
 bind = 127.0.0.1
 lobby-port = 0
 lobby-mcs = yes
-mcs-port = ${MCSPORT:-$(python3 tools/free_ports.py)}     # (a free one: tools/free_ports.py)
+# mcs-port: a free one (tools/free_ports.py); the config reader takes no comments after a value
+mcs-port = ${MCSPORT:-$(python3 tools/free_ports.py)}
 db = accounts.sqlite3
 verbose = yes
 CONF
