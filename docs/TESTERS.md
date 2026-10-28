@@ -116,6 +116,25 @@ broken / not tried) in your report.
 8. **Everything else.** Frame rate in the village and in a busy fight, sound and music, missing or wrong graphics,
    the hunter falling through the ground, menus that do nothing.
 
+
+### Second start, saves and the watchdog (detailed)
+
+1. Second start: play a minute, Back + Start, let the loader go back to the dashboard, start the game again from the
+   dashboard. Does it reach the title with sound? Do it 3 times in a row (G, then MH1). If it stops on a black screen:
+   wait 70 s (the watchdog's boot limit) - does a "froze" screen come? Then power off and on, start the game once more
+   and let the loader send the log: its last "boot step:" / "ac97: init:" line names where it stopped.
+2. Same with the online build (title -> online town -> Back + Start -> start again).
+3. A start right after a power cycle that followed a black screen: normal (expected yes)?
+4. Sound after the second start: music and effects (the 13 Oct "0 frames played" silence).
+5. Saves: save at the bed, Back + Start, start again, CONTINUE: the same hunter (money, equipment)? Then save, wait 5 s,
+   switch off at the power button, switch on, CONTINUE: the save kept? Does the dashboard's memory manager list
+   "Monster Hunter" / "Monster Hunter G" saves with a name (meta files written from memory of the format)? Can it copy
+   one to a memory unit and back (the game itself only uses the hard disk)?
+6. Watchdog: the log's "watchdog: longest wait so far" lines after a normal session (village, a quest, an area change,
+   the gallery, a bug report save, the online lobby and a co-op start): any above ~3 s, and where? No "froze" screen
+   during play, during the 10 s exit screen after Back + Start, or while saving a bug report?
+7. A save on a nearly full E: (only if easy: copy big files onto E: first): what does the game say?
+
 ## 5. Reporting a bug
 
 One report per problem. Copy this into a message (or a GitHub issue) and fill it in:

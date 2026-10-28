@@ -197,3 +197,9 @@ descriptions only, never game bytes or text.
 When you fix something in G that MH1 shares (platform layer, glue, a shared table or function, a test aid), check MH1
 has the same fault and fix it there too, and the reverse. Say in your report which game(s) each fix covers and how
 each was checked.
+
+## Clean up after each round (28 Oct 2026)
+The laptop's SSD filled up twice on 27-28 Oct. At the end of every round, delete your own regenerable output that the
+report doesn't cite: build/show/*, build/referee, build/ps2online, old render_score captures, nv2a data ISOs, xemu/PCSX2
+dumps. Keep the build trees (build/pc, build/mhg, build/xbox) so the next round doesn't rebuild everything. Say in the
+report how big your worktree is at the end (`du -sh`). Before a big job, check `df -h /`; under 10 GB free, clean up first.
