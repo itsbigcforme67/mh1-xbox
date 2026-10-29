@@ -1226,3 +1226,15 @@ sub_main:0x541830	bbd6db19	-	Delete the login ID and password from the\nNET file
 sub_main:0x541870	cbb69e9c	-	Create and edit the network settings needed to\nplay online.\n(The game restarts after setting up.)
 sub_main:0x5418E0	9520037b	-	Return to the Game Menu.
 sub_main:0x541900	187459f2	-	Manual
+sub_main:0x538D18	a88fa5ea	-	Talk
+lobby:0x63EBC0	749cb596	-	　
+sub_main:0x5414F8	d2628253	-	EXIT
+lobby:0x637E88	d2628253	-	EXIT
+sub_main:0x539160	ff6d06ad	-	Fire:            Water:
+sub_main:0x539180	7802e2f6	-	Thunder:         Dragon:
+sub_main:0x539AF0	00612808	-	Wisdom of the Chief added.
+main:0x2D23C0	45098628	d	fit for use any more.
+main:0x2D2A40	5ba541b5	d	fit for use any more.
+main:0x2D3120	57e3f0e3	d	fit for use any more.
+main:0x2D23E0	531f1ae7	d	If it were restored...
+main:0x2D3AC0	33d01385	d	Rusty blades that aren't

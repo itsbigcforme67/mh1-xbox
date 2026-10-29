@@ -561,3 +561,8 @@ jp main:0x3581A0 sub_main:0x5BCC30
 g sub_main:0x53ABE0 sub_main:0x5BCBE0
 g sub_main:0x53AC00 sub_main:0x5BCC10
 g sub_main:0x53AC20 sub_main:0x5BCC30
+# 28 Oct 2026 (agent A, g_eng_tour): official English that does not fit or is wrong here; text/mhg_en_own.tsv has our line
+drop g sub_main:0x5414F8     # NETWORK OPTIONS' last row: the paired English says ADJUST SCREEN, G's row is EXIT (its help: back to the game menu)
+drop g lobby:0x637E88        # the same EXIT row, lobby's copy
+drop g sub_main:0x539160     # armour compare window: the value is drawn 8 columns in; "Fire Res:" / "Water Res:" pair kept with the next line
+drop g sub_main:0x539180     # "Thunder Res:" ran under its value (shop armour compare, 28 Oct shots)

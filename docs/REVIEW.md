@@ -1155,3 +1155,12 @@ Both games unless marked.
   tools/free_ports.py picks free ones per run (MCSPORT still overrides). **Why:** two worktrees' full checks ran
   test_online_town at once and took each other's co-op port ("ANNA did not start the co-op quest"). **To revert:**
   commit "Online tests: free ports per run ...".
+
+## G English: per-item descriptions, talk rows (agent A, 28 Oct 2026)
+- **Dropped:** one English line per G description string when G shares the string between items; Freedom's "most used
+  wording" for single description lines that have MH1 US English; lobby talk messages outside the talk tables written
+  as they came. **Now:** Freedom's whole description in each item's pointer words (rt_text.c slots) where a line is
+  shared; description lines keep MH1 US unless the whole description is Freedom's; lobby messages of <= 22-byte rows go
+  through talk_layout; drops + our lines for ADJUST SCREEN (EXIT) and the armour compare labels. **Why:** spliced
+  descriptions and overlapping talk rows seen in the extended tour (docs/english_g.md). **To revert:** commit "G
+  English: per-item descriptions, the tour's new screens".
