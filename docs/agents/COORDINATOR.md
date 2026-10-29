@@ -203,13 +203,30 @@ both Xbox builds) plus `VERSION=mhg tools/rebuild.sh` (7 OK).
 
 ## Xbox bench (real hardware)
 
-docs/xbox.md "Real Xbox bench setup" onwards. Short version: the owner powers the Xbox; builds
-reach it through the network loader (tools/xbox_serve.py on the laptop, port 8765;
-`--input/--env` for scripted test runs); the game's log comes back on the next start
-(build/xbox/logs/). Capture card: find the node with tools' dev.sh logic (MacroSilicon "USB
-Video"), raw yuyv422 1280x720. Pad: RetroKM hub 127.0.0.1:24851 (`goto xbox`, then
-`pad <hex>` taps of ~50 ms; the KVM must have the xbox screen active). The Xbox's DHCP address
-changes (192.168.1.115/116/118/165 so far; MAC 00:0D:3A:31:08:AB); the laptop keeps 192.168.1.166 as a saved second address.
+docs/xbox.md "Real Xbox bench setup" onwards. Builds reach it through the network loader
+(tools/xbox_serve.py on the laptop, port 8765; `--input/--env` for scripted test runs); the
+game's log comes back on the next start (build/xbox/logs/).
+
+Since 29 Oct the coordinator can run the bench alone (owner set it up):
+- **Power:** `"../../MULTI KM/xboxpress/xbox_power.py" on|off|state`. A servo on an Atom Lite
+  ("xboxpress.local") presses the power button; on/off is checked from the pad (the console
+  polls it), a missed press is retried a bit longer. Never `off` while the game saves.
+  The presser's battery: `echo power | nc -u -w1 xboxpress.local 24854` (about 3.3 V = empty).
+- **Screen:** capture card /dev/video2 (MacroSilicon 534d:2109). It shows colour bars for the
+  first moments after opening, so stream 4 s and keep the last frame:
+  `ffmpeg -f v4l2 -input_format yuyv422 -video_size 1280x720 -i /dev/video2 -t 4 -update 1 out.png`.
+  It keeps the last frame after the signal goes, so it can't tell "off". Discord can hold it.
+- **Pad:** the Atom EchoS3R pad (xboxpad.local, MULTI KM/xboxpad/), powered by the console.
+  The RetroKM hub (127.0.0.1:24851) routes pads: the owner's Elite is linked to xbox:P1 with
+  `keep ... xbox on` (drives the Xbox while the laptop has focus). Scripted input: `pad <hex>`
+  goes to the focused screen; link the `script` accessory to xbox (keep on) rather than `goto
+  xbox`, which takes the owner's keyboard. Don't OTA the pad while the owner is playing: its
+  restart unplugs the controller and Evolution X doesn't take it back (reset the Xbox).
+- **Network:** DHCP, 192.168.1.115 on 29 Oct (earlier 116/118/165; MAC 00:0D:3A:31:08:AB, but the
+  laptop's WiFi extender rewrites MACs, so check by address). The laptop keeps 192.168.1.166 as a
+  saved second address. FTP login: the owner only (tools/xbox_upload.sh).
+- Rules: one move + a screenshot at a time; never select Lock/Unlock Harddisk or Flash BIOS in
+  Evolution X; never dump the EEPROM.
 
 ## Gameplay clips for the owner
 
