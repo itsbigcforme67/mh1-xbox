@@ -698,7 +698,11 @@ void menu_draw(void)
     if (!atlas)
         atlas_make();
     if (!M.open) {
-        if (rt_boot_title()) {          /* the hint on the title screen */
+        /* the hint, for the first 10 s of the title phase only: rt_boot_title() also covers the character and mode
+         * select screens, where it sat on the game's help line ("○ Confirm", seen on the real Xbox 29 Oct 2026) */
+        static unsigned title_frames;
+        title_frames = rt_boot_title() ? title_frames + 1 : 0;
+        if (title_frames && title_frames < 600) {
             const char *h = XB("Back + L3: SETTINGS", M.shot ? "F10: PC SETTINGS" : "F10 or Back+L3: PC SETTINGS");
             int hs = H >= 700 ? 2 : 1;
             states_on();

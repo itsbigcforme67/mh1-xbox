@@ -1764,7 +1764,7 @@ kept). If the laptop's address changes (DHCP), run the upload again.
 ## Settings menu on the Xbox (agent F, 15 Oct 2026)
 
 The PC's settings menu (docs/pc.md "Settings menu") now runs on the Xbox, MH1 and G. **Back + L3** (hold Back, click
-the left stick) opens it at any time; the title screen shows "Back + L3: SETTINGS" in the bottom-left corner. The game
+the left stick) opens it at any time; the title screen shows "Back + L3: SETTINGS" in the bottom-left corner for the first 10 s of the title phase (it covered the character / mode select help line on hardware, 29 Oct 2026). The game
 does not tick while it is open and the music pauses. D-pad or left stick up/down selects, left/right changes (A also
 steps to the next value), B, Start or Back closes (on release). Back + R3 is still the testers' debug menu.
 
