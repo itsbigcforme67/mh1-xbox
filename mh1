@@ -261,6 +261,11 @@ xbox)
         say "copying the game files from your disc to $OUT/MHG/data (about 1.1 GB)"
         mkdir -p "$OUT/MHG/data"
         python3 tools/disc_files.py extract "$DISC" "$OUT/MHG/data" --files "AFS_DATA.AFS,AFS00.AFS,AFS01.AFS,SLPM_658.69" || die "copying the disc files failed"
+        # English: the table tools/text_map.py made from your own discs (build/text/en_mhg.txt), where the game looks for it
+        if [ -f build/text/en_mhg.txt ]; then
+            mkdir -p "$OUT/MHG/data/text"; cp build/text/en_mhg.txt "$OUT/MHG/data/text/en.txt"
+            say "English text: build/text/en_mhg.txt -> $OUT/MHG/data/text/en.txt"
+        fi
         say "done. Copy the folder $OUT/MHG to your Xbox's hard disk as E:\\Games\\MHG (so that"
         say "E:\\Games\\MHG\\default.xbe and E:\\Games\\MHG\\data\\AFS_DATA.AFS exist), e.g. with any FTP program,"
         say "then start 'Monster Hunter G' from your dashboard's games list. (G is a work in progress.)"

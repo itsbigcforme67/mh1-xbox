@@ -99,6 +99,11 @@ def load_data(src):
     for _, f in files:
         if not os.path.exists(f):
             sys.exit('%s missing' % f)
+    # the English table (./mh1 xbox puts it in data/text/en.txt, made from the player's own discs): the game looks for it
+    # in <game folder>\data\text\en.txt (gfx_opts.c gfx_text_table_find); the loader makes the text folder
+    en = os.path.join(base, 'text', 'en.txt')
+    if os.path.exists(en):
+        files.append(('data/text/en.txt', en))
     xbe = os.path.join(src, 'default.xbe')
     if GAMES[game]['xbe_default'] and os.path.exists(xbe):
         GAMES[game]['xbe'] = xbe        # the folder's XBE is the build (never installed as default.xbe: the loader)

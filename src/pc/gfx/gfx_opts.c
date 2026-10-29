@@ -106,7 +106,10 @@ static void set_key(const char *k, const char *v)
     else if (!strcmp(k, "ps2_output")) gfx_opt.ps2_output = truth(v);
     else if (!strcmp(k, "filter2d"))
         gfx_opt.filter2d = ieq(v, "nearest") ? F2D_NEAREST : ieq(v, "sharp") ? F2D_SHARP : F2D_LINEAR;
-    else if (!strcmp(k, "language")) pc_opt.lang_en = ieq(v, "en") || ieq(v, "english");
+    else if (!strcmp(k, "language")) {
+        pc_opt.lang_en = ieq(v, "en") || ieq(v, "english");
+        pc_opt.lang_chosen = !ieq(v, "auto");
+    }
     else if (!strcmp(k, "confirm")) pc_opt.western_pad = ieq(v, "cross");
     else if (!strcmp(k, "hud")) rt_hud_style = strstr(v, "proto") || strstr(v, "gunner");
     else if (!strcmp(k, "text_table")) snprintf(pc_opt.text_table, sizeof pc_opt.text_table, "%s", v);
@@ -180,8 +183,8 @@ int gfx_opts_arg(int argc, char **argv, int *i)
         gfx_opt.widescreen = strcmp(v, "4:3") != 0;     /* 16:9 (or any other value): widescreen */
     }
     else if (!strcmp(a, "--filter2d") && *i + 1 < argc) set_key("filter2d", argv[++*i]);
-    else if (!strcmp(a, "--english")) pc_opt.lang_en = 1;
-    else if (!strcmp(a, "--japanese")) pc_opt.lang_en = 0;
+    else if (!strcmp(a, "--english")) pc_opt.lang_en = pc_opt.lang_chosen = 1;
+    else if (!strcmp(a, "--japanese")) { pc_opt.lang_en = 0; pc_opt.lang_chosen = 1; }
     else if (!strcmp(a, "--confirm") && *i + 1 < argc) set_key("confirm", argv[++*i]);
     else if (!strcmp(a, "--hud") && *i + 1 < argc) set_key("hud", argv[++*i]);
     else if (!strcmp(a, "--text-table") && *i + 1 < argc) set_key("text_table", argv[++*i]);
@@ -245,8 +248,8 @@ void gfx_opts_save(void)
     note(f, "filter2d: linear, nearest, or sharp (nearest at an integer scale, bilinear for the rest) for the HUD and menu art.");
     fprintf(f, "filter2d = %s\n", gfx_opt.filter2d == F2D_NEAREST ? "nearest" : gfx_opt.filter2d == F2D_SHARP ? "sharp" : "linear");
 #endif
-    note(f, "language: ja, or en when a translation table is found (text_table, else text/en.txt; docs/english.md). Read at start-up.");
-    fprintf(f, "language = %s\n", pc_opt.lang_en ? "en" : "ja");
+    note(f, "language: auto (English when a translation table is found: text_table, else text/en.txt; docs/english.md), en or ja. Read at start-up.");
+    fprintf(f, "language = %s\n", !pc_opt.lang_chosen ? "auto" : pc_opt.lang_en ? "en" : "ja");
     if (pc_opt.text_table[0])
         fprintf(f, "text_table = %s\n", pc_opt.text_table);
     note(f, "confirm: circle (Japanese layout) or cross (Western: circle and cross swapped, menus and play alike)");
@@ -360,9 +363,15 @@ const char *gfx_text_table_find(void)
 void gfx_opts_apply_language(void)
 {
     const char *t;
-    if (!pc_opt.lang_en || getenv("RT_TEXT_TABLE"))
+    if (getenv("RT_TEXT_TABLE"))
         return;
-    if ((t = gfx_text_table_find()) != NULL) {
+    t = gfx_text_table_find();
+    if (!pc_opt.lang_chosen)            /* "auto": English when the player has a table (29 Oct 2026: before, Japanese
+                                         * until changed in the settings menu, so an installed table went unused) */
+        pc_opt.lang_en = t != NULL;
+    if (!pc_opt.lang_en)
+        return;
+    if (t != NULL) {
 #ifdef XBOX
         xbox_env_set("RT_TEXT_TABLE", t);
 #else

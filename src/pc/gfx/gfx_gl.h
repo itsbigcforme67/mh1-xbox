@@ -25,6 +25,8 @@ extern gfx_options gfx_opt;
 /* the PC settings that are not about the picture (gfx_opts.c; the in-game settings menu, src/pc/menu.c, edits them) */
 typedef struct {
     int lang_en;         /* 1: English text from the translation table (text/en.txt, docs/english.md); read at start-up */
+    int lang_chosen;     /* 1: the player picked the language (settings file, menu, --english / --japanese); 0: "auto",
+                          * English when a translation table is found (gfx_opts_apply_language) */
     int western_pad;     /* 1: cross confirms and circle cancels (swapped), 0: the Japanese circle-confirm layout */
     char text_table[512];/* path of the translation table from the settings file ("" = look in the default places) */
     char online_server[128];  /* the online town (ONLINE=1, docs/network.md 3.5): lobby server "host:port" ("" = 127.0.0.1:10200) */

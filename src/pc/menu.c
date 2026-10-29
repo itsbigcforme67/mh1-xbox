@@ -205,8 +205,10 @@ static void change(int row, int d)
         gfx_opt.widescreen = !gfx_opt.widescreen;
         break;
     case R_LANG:
-        if (M.have_table)
+        if (M.have_table) {
             pc_opt.lang_en = !pc_opt.lang_en;
+            pc_opt.lang_chosen = 1;
+        }
         break;
     case R_PAD:
         pc_opt.western_pad = !pc_opt.western_pad;
