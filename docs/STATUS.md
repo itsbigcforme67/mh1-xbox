@@ -958,3 +958,23 @@ loader's HTTP data install (FTP to Evolution X stalls on big files); Xbox sound 
 (own AC97 driver, owner confirmed); debug menu, Xbox settings menu, prototype gunner HUD from cockpit2.apx;
 prototypes/demo surveyed (docs/FINDS.md). OOM crashes: wiping build/raw before a G rebuild made wibo
 loop (BRIEF.md rules).
+
+## 2026-10-29: G on the real Xbox, driven by the coordinator
+
+The coordinator now runs the real Xbox alone (power servo, capture card, scripted pad; docs/agents/COORDINATOR.md
+"Xbox bench"). Build 2aa6993a / 57e1ab1f, G nv2a through the loader. Verified on hardware:
+- Frame rate: village 30 game frames a second (capture card: a new picture every 2nd 60 Hz frame, no repeat
+  longer than one frame while walking past villagers); Forest and Hills field and a fight with Velociprey the
+  same. The game log: 59 drawn fps, 30 ticks a second in the village. No tearing (owner's eye on the CRT).
+- Second start (Back + Start or the watchdog, then G again from the dashboard, no power cycle): 3 of 3 fine.
+- Villagers present on a normal village visit (GB5 bug 3 confirmed fixed on hardware).
+- Fixed: the debug menu's quest list froze the GPU every time (watchdog "no frame for 5 s", with or without
+  RT_NV2A_SYNC): a frame wrote past pbkit's 512 KB push buffer, which never wraps. gfx_nv2a.c now waits for the
+  GPU and starts the buffer again from its head when a frame nears the end (2aa6993a). Quest list drawn after.
+- English on the Xbox: ./mh1 xbox copies build/text/en_mhg.txt to dist/xbox/MHG/data/text/en.txt and
+  xbox_serve.py --data installs it through the loader; the language setting is "auto" by default (English when a
+  table is found). The owner's Xbox had "language = ja" saved by the old menu (it always wrote ja), so it needed one
+  switch in Back + L3. Character select, mode select: English (57e1ab1f).
+- The "Back + L3: SETTINGS" hint covered the character / mode select help line: now the first 10 s only.
+Open: a ~200 ms frame every ~90 s in the village (log "load: pause ... other", very regular; the owner suspects the
+capture card, not checked); no audio through the capture card yet (RetroTINK HDMI gives none); Kut-Ku not fought.
