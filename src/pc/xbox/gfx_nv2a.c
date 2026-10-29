@@ -44,7 +44,14 @@
  * written: after each draw, when a batch grows past CMD_BATCH dwords, and before every pbkit call that writes
  * commands itself or waits for the GPU (the macros below). Same commands in the same order, fewer PUT writes. */
 #define CMD_BATCH 4096
-static uint32_t *cmd_open, *cmd_start;
+/* pbkit's push buffer (PBKIT_PUSHBUFFER_SIZE, 512 KB) is used from its head once per frame (pb_reset in
+ * gfx_begin_frame) and never wraps by itself: a frame writing more runs past its end into other memory and the GPU
+ * hangs (29 Oct 2026, real Xbox, G's debug menu quest list: watchdog freeze in the GPU wait, with or without
+ * RT_NV2A_SYNC). So a batch that would start past PB_FRAME_DWORDS waits for the GPU and starts again from the head.
+ * The margin covers one batch (CMD_BATCH) plus the largest single block (a draw's inline indices). */
+#define PB_FRAME_DWORDS (PBKIT_PUSHBUFFER_SIZE / 4 - 24 * 1024)
+static uint32_t *cmd_open, *cmd_start, *cmd_head;   /* cmd_head: the first write after the last rewind */
+static void wait_idle(void);
 static void cmd_kick(void)
 {
     if (!cmd_open)
@@ -53,10 +60,26 @@ static void cmd_kick(void)
     cmd_open = NULL;
     rt_prof_count(RTPC_KICKS, 1);
 }
+static uint32_t *cmd_rewind(uint32_t *p)
+{
+    static int logged;
+    if (logged++ < 3)
+        rt_log("nv2a: push buffer full mid-frame (%d KB used): waiting for the GPU, starting again from its head",
+               (int)((p - cmd_head) * 4 / 1024));
+    wait_idle();
+    pb_reset();
+    return cmd_head = pb_begin();
+}
 static inline uint32_t *cmd_begin(void)
 {
-    if (!cmd_open)
-        cmd_open = cmd_start = pb_begin();
+    if (!cmd_open) {
+        uint32_t *p = pb_begin();
+        if (!cmd_head)
+            cmd_head = p;
+        else if (p - cmd_head > PB_FRAME_DWORDS)
+            p = cmd_rewind(p);
+        cmd_open = cmd_start = p;
+    }
     return cmd_open;
 }
 static inline void cmd_end(uint32_t *p)
@@ -466,6 +489,7 @@ void gfx_begin_frame(uint32_t c)
     }
     xbox_watch_mark("drawing (after the GPU wait)");
     pb_reset();
+    cmd_head = NULL;
     /* the PS2 output (gfx_opt.ps2_output): the frame is drawn at the PS2's 512 x 448 in the extra buffer and shown by
      * ps2_present (not for the bug reporter's id pass, which works in screen pixels) */
     G.ps2 = G.ps2_ok && gfx_opt.ps2_output && !gfx_pick_pass;
