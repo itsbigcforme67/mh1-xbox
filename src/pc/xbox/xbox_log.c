@@ -178,6 +178,23 @@ void xbox_log_commit(FILE *f)
     NtFlushBuffersFile(*(HANDLE *)f, &io);
 }
 
+/* Reserve disk space for a log file up front (its end of file stays where it is). FATX allocates a 16 KB cluster
+ * when a write first runs past the last one, and the commit above then wrote the allocation table through: a
+ * 150-200 ms frame each time the log crossed a 16 KB boundary, about every 90 s in the village (real Xbox,
+ * 29 Oct 2026: all seven logged pauses sat within 1 KB past a multiple of 16 KB; not the capture card). */
+void xbox_log_reserve(FILE *f, unsigned bytes)
+{
+    IO_STATUS_BLOCK io;
+    FILE_ALLOCATION_INFORMATION ai;
+    NTSTATUS st;
+    if (!f)
+        return;
+    ai.AllocationSize.QuadPart = bytes;
+    st = NtSetInformationFile(*(HANDLE *)f, &io, &ai, sizeof ai, FileAllocationInformation);
+    if (!NT_SUCCESS(st))
+        fprintf(stderr, "log: reserving %u KB on the disk failed (0x%08lx)\n", bytes / 1024, (unsigned long)st);
+}
+
 /* after E: is mounted */
 void xbox_log_start(void)
 {
@@ -186,9 +203,10 @@ void xbox_log_start(void)
     CreateDirectoryA("E:\\Games", NULL);          /* the network loader's folder; a freshly formatted */
     CreateDirectoryA(XBOX_GAME_DIR, NULL);        /* disk (xemu, tools/xbox_fatx.py) has none */
     log_path_from_xbe();
-    if (freopen(XBOX_LOG, "w", stderr))
+    if (freopen(XBOX_LOG, "w", stderr)) {
         setvbuf(stderr, NULL, _IONBF, 0);
-    else
+        xbox_log_reserve(stderr, 4u << 20);
+    } else
         debugPrint("cannot write %s\n", XBOX_LOG);
     SDL_SetAssertionHandler(xbox_sdl_assert, NULL);
     atexit(xbox_log_show);

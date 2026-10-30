@@ -98,6 +98,22 @@ always been a struct field type or a lost field.
 
 ## Current assignments (update when they change)
 
+### Session end, 29 Oct 2026 evening (owner restarting the session; Xbox off, no agents running)
+- Pushed today: push-buffer rewind (quest list freeze), English on the Xbox (table via ./mh1 xbox + xbox_serve.py --data,
+  language = auto), settings hint 10 s only, docs. Full check 46 ok + mhg 7 OK before each push.
+- Committed, NOT pushed (no full check yet): (1) xbox_log_reserve: 4 MB reserved for both log files (fix for the
+  ~150-200 ms pause every ~90 s: FATX cluster allocation at each 16 KB of log; all 7 pauses sat just past a 16 KB
+  multiple). Built, but the village idle test to confirm it was not run yet (scratchpad xb_village.sh, 240 s idle,
+  Back+Start, check "load: pause" in the log). (2) xbox_ac97.c: every codec access in codec_setup logged + committed.
+- Open: cold power-on black screen = hang inside codec_setup (log 20261029-201017 ends at "codec ready, setting up").
+  Seen 1 of ~9 cold starts. Trace shows every codec READ returns 0000 (even reg 00 and 2C), so reads look broken;
+  suspect a read that never completes. The STEP commits take ~90 ms each and eat codec_setup's 200 ms wait. Next:
+  cold-start loop (scratchpad coldloop.sh N: power on, find "Monster Hunter G" by template tmpl_mhg.png, 45 s,
+  black = hung) until a hang names the access; then consider skipping codec reads / the cold reset.
+- Bench notes: in-game taps need ~200 ms holds (dashboard 60 ms, else it double-steps); B confirms in G (○), A in
+  the debug menu; the dashboard list keeps its position, so find the row by picture, never by counting.
+  xbox_serve.py currently runs with --data dist/xbox/MHG (no test switches).
+
 ### Checkpoint, 28 Oct 2026 (owner: "checkpoint and slow down"; no agents running)
 - 28 Oct merged and pushed: D (actor lighting = PS2, fl_light_local; --ps2-output; MH1 US banners), E (Xbox fps: guild hall 5.7 -> ~34, village ~10 -> 22, MH1 field ~12 -> 26 in xemu; old paths behind RT_ONLINE_PACE / RT_NV2A_OLDCLIP / RT_NV2A_SYNC), A (tester kit tools/make_release.sh + docs/TESTERS.md; Freedom-first G English, 95.0%), B (Fatalis G code; referee g_fatalis / g_fatalis_end: kill, clear, carves equal every tick), F (watchdog exit-screen fix, AC97 guard, xemu relaunch test, make_release --xemu-test passes), C12 (HP flake = raw MH1 offset in pull_enemy_work), C13 (tools/check_gwx.py full_check step gwx, 7 more GWX fixes incl. bgm_nm em_status_ck; tools/free_ports.py per-run ports fixed the test_online_town flake).
 - After C13: test_online_g.sh HUNT=1 broke ("server did not start"): a comment after the mcs-port value in the generated .conf. Fixed (comment on its own line). full_check does not run HUNT=1, so run `HUNT=1 MH1_HIDDEN=1 tools/test_online_g.sh` 3x after every online merge.

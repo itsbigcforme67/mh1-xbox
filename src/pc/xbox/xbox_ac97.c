@@ -133,14 +133,26 @@ static int cas_wait(void)
             return 0;
     return 1;
 }
+/* codec_setup's accesses, each logged and committed before it is made: a cold power-on hung inside codec_setup on the
+ * real Xbox (29 Oct 2026, log ends at "codec ready, setting up"; the 21 Oct black screen too): the next one names the
+ * access. Every wait there has a time-out, so the suspect is one register access that never completes. */
+static int codec_trace;
 static unsigned codec_rd(int reg)
 {
-    cas_wait();
-    return *(volatile unsigned short *)(0xFEC00000 + reg);
+    int sem = cas_wait();
+    unsigned v;
+    if (codec_trace)
+        STEP("codec rd %02X (semaphore %s)", reg, sem ? "taken" : "TIMED OUT");
+    v = *(volatile unsigned short *)(0xFEC00000 + reg);
+    if (codec_trace)
+        STEP("codec rd %02X = %04X", reg, v);
+    return v;
 }
 static void codec_wr(int reg, unsigned v)
 {
-    cas_wait();
+    int sem = cas_wait();
+    if (codec_trace)
+        STEP("codec wr %02X %04X (semaphore %s)", reg, v, sem ? "taken" : "TIMED OUT");
     *(volatile unsigned short *)(0xFEC00000 + reg) = (unsigned short)v;
 }
 
@@ -170,6 +182,7 @@ void xbox_ac97_dump(const char *when)
 static void codec_setup(void)
 {
     DWORD t0 = KeTickCount;
+    codec_trace = 1;
     codec_wr(0x26, 0x0000);             /* power-down bits PR0-PR6 cleared */
     while ((codec_rd(0x26) & 0x000F) != 0x000F && !past(t0, 200)) {     /* ADC/DAC/analog/ref ready */
         LARGE_INTEGER t;
@@ -181,6 +194,7 @@ static void codec_setup(void)
     codec_wr(0x04, 0x0000);             /* headphone / aux out */
     codec_wr(0x06, 0x0000);             /* mono out */
     codec_wr(0x18, 0x0808);             /* PCM out */
+    codec_trace = 0;
 }
 
 static bool bm_reset(int cr, int sr)

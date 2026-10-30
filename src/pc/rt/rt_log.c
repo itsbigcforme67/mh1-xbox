@@ -820,6 +820,12 @@ void rt_log_init(const char *disc, int argc, char **argv)
     if (lf) {
         static char buf[32768];
         setvbuf(lf, buf, _IOFBF, sizeof buf);
+#ifdef MH1_XBOX
+        {
+            void xbox_log_reserve(FILE *f, unsigned bytes);
+            xbox_log_reserve(lf, 4u << 20);     /* no cluster allocation while playing (xbox_log.c) */
+        }
+#endif
 #if defined(MH1_WINDOWS)
         lfd = _fileno(lf);
 #elif !defined(MH1_XBOX)
