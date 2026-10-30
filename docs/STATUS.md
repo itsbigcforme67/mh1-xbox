@@ -978,3 +978,9 @@ The coordinator now runs the real Xbox alone (power servo, capture card, scripte
 - The "Back + L3: SETTINGS" hint covered the character / mode select help line: now the first 10 s only.
 Open: a ~200 ms frame every ~90 s in the village (log "load: pause ... other", very regular; the owner suspects the
 capture card, not checked); no audio through the capture card yet (RetroTINK HDMI gives none); Kut-Ku not fought.
+
+## 2026-10-29 late: two Xbox fixes checked on hardware
+- Village pause gone: the log files reserve 4 MB, so the FATX disk no longer stops the game every ~90 s to grow them
+  (4.5 min idle in the village, no pause).
+- Cold-start black screen (rare, 1 in ~25): the audio setup no longer reads the sound chip's registers (the reads never
+  worked: always 0000) and only writes them. 15 of 15 cold starts fine afterwards; likely fixed, not proven.

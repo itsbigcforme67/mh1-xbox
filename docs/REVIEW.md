@@ -1164,3 +1164,13 @@ Both games unless marked.
   through talk_layout; drops + our lines for ADJUST SCREEN (EXIT) and the armour compare labels. **Why:** spliced
   descriptions and overlapping talk rows seen in the extended tour (docs/english_g.md). **To revert:** commit "G
   English: per-item descriptions, the tour's new screens".
+
+## Xbox AC97: no codec register reads (coordinator, 29 Oct 2026)
+- **Dropped:** codec_setup's wait on register 26's ready bits (it read the register every 10 ms for up to 200 ms),
+  its read-modify-write of register 2A, and the codec register values in the "ac97 open:" / "ac97 stalled:" log line.
+  **Now:** the same writes (26, 2A, 02, 04, 06, 18) with a fixed 200 ms wait after the power-up write. **Why:** on the
+  real Xbox every codec read returns 0000, even register 18 right after 0808 was written (24 logs of 29 Oct), so the
+  wait always ran to its time-out and the logged values meant nothing; a cold power-on hung inside codec_setup (1 of ~25
+  starts) and the 21 Oct black screen also stopped at a codec read. nxdk's own driver touches no codec register.
+  Verified: 15 of 15 cold starts on hardware, audio DMA running (movie audio consumed, no "stopped playing"); that the
+  hang is gone is likely, not proven (it was rare). **To revert:** commit "Xbox AC97: codec registers written only".

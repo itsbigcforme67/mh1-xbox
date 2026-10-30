@@ -2077,3 +2077,13 @@ subroutines (CALL) for static index lists would remove them, but were left for n
 render_score.py aid) against this round: g_camp, g_village, g_forest1, g_cave, m_camp, m_forest1, each at the tick and
 one tick either side: 18 pictures, all pixel-identical. (One old-way capture, g_camp one tick late, came out torn the
 first time; run again it matched: an xemu capture glitch.)
+
+## Real Xbox, 29 Oct 2026 evening: log pause and cold-start hang (coordinator)
+- The ~200 ms pause every ~90 s in the village was the FATX cluster allocation at each 16 KB of log: the log files
+  now reserve 4 MB at start (xbox_log). Hardware: after entering the village, 4.5 minutes idle with no "load: pause"
+  line (log 20261029-204119; before, one every ~90 s).
+- Cold power-on black screen (1 of ~25 starts, log 20261029-201017 ends at "codec ready, setting up"): every codec
+  register access was then logged one by one; 10 of 10 cold starts were fine with that (the slow logging changes the
+  timing) and showed every codec READ returning 0000, even a register just written. The codec is now only written
+  (docs/REVIEW.md); 15 of 15 cold starts fine with that build (tools/bench/coldloop.sh). Audio DMA runs; whether it is
+  audible needs a person (the capture card carries no sound).

@@ -98,6 +98,14 @@ always been a struct field type or a lost field.
 
 ## Current assignments (update when they change)
 
+### Session, 29 Oct 2026 late (no agents running; Xbox off)
+- Log reserve (4 MB) confirmed on hardware: no village pause in 4.5 min idle. AC97 codec now written only (reads always
+  gave 0000); cold-start loop: 10/10 with the access trace, 15/15 after the change. Owner: listen once that the game
+  still has sound. agent-A c3fde101 was already in main (merged with cdd30aba). Bench scripts' template path fixed.
+- Start the bench scripts from the dashboard's MAIN menu: xb_village.sh / coldloop.sh press A first (inside the game
+  list that launches the highlighted game). Quit G = hold Back + Start 2.5 s (`xb.sh hold 00c0 2500`).
+- Open on hardware: music static, fog, HDD launch, Kut-Ku fight; audio through the capture card.
+
 ### Session end, 29 Oct 2026 evening (owner restarting the session; Xbox off, no agents running)
 - Pushed today: push-buffer rewind (quest list freeze), English on the Xbox (table via ./mh1 xbox + xbox_serve.py --data,
   language = auto), settings hint 10 s only, docs. Full check 46 ok + mhg 7 OK before each push.
