@@ -2087,3 +2087,16 @@ first time; run again it matched: an xemu capture glitch.)
   timing) and showed every codec READ returning 0000, even a register just written. The codec is now only written
   (docs/REVIEW.md); 15 of 15 cold starts fine with that build (tools/bench/coldloop.sh). Audio DMA runs; whether it is
   audible needs a person (the capture card carries no sound).
+
+## G online on the real Xbox: first lobby (coordinator, 30 Oct 2026)
+First online run on hardware. Build: G online (`--version mhg --online --gfx nv2a`) through the loader (`xbox_serve.py --xbe-g ...
+--env --input`), mh1-server with an account store bound to the laptop's LAN address, RT_NET_HOST / RT_NET_PORT / RT_NET_ID /
+RT_NET_PASS from env.txt, and RT_SAVE_ID (new): another save folder, so a test can't write the owner's save (the game lists only
+that folder; test folders 4D48000200000002 and ...03 stay on the Xbox's disk). Verified: DHCP 192.168.1.115, login, new hunter,
+G Plaza, town at 59 fps; the PC G client in the same town: each sees the other's hunter (capture on1-on4 in build/bench, not
+committed). Not yet checked: chat, rooms, a hunt, name tags over the hunters on the Xbox (none in the capture).
+- Crash found and fixed: Lb_act_set called `Lb_act_ck()` with no arguments (the m2c draft dropped them; on the PS2 they stay in the
+  registers), so on 32-bit x86 it read junk from the stack: access violation when the other hunter's area message arrived
+  (Lb_check_receipt -> lb_set_pl_stage -> Lb_act_set, log 20261030-035955-mhg). The xemu tests pass, so the stack there apparently held something harmless (not checked).
+- The same kind of call: a rough scan of src/lobby/gonl finds ~116 more sites in 26 functions with fewer arguments than the
+  definition (Get_sw2, To_LogOut, Lb_pl_chr_set, SoftKeyboard_move, ...); not reviewed, some will be false alarms.

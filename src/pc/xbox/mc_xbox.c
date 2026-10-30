@@ -115,7 +115,8 @@ static void ensure_dirs(void)
     if (title_dir[0])
         return;
     snprintf(title_dir, sizeof title_dir, "%s\\%s", ROOT, XBOX_TITLE_ID_STR);
-    snprintf(save_dir, sizeof save_dir, "%s\\%s", title_dir, XBOX_SAVE_ID);
+    /* RT_SAVE_ID: another save directory for a test run, so it can't write the owner's save (16 hex digits) */
+    snprintf(save_dir, sizeof save_dir, "%s\\%s", title_dir, getenv("RT_SAVE_ID") ? getenv("RT_SAVE_ID") : XBOX_SAVE_ID);
     CreateDirectoryA(ROOT, NULL);
     CreateDirectoryA(title_dir, NULL);
 }
@@ -293,8 +294,10 @@ int sceMcGetDir(int port, int slot, const char *name, unsigned mode, int maxent,
         const char *nm = fd.cFileName;
         if (is_hidden(nm) || !strcmp(nm, ".") || !strcmp(nm, ".."))
             continue;
-        if (!strcmp(nm, XBOX_SAVE_ID))
+        if (!strcmp(nm, strrchr(save_dir, '\\') + 1))
             nm = PS2_SAVE_DIR;
+        else if (!strcmp(nm, XBOX_SAVE_ID))
+            continue;                   /* RT_SAVE_ID: the real save is not this run's */
         if (n < maxent && o)
             put_ent(o + 0x40 * n, nm, &fd);
         n++;

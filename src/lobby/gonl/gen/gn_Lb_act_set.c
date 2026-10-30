@@ -48,7 +48,7 @@ void Lb_act_set(void *arg0, u8 arg1, u8 arg2) {
     (*(s32 *)((u8 *)(arg0) + 0x1A0)) = 0x40000000;
     (*(s32 *)((u8 *)(arg0) + 0x1F0)) = 0x40000000;
     if (((*(u8 *)((u8 *)(arg0) + 0x1E)) == 0) && ((*(u16 *)((u8 *)(arg0) + 0xC)) != (*(u8 *)((u8 *)&game_w + 0x3A)))) {
-        if ((((s16) (Lb_act_ck()))) != 0) {
+        if ((((s16) (Lb_act_ck(arg0, 0, 0)))) != 0) {
             if ((*(u16 *)((u8 *)(arg0) + 0x2DC)) != 1) {
                 Lb_pl_to_normal(arg0, 0, 4, 0);
             }

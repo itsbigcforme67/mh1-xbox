@@ -293,6 +293,8 @@ def renamed(src):
 
 # one-line corrections applied to a function's draft every time it is generated (instead of a HAND-FIXED copy)
 FIXUPS = {
+    # m2c dropped the arguments (still in a0-a2 on the PS2): the Xbox's stack calls read junk, crash on the real Xbox 30 Oct 2026
+    'Lb_act_set': [(r'Lb_act_ck\(\)', 'Lb_act_ck(arg0, 0, 0)')],
     'Lb_check_receipt': [   # G passes its own a0 (the sender's id) on to Lb_get_plID unchanged
         (r'= Lb_get_plID\(\)', '= Lb_get_plID(arg0)')],
     'Lb_get_comment': [     # the same (G 0x56C2B0)
