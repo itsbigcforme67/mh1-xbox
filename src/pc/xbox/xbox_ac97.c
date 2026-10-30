@@ -133,26 +133,12 @@ static int cas_wait(void)
             return 0;
     return 1;
 }
-/* codec_setup's accesses, each logged and committed before it is made: a cold power-on hung inside codec_setup on the
- * real Xbox (29 Oct 2026, log ends at "codec ready, setting up"; the 21 Oct black screen too): the next one names the
- * access. Every wait there has a time-out, so the suspect is one register access that never completes. */
-static int codec_trace;
-static unsigned codec_rd(int reg)
-{
-    int sem = cas_wait();
-    unsigned v;
-    if (codec_trace)
-        STEP("codec rd %02X (semaphore %s)", reg, sem ? "taken" : "TIMED OUT");
-    v = *(volatile unsigned short *)(0xFEC00000 + reg);
-    if (codec_trace)
-        STEP("codec rd %02X = %04X", reg, v);
-    return v;
-}
+/* codec registers are only written: on the real Xbox every read returns 0000 (even a register just written; logs of 29 Oct
+ * 2026), and a rare cold power-on hung inside codec_setup, whose wait loop read register 26 ~20 times (1 of ~25 starts;
+ * the 21 Oct black screen also stopped at a codec read). nxdk's driver touches no codec register at all. */
 static void codec_wr(int reg, unsigned v)
 {
-    int sem = cas_wait();
-    if (codec_trace)
-        STEP("codec wr %02X %04X (semaphore %s)", reg, v, sem ? "taken" : "TIMED OUT");
+    cas_wait();
     *(volatile unsigned short *)(0xFEC00000 + reg) = (unsigned short)v;
 }
 
@@ -170,31 +156,22 @@ void xbox_ac97_dump(const char *when)
     if (n_unknown)
         rt_warn("ac97 %s: %lu interrupt(s) with no known cause (first with GLOB_STA %08X): the AC97's interrupts were switched "
                 "off (silent rather than a hang)", when, n_unknown, unknown_sta);
-    if (!codec_access)
-        rt_log("ac97 %s: codec registers not read (GLOB_CNT without the cold-reset bit: xemu)", when);
-    else
-    rt_log("ac97 %s: codec 00 %04X master 02 %04X pcm 18 %04X pwr 26 %04X ext 2A %04X dac 2C %04X",
-           when, codec_rd(0x00), codec_rd(0x02), codec_rd(0x18), codec_rd(0x26), codec_rd(0x2A), codec_rd(0x2C));
 }
 
 /* after a cold reset: everything powered, master and PCM out unmuted at 0 dB, the DAC at
  * 48 kHz (variable rate off: the fixed 48 kHz) */
 static void codec_setup(void)
 {
-    DWORD t0 = KeTickCount;
-    codec_trace = 1;
+    LARGE_INTEGER t;
     codec_wr(0x26, 0x0000);             /* power-down bits PR0-PR6 cleared */
-    while ((codec_rd(0x26) & 0x000F) != 0x000F && !past(t0, 200)) {     /* ADC/DAC/analog/ref ready */
-        LARGE_INTEGER t;
-        t.QuadPart = -10 * 1000;
-        KeDelayExecutionThread(KernelMode, FALSE, &t);
-    }
-    codec_wr(0x2A, codec_rd(0x2A) & ~1u);       /* VRA off */
+    t.QuadPart = -10 * 1000 * 200;      /* 200 ms for the ADC/DAC/analog/ref to come up (the old wait on register 26's
+                                         * ready bits always ran to its 200 ms time-out: the reads give 0000) */
+    KeDelayExecutionThread(KernelMode, FALSE, &t);
+    codec_wr(0x2A, 0x0000);             /* VRA off */
     codec_wr(0x02, 0x0000);             /* master */
     codec_wr(0x04, 0x0000);             /* headphone / aux out */
     codec_wr(0x06, 0x0000);             /* mono out */
     codec_wr(0x18, 0x0808);             /* PCM out */
-    codec_trace = 0;
 }
 
 static bool bm_reset(int cr, int sr)

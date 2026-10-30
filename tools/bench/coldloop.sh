@@ -12,7 +12,7 @@ for c in $(seq 1 ${1:-10}); do
     "$T/xb.sh" shot v_list >/dev/null 2>&1
     python3 -c "
 from PIL import Image, ImageChops, ImageStat; import sys
-t=Image.open("$S/tmpl_mhg.png"); im=Image.open('$S/v_list.png').convert('L').crop((300,495,660,522))
+t=Image.open('$S/tmpl_mhg.png'); im=Image.open('$S/v_list.png').convert('L').crop((300,495,660,522))
 sys.exit(0 if ImageStat.Stat(ImageChops.difference(im,t)).mean[0] < 15 else 1)" && { found=1; break; }
     if [ $i -le 5 ]; then "$T/xb.sh" tap down 60; else "$T/xb.sh" tap up 60; fi; sleep 1.5
   done
