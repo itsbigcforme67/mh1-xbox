@@ -35,7 +35,7 @@ extern u8 tl_mail_tbl;
 s32 *Get_ServerName();                          /* extern */
 s32 font_print(); /* extern */
 s32 func_0012BDD0();                         /* extern */
-s32 nwDispStr_Html(s32, s32, f32);          /* extern */
+void nwDispStr_Html(f32, f32, f32, u8 *);
 s32 put_titles();                  /* extern */
 s32 sprintf();           /* extern */
 extern u8 ClassInfo;
@@ -134,7 +134,7 @@ void disp_status(s32 arg0, s32 arg1, void *arg2, s32 *arg3, void *arg4, s32 arg5
             font_print(&g_lb_63E278, Get_ServerName(), (u8 *)&PlazaInfo + ((ClassInfo - 1) * 0x15C) + 0x1A, ClassInfo);
             return;
         }
-        nwDispStr_Html((*(s32 *)&cw) + (arg_sp0 * 0x24A) + 0x1064, 0x43960000, (f32) temp_s4_5);
+        nwDispStr_Html(300.0f, (f32) temp_s4_5, 1.0f, (u8 *)(*(s32 *)&cw) + (arg_sp0 * 0x24A) + 0x1064);
         return;
     case 1:
         temp_s4_6 = ((s16) ((var_s4 + 0x16)));

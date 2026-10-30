@@ -20,7 +20,7 @@ s32 Get_kb_input();                             /* extern */
 unsigned char Get_kb_input();                             /* extern */   /* the real return type (tools/check_kr_returns.py) */
 #endif
 s32 SoftKeyboard_exit();                     /* extern */
-s32 SoftKeyboard_pos_set();     /* extern */
+void SoftKeyboard_pos_set(f32, s16);
 
 s32 lobby_func_0056D570(void *arg0) {
     s32 temp_a0;
@@ -39,7 +39,7 @@ s32 lobby_func_0056D570(void *arg0) {
     switch (temp_v1_2) {                            /* irregular */
     case 0:
         (*(u8 *)((u8 *)(temp_v1) + 0x232)) = (u8) (temp_v1_2 + 1);
-        SoftKeyboard_pos_set(0x140, 0x42C80000);
+        SoftKeyboard_pos_set(100.0f, 0x140);
         func_00220F40(1, 0xE, 0x7E, arg0);
 block_16:
         return 0;

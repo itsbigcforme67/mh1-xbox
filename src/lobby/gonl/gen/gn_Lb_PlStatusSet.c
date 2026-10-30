@@ -14,7 +14,7 @@ void Lb_PlStatusSet(s32 arg0) {
     u8 *temp_a0;
     u8 *temp_v0;
 
-    temp_v0 = GetAdrsMiniData();
+    temp_v0 = GetAdrsMiniData(arg0);
     temp_s0 = arg0 & 0xFF;
     temp_a0 = &player_work + (temp_s0 * 0xA00);
     (*(s16 *)((u8 *)(temp_a0) + 0x35E)) = (s16) (*(s16 *)((u8 *)(temp_v0) + 0xA));

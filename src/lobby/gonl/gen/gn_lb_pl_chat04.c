@@ -16,7 +16,7 @@ void lb_pl_chat04(void *arg0) {
     switch (temp_a1) {                              /* irregular */
     case 0:
         (*(u8 *)((u8 *)(arg0) + 5)) = (u8) (temp_a1 + 1);
-        Lb_pl_chr_set((void *)0x270, 6, 0);
+        Lb_pl_chr_set(arg0, 0x270, 6, 0);
         (*(s32 *)((u8 *)(arg0) + 0x39C)) = 0;
         Lb_Pl_basic_flagset(arg0, 0, 0, 0);
         return;

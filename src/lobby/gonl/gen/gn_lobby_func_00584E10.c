@@ -7,14 +7,14 @@ s32 Lb_put_inputMsgForHTML();
 s32 font_set_stack_no();
 extern u8 cw;
 s32 Disp_back();                                /* extern */
-s32 nwDispStr_Html();      /* extern */
+void nwDispStr_Html(f32, f32, f32, u8 *);
 
 void lobby_func_00584E10(void) {
     u8 *temp_a0;
 
     Disp_back();
     font_set_stack_no(5);
-    nwDispStr_Html((*(void **)&cw) + 0xBD6, 0x42C80000, 0x42700000);
+    nwDispStr_Html(100.0f, 60.0f, 1.0f, (u8 *)(*(void **)&cw) + 0xBD6);
     temp_a0 = (*(void **)&cw);
     if (((*(u8 *)((u8 *)(temp_a0) + 0xBC4)) == 0) && ((*(s8 *)((u8 *)(temp_a0) + 0xB71)) == 0) && ((*(s8 *)((u8 *)(temp_a0) + 0xB72)) == 0) && ((*(s8 *)((u8 *)(temp_a0) + 0xB73)) == 0)) {
         Lb_put_inputMsgForHTML((s32) temp_a0, M2C_ERROR(/* Read from unset register $a1 */), M2C_ERROR(/* Read from unset register $a2 */), M2C_ERROR(/* Read from unset register $a3 */));

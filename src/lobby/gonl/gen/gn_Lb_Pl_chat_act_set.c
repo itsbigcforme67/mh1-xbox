@@ -11,7 +11,7 @@ void Lb_Pl_chat_act_set(void *arg0) {
 
     temp_v1 = (*(u8 *)((u8 *)(arg0) + 0x8C4));
     if (temp_v1 != 0) {
-        Lb_Pl_act_set(1, *(&chat_act_tbl_0064E198 + temp_v1), 0);
+        Lb_Pl_act_set(arg0, 1, *(&chat_act_tbl_0064E198 + temp_v1), 0);
     }
 }
 

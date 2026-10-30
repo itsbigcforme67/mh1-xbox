@@ -20,7 +20,7 @@ extern u8 lb_rule_member;
 extern u8 pNet;
 s32 check_warning_level(); /* extern */
 s32 cnLBS_Answer_LoginWarningMessage(); /* extern */
-s32 cnWrap_FontDisp(); /* extern */
+void cnWrap_FontDisp(f32, f32, f32, char *);
 s32 cnWrap_SetFontColor();               /* extern */
 
 void lbc_login_warning_message(void) {
@@ -90,7 +90,7 @@ void lbc_login_warning_message(void) {
         }
         cnWrap_SetFontColor(5);
         flfntSetSize(0x14, 0x14);
-        cnWrap_FontDisp((*(s32 *)((u8 *)&lb_rule_member + 0x1C)), 0x43520000, 0x43970000, 0x40000000);
+        cnWrap_FontDisp(210.0f, 302.0f, 2.0f, (char *)(*(s32 *)((u8 *)&lb_rule_member + 0x1C)));
         return;
     case 4:
         (*(u8 *)((u8 *)(temp_a2) + 0xB9C)) = (u8) (temp_a1 + 1);

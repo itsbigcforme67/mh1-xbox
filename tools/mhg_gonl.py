@@ -292,7 +292,36 @@ def renamed(src):
 
 
 # one-line corrections applied to a function's draft every time it is generated (instead of a HAND-FIXED copy)
+CHR_SET = (r'Lb_pl_chr_set\((?:\(void \*\))?(0x[0-9A-F]+, -?\w+, 0\))', r'Lb_pl_chr_set(arg0, \1')
+HTML_DECL = (r's32 nwDispStr_Html\([^)]*\);[^\n]*', 'void nwDispStr_Html(f32, f32, f32, u8 *);')
+KB_DECL = (r's32 SoftKeyboard_pos_set\(\);[^\n]*', 'void SoftKeyboard_pos_set(f32, s16);')
+KB_POS = (r'SoftKeyboard_pos_set\(0x140, 0x42C80000\)', 'SoftKeyboard_pos_set(100.0f, 0x140)')
+
 FIXUPS = {
+    # m2c leaves out an a0 still live from the function's own a0: on x86 the next argument (or 0) became the player.
+    # Each call compared with G's registers, 30 Oct 2026
+    'lb_pl_chat': [(r'\b(lb_pl_chat\d\d|lobby_func_0059A060)\((\d)\);', r'\1(arg0, \2);')],
+    'lb_pl_chat01': [CHR_SET], 'lb_pl_chat02': [CHR_SET], 'lb_pl_chat04': [CHR_SET], 'lb_pl_chat06': [CHR_SET],
+    'lb_pl_chat07': [CHR_SET], 'lb_pl_chat08': [CHR_SET], 'lb_pl_chat10': [CHR_SET], 'lb_pl_chat11': [CHR_SET],
+    'lb_pl_chat12': [CHR_SET], 'lb_pl_chat16': [CHR_SET],
+    'lb_pl_chat09': [(r'Lb_pl_chr_set\(\(\*', 'Lb_pl_chr_set(arg0, (*')],
+    'Lb_PlStatusSet': [(r'= GetAdrsMiniData\(\)', '= GetAdrsMiniData(arg0)')],
+    'Lb_Pl_chat_act_set': [(r'Lb_Pl_act_set\(1, ', 'Lb_Pl_act_set(arg0, 1, ')],
+    # floats (f12...) and ints (a0...) are separate registers on the PS2, so m2c's order is not the prototype's
+    # and an undeclared float call passes the wrong thing on x86. z is not set by G and not read by G's
+    # nwDispStr_Html; MH1's keeps it, 1.0 as in lb_ui.c
+    'lobby_func_00584E10': [HTML_DECL,
+        (r'nwDispStr_Html\(\(\*\(void \*\*\)&cw\) \+ 0xBD6, 0x42C80000, 0x42700000\)',
+         'nwDispStr_Html(100.0f, 60.0f, 1.0f, (u8 *)(*(void **)&cw) + 0xBD6)')],
+    'disp_status': [HTML_DECL,
+        (r'nwDispStr_Html\(\(\*\(s32 \*\)&cw\) \+ \(arg_sp0 \* 0x24A\) \+ 0x1064, 0x43960000, \(f32\) temp_s4_5\)',
+         'nwDispStr_Html(300.0f, (f32) temp_s4_5, 1.0f, (u8 *)(*(s32 *)&cw) + (arg_sp0 * 0x24A) + 0x1064)')],
+    'lbc_login_warning_message': [
+        (r's32 cnWrap_FontDisp\(\);[^\n]*', 'void cnWrap_FontDisp(f32, f32, f32, char *);'),
+        (r'cnWrap_FontDisp\(\(\*\(s32 \*\)\(\(u8 \*\)&lb_rule_member \+ 0x1C\)\), 0x43520000, 0x43970000, 0x40000000\)',
+         'cnWrap_FontDisp(210.0f, 302.0f, 2.0f, (char *)(*(s32 *)((u8 *)&lb_rule_member + 0x1C)))')],
+    'join_input_password': [KB_DECL, (r'SoftKeyboard_pos_set\(0x3A, 0x42A00000\)', 'SoftKeyboard_pos_set(80.0f, 0x3A)')],
+    'lobby_func_0056D570': [KB_DECL, KB_POS], 'my_comment_input': [KB_DECL, KB_POS], 'plaza_req_input': [KB_DECL, KB_POS],
     # m2c dropped the arguments (still in a0-a2 on the PS2): the Xbox's stack calls read junk, crash on the real Xbox 30 Oct 2026
     'Lb_act_set': [(r'Lb_act_ck\(\)', 'Lb_act_ck(arg0, 0, 0)')],
     'Lb_check_receipt': [   # G passes its own a0 (the sender's id) on to Lb_get_plID unchanged

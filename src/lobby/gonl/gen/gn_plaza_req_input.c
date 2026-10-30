@@ -14,7 +14,7 @@ s32 func_00220F40();
 extern u8 Psw;
 extern u8 pNet;
 s32 SoftKeyboard_exit();                     /* extern */
-s32 SoftKeyboard_pos_set();     /* extern */
+void SoftKeyboard_pos_set(f32, s16);
 
 s32 plaza_req_input(void *arg0, s32 arg1) {
     s32 temp_s0;
@@ -31,7 +31,7 @@ s32 plaza_req_input(void *arg0, s32 arg1) {
     switch (temp_v1_2) {                            /* switch 1; irregular */
     case 0:                                         /* switch 1 */
         (*(u8 *)((u8 *)(temp_v1) + 0x25)) = (u8) (temp_v1_2 + 1);
-        SoftKeyboard_pos_set(0x140, 0x42C80000);
+        SoftKeyboard_pos_set(100.0f, 0x140);
         if (!(arg1 & 0xFF)) {
             func_00220F40(0, 6, 6, arg0);
         } else {

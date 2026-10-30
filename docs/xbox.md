@@ -2098,5 +2098,12 @@ committed). Not yet checked: chat, rooms, a hunt, name tags over the hunters on 
 - Crash found and fixed: Lb_act_set called `Lb_act_ck()` with no arguments (the m2c draft dropped them; on the PS2 they stay in the
   registers), so on 32-bit x86 it read junk from the stack: access violation when the other hunter's area message arrived
   (Lb_check_receipt -> lb_set_pl_stage -> Lb_act_set, log 20261030-035955-mhg). The xemu tests pass, so the stack there apparently held something harmless (not checked).
-- The same kind of call: a rough scan of src/lobby/gonl finds ~116 more sites in 26 functions with fewer arguments than the
-  definition (Get_sw2, To_LogOut, Lb_pl_chr_set, SoftKeyboard_move, ...); not reviewed, some will be false alarms.
+- The same kind of call, reviewed 30 Oct against G's registers at each call: the "~116" of the first scan was mostly declarations
+  counted as calls (37 real short calls), and most of the 37 are m2c's guessed extra parameters, passed on to functions that never read
+  them (To_LogOut, SetHelpLineMsg, lobby_func_0059F740, ...): harmless. Fixed in tools/mhg_gonl.py FIXUPS and gen/: every chat action
+  (lb_pl_chat passed 0 as the player to lb_pl_chat00-16: a NULL read; Lb_pl_chr_set lost its player, Lb_Pl_act_set too),
+  Lb_PlStatusSet (GetAdrsMiniData() without the id), and float calls with the arguments in the wrong order (nwDispStr_Html,
+  cnWrap_FontDisp, SoftKeyboard_pos_set). The fixes are compiled and pass the full check, but none has run on hardware or been reached
+  in a test yet. Left alone: cnWrap_SetFontSize(0x41A00000), right bits on 32-bit x86 by luck; nwDispStr_Html's z, which G doesn't set
+  or read (1.0 as in MH1's lb_ui.c). m2c's 976 M2C_ERROR "unset register" arguments were sampled, not all checked: the samples are
+  no-argument calls or guessed parameters.

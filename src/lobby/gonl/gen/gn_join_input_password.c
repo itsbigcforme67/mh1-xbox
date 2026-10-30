@@ -24,7 +24,7 @@ unsigned char Get_kb_input();                             /* extern */   /* the 
 s32 Lb_put_set01();                      /* extern */
 void *Lbs_GetRoomInfo();                          /* extern */
 s32 SoftKeyboard_exit();                        /* extern */
-s32 SoftKeyboard_pos_set();     /* extern */
+void SoftKeyboard_pos_set(f32, s16);
 
 s32 join_input_password(void *arg0) {
     u8 temp_a0;
@@ -36,7 +36,7 @@ s32 join_input_password(void *arg0) {
     switch ((*(s8 *)((u8 *)&lb_sys + 0x1D))) {                           /* switch 1; irregular */
     case 0:                                         /* switch 1 */
         (*(s8 *)((u8 *)&lb_sys + 0x1D)) += 1;
-        SoftKeyboard_pos_set(0x3A, 0x42A00000);
+        SoftKeyboard_pos_set(80.0f, 0x3A);
         func_00220F40(0, 6, 8, arg0);
         (*(s8 *)&D_0035EFEB) = 0;
 block_22:
