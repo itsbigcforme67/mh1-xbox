@@ -2120,3 +2120,20 @@ committed). Not yet checked: chat, rooms, a hunt, name tags over the hunters on 
   - CallBack_Event_RoomLeaver: memset of 0x5C bytes into an s32 wiped the stack, eip 0 when a member left for the match. The only such
     local in gen/ (scan of address-taken spNN locals). Crash on hardware, not on the PC (different stack layout).
   - The real pad's Back+Start does not quit a run with --input (the script owns the pad): power the Xbox off instead. Test save folder 4D48000200000004 added.
+
+### 30 Oct 2026: a whole G online hunt on the real Xbox
+
+`tools/bench/xbox_hunt.sh` (needs the bench: power presser, pad, capture; ~20 min; ends with the Xbox off) plays
+ANNA's part of `tools/test_online_g.sh HUNT=1` on the real Xbox and BOB's on a hidden PC client, on our own mh1-server
+on the LAN. It is a replayed script with the test aids (RT_PL_GOD, RT_PL_GOTO, RT_DMG_MUL=2, ...), no model in the loop.
+
+Verified: room for quest 4 (the Kut-Ku), BOB joins, match, both on the mcs relay, start agreed, the monster handed
+over between the machines (owner slots 0, 1, 0, 1, 0), HP the same on both, the kill, both carve 3 items
+(`tools/hunt_sync.py --kind 6 --masters 0,1,0 --kill --carve`: OK), the clear and result screens on both, both go back
+to the town login. 1049 records relayed. Frame times: 59-60 fps in the town, 43.8 over the minute with the quest load
+(worst frame 4.5 s: that minute's load; not looked at further). No crash report. The PC saved to its card (6200z).
+Captures show both hunters on the Kut-Ku with the BOB tag, and the lobby's message panel drawing text on the Xbox.
+
+Not verified: the Xbox's save after the hunt. Its test save folder holds no G save, so the relogin stopped at "Continue
+the game without saving?" with No selected and the script's circles went round that screen; run it from a saved game.
+The hit-by-hit fight used test aids, so this is not a test of hand play.
