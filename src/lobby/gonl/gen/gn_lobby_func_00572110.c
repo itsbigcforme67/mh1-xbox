@@ -41,7 +41,7 @@ extern u8 g_main_2EFBC4;
 extern u8 lb_sys;
 extern u8 pNet;
 extern u8 tl_member_buff;
-s32 Visual_main();                              /* extern */
+s32 gonl_strlen();                              /* extern */
 s16 net_Check_FriendSuu();        /* extern */
 extern s8 g_lb_653A50;
 extern s32 g_main_302CB0;
@@ -280,7 +280,7 @@ block_51:
             if (memcmp(temp_a0_6 + ((*(s8 *)((u8 *)(temp_a0_6) + 0x237)) * 0x5C) + 0x9A, &g_lb_653A50, 8) != 0) {
                 temp_a0_7 = (*(void **)&g_main_2EFBAC);
                 memcpy(temp_a0_7 + ((*(s8 *)((u8 *)(temp_a0_7) + 0x237)) * 0x5C) + 0x9A, &g_lb_653A50, 8);
-                if (Visual_main(&g_lb_653A50) < 6) {
+                if (gonl_strlen(&g_lb_653A50) < 6) {
                     SetDialogData(0x21, M2C_ERROR(/* Read from unset register $a1 */), M2C_ERROR(/* Read from unset register $a2 */), M2C_ERROR(/* Read from unset register $a3 */));
                     (*(s8 *)((u8 *)((*(void **)&pNet)) + 0x2D)) = 1;
                     (*(u8 *)((u8 *)((*(void **)&g_main_2EFBAC)) + 0x233)) = 0xBU;

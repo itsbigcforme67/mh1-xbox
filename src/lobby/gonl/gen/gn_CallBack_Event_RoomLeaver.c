@@ -11,7 +11,7 @@ s32 memcpy();            /* extern */
 s32 memset();        /* extern */
 
 void CallBack_Event_RoomLeaver(void) {
-    s32 sp60;
+    u8 sp60[0x5C] __attribute__((aligned(16)));   /* HAND-FIXED: a user record, 0x5C bytes: as an s32 the memset below wiped the return address (Xbox crash, 30 Oct) */
     s32 var_s0;
     s32 var_s0_2;
     s32 var_s1;

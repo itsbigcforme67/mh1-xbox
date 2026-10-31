@@ -2,6 +2,13 @@
 #include "gonl.h"
 
 void CallBack_Result_SearchUserPlace(s64 arg0);
+int strlen(const char *);
+
+/* G's "Visual_main" (lobby 0x59DA80) is a jump to strlen: tools/mhg_gonl.py fixups */
+int gonl_strlen(const char *s)
+{
+    return strlen(s);
+}
 
 /* MH1's lobby client (lb_cli.c, Lbs_SeekId) passes this lbtu3 alias name as the user search's callback
  * (config/lobby_aliases.txt). In G the callback at that place is G's own CallBack_Result_SearchUserPlace (lobby

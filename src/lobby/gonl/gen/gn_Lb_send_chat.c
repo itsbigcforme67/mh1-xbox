@@ -12,7 +12,7 @@ void * strcpy();
 extern u8 cw;
 s32 Lb_chat_receipt();                 /* extern */
 s32 Online_ck();                                    /* extern */
-s32 Visual_main();                               /* extern */
+s32 gonl_strlen();                               /* extern */
 extern s8 chatIDList;
 extern u8 chat_cnfg_font_color;
 extern s32 my_user_handle;
@@ -30,7 +30,7 @@ void Lb_send_chat(s32 unused_a0, s32 arg1, s32 arg2) {
     s32 var_s2;
     s8 *var_s0;
 
-    if ((Online_ck() != 0) && (temp_v0 = Visual_main(arg1), ((temp_v0 < 0x40) != 0))) {
+    if ((Online_ck() != 0) && (temp_v0 = gonl_strlen(arg1), ((temp_v0 < 0x40) != 0))) {
         if ((*(u8 *)((u8 *)((*(void **)&cw)) + 0xF74E)) == 0) {
             cnLBS_Send_ChatMessage(arg1, temp_v0 & 0xFFFF);
             return;

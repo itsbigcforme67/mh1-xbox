@@ -2107,3 +2107,16 @@ committed). Not yet checked: chat, rooms, a hunt, name tags over the hunters on 
   in a test yet. Left alone: cnWrap_SetFontSize(0x41A00000), right bits on 32-bit x86 by luck; nwDispStr_Html's z, which G doesn't set
   or read (1.0 as in MH1's lb_ui.c). m2c's 976 M2C_ERROR "unset register" arguments were sampled, not all checked: the samples are
   no-argument calls or guessed parameters.
+- Later the same day, chat, a room and the start of a co-op quest on hardware (Xbox hosts by script, input from test_online_g.sh ROOM=1;
+  a hidden PC client joins; server mh1_server with lobby-mcs). Verified: chat both ways reaches the server and back (6701 / 6702), Xbox
+  keeps running; XBOX creates room 1, BOB joins, match start, both log in to the mcs relay, the PC client's "start agreed", quest 1
+  on both, 491 relayed records in 143 s until the PC's run ended, no crash report. Not checked: the on-screen chat text on the Xbox
+  (nothing visible in the captures), a whole hunt, name tags. The room's rule read 4 hunters, not the script's 2 (not looked into).
+  Found on the way:
+  - G's symbol "Visual_main" (lobby 0x59DA80) is a jump to strlen, not MH1's town function: chat went out one letter long, and the
+    name / password length checks read junk. gonl_strlen (gonl_g.c), renamed by mhg_gonl.py.
+  - cnet_g.c's gnet_6502_note / 6503_note called _sub_InOutRoomMember() without G's kind (3 / 2, G 0x5BCED0 / 0x5BCEC0). Crash when
+    the PC joined the Xbox's room (old-style definition, so no scan or compiler saw it).
+  - CallBack_Event_RoomLeaver: memset of 0x5C bytes into an s32 wiped the stack, eip 0 when a member left for the match. The only such
+    local in gen/ (scan of address-taken spNN locals). Crash on hardware, not on the PC (different stack layout).
+  - The real pad's Back+Start does not quit a run with --input (the script owns the pad): power the Xbox off instead. Test save folder 4D48000200000004 added.

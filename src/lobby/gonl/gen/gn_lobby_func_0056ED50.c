@@ -54,7 +54,7 @@ extern u8 g_main_2EFBC4;
 extern u8 jtbl_0063E0C0;
 extern u8 pNet;
 extern u8 tl_member_buff;
-s32 Visual_main();                            /* extern */
+s32 gonl_strlen();                            /* extern */
 s32 cnLBS_Get_SerchUserPlace(); /* extern */
 extern s32 g_lb_636E10;
 extern s8 g_lb_6B46D0;
@@ -231,7 +231,7 @@ void lobby_func_0056ED50(void) {
             return;
         case 1:                                     /* switch 4 */
             (*(u8 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x18))) + 0x136D)) = (u8) ((*(u8 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x18))) + 0x136D)) + 1);
-            if (Visual_main(&g_lb_6B46D0 + ((*(u8 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x18))) + 0x136C)) * 0x44) + 4) < 6) {
+            if (gonl_strlen(&g_lb_6B46D0 + ((*(u8 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x18))) + 0x136C)) * 0x44) + 4) < 6) {
                 memset(&(*(u8 *)((u8 *)&tl_member_buff + 0x18)) + ((*(u8 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x18))) + 0x136C)) * 0x5C), 0, 0x5C);
             } else {
                 memcpy(&(*(u8 *)((u8 *)&tl_member_buff + 0x18)) + ((*(u8 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x18))) + 0x136C)) * 0x5C), &g_lb_6B46D0 + ((*(u8 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x18))) + 0x136C)) * 0x44) + 4, 9);

@@ -19,7 +19,7 @@ s32 plaza_req_input();
 void * strcpy();
 extern u8 pNet;
 extern u8 tl_member_buff;
-s8 Visual_main();                          /* extern */
+s8 gonl_strlen();                          /* extern */
 extern u8 g_lb_5FBC28;
 extern u8 g_lb_5FBC29;
 extern s32 g_lb_653A50;
@@ -91,8 +91,8 @@ block_51:
     case 1:                                         /* switch 1 */
         if (plaza_req_input(&g_lb_653A50, 1, M2C_ERROR(/* Read from unset register $a2 */), M2C_ERROR(/* Read from unset register $a3 */)) == 1) {
             strcpy(&g_lb_6B46D0 + ((*(s8 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x18))) + 0x1373)) * 0x44) + 4, &g_lb_653A50);
-            if (Visual_main(&g_lb_653A50) != 0) {
-                *(&g_lb_6B46D1 + ((*(s8 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x18))) + 0x1373)) * 0x44)) = Visual_main(&g_lb_653A50);
+            if (gonl_strlen(&g_lb_653A50) != 0) {
+                *(&g_lb_6B46D1 + ((*(s8 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x18))) + 0x1373)) * 0x44)) = gonl_strlen(&g_lb_653A50);
                 if ((*(u8 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x18))) + 0x1370)) == 0) {
                     *(&g_lb_6B46D0 + ((*(s8 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x18))) + 0x1373)) * 0x44)) = 2;
                     (*(u8 *)((u8 *)(&(*(u8 *)((u8 *)&tl_member_buff + 0x18))) + 0x136B)) = 0U;

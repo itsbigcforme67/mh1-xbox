@@ -14,7 +14,7 @@ extern u8 cw;
 extern u8 g_main_2EFBB8;
 extern u8 g_main_2EFBBA;
 extern u8 g_main_2EFBBC;
-s16 Visual_main();                      /* extern */
+s16 gonl_strlen();                      /* extern */
 
 s32 lobby_func_005807E0(s8 *arg0, s32 unused_a1, s32 arg2, s32 arg3) {
     s8 *temp_a1;
@@ -27,14 +27,14 @@ s32 lobby_func_005807E0(s8 *arg0, s32 unused_a1, s32 arg2, s32 arg3) {
     temp_v1_2 = (*(u8 *)((u8 *)(temp_v1) + 0xB9D));
     switch (temp_v1_2) {                            /* irregular */
     case 0x0:
-        if ((*arg0 == 0) || (Visual_main(temp_a1) >= 0x11)) {
+        if ((*arg0 == 0) || (gonl_strlen(temp_a1) >= 0x11)) {
             (*(u8 *)((u8 *)((*(void **)&cw)) + 0xB9D)) = 0x63U;
         } else {
             temp_a1_2 = (*(void **)&cw);
             (*(u8 *)((u8 *)(temp_a1_2) + 0xB9D)) = (u8) ((*(u8 *)((u8 *)(temp_a1_2) + 0xB9D)) + 1);
             (*(s8 *)&g_main_2EFBB8) = 0x64;
             (*(s8 **)&g_main_2EFBBC) = arg0;
-            (*(s16 *)&g_main_2EFBBA) = Visual_main(arg0, temp_a1_2);
+            (*(s16 *)&g_main_2EFBBA) = gonl_strlen(arg0, temp_a1_2);
             (*(s32 *)((u8 *)((*(void **)&cw)) + 0xFA68)) = 0xE10;
             (*(s8 *)((u8 *)((*(void **)&cw)) + 0xFA65)) = 0;
             (*(s8 *)((u8 *)((*(void **)&cw)) + 0xBA9)) = 0x16;

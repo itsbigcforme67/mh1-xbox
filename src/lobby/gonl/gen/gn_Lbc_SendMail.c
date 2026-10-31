@@ -7,7 +7,7 @@ s32 CallBack_Result_Mail_SendMail();
 s32 Check_CallBackWait();
 s32 lobby_func_005E5C50();
 extern u8 cw;
-s32 Visual_main();                    /* extern */
+s32 gonl_strlen();                    /* extern */
 
 s32 Lbc_SendMail(s32 unused_a0, s32 unused_a1, s32 arg2, s32 arg3) {
     u8 temp_v1;
@@ -22,7 +22,7 @@ s32 Lbc_SendMail(s32 unused_a0, s32 unused_a1, s32 arg2, s32 arg3) {
         if ((*(s8 *)((u8 *)(temp_a1) + 0xF81)) == 0) {
             return 0;
         }
-        if (Visual_main(temp_a1 + 0xF81, temp_a1) < 6) {
+        if (gonl_strlen(temp_a1 + 0xF81, temp_a1) < 6) {
             return 1;
         }
         (*(s32 *)((u8 *)((*(void **)&cw)) + 0xFA68)) = 0xE10;

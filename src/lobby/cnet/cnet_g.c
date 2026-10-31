@@ -35,7 +35,7 @@ void __cnet_ClearEntryFloorInfo(int);
 void __cnet_SendSet_ConnectionPair(void);
 void __cnet_SendSet_FirstData(void);
 void __cnet_SendReq_EchoPacket(void);
-void _sub_InOutRoomMember(void);
+void _sub_InOutRoomMember(int kind);
 
 #define CNGP(o) ((u8 *)&CnetSys_w + 0xA8 + (o))
 #define CNG(T, o) (*(T *)CNGP(o))
@@ -745,12 +745,12 @@ void gnet_6149_ans(void)
 
 void gnet_6502_note(void)
 {
-    _sub_InOutRoomMember();
+    _sub_InOutRoomMember(3);
 }
 
 void gnet_6503_note(void)
 {
-    _sub_InOutRoomMember();
+    _sub_InOutRoomMember(2);
 }
 
 /* answers G reads nothing from and does not call back for (6144-6146, 660B) */

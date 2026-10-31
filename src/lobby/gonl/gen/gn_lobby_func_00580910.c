@@ -9,7 +9,7 @@ s32 cnLBS_Get_ServerMessage();
 s32 lobby_func_005E69B0();
 s32 memcmp();
 extern u8 cw;
-s32 Visual_main();                               /* extern */
+s32 gonl_strlen();                               /* extern */
 extern s32 my_user_id;
 
 s32 lobby_func_00580910(s8 *arg0, s32 unused_a1, s32 arg2, s32 arg3) {
@@ -23,7 +23,7 @@ s32 lobby_func_00580910(s8 *arg0, s32 unused_a1, s32 arg2, s32 arg3) {
     temp_v1_2 = (*(u8 *)((u8 *)(temp_v1) + 0xB9D));
     switch (temp_v1_2) {                            /* irregular */
     case 0x0:
-        if ((*arg0 == 0) || (Visual_main(temp_a1) < 6)) {
+        if ((*arg0 == 0) || (gonl_strlen(temp_a1) < 6)) {
             (*(u8 *)((u8 *)((*(void **)&cw)) + 0xB9D)) = 0x63U;
             goto block_17;
         }

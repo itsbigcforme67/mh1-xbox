@@ -344,6 +344,9 @@ FIXUPS = {
 
 
 def fixups(name, src):
+    # G's symbol file names 0x59DA80 Visual_main after MH1, but in G it is a jump to strlen (config/mhg/pc_symbols/lobby.txt);
+    # the PC would link MH1's town function: chat went out one letter long
+    src = re.sub(r'\bVisual_main\b', 'gonl_strlen', src)
     for a, b in FIXUPS.get(name, []):
         src, n = re.subn(a, b, src)
         if n == 0:
