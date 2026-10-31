@@ -306,6 +306,8 @@ FIXUPS = {
     'lb_pl_chat12': [CHR_SET], 'lb_pl_chat16': [CHR_SET],
     'lb_pl_chat09': [(r'Lb_pl_chr_set\(\(\*', 'Lb_pl_chr_set(arg0, (*')],
     'Lb_PlStatusSet': [(r'= GetAdrsMiniData\(\)', '= GetAdrsMiniData(arg0)')],
+    # G's list goes to G's slots 0x174..; the screens use the PC's numbers (g_tex_slot): gonl_g.c copies them over
+    'Lbs_load': [(r'func_0010EF50\(\(\*\(s32 \*\)&NET_CON_TEX\), 0x174, 0\)', 'gonl_load_net_tex()')],
     'Lb_Pl_chat_act_set': [(r'Lb_Pl_act_set\(1, ', 'Lb_Pl_act_set(arg0, 1, ')],
     # floats (f12...) and ints (a0...) are separate registers on the PS2, so m2c's order is not the prototype's
     # and an undeclared float call passes the wrong thing on x86. z is not set by G and not read by G's

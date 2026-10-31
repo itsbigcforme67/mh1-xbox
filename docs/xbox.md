@@ -2137,3 +2137,31 @@ Captures show both hunters on the Kut-Ku with the BOB tag, and the lobby's messa
 Not verified: the Xbox's save after the hunt. Its test save folder holds no G save, so the relogin stopped at "Continue
 the game without saving?" with No selected and the script's circles went round that screen; run it from a saved game.
 The hit-by-hit fight used test aids, so this is not a test of hand play.
+
+### 31 Oct 2026: white lobby screens, chat rows, the tan view (owner's questions, checked against the real game)
+
+Reference: `tools/test_ps2_g_hunt.sh STEPSHOTS=1`, the real G disc in hidden PCSX2 (FUSE fails here: PCSX2= the extracted
+AppRun in ~/ps2dev/pcsx2/x/squashfs-root; start it from a script file, or pcsx2_running matches the shell's own command).
+
+* **White backdrops, port bug (PC and Xbox), fixed.** Lbs_load fills G's slots from 0x174, the generated screens use the
+  PC's numbers (g_tex_slot), so they drew empty slots: white plaza, white after-quest save screen. gonl_g.c
+  gonl_load_net_tex copies each picture to the PC's number. Checked: the PC plaza shows the mountains as the PS2's,
+  the real Xbox's save screens show the map table as the PS2's (capture hu8 / hu_end).
+* **Chat rows, two port bugs, fixed for now.** (1) English ran past the box: the game cuts at 30 bytes and anywhere;
+  chat_nm.c chat_row_room ends an all-ASCII row at its last space within 24 (26 still spilled by about 10 px). (2) Row 2
+  lost its first byte: G's rows are 0x20 long, the writer stepped 0x1F (the "." after "depar", "epart."): now sizeof the
+  row. Checked in the English PC test (no row past the box, row 2 whole); on the Xbox only row 1, before these last two
+  changes.
+* **What the US MH1 does (SLUS_208.96, read from the code; owner wants G's English to match Capcom's handling).**
+  chat_log_add at about 0x235794: 22 bytes for players, 28 for game messages (JP 30), no break at spaces, row step 0x1F.
+  The draw at 0x2360F0 takes a size from a table at 0x39694C = 17, 19, 21 (JP always 21), height size * 18 / 21, line
+  limits 0x65..0x1A2 (JP 0xD1..0x190). Index: byte 0x414C36, saved at +0x8D, the Options entry CHAT WINDOW SIZE (not in G).
+  The box scales with size / 21. Inferred, not measured: box about 242 px wide at 21, so a full 28-byte row may
+  spill in the US game too. Default size unknown (not in the main ELF's code as far as read).
+  **Next:** run the US disc hidden: Options screen (default size) and a real chat box if reachable without a live server;
+  then set row limit and size to match, add the option if G's save and menu allow. Breaking at spaces instead of
+  Capcom's cut goes in docs/REVIEW.md for the owner if kept.
+* **Tan view, not a port bug.** Same picture on the real G disc with the same warp to the departure spot, hunter hidden
+  too. Not tested: walking there by hand (the test warps both).
+* Open: with the English table the room's rule stays 3 (4 hunters) on the server though the sheet shows 2; the Japanese
+  HUNT=1 test passes. The Xbox test folder still has no G save.

@@ -4,6 +4,25 @@
 void CallBack_Result_SearchUserPlace(s64 arg0);
 int strlen(const char *);
 
+/* Lbs_load's list (NET_CON_TEX: the lobby's backdrops and icons): it fills G's slots from 0x174, but the screens were
+ * generated with the PC's numbers (tools/mhg_gonl.py g_tex_slot), so each picture is copied to its number there.
+ * Without this every lobby backdrop drew from an empty slot: a white screen. */
+void func_0010EF50(int, int, int);
+extern int NET_CON_TEX;
+extern u32 mem_tex[];
+
+void gonl_load_net_tex(void)
+{
+    int g;
+
+    func_0010EF50(NET_CON_TEX, 0x174, 0);
+    for (g = 0x174; g <= 0x188; g++) {
+        if (mem_tex[g] != 0) {
+            mem_tex[g >= 0x179 ? g - 0x29 : g - 0x27] = mem_tex[g];
+        }
+    }
+}
+
 /* G's "Visual_main" (lobby 0x59DA80) is a jump to strlen: tools/mhg_gonl.py fixups */
 int gonl_strlen(const char *s)
 {

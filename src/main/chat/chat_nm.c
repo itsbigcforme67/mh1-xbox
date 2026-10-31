@@ -705,6 +705,31 @@ extern u8 chat_font_color[8];
 extern u8 chat_cnfg_font_color[8];
 extern u8 my_user_id[];
 
+#ifndef __MWERKS__
+/* The log window was sized for 30 bytes of Japanese; our proportional English fills it at about 24, and the game cuts
+ * the row at any byte. An all-ASCII row that does not fit ends at its last space instead. */
+#define CHAT_ROW_ASCII 24
+static int chat_row_room(const s8 *s, int room) {
+    int i, sp = 0;
+
+    if (room <= CHAT_ROW_ASCII) {
+        return room;
+    }
+    for (i = 0; i < room && s[i] != 0; i++) {
+        if (s[i] < 0x20) {
+            return room;        /* a two-byte character (s8: bit 7 set) or a control code */
+        }
+        if (s[i] == ' ' && i < CHAT_ROW_ASCII) {
+            sp = i + 1;
+        }
+    }
+    if (i <= CHAT_ROW_ASCII) {
+        return room;
+    }
+    return sp != 0 ? sp : CHAT_ROW_ASCII;
+}
+#endif
+
 void chat_log_add(int who, s8 *s, PIT_CHAT *src) {
     PIT_CHAT *l;
     s8 *o;
@@ -745,14 +770,18 @@ void chat_log_add(int who, s8 *s, PIT_CHAT *src) {
     l->nline = 0;
     i = 0;
     o = (s8 *)l->text[0];
-    for (; i < 2; i++, o += 0x1F) {
+    for (; i < 2; i++, o += sizeof(l->text[0])) {
         int left;
         s8 *d = o;
         if (*s == 0) {
             *o = 0;
             return;
         }
+#ifndef __MWERKS__
+        left = chat_row_room(s, room);
+#else
         left = room;
+#endif
         while (1) {
             c = *s;
             if (c == 0) {
