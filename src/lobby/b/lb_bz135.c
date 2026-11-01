@@ -1,6 +1,13 @@
 /* lb_bz135 - lobby UI/client 0x005B43D0-0x005B44A8: lb_menu_status_i (first drafted by tools/lbauto.py). */
 #include "lobby_a.h"
 
+#ifdef VERSION_MHG
+/* G's wrappers 0x58E690, 0x58E720, 0x58E7A0: the pages show the hunter's skills */
+void Lb_menu_skill_set(void) {
+    Skill_set_PL((int)&player_work + (game_w.master * 0xA00));
+}
+#endif
+
 void lb_menu_status_i(void) {
     s16 var_v0;
     int temp_s0;

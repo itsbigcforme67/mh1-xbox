@@ -426,11 +426,12 @@ void disp_option(void) {
     int n;
 
     SetTrnslMode(4, 5);
-    n = lpPit->x88;
 #ifdef VERSION_MHG
+    n = ((u8 *)lpPit)[0x89];
     pfl_option[7] = 6;
     *(void **)(pfl_option + 0xC) = option_list_str + n * 0x18;
 #else
+    n = lpPit->x88;
     *(void **)(pfl_option + 0xC) = option_list_str + n * 0x14;
 #endif
     DispFrameList(pfl_option, lit_5054, -1, n);
@@ -438,13 +439,15 @@ void disp_option(void) {
 #ifdef VERSION_MHG
 #define OPT_ROWS 6
 #define OPT_BASE 0x89
+#define OPT_FIRST ((u8 *)lpPit)[0x89]
 #else
 #define OPT_ROWS 5
 #define OPT_BASE 0x88
+#define OPT_FIRST lpPit->x88
 #endif
     for (y = 0x54, i = 0, vals = option_val_str; i < OPT_ROWS; y = (s16)(y + 0x16), vals += 0xC, i++) {
         flfntLocate(0x208, y);
-        if (lpPit->x88 == 0 || i != 1) {
+        if (OPT_FIRST == 0 || i != 1) {
             font_print_uf(*(void **)(vals + ((u8 *)lpPit)[i + OPT_BASE] * 4));
         } else {
             font_print_sp(opt_map_invalid_str);
@@ -453,7 +456,7 @@ void disp_option(void) {
     q.s[2] = 0xE;
     q.s[1] = lpPit->x43 * 0x16 + 0x54;
     q.s[3] = 0x12;
-    if (lpPit->x88 == 0 || lpPit->x43 != 1) {
+    if (OPT_FIRST == 0 || lpPit->x43 != 1) {
         v = ((System_timer & 0x3F) << 10) & 0xFFFF;
         q.col = (((s8)(48.0f * flSin(0.0000958738f * (f32)v)) + 0xAF) << 8) | 0xF0200020;
     } else {
@@ -468,3 +471,34 @@ void disp_option(void) {
     q.uv[2] = 0xA6;
     flps0008(&q);
 }
+
+#ifdef VERSION_MHG
+/* G 0x1269E0: the village / lobby Options page, one row: the chat window size (lobby rows 0x5FDB90) */
+void Lb_disp_win_size(void) {
+    PFLPS2 q;
+    char *s;
+    u32 v;
+
+    SetTrnslMode(4, 5);
+    *(void **)(pfl_option + 0xC) = option_list_str + 0x14;
+    pfl_option[7] = 1;
+    DispFrameList(pfl_option, lit_5054, -1, 0);
+    font_set_palette(5);
+    s = *(char **)(option_val_str + 0x3C + ((u8 *)lpPit)[0x8E] * 4);
+    flfntLocate(0x22C - (int)strlen(s) * 9 / 2, 0x54);
+    font_print_uf(s);
+    q.s[2] = 0xE;
+    q.s[1] = 0x54;
+    q.s[3] = 0x12;
+    v = ((System_timer & 0x3F) << 10) & 0xFFFF;
+    q.col = (((s8)(48.0f * flSin(0.0000958738f * (f32)v)) + 0xAF) << 8) | 0xF0200020;
+    q.s[0] = 0x192;
+    *(u32 *)&q.uv[0] = 0x1A00A6;
+    *(u32 *)&q.uv[2] = 0x2E0094;
+    flps0008(&q);
+    q.s[0] = 0x1DC;
+    q.uv[0] = 0x94;
+    q.uv[2] = 0xA6;
+    flps0008(&q);
+}
+#endif

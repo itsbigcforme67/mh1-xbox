@@ -259,6 +259,8 @@ extern u8 frame_status_main_002F0D70[];
 extern u8 pfl_option[];
 extern u8 option_list_str[];
 extern u8 option_val_str[];
+int Menu_mix_ok(void);
+int Menu_pick_ok(void);
 extern u8 opt_map_invalid_str[];
 int Item_preparation_list_num();
 u32 Monster_list_num();
@@ -445,7 +447,12 @@ void disp_menu(int sw, PIT_W *p) {
     base = n * 5;
     SetTrnslMode(4, 5);
     if (n == 0) {
+#ifdef VERSION_MHG
+        k = (Menu_mix_ok() == 1 && Menu_pick_ok() == 1) ? 0 : 5;
+        *(void **)(pfl_menu + 0xC) = menu_str_002EF860 + k * 0x14;
+#else
         *(void **)(pfl_menu + 0xC) = menu_str_002EF860;
+#endif
     } else {
         k = 1;
         if (Online_ck() == 0) {

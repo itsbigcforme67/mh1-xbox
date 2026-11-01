@@ -4157,6 +4157,10 @@ void Lb_ck_menu(void) {
     }
 }
 
+#ifdef VERSION_MHG
+int Lb_menu_help(int);
+#endif
+
 s32 Lb_menu_move(void) {
     if (M2C_FIELD(lbmw, u8 *, 5) == 0) {
         Lb_menu_exit();
@@ -4176,7 +4180,11 @@ void lb_menu_init(void) {
     M2C_FIELD(lbmw, s32 *, 0) = 0;
     *(s8 *)0x39DAD0 = 1;
     *(s8 *)0x39DAD1 = 4;
+#ifdef VERSION_MHG
+    *(s16 *)0x39DAD2 = (s16) Lb_menu_help(M2C_FIELD(lbmw, u8 *, 4));
+#else
     *(s16 *)0x39DAD2 = (s16) M2C_FIELD(lbmw, u8 *, 4);
+#endif
     *(s8 *)0x39DADC = 0;
 }
 

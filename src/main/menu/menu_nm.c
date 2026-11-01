@@ -564,8 +564,32 @@ void menu_mix_clear(void) {
     lpPit->x84 = 0;
 }
 
+#ifdef VERSION_MHG
+int Lbs_InRoomCheck(void);
+
+/* G 0x11B640: combining is allowed in a quest when the hunter can use items, in the lobby outside a room */
+int Menu_mix_ok(void) {
+    if (game_w.x1DC != 0) {
+        return Lbs_InRoomCheck() != 1;
+    }
+    return Item_ok_chk(lpPit->pl) == 1;
+}
+
+/* G 0x11CC10 with 0: no item picking request is running */
+int Menu_pick_ok(void) {
+    if (lpPit->x07 != 0) {
+        return 0;
+    }
+    return item_pick_declaration_timer <= 0;
+}
+#endif
+
 int Menu_mix_i(void) {
+#ifdef VERSION_MHG
+    if (Menu_mix_ok() != 1) {
+#else
     if (Item_ok_chk(lpPit->pl) == 0) {
+#endif
         return -1;
     }
     lpPit->x76 = -1;
@@ -2120,12 +2144,21 @@ void menu_move(int sw) {
             case 6:
                 Menu_equipment_i();
                 break;
+#ifdef VERSION_MHG
+            case 7:     /* G's rows: Chat Log, Quick Phrase (main 0x25E520) */
+                r = Menu_chatlog_i();
+                break;
+            case 8:
+                r = Menu_chatcnfg_i();
+                break;
+#else
             case 7:
                 r = Menu_chatcnfg_i();
                 break;
             case 8:
                 r = Menu_chatlog_i();
                 break;
+#endif
             case 9:
                 r = menu_retire_i();
                 break;

@@ -107,6 +107,12 @@ void func_609750(void) { Lb_ItemBox_init(); }       /* G: lobby 0x552470, main's
 void Disp_lb_item_box(void);
 void func_60CE50(void) { Disp_lb_item_box(); }
 
+#ifdef VERSION_MHG
+/* G's online pages (src/lobby/gonl/gen, the online build); a build without them never reaches these rows */
+__attribute__((weak)) int lobby_func_0058CF40(void) { return 1; }
+__attribute__((weak)) void lobby_func_0058D140(void) { }
+#endif
+
 /* ------------------------------------------------ online / lobby only (no-ops) */
 u8 D_6EAC80[0x400];
 /* The soft keyboard is the game's own (src/main/tu/sk_all.c: the on-screen

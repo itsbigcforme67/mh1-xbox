@@ -1181,3 +1181,10 @@ Both games unless marked.
   messages stop at 28 bytes (US game). **Kept different from Capcom, your call:** rows break at a space where the US game
   cuts anywhere ("dep" / "art."). Rows of 23-28 bytes spill as in the US game. **To revert the break:** in chat_nm.c,
   chat_row_room returns CHAT_ROW_ASCII when the row is longer. Details: docs/xbox.md, 31 Oct section.
+
+## G pause menu: G's rows (1 Nov 2026)
+
+- Dropped in G builds: `Cockpit_chat_chk` in Lb_menu_move_Core (lb_by151.c), because G's 0x58E340 does not call it. MH1 builds keep it.
+- Dropped in G builds: the `cw` write before Combine; G sets the flag back after a page only when it was clear, and sets lb_sys + 0x94 then.
+- The 20 online pages are now G's m2c drafts (src/lobby/gonl/gen). MH1's stay for the MH1 build. Drafts, not compared with anything.
+

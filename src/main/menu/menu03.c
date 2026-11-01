@@ -218,12 +218,21 @@ void menu_move(int sw) {
             case 6:
                 Menu_equipment_i();
                 break;
+#ifdef VERSION_MHG
+            case 7:     /* G's rows: Chat Log, Quick Phrase (main 0x25E520) */
+                r = Menu_chatlog_i();
+                break;
+            case 8:
+                r = Menu_chatcnfg_i();
+                break;
+#else
             case 7:
                 r = Menu_chatcnfg_i();
                 break;
             case 8:
                 r = Menu_chatlog_i();
                 break;
+#endif
             case 9:
                 r = menu_retire_i();
                 break;

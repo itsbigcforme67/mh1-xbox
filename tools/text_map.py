@@ -2607,7 +2607,7 @@ G_TERMS = [(re.compile(rb"\b([Dd])ual([ \n])([Ss])word(s?)\b"),
 
 
 # G's Options row SCREEN ADJUST: paired by position with QUICK CONTINUE, the US name is ADJUST SCREEN
-G_LABELS = {("sub_main", 0x5414B0): b"ADJUST SCREEN"}
+G_LABELS = {("sub_main", 0x5414B0): b"ADJUST SCREEN", ("sub_main", 0x537EB8): b"~C10Quick Phrase", ("lobby", 0x640920): b" ~C05Current Location"}
 
 
 NAME_AREAS = ("items", "weapons", "armour", "skills", "monsters")

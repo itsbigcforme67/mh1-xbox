@@ -49,6 +49,39 @@ int lm_net_status_mv();
 int lm_logout_mv();
 void lb_menu_init();
 void se_req();
+#ifdef VERSION_MHG
+int menu_option_i();
+int lobby_func_0058CF40();
+int Lb_menu_win_size_mv();
+void Lb_menu_skill_set();
+
+/* G's start menu is not MH1's: 7 rows offline, 16 online, and the rows moved (G lobby tables 0x5FDB90 offline, 0x5FDBD0
+   online, labels lb_menu_msg_entry + 0x40 and lb_menu_msg). The value is the page number of the switches below and of
+   DispLobbyMenu: MH1's rows, 16 = G's one-row Options page. G's main 0x2EEF18 gives an offline row its help line. */
+#define LB_PAGE_OPTION 16
+static const u8 lb_page_off[7] = {1, 2, 3, 0, 4, 5, LB_PAGE_OPTION};
+static const u8 lb_page_on[16] = {1, 2, 3, 0, 11, 9, 8, LB_PAGE_OPTION, 4, 5, 13, 14, 12, 7, 6, 15};
+static const u8 lb_help_off[7] = {0, 1, 2, 3, 8, 9, 7};
+
+int Lb_menu_page(int row) {
+    return Online_ck() == 1 ? lb_page_on[row] : lb_page_off[row];
+}
+
+int Lb_menu_help(int row) {
+    return Online_ck() == 1 ? row : lb_help_off[row];
+}
+
+/* G 0x58E5A4: back from a page */
+static void lb_menu_back(void) {
+    if (F(s8, cw, CW_OFS(0x2C08)) == 0) {
+        F(s8, cw, CW_OFS(0x2C08)) = 1;
+        ((u8 *)&lb_sys)[0x94] = 1;
+    }
+}
+#define LB_MENU_PAGE(row) Lb_menu_page(row)
+#else
+#define LB_MENU_PAGE(row) (row)
+#endif
 s32 Lb_menu_move_Core(void) {
     int keys;
     u16 r;
@@ -62,9 +95,11 @@ s32 Lb_menu_move_Core(void) {
     if (Chk_lb_status(0xF) == 0) {
         return 1;
     }
+#ifndef VERSION_MHG
     if (Cockpit_chat_chk() == 1) {
         return 0;
     }
+#endif
     keys = F(u16, lbmw, 6);
     F(u16, lbmw, 6) = 0;
     switch (F(u8, lbmw, 0)) {
@@ -75,15 +110,23 @@ s32 Lb_menu_move_Core(void) {
                 Name_ID_change();
             }
         } else {
+#ifdef VERSION_MHG
+            ListSelect(lbmw + 4, keys, 7);
+#else
             ListSelect(lbmw + 4, keys, 8);
+#endif
         }
         mp = lbmw;
         k = keys & 0xFFFF;
+#ifdef VERSION_MHG
+        *(s16 *)0x39DAD2 = Lb_menu_help(mp[4]);
+#else
         *(s16 *)0x39DAD2 = mp[4];
+#endif
         sp = mp + 4;
         if (k & 0x20) {
             keys = 0;
-            switch (*sp) {
+            switch (LB_MENU_PAGE(*sp)) {
             case 0:
                 Menu_quest_i();
                 break;
@@ -91,16 +134,26 @@ s32 Lb_menu_move_Core(void) {
                 Menu_item_i();
                 break;
             case 2:
+#ifdef VERSION_MHG
+                Lb_menu_skill_set();
+#else
                 F(s8, cw, CW_OFS(0x2C08)) = 0;
+#endif
                 keys = Menu_mix_i();
                 break;
             case 3:
+#ifdef VERSION_MHG
+                Lb_menu_skill_set();
+#endif
                 Menu_data_i();
                 break;
             case 4:
                 lb_menu_status_i();
                 break;
             case 5:
+#ifdef VERSION_MHG
+                Lb_menu_skill_set();
+#endif
                 Menu_equipment_i();
                 break;
             case 6:
@@ -121,9 +174,15 @@ s32 Lb_menu_move_Core(void) {
             case 11:
                 keys = lm_friend_list_i();
                 break;
+#ifdef VERSION_MHG
+            case 12:
+                keys = lobby_func_0058CF40();   /* G's names are MH1's by position: its Friends List uses the lm_mail_box pair, its mail these */
+                break;
+#else
             case 12:
                 keys = lm_mail_box_i();
                 break;
+#endif
             case 14:
                 keys = lm_net_status_i();
                 break;
@@ -133,6 +192,11 @@ s32 Lb_menu_move_Core(void) {
             case 15:
                 keys = lm_logout_i();
                 break;
+#ifdef VERSION_MHG
+            case LB_PAGE_OPTION:
+                keys = menu_option_i();
+                break;
+#endif
             default:
                 keys = 1;
                 break;
@@ -150,7 +214,7 @@ s32 Lb_menu_move_Core(void) {
         }
         break;
     case 1:
-        switch (F(u8, lbmw, 4)) {
+        switch (LB_MENU_PAGE(F(u8, lbmw, 4))) {
         case 0:
             r = Menu_quest_mv(keys);
             break;
@@ -184,12 +248,21 @@ s32 Lb_menu_move_Core(void) {
         case 10:
             r = lm_room_member_mv(keys);
             break;
+#ifdef VERSION_MHG
+        case 11:
+            r = lm_mail_box_mv(keys);
+            break;
+        case 12:
+            r = lm_friend_list_mv(keys);
+            break;
+#else
         case 11:
             r = lm_friend_list_mv(keys);
             break;
         case 12:
             r = lm_mail_box_mv(keys);
             break;
+#endif
         case 13:
             r = lm_introduction_mv(keys);
             break;
@@ -199,6 +272,11 @@ s32 Lb_menu_move_Core(void) {
         case 15:
             r = lm_logout_mv(keys);
             break;
+#ifdef VERSION_MHG
+        case LB_PAGE_OPTION:
+            r = Lb_menu_win_size_mv(keys);
+            break;
+#endif
         default:
             r = 0x40;
             break;
@@ -206,13 +284,22 @@ s32 Lb_menu_move_Core(void) {
         k = r & 0xFFFF;
         if (k & 0x8000) {
             F(u8, lbmw, 5) = 0;
+#ifdef VERSION_MHG
+            lb_menu_back();
+            se_req(7, 0x14, 0);
+#else
             F(u8, cw, CW_OFS(0x2C08)) = 1;
+#endif
             return 1;
         }
         if (k & 0x40) {
             lb_menu_init();
             se_req(7, 0x14, 0);
+#ifdef VERSION_MHG
+            lb_menu_back();
+#else
             F(u8, cw, CW_OFS(0x2C08)) = 1;
+#endif
         }
         break;
     }

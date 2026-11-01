@@ -18,6 +18,12 @@ extern u8 lb_menu_msg_off[];
 extern u8 lb_menu_msg_entry[];
 extern char lit_492_0065E760[];
 extern char lit_493_0065E780[];
+#ifdef VERSION_MHG
+extern char *lb_rule_msg_etc[];
+extern u8 menuData[];
+int Menu_mix_ok(void);
+int Menu_pick_ok(void);
+#endif
 
 #define MD_LIST (*(void **)(menuData + 0xC))
 #define MD_COL (*(u32 *)(menuData + 0x10))
@@ -37,6 +43,33 @@ void Disp_lb_menu(s8 arg0) {
         MD_COL = 0x808080;
         col = 0xA0207020;
     }
+#ifdef VERSION_MHG
+    /* G 0x58E9E0: 8 rows a page online, 7 offline, and the format takes the title. Combine (and online Set State, Log Out) are grey when they cannot be used. */
+    if (Online_ck() == 1) {
+        int plain = 0;
+
+        n = lbmw[4];
+        page = (u32)n >> 3;
+        sel = n % 8;
+        if (Lbs_InRoomCheck() == 0 && (page != 0 || (Menu_mix_ok() == 1 && Menu_pick_ok() == 1)))
+            plain = 1;
+        MD_LIST = (plain ? lb_menu_msg : lb_menu_msg_entry) + page * 32;
+        menuData[7] = 8;
+        sprintf(buf, " ~C05%-10s~C00%01d/2", lb_rule_msg_etc[11], page + 1);
+        DispFrameList(menuData, buf, sel);
+        DispFrameListOptionArrowC(menuData, col);
+        if (arg0 == 0)
+            Disp_name_or_id(0x113);
+    } else {
+        if (Lbs_InRoomCheck() == 0 && Menu_mix_ok() == 1 && Menu_pick_ok() == 1)
+            MD_LIST = lb_menu_msg_entry + 0x40;
+        else
+            MD_LIST = lb_menu_msg_off;
+        menuData[7] = 7;
+        sprintf(buf, " ~C05%-10s~C00", lb_rule_msg_etc[11]);
+        DispFrameList(menuData, buf, lbmw[4]);
+    }
+#else
     if (Online_ck() == 1) {
         n = lbmw[4];
         page = (u32)n >> 3;
@@ -54,4 +87,5 @@ void Disp_lb_menu(s8 arg0) {
         MD_LIST = lb_menu_msg_off;
         DispFrameList(menuData, lit_493_0065E780, lbmw[4]);
     }
+#endif
 }

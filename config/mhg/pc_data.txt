@@ -601,6 +601,7 @@ tuto_str_tbl = 0x005282F0; // size:0x14      # the Elder's lesson window texts (
 tuto_title_str = 0x00529050; // size:0x20 noptr   # its frame title (a text; MH1 passes a pointer word, soncho_no_oshie)
 [main]
 g_main_2EEE70 = 0x002EEE70; // size:0x8   # tools/mhg_gonl.py: G data the G online code uses (size: up to the next name)
+g_main_2EF06C = 0x002EF06C; // size:0x4   # the Status Options page title (lobby 0x58D140)
 [main]
 g_main_2EF078 = 0x002EF078; // size:0x8   # tools/mhg_gonl.py: G data the G online code uses (size: up to the next name)
 [main]
@@ -684,6 +685,7 @@ key_quest_tbl = 0x00525FA0; // size:0x20    # round 11 scan: MH1 0xE; G data con
 menu_str_002EF860 = 0x00526340; // size:0x80    # round 11 scan: MH1 0x64; G data continues +0x13 past MH1 size, no label (MH1: next label right at the end)
 item_cmd_str = 0x005263C0; // size:0x40    # round 11 scan: MH1 0x18; G data continues +0x23 past MH1 size, no label (MH1: next label right at the end)
 option_list_str = 0x00526400; // size:0x30    # round 11 scan: MH1 0x28; G data continues +0x7 past MH1 size, no label (MH1: next label right at the end)
+option_val_str = 0x00526430; // size:0x48    # the village Options page reads the fifth row, SMALL / MEDIUM / LARGE, at +0x3C (G 0x1269E0); config/mhg/symbols size stops at 0x3C
 menu_stat_job_str = 0x00527CD0; // size:0x20    # round 11 scan: MH1 0x18; G data continues +0x3 past MH1 size, no label (MH1: next label right at the end)
 info_str1 = 0x00528380; // size:0x50    # round 11 scan: MH1 0x44; G data continues +0x3 past MH1 size, no label (MH1: next label right at the end)
 info_str2 = 0x005283D0; // size:0x28    # round 11 scan: MH1 0x4; G data continues +0x1F past MH1 size, no label (MH1: next label right at the end)

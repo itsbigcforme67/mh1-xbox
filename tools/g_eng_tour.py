@@ -126,6 +126,11 @@ SCENES = {
     "pause": village({60: "start*2", 100: "ddown*2", 130: "ddown*2", 160: "ddown*2", 190: "ddown*2", 220: "circle*2", 280: "dright*2",
                       330: "cross*2", 360: "ddown*2", 390: "circle*2", 450: "dright*2", 500: "dright*2"}, 560,
                      [80, 120, 200, 250, 310, 345, 420, 480, 540]),
+    # pause menu: open each of G's seven village rows in turn (the row list, then its page); last, Options: left, right
+    "pause_rows": village(dict([(60, "start*2")] + [(t, k) for i in range(6) for t, k in
+                                ((100 + i * 120, "circle*2"), (170 + i * 120, "cross*2"), (205 + i * 120, "ddown*2"))] +
+                               [(820, "circle*2"), (870, "dright*2"), (920, "dright*2"), (970, "dright*2"), (1020, "cross*2"), (1060, "cross*2")]), 1120,
+                          [90] + [t for i in range(6) for t in (95 + i * 120, 150 + i * 120)] + [815, 860, 900, 950, 1000, 1045, 1100]),
     # pause menu, Reference row: the data page (G's frame list, hunting log, mix list)
     "data_page": village({60: "start*2", 100: "ddown*2", 130: "ddown*2", 160: "ddown*2", 200: "circle*2", 280: "dright*2", 340: "circle*2"}, 440,
                          [90, 150, 190, 230, 260, 320, 370, 430]),
@@ -133,6 +138,10 @@ SCENES = {
     "quest_info": dict(args=["--quest", "1", "--play"], input="idle*200,start*2,idle*40,ddown*2,idle*20,ddown*2,idle*20,ddown*2,idle*20,circle*2,idle*60,dright*2,idle*60,"
                        "dright*2,idle*60,cross*2,idle*30,cross*2,idle*60,start*2,idle*40,circle*2,idle*90", time=30,
                        shots=[220, 260, 330, 400, 460, 560, 640], env=dict(RT_STEP="1", RT_QUEST_STAGE="1"), card="qcard"),
+    # in a quest: the pause menu's Options row (six rows, the sixth = window size: down to it, right), then page 2: Chat Log, Quick Phrase
+    "quest_pause": dict(args=["--quest", "1", "--play"], input="idle*200,start*2,idle*40," + "ddown*2,idle*12," * 4 + "idle*10,circle*2,idle*50," +
+                        "ddown*2,idle*12," * 5 + "idle*20,dright*2,idle*40,cross*2,idle*30,cross*2,idle*40,idle*200", time=30,
+                        shots=[230, 300, 340, 400, 450, 500], env=dict(RT_STEP="1", RT_QUEST_STAGE="1"), card="qcard"),
     # quest 10001 from its start: the "Wisdom of the Chief added" banner (sub_main 0x539AF0), the field HUD; the hunter
     # follows the monsters with the reward scene's aids
     "wisdom": dict(args=["--quest", "10001", "--play"], input="idle*60" + (",cam_u*2,idle*30" * 4 + ",circle*2,idle*28" * 6 +
@@ -183,6 +192,13 @@ if GAME == "mhg":
             break
         _b.append(_it)
         _f += int(_c)
+    # standing in town 1: G's online start menu, 16 rows on 2 pages: open each of them but Log Out
+    _T = sum(int(i.split("*")[1]) for i in _b) + 400
+    _R = "circle*2,idle*60,cross*2,idle*40,ddown*2,idle*22"
+    SCENES["town_menu"] = dict(args=["--quest", "10", "--play", "--online", "--mute"], online=True, time=(_T + 2000) / 30.0 + 15,
+                               input=",".join(_b) + ",idle*400,start*2,idle*40," + ",".join([_R] * 8) + ",dright*2,idle*20," + ",".join([_R] * 7) + ",idle*60",
+                               shots=[_T + 30] + [_T + 42 + 126 * i + (20 if i >= 8 else 0) + d for i in range(15) for d in (45,)],
+                               env=dict(RT_STEP="1", RT_VILLAGE_START="1", RT_VILLAGE_SKIP_INTRO="1", RT_ONLINE_TRACE="1", RT_NET_REGISTERED="1"), card="tcard")
     SCENES["town"] = dict(args=["--quest", "10", "--play", "--online", "--mute"], online=True, time=175,
                           input=",".join(_b) + ",square*2,idle*270" + ",circle*2,idle*148" * 9 + ",cross*2,idle*100" * 3 + ",idle*300",
                           shots=[260, 420, 570, 720, 870, 1020, 1170, 1320, 1600, 1900, 2300, 2700, 2950, 3100, 3250, 3400, 3550,
@@ -238,7 +254,8 @@ def run(name, sc):
             server.kill()
             sys.exit("g_eng_tour: the test server did not start")
         env["RT_NET_PORT"] = port
-    cmd = ["sh", "-c", 'ulimit -v 1500000; exec "$@"', "sh", exe(sc), os.path.join(ROOT, "disc", "mh1" if GAME == "mh1" else "mhg")] + \
+    gdb = ["gdb", "-q", "-batch", "-ex", "run", "-ex", "bt 14", "--args"] if os.environ.get("G_ENG_GDB") else []     # backtrace of a crash, in the scene's log
+    cmd = ["sh", "-c", 'ulimit -v 1500000; exec "$@"', "sh"] + gdb + [exe(sc), os.path.join(ROOT, "disc", "mh1" if GAME == "mh1" else "mhg")] + \
           sc["args"] + ["--input", sc["input"], "--shot", os.path.join(d, name + ".png"), "--time", str(sc["time"])]
     try:
         with open(os.path.join(d, name + ".log"), "wb") as f:

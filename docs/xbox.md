@@ -2171,3 +2171,27 @@ AppRun in ~/ps2dev/pcsx2/x/squashfs-root; start it from a script file, or pcsx2_
   too. Not tested: walking there by hand (the test warps both).
 * Open: with the English table the room's rule stays 3 (4 hunters) on the server though the sheet shows 2; the Japanese
   HUNT=1 test passes. The Xbox test folder still has no G save.
+
+## Pause menu: G's rows (1 Nov 2026)
+
+**The bug:** the village and lobby pause menu is not `menu_move` (that is the quest's), it is the lobby's `Lb_menu_move_Core`, and the port's was MH1's: 8
+offline rows in MH1's order. G rebuilt it: 7 rows offline, 16 online in two pages of 8 (G lobby 0x58E340, tables 0x5FDB90 / 0x5FDBB0 / 0x5FDC50 offline,
+0x5FDBD0 / 0x5FDC10 / 0x5FDC70 online, labels lb_menu_msg, lb_menu_msg_entry, entry + 0x40, lb_menu_msg_off). That was the wrong pages, the blank row and the
+wrong help lines. It also explains the earlier empty logs in menu_move: the village never calls it.
+
+* lb_by151.c: `Lb_menu_page(row)` turns G's row into the page number of the existing switches (MH1's numbers, 16 = G's Options); `Lb_menu_help(row)`, G main
+  0x2EEF18, gives an offline row its help line. Skill_set_PL before Combine, Reference, Equip as in G's wrappers. G has no Cockpit_chat_chk here.
+* **The village Options row is one row: the chat window size** (G main 0x11CB50, 0x1269E0: Lb_menu_win_size_mv, Lb_disp_win_size), not the quest's six rows.
+* Disp_lb_menu: the title takes "Menu" and the page (the formats are written in the C: importing them gave junk bytes, not explained). Combine is grey when
+  it cannot be used (Menu_mix_ok, Menu_pick_ok: G 0x11B640, 0x11CC10); the quest menu's page 1 does the same.
+* Quest menu: G's rows 7, 8 are Chat Log, Quick Phrase; the C had MH1's order (a Quick Phrase init with a Chat Log page). Fixed, not opened in a test: the
+  test's walk to page 2 of the quest menu stopped short.
+* disp_option read lpPit+0x88 where G reads +0x89. option_val_str was 0x3C long, the page reads to 0x48 (the crash on changing the size).
+* Online pages, G's own now (tools/mhg_gonl.py, src/lobby/gonl/gen): 20 functions, MH1's crashed on open. **G's symbol names for these are MH1's by position**:
+  G's "lm_mail_box_mv/trans" are the Friends List's, "lm_friend_list_mv/trans" Short Mail's, its init lobby_func_0058CF40; Status Options draws with
+  lobby_func_0058D140. lm_friend_list_mv and lm_introduction_trans by hand. m2c drafts, compared with nothing; G's lm_logout was not opened (it would log out).
+
+Checked on the PC, hidden: tools/g_eng_tour.py pause_rows (all 7 rows, Options MEDIUM, LARGE, SMALL, MEDIUM, back to the menu), quest_pause (5 rows on page 1,
+Options, six rows, the cursor on row 6), town_menu on the local test server (15 of 16 rows open and go back, English). Not checked: the Xbox; G's real disc
+next to it; Log Out; Current Location prints "(null)" for the server name on the test server (Get_ServerName compares the server list's ID with the connected
+one, the test server's list has none: not looked into further).

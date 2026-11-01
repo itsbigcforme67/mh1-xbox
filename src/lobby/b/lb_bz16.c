@@ -4,13 +4,20 @@
 unsigned short Get_sw2();   /* its real return type: was implicitly int (tools/check_kr_returns.py) */
 #endif
 extern u8 * lbmw;
+#ifdef VERSION_MHG
+int Lb_menu_help(int);
+#endif
 
 #if !defined(G_PART)
 void lb_menu_init(void) {
     F(s32, lbmw, 0) = 0;
     *(s8 *)0x39DAD0 = 1;
     *(s8 *)0x39DAD1 = 4;
+#ifdef VERSION_MHG
+    *(s16 *)0x39DAD2 = (s16) Lb_menu_help(F(u8, lbmw, 4));
+#else
     *(s16 *)0x39DAD2 = (s16) F(u8, lbmw, 4);
+#endif
     *(s8 *)0x39DADC = 0;
 }
 #endif

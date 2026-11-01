@@ -158,6 +158,24 @@ void menu_option_i(void) {
 }
 #endif
 
+#ifdef VERSION_MHG
+/* G 0x11CB50: the village / lobby Options page: left / right change the chat window size */
+int Lb_menu_win_size_mv(int sw) {
+    u8 *p = (u8 *)lpPit + 0x8E;
+
+    if (sw & 0xC00) {
+        if (sw & 0x800) {
+            *p = *p == 0 ? 2 : *p - 1;
+        } else {
+            *p = *p >= 2 ? 0 : *p + 1;
+        }
+        se_req(7, 0x17, 0);
+    }
+    option_w.x06 = *p;
+    return sw & 0x8040;
+}
+#endif
+
 /* 0x12A4C0: option screen: ListSelect over the 5 rows, toggle / cycle the setting, copy them to option_w and
  * game_w, start the pad vibration when it was switched on. */
 #define lpPit_opt(i) ((&lpPit->x88)[i])   /* option row values, lpPit+0x88.. */

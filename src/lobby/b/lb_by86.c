@@ -3,6 +3,12 @@
 extern int lbmw;
 extern char jtbl_460_0065E720[];
 
+#ifdef VERSION_MHG
+int Lb_menu_page(int);
+void Lb_disp_win_size(void);
+void lobby_func_0058D140(void);
+#endif
+
 void DispLobbyMenu(void) {
     u8 temp_a0;
     u8 temp_v1;
@@ -19,7 +25,11 @@ void DispLobbyMenu(void) {
         Disp_lb_menu(0);
         break;
     case 1:                                         /* switch 1 */
+#ifdef VERSION_MHG
+        temp_v1 = Lb_menu_page(F(u8, temp_a1, 4));
+#else
         temp_v1 = F(u8, temp_a1, 4);
+#endif
         switch (temp_v1) {                          /* switch 2 */
         case 0:                                     /* switch 2 */
             Pit_disp_quest();
@@ -54,6 +64,17 @@ void DispLobbyMenu(void) {
         case 9:                                     /* switch 2 */
             lm_member_trans();
             break;
+#ifdef VERSION_MHG
+        case 11:                                    /* switch 2 */
+            lm_mail_box_trans();
+            break;
+        case 12:                                    /* switch 2 */
+            lm_friend_list_trans();
+            break;
+        case 14:                                    /* switch 2 */
+            lobby_func_0058D140();
+            break;
+#else
         case 11:                                    /* switch 2 */
             lm_friend_list_trans();
             break;
@@ -63,11 +84,17 @@ void DispLobbyMenu(void) {
         case 14:                                    /* switch 2 */
             lm_net_status_trans();
             break;
+#endif
         case 13:                                    /* switch 2 */
             lm_introduction_trans();
             break;
         case 15:
             break;
+#ifdef VERSION_MHG
+        case 16:
+            Lb_disp_win_size();
+            break;
+#endif
         }
         break;
     }
