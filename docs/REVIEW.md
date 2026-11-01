@@ -1175,9 +1175,9 @@ Both games unless marked.
   Verified: 15 of 15 cold starts on hardware, audio DMA running (movie audio consumed, no "stopped playing"); that the
   hang is gone is likely, not proven (it was rare). **To revert:** commit "Xbox AC97: codec registers written only".
 
-## G English chat rows: Capcom's limits, our row breaks (1 Nov 2026)
-- **Changed:** English chat rows use the US game's 28-byte limit and size 19 text. **Kept different from Capcom, your
-  call:** rows break at a space where the US game cuts anywhere ("dep" / "art."); G's full-size box stays (the US box
-  shrinks with the text, and its 23-28 byte rows spill out); no CHAT WINDOW SIZE option. **Why:** owner asked to match
-  Capcom; the row break and box only keep text more readable. Details: docs/xbox.md, 31 Oct section. **To revert the
-  break:** in chat_nm.c, chat_row_room returns CHAT_ROW_ASCII when the row is longer.
+## G chat window: as in G and the US game (1 Nov 2026)
+- **Dropped:** the fixed size 21 chat window and hard-coded rows in chat_nm.c, MH1's 8-row title Options page for G.
+  **Now:** G's WINDOW SIZE (17, 19, 21, default 19), the window scales from its bottom edge, ten Options rows. English game
+  messages stop at 28 bytes (US game). **Kept different from Capcom, your call:** rows break at a space where the US game
+  cuts anywhere ("dep" / "art."). Rows of 23-28 bytes spill as in the US game. **To revert the break:** in chat_nm.c,
+  chat_row_room returns CHAT_ROW_ASCII when the row is longer. Details: docs/xbox.md, 31 Oct section.

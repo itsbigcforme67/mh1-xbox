@@ -263,7 +263,11 @@ void system_w_set(void) {
     system_w.bgm_vol = option_w[2];
     str_outmode(system_w.outmode);
     str_master_vol(0);
+#ifdef VERSION_MHG
+    flAdjustScreen(option_w[7], option_w[8]);   /* G: 5 and 6 are quick continue and window size */
+#else
     flAdjustScreen(option_w[5], option_w[6]);
+#endif
 }
 #endif
 

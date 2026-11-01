@@ -2606,6 +2606,10 @@ G_TERMS = [(re.compile(rb"\b([Dd])ual([ \n])([Ss])word(s?)\b"),
             lambda m: m.group(1) + b"ual" + m.group(2) + (b"B" if m.group(3) == b"S" else b"b") + b"lade" + m.group(4))]
 
 
+# G's Options row SCREEN ADJUST: paired by position with QUICK CONTINUE, the US name is ADJUST SCREEN
+G_LABELS = {("sub_main", 0x5414B0): b"ADJUST SCREEN"}
+
+
 NAME_AREAS = ("items", "weapons", "armour", "skills", "monsters")
 
 
@@ -3426,7 +3430,7 @@ def main():
                                                           k in talk_g and k in fr_g) else
                                                               talk_layout(fr_names(k, v)) if k in talk_g else
                                                               even_rows(k, fr_names(k, v)))
-                                                      for k, v in merged(en_g, gk_slot, {**slot_g, **own_fb, **fr_slots}).items()}, hdr)
+                                                      for k, v in merged(en_g, gk_slot, {**slot_g, **own_fb, **fr_slots, **G_LABELS}).items()}, hdr)
     log("G: %d description lines G shares between items set per item (Freedom, pointer slots)" % len(fr_slots))
     log("G: Freedom's names put into %d MH1 US / own lines" % nterm[True])
     # fit: Freedom's PSP lines are laid out for the PSP's windows. Talk: the PSP talk window has the same 22 columns

@@ -89,8 +89,8 @@ SCENES = {
     "gallery": boot(GM + ",ddown*2,idle*10,circle*2,idle*90,ddown*2,idle*30,ddown*2,idle*60,cross*2,idle*120", 40,
                     [700, 760, 800, 860, 920]),
     # options: fourth row
-    "options": boot(GM + ",ddown*2,idle*10,ddown*2,idle*10,circle*2,idle*90,ddown*2,idle*30,ddown*2,idle*60", 40,
-                    [700, 790, 830, 880]),
+    "options": boot(GM + ",ddown*2,idle*10,ddown*2,idle*10,ddown*2,idle*10,circle*2,idle*90" + ",ddown*2,idle*30" * 6 + ",dright*2,idle*60", 40,
+                    [790, 880, 1000, 1080]),
     # continue from the new game's card: the mode menu (town / village), then the town (network) side: NET file dialogs
     "network": boot(script("continue.txt").split(",idle*150")[0] + ",idle*150,ddown*2,idle*10,circle*2,idle*200,circle*2,idle*200,circle*2,idle*300",
                     60, [700, 800, 900, 1000, 1100, 1250, 1400, 1600]),

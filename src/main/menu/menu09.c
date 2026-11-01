@@ -165,7 +165,11 @@ void menu_option_i(void) {
 int menu_option_mv(int sw) {
     u8 c;
 
+#ifdef VERSION_MHG
+    ListSelect(&lpPit->x43, sw, 6);
+#else
     ListSelect(&lpPit->x43, sw, 5);
+#endif
     if ((u16)sw & 0xC00) {
         c = lpPit->x43;
         switch (c) {
@@ -180,6 +184,9 @@ int menu_option_mv(int sw) {
             break;
         case 2:
         case 3:
+#ifdef VERSION_MHG
+        case 5:
+#endif
             if ((u16)sw & 0x800) {
                 if (lpPit_opt(c) == 0) {
                     lpPit_opt(c) = 2;
@@ -208,6 +215,9 @@ int menu_option_mv(int sw) {
     c = lpPit->x8B;
     option_w.x07 = c;
     GW8(0xF) = c;
+#ifdef VERSION_MHG
+    option_w.x06 = lpPit->x8E;
+#endif
     c = lpPit->x8C;
     if (c != option_w.x03) {
         option_w.x03 = c;

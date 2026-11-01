@@ -213,6 +213,9 @@ void Pit_init(void) {
     lpPit->x8A = GW8(0x1DD);
     lpPit->x8B = game_w.x0F;
     lpPit->x8C = FLDS8(option_w, 3);
+#ifdef VERSION_MHG
+    lpPit->x8E = FLDS8(option_w, 6);
+#endif
     PitMenu.x00 = 0;
     PitMenu.x08 = -1;
     PitMenu.x06 = 0;

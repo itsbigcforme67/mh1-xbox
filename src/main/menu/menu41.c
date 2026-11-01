@@ -427,13 +427,25 @@ void disp_option(void) {
 
     SetTrnslMode(4, 5);
     n = lpPit->x88;
+#ifdef VERSION_MHG
+    pfl_option[7] = 6;
+    *(void **)(pfl_option + 0xC) = option_list_str + n * 0x18;
+#else
     *(void **)(pfl_option + 0xC) = option_list_str + n * 0x14;
+#endif
     DispFrameList(pfl_option, lit_5054, -1, n);
     font_set_palette(5);
-    for (y = 0x54, i = 0, vals = option_val_str; i < 5; y = (s16)(y + 0x16), vals += 0xC, i++) {
+#ifdef VERSION_MHG
+#define OPT_ROWS 6
+#define OPT_BASE 0x89
+#else
+#define OPT_ROWS 5
+#define OPT_BASE 0x88
+#endif
+    for (y = 0x54, i = 0, vals = option_val_str; i < OPT_ROWS; y = (s16)(y + 0x16), vals += 0xC, i++) {
         flfntLocate(0x208, y);
         if (lpPit->x88 == 0 || i != 1) {
-            font_print_uf(*(void **)(vals + ((u8 *)lpPit)[i + 0x88] * 4));
+            font_print_uf(*(void **)(vals + ((u8 *)lpPit)[i + OPT_BASE] * 4));
         } else {
             font_print_sp(opt_map_invalid_str);
         }

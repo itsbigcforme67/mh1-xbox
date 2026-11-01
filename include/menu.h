@@ -100,7 +100,8 @@ typedef struct PIT_W {              /* pit_work, 0x90 bytes; lpPit points at it 
     u8 x8A;           /* 0x8B game_w+0x1DD */
     u8 x8B;           /* 0x8C game_w+0x0F */
     u8 x8C;           /* 0x8D option_w+3 */
-    u8 _pad8E[0x90 - 0x8E];
+    u8 x8E;           /* 0x8E option_w+6: chat window size 0-2 */
+    u8 _pad8F;
     u8 x8D;           /* 0x90 */
     u8 _pad91[0x98 - 0x91];
 #else

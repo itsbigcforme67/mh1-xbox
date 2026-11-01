@@ -706,10 +706,8 @@ extern u8 chat_cnfg_font_color[8];
 extern u8 my_user_id[];
 
 #ifndef __MWERKS__
-int rt_text_active(void);
-
-/* The US game cuts game messages at 28 bytes, not 30, and draws the rows smaller (see disp_chat_log_sub). It cuts at any
- * byte; an all-ASCII row that does not fit ends at its last space here instead. */
+/* The US game cuts game messages at 28 bytes, not 30. It cuts at any byte; an all-ASCII row that does not fit ends at its
+ * last space here instead. */
 #define CHAT_ROW_ASCII 28
 static int chat_row_room(const s8 *s, int room) {
     int i, sp = 0;
@@ -959,15 +957,45 @@ u32 chat_log_disp_line(u8 top) {
 }
 
 extern u8 pf_chat_log_base[];
+
+/* The chat window's size: G and the US game scale it with the Options row "window size" (option_w+6: 17, 19, 21, default
+ * 19) and keep its bottom edge. Size 21 is the JP MH1 window. MH1 has no such option: English uses the default. */
+#ifdef VERSION_MHG
+#define CHAT_SIZE (0x11 + 2 * option_w.x06)
+#elif defined(__MWERKS__)
+#define CHAT_SIZE 0x15
+#else
+int rt_text_active(void);
+#define CHAT_SIZE (rt_text_active() ? 0x13 : 0x15)
+#endif
+#define CHAT_H(s) ((s) * 18 / 21)
+#define CHAT_STEP(s) (CHAT_H(s) + 1)
+#define CHAT_TOP(s) (0x1A2 - 12 * CHAT_STEP(s))
+
+static void chat_frame(void *text) {
+    int s = CHAT_SIZE;
+    s16 y = *(s16 *)(pf_chat_log_base + 2);
+    u8 w = pf_chat_log_base[4], h = pf_chat_log_base[5];
+
+    *(s16 *)(pf_chat_log_base + 2) = CHAT_TOP(s);
+    pf_chat_log_base[4] = s;
+    pf_chat_log_base[5] = CHAT_H(s) - 1;
+    DispFrameMessage(pf_chat_log_base, text);
+    *(s16 *)(pf_chat_log_base + 2) = y;
+    pf_chat_log_base[4] = w;
+    pf_chat_log_base[5] = h;
+}
 extern u8 lit_3171[];
 extern char *str_3166[];
 
 void Pit_disp_chat(void) {
-    DispFrameMessage(pf_chat_log_base, lit_3171);
-    Put_megaphone(0x97, 0xBB, PitMenu.x17);
-    flfntSetSize(0x15, 0x12);
+    int cs = CHAT_SIZE;
+
+    chat_frame(lit_3171);
+    Put_megaphone(0x1E + 121 * cs / 21, CHAT_TOP(cs) - cs / 7, PitMenu.x17);
+    flfntSetSize(cs, CHAT_H(cs));
     font_set_palette(0);
-    flfntLocate(0xC6, 0xBE);
+    flfntLocate(0x1E + 8 * cs, CHAT_TOP(cs));
     font_print_uf(str_3166[(u8)PitMenu.x17]);
     disp_chat_log_sub(0, 0, 0);
 }
@@ -989,18 +1017,15 @@ void disp_chat_log_sub(int top, s16 yofs, int a) {
     s16 y;
     s16 k;
     PIT_CHAT *l;
+    int cs = CHAT_SIZE;
+    s16 step = CHAT_STEP(cs);
+    s16 first = CHAT_TOP(cs) + step;
 
     if (PitMenu.lognum != 0) {
-        #ifndef __MWERKS__
-        /* the US game's default CHAT WINDOW SIZE (19, height 19 * 18 / 21) for English; Japanese keeps 21 */
-        if (rt_text_active()) {
-            flfntSetSize(0x13, 0x10);
-        } else
-#endif
-        flfntSetSize(0x15, 0x12);
+                flfntSetSize(cs, CHAT_H(cs));
         if ((u32)Get_chat_line_num() > 0xB && !(a & 0xFF)) {
             top &= 0xFF;
-            y = 0x18F;
+            y = 0x1A2 - step;
             cnt = PitMenu.lognum - top;
             i = (PitMenu.logtop - 1) - top;
             for (; cnt != 0; cnt--, i = (i & 0x3F) - 1) {
@@ -1010,16 +1035,16 @@ void disp_chat_log_sub(int top, s16 yofs, int a) {
                 for (; k >= 0; k--) {
                     flfntLocate(0x1E, (s16)(y + yofs));
                     font_print_uf(l->text[k]);
-                    y -= 0x13;
-                    if (y < 0xD1) {
+                    y -= step;
+                    if (y < first) {
                         goto next;
                     }
                 }
                 if (l->uid[0] != 0) {
                     chat_log_name(buf, l);
                     font_print_double2(0x1E, (s16)(y + yofs), 1, l->col[2], buf);
-                    y -= 0x13;
-                    if (y < 0xD1) {
+                    y -= step;
+                    if (y < first) {
                         goto next;
                     }
                 }
@@ -1028,15 +1053,15 @@ next:
             }
         } else {
             u8 c = PitMenu.lognum;
-            y = 0xD1;
+            y = first;
             i = PitMenu.logtop - c;
             for (; c != 0; c--, i = (i & 0x3F) + 1) {
                 l = &PitMenu.log[i & 0x3F];
                 if (l->uid[0] != 0) {
                     chat_log_name(buf, l);
                     font_print_double2(0x1E, (s16)(y + yofs), 1, l->col[2], buf);
-                    y += 0x13;
-                    if (y >= 0x190) {
+                    y += step;
+                    if (y >= 0x1A2) {
                         continue;
                     }
                 }
@@ -1044,8 +1069,8 @@ next:
                 for (k = 0; k < l->nline; k++) {
                     flfntLocate(0x1E, (s16)(y + yofs));
                     font_print_uf(l->text[k]);
-                    y += 0x13;
-                    if (y >= 0x190) {
+                    y += step;
+                    if (y >= 0x1A2) {
                         break;
                     }
                 }
@@ -1062,10 +1087,10 @@ void Pit_disp_chat_log(void) {
     s16 y2;
 
     SetFilterMode(0);
-    DispFrameMessage(pf_chat_log_base, 0);
+    chat_frame(0);
     t = (u16)((System_timer & 0x1F) << 11);
     col = (((s8)(48.0f * flSin(0.0000958738f * (f32)t)) + 0xCF) << 24) | 0x1ACC8E;
-    y = 0xB6;
+    y = CHAT_TOP(CHAT_SIZE) - 8;
     if (PitMenu.x22 & 1) {
         c = col;
         if (PitMenu.x22 & 4) {
@@ -1074,7 +1099,7 @@ void Pit_disp_chat_log(void) {
     } else {
         c = 0xA0606060;
     }
-    PutArrow(0x80, y, 0x1B, 0xF, c, 2);
+    PutArrow(0x1E + 98 * CHAT_SIZE / 21, y, 0x1B, 0xF, c, 2);
     y2 = 0x198;
     if (PitMenu.x22 & 2) {
         if (PitMenu.x22 & 8) {
@@ -1083,7 +1108,7 @@ void Pit_disp_chat_log(void) {
     } else {
         col = 0xA0606060;
     }
-    PutArrow(0x80, y2, 0x1B, 0xF, col, 3);
+    PutArrow(0x1E + 98 * CHAT_SIZE / 21, y2, 0x1B, 0xF, col, 3);
     disp_chat_log_sub(PitMenu.logscr, -0xA, PitMenu.x21);
     Put_receive_mark(0);
 }
@@ -1108,7 +1133,7 @@ extern void *receive_mes_str[2];
 void Pit_disp_receive_mes(void) {
     if (!(PitMenu.x22 & 0x80) && F8(&PitMenu, 0x1C) == 0 && F16(&PitMenu, 0xC) != 0) {
         SetFilterMode(0);
-        DispFrameMessage(pf_chat_log_base, receive_mes_str[F8(&PitMenu, 0xE)]);
+        chat_frame(receive_mes_str[F8(&PitMenu, 0xE)]);
         disp_chat_log_sub(0, 0, 0);
     }
 }
@@ -1189,12 +1214,14 @@ void Disp_NPC_message(void) {
     char *d;
 
     if (!(PitMenu.x06 & 0x10)) {
-        DispFrameMessage(pf_chat_log_base, lit_3439);
-        flfntSetSize(0x15, 0x12);
+        int cs = CHAT_SIZE;
+
+        chat_frame(lit_3439);
+        flfntSetSize(cs, CHAT_H(cs));
         font_set_palette(0);
         left = PitMenu.x04;
         s = *(s8 **)&PitMenu.x00;
-        y = 0xD1;
+        y = CHAT_TOP(cs) + CHAT_STEP(cs);
         while (left > 0) {
             d = buf;
             room = 0xB;
@@ -1214,10 +1241,10 @@ void Disp_NPC_message(void) {
             *d = 0;
             flfntLocate(0x1E, y);
             font_print_uf(buf);
-            y += 0x13;
+            y += CHAT_STEP(cs);
         }
         if (PitMenu.x06 & 2) {
-            flfntLocate(0x1E, (s16)(y + 0x13));
+            flfntLocate(0x1E, (s16)(y + CHAT_STEP(cs)));
             if (PitMenu.x06 & 4) {
                 font_print_sp(lit_3440);
             } else {
@@ -1226,7 +1253,7 @@ void Disp_NPC_message(void) {
         }
         if (PitMenu.x06 & 8) {
             font_set_palette(2);
-            flfntLocate(0xA2, (s16)(y + 0x13));
+            flfntLocate(0xA2, (s16)(y + CHAT_STEP(cs)));
             font_print_uf(lit_3442);
         }
         Put_receive_mark(0);

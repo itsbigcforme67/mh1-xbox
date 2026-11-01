@@ -9,6 +9,13 @@
 unsigned char McCardOperation();   /* (declared before its first use) */
 #endif
 
+/* the Options rows: G has quick continue and window size at 5 and 6, so screen adjust, defaults and exit move down */
+#ifdef VERSION_MHG
+#define OV(mh1, g) (g)
+#else
+#define OV(mh1, g) (mh1)
+#endif
+
 typedef struct OPTTSK {
     u8 pad00[8];
     u8 step;        /* 0x08 0 init, 1 main menu, 2 sub menu, 3 idle, 4 exit */
@@ -22,7 +29,7 @@ typedef struct OPTTSK {
 extern u16 Psw[];
 extern s8 option_w[0x1000];
 extern s8 cfg_default[];
-extern u8 option_max_kind[8];
+extern u8 option_max_kind[OV(8, 10)];
 extern char lit_295_00358758[];
 extern char lit_389_00358760[];
 extern char lit_390_00358780[];
@@ -163,11 +170,11 @@ u16 pad;
     int p;
 
     if (Psw[2] & 0x20) {
-        if (t->cur == GV(5, 7)) {
+        if (t->cur == OV(5, 7)) {
             t->step = 2;
             decide_se();
         } else {
-            if (t->cur == GV(6, 8)) {
+            if (t->cur == OV(6, 8)) {
                 decide_se();
                 if (option_w[3] == 0) {
                     option_w[3] = 1;
@@ -176,29 +183,29 @@ u16 pad;
                 }
                 option_default_set();
             }
-            if (t->cur == GV(7, 9)) {
+            if (t->cur == OV(7, 9)) {
                 t->step = 4;
                 t->sub = 0;
                 cancel_se();
             }
         }
     } else if (Psw[2] & 0x40) {
-        if (t->cur != GV(7, 9)) {
-            t->cur = GV(7, 9);
+        if (t->cur != OV(7, 9)) {
+            t->cur = OV(7, 9);
             cancel_se();
         }
     } else {
         p = pad & 0xFFFF;
         if (p & 0x2000) {
             if (t->cur == 0) {
-                t->cur = GV(7, 9);
+                t->cur = OV(7, 9);
             } else {
                 t->cur = t->cur - 1;
             }
             cursor_se();
         }
         if (p & 0x1000) {
-            if (t->cur == GV(7, 9)) {
+            if (t->cur == OV(7, 9)) {
                 t->cur = 0;
             } else {
                 t->cur = t->cur + 1;
@@ -225,9 +232,9 @@ void param_change_00126B30(OPTTSK *t, long d) {
     u8 row = t->cur;
 
     switch (row) {
-    case 5:
-    case 6:
-    case 7:
+    case OV(5, 7):
+    case OV(6, 8):
+    case OV(7, 9):
         break;
     default:
         if (d < 0 && option_w[row] == 0) {
@@ -283,47 +290,47 @@ void option_sub_menu(OPTTSK *t, int pad) {
     } else {
         p = pad & 0xFFFF;
         if (p & 0x2000) {
-            if (w[GV(6, 8)] > -0x10) {
+            if (w[OV(6, 8)] > -0x10) {
                 chg = 1;
-                w[GV(6, 8)]--;
+                w[OV(6, 8)]--;
                 shown |= 0x2000;
                 cursor_se();
             } else {
-                w[GV(6, 8)] = -0x10;
+                w[OV(6, 8)] = -0x10;
             }
         }
         if (p & 0x1000) {
-            if (w[GV(6, 8)] < 0x10) {
+            if (w[OV(6, 8)] < 0x10) {
                 chg = 1;
-                w[GV(6, 8)]++;
+                w[OV(6, 8)]++;
                 shown |= 0x1000;
                 cursor_se();
             } else {
-                w[GV(6, 8)] = 0x10;
+                w[OV(6, 8)] = 0x10;
             }
         }
         if (p & 0x800) {
-            if (w[GV(5, 7)] > -0x10) {
+            if (w[OV(5, 7)] > -0x10) {
                 chg = 1;
-                w[GV(5, 7)]--;
+                w[OV(5, 7)]--;
                 shown |= 0x800;
                 cursor_se();
             } else {
-                w[GV(5, 7)] = -0x10;
+                w[OV(5, 7)] = -0x10;
             }
         }
         if (p & 0x400) {
-            if (w[GV(5, 7)] < 0x10) {
+            if (w[OV(5, 7)] < 0x10) {
                 chg = 1;
-                w[GV(5, 7)]++;
+                w[OV(5, 7)]++;
                 shown |= 0x400;
                 cursor_se();
             } else {
-                w[GV(5, 7)] = 0x10;
+                w[OV(5, 7)] = 0x10;
             }
         }
         if (chg != 0) {
-            flAdjustScreen(w[GV(5, 7)], w[GV(6, 8)]);
+            flAdjustScreen(w[OV(5, 7)], w[OV(6, 8)]);
         }
     }
     disp_option_sub_menu(t, shown);
@@ -391,15 +398,15 @@ void disp_option_menu(OPTTSK *t) {
     Sel_menu_disp(2);
     y = 0x64;
     flfntSetSize(0x12, 0x12);
-    for (i = 0; i < 8; i++) {
+    for (i = 0; i < OV(8, 10); i++) {
         if (i == t->cur) {
             pal = 0xB;
-        } else if (i == 6 && cfg_change_ck() != 0) {
+        } else if (i == OV(6, 8) && cfg_change_ck() != 0) {
             pal = 3;
         } else {
             pal = 0;
         }
-        if (i == 7) {
+        if (i == OV(7, 9)) {
             y += 0xC;
         }
         flfntLocate(0x2C, y);
@@ -417,10 +424,14 @@ void disp_option_menu(OPTTSK *t) {
             break;
         case 1:
         case 2:
+#ifdef VERSION_MHG
+        case 5:
+        case 6:
+#endif
             opt_sub_disp(y, sub_str_tbl[i][option_w[i]]);
             break;
         }
-        y += 0x28;
+        y += OV(0x28, 0x1E);
     }
 }
 #endif
@@ -431,7 +442,7 @@ void disp_option_sub_menu(OPTTSK *t, u16 keys) {
     s16 i;
 
     switch (t->cur) {
-    case GV(5, 7):
+    case OV(5, 7):
         Sel_back_disp(0xFF);
         Sel_menu_disp(3);
         flfntSetSize(0x12, 0x12);
@@ -439,8 +450,8 @@ void disp_option_sub_menu(OPTTSK *t, u16 keys) {
         font_print_ex(0xB8, 0x154, 0, lit_390_00358780);
         font_print_ex(0x124, 0x188, 0, lit_391_00358798);
         flfntSetSize(0x24, 0x12);
-        font_print_ex(0x1A2, 0x130, 0, lit_392_003587A8, option_w[GV(5, 7)]);
-        font_print_ex(0x1A2, 0x154, 0, lit_392_003587A8, option_w[GV(6, 8)]);
+        font_print_ex(0x1A2, 0x130, 0, lit_392_003587A8, option_w[OV(5, 7)]);
+        font_print_ex(0x1A2, 0x154, 0, lit_392_003587A8, option_w[OV(6, 8)]);
         Disp_button(1.0f, GV(1, 21), 0x10F, 0x185, 8);
         reload_tex(1, 8);
         SetTextureStage(8);

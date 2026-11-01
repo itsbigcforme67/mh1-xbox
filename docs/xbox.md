@@ -2147,19 +2147,26 @@ AppRun in ~/ps2dev/pcsx2/x/squashfs-root; start it from a script file, or pcsx2_
   PC's numbers (g_tex_slot), so they drew empty slots: white plaza, white after-quest save screen. gonl_g.c
   gonl_load_net_tex copies each picture to the PC's number. Checked: the PC plaza shows the mountains as the PS2's,
   the real Xbox's save screens show the map table as the PS2's (capture hu8 / hu_end).
-* **Chat rows, two port bugs, fixed.** (1) English ran past the box: chat_nm.c now follows the US game (below): row limit
-  28 for all-ASCII game messages, text size 19 (height 16) in English; Japanese keeps 30 and 21. (2) Row 2 lost its first
-  byte: G's rows are 0x20 long, the writer stepped 0x1F ("epart."): now sizeof the row. Checked in the English PC test;
-  not yet on the Xbox.
+* **Chat rows and window, port bugs, fixed.** (1) chat_nm.c is MH1's code and always drew size 21. G and the US game scale
+  the window with the Options row WINDOW SIZE; now done as in G (below). (2) English game messages stop at 28 bytes as in
+  the US game, at a space; Japanese keeps 30. (3) Row 2 lost its first byte: G's rows are 0x20 long, the writer stepped
+  0x1F ("epart."): now sizeof the row. Checked in the English PC test at 17, 19, 21; not yet on the Xbox.
+* **Options, port bugs, fixed.** The title page used MH1's 8 rows: G has 10 (5 quick continue, 6 window size, 7 adjust
+  screen, 8 defaults, 9 exit; steps 30 px; G main 0x117D80). option01.c OV(), not GV() (PC builds keep MH1's GV). Startup
+  read the screen offset from option_w[5,6], in G quick continue and window size; now [7,8]. Row 7's English
+  said QUICK CONTINUE: text_map.py G_LABELS. Checked on the PC: all rows, MEDIUM -> LARGE.
+* **Not working:** the pause menu's page order. In the village "Items" opens Quest Info, "Combine" Items, "Reference"
+  Combine, and "Options" nothing; the Options page was not reached, so its sixth row (menu09.c, menu41.c, written from G
+  0x11C950 and 0x126710: 6 rows, 0x18 stride, values from lpPit+0x89) is untested. Temporary logs in menu_move printed
+  nothing here: not explained. Not compared with the build before these changes. G's lobby calls 0x11CB50 (window size only), not ported.
 * **What the US MH1 really does (owner: match Capcom).** Code: chat_log_add at about 0x235794: 22 bytes for players, 28
   for game messages (JP 30), any-byte cut, row step 0x1F. Log at 0x3AAC6A, entries 0x65 bytes (uid 16 bytes). Draw 0x2360F0
   size from table 0x39694C = 17, 19, 21 (RAM read, PCSX2 PINE), height size * 18 / 21, step height + 1, frame scaled
-  size / 21. Index byte 0x414C36, saved at +0x8D, Options entry CHAT WINDOW SIZE (G has no such entry). Default: 1 = size
+  size / 21. Index byte 0x414C36, saved at +0x8D, Options entry CHAT WINDOW SIZE. G has the same: option_w+6, table 0x2EC124, G main 0x221DA0, 0x221E00; default 1 = size
   19 (read from RAM after NEW GAME, card empty). Seen in the running game (test rows poked into the log, x0C/x0F set: hidden
   PCSX2 with its own card, $HOME/ps2dev/pcsx2/us): ASCII is monospaced, half the size wide, and the box fits 22 bytes, so
   **rows of 23-28 bytes spill out of Capcom's own box at all three sizes**, about 40 px at 19. The spill is original behaviour.
-  Differences we keep: G's full-size frame and 12-row layout (not scaled), proportional English (so 28 bytes mostly
-  stay inside), breaks at spaces (docs/REVIEW.md). No CHAT WINDOW SIZE option: G's menu and save have no room for it yet.
+  Differences we keep: proportional English, breaks at spaces (docs/REVIEW.md).
 * **Tan view, not a port bug.** Same picture on the real G disc with the same warp to the departure spot, hunter hidden
   too. Not tested: walking there by hand (the test warps both).
 * Open: with the English table the room's rule stays 3 (4 hunters) on the server though the sheet shows 2; the Japanese

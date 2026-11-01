@@ -5,6 +5,13 @@
 #include "types.h"
 #include "gwx.h"
 
+/* the Options rows: G has quick continue and window size at 5 and 6, so screen adjust, defaults and exit move down */
+#ifdef VERSION_MHG
+#define OV(mh1, g) (g)
+#else
+#define OV(mh1, g) (mh1)
+#endif
+
 typedef struct OPTTSK {
     u8 pad00[8];
     u8 step;        /* 0x08 0 init, 1 main menu, 2 sub menu, 3 idle, 4 exit */
@@ -18,7 +25,7 @@ typedef struct OPTTSK {
 extern u16 Psw[];
 extern s8 option_w[0x1000];
 extern s8 cfg_default[];
-extern u8 option_max_kind[8];
+extern u8 option_max_kind[OV(8, 10)];
 extern char lit_295_00358758[];
 extern char lit_389_00358760[];
 extern char lit_390_00358780[];
@@ -191,9 +198,9 @@ void param_change_00126B30(OPTTSK *t, long d) {
     u8 row = t->cur;
 
     switch (row) {
-    case 5:
-    case 6:
-    case 7:
+    case OV(5, 7):
+    case OV(6, 8):
+    case OV(7, 9):
         break;
     default:
         if (d < 0 && option_w[row] == 0) {
@@ -347,15 +354,15 @@ void disp_option_menu(OPTTSK *t) {
     Sel_menu_disp(2);
     y = 0x64;
     flfntSetSize(0x12, 0x12);
-    for (i = 0; i < 8; i++) {
+    for (i = 0; i < OV(8, 10); i++) {
         if (i == t->cur) {
             pal = 0xB;
-        } else if (i == 6 && cfg_change_ck() != 0) {
+        } else if (i == OV(6, 8) && cfg_change_ck() != 0) {
             pal = 3;
         } else {
             pal = 0;
         }
-        if (i == 7) {
+        if (i == OV(7, 9)) {
             y += 0xC;
         }
         flfntLocate(0x2C, y);
@@ -373,10 +380,14 @@ void disp_option_menu(OPTTSK *t) {
             break;
         case 1:
         case 2:
+#ifdef VERSION_MHG
+        case 5:
+        case 6:
+#endif
             opt_sub_disp(y, sub_str_tbl[i][option_w[i]]);
             break;
         }
-        y += 0x28;
+        y += OV(0x28, 0x1E);
     }
 }
 

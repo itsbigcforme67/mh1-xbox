@@ -22,7 +22,7 @@
 #define GW32(o)  FLD32(game_w, GWX(o))
 
 typedef struct SYSTEM_W { u8 _pad00[0x32]; u8 x32; u8 x33; u8 _pad34; u8 x35; u8 _pad36[9]; u8 x3F; s16 x40; /* 0x35 set while loading */ } SYSTEM_W;
-typedef struct OPTION_W { u8 _pad00[3]; s8 x03; /* vibration off */ s8 x04; u8 _pad05[2]; s8 x07; u8 _pad08[0x18]; } OPTION_W;
+typedef struct OPTION_W { u8 _pad00[3]; s8 x03; /* vibration off */ s8 x04; u8 _pad05; s8 x06; /* G: chat window size */ s8 x07; u8 _pad08[0x18]; } OPTION_W;
 extern SYSTEM_W system_w;
 extern OPTION_W option_w;
 /* select_w: character select results (only what game11 and game3/4 read) */
