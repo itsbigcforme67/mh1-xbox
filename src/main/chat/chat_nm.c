@@ -706,9 +706,11 @@ extern u8 chat_cnfg_font_color[8];
 extern u8 my_user_id[];
 
 #ifndef __MWERKS__
-/* The log window was sized for 30 bytes of Japanese; our proportional English fills it at about 24, and the game cuts
- * the row at any byte. An all-ASCII row that does not fit ends at its last space instead. */
-#define CHAT_ROW_ASCII 24
+int rt_text_active(void);
+
+/* The US game cuts game messages at 28 bytes, not 30, and draws the rows smaller (see disp_chat_log_sub). It cuts at any
+ * byte; an all-ASCII row that does not fit ends at its last space here instead. */
+#define CHAT_ROW_ASCII 28
 static int chat_row_room(const s8 *s, int room) {
     int i, sp = 0;
 
@@ -989,6 +991,12 @@ void disp_chat_log_sub(int top, s16 yofs, int a) {
     PIT_CHAT *l;
 
     if (PitMenu.lognum != 0) {
+        #ifndef __MWERKS__
+        /* the US game's default CHAT WINDOW SIZE (19, height 19 * 18 / 21) for English; Japanese keeps 21 */
+        if (rt_text_active()) {
+            flfntSetSize(0x13, 0x10);
+        } else
+#endif
         flfntSetSize(0x15, 0x12);
         if ((u32)Get_chat_line_num() > 0xB && !(a & 0xFF)) {
             top &= 0xFF;

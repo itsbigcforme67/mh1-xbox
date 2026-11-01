@@ -1174,3 +1174,10 @@ Both games unless marked.
   starts) and the 21 Oct black screen also stopped at a codec read. nxdk's own driver touches no codec register.
   Verified: 15 of 15 cold starts on hardware, audio DMA running (movie audio consumed, no "stopped playing"); that the
   hang is gone is likely, not proven (it was rare). **To revert:** commit "Xbox AC97: codec registers written only".
+
+## G English chat rows: Capcom's limits, our row breaks (1 Nov 2026)
+- **Changed:** English chat rows use the US game's 28-byte limit and size 19 text. **Kept different from Capcom, your
+  call:** rows break at a space where the US game cuts anywhere ("dep" / "art."); G's full-size box stays (the US box
+  shrinks with the text, and its 23-28 byte rows spill out); no CHAT WINDOW SIZE option. **Why:** owner asked to match
+  Capcom; the row break and box only keep text more readable. Details: docs/xbox.md, 31 Oct section. **To revert the
+  break:** in chat_nm.c, chat_row_room returns CHAT_ROW_ASCII when the row is longer.

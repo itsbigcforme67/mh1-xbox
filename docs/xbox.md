@@ -2147,20 +2147,19 @@ AppRun in ~/ps2dev/pcsx2/x/squashfs-root; start it from a script file, or pcsx2_
   PC's numbers (g_tex_slot), so they drew empty slots: white plaza, white after-quest save screen. gonl_g.c
   gonl_load_net_tex copies each picture to the PC's number. Checked: the PC plaza shows the mountains as the PS2's,
   the real Xbox's save screens show the map table as the PS2's (capture hu8 / hu_end).
-* **Chat rows, two port bugs, fixed for now.** (1) English ran past the box: the game cuts at 30 bytes and anywhere;
-  chat_nm.c chat_row_room ends an all-ASCII row at its last space within 24 (26 still spilled by about 10 px). (2) Row 2
-  lost its first byte: G's rows are 0x20 long, the writer stepped 0x1F (the "." after "depar", "epart."): now sizeof the
-  row. Checked in the English PC test (no row past the box, row 2 whole); on the Xbox only row 1, before these last two
-  changes.
-* **What the US MH1 does (SLUS_208.96, read from the code; owner wants G's English to match Capcom's handling).**
-  chat_log_add at about 0x235794: 22 bytes for players, 28 for game messages (JP 30), no break at spaces, row step 0x1F.
-  The draw at 0x2360F0 takes a size from a table at 0x39694C = 17, 19, 21 (JP always 21), height size * 18 / 21, line
-  limits 0x65..0x1A2 (JP 0xD1..0x190). Index: byte 0x414C36, saved at +0x8D, the Options entry CHAT WINDOW SIZE (not in G).
-  The box scales with size / 21. Inferred, not measured: box about 242 px wide at 21, so a full 28-byte row may
-  spill in the US game too. Default size unknown (not in the main ELF's code as far as read).
-  **Next:** run the US disc hidden: Options screen (default size) and a real chat box if reachable without a live server;
-  then set row limit and size to match, add the option if G's save and menu allow. Breaking at spaces instead of
-  Capcom's cut goes in docs/REVIEW.md for the owner if kept.
+* **Chat rows, two port bugs, fixed.** (1) English ran past the box: chat_nm.c now follows the US game (below): row limit
+  28 for all-ASCII game messages, text size 19 (height 16) in English; Japanese keeps 30 and 21. (2) Row 2 lost its first
+  byte: G's rows are 0x20 long, the writer stepped 0x1F ("epart."): now sizeof the row. Checked in the English PC test;
+  not yet on the Xbox.
+* **What the US MH1 really does (owner: match Capcom).** Code: chat_log_add at about 0x235794: 22 bytes for players, 28
+  for game messages (JP 30), any-byte cut, row step 0x1F. Log at 0x3AAC6A, entries 0x65 bytes (uid 16 bytes). Draw 0x2360F0
+  size from table 0x39694C = 17, 19, 21 (RAM read, PCSX2 PINE), height size * 18 / 21, step height + 1, frame scaled
+  size / 21. Index byte 0x414C36, saved at +0x8D, Options entry CHAT WINDOW SIZE (G has no such entry). Default: 1 = size
+  19 (read from RAM after NEW GAME, card empty). Seen in the running game (test rows poked into the log, x0C/x0F set: hidden
+  PCSX2 with its own card, $HOME/ps2dev/pcsx2/us): ASCII is monospaced, half the size wide, and the box fits 22 bytes, so
+  **rows of 23-28 bytes spill out of Capcom's own box at all three sizes**, about 40 px at 19. The spill is original behaviour.
+  Differences we keep: G's full-size frame and 12-row layout (not scaled), proportional English (so 28 bytes mostly
+  stay inside), breaks at spaces (docs/REVIEW.md). No CHAT WINDOW SIZE option: G's menu and save have no room for it yet.
 * **Tan view, not a port bug.** Same picture on the real G disc with the same warp to the departure spot, hunter hidden
   too. Not tested: walking there by hand (the test warps both).
 * Open: with the English table the room's rule stays 3 (4 hunters) on the server though the sheet shows 2; the Japanese
