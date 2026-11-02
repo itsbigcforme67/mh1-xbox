@@ -6,6 +6,30 @@ typedef struct DEVREC { s32 x00; s32 x04; s32 id; s32 sub; s32 x10; s32 x14; s32
 extern DEVREC Modem_device_list[];
 extern DEVREC Ether_device_list[];
 void *memset();
+#ifdef VERSION_MH2
+int set_device_no(DEVREC *out, int id, int sub, int unused, int x10) {
+    DEVREC *p;
+    p = Ether_device_list;
+    for (;;) {
+        if (p->id == 0) {
+            break;
+        }
+        if (p->id == id && p->sub == sub) {
+            out->x00 = p->x00;
+            out->x04 = p->x04;
+            out->id = id;
+            out->sub = sub;
+            out->x10 = x10;
+            out->x14 = p->x14;
+            out->x18 = p->x18;
+            return 0;
+        }
+        p++;
+    }
+    memset(out, 0xFF, 0x1C);
+    return -1;
+}
+#else
 int set_device_no(DEVREC *out, int id, int sub, int unused, int x10) {
     DEVREC *p;
 
@@ -46,3 +70,4 @@ int set_device_no(DEVREC *out, int id, int sub, int unused, int x10) {
     memset(out, 0xFF, 0x1C);
     return -1;
 }
+#endif

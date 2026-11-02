@@ -201,6 +201,17 @@ extern SKMODE skey_mode_tbl_910[];
 
 
 
+#ifdef VERSION_MH2
+int net_swdata3(s8 p)
+{
+  int sw = 0;
+  if ((1 << p) & 1)
+  {
+    sw = sw | *(u16 *)0x6AE0B0;
+  }
+  return sw;
+}
+#else
 int net_swdata3(s8 p)
 {
   int sw = 0;
@@ -213,3 +224,4 @@ int net_swdata3(s8 p)
   }
   return sw;
 }
+#endif

@@ -1,5 +1,8 @@
 /* lb_au06 - browser quit/poster/init states, page work 0x005FD2C0-0x005FD3A4: To_ReqCancelWait, SetNextURL. Whole file in lb_au.c. */
 #include "lobby_f.h"
+#ifdef VERSION_MH2
+#include "mh2_lb.h"
+#endif
 extern BSSYS *bsSys;
 extern u8 *bsCsv;
 extern u8 *lpSKey;
@@ -40,9 +43,6 @@ int strcmp();
 char *strcpy();
 
 #if !defined(G_PART)
-#ifdef VERSION_MH2
-#include "mh2_lb.h"
-#endif
 #ifdef VERSION_MH2
 #ifdef VERSION_MH2
 #ifdef VERSION_MH2

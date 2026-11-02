@@ -121,7 +121,9 @@ typedef struct PIT_W {              /* pit_work, 0x90 bytes; lpPit points at it 
 
 /* One chat log entry (PitMenu.log[64], 0x5D bytes; f_chat). */
 typedef struct PIT_CHAT {
-#ifdef VERSION_MHG
+#ifdef VERSION_MH2
+    char text[2][0x18]; /* MH2: lines are 7 bytes shorter (entry 0x4F bytes) */
+#elif defined(VERSION_MHG)
     char text[2][0x20]; /* G: lines are one byte longer (entry 0x5F bytes, every later field +2) */
 #else
     char text[2][0x1F]; /* 0x00 message split into two display lines */
@@ -155,6 +157,9 @@ typedef struct PIT_MENU {           /* PitMenu, 0x1764 bytes */
     s8 x1B;             /* 0x1B (s8: lb in Pit_disp_chat_cnfg) */
 #ifdef VERSION_MHG
     u8 _padG[7];        /* G: everything from here on sits 7 bytes later (PitMenu is 0x...290 there) */
+#endif
+#ifdef VERSION_MH2
+    u8 _padH[0x1F];     /* MH2: everything from here on sits 0x1F bytes later (from logtop 0x5BB0BD and the log's fields) */
 #endif
     s8 x1C;             /* 0x1C message halt flag (f_chat) */
     u8 open;            /* 0x1D non-zero while the menu is open (Cockpit_menu_chk) */
