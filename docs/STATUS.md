@@ -1001,3 +1001,7 @@ community mh2-decomp repo was not opened.
   (`tools/mh2_carry.py`) and 8 new small functions, src/mh2/plsel. All in the build that passed the check above.
 - Not done: no data slots yet, so C with strings, literals or jump tables is not carried; nothing has been run, only rebuilt.
 Next: data slots for carried C, then the 300 files that compile but differ (docs/mh2.md section 6).
+- Regression from this worktree: `tools/rebuild.sh` (MH1) all five OK. `VERSION=mhg tools/rebuild.sh`: six modules OK, but G `main`
+  fails to link: "multiple definition of Lb_menu_win_size_mv" (menu09_p1 and menu09_p2 both get it: in src/main/menu/menu09.c the `#ifdef VERSION_MHG` block at line 161 sits outside the G_PART guards).
+  No file under src/main, src/mhg, src/lobby, src/game, config/mhg or include changed on this branch, so this is
+  not from the MH2 work; src/main/menu/menu09.c last changed in the G commits of 1 Nov. Left alone for the G side.
