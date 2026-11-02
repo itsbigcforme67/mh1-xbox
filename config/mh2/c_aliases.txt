@@ -4,6 +4,7 @@ game BBQcamera_set 0x0031BC40
 game CalcDistanceXZ 0x00337C70
 game D_3E4C9C 0x005F8A7C
 game Eft06_set 0x003CD750
+game Eft08_set 0x003E3D10
 game Eft10_set 0x00865C60
 game Eft12_set3 0x00869140
 game Eft16_set_ex3 0x00871010
@@ -262,6 +263,7 @@ game em_cmd_reset 0x00733200
 game em_cmd_search_data_set 0x0072B5A0
 game em_cmd_sensor_ck 0x0072BF90
 game em_cmd_stand_ck_mh2_007279D0 0x007279D0
+game em_cmd_sub_contents 0x007304E0
 game em_cmd_suimin_add 0x0072DA80
 game em_cmd_swim_ck 0x0072DAE0
 game em_cmd_target_pl_act_ck 0x0072D510
@@ -592,6 +594,7 @@ game func_0072ECB0 0x0072ECB0
 game func_0072FEB0 0x0072FEB0
 game func_00730180 0x00730180
 game func_007302A0 0x007302A0
+game func_007304E0 0x007304E0
 game func_007313A0 0x007313A0
 game func_00731410 0x00731410
 game func_007314C0 0x007314C0
@@ -668,6 +671,7 @@ game func_0078E680 0x0078E680
 game func_0078E710 0x0078E710
 game func_00792090 0x00792090
 game func_00794F40 0x00794F40
+game func_007950E0 0x007950E0
 game func_00796B20 0x00796B20
 game func_00798240 0x00798240
 game func_007982F0 0x007982F0
@@ -857,6 +861,7 @@ game func_008668F0 0x008668F0
 game func_008669D0 0x008669D0
 game func_00867A50 0x00867A50
 game func_00867AD0 0x00867AD0
+game func_00868B00 0x00868B00
 game func_00868B40 0x00868B40
 game func_00869140 0x00869140
 game func_0086FC70 0x0086FC70
@@ -889,10 +894,8 @@ game func_549200 0x00868C40
 game func_6362B0 0x006C2880
 game func_637F60 0x006D9600
 game game_func_0064EFF0 0x006EF2D0
-game game_w 0x006ADCB2
-game game_w_mh2_006ADBDE 0x006ADBDE
-game game_w_mh2_006ADC1B 0x006ADC1B
-game game_w_mh2_006ADD06 0x006ADD06
+game game_w 0x006ADCB0
+game game_w_mh2_006ADCB2 0x006ADCB2
 game get_joint_pos 0x003E0E00
 game get_joint_pos_em 0x003E0E30
 game get_joint_wmat_em 0x003E0E70
@@ -983,11 +986,13 @@ game smell_ptr_set 0x00733CD0
 game smell_search 0x007026D0
 game smell_stack 0x005D8C70
 game softdip_ck 0x00364BB0
+game sound_call_sub_00608D00 0x00709D00
 game speed_add 0x00702B80
 game speed_add_g 0x00702C10
 game stick_dir_set 0x0070E010
 game stick_pow_get 0x0070E0B0
 game swim_eff_set2_005A7120 0x007DE090
+game swim_eff_set2_0060C260 0x007950E0
 game swim_eff_set_005A7070 0x007DDFE0
 game talk_move 0x00796FA0
 game tame_cnt_up 0x003B3820
@@ -3896,7 +3901,9 @@ sub_main func_003250A0 0x003250A0
 sub_main func_00325150 0x00325150
 sub_main func_00325270 0x00325270
 sub_main func_00325E70 0x00325E70
+sub_main func_003274F0 0x003274F0
 sub_main func_00327D40 0x00327D40
+sub_main func_00328670 0x00328670
 sub_main func_003286B0 0x003286B0
 sub_main func_003288F0 0x003288F0
 sub_main func_00328920 0x00328920
@@ -3904,6 +3911,7 @@ sub_main func_00328950 0x00328950
 sub_main func_00331240 0x00331240
 sub_main func_003313B0 0x003313B0
 sub_main func_00331940 0x00331940
+sub_main func_00333120 0x00333120
 sub_main func_00333220 0x00333220
 sub_main func_003337E0 0x003337E0
 sub_main func_00333D70 0x00333D70
@@ -4051,6 +4059,7 @@ sub_main func_003813A0 0x003813A0
 sub_main func_00384F20 0x00384F20
 sub_main func_00384F40 0x00384F40
 sub_main func_00386160 0x00386160
+sub_main func_003861B0 0x003861B0
 sub_main func_00387B80 0x00387B80
 sub_main func_00387BE0 0x00387BE0
 sub_main func_00387F80 0x00387F80
@@ -4115,6 +4124,8 @@ sub_main func_003B0BD0 0x003B0BD0
 sub_main func_003B0BE0 0x003B0BE0
 sub_main func_003B0F30 0x003B0F30
 sub_main func_003B1060 0x003B1060
+sub_main func_003B1190 0x003B1190
+sub_main func_003B11B0 0x003B11B0
 sub_main func_003B11D0 0x003B11D0
 sub_main func_003B11F0 0x003B11F0
 sub_main func_003B1260 0x003B1260
@@ -4213,15 +4224,10 @@ sub_main func_5C5E20 0x0075F5C0
 sub_main func_mode 0x00581B78
 sub_main gAskRom 0x00581C30
 sub_main gaku_mode 0x00581C40
-sub_main game_w 0x006ADCB2
-sub_main game_w_mh2_006ADB15 0x006ADB15
-sub_main game_w_mh2_006ADBDC 0x006ADBDC
+sub_main game5 0x003274F0
+sub_main game_w 0x006ADCB0
 sub_main game_w_mh2_006ADC1B 0x006ADC1B
-sub_main game_w_mh2_006ADCB0 0x006ADCB0
-sub_main game_w_mh2_006ADCCC 0x006ADCCC
-sub_main game_w_mh2_006ADCF0 0x006ADCF0
 sub_main game_w_mh2_006ADD3E 0x006ADD3E
-sub_main game_w_mh2_006ADD40 0x006ADD40
 sub_main get1wd 0x002FCD40
 sub_main get_entid_tab 0x002FEF90
 sub_main get_heap_ptr 0x00363E50
@@ -4289,6 +4295,7 @@ sub_main init_flg 0x00581998
 sub_main init_hash_tab 0x002FF300
 sub_main init_hchar 0x00300340
 sub_main init_kouho 0x00301EE0
+sub_main init_light_work 0x00328670
 sub_main init_move_work 0x00363D10
 sub_main init_node_tab 0x002FF240
 sub_main init_page 0x002FE4F0
@@ -4349,6 +4356,8 @@ sub_main lb_npc_die 0x003C7840
 sub_main lb_npc_erase 0x003C7850
 sub_main lbs_encode_ex 0x0030A8C0
 sub_main learn_on 0x0059BA48
+sub_main light_init 0x00332F80
+sub_main light_move 0x00333120
 sub_main light_set 0x003337E0
 sub_main light_tbl 0x0041EAF0
 sub_main light_work 0x005EC1D0
@@ -4423,6 +4432,7 @@ sub_main move_stage 0x0037AC80
 sub_main muhenkan 0x003009E0
 sub_main my_user_id 0x005CAA38
 sub_main mydicname 0x00581C70
+sub_main net_send_sys 0x00901790
 sub_main newwd_219 0x0059BAF0
 sub_main newwdlen 0x002FF9D0
 sub_main next_gun 0x003031D0
@@ -4576,6 +4586,7 @@ sub_main render_end 0x00368F60
 sub_main render_flag 0x006A9E48
 sub_main render_start 0x00368F10
 sub_main reset_temp 0x002FF350
+sub_main result_prog 0x00D683C0
 sub_main ride_ofs_calc 0x003E2250
 sub_main rmspec 0x00405150
 sub_main rmtype 0x00404DC0
@@ -4612,6 +4623,7 @@ sub_main set06_move 0x003813F0
 sub_main set13_d 0x00384F20
 sub_main set13_disp_pos_calc 0x00386160
 sub_main set13_e 0x00384F40
+sub_main set13_hit_calc 0x003861B0
 sub_main setBGcolor 0x002E3EE0
 sub_main set_ctr 0x005B4DA8
 sub_main set_dicname 0x002FE3A0
@@ -4677,6 +4689,7 @@ sub_main srch_ucode 0x002FBD20
 sub_main sstrtom 0x00303670
 sub_main stage_i 0x00379EA0
 sub_main stage_m 0x0037A690
+sub_main stage_sphr_tbl 0x00449BB0
 sub_main stage_work 0x005EC460
 sub_main std_rate_all 0x006AE390
 sub_main std_rate_tbl 0x006AE2A0
@@ -4725,6 +4738,7 @@ sub_main to_ucode 0x00303750
 sub_main to_zenkaku 0x002FBA00
 sub_main to_zenkaku_spec 0x002FBA50
 sub_main top_kh 0x00589898
+sub_main trans 0x0036D170
 sub_main trans_eft 0x003245A0
 sub_main trans_eft_up 0x00324630
 sub_main trans_pl_sub 0x0036D580

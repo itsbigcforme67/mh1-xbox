@@ -174,15 +174,14 @@ typedef struct PLW {
     u8    x56F;                  /* 0x537 (MH1 0x56F) (stage_mv_ck: zone check only while 0) */
     u16   work570;               /* 0x538 (MH1 0x570) */
     s16   work572;               /* 0x53A (MH1 0x572) */
-    u16   work5B8;               /* 0x53C (MH1 0x5B8) */
-    u8 _pad53E[0x2A];
+    u8 _pad53C[0x2C];
     f32   work5A0;               /* 0x568 (MH1 0x5A0) */
     f32   work5A4;               /* 0x56C (MH1 0x5A4) */
     f32   work5A8;               /* 0x570 (MH1 0x5A8) */
     f32   x5AC;                  /* 0x574 (MH1 0x5AC) ground height (eft21_i, as EMW) */
     u8 _pad578[0x8];
-    u32   work5FC;               /* 0x580 (MH1 0x5FC) */
-    u8 _pad584[0x1];
+    u16   work5B8;               /* 0x580 (MH1 0x5B8) */
+    u8 _pad582[0x3];
     s8    work601;               /* 0x585 (MH1 0x601) */
     u8 _pad586[0x1];
     s8    work603;               /* 0x587 (MH1 0x603) */
@@ -198,7 +197,9 @@ typedef struct PLW {
     u8 _pad598[0x1];
     u8    work615;               /* 0x599 (MH1 0x615) non-zero: weapon in the other hand (eft05) */
     u8    work616;               /* 0x59A (MH1 0x616) */
-    u8 _pad59B[0x8D];
+    u8 _pad59B[0x29];
+    u32   work5FC;               /* 0x5C4 (MH1 0x5FC) */
+    u8 _pad5C8[0x60];
     s8    work6A4;               /* 0x628 (MH1 0x6A4) */
     s8    work6A5;               /* 0x629 (MH1 0x6A5) */
     u16   work6A6;               /* 0x62A (MH1 0x6A6) */

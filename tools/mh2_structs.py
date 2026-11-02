@@ -10,6 +10,7 @@ config/mh2/struct_map.txt:
     struct NAME SIZE          starts a struct's table; SIZE is MH2's sizeof
     RUN OLD DELTA             fields at MH1 offset >= OLD move by DELTA (until the next RUN)
     FIELD OLD NEW [TYPE]      one field: MH1 offset OLD sits at NEW, optionally with another type
+    DECL OLD NEW text...      the same with a new declaration (another array size)
 A field that lands on another one's bytes overlays them through a union at the end of the struct: its place in MH2 is
 then unknown, and the source keeps compiling so that the rest of a file can still be carried.
 
@@ -20,8 +21,9 @@ import re
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 SIZES = {"u8": 1, "s8": 1, "char": 1, "u16": 2, "s16": 2, "u32": 4, "s32": 4, "f32": 4, "PLSW": 0x24, "PL_ITEM": 4,
-         "EM_HAGI": 8}
-OUT = {"PLW": ("include/pl.h", "include/pl_mh2.h", "PL_MH2_H"), "EMW": ("include/em.h", "include/em_mh2.h", "EM_MH2_H")}
+         "EM_HAGI": 8, "V3S": 6}
+OUT = {"PLW": ("include/pl.h", "include/pl_mh2.h", "PL_MH2_H"), "EMW": ("include/em.h", "include/em_mh2.h", "EM_MH2_H"),
+       "GAME_W": ("include/game.h", "include/game_mh2.h", "GAME_MH2_H")}   # GAME_W: G's struct, MH2 comes from it
 
 
 def load_map():
@@ -35,6 +37,8 @@ def load_map():
             cur = maps.setdefault(f[1], {"size": int(f[2], 0), "runs": [], "fields": {}})
         elif f[0] == "RUN":
             cur["runs"].append((int(f[1], 0), int(f[2], 0)))
+        elif f[0] == "DECL":
+            cur["fields"][int(f[1], 0)] = (int(f[2], 0), " ".join(f[3:]))
         elif f[0] == "FIELD":
             cur["fields"][int(f[1], 0)] = (int(f[2], 0), f[3] if len(f) > 3 else None)
     return maps
@@ -43,7 +47,7 @@ def load_map():
 def body(path, name):
     """lines of the MH1 definition: the `#else` side of each #if inside it"""
     text = open(os.path.join(ROOT, path)).read()
-    start = text.index("typedef struct %s {" % name)
+    start = text.index("typedef struct %s {" % name)        # the first one: for GAME_W that is G's
     end = text.index("} %s;" % name, start)
     out, keep = [], [True]
     for l in text[start:end].split("\n")[1:]:
@@ -122,7 +126,10 @@ def emit(name, m):
     items = []
     for old, size, decl, note, fname in fields(body(src, name)):
         new, typ = place(old, m)
-        if typ:
+        if typ and " " in typ:
+            decl = typ
+            size = size_of(typ)
+        elif typ:
             decl = re.sub(r"^\S+", typ, decl)
             size = SIZES[typ]
         items.append((new, old, size, decl, note, fname))

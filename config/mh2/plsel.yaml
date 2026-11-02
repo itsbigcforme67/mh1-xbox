@@ -48,7 +48,7 @@ segments:
       - [0x007330, c, main/reward/rwkey01]
       - [0x007364, asm, text/plsel_D67564]
       - [0x007420, c, mhg/main/reward/f_reward_p2]
-      - [0x007430, c, mh2/parts/lobby_b_lb_bz73_g_488]
+      - [0x007430, c, mh2/parts/lobby_b_lb_bz73_g_486]
       - [0x007448, asm, text/plsel_D67648]
       - [0x00F6B0, c, mh2/plsel/p00D6F8B0]
       - [0x00F6C4, asm, text/plsel_D6F8C4]

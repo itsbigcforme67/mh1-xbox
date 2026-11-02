@@ -15,7 +15,9 @@ typedef struct PL_ITEM {
 } PL_ITEM;
 #endif
 
-#ifdef VERSION_MHG
+#ifdef VERSION_MH2
+#include "game_mh2.h"
+#elif defined(VERSION_MHG)
 /* G game_w (0x35ED20, 0x240 bytes): G reordered the fields (offsets found with tools/mhg_fields.py and check.py;
  * the MH1 offset of each field is in the comment). Fields not seen in G code yet stay at their MH1 offset. */
 typedef struct GAME_W {

@@ -99,23 +99,19 @@ typedef struct EMW {
     u8 _pad412[0x6];
     s16 x416;                    /* 0x418 (MH1 0x416) default blend (em_char_set) */
     u8 _pad41A[0x1E];
-    u8 ex[0x50C - 0x444];        /* 0x438 (MH1 0x444) per-monster work: each emNN.c lays out its own */
-    u8 _pad500[0x32];
+    u8 ex[0xB4];                 /* 0x438 (MH1 0x444) per-monster work: each emNN.c lays out its own */
+    struct EM_MDL *mdl;          /* 0x4EC (MH1 0x50C) model work */
+    u8 _pad4F0[0x42];
     u8 x56A;                     /* 0x532 (MH1 0x56A) cleared when em19 dies */
-    u8 _pad533[0x11];
-    f32 uv[4][3];                /* 0x544 (MH1 0x5C0) texture scroll per slot (x, y, unused) */
+    u8 _pad533[0x35];
+    f32 x5A0[3];                 /* 0x568 (MH1 0x5A0) */
     f32 x5AC;                    /* 0x574 (MH1 0x5AC) height used for set20's shell */
-    u8 _pad578[0x4];
-    u8 uvty[4];                  /* 0x57C (MH1 0x5F8) slot type, 0xFF none */
-    u8 _pad580[0x4];
+    u8 _pad578[0xC];
     f32 base_scale;              /* 0x584 (MH1 0x600) G: enemy_scale[kind] before the size (em_status_init, em_size_scale_set) */
-    u8 _pad588[0x8];
-    u16 neck_tgt;                /* 0x590 (MH1 0x60C) neck target angle, relative (em_neck_move_sub) */
-    u16 neck_ang;                /* 0x592 (MH1 0x60E) current neck angle */
-    u8 _pad594[0x6];
-    u8 x616;                     /* 0x59A (MH1 0x616) player number (em18 mov01 follows player_work[x616]) */
-    s8 x617;                     /* 0x59B (MH1 0x617) -1: no ... (em08_fly_act_set) */
-    u8 _pad59C[0x98];
+    f32 uv[4][3];                /* 0x588 (MH1 0x5C0) texture scroll per slot (x, y, unused) */
+    u16 uvtm[4];                 /* 0x5B8 (MH1 0x5F0) slot timer, 0xFFFF idle */
+    u8 uvty[4];                  /* 0x5C0 (MH1 0x5F8) slot type, 0xFF none */
+    u8 _pad5C4[0x70];
     u16 x6E0;                    /* 0x634 (MH1 0x6E0) em10: item given in a trade */
     u16 x6E2;                    /* 0x636 (MH1 0x6E2) em10: item taken in a trade */
     struct EM_SEARCH * search;   /* 0x638 (MH1 0x6E4) */
@@ -364,11 +360,12 @@ typedef struct EMW {
     u8 _pad9F4[0xA10 - 0x9F4];   /* 0x978 (MH1 0x9F4) named pad */
     u8 _pad994[0x3C];
     };
-    struct { u8 _p50C[0x4EC]; struct EM_MDL *mdl; };  /* MH1 0x50C: place in MH2 not known */
-    struct { u8 _p5A0[0x568]; f32 x5A0[3]; };  /* MH1 0x5A0: place in MH2 not known */
-    struct { u8 _p5F0[0x574]; u16 uvtm[4]; };  /* MH1 0x5F0: place in MH2 not known */
+    struct { u8 _p60C[0x590]; u16 neck_tgt; };  /* MH1 0x60C: place in MH2 not known */
+    struct { u8 _p60E[0x592]; u16 neck_ang; };  /* MH1 0x60E: place in MH2 not known */
+    struct { u8 _p616[0x59A]; u8 x616; };  /* MH1 0x616: place in MH2 not known */
+    struct { u8 _p617[0x59B]; s8 x617; };  /* MH1 0x617: place in MH2 not known */
     struct { u8 _p736[0x680]; u16 stg; };  /* MH1 0x736: place in MH2 not known */
-    struct { u8 _p824[0x776]; u16 x824; };  /* MH1 0x824: place in MH2 not known */
+    struct { u8 _p824[0x776]; u8 x824; };  /* MH1 0x824: place in MH2 not known */
     };
 } EMW;
 
