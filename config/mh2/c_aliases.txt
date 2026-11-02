@@ -225,6 +225,7 @@ game func_007314C0 0x007314C0
 game func_00733150 0x00733150
 game func_00737AE0 0x00737AE0
 game func_00739200 0x00739200
+game func_0073AFC0 0x0073AFC0
 game func_0073D280 0x0073D280
 game func_0073D370 0x0073D370
 game func_0073D670 0x0073D670
@@ -297,6 +298,8 @@ game func_0087EFA0 0x0087EFA0
 game func_00894320 0x00894320
 game func_544C90 0x003E3D10
 game game_func_0064EFF0 0x006EF2D0
+game game_func_0073ABE0 0x0073ABE0
+game game_func_0073AD60 0x0073AD60
 game game_w 0x006ADCB2
 game game_w_mh2_006ADCB0 0x006ADCB0
 game get_prim2_mh2_00376F90 0x00376F90
@@ -307,6 +310,7 @@ game hover_eff_set2_0057A9A0 0x00786B20
 game kyusyu_senkai_ret_0057AB40 0x007F8230
 game next_cmd_search 0x00731DA0
 game ot1 0x006A9B80
+game other_item_sub 0x0073AFC0
 game pl_chr_set2 0x003B0430
 game pl_flag_set 0x003ABDC0
 game pull_eft_work 0x003242A0
@@ -1380,6 +1384,7 @@ lobby tk_sw_on_ck 0x007573E0
 lobby tr_align_dat 0x007EFEC0
 lobby tr_valign_dat 0x007EFEE0
 lobby wait_157 0x008B2B40
+main ADXM_ExecMain 0x00162040
 main ADXM_Lock 0x00161EC0
 main ADXM_Unlock 0x00161ED8
 main ADXT_SetOutVol 0x00166DF8
@@ -1439,6 +1444,8 @@ main flFileAppend 0x0017FC70
 main flFileLength 0x0017FD50
 main flFileRead 0x0017FAC0
 main flFileWrite 0x0017FBA0
+main flFlip 0x001809C0
+main flFrame 0x00219188
 main flGetFrame 0x0017FFC0
 main flHeight 0x00219190
 main flInitPhaseFinished 0x00182020
@@ -1479,8 +1486,10 @@ main flPS2DmaAddRefTag 0x00179620
 main flPS2DmaAddRefeTag 0x00179680
 main flPS2DmaAddRetTag 0x00179730
 main flPS2DmaInitControl 0x0017A820
+main flPS2DmaSend 0x0017AEB0
 main flPS2DmaTerminate 0x0017B110
 main flPS2DmaWait 0x0017B090
+main flPS2DrawPreparation 0x00181C50
 main flPS2GetPaletteHandle 0x0017BD60
 main flPS2GetPaletteInfoFromContext 0x0017BAD0
 main flPS2GetPaletteVramBlock 0x0017D9C0
@@ -1554,6 +1563,7 @@ main flVramStaticNum 0x00215150
 main flWidth 0x00219198
 main flmatCopy 0x00127A60
 main flmatMul 0x002EDD70
+main flmwFlip 0x00186D80
 main flmwVSyncCallback 0x00186D30
 main flpad_conf 0x0024BAA0
 main flpad_io_map 0x001C7C90
@@ -1627,6 +1637,7 @@ main func_001800B0 0x001800B0
 main func_00180110 0x00180110
 main func_00180210 0x00180210
 main func_001805B0 0x001805B0
+main func_001809C0 0x001809C0
 main func_00180A50 0x00180A50
 main func_00181E00 0x00181E00
 main func_00182010 0x00182010
@@ -1698,6 +1709,7 @@ main func_00194DC0 0x00194DC0
 main func_00195170 0x00195170
 main func_001951D0 0x001951D0
 main func_00195240 0x00195240
+main func_002E3D00 0x002E3D00
 main hdpack 0x0026C380
 main lever_analog_to_digital 0x0018B650
 main lit_1221_0035BFB0 0x001C7BF0
@@ -2380,7 +2392,9 @@ sub_main equip_color_rare_tbl 0x0043AB10
 sub_main exist_synref 0x002FC890
 sub_main expf 0x00124250
 sub_main ext_jis 0x002FBAE0
+sub_main fade_draw 0x00325A60
 sub_main fade_reset 0x00325E70
+sub_main fade_rgb_110 0x0041D190
 sub_main fade_w 0x005B1DA0
 sub_main filter_mode_265 0x0043C978
 sub_main first_init_5 0x00404DB0
@@ -3234,6 +3248,7 @@ sub_main func_00324FD0 0x00324FD0
 sub_main func_003250A0 0x003250A0
 sub_main func_00325150 0x00325150
 sub_main func_00325270 0x00325270
+sub_main func_00325A60 0x00325A60
 sub_main func_00325E70 0x00325E70
 sub_main func_00326C90 0x00326C90
 sub_main func_00326D10 0x00326D10
@@ -3460,7 +3475,9 @@ sub_main func_003C1EF0 0x003C1EF0
 sub_main func_003C2250 0x003C2250
 sub_main func_003C2390 0x003C2390
 sub_main func_003C2420 0x003C2420
+sub_main func_003C6BF0 0x003C6BF0
 sub_main func_003C6C00 0x003C6C00
+sub_main func_003C6C70 0x003C6C70
 sub_main func_003C6D90 0x003C6D90
 sub_main func_003C6DF0 0x003C6DF0
 sub_main func_003C7840 0x003C7840
@@ -3576,6 +3593,7 @@ sub_main hit_cap_cap2_sub 0x003BF860
 sub_main hit_cap_cap3_sub 0x003C1E90
 sub_main hit_cap_pk 0x003BE140
 sub_main hit_cap_sphr_m 0x003C07E0
+sub_main hit_data_on_shl_sub 0x003C6BF0
 sub_main hit_line2_pk 0x003BE060
 sub_main hit_point_cbd 0x003C2420
 sub_main hit_point_cyl 0x003C2390
@@ -3806,6 +3824,7 @@ sub_main plSetupFOVClipPlanes 0x002F9480
 sub_main pl_area_top 0x006ADFE8
 sub_main pl_area_top_mh2_006AE004 0x006AE004
 sub_main pl_atck_data_set2 0x003B09B0
+sub_main pl_atck_data_set_shl2 0x003B09C0
 sub_main pl_cnt_w 0x005F89C0
 sub_main pl_flag_ck 0x003ABD80
 sub_main pl_init 0x0039A350

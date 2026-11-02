@@ -198,7 +198,14 @@ asm void flPS2VSyncCallback(void)
 #endif
 
 #if !defined(G_PART) || G_PART == 2
+#ifdef VERSION_MH2
+void func_002E3D00(void);
+void ADXM_ExecMain(void);
+#endif
 int flFlip(void) {
+#ifdef VERSION_MH2
+    func_002E3D00();
+#endif
     flPS2DmaWait();
     flmwFlip();
     *(int *)0x10000010 = 0x83;
@@ -210,7 +217,7 @@ int flFlip(void) {
     flPS2DrawPreparation();
     PS2S(int, 0x3F0) = 0;
     PS2S(int, 0x3EC) = -1;
-#ifdef MHG_PS2
+#if defined(MHG_PS2) || defined(VERSION_MH2)
     ADXM_ExecMain();                /* G runs the ADX main step here */
 #endif
     return 1;

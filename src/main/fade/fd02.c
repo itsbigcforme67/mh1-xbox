@@ -45,7 +45,11 @@ void fade_draw(void) {
     f32 q[9];
     FADE_W *w = &fade_w;
 
+#ifdef VERSION_MH2
+    if (w->req != 0 && w->ent != 0) {
+#else
     if (w->req != 0) {
+#endif
         t = (f32)w->alpha / 256.0f;
         if (t > 0.0f) {
             SetTrnslMode(4, 5);

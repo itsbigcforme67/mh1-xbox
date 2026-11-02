@@ -223,6 +223,21 @@ typedef struct AQPKT {
 
 
 
+#ifdef VERSION_MH2
+void game_func_0073ABE0(u8 *, int);
+void game_func_0073AD60(u8 *, int);
+
+void other_item_sub(u8 *d, int idx, int x) {
+    switch (d[21]) {
+    case 1:
+        game_func_0073ABE0(d, idx);
+        break;
+    case 2:
+        game_func_0073AD60(d, idx);
+        break;
+    }
+}
+#else
 void other_item_sub(u8 *d, int idx, int x) {
     switch (d[8]) {
     case 1:
@@ -232,3 +247,4 @@ void other_item_sub(u8 *d, int idx, int x) {
         break;
     }
 }
+#endif
