@@ -1,0 +1,6 @@
+# Hand entries for tools/mh2_structs.py gen: STRUCT MH1_OFFSET MH2_OFFSET.
+# G-only EMW tail, numbered as G offset + 8: size has one vote (0x984), meat_no and lv follow it unverified.
+EMW A00 984
+EMW A03 987
+EMW A04 988
+PLW 35F 35B # votes for 0x002 are stray; 0x360/0x362 move by -4
