@@ -16,4 +16,5 @@ if [ -z "$MH2_NOSPLIT" ]; then
             || { echo "splat failed for $m (build/mh2/split_$m.log)"; exit 1; }
     done
 fi
+for m in $mods; do rm -f "build/mh2/$m.bin"; done     # a failed link must not leave an old file for mh2_check.py
 VERSION=mh2 nice -n 10 python3 tools/build.py -j 2 $mods 2>&1 | grep -v "Warning\|Assembler messages\|macro instruction"

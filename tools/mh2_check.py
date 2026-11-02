@@ -3,6 +3,7 @@
 
 build.py compares with its working copy in build/mh2/split; this reads disc/mh2 directly:
   - each build/mh2/MODULE.bin against disc/mh2/overlays/MODULE.bin (SHA-256, whole file)
+  - each overlay also inside disc/mh2/DATA.BIN, where it is stored uncompressed
   - the whole executable: SLPM_662.80 with its code and data bytes swapped for the rebuilt
     main.bin (ELF headers and section table come from the disc, they are not rebuilt)
 
@@ -10,6 +11,7 @@ Exit status 0 only if everything is identical. Nothing is written.
 Usage: python3 tools/mh2_check.py
 """
 import hashlib
+import mmap
 import os
 import sys
 
@@ -31,12 +33,16 @@ def main():
     ok = len(built) == MAIN_SIZE and sha(whole) == sha(elf)
     bad += not ok
     print("%-12s %8d  %s  %s" % ("SLPM_662.80", len(elf), sha(whole)[:16], "identical" if ok else "DIFFERENT"))
+    db = open(os.path.join(ROOT, "disc/mh2/DATA.BIN"), "rb")
+    data = mmap.mmap(db.fileno(), 0, access=mmap.ACCESS_READ)
     for m in OVERLAYS:
         want = open(os.path.join(ROOT, "disc/mh2/overlays/%s.bin" % m), "rb").read()
         got = open(os.path.join(ROOT, "build/mh2/%s.bin" % m), "rb").read()
-        ok = sha(want) == sha(got)
+        pos = data.find(want[:0x40])
+        ok = sha(want) == sha(got) and pos >= 0 and sha(data[pos:pos + len(want)]) == sha(want)
         bad += not ok
-        print("%-12s %8d  %s  %s" % (m, len(want), sha(got)[:16], "identical" if ok else "DIFFERENT"))
+        print("%-12s %8d  %s  %s (DATA.BIN+0x%X)" % (m, len(want), sha(got)[:16],
+                                                     "identical" if ok else "DIFFERENT", pos))
     print("%d of %d files identical" % (len(OVERLAYS) + 1 - bad, len(OVERLAYS) + 1))
     sys.exit(1 if bad else 0)
 
