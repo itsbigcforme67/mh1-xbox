@@ -13,8 +13,18 @@ For each site the object's relocations are checked against what the original ins
     That address becomes a slot `MODULE:data START END NAME` in config/mh2/c_files.txt.
 A name that the symbol files or another file place elsewhere is renamed in that object only (config/mh2/c_symfix.txt).
 
+Each file is tried twice: as MH1 sees it, then with VERSION_MHG on (G's headers and code); the second form builds through
+a wrapper in src/mh2/parts that defines it. Files with `.inc` raw functions are left out: those hold original bytes, not C.
+
+Parts: when a whole file does not match, the functions of it that do still go in. A wrapper src/mh2/parts/NAME.c includes
+the file and config/mh2/c_parts.txt says which sections of its object stay (tools/build.py, keep_sections). The rest of
+the object is dropped at link time; no source is edited. What a kept function needs from a dropped one is its real MH2
+address: a global name through c_aliases.txt, a static as an absolute symbol. Data a kept function uses gets a slot when it
+matches whole and no other part took it; otherwise it stays in the asm and is reached by address.
+
   mh2_carry.py survey [--limit N]   compile with every local Metrowerks compiler; count functions found (nothing written)
-  mh2_carry.py register             write config/mh2/c_files.txt, c_aliases.txt, c_symfix.txt, docs/survey/mh2_differ.csv
+  mh2_carry.py register             write config/mh2/c_files.txt, c_parts.txt, c_aliases.txt, c_symfix.txt, src/mh2/parts,
+                                    docs/survey/mh2_differ.csv
   mh2_carry.py fix                  after a failed build: name the C files inside the mismatching bytes
 
 Objects stay in build/mh2/carry and are only recompiled when the .c is newer, so a rerun is cheap (delete it after
@@ -26,6 +36,7 @@ import csv
 import difflib
 import os
 import re
+import shutil
 import struct
 import subprocess
 import sys
@@ -86,7 +97,19 @@ def sources():
         if len(f) == 4 and ":" not in f[0]:
             out.append(f[3])
     seen = collections.OrderedDict((p, 1) for p in out if os.path.exists(P("src", p + ".c")))
-    return [p for p in seen if p not in skip]
+    return [p for p in seen if p not in skip and not has_raw(p)]
+
+
+def has_raw(path):
+    """the file, or a file it includes, pulls original bytes in through a .inc of tools/build.py gen_raw"""
+    t = open(P("src", path + ".c"), errors="replace").read()
+    if re.search(r'#\s*include\s+"[^"]*\.inc"', t):
+        return True
+    for inc in re.findall(r'#\s*include\s+"([^"]+\.c)"', t):
+        q = os.path.normpath(os.path.join(os.path.dirname(P("src", path)), inc))
+        if os.path.exists(q) and re.search(r'#\s*include\s+"[^"]*\.inc"', open(q, errors="replace").read()):
+            return True
+    return False
 
 
 def hints():
@@ -142,60 +165,83 @@ class Obj:
                 self.mask[(o + off) // 4] &= ~MASK.get(t, 0) & 0xFFFFFFFF
         self.funcs = [(y[0], y[5], y[1], y[2]) for y in self.syms if y[3] == 2 and y[2]]
 
-    def anchor(self):
-        """(word index, bytes) of the longest run of words without relocations"""
+    def span(self, sec=None):
+        """word range of one text section, or of the whole object"""
+        if sec is None:
+            return 0, len(self.words)
+        return self.layout[sec] // 4, (self.layout[sec] + self.S[sec][5]) // 4
+
+    def anchor(self, sec=None):
+        """(word index from the range's start, bytes) of the longest run of words without relocations"""
+        lo, hi = self.span(sec)
         best, cur, at = 0, 0, 0
-        for i, m in enumerate(self.mask):
-            cur = cur + 1 if m == 0xFFFFFFFF else 0
+        for i in range(lo, hi):
+            cur = cur + 1 if self.mask[i] == 0xFFFFFFFF else 0
             if cur > best:
                 best, at = cur, i - cur + 1
         best = min(best, 32)
-        return at, struct.pack("<%dI" % best, *self.words[at:at + best])
+        return at - lo, struct.pack("<%dI" % best, *self.words[at:at + best])
 
-    def equal_at(self, data, off):
-        n = len(self.words)
+    def equal_at(self, data, off, sec=None):
+        lo, hi = self.span(sec)
+        n = hi - lo
         if off < 0 or off + n * 4 > len(data):
             return False
         o = struct.unpack_from("<%dI" % n, data, off)
-        return all((a ^ b) & m == 0 for a, b, m in zip(self.words, o, self.mask))
+        return all((a ^ b) & m == 0 for a, b, m in zip(self.words[lo:hi], o, self.mask[lo:hi]))
 
 
 def sext(x):
     return (x ^ 0x8000) - 0x8000
 
 
-def resolve(ob, mod, addr):
-    """Checks one site. Returns (want {name: address}, slots [(sec index, base, size)], defs {name: address}) or a reason."""
+def resolve(ob, mod, place, claimed=None):
+    """Checks kept text sections placed at {section: address}. Returns (want {name: address}, slots [(sec, base, size)],
+    defs {name: address}, absolute {symbol index: address}) or a reason. claimed=None: the whole object, all data must
+    match. Otherwise a part: claimed holds the data sections other parts of this object took."""
     load, data = image(mod)[:2]
 
     def word(a):
         return struct.unpack_from("<I", data, a - load)[0]
+    part = claimed is not None
     want = collections.defaultdict(set)
     bases = collections.defaultdict(set)
+    absol = collections.defaultdict(set)
+    refs = collections.defaultdict(set)         # data section -> symbol indices used
     defs = {}
     for name, val, size, typ, bind, sh in ob.syms:
-        if sh in ob.layout and bind and typ != 3:
-            defs[name] = addr + ob.layout[sh] + val
+        if sh in place and bind and typ != 3:
+            defs[name] = place[sh] + val
 
     def hit(y, tg):
+        tg &= 0xFFFFFFFF
         name, val, _s, typ, bind, sh = ob.syms[y]
         if sh == 0:
-            want[name].add(tg & 0xFFFFFFFF)
+            want[name].add(tg)
             return True
         if sh == 0xFFF2:
             return False                      # common symbol: nothing here would give it an address
-        if sh in ob.layout:
-            return (tg & 0xFFFFFFFF) == addr + ob.layout[sh] + val
+        if sh in place:
+            return tg == place[sh] + val
+        if sh in ob.layout:                   # a function this part leaves out
+            if not part:
+                return False
+            if bind and typ != 3:
+                want[name].add(tg)
+            else:
+                absol[y].add(tg)
+            return True
         if ob.S[sh][2] & SHF_ALLOC:
             bases[sh].add((tg - val) & 0xFFFFFFFF)
+            refs[sh].add(y)
             return True
         return False
 
-    for sec, base in ob.layout.items():
+    for sec, at in place.items():
         hi_by = {}
         raw = ob.S[sec][4]
         for off, t, y in sorted(ob.rel[sec]):
-            pos = addr + base + off
+            pos = at + off
             w = word(pos)
             a = struct.unpack_from("<I", ob.d, raw + off)[0]
             if t == R26:
@@ -215,65 +261,94 @@ def resolve(ob, mod, addr):
     if any(len(v) != 1 for v in want.values()):
         return "a name needs two addresses inside the file"
     slots = []
-    for sec in ob.alloc:
+    for sec in (sorted(bases) if part else ob.alloc):
         s = ob.S[sec]
         size = s[5]
         b = bases.get(sec)
         if b and len(b) != 1:
             return "own data referenced at two places"
-        if s[1] == 8:
-            return "has bss"
-        blob = ob.d[s[4]:s[4] + size]
+        reason = None
         rm = {off: (t, y) for off, t, y in ob.rel[sec]}
-        if not b:                             # nothing in the text points at it: the bytes must be unique in this module
-            lo, hi = image(mod)[3:5]
-            hits = []
-            start = lo - load
-            while not rm:
-                p = data.find(blob, start, hi - load)
-                if p < 0:
-                    break
-                hits.append(p + load)
-                start = p + 1
-            if len(hits) != 1:
-                return "own data not located"
-            b = {hits[0]}
-        at = next(iter(b))
-        if at % max(s[8], 1):
-            return "own data misaligned"
-        if not image(mod)[3] <= at <= image(mod)[4] - size:
-            return "own data outside the module's data"
-        for i in range(0, size & ~3, 4):
-            x = struct.unpack_from("<I", blob, i)[0]
-            o = word(at + i)
-            if i in rm:
-                t, y = rm[i]
-                if t != R32 or not hit(y, o - x):
-                    return "a data reference lands elsewhere"
-            elif x != o:
-                return "own data differs"
-        if size & 3 and blob[size & ~3:] != data[at + (size & ~3) - load:at + size - load]:
-            return "own data differs"
+        snap = (set(want), set(absol))
+        if s[1] == 8:
+            reason = "has bss"
+        elif part and sec in claimed:
+            reason = "taken"
+        else:
+            blob = ob.d[s[4]:s[4] + size]
+            if not b:                         # nothing in the text points at it: the bytes must be unique in this module
+                lo, hi = image(mod)[3:5]
+                hits = []
+                start = lo - load
+                while not rm:
+                    p = data.find(blob, start, hi - load)
+                    if p < 0:
+                        break
+                    hits.append(p + load)
+                    start = p + 1
+                if len(hits) != 1:
+                    reason = "own data not located"
+                else:
+                    b = {hits[0]}
+            if not reason:
+                at = next(iter(b))
+                if at % max(s[8], 1):
+                    reason = "own data misaligned"
+                elif not image(mod)[3] <= at <= image(mod)[4] - size:
+                    reason = "own data outside the module's data"
+                else:
+                    for i in range(0, size & ~3, 4):
+                        x = struct.unpack_from("<I", blob, i)[0]
+                        o = word(at + i)
+                        if i in rm:
+                            t, y = rm[i]
+                            if t != R32 or (ob.syms[y][5] in ob.layout and ob.syms[y][5] not in place) \
+                                    or not hit(y, o - x):
+                                reason = "a data reference lands elsewhere"
+                                break
+                        elif x != o:
+                            reason = "own data differs"
+                            break
+                    if not reason and size & 3 and blob[size & ~3:] != data[at + (size & ~3) - load:at + size - load]:
+                        reason = "own data differs"
+        if reason:
+            if not part:
+                return reason
+            # a part: this data stays in the asm, the code reaches it by address. A table of code labels cannot.
+            if any(ob.syms[y][5] in ob.layout for _t, y in rm.values()):
+                return "jump table not placed: " + reason
+            for k in list(want):
+                if k not in snap[0]:
+                    del want[k]
+            for y in refs[sec]:
+                nm, val, _s, typ, bind, sh = ob.syms[y]
+                if bind and typ != 3:
+                    want[nm].add(next(iter(b)) + val)
+                else:
+                    absol[y].add(next(iter(b)) + val)
+            continue
         slots.append((sec, at, size))
+        if any(data[at + size - load:(at + size + 3 & ~3) - load]):
+            return "own data ends against other bytes"
         for name, val, _s, typ, bind, sh in ob.syms:
             if sh == sec and bind and typ != 3:
                 defs[name] = at + val
-    if any(len(v) != 1 for v in want.values()):
+    if any(len(v) != 1 for v in want.values()) or any(len(v) != 1 for v in absol.values()):
         return "a name needs two addresses inside the file"
-    for sec, v in bases.items():
-        if not any(sec == q[0] and v == {q[1]} for q in slots):
-            return "own data referenced at two places"
-    return {n: next(iter(v)) for n, v in want.items()}, slots, defs
+    if chunks(ob, slots) is None:
+        return "data sections out of order"
+    return ({n: next(iter(v)) for n, v in want.items()}, slots, defs, {y: next(iter(v)) for y, v in absol.items()})
 
 
-def compile_one(path, cc=CC, tmp=None):
+def compile_one(path, cc=CC, tmp=None, gform=False):
     tmp = tmp or P("build/mh2/carry")
-    obj = os.path.relpath(os.path.join(tmp, re.sub(r"\W", "_", path) + ".o"), ROOT)
+    obj = os.path.relpath(os.path.join(tmp, ("g_" if gform else "") + re.sub(r"\W", "_", path) + ".o"), ROOT)
     src = os.path.join("src", path + ".c")
     if os.path.exists(P(obj)) and os.path.getmtime(P(obj)) >= os.path.getmtime(P(src)):
         return P(obj)
     try:
-        p = subprocess.run([WIBO, P("tools/compilers", cc, "mwccps2.exe")] + OPT + BASE + [src, "-o", obj], cwd=ROOT,
+        p = subprocess.run([WIBO, P("tools/compilers", cc, "mwccps2.exe")] + OPT + BASE + (["-DVERSION_MHG"] if gform else []) + [src, "-o", obj],
+                           cwd=ROOT,
                            capture_output=True, text=True, timeout=120)
     except subprocess.TimeoutExpired:
         return None
@@ -282,11 +357,11 @@ def compile_one(path, cc=CC, tmp=None):
     return P(obj)
 
 
-def sites(ob):
-    """every (module, address) where the object's code equals MH2's"""
+def sites(ob, sec=None):
+    """every (module, address) where the object's code (or one text section) equals MH2's"""
     if not ob.words:
         return []
-    i, key = ob.anchor()
+    i, key = ob.anchor(sec)
     if not key:
         return []
     out = []
@@ -301,7 +376,7 @@ def sites(ob):
             q = p - i * 4
             if p & 3 or (q + load) & 15 or q + load < lo:
                 continue
-            if ob.equal_at(data, q):
+            if ob.equal_at(data, q, sec):
                 out.append((m, q + load))
     return out
 
@@ -418,14 +493,48 @@ def visible(mod):
 
 
 def chunks(ob, slots):
-    """data slots of one object: contiguous sections in object order are one slot, else one slot per section"""
+    """data slots of one object: contiguous sections in object order are one slot, else one slot per section.
+    None if sections are out of object order: build.py gives the k-th section to the k-th slot."""
     order = sorted(slots)
+    if any(order[i][1] > order[i + 1][1] for i in range(len(order) - 1)):
+        return None
     al = lambda k: max(ob.S[order[k][0]][8], 1)
     joined = all((order[i][1] + order[i][2] + al(i + 1) - 1) & -al(i + 1) == order[i + 1][1]
                  for i in range(len(order) - 1))
+    # the end is rounded up to a word: the asm after a slot must start aligned or its labels shift. ld pads with zeros
     if joined and order:
-        return [(order[0][1], order[-1][1] + order[-1][2])]
-    return [(b, b + n) for _s, b, n in order]
+        return [(order[0][1], (order[-1][1] + order[-1][2] + 3) & ~3)]
+    return [(b, (b + n + 3) & ~3) for _s, b, n in order]
+
+
+def wrapper_name(path, gform, k=None):
+    base = re.sub(r"\W", "_", path)
+    return "mh2/parts/%s%s%s" % (base, "_g" if gform else "", "" if k is None else "_%d" % k)
+
+
+def write_wrapper(name, path, gform, what):
+    with open(P("src", name + ".c"), "w") as fh:
+        fh.write("/* Generated by tools/mh2_carry.py: %s of %s.c. */\n" % (what, path))
+        if gform:
+            fh.write("#define VERSION_MHG\n")
+        fh.write('#include "../src/%s.c"\n' % path)
+
+
+def part_sites(ob, sec, hint, cover):
+    """(module, address) for one text section outside the files already placed: the name map's site, or a single site"""
+    names = [f[0] for f in ob.funcs if f[1] == sec]
+    tries = []
+    for n in names:
+        tries += hint.get(re.sub(r"_[0-9A-F]{6,8}$", "", n), []) + hint.get(n, [])
+    out = []
+    for m, a in tries:
+        load, data, lo, hi = image(m)[:4]
+        if lo <= a < hi and not a & 15 and ob.equal_at(data, a - load, sec) and (m, a) not in out:
+            out.append((m, a))
+    if not out and ob.S[sec][5] >= 32:
+        fs = sites(ob, sec)
+        out = fs if len(fs) == 1 else []
+    return [t for t in out if not any(x < t[1] + ob.S[sec][5] and t[1] < y for x, y in cover[t[0]])]
 
 
 def register():
@@ -434,48 +543,46 @@ def register():
     os.makedirs(P("build/mh2/carry"), exist_ok=True)
     with ThreadPoolExecutor(JOBS) as pool:
         objs = list(pool.map(compile_one, paths))
+        gobjs = list(pool.map(lambda p: compile_one(p, gform=True), paths))
     why = collections.Counter()
     why["does not compile"] = objs.count(None)
-    results = [(p, Obj(o)) for p, o in zip(paths, objs) if o]
+    results = [(p, False, Obj(o)) for p, o in zip(paths, objs) if o]
+    gresults = [(p, True, Obj(g)) for p, o, g in zip(paths, objs, gobjs)
+                if g and (not o or open(g, "rb").read() != open(o, "rb").read())]
+    print("%d compiled, %d differ with VERSION_MHG" % (len(results), len(gresults)))
     found = []
-    for p, ob in results:
-        if not ob.funcs:
-            why["no code"] += 1
+    got = set()
+    for p, gf, ob in results + gresults:
+        if not ob.funcs or p in got:
             continue
         fs = sites(ob)
-        if not fs:
-            why["code not found"] += 1
-            continue
-        ch = choose(ob, fs, hint)
+        ch = choose(ob, fs, hint) if fs else []
         if not ch:
-            why["ambiguous site"] += 1
+            if not gf:
+                why["ambiguous site" if fs else "code not found"] += 1
             continue
         for m, a in ch:
-            r = resolve(ob, m, a)
+            r = resolve(ob, m, {sec: a + at for sec, at in ob.layout.items()})
             if isinstance(r, str):
                 why[r] += 1
             else:
-                found.append((p, ob, m, a, r))
+                found.append((p, gf, ob, m, a, r))
+                got.add(p)
     # biggest first: a part inside a whole file loses to the file; two copies of a file keep the first
-    found.sort(key=lambda t: (-t[1].size, t[0]))
+    found.sort(key=lambda t: (-t[2].size, t[0], t[1]))
     busy = hand_ranges()
     busyd = collections.defaultdict(list)
     tabs = {}
     scope = collections.defaultdict(dict)
     fixes = []
-    final = []
+    final = []                                  # (src name, source path, gform, object, module, address, size, slots)
+    parts = []
 
     def clash(lst, a, b):
         return any(a < y and x < b for x, y in lst)
-    for p, ob, m, a, (want, slots, defs) in found:
-        if clash(busy[m], a, a + ob.size):
-            why["overlaps a bigger match"] += 1
-            continue
-        if any(clash(busyd[m], b, b + n) for _s, b, n in slots):
-            why["data overlaps another file"] += 1
-            continue
+
+    def accept(name, ob, m, want, defs, slots, funcs):
         tab = tabs.setdefault(m, visible(m))
-        # a name placed elsewhere by the symbol files or another file is renamed in this object only
         ren = {}
         for n, ad in list(want.items()) + list(defs.items()):
             if tab.get(n, ad) != ad or scope[m].get(n, ad) != ad:
@@ -483,30 +590,101 @@ def register():
         for n, ad in list(want.items()) + list(defs.items()):
             scope[m][ren.get(n, n)] = ad
         for n, new in sorted(ren.items()):
-            fixes.append((p, n, new))
-        for n, sh, val, _sz in ob.funcs:      # the asm left around this file may call it by address
-            scope[m]["func_%08X" % (a + ob.layout[sh] + val)] = a + ob.layout[sh] + val
-        busy[m].append((a, a + ob.size))
+            fixes.append((name, n, new))
+        for ad in funcs:                        # the asm left around this file may call it by address
+            scope[m]["func_%08X" % ad] = ad
         for _s, b, n in slots:
             busyd[m].append((b, b + n))
-        final.append((p, ob, m, a, slots))
-    why["registered"] = len(final)
+
+    for p, gf, ob, m, a, (want, slots, defs, _abs) in found:
+        if clash(busy[m], a, a + ob.size):
+            why["overlaps a bigger match"] += 1
+            continue
+        if any(clash(busyd[m], b, b + n) for _s, b, n in slots):
+            why["data overlaps another file"] += 1
+            continue
+        name = wrapper_name(p, True) if gf else p
+        accept(name, ob, m, want, defs, slots, [a + ob.layout[sh] + val for _n, sh, val, _z in ob.funcs])
+        busy[m].append((a, a + ob.size))
+        final.append((name, p, gf, ob, m, a, ob.size, slots))
+    whole = len(final)
+    # parts: the functions of the other files, MH1's form first
+    wholes = set(t[1] for t in final)
+    for p, gf, ob in results + gresults:
+        if p in wholes or not ob.funcs:
+            continue
+        place = {}
+        cover = collections.defaultdict(list)
+        for mm, lst in busy.items():
+            cover[mm] = list(lst)
+        for sec in sorted(ob.layout):
+            ss = part_sites(ob, sec, hint, cover)
+            if ss:
+                place[sec] = ss[0]
+                cover[ss[0][0]].append((ss[0][1], ss[0][1] + ob.S[sec][5]))
+        runs = []
+        for sec in sorted(place):
+            m, a = place[sec]
+            if runs and runs[-1][0] == m and (runs[-1][2] + 15) & -16 == a:
+                runs[-1][1].append(sec)
+                runs[-1][2] = a + ob.S[sec][5]
+            else:
+                runs.append([m, [sec], a + ob.S[sec][5]])
+        claimed = set()
+        for m, secs, end in runs:
+            pl = {sec: place[sec][1] for sec in secs}
+            a = pl[secs[0]]
+            r = resolve(ob, m, pl, claimed)
+            if isinstance(r, str):
+                why["part: " + r] += 1
+                continue
+            want, slots, defs, absol = r
+            if clash(busy[m], a, end):
+                continue
+            if any(clash(busyd[m], b, b + n) for _s, b, n in slots):
+                r = resolve(ob, m, pl, claimed | set(q[0] for q in slots))
+                if isinstance(r, str):
+                    why["part: " + r] += 1
+                    continue
+                want, slots, defs, absol = r
+            claimed |= set(q[0] for q in slots)
+            name = wrapper_name(p, gf, len(parts))
+            accept(name, ob, m, want, defs, slots, [pl[sh] + val for _n, sh, val, _z in ob.funcs if sh in pl])
+            busy[m].append((a, end))
+            final.append((name, p, gf, ob, m, a, end - a, slots))
+            parts.append((name, secs + [q[0] for q in slots], absol))
+    why["registered whole"] = whole
+    why["registered parts"] = len(final) - whole
     print(sorted(why.items()))
-    final.sort(key=lambda t: (t[2], t[3]))
+    final.sort(key=lambda t: (t[4], t[5]))
     hand = ""
     if os.path.exists(P("config/mh2/c_files.txt")):
         txt = open(P("config/mh2/c_files.txt")).read()
         if HAND in txt:
             hand = txt[txt.index(HAND):]
+    shutil.rmtree(P("src/mh2/parts"), ignore_errors=True)
+    os.makedirs(P("src/mh2/parts"))
+    partnames = set(t[0] for t in parts)
     with open(P("config/mh2/c_files.txt"), "w") as fh:
-        fh.write("# Generated by tools/mh2_carry.py: matched MH1/G C files that rebuild MH2 unchanged.\n"
-                 "# MODULE START END NAME, NAME relative to src/ (shared with the MH1 and G builds);\n"
+        fh.write("# Generated by tools/mh2_carry.py: matched MH1/G C that rebuilds MH2 unchanged.\n"
+                 "# MODULE START END NAME, NAME relative to src/ (shared with the MH1 and G builds; mh2/parts: wrappers);\n"
                  "# MODULE:data START END NAME places the object's data there (addresses only).\n")
-        for p, ob, m, a, slots in final:
-            fh.write("%s 0x%08X 0x%08X %s\n" % (m, a, a + ob.size, p))
+        for name, p, gf, ob, m, a, size, slots in final:
+            fh.write("%s 0x%08X 0x%08X %s\n" % (m, a, a + size, name))
             for lo, hi in chunks(ob, slots):
-                fh.write("%s:data 0x%08X 0x%08X %s\n" % (m, lo, hi, p))
+                fh.write("%s:data 0x%08X 0x%08X %s\n" % (m, lo, hi, name))
+            if name in partnames:
+                write_wrapper(name, p, gf, "some functions")
+            elif gf:
+                write_wrapper(name, p, gf, "G's form")
         fh.write(hand)
+    with open(P("config/mh2/c_parts.txt"), "w") as fh:
+        fh.write("# Generated by tools/mh2_carry.py: NAME SECTIONS ABSOLUTE. The object of src/NAME.c keeps those sections;\n"
+                 "# ABSOLUTE gives its static symbols that point at dropped code or data their MH2 address (- if none).\n"
+                 "# Section and symbol numbers are the compiler's: rerun mh2_carry.py register after editing the C.\n")
+        for name, secs, absol in parts:
+            fh.write("%s %s %s\n" % (name, ",".join(map(str, sorted(secs))),
+                                     ",".join("%d=0x%X" % t for t in sorted(absol.items())) or "-"))
     with open(P("config/mh2/c_aliases.txt"), "w") as fh:
         fh.write("# Generated by tools/mh2_carry.py: names the carried C uses, at the MH2 address the original\n"
                  "# instruction holds. tools/mh2_setup.py merges them into MODULE_aliases.txt.\n")
@@ -518,8 +696,8 @@ def register():
                  "# symbol files or another carried file put NAME at another address.\n")
         for t in sorted(set(fixes)):
             fh.write("%s %s %s\n" % t)
-    done = set(t[0] for t in final)
-    rows = differ_rows(results, hint, done)
+    done = set(t[1] for t in final if t[0] not in partnames)
+    rows = differ_rows([(p, ob) for p, _g, ob in results], hint, done)
     with open(P("docs/survey/mh2_differ.csv"), "w", newline="") as fh:
         w = csv.writer(fh)
         w.writerow(["instructions_differ", "file", "mh2_module", "mh2_addr", "functions", "functions_same",

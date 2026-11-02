@@ -23,7 +23,7 @@ def main():
         f = l.split("#", 1)[0].split()
         if len(f) == 4 and ":" not in f[0]:
             ranges[f[0]].append((int(f[1], 16), int(f[2], 16)))
-            if f[3].startswith("mh2/"):
+            if f[3].startswith("mh2/") and not f[3].startswith("mh2/parts/"):
                 hand += 1
             else:
                 carried += 1

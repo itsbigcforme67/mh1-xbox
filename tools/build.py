@@ -229,12 +229,44 @@ def compile_c(src):
     if err:
         return err
     for old, new in RENAMES.get(obj, []):
+        if old.startswith("keep:"):      # VERSION=mh2: part of an object (config/mh2/c_parts.txt)
+            keep_sections(os.path.join(ROOT, obj), old[5:], new)
+            continue
         # `sym:OLD NEW`: a symbol renamed in this object only (VERSION=mh2, config/mh2/c_symfix.txt)
         err = run([BU + "objcopy", "--redefine-sym", "%s=%s" % (old[4:], new), obj] if old.startswith("sym:")
                   else [BU + "objcopy", "--rename-section", "%s=%s" % (old, new), obj])
         if err:
             return err
     return None
+
+
+def keep_sections(path, keep, absolute):
+    """VERSION=mh2 (tools/mh2_carry.py, Parts): of an object keep only the listed allocated sections. The others take the
+    name .comment, which every linker script discards. Their global symbols become undefined (the aliases give them
+    their MH2 address) and the static symbols in `absolute` (`index=address,...`) absolute at that address."""
+    import struct
+    d = bytearray(open(path, "rb").read())
+    shoff, = struct.unpack_from("<I", d, 0x20)
+    shentsize, shnum, shstrndx = struct.unpack_from("<HHH", d, 0x2E)
+    hdr = [struct.unpack_from("<10I", d, shoff + i * shentsize) for i in range(shnum)]
+    tab = bytes(d[hdr[shstrndx][4]:hdr[shstrndx][4] + hdr[shstrndx][5]])
+    comment = tab.index(b".comment\0")
+    kept = set(int(x) for x in keep.split(","))
+    dropped = set(i for i, h in enumerate(hdr) if h[2] & 2 and h[5] and h[1] in (1, 8) and i not in kept)
+    for i in dropped:
+        struct.pack_into("<I", d, shoff + i * shentsize, comment)
+    fixed = dict((int(x.split("=")[0]), int(x.split("=")[1], 16)) for x in absolute.split(",")) if absolute != "-" else {}
+    sy = next(h for h in hdr if h[1] == 2)
+    for k in range(sy[5] // 16):
+        at = sy[4] + k * 16
+        val, info, sh = struct.unpack_from("<I", d, at + 4)[0], d[at + 12], struct.unpack_from("<H", d, at + 14)[0]
+        if k in fixed:
+            struct.pack_into("<I", d, at + 4, fixed[k])
+            struct.pack_into("<H", d, at + 14, 0xFFF1)
+        elif sh in dropped and info >> 4:
+            struct.pack_into("<I", d, at + 4, 0)
+            struct.pack_into("<H", d, at + 14, 0)
+    open(path, "wb").write(d)
 
 
 def binobj(src):
