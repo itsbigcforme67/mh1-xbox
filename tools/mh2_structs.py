@@ -9,10 +9,12 @@ opcode and registers) that gives votes: field offset in MH1 -> offset in MH2.
 
   mh2_structs.py probe          compile, write build/mh2/probe/votes.tsv (counts only)
   mh2_structs.py show STRUCT    votes for one struct as a table
-  mh2_structs.py gen            write include/mh2_plw.h and include/mh2_emw.h from the votes and config/mh2/struct_map.txt
+  mh2_structs.py gen            write include/mh2_plw.h, mh2_emw.h, mh2_ofs.h from the votes and config/mh2/struct_map.txt
 
-config/mh2/struct_map.txt holds hand corrections: STRUCT MH1_OFFSET MH2_OFFSET (or `drop`). Objects are reused when newer than
-their source; run with build/mh2/carry filled (mh2_carry.py register).
+config/mh2/struct_map.txt holds hand corrections: STRUCT MH1_OFFSET MH2_OFFSET [NEWTYPE]. SHLW and EFTW are probed for `show`
+only; their few moves are guards in shell.h and eft.h. C that reaches PLW or EMW by number goes through MH2_OFS(p, o) (include/
+types.h): it picks the map by sizeof(*p), and is plain (o) for MH1 and G. The probe compiles MH1's layout of PLW and EMW in
+build/mh2/probe/base and pad; votes.tsv is not committed, the generated headers are.
 """
 import collections
 import json
