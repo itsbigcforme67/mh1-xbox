@@ -11,8 +11,8 @@ during this work: nothing here comes from it. No PC port yet. Numbers are from t
   table, directly or through G. The rest stay `func_ADDRESS`.
 - MH2 uses the same compiler as MH1 and G. The one difference: it was built with small data off, so it
   never uses the gp register. Add `-sdatathreshold 0` and MH1's C compiles to MH2's bytes.
-- 201 functions (34,280 bytes, 0.62% of the code) are already matching C: 193 functions in 192
-  unchanged MH1 files, plus 8 small MH2-only functions written fresh from our disassembly.
+- 1,532 functions (208,104 bytes, 3.74% of the code) are matching C: 820 C objects carried unchanged from
+  MH1 and G, plus 8 small MH2-only functions written fresh from our disassembly (`tools/mh2_progress.py`).
 
 ## 1. Layout
 
@@ -51,6 +51,8 @@ tools/binutils and tools/compilers/ as in README Phase 1.
     tools/mh2_rebuild.sh              # split and build all 13 modules; prints OK per module
     python3 tools/mh2_check.py        # the check against the disc itself
     MH2_NOSPLIT=1 tools/mh2_rebuild.sh # after editing C only
+    python3 tools/mh2_carry.py register # rebuilds the list of carried C, wrappers and slots; then a full rebuild
+    python3 tools/mh2_carry.py fix      # after a failed compare: which C files sit on the wrong bytes
 
 `MH2_PY=/path/python` picks the python with splat when .venv is elsewhere (git worktrees). Everything goes to
 asm/mh2, build/mh2, assets/mh2, which are gitignored. config/mh2 holds only names and addresses;
@@ -134,41 +136,84 @@ the code fits a mid-2003 compiler, not the newer 3.0.1 line. `-O3` was only trie
 
 | module | functions | matched | code bytes | matched bytes | % |
 |---|---|---|---|---|---|
-| game | 4580 | 3 | 1963064 | 780 | 0.04% |
-| gm_sub | 128 | 0 | 64152 | 0 | 0.00% |
+| game | 4580 | 103 | 1963064 | 16304 | 0.83% |
+| gm_sub | 128 | 3 | 64152 | 388 | 0.60% |
 | lbguild | 1 | 0 | 4 | 0 | 0.00% |
-| lobby | 3819 | 90 | 1205876 | 11216 | 0.93% |
-| main | 3188 | 16 | 602132 | 6232 | 1.03% |
-| nethttp | 1329 | 0 | 345532 | 0 | 0.00% |
-| plsel | 179 | 8 | 88364 | 336 | 0.38% |
-| select | 251 | 1 | 99636 | 384 | 0.39% |
-| sub_main | 3437 | 70 | 1154632 | 12488 | 1.08% |
-| yn | 122 | 13 | 36468 | 2844 | 7.80% |
-| **all** | **17034** | **201** | **5559860** | **34280** | **0.62%** |
+| lobby | 3819 | 396 | 1205876 | 42276 | 3.51% |
+| main | 3188 | 128 | 602132 | 24548 | 4.08% |
+| nethttp | 1329 | 1 | 345532 | 24 | 0.01% |
+| plsel | 179 | 11 | 88364 | 428 | 0.48% |
+| select | 251 | 4 | 99636 | 760 | 0.76% |
+| sub_main | 3437 | 840 | 1154632 | 116704 | 10.11% |
+| yn | 122 | 46 | 36468 | 6672 | 18.30% |
+| **all** | **17034** | **1532** | **5559860** | **208104** | **3.74%** |
 
 The totals include Sony's libraries and middleware (CRI, OpenSSL), which have no marker yet, so the share of Capcom's
 game code is a little different.
 
-- **Carried (192 files):** `tools/mh2_carry.py register` takes each matched MH1 C file whose functions all have twins
-  in one module, compiles it with the MH2 flags and keeps it only if it equals MH2's bytes, sits in MH2 in the same order,
-  has no data of its own, and every name it uses agrees with the symbol files. Out of 1,719 MH1 text files: 500 got that
-  far, 300 came out different (MH2 changed them, or MH1's struct layouts in include/ are out of date for MH2), the rest
-  were dropped by those checks. The files are shared: src/lobby/f/lb_z43.c is the same file in all three games.
+**How C gets in (tools/mh2_carry.py register, rewritten 2 Nov 2026).** About 2,160 C files that MH1 or G link are compiled
+with MH2's flags, each object laid out as ld would, and searched for in MH2's code: a run without relocations is found,
+the rest compared with relocated fields masked. The name map only breaks ties, it decides nothing. Then every relocation
+is checked against what the original instruction holds. Results of the last run:
+
+| what | count |
+|---|---|
+| whole files that match | 471 (44 of them only in G's form, see below) |
+| parts of other files | 349 (15 in G's form) |
+| data slots | 25 |
+| code not found anywhere | 1,608 files |
+| several sites and no name to choose | 109 files, nearly all under 10 instructions |
+| a name needs two addresses | 8 files, 50 single functions: one global reached at two offsets that do not fit (a struct moved) |
+| do not compile | 4 |
+
+- **The old count was wrong.** Earlier versions of this file said 300 of 500 files "compile but differ". At least 79 of
+  those did not differ at all (every function equal): MWCC gives every function its own .text section, and the old compare took each function's
+  offset inside its own section as its offset in the file, so any file with two functions failed. Only 22 candidates
+  held data of their own, so data slots were not the big unlock this file's next-steps list said they were. The bug
+  and the wider search were.
+- **Data slots.** `MODULE:data START END NAME` in config/mh2/c_files.txt, cut by tools/mh2_setup.py. MH2's module data is
+  one typed block, so every slot is a `.data` linker entry and the object's .rodata is renamed to .data, as for MH1 and G
+  (build.py's existing k-th section handling). The slot address comes from the code: the original `lui`/`addiu` pair says where
+  the data is; the section's bytes must then equal MH2's, words with relocations checked as addresses (jump tables). Slot ends
+  are rounded up to a word because the asm after a slot must start aligned or all its labels shift (zeros only, else refused).
+- **Parts.** When a file does not match whole, the functions of it that do still go in, with no source edit. src/mh2/parts/NAME.c
+  includes the file, config/mh2/c_parts.txt lists the object sections that stay, and tools/build.py keep_sections drops the rest
+  at link time. What a kept function needs from a dropped one is its real address: a global name through c_aliases.txt, a static
+  as an absolute symbol. Data a kept function uses gets a slot if it matches whole and no other part took it; otherwise it
+  stays in the asm and is reached by address, so a part may carry code but not its strings. A jump table cannot stay behind
+  (its labels live in the C), so such a function is refused. Section numbers are the compiler's: **rerun
+  `mh2_carry.py register` after editing any carried C or header**, or keep_sections drops the wrong sections and the link says so.
+  This is a different way from G's `G_PART` guards, chosen because it leaves the shared sources alone.
+- **G's form.** A file that does not match as MH1 sees it is tried with VERSION_MHG on (G's headers). Those go through a wrapper
+  that defines it, so nothing changes for MH1 or G.
+- **Renames.** A name that the symbol files or another file place elsewhere is renamed in that object only
+  (config/mh2/c_symfix.txt, 145 lines, `objcopy --redefine-sym` through c_renames.txt). Mostly these are map names that
+  are wrong or that exist twice, so treat that list as a to-do for the name map.
+- Files with `.inc` raw functions are not carried: those hold original bytes, not C.
 - **Written for MH2 (8):** src/mh2/plsel/p00D*.c, plsel_func_00D61710 and friends, from our own disassembly
   (`tools/mh2_own.py -v` shows a side-by-side). Registered by hand at the end of config/mh2/c_files.txt, globals in
   config/mh2/hand_names.txt. Struct and global names there are placeholders; what these functions do in the game is not known.
-- Every one is checked three ways: per function (relocated fields masked), by the full link (OK per module), and by
-  tools/mh2_check.py.
+- Every one is checked by the search above, by the full link (OK per module), and by tools/mh2_check.py.
+
+**Files that differ (docs/survey/mh2_differ.csv, counts only).** 977 files with at least one named twin, sorted by how many
+instructions differ from MH2 (relocated fields masked): 15 with none (all functions equal but not next to each other in MH2:
+already in as parts), 183 with 1-7, 370 with 8-63, 409 with 64 or more. `functions_same` says how many of a file's functions
+are equal, and those are mostly already in as parts. The MH1 and G views of one source can both be listed.
+
+A sample of the 1-7 group says these are real content changes, not compiler noise: struct offsets (`sb zero,2077(a0)`
+against `1905`), packet and message numbers (a whole family of `__cnet_Send*` is off by 60), array sizes, loop limits. None was
+taken by a flag. They need edits, which this step was not for.
 
 ## 6. Next
 
-1. Data of its own: 22 files have data slots, and most of the 500 candidates that have strings, float literals or jump
-   tables need `MODULE:SECTION` slots like G's (tools/mh2_setup.py does not cut data yet). That is the biggest cheap gain.
-2. The 300 "not equal" files: sort by how few instructions differ. Struct offsets moved, so most need one
-   header edit, and `#ifdef VERSION_MH2` must stay out of G's and MH1's paths.
-3. Files with one function lacking a twin (1,143 of them): name those functions by hand or split the file for MH2.
-4. Type main's data block and name the Sony and CRI code properly.
-5. A PC port is not started. Whether to port MH2 onto the G engine is the owner's call later.
+1. docs/survey/mh2_differ.csv from the top: the 183 small ones are mostly one struct offset or one constant. Group them: the
+   `__cnet_Send*` family wants one enum change, the player offsets one struct change. Keep `#ifdef VERSION_MH2` out of G's and
+   MH1's paths. A source edit means rerunning register.
+2. Function bodies with no twin (1,608 files are not found at all): after the struct work, rerun; a fixed header frees many at once.
+3. Parts that left strings in the asm: when the rest of such a file matches, its data gets a slot by itself on the next register.
+4. Clean the map with c_symfix.txt: each line is a name the map has at the wrong place or twice.
+5. Type main's data block and name the Sony and CRI code properly.
+6. A PC port is not started. Whether to port MH2 onto the G engine is the owner's call later.
 
 ## 7. Not done or not tested
 
@@ -176,3 +221,7 @@ game code is a little different.
 - The English v1.03 ISO in disc/mh2 was not used.
 - dnas_net and dnas_ins only rebuild as bytes. No work was done on what is in them, by design.
 - No names or conclusions were cross-checked with the community repo; the allowance to do so was not needed.
+- Ties: when a file has several sites and no name chooses, it is left out (109 files). When the map names a site, its word
+  is taken, so a tiny function can sit under the wrong name although the bytes are right. Bytes prove the code, not the name.
+- A part's data left in the asm means that part cannot move in memory yet (it holds absolute addresses): fine for a byte match,
+  to be fixed before any relink or port.

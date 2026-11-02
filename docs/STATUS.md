@@ -1005,3 +1005,23 @@ Next: data slots for carried C, then the 300 files that compile but differ (docs
   fails to link: "multiple definition of Lb_menu_win_size_mv" (menu09_p1 and menu09_p2 both get it: in src/main/menu/menu09.c the `#ifdef VERSION_MHG` block at line 161 sits outside the G_PART guards).
   No file under src/main, src/mhg, src/lobby, src/game, config/mhg or include changed on this branch, so this is
   not from the MH2 work; src/main/menu/menu09.c last changed in the G commits of 1 Nov. Left alone for the G side.
+
+## 2026-11-02: MH2 data slots, carrying C at 3.74% (docs/mh2.md section 5)
+
+Decided alone, the owner being away. Community mh2-decomp not opened.
+
+- tools/mh2_setup.py and the build cut `MODULE:data` slots. 25 slots in.
+- Found a bug: tools/mh2_carry.py failed every multi-function file, because MWCC gives each function its own .text section. At least 79
+  of the "300 that differ" did not differ. Only 22 candidates held data, so slots alone were not the big gain docs/mh2.md had expected.
+- Rewrote the carry: every file MH1 or G links is searched for in MH2's code; relocations are checked against the original
+  instructions. New: files tried in G's form (VERSION_MHG through a wrapper), per-object renames (c_symfix.txt), and parts: the
+  functions of a file that match go in without a source edit (src/mh2/parts, c_parts.txt, keep_sections in tools/build.py).
+- Result: 1,532 functions, 208,104 bytes, 3.74% (was 201, 0.62%): 471 whole files, 349 parts, 8 hand. Remaining equal functions outside
+  this: 19, 2,884 bytes.
+- Report for later: docs/survey/mh2_differ.csv, 977 files by instructions that differ. A sample of the small ones shows real edits
+  (struct offsets, message numbers), so no flag or tool fixes them.
+- Verified: tools/mh2_rebuild.sh OK for all 13, tools/mh2_check.py 13 of 13 identical. tools/rebuild.sh 5 OK and VERSION=mhg
+  tools/rebuild.sh 7 OK; neither changed any tracked file. I did not compare their sha1s with a build from before this branch; both compare against the original bytes, so OK is the proof.
+- tools/mh2_rebuild.sh now limits itself to `ulimit -v 3000000`. Not run in any emulator: proof is bytes only.
+
+Next: the small files in mh2_differ.csv by family (docs/mh2.md section 6).
