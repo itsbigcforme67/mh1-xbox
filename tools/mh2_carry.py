@@ -230,7 +230,7 @@ def survey(args):
     compilers = [d for d in compilers if os.path.exists(P("tools/compilers", d, "mwccps2.exe"))]
     res = []
     for cc in compilers:
-        for opt in (["-O4,p"], ["-O3"]):
+        for opt in (["-O4,p"],):
             with tempfile.TemporaryDirectory(dir=P("build/mh2")) as tmp:
                 def one(c):
                     o = compile_one(c, cc, opt, tmp)
