@@ -269,6 +269,7 @@ game func_00865C60 0x00865C60
 game func_00865CF0 0x00865CF0
 game func_008669D0 0x008669D0
 game func_00867A50 0x00867A50
+game func_00868B00 0x00868B00
 game func_00868B40 0x00868B40
 game func_00869140 0x00869140
 game func_0086FC70 0x0086FC70
@@ -296,8 +297,8 @@ game func_0087EFA0 0x0087EFA0
 game func_00894320 0x00894320
 game func_544C90 0x003E3D10
 game game_func_0064EFF0 0x006EF2D0
-game game_w 0x006ADBDE
-game game_w_mh2_006ADCB2 0x006ADCB2
+game game_w 0x006ADCB2
+game game_w_mh2_006ADCB0 0x006ADCB0
 game get_prim2_mh2_00376F90 0x00376F90
 game get_prim_mh2_00376EF0 0x00376EF0
 game get_prim_ptr 0x00376EB0
@@ -343,10 +344,14 @@ gm_sub em_erase 0x00905810
 gm_sub flSetRenderState 0x00183F20
 gm_sub flmatInit 0x002ECDD0
 gm_sub func_008FB570 0x008FB570
+gm_sub func_008FC180 0x008FC180
 gm_sub func_00905810 0x00905810
 gm_sub func_00905C80 0x00905C80
-gm_sub game_w 0x006ADCB2
+gm_sub game_w 0x006ADCB0
+gm_sub game_w_mh2_006ADCB2 0x006ADCB2
+gm_sub host_change 0x008FC180
 gm_sub key_rept_du 0x0036AD20
+gm_sub player_work 0x005F89D0
 gm_sub push_em_work 0x00377CB0
 gm_sub sel_sel_sub 0x008FB570
 lobby AppendWork 0x007349F0
@@ -1945,6 +1950,7 @@ sub_main DeviceUpdateStatus 0x0030A590
 sub_main DeviceWork 0x0059DE20
 sub_main Device_driver_rollbacked 0x0059CC28
 sub_main Device_get_usb_id_r_no 0x0059CC30
+sub_main Disp_back 0x0036C560
 sub_main Eft02_set2 0x003CA250
 sub_main Eft02_set4 0x003CA3F0
 sub_main Eft02_set6 0x003CA5C0
@@ -2007,6 +2013,7 @@ sub_main Info_Initialization 0x00380530
 sub_main InitRenderState 0x00369090
 sub_main Initialized_flags 0x0059BFA8
 sub_main ItemCopy_Pl2Ud 0x003B64C0
+sub_main Item_data 0x0045F110
 sub_main Item_preparation_adrs 0x003313B0
 sub_main Item_preparation_rate 0x00331940
 sub_main Item_preparation_rate_0 0x00331720
@@ -2024,6 +2031,7 @@ sub_main NPCZoomInCameraCheck 0x0031D990
 sub_main NormalClipCheckF3 0x00337640
 sub_main NormalClipF3 0x003375A0
 sub_main Now_Game_ck 0x0036BAD0
+sub_main Now_equip_ck_mh2_003BAD40 0x003BAD40
 sub_main NvecFloatAdjust 0x003378C0
 sub_main Omake_flag_ck 0x003BD4F0
 sub_main Online_ck 0x0036BA40
@@ -2100,10 +2108,13 @@ sub_main Tsk_Exit 0x0033D5E0
 sub_main Tsk_Sleep 0x0033D5F0
 sub_main UnitNormalVectorCCW 0x00337510
 sub_main UsbDeviceNum 0x0059DE18
+sub_main UseItemChk 0x003553D0
 sub_main User_data 0x005D73C4
 sub_main User_data_mh2_005D4AA0 0x005D4AA0
 sub_main WaitSema 0x00113B60
+sub_main Warehouse_equip_erase 0x003BA5A0
 sub_main World_calc2 0x003B1260
+sub_main WyvernAreaMove 0x00351580
 sub_main Zero_rev_set 0x00368B50
 sub_main ZoomBaseAngleRail 0x00322400
 sub_main _ConexScriptBase 0x00405180
@@ -3161,6 +3172,7 @@ sub_main func_003250A0 0x003250A0
 sub_main func_00325150 0x00325150
 sub_main func_00325270 0x00325270
 sub_main func_00325E70 0x00325E70
+sub_main func_003274F0 0x003274F0
 sub_main func_003286B0 0x003286B0
 sub_main func_003288F0 0x003288F0
 sub_main func_00328920 0x00328920
@@ -3217,8 +3229,11 @@ sub_main func_00342680 0x00342680
 sub_main func_00342790 0x00342790
 sub_main func_00347980 0x00347980
 sub_main func_0034A3E0 0x0034A3E0
+sub_main func_00351520 0x00351520
+sub_main func_00351580 0x00351580
 sub_main func_00353C30 0x00353C30
 sub_main func_00353D80 0x00353D80
+sub_main func_003553D0 0x003553D0
 sub_main func_00356160 0x00356160
 sub_main func_003627A0 0x003627A0
 sub_main func_003629E0 0x003629E0
@@ -3239,6 +3254,7 @@ sub_main func_00364780 0x00364780
 sub_main func_00364BB0 0x00364BB0
 sub_main func_003655C0 0x003655C0
 sub_main func_00365670 0x00365670
+sub_main func_00366640 0x00366640
 sub_main func_00368B50 0x00368B50
 sub_main func_00368C40 0x00368C40
 sub_main func_00368C50 0x00368C50
@@ -3266,6 +3282,7 @@ sub_main func_0036BA40 0x0036BA40
 sub_main func_0036BAD0 0x0036BAD0
 sub_main func_0036BB10 0x0036BB10
 sub_main func_0036C1C0 0x0036C1C0
+sub_main func_0036C560 0x0036C560
 sub_main func_0036CD10 0x0036CD10
 sub_main func_0036CF60 0x0036CF60
 sub_main func_00376C90 0x00376C90
@@ -3340,10 +3357,13 @@ sub_main func_003B0F30 0x003B0F30
 sub_main func_003B1060 0x003B1060
 sub_main func_003B1260 0x003B1260
 sub_main func_003B2990 0x003B2990
+sub_main func_003B6590 0x003B6590
+sub_main func_003B6820 0x003B6820
 sub_main func_003B7E70 0x003B7E70
 sub_main func_003B7EB0 0x003B7EB0
 sub_main func_003B8160 0x003B8160
 sub_main func_003B8310 0x003B8310
+sub_main func_003BA5A0 0x003BA5A0
 sub_main func_003BD380 0x003BD380
 sub_main func_003BD4F0 0x003BD4F0
 sub_main func_003BE060 0x003BE060
@@ -3415,14 +3435,10 @@ sub_main func_5C5E20 0x0075F5C0
 sub_main func_mode 0x00581B78
 sub_main gAskRom 0x00581C30
 sub_main gaku_mode 0x00581C40
-sub_main game_w 0x006ADCF0
-sub_main game_w_mh2_006ADB15 0x006ADB15
-sub_main game_w_mh2_006ADBDC 0x006ADBDC
+sub_main game5 0x003274F0
+sub_main game_w 0x006ADCB0
 sub_main game_w_mh2_006ADC1B 0x006ADC1B
-sub_main game_w_mh2_006ADCB0 0x006ADCB0
-sub_main game_w_mh2_006ADCB2 0x006ADCB2
 sub_main game_w_mh2_006ADD3E 0x006ADD3E
-sub_main game_w_mh2_006ADD40 0x006ADD40
 sub_main get1wd 0x002FCD40
 sub_main get_entid_tab 0x002FEF90
 sub_main get_heap_ptr 0x00363E50
@@ -3572,6 +3588,7 @@ sub_main lit_365_0036CF10 0x0046A860
 sub_main lit_377_0035BB08 0x004909B8
 sub_main lit_456_0036CE10 0x0046A600
 sub_main lit_505_0035BB10 0x004909C0
+sub_main lit_562_00300780 0x0043C990
 sub_main lit_628_0036E5C0 0x0046CC08
 sub_main lit_913_0034E410 0x00416720
 sub_main lit_937_0036CE50 0x00405380
@@ -3620,6 +3637,7 @@ sub_main move_stage 0x0037AC80
 sub_main muhenkan 0x003009E0
 sub_main my_user_id 0x005CAA38
 sub_main mydicname 0x00581C70
+sub_main net_send_sys 0x00901790
 sub_main newwd_219 0x0059BAF0
 sub_main newwdlen 0x002FF9D0
 sub_main next_gun 0x003031D0
@@ -3748,6 +3766,7 @@ sub_main render_end 0x00368F60
 sub_main render_flag 0x006A9E48
 sub_main render_start 0x00368F10
 sub_main reset_temp 0x002FF350
+sub_main result_prog 0x00D683C0
 sub_main ride_ofs_calc 0x003E2250
 sub_main rmspec 0x00405150
 sub_main rmtype 0x00404DC0
@@ -3891,6 +3910,7 @@ sub_main to_ucode 0x00303750
 sub_main to_zenkaku 0x002FBA00
 sub_main to_zenkaku_spec 0x002FBA50
 sub_main top_kh 0x00589898
+sub_main trans 0x0036D170
 sub_main trans_eft 0x003245A0
 sub_main trans_eft_up 0x00324630
 sub_main trans_roman 0x002FB0C0

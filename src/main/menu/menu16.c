@@ -160,8 +160,18 @@ void menu_data_monster_sub(int);
 int menu_chcnfg_sendpl(int sw);
 int menu_chcnfg_reibun(int sw);
 
+#ifdef VERSION_MH2
+int func_00351520(PLW *);
+
+void WyvernAreaMove(PLW *em) {
+    if (func_00351520(em) != 0 && lpPit->x05 == 0 && ((u8 *)lpPit)[0x9C] == 0 && ((u8 *)lpPit)[0x98] == 0) {
+        ((u8 *)lpPit)[0x47] = 0x1A;
+    }
+}
+#else
 void WyvernAreaMove(PLW *em) {
     if (enemy_mark_chk(lpPit->pl, (EMW *)em) != 0 && lpPit->x05 == 0 && lpPit->lb == 0 && lpPit->x83 == 0) {
         lpPit->x3F = 0x1A;
     }
 }
+#endif

@@ -34,4 +34,11 @@
 #define STG_POS_N 88
 #define MAHI_MAX 3
 #endif
+#ifdef VERSION_MH2
+#undef ITEM_ROW
+#define ITEM_ROW 24 /* one Item_data row in MH2 (UseItemChk: id * 24) */
+#define PLW_AT(i) ((PLW *)((u8 *)player_work + (i) * 0x970)) /* player work is 0x970 bytes in MH2 */
+#else
+#define PLW_AT(i) (&player_work[i])
+#endif
 #endif

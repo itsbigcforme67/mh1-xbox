@@ -13,7 +13,7 @@ game 0x006D5D30 0x006D5D88 mh2/parts/game_shell_shell12_8
 game 0x006D7390 0x006D7428 mhg/game/shell/shell14_p3
 game 0x006EF280 0x006EF2C8 mh2/parts/mhg_main_set_set13_p1_g
 game 0x006EF8F0 0x006EF92C mh2/parts/game_set_set03_g_337
-game 0x006FC760 0x006FC79C mh2/parts/game_set_set17_g_341
+game 0x006FC760 0x006FC79C mh2/parts/game_set_set17_g_342
 game 0x006FEEA0 0x006FEED4 mh2/parts/game_set_set22_g_335
 game 0x006FEEE0 0x006FEF64 mh2/parts/game_set_set22_15
 game 0x006FEF70 0x006FF020 mh2/parts/game_set_set22_g_336
@@ -89,7 +89,7 @@ game 0x00865C60 0x00865CEC mh2/parts/game_eft_eft10_14
 game 0x00865CF0 0x00865D74 game/eft/eft11
 game 0x008669D0 0x00866A54 mh2/parts/game_eft_eft12_23
 game 0x00867A50 0x00867ACC mh2/parts/game_eft_eft12_24
-game 0x00868B40 0x00868BD4 mh2/parts/game_eft_eft12_25
+game 0x00868B00 0x00868BD4 mh2/parts/game_eft_eft12_25
 game 0x00869140 0x008691BC mh2/parts/game_eft_eft12_26
 game 0x0086FC70 0x0086FD00 mh2/parts/game_eft_eft16_47
 game 0x00870AC0 0x00870B30 mh2/parts/game_eft_eft16_48
@@ -106,6 +106,7 @@ game 0x0087E9F0 0x0087EB68 mh2/parts/main_eft_eft20d_45
 game 0x0087EFA0 0x0087F154 mh2/parts/main_eft_eft20d_46
 game 0x00894320 0x00894358 mh2/parts/main_eft_eft06_40
 gm_sub 0x008FB570 0x008FB63C mh2/parts/mhg_main_omake_omake_a_300
+gm_sub 0x008FC180 0x008FC208 main/aq/aqrun01
 gm_sub 0x00905810 0x00905844 mhg/main/emw/emu03_p1
 gm_sub 0x00905C80 0x00905D04 mh2/parts/main_emw_emt01_126
 lobby 0x006B6460 0x006B64EC mhg/lobby/f/lb_ge2501_p1
@@ -457,11 +458,11 @@ main 0x00195240 0x0019527C mhg/main/sound/sndc03_p2
 nethttp 0x008FB420 0x008FB438 lobby/f/lb_m01
 plsel 0x00D67530 0x00D67564 main/reward/rwkey01
 plsel 0x00D67620 0x00D67630 mhg/main/reward/f_reward_p2
-plsel 0x00D67630 0x00D67648 mh2/parts/lobby_b_lb_bz73_g_342
+plsel 0x00D67630 0x00D67648 mh2/parts/lobby_b_lb_bz73_g_343
 select 0x006AFF30 0x006AFFB0 mhg/select/edit03_p2
 select 0x006B0600 0x006B0794 mh2/parts/select_edit04_95
 select 0x006B3310 0x006B334C mhg/select/edit04_p3
-select 0x006BA9D0 0x006BAA78 mh2/parts/mhg_main_omake_omake_c_g_345
+select 0x006BA9D0 0x006BAA78 mh2/parts/mhg_main_omake_omake_c_g_346
 sub_main 0x002E3EE0 0x002E3FB8 mh2/parts/main_sys_f_ioread_116
 sub_main 0x002E47B0 0x002E49DC mh2/parts/main_sys_f_ioread_115
 sub_main:data 0x00402270 0x00402278 mh2/parts/main_sys_f_ioread_115
@@ -469,7 +470,7 @@ sub_main 0x002E5020 0x002E50B0 mh2/parts/main_frame_f_frameb_85
 sub_main 0x002E5DC0 0x002E5E48 mh2/parts/main_frame_f_framec_86
 sub_main 0x002E6560 0x002E6584 mh2/parts/main_font_fs2_01_111
 sub_main 0x002E6590 0x002E65B4 mh2/parts/mhg_main_flfnt_flfnt01_p2_g
-sub_main 0x002E6670 0x002E668C mh2/parts/main_flfnt_flfnt02_g_344
+sub_main 0x002E6670 0x002E668C mh2/parts/main_flfnt_flfnt02_g_345
 sub_main 0x002E7B20 0x002E7B74 main/flfnt/flfnt07
 sub_main 0x002E8460 0x002E84C8 main/flfnt/flfnt05
 sub_main 0x002E8740 0x002E88D4 main/fl/clay01
@@ -664,6 +665,7 @@ sub_main 0x00324490 0x003246B8 mh2/parts/main_sys_adxs04_182
 sub_main 0x00324E20 0x003251E8 mh2/parts/main_sys_adxs05_183
 sub_main 0x00325270 0x003252E8 mh2/parts/main_sys_adxs05_184
 sub_main 0x00325E70 0x00325E9C mh2/parts/mhg_main_fade_fd02_p2_g
+sub_main 0x003274F0 0x00327554 mh2/parts/main_game_f_gameb_g_340
 sub_main 0x003286B0 0x00328758 mh2/parts/main_game_flow02_161
 sub_main 0x003288F0 0x0032898C mh2/parts/main_game_flow02_162
 sub_main 0x00331940 0x0033197C main/item/item02
@@ -694,8 +696,10 @@ sub_main 0x00342610 0x003426D0 mhg/main/menu/menu20_p1
 sub_main 0x00342790 0x00342818 mh2/parts/mhg_main_menu_menu20_p2_g
 sub_main 0x00347980 0x003479BC mh2/parts/main_menu_menu11_71
 sub_main 0x0034A3E0 0x0034A4F4 main/menu/menu19
+sub_main 0x00351580 0x003515D4 main/menu/menu16
 sub_main 0x00353C30 0x00353E70 main/menu/menu36
-sub_main 0x00356160 0x003561A8 mh2/parts/mhg_main_chat_f_chat_p3_g_346
+sub_main 0x003553D0 0x00355438 main/menu/pitx01
+sub_main 0x00356160 0x003561A8 mh2/parts/mhg_main_chat_f_chat_p3_g_347
 sub_main 0x003627A0 0x003627E8 mh2/parts/mhg_main_chat_f_chat_p13_g
 sub_main 0x003629E0 0x00362A5C mh2/parts/mhg_main_chat_f_chat_p14_305
 sub_main 0x00362C00 0x00362C70 mhg/main/chat/f_chat_p25
@@ -710,7 +714,7 @@ sub_main 0x00364BB0 0x00364BB8 mh2/parts/main_pl_shell_work2_145
 sub_main 0x003655C0 0x003657D0 mh2/parts/main_sprite_trans2_g
 sub_main 0x00368B50 0x00368B94 mh2/parts/main_sound_rev01_148
 sub_main 0x00368C40 0x00368C48 mh2/parts/main_sprite_sysw_96
-sub_main 0x00368C50 0x00368C68 mh2/parts/main_sprite_sysw_g_340
+sub_main 0x00368C50 0x00368C68 mh2/parts/main_sprite_sysw_g_341
 sub_main 0x00368C70 0x00368CC4 mh2/parts/main_sprite_sysw_97
 sub_main 0x00368D90 0x00368F90 mhg/main/sprite/sysw_p2
 sub_main 0x00368F90 0x003691EC mh2/parts/main_font_fs1_01_125
@@ -725,6 +729,7 @@ sub_main 0x0036BAD0 0x0036BB08 mhg/main/font/gfs01_p5
 sub_main 0x0036BB10 0x0036BB80 main/font/dsp01
 sub_main:data 0x004909D0 0x004909E8 main/font/dsp01
 sub_main 0x0036C1C0 0x0036C248 main/font/disp103
+sub_main 0x0036C560 0x0036C5D0 main/font/disp201
 sub_main 0x0036CD10 0x0036CE1C mh2/parts/main_pad_pad_get_3
 sub_main 0x0036CF60 0x0036D014 mh2/parts/main_pad_pad_get_4
 sub_main 0x00376C90 0x00376DD8 mh2/parts/main_weapon_weapon3_83
@@ -753,10 +758,10 @@ sub_main 0x00395D80 0x00395EFC mhg/main/pl/pl_snd01_p2
 sub_main:data 0x0049FCE0 0x0049FD04 mhg/main/pl/pl_snd01_p2
 sub_main 0x0039A2F0 0x0039A34C mh2/parts/mhg_main_pl_f_pl_p37_318
 sub_main 0x003A0810 0x003A0820 mh2/parts/main_quest_qstb01_170
-sub_main 0x003A0F80 0x003A1070 mh2/parts/main_quest_qstb03_g_343
+sub_main 0x003A0F80 0x003A1070 mh2/parts/main_quest_qstb03_g_344
 sub_main 0x003A1CD0 0x003A1CFC mh2/parts/mhg_main_quest_f_quest_p1_319
 sub_main 0x003A1F60 0x003A1FC0 mh2/parts/mhg_main_quest_f_quest_p2_320
-sub_main 0x003A39F0 0x003A3A40 mh2/parts/mhg_main_quest_f_quest_p4_g_347
+sub_main 0x003A39F0 0x003A3A40 mh2/parts/mhg_main_quest_f_quest_p4_g_348
 sub_main 0x003A4650 0x003A46A4 mh2/parts/mhg_main_quest_f_quest_p6_g
 sub_main 0x003A4A00 0x003A4A5C mh2/parts/mhg_main_quest_f_quest_p8_g
 sub_main 0x003A5F20 0x003A600C mh2/parts/mhg_main_quest_f_quest_p11_321
@@ -775,11 +780,13 @@ sub_main 0x003B0BD0 0x003B0BD8 main/pl/pl61
 sub_main 0x003B0F30 0x003B1190 mh2/parts/main_pl_pl57_131
 sub_main 0x003B1260 0x003B12DC mh2/parts/main_pl_pl58_132
 sub_main 0x003B2990 0x003B29B0 mhg/main/pl/pl67_b
+sub_main 0x003B6820 0x003B6850 mhg/main/ud/f_ud_p2
 sub_main 0x003B7E70 0x003B7EF4 mh2/parts/mhg_main_ud_f_ud_p6_331
 sub_main 0x003B8160 0x003B81E8 mhg/main/ud/f_ud_p19
 sub_main 0x003B8310 0x003B8388 mhg/main/ud/f_ud_p20
+sub_main 0x003BA5A0 0x003BA61C mhg/main/ud/f_ud_p7
 sub_main 0x003BD380 0x003BD3E0 mhg/main/ud/f_ud_p15
-sub_main 0x003BD4F0 0x003BD50C mh2/parts/mhg_main_ud_f_ud_p6_g_348
+sub_main 0x003BD4F0 0x003BD50C mh2/parts/mhg_main_ud_f_ud_p6_g_349
 sub_main 0x003BE060 0x003BE220 main/hit/hitpk01
 sub_main 0x003BE220 0x003BE2C4 mh2/parts/mhg_main_hit_hit2all_p1_310
 sub_main 0x003BE3D0 0x003BE4B8 mh2/parts/mhg_main_hit_hit2all_p1_311

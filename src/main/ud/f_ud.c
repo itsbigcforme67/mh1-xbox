@@ -220,9 +220,17 @@ void Get_hunter_status(UDW *u, u8 *rank, u32 *cur, u32 *next) {
 #endif
 
 #if !defined(G_PART) || G_PART == 2
+#ifdef VERSION_MH2
+int func_003B6590(u16);
+
+static void stop_level(void *p, int n) {
+    *(u32 *)((u8 *)p + 0x5C) = func_003B6590(n) - 1;
+}
+#else
 static void stop_level(void *p, int n) {
     *(u32 *)((u8 *)p + 0x1C) = D_0035178C[n] - 1;
 }
+#endif
 #endif
 
 #if !defined(G_PART)
@@ -688,6 +696,33 @@ u8 Warehouse_equip_stack(UDW *u, s8 kind, s16 id, s16 opt) {
 #endif
 
 #if !defined(G_PART) || G_PART == 7
+#ifdef VERSION_MH2
+typedef struct MH2WARE {     /* one stored equipment, 12 bytes at UDW+0xBC (MH1: 6 bytes at +0x44) */
+    u8 use;
+    u8 kind;
+    u16 id;
+    u16 opt[4];
+} MH2WARE;
+typedef struct MH2UDW {
+    u8 _pad[0xBC];
+    MH2WARE ware[1];
+} MH2UDW;
+
+int Warehouse_equip_erase(UDW *u, u16 idx) {
+    if (Now_equip_ck(u, idx) == 0) {
+        MH2UDW *m = (MH2UDW *)u;
+        m->ware[idx].use = 0;
+        m->ware[idx].kind = 0;
+        m->ware[idx].id = 0;
+        m->ware[idx].opt[0] = 0;
+        m->ware[idx].opt[1] = 0;
+        m->ware[idx].opt[2] = 0;
+        m->ware[idx].opt[3] = 0;
+        return 1;
+    }
+    return 0;
+}
+#else
 int Warehouse_equip_erase(UDW *u, u16 idx) {
     if (Now_equip_ck(u, idx) == 0) {
         u->ware[idx].use = 0;
@@ -698,6 +733,7 @@ int Warehouse_equip_erase(UDW *u, u16 idx) {
     }
     return 0;
 }
+#endif
 #endif
 
 #if !defined(G_PART)

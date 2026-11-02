@@ -30,6 +30,19 @@ s16 *Start_item_data_adrs_get(void);
 
 
 
+#ifdef VERSION_MH2
+void func_00366640(int, int, int, int, int);
+
+void Disp_back(void) {
+    PUT_2TF q = lit_562_00300780;
+
+    reload_tex(1, 0x155);
+    SetTextureStage(0x155);
+    SetFilterMode(1);
+    flSetRenderState(0x60, 0);
+    func_00366640(q.x0, q.y0, q.x1, q.y1, 0xFF000000);
+}
+#else
 void Disp_back(void) {
     PUT_2TF q = lit_562_00300780;
 
@@ -39,3 +52,4 @@ void Disp_back(void) {
     flSetRenderState(0x60, 0);
     Put_2TF(&q);
 }
+#endif
