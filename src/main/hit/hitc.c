@@ -10,6 +10,7 @@
 #include "pl.h"
 #include "em.h"
 #include "game.h"
+#include "version.h"
 
 typedef struct EM_MEAT {
     u8 v[8];            /* 1/2 cut/blunt %, 3 shot %, 4-7 ailment % */
@@ -66,7 +67,11 @@ void func_5547B0(f32 *, s16, int);              /* game.bin Eft18_set2 */
 int func_639FC0(u16, u16);                      /* game.bin Guard_dir_ck */
 
 void hit_data_on_shl_sub(HSHL *sh, HCHR *pl) {
+#ifdef VERSION_MH2
+    *(void **)((u8 *)pl + 0x420) = &sh->hit_time;
+#else
     pl->x41C = &sh->hit_time;
+#endif
 }
 
 void hit_shell_minus(HSHL *sh) {
@@ -93,7 +98,7 @@ static void hit_timer_calc_shl_sub(HSHL *sh) {
     case 2:
         if (sh->hit_wait == 0) {
             if (sh->x73 != 0) {
-                pl_atck_data_set_shl2(sh, &player_work[sh->no], sh->x73);
+                pl_atck_data_set_shl2(sh, PLW_AT(sh->no), sh->x73);
                 sh->hit_mode = 1;
                 if (sh->hit_time == 0) {
                     sh->hit_mode = 2;

@@ -88,6 +88,9 @@ void module_load_00535140();
 
 
 
+#ifdef VERSION_MH2
+int sub_main_func_0030A090(char *, char *);
+#endif
 typedef struct DEVW {
     s32 state;          /* 0x00 -1 = unused slot, 1 = ... (guess) */
     u8 _pad04[0x10];
@@ -127,7 +130,11 @@ s32 yn_hard_status_check(char *name, char *vendor) {
         i++;
         d++;
     } while (i < 0x23);
+#ifdef VERSION_MH2
+    return sub_main_func_0030A090(name, vendor) ? -1 : -2;
+#else
     return -1;
+#endif
 }
 
 s32 yn_hard_type_check(char *name, char *vendor) {

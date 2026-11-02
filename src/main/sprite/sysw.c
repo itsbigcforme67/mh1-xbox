@@ -33,7 +33,7 @@ void system_error(void) {
 }
 #endif
 
-#ifdef MHG_PS2
+#if defined(MHG_PS2) || defined(VERSION_MH2)
 #define RAN_ARG u8 seed         /* G: the seed is a parameter */
 #define RAN_SEED seed
 #else
@@ -98,7 +98,11 @@ void sprite_work_free(s16 n) {
 void all_sprite_free(void) {
     s16 i;
 
+#ifdef VERSION_MH2
+    for (i = 0; i < 0x20; i++) {
+#else
     for (i = 0; i < 0x40; i++) {
+#endif
         sprite_work_free(i);
     }
 }

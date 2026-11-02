@@ -225,6 +225,32 @@ typedef struct AQPKT {
 
 
 
+#ifdef VERSION_MH2
+void host_change(void) {
+    s16 i;
+    u8 *p;
+    u8 *pl;
+    u8 *base;
+
+    i = 0;
+    if (0 < game_w[GWX(0xD3)]) {
+        p = game_w;
+        do {
+            if (p[0x224] == 1) {
+                game_w[GWX(0x21B)] = i;
+                base = player_work + 0x877;
+                pl = base + game_w[GWX(0xD1)] * 0x970;
+                if (*pl != 0) {
+                    *pl = 0;
+                }
+                return;
+            }
+            i++;
+            p++;
+        } while (i < game_w[GWX(0xD3)]);
+    }
+}
+#else
 void host_change(void) {
     s16 i;
     u8 *p;
@@ -249,3 +275,4 @@ void host_change(void) {
         } while (i < game_w[GWX(0xD3)]);
     }
 }
+#endif

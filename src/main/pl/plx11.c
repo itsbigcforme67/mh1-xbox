@@ -22,7 +22,7 @@ void pl_light_ck(PLW *pl) {
     }
     e = em_work;
     for (i = 0; i < 20; i++, e++) {
-        if (e->be_flag != 0 && e->x01 != 0 && PU8(e, MH2V(0x612, 0x596)) >= 2) {
+        if (e->be_flag != 0 && e->x01 != 0 && PU8(e, 0x612) >= 2) {
             dx = pl->pos[0] - e->pos[0];
             dz = pl->pos[2] - e->pos[2];
             d = flSqrt(dx * dx + dz * dz);

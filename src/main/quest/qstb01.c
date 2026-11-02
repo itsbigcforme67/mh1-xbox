@@ -31,6 +31,19 @@ void Quest_failed_set(void)
 }
 
 /* 0x226840: quests 0x66-0x6A (the "f_dra" quests) */
+#ifdef VERSION_MH2
+int Quest_f_dra_ck(int q)
+{
+    switch (q) {
+    case 621:
+    case 622:
+    case 623:
+    case 624:
+        return 1;
+    }
+    return 0;
+}
+#else
 int Quest_f_dra_ck(int unused)
 {
     switch (quest_w.no) {
@@ -50,3 +63,4 @@ int Quest_f_dra_ck(int unused)
     }
     return 0;
 }
+#endif

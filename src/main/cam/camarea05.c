@@ -7,6 +7,7 @@
 #endif
 #include "cam.h"
 #include "game.h"
+#include "version.h"
 
 #define EB(p, o) (*(u8 *)((u8 *)(p) + (o)))
 #define EH(p, o) (*(u16 *)((u8 *)(p) + (o)))
@@ -46,6 +47,40 @@ s32 CameraAreaCheck(CAMAREA *a, PLW *pl, s32 mask);
 
 /* 0x00223070: the area the camera's player is in. -1 no camera data,
  * 0 none found (area = first block), 1 found (area set). */
+#ifdef VERSION_MH2
+s32 SetAreaData(CAMW *cw) {
+    PLW *pl = PLW_AT(EB(&game_w, GWX(0xD1)));
+    u8 *d = EP(cw, 0x388);
+    u8 *cell;
+    CAMAREA **l;
+    u32 n;
+
+    if (d == 0) {
+        EW(cw, 0x38C) = 0;
+        return -1;
+    }
+    EW(cw, 0x38C) = EW(d, 0x28);
+    if (EB(cw, 0x3AC) != 0) {
+        return 0;
+    }
+    if (EP(d, 0x1C) == 0) {
+        return 0;
+    }
+    cell = EP(d, 0x1C) + (EH(cw, 0x3A8) + EH(cw, 0x390) * EH(cw, 0x3AA)) * 8;
+    n = EW(cell, 0);
+    if (n == 0) {
+        return 0;
+    }
+    l = (CAMAREA **)EP(cell, 4);
+    for (; n != 0; n--, l++) {
+        if (CameraAreaCheck(*l, pl, 1) == 0) {
+            EW(cw, 0x38C) = (u32)*l;
+            return 1;
+        }
+    }
+    return 0;
+}
+#else
 s32 SetAreaData(CAMW *cw) {
     PLW *pl = &player_work[EB(&game_w, GW_MASTER)];
     u8 *d = cw->data;
@@ -78,3 +113,4 @@ s32 SetAreaData(CAMW *cw) {
     }
     return 0;
 }
+#endif

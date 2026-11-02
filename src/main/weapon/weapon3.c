@@ -13,6 +13,14 @@ extern u32 mem_tex[];
 void Pl_horm_adj(PLW *, s16);
 
 void flmatMul(FLMAT *, f32 *, FLMAT *);
+#ifdef VERSION_MH2
+typedef struct MH2PLP { u8 _pad[0xD0]; void *part[1]; } MH2PLP;
+#define PL_PART(pl, i) (((MH2PLP *)(pl))->part[i])
+#define PL_MDL 0x4EC
+#else
+#define PL_PART(pl, i) ((pl)->part[i])
+#define PL_MDL 0x50C
+#endif
 void flmatCopy(void *, void *);
 void flCalcTrans(void *, FLMAT *);
 void flCalcTransSI(void *, FLMAT *);
@@ -39,7 +47,7 @@ void player_mat_calc(PLW *pl, PLNODE *n, FLMAT *base) {
 
     for (i = 0; i < 0x15; i++) {
         Pl_horm_adj(pl, np->jnt);
-        flmatMakeScale(&sc, *(f32 *)((u8 *)pl->part[i] + 0x98), *(f32 *)((u8 *)pl->part[i] + 0x9C), *(f32 *)((u8 *)pl->part[i] + 0xA0));
+        flmatMakeScale(&sc, *(f32 *)((u8 *)PL_PART(pl, i) + 0x98), *(f32 *)((u8 *)PL_PART(pl, i) + 0x9C), *(f32 *)((u8 *)PL_PART(pl, i) + 0xA0));
         flmatMul(&res, (f32 *)np->m40, &sc);
         np->pos[0] = ((f32 *)res)[12];
         np->pos[1] = ((f32 *)res)[13];
@@ -49,7 +57,7 @@ void player_mat_calc(PLW *pl, PLNODE *n, FLMAT *base) {
     flCalcTransSI(n, base);
     flSetSkinTrans(n);
     for (j = 0; j < 0x15; j++) {
-        flmatCopy((u8 *)pl->part[q->jnt] + 0x40, q);
+        flmatCopy((u8 *)PL_PART(pl, q->jnt) + 0x40, q);
         q++;
     }
 }
@@ -60,7 +68,7 @@ void player_modify(PLW *pl) {
     u8 *mdl;
 
     if (pl->x01 != 0) {
-        mdl = *(u8 **)((u8 *)pl + 0x50C);
+        mdl = *(u8 **)((u8 *)pl + PL_MDL);
         cpAng2Rad_all(&pl->ang, ang);
         flmatMakeScale(&m, pl->scl[0], pl->scl[1], pl->scl[2]);
         flmatRotXYZ33(&m, ang[0], ang[1], ang[2]);
@@ -71,6 +79,22 @@ void player_modify(PLW *pl) {
     }
 }
 
+#ifdef VERSION_MH2
+int func_0018D320(int);
+extern s8 D_008EA910[];
+
+void player_mk(void) {
+    u8 *p = (u8 *)player_work;
+    int i;
+
+    for (i = 0; i < 10; i++) {
+        if (func_0018D320(4) != 1 || D_008EA910[0x152E + ((PLW *)p)->id] == 1) {
+            if (((PLW *)p)->be_flag != 0) player_modify((PLW *)p);
+        }
+        p += 0x970;
+    }
+}
+#else
 void player_mk(void) {
     PLW *p = player_work;
     int i;
@@ -83,6 +107,7 @@ void player_mk(void) {
         p++;
     }
 }
+#endif
 
 int get_tex_num(int n) {
     int i = 0;

@@ -27,6 +27,13 @@ typedef struct PARTS {
 
 extern s16 *ptmat_tbl[];
 
+#ifdef VERSION_MH2
+#define PL_PART(pl, i) (((void **)((u8 *)(pl) + 0xD0))[i])
+#define PL_FRM 0x15C
+#else
+#define PL_PART(pl, i) ((pl)->part[i])
+#define PL_FRM 0x19C
+#endif
 void flmatCopy(f32 *, f32 *);
 void flmatInit(FLMAT *);
 void flmatMul(f32 *, f32 *, f32 *);
@@ -42,11 +49,11 @@ void SetPartsTrans(PARTS *n, PLW *pl, s16 type, int a3) {
     k = ptmat_tbl[type][n->j];
     if (k > 0) {
         if (k < 0x40) {
-            flmatCopy((f32 *)m, (f32 *)((u8 *)pl->part[k & 0x3F] + 0x40));
+            flmatCopy((f32 *)m, (f32 *)((u8 *)PL_PART(pl, k & 0x3F) + 0x40));
         } else {
             flmatCopy((f32 *)m, (f32 *)n);
-            plmatCopy33((f32 *)m, (f32 *)((u8 *)pl->part[k & 0x3F] + 0x40));
-            flmatMul33((f32 *)m, (f32 *)&n->m40, (f32 *)((u8 *)pl->part[k & 0x3F] + 0x40));
+            plmatCopy33((f32 *)m, (f32 *)((u8 *)PL_PART(pl, k & 0x3F) + 0x40));
+            flmatMul33((f32 *)m, (f32 *)&n->m40, (f32 *)((u8 *)PL_PART(pl, k & 0x3F) + 0x40));
         }
     } else {
         flmatInit(&m);
@@ -72,7 +79,7 @@ void SetPartsTrans2(PARTS *n, PLW *pl, s16 type, int a3, f32 *pm) {
     k = ptmat_tbl[type][n->j];
     if (k > 0) {
         if (k < 0x40) {
-            flmatCopy((f32 *)m, (f32 *)((u8 *)pl->part[k & 0x3F] + 0x40));
+            flmatCopy((f32 *)m, (f32 *)((u8 *)PL_PART(pl, k & 0x3F) + 0x40));
         } else {
             flmatMul((f32 *)m, (f32 *)&n->m40, pm);
         }
@@ -98,7 +105,7 @@ f32 weapon_dat_make(PLW *pl, f32 *t) {
             return t[1];
         }
         if (frame_check2(t[0], pl, 0) != 0 && frame_check2(t[2], pl, 0) == 0) {
-            return t[1] + (t[3] - t[1]) * ((*(f32 *)((u8 *)pl + MH2V(0x19C, 0x15C)) - t[0]) / (t[2] - t[0]));
+            return t[1] + (t[3] - t[1]) * ((*(f32 *)((u8 *)pl + PL_FRM) - t[0]) / (t[2] - t[0]));
         }
         t += 2;
     }
@@ -113,9 +120,9 @@ void weapon_dat_make2(PLW *pl, f32 *t, f32 *out) {
             return;
         }
         if (frame_check2(t[0], pl, 0) != 0 && frame_check2(t[4], pl, 0) == 0) {
-            out[0] = t[1] + (t[5] - t[1]) * ((*(f32 *)((u8 *)pl + MH2V(0x19C, 0x15C)) - t[0]) / (t[4] - t[0]));
-            out[1] = t[2] + (t[6] - t[2]) * ((*(f32 *)((u8 *)pl + MH2V(0x19C, 0x15C)) - t[0]) / (t[4] - t[0]));
-            out[2] = t[3] + (t[7] - t[3]) * ((*(f32 *)((u8 *)pl + MH2V(0x19C, 0x15C)) - t[0]) / (t[4] - t[0]));
+            out[0] = t[1] + (t[5] - t[1]) * ((*(f32 *)((u8 *)pl + PL_FRM) - t[0]) / (t[4] - t[0]));
+            out[1] = t[2] + (t[6] - t[2]) * ((*(f32 *)((u8 *)pl + PL_FRM) - t[0]) / (t[4] - t[0]));
+            out[2] = t[3] + (t[7] - t[3]) * ((*(f32 *)((u8 *)pl + PL_FRM) - t[0]) / (t[4] - t[0]));
             return;
         }
         t += 4;
@@ -130,8 +137,8 @@ void weapon_dat_make3(PLW *pl, f32 *t, f32 *a, f32 *b) {
             return;
         }
         if (frame_check2(t[0], pl, 0) != 0 && frame_check2(t[3], pl, 0) == 0) {
-            *a = t[1] + (t[4] - t[1]) * ((*(f32 *)((u8 *)pl + MH2V(0x19C, 0x15C)) - t[0]) / (t[3] - t[0]));
-            *b = t[2] + (t[5] - t[2]) * ((*(f32 *)((u8 *)pl + MH2V(0x19C, 0x15C)) - t[0]) / (t[3] - t[0]));
+            *a = t[1] + (t[4] - t[1]) * ((*(f32 *)((u8 *)pl + PL_FRM) - t[0]) / (t[3] - t[0]));
+            *b = t[2] + (t[5] - t[2]) * ((*(f32 *)((u8 *)pl + PL_FRM) - t[0]) / (t[3] - t[0]));
             return;
         }
         t += 3;

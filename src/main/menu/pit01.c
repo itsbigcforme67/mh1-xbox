@@ -45,6 +45,22 @@ int ListSelect();
 
 
 
+#ifdef VERSION_MH2
+void load_pit(void) {
+    load_texlist(*(s32 *)(PIT_TEX + 4), 0x144, 0);
+    if (game_w.x1DC == 0) {
+        mkmapTexture(game_w.x2E, game_w.quest, 0x145, 0);
+        mkTexture(2, 0x146, 0);
+    } else {
+        mkTexture(9, 0x168, 0);
+        mkTexture(10, 0x169, 0);
+        mkTexture(11, 0x16A, 0);
+        mkTexture(12, 0x16B, 0);
+        mkTexture(13, 0x16C, 0);
+    }
+    mkTexture(7, 0x147, 0);
+}
+#else
 void load_pit(void) {
     load_texlist(*(s32 *)(PIT_TEX + 4), 0x118, 0);
     if (game_w.x1DC == 0) {
@@ -57,3 +73,4 @@ void load_pit(void) {
     mkTexture(8, 0x11B, 0);
     mkTexture(4, 0x11C, 0);
 }
+#endif

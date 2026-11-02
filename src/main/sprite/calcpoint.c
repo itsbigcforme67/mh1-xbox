@@ -32,9 +32,13 @@ void CalcPoint(f32 *pts, f32 *center, int n, SPRD *d) {
         flmatInit(view);
     }
     flmatInit(rot);
+#ifdef VERSION_MH2
+    flmatSetZYX33(rot, 6.2831855f * d->ang[0] / 360.0f, 6.2831855f * d->ang[1] / 360.0f, 6.2831855f * d->ang[2] / 360.0f);
+#else
     flmatSetZYX33(rot, 2.0f * (3.1415927f * (d->ang[0] / 360.0f)),
                   2.0f * (3.1415927f * (d->ang[1] / 360.0f)),
                   2.0f * (3.1415927f * (d->ang[2] / 360.0f)));
+#endif
     flmatMul(rot, rot, view);
     for (i = 0; i < n; i++) {
         v[0] = pts[0] - center[0];

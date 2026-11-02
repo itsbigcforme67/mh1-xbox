@@ -711,8 +711,13 @@ void hk_key_u_cursor(void) {
 #else
     if (SKB(0x2F) != 0) {
 #endif
+#ifdef VERSION_MH2
+        SK_SE(0x17);
+        cmd_prev_kouho();
+#else
         cmd_prev_kouho();
         SK_SE(0x16);
+#endif
     }
 }
 #endif
@@ -733,8 +738,13 @@ void hk_key_d_cursor(void) {
 #else
     if (SKB(0x2F) != 0) {
 #endif
+#ifdef VERSION_MH2
+        SK_SE(0x17);
+        cmd_next_kouho();
+#else
         cmd_next_kouho();
         SK_SE(0x16);
+#endif
     }
 }
 #endif
@@ -808,6 +818,18 @@ static void cmd_delete(void) {
             s = (char *)lpSKey + SKO(0x44);
             n = sk_letlenU(s, pos);
         }
+#ifdef VERSION_MH2
+        if ((int)strlen(s) <= pos) {
+            SK_SE(0x15);
+            return;
+        }
+        if (n != 0) {
+            p = s + pos;
+            *p = 0;
+            strcat(p, p + n);
+            SKS8(0x28) = 0;
+        }
+#else
         if (pos < (int)strlen(s)) {
             if (n != 0) {
                 p = s + pos;
@@ -816,6 +838,7 @@ static void cmd_delete(void) {
                 SKS8(0x28) = 0;
             }
         }
+#endif
     }
 }
 #endif
@@ -868,7 +891,7 @@ static int hk_roma_ck(int mode) {
         off = 0;
     }
     n = 8 - off;
-    strncpy(b + off, (char *)lpSKey + (SKU16(0x2C) - n) + SKO(MH2V(0x158, 0x168)), n);
+    strncpy(b + off, (char *)lpSKey + (SKU16(0x2C) - n) + SKO(0x158), n);
     if (roma_ck_sub(mode, b + 2) != 0) {
         return 1;
     }
@@ -885,7 +908,7 @@ static int hk_roma_ck(int mode) {
         return 0;
     }
     p = (char *)lpSKey + (SKU16(0x2C) - 4);
-    strncpy(p + SKO(MH2V(0x158, 0x168)), nn_tbl[mode], 2);
+    strncpy(p + SKO(0x158), nn_tbl[mode], 2);
     return 1;
 }
 #endif

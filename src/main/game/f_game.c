@@ -249,6 +249,9 @@ void game13(void) {
 }
 #endif
 
+#ifdef VERSION_MH2
+void func_00326C90(void);
+#endif
 #if !defined(G_PART) || G_PART == 2
 void game1(void) {
     swset();
@@ -265,6 +268,11 @@ void game1(void) {
     case 3:
         game13();
         break;
+#ifdef VERSION_MH2
+    case 4:
+        func_00326C90();
+        break;
+#endif
     }
 }
 #endif

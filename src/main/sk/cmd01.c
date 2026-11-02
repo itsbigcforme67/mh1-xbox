@@ -89,7 +89,7 @@ extern ZK lit_913_0034E410;
 
 #if !defined(G_PART) || G_PART == 1
 void sk_conv_init(void) {
-    memset(lpSKey + SKO(MH2V(0x144, 0x154)), 0, 0x514);
+    memset(lpSKey + SKO(0x144), 0, 0x514);
     memset(kouhogun, 0, 0x300);
 }
 #endif

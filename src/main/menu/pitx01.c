@@ -45,6 +45,20 @@ int ListSelect();
 
 
 
+#ifdef VERSION_MH2
+int UseItemChk(u8 *pl, int slot) {
+    u8 *q = (u8 *)((slot & 0xFFFF) * 4) + (int)pl;
+    s16 id;
+
+    if (*(s16 *)(q + 0x77E) > 0) {
+        id = *(s16 *)(q + 0x77C);
+        if (id != 0 && (Item_data[id][1] & 1)) {
+            return 1;
+        }
+    }
+    return 0;
+}
+#else
 int UseItemChk(u8 *pl, int slot) {
     u8 *q = (u8 *)((slot & 0xFFFF) * 4) + (int)pl;
     s16 id;
@@ -57,3 +71,4 @@ int UseItemChk(u8 *pl, int slot) {
     }
     return 0;
 }
+#endif

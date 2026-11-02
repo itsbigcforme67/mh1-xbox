@@ -83,6 +83,9 @@ typedef struct EFT01_CHR {
 
 /* Work area for kind 2. */
 typedef struct EFT01_WORK {
+#ifdef VERSION_MH2
+    u8 _pad00[0x3C];
+#endif
     PRIM *prim[5];      /* 0x00 */
     s16 prim_no[5];     /* 0x14 */
 } EFT01_WORK;

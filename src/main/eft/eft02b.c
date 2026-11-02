@@ -62,7 +62,11 @@ void eft02_set(PLW *pl, int arg, f32 *pos) {
             ew->pos[0] = pos[0];
             ew->pos[1] = pos[1];
             ew->pos[2] = pos[2];
+#ifdef VERSION_MH2
+            ew->u0A.ang = *(u16 *)((u8 *)pl + 0x3F0) + 0x8000;
+#else
             ew->u0A.ang = pl->dm_ang + 0x8000;
+#endif
         }
     }
 }
@@ -105,6 +109,13 @@ void Eft02_set3(EMW *em, int ang, int arg, int joint, f32 *pos, f32 scale) {
             ew->mode2 = joint;
             ew->x07 = 0;
             ew->u0A.joint = ang;
+#ifdef VERSION_MH2
+            if (em->x10 != 0) {
+                ew->x1E = em->kind;
+            } else {
+                ew->x1E = 0;
+            }
+#else
             if (em->x10 != 0 && (em->kind == 0x13 || em->kind == 0x18)) {
                 ew->x1E = 2;
 #if defined(VERSION_MHG) && !defined(__MWERKS__)       /* G (sub_main 0x4C3900): kinds 8 / 34 bleed dark (x1E 3) */
@@ -114,6 +125,7 @@ void Eft02_set3(EMW *em, int ang, int arg, int joint, f32 *pos, f32 scale) {
             } else {
                 ew->x1E = 0;
             }
+#endif
         }
     }
 }
@@ -167,9 +179,15 @@ void Eft02_set5(EMW *em, s16 kind, int arg, int joint, f32 *pos, f32 scale) {
                 break;
             default:
                 ew->stg = 0;
+#ifdef VERSION_MH2
+                if (em->x10 != 0) {
+                    ew->x1E = em->kind;
+                }
+#else
                 if (em->x10 != 0 && (em->kind == 0x13 || em->kind == 0x18)) {
                     ew->x1E = 2;
                 }
+#endif
                 break;
             }
             ew->x07 = 0;

@@ -63,6 +63,10 @@ int get_prim(void) {
         p++;
     }
     prim_free_top = n;
+#ifdef VERSION_MH2
+    p = get_prim_ptr(i);
+    *(s32 *)((u8 *)p + 0x14) = 1;
+#endif
     return (s16)i;
 }
 

@@ -258,7 +258,7 @@ u8 *em_cmd_boss_work_ck(EMW *em, u8 *p) {
     var_a1 = p;
     switch (*var_a1++) {
     case 0:
-        if (EM_FIELD(em, s32 *, MH2V(0x9D4, 0x958)) == 0) {
+        if (EM_FIELD(em, s32 *, 0x9D4) == 0) {
             CMD_SKIP(em, var_a1, 0x3B);
         }
         break;

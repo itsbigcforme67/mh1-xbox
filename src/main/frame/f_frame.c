@@ -7,14 +7,26 @@
 #include "em.h"
 #include "frame.h"
 
+#ifdef VERSION_MH2
+#define MOT_PL 710
+#define MOT_EM 1910
+#else
+#define MOT_PL 500
+#define MOT_EM 1700
+#endif
 void create_plcom_motion(void) {
     u8 tmp[0x28];
     u8 frame[8];
+#ifdef VERSION_MH2
+    int i;
+#endif
     int idx;
     u8 *aan;
     int num;
     s32 *ofs;
+#ifndef VERSION_MH2
     int i;
+#endif
     u8 *p;
     u32 *han;
     u32 h;
@@ -48,18 +60,23 @@ void create_plcom_motion(void) {
 void create_pl_motion(int pl) {
     u8 tmp[0x28];
     u8 frame[8];
+#ifdef VERSION_MH2
+    int i;
+#endif
     int idx;
     u8 *aan;
     int num;
     s32 *ofs;
+#ifndef VERSION_MH2
     int i;
+#endif
     u8 *p;
     u32 *han;
     u32 h;
     int base;
     int bank;
 
-    han = &motion_set_handle_tbl[pl * 300 + 500];
+    han = &motion_set_handle_tbl[pl * 300 + MOT_PL];
     aan = pl_area_top;
     idx = 0;
     bank = 0;
@@ -88,15 +105,20 @@ void create_em_motion(int no, int em) {
     u8 tmp[0x28];
     u8 frame[8];
     int bank;
+#ifdef VERSION_MH2
+    int i;
+#endif
     int idx;
     int num;
+#ifndef VERSION_MH2
     int i;
+#endif
     u8 *p;
     u32 *han;
     u32 h;
     int banks;
 
-    han = &motion_set_handle_tbl[no * 600 + 1700];
+    han = &motion_set_handle_tbl[no * 600 + MOT_EM];
     aan = pl_area_top;
     banks = Em_max_parts_get(em) * 2;
     idx = 0;

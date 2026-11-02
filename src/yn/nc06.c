@@ -19,6 +19,7 @@ int sceNetcnfifInit();
 int sceNetcnfifLoadEntry();
 int sceNetcnfifSetFNoDecode();
 int sceNetcnfifSetup();
+int sceNetcnfifTerm();
 int sceSifLoadModule();
 int sceSifLoadStartModule();
 int sceSifSearchModuleByName();
@@ -77,6 +78,9 @@ s32 yn_netcnf_exit(void) {
     do {
 
     } while (sceNetcnfifCheck() != 0);
+#ifdef VERSION_MH2
+    sceNetcnfifTerm();
+#endif
     temp_v0 = sceSifSearchModuleByName(lit_203_0053E360);
     if (0 <= temp_v0) {
         module_unload_00535090(temp_v0);
