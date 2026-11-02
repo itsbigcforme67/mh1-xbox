@@ -158,7 +158,7 @@ void menu_option_i(void) {
 }
 #endif
 
-#ifdef VERSION_MHG
+#if defined(VERSION_MHG) && !defined(G_PART)
 /* G 0x11CB50: the village / lobby Options page: left / right change the chat window size */
 int Lb_menu_win_size_mv(int sw) {
     u8 *p = (u8 *)lpPit + 0x8E;

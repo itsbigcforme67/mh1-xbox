@@ -19,6 +19,9 @@ step() {  # step NAME CMD...
 (ulimit -v 3000000; tools/rebuild.sh) > build/check/rebuild.log 2>&1
 n=$(grep -cE '^[a-z]+ +OK ' build/check/rebuild.log)
 if [ "$n" = 5 ]; then echo "ok   rebuild (5 OK)"; else echo "FAIL rebuild ($n OK, build/check/rebuild.log)"; fail=1; fi
+(ulimit -v 3000000; VERSION=mhg tools/rebuild.sh) > build/check/rebuild_mhg.log 2>&1
+n=$(grep -cE '^[a-z_]+ +OK ' build/check/rebuild_mhg.log)
+if [ "$n" = 7 ]; then echo "ok   rebuild_mhg (7 OK)"; else echo "FAIL rebuild_mhg ($n OK, build/check/rebuild_mhg.log)"; fail=1; fi
 step build_pc tools/build_pc.sh
 step kr_returns python3 tools/check_kr_returns.py --implicit build/pc/cmd --mwcc mh1   # Xbox ABI hazard: char/short/float functions declared or used as int
 step build_pc_online env ONLINE=1 tools/build_pc.sh
