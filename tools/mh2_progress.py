@@ -21,7 +21,7 @@ def main():
     carried = hand = 0
     for l in open(os.path.join(ROOT, "config/mh2/c_files.txt")):
         f = l.split("#", 1)[0].split()
-        if len(f) == 4:
+        if len(f) == 4 and ":" not in f[0]:
             ranges[f[0]].append((int(f[1], 16), int(f[2], 16)))
             if f[3].startswith("mh2/"):
                 hand += 1
@@ -41,7 +41,7 @@ def main():
         tf, tm, tb, tmb = tf + len(fl), tm + len(done), tb + b, tmb + mb
         print("| %s | %d | %d | %d | %d | %.2f%% |" % (m, len(fl), len(done), b, mb, 100 * mb / b))
     print("| all | %d | %d | %d | %d | %.2f%% |" % (tf, tm, tb, tmb, 100 * tmb / tb))
-    print("%d C files: %d carried unchanged from MH1, %d written for MH2" % (carried + hand, carried, hand))
+    print("%d C files: %d carried unchanged from MH1/G, %d written for MH2" % (carried + hand, carried, hand))
 
 
 if __name__ == "__main__":

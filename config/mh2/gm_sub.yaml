@@ -35,5 +35,7 @@ segments:
     subsegments:
       - [0x000000, textbin, header]
       - [0x000040, asm, text/gm_sub_8FAE40]
+      - [0x00AA10, c, mhg/main/emw/emu03_p1]
+      - [0x00AA44, asm, text/gm_sub_905844]
       - [0x00FE80, data, data/gm_sub_data]
   - [0x38580]

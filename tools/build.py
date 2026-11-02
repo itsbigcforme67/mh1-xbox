@@ -229,7 +229,9 @@ def compile_c(src):
     if err:
         return err
     for old, new in RENAMES.get(obj, []):
-        err = run([BU + "objcopy", "--rename-section", "%s=%s" % (old, new), obj])
+        # `sym:OLD NEW`: a symbol renamed in this object only (VERSION=mh2, config/mh2/c_symfix.txt)
+        err = run([BU + "objcopy", "--redefine-sym", "%s=%s" % (old[4:], new), obj] if old.startswith("sym:")
+                  else [BU + "objcopy", "--rename-section", "%s=%s" % (old, new), obj])
         if err:
             return err
     return None

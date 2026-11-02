@@ -4,7 +4,7 @@
 #        MH2_PY=/path/to/venv/bin/python    if .venv is not in this tree (git worktrees)
 #        MH2_NOSPLIT=1                      reuse asm/mh2, only compile, link and compare
 cd "$(dirname "$0")/.." || exit 1
-ulimit -v 6000000
+ulimit -v 3000000
 PY=${MH2_PY:-.venv/bin/python}
 mods="${*:-main sub_main select game lobby yn plsel gm_sub lbguild nethttp test dnas_net dnas_ins}"
 python3 tools/mh2_setup.py > /dev/null || exit 1
