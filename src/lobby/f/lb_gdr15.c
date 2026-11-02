@@ -113,6 +113,28 @@ extern u8 INTCTYPE_MAP_006535E0[];
 
 
 /* post the lobby info (user id and the csv work) to the server and start the request */
+#ifdef VERSION_MH2
+int PostLbsInfoGetOrGameEnd(void) {
+    char *id;
+    int r;
+    id = bsSys->id1;
+    if (*(u8 *)id != 0 && strcmp(id, bsCsv) != 0) {
+        r = BsRequestPostAdd(lit_429_00667370, ((BSSYS *)bsSys)->id1);
+    } else {
+        r = BsRequestPostAdd(lit_429_00667370, bsCsv);
+    }
+    if (r < 0) {
+        return -1;
+    }
+    if (BsRequestPostAdd(lit_430_00667378, bsCsv + 0x11) < 0) {
+        return -1;
+    }
+    BsRequestHtmlPost(bsUrl);
+    *(s8 *)(bsUrl + 0x8EAE) = 1;
+    ((BSSYS *)bsSys)->x34 = 1;
+    return 1;
+}
+#else
 int PostLbsInfoGetOrGameEnd(void) {
     char *id;
     int r;
@@ -133,3 +155,4 @@ int PostLbsInfoGetOrGameEnd(void) {
     ((BSSYS *)bsSys)->x34 = 1;
     return 1;
 }
+#endif

@@ -26,9 +26,15 @@ s32 cnWrap_GetConnectType(void) {
 #endif
 
 #if !defined(G_PART)
+#ifdef VERSION_MH2
+s32 cnWrap_IsAccessMemoryCard(void) {
+    return *(s8 *)0x6ADFCC != 0;
+}
+#else
 s32 cnWrap_IsAccessMemoryCard(void) {
     return *(s8 *)0x3F36CC != 0;
 }
+#endif
 #endif
 
 #if !defined(G_PART) || G_PART == 2

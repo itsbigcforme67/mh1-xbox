@@ -10,7 +10,11 @@ extern u8 *cw;                 /* client work (D_6DD7E0, 0xBF40 bytes): u8 acces
 #define CW8(o)  (*(u8 *)(cw + (o)))
 #define CWPLAYER(i) (cw + (i) * 0x2FC)  /* per member records start at cw+0x1334 */
 
+#ifdef VERSION_MH2
+typedef struct LBCOMMER { s8 mac[6]; u8 _pad06[2]; char name[0x10]; u8 _pad18[0x11C - 0x18]; } LBCOMMER; /* MH2: 0x11C bytes */
+#else
 typedef struct LBCOMMER { s8 mac[6]; u8 _pad06[2]; char name[0x10]; u8 _pad18[0x5C - 0x18]; } LBCOMMER; /* 0x5C bytes x8 at lbCommer */
+#endif
 extern LBCOMMER lbCommer[8];
 
 typedef struct LBPLAYER { PLW *pl; u8 x04[0x10]; u8 _pad14[0x24 - 0x14]; s8 x24; u8 _pad25[0x38 - 0x25]; } LBPLAYER; /* lb_player 0x38 x8 */
