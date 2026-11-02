@@ -99,6 +99,6 @@ void GetRailCamPos(f32 *out, CAMW *cw, CAMAREA *a, f32 *spl) {
     u8 sec;
 
     Spline(spl, (f32 *)((u8 *)a + 0x20), EB(a, 0x280));
-    sec = EB(cw, 0x5B4);
-    CamRailPoint(out, spl + sec * 12, EF(cw, 0x5B0) * EF((u8 *)(sec * 16) + (int)a, 0x2C));
+    sec = EB(cw, MH2V(0x5B4, 0x654));
+    CamRailPoint(out, spl + sec * 12, EF(cw, MH2V(0x5B0, 0x650)) * EF((u8 *)(sec * 16) + (int)a, 0x2C));
 }

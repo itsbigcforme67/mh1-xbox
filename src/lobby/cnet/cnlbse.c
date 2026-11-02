@@ -526,9 +526,9 @@ void *d3;
 {
     u8 *t = (u8 *)&CnetSys_w + (u16)idx * 0x60;
 
-    strcpy(d1, t + CNO(MH2V(0x36EE, 0x4E2C)));
-    strcpy(d2, t + CNO(MH2V(0x36F6, 0x4E34)));
-    memcpy(d3, t + CNO(MH2V(0x370A, 0x4E48)), MH2V(0x40, 0x100));
+    strcpy(d1, t + CNO(0x36EE));
+    strcpy(d2, t + CNO(0x36F6));
+    memcpy(d3, t + CNO(0x370A), MH2V(0x40, 0x100));
     return 0;
 }
 #endif
@@ -687,7 +687,7 @@ void _cnet_RecvFromLbs_AnswerRoomMatchEntryTypeList(void) {
                     k = 0;
                     s2 = (u8 *)&CnetSys_w;
                     do {
-                        if (memcmp(name, s2 + CNO(MH2V(0x39EE, 0x4E2C)), 8) == 0) {
+                        if (memcmp(name, s2 + CNO(0x39EE), 8) == 0) {
                             s2[CNO(0x3A4A)] = type;
                         }
                         k++;
@@ -933,7 +933,7 @@ char *d;
 {
     int k = idx & 0xFF;
 
-    strcpy(d, (u8 *)&CnetSys_w + k * 0x5C + CNO(MH2V(0x1462, 0x18DB)));
+    strcpy(d, (u8 *)&CnetSys_w + k * 0x5C + CNO(0x1462));
     return 0;
 }
 #endif
@@ -945,7 +945,7 @@ char *d;
 {
     int k = idx & 0xFF;
 
-    strcpy(d, (u8 *)&CnetSys_w + k * 0x5C + CNO(MH2V(0x146A, 0x18E3)));
+    strcpy(d, (u8 *)&CnetSys_w + k * 0x5C + CNO(0x146A));
     return 0;
 }
 #endif
@@ -957,7 +957,7 @@ void *d;
 {
     int k = idx & 0xFF;
 
-    memcpy(d, (u8 *)&CnetSys_w + k * 0x5C + CNO(MH2V(0x147E, 0x18F7)), MH2V(0x40, 0x100));
+    memcpy(d, (u8 *)&CnetSys_w + k * 0x5C + CNO(0x147E), MH2V(0x40, 0x100));
     return 0;
 }
 #endif

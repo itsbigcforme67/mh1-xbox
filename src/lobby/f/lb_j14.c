@@ -117,7 +117,7 @@ void lb_pl_mv099(PLW *pl) {
         Lb_pl_chr_set(pl, 0x25D, 6, 0);
         return;
     case 1:
-        if (F(s32, pl, 0x194) <= 0) {
+        if (F(s32, pl, MH2V(0x194, 0x154)) <= 0) {
             pl->x05 = s + 1;
             Lb_pl_chr_set(pl, 0x25E, 0, 0);
         }
@@ -125,7 +125,7 @@ void lb_pl_mv099(PLW *pl) {
     case 2:
         break;
     case 3:
-        if (F(s32, pl, 0x194) <= 0) {
+        if (F(s32, pl, MH2V(0x194, 0x154)) <= 0) {
             Lb_pl_to_normal(pl, 0, 4, 0);
         }
         break;

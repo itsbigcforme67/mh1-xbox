@@ -118,13 +118,13 @@ int is_sjis(u8 *obj, u8 *s, int n) {
         do {
             u8 c = *s;
             if ((c >= 0x81 && c <= 0x8D) || (c >= 0x8F && c <= 0xA0)) {
-                obj[0x3F] = 1;
+                obj[MH2V(0x3F, 0x45)] = 1;
                 return 1;
             }
             n -= 1;
             s += 1;
         } while (n > 0);
     }
-    obj[0x3F] = 0;
+    obj[MH2V(0x3F, 0x45)] = 0;
     return 0;
 }

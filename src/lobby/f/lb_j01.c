@@ -9,7 +9,7 @@
 
 void lb_pl_mv044(PLW *pl) {
     u8 s;
-    if (PLU8(pl, 0x8EC) != 0) {
+    if (PLU8(pl, MH2V(0x8EC, 0x844)) != 0) {
         Lb_act_set(pl, 0, MH2V(0x55, 0x1D));
         Lb_Pl_basic_flagset(pl, 0, 0, 0);
         return;
@@ -22,7 +22,7 @@ void lb_pl_mv044(PLW *pl) {
         Lb_pl_chr_set(pl, 0x1E, 4, 0);
         return;
     case 1:
-        if (F(s32, pl, 0x194) == 0) {
+        if (F(s32, pl, MH2V(0x194, 0x154)) == 0) {
             Lb_pl_to_normal(pl, 0, 0xA, 0);
         }
     }

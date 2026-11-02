@@ -21,7 +21,7 @@ void pl_sleeping();
 #if !defined(G_PART) || G_PART == 1
 void lb_pl_mv063(PLW *pl) {
     u8 s;
-    if (PLU8(pl, 0x8EC) != 0) {
+    if (PLU8(pl, MH2V(0x8EC, 0x844)) != 0) {
         Lb_act_set(pl, 0, MH2V(0x1F, 0x4));
         return;
     }
@@ -36,7 +36,7 @@ void lb_pl_mv063(PLW *pl) {
         Lb_pl_flag_set(pl, 0x1000);
         return;
     case 1:
-        if (F(s32, pl, 0x194) == 0) {
+        if (F(s32, pl, MH2V(0x194, 0x154)) == 0) {
             Lb_Pl_act_set2(pl, 0, MH2V(0x1F, 0x4), 0);
         }
         break;

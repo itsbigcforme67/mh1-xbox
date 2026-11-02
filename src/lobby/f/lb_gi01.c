@@ -19,9 +19,9 @@ void lb_pl_horm_sub(PLW *pl) {
             return;
         }
         if ((s16)a >= 0) {
-            pl->work81A = *(u16 *)((u8 *)pl + 0x81A) - 0x400;
+            pl->work81A = *(u16 *)((u8 *)pl + MH2V(0x81A, 0x76E)) - 0x400;
             return;
         }
-        pl->work81A = *(u16 *)((u8 *)pl + 0x81A) + 0x400;
+        pl->work81A = *(u16 *)((u8 *)pl + MH2V(0x81A, 0x76E)) + 0x400;
     }
 }

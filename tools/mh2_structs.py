@@ -21,9 +21,15 @@ import re
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 SIZES = {"u8": 1, "s8": 1, "char": 1, "u16": 2, "s16": 2, "u32": 4, "s32": 4, "f32": 4, "PLSW": 0x24, "PL_ITEM": 4,
-         "EM_HAGI": 8, "V3S": 6}
+         "EM_HAGI": 8, "V3S": 6,
+         "CNET_BG": 0x1C, "CNET_BURST": 0x28, "CNET_LOGIN": 0x40, "CNET_B5C": 0x11C, "CNET_FIRSTDATA": 0x24,
+         "CNET_PDATA": 0x1D0, "CNET_RULE": 0x16B, "CNET_BATRES": 0x28, "CNET_LUSER": 0x11C, "CNET_B1004": 0x1004,
+         "CNET_H1004": 0x1004, "CNET_PIECE": 0x164, "CNET_RULETBL": 0x294A4, "CNET_W5D4": 0xE44, "CNET_CHAT": 0x120,
+         "CNET_B308": 0x308, "CNET_BUF2000": 0x2000, "CNET_CSEARCH": 0x58C4}
 OUT = {"PLW": ("include/pl.h", "include/pl_mh2.h", "PL_MH2_H"), "EMW": ("include/em.h", "include/em_mh2.h", "EM_MH2_H"),
-       "GAME_W": ("include/game.h", "include/game_mh2.h", "GAME_MH2_H")}   # GAME_W: G's struct, MH2 comes from it
+       "GAME_W": ("include/game.h", "include/game_mh2.h", "GAME_MH2_H"),   # GAME_W: G's struct, MH2 comes from it
+       "CNET_SYS": ("include/lbnet.h", "include/cnet_mh2.h", "CNET_MH2_H")}  # also writes CNO(), offsets as MH1's
+LAST = {"CNET_SYS"}                             # use the last definition in the file: the first is G's
 
 
 def load_map():
@@ -47,7 +53,7 @@ def load_map():
 def body(path, name):
     """lines of the MH1 definition: the `#else` side of each #if inside it"""
     text = open(os.path.join(ROOT, path)).read()
-    start = text.index("typedef struct %s {" % name)        # the first one: for GAME_W that is G's
+    start = (text.rindex if name in LAST else text.index)("typedef struct %s {" % name)   # GAME_W: the first one, G's
     end = text.index("} %s;" % name, start)
     out, keep = [], [True]
     for l in text[start:end].split("\n")[1:]:
@@ -121,6 +127,15 @@ def place(old, m):
     return old + delta, None
 
 
+def cno(m):
+    pts = sorted(set(m["runs"]) | set((o, n - o) for o, (n, _t) in m["fields"].items()))
+    chain = ""
+    # each FIELD also ends at the next point, which RUN lines must state when the run goes on
+    for i, (start, d) in enumerate(pts[:-1]):
+        chain += "(o) < 0x%X ? %d : " % (pts[i + 1][0], d)
+    return "#define CNO(o) ((o) + ((o) < 0x%X ? 0 : %s%d))" % (pts[0][0], chain, pts[-1][1])
+
+
 def emit(name, m):
     src, dst, guard = OUT[name]
     items = []
@@ -161,6 +176,8 @@ def emit(name, m):
             out.append("    struct { u8 _p%03X[0x%X]; %s };  /* MH1 0x%03X: place in MH2 not known */" % (old, new, decl.strip(), old))
         out.append("    };")
     out.append("} %s;" % name)
+    if name == "CNET_SYS":
+        out += ["", "/* CNO(o): MH2's offset of a CnetSys_w byte written as an MH1 offset */", cno(m)]
     out += ["", "#endif", ""]
     open(os.path.join(ROOT, dst), "w").write("\n".join(out))
     print("%s: %d fields, %d without room" % (dst, len(items) - len(lost), len(lost)))

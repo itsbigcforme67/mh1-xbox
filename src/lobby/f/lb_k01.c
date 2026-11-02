@@ -35,7 +35,7 @@ void lb_pl_chat00(PLW *pl) {
                 Lb_Pl_act_set2(pl, 1, 1, 0);
                 return;
             }
-            if (PLU8(pl, 0x8C4) != 0) {
+            if (PLU8(pl, MH2V(0x8C4, 0x81C)) != 0) {
                 Lb_Pl_chat_act_set(pl);
             }
         }

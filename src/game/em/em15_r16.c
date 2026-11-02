@@ -381,7 +381,7 @@ void em_mv07_005C5330(EMW *em, EM15W *w) {
         }
         break;
     case 2:
-        if (M2C_FIELD(em, s32 *, 0x1E4) == 0) {
+        if (M2C_FIELD(em, s32 *, MH2V(0x1E4, 0x1A4)) == 0) {
             em->x05 = temp_a1 + 1;
             em15_to_normal(em);
         }

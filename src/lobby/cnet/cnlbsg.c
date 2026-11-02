@@ -240,7 +240,7 @@ int __cnet_Recv_UserIDandHandle(void) {
     if (0 < n) {
         s0 = (u8 *)&CnetSys_w;
         do {
-            p = GetRecvDataOption3(s0 + CNO(MH2V(0x147E, 0x18F7)), MH2V(0x40, 0x100), GetRecvDataOption3(s0 + CNO(MH2V(0x146A, 0x18E3)), 0x10, GetRecvDataOption3(s0 + CNO(MH2V(0x1462, 0x18DB)), 8, p)));
+            p = GetRecvDataOption3(s0 + CNO(0x147E), MH2V(0x40, 0x100), GetRecvDataOption3(s0 + CNO(0x146A), 0x10, GetRecvDataOption3(s0 + CNO(0x1462), 8, p)));
             i++;
             s0 += MH2V(0x5C, 0x11C);
         } while (i < n);

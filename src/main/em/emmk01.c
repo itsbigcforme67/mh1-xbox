@@ -35,7 +35,7 @@ void old_pos_save(u8 *em) {
     if (em[0] == 0 || em[1] == 0) {
         return;
     }
-    skin = *(u8 **)(*(u8 **)(em + 0x50C) + 0x24);
+    skin = *(u8 **)(*(u8 **)(em + MH2V(0x50C, 0x4EC)) + 0x24);
     n = *(s16 *)(skin + 0xC2);
     for (i = 0; i < n; i++, skin += 0x190) {
         sys_old_pos[i][0] = *(f32 *)(skin + 0x30);

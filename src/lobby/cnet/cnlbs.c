@@ -1641,9 +1641,9 @@ void *d3;
 {
     u8 *t = (u8 *)&CnetSys_w + (u16)idx * 0x60;
 
-    strcpy(d1, t + CNO(MH2V(0x39EE, 0x42EC)));
-    strcpy(d2, t + CNO(MH2V(0x39F6, 0x42F4)));
-    memcpy(d3, t + CNO(MH2V(0x3A0A, 0x4308)), MH2V(0x40, 0x100));
+    strcpy(d1, t + CNO(0x39EE));
+    strcpy(d2, t + CNO(0x39F6));
+    memcpy(d3, t + CNO(0x3A0A), MH2V(0x40, 0x100));
     return 0;
 }
 #endif

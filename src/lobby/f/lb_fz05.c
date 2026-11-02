@@ -36,5 +36,5 @@ void lb_target_angle(PLW *pl, u8 *tgt, u32 dir, u32 rng, u8 mode) {
             dir = (int)((f32)(0xFFFF - d) * (1.0f / ((f32)rng / 3.0f))) & 0xFFFF;
         }
     }
-    *(s16 *)(tgt + 0x302) = dir;
+    *(s16 *)(tgt + MH2V(0x302, 0x2C2)) = dir;
 }
