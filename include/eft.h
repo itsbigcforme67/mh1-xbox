@@ -37,7 +37,9 @@ typedef struct EFTW {
     EMW *owner;         /* 0x34 */
     struct PRIM *prim;  /* 0x38 */
     s16 prim_no;        /* 0x3C */
-#ifndef VERSION_MH2
+#ifdef VERSION_MH2
+    u16 x3E;            /* 0x3E eft12: stage number, 16 bits (MH1 x07) */
+#else
     u8 prim2;           /* 0x3E 1: prim from the second pool (get_prim2) */
 #endif
 } EFTW;

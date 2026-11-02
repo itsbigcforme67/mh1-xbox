@@ -782,7 +782,7 @@ void em_atk02_00591B80(EMW *em) {
                     if (w->x19 >= 0xA) {
                         Quest_failed_set(em);
                     }
-                    *(s8 *)0x3F360D = w->x19;
+                    *(s8 *)MH2V(0x3F360D, 0x6ADDEF) = w->x19;
                 }
             }
         }
@@ -868,7 +868,7 @@ void em_atk05_00591EC0(EMW *em) {
         break;
     case 1:
         if (em_frame_check(em, 210.0f, 0) != 0) {
-            *(u8 *)0x3F35A3 |= 1;
+            *(u8 *)MH2V(0x3F35A3, 0x6ADEB9) |= 1;
             toride_eff_set(em);
         }
         if (em->x194 == 0) {

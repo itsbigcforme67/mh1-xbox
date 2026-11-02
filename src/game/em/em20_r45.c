@@ -692,7 +692,7 @@ block_111:
         break;
     }
     if ((quest_w.no == 0x94) && (em->stg == 0x2E) && (Event_flag_ck(0x10) == 0)) {
-        if ((*(u8 *)0x3F360F == 1) && (em->mode != 6)) {
+        if ((*(u8 *)MH2V(0x3F360F, 0x6ADF25) == 1) && (em->mode != 6)) {
             em20_act_set(em, 6, 0, 1);
         }
     } else {

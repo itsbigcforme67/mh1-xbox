@@ -11,8 +11,12 @@ typedef float f32;
 #ifdef VERSION_MH2
 #include "mh2_ofs.h"
 #define MH2V(mh1, mh2) (mh2)    /* a constant MH2 changed */
+#define MH2_EM(o) MH2_OFS_EMW(o)  /* for pads of local copies of EMW */
+typedef u16 stg_t;              /* stage number: 16 bits in MH2 */
 #else
 #define MH2_OFS(p, o) (o)
 #define MH2V(mh1, mh2) (mh1)
+#define MH2_EM(o) (o)
+typedef u8 stg_t;
 #endif
 #endif

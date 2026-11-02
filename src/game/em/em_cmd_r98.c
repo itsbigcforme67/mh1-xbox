@@ -19,7 +19,7 @@ void em_cdm_act_flag_ck(EMW *em) {
         EM_FIELD(em, s8 *, 0x880) = 0;
         return;
     case 1:
-        n = *(u8 *)0x3F34C3;
+        n = *(u8 *)MH2V(0x3F34C3, 0x6ADCEE);
         i = 0;
         cnt = 0;
         for (; i < n; i++) {
@@ -34,7 +34,7 @@ void em_cdm_act_flag_ck(EMW *em) {
         EM_FIELD(em, s8 *, 0x880) = 1;
         em->x881 = 1;
         em->x882 = 0;
-        m = *(u8 *)0x3F34C3;
+        m = *(u8 *)MH2V(0x3F34C3, 0x6ADCEE);
         i = 0;
         if (0 < m) {
             while (!(em->x914 & (1 << i)) && ++i < m) {

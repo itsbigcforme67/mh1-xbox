@@ -601,7 +601,7 @@ void ef_move_sub_005F7800(EMW *em, EM20W *w) {
         if (em_frame_check(em, 0, 30.0f) != 0) {
             shell17_set(em, 6);
         }
-        if ((em->x8B6 != 0) && (em_frame_check3(em, 0, 2.0f, 78.0f) != 0) && !(*(u16 *)0x3F340E & 3)) {
+        if ((em->x8B6 != 0) && (em_frame_check3(em, 0, 2.0f, 78.0f) != 0) && !(*(u16 *)MH2V(0x3F340E, 0x6ADCD0) & 3)) {
             Eft20_set(1.0f, em, 0x1A, 1);
             return;
         }

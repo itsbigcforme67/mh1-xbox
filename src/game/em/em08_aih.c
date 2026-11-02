@@ -1286,7 +1286,7 @@ void em08_main(EMW *em) {
         em->x88B = 1;
     }
     if ((*(s16 *)0x3C7448 == 0x9A) && (em->stg == 0x38) && (Event_flag_ck(0x11) == 0)) {
-        if ((*(u8 *)0x3F360F == 1) && (em->mode != 6)) {
+        if ((*(u8 *)MH2V(0x3F360F, 0x6ADF25) == 1) && (em->mode != 6)) {
             if (em->kind == 8) {
                 em08_act_set(em, 6, 0, 1);
             } else {
@@ -1302,7 +1302,7 @@ void em08_main(EMW *em) {
         em08_main_sub(em, w);
         em->x6FF = 0;
     }
-    if ((em->x7E9 != 0) && (*(u8 *)0x3F3404 == em->stg)) {
+    if ((em->x7E9 != 0) && (*(stg_t *)MH2V(0x3F3404, 0x6ADCC4) == em->stg)) {
         if (em->x388 == 4) {
             temp_f1 = em->x7E4 - em->x7E0;
             if (!(em->pos[1] <= temp_f1)) {

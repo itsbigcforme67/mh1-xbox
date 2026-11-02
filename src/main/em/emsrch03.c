@@ -19,9 +19,15 @@ typedef struct EMVT { void *_0; void (*init)(EMW *); } EMVT;
 /* per monster function table: init at +4 */
 typedef struct EMP {
     u8 on;                  /* 0x000 */
+#ifdef VERSION_MH2
+    u8 _pad001[0x3CF];
+    EMVT *vt;               /* 0x3D0 */
+    u8 _pad3D4[0x52C - 0x3D4];
+#else
     u8 _pad001[0x3CB];
     EMVT *vt;               /* 0x3CC */
     u8 _pad3D0[0x564 - 0x3D0];
+#endif
     PRIM *prim;             /* 0x564 */
     s16 prim_no;            /* 0x568 */
 } EMP;
@@ -49,7 +55,7 @@ s16 Em_area_ck(s16 stg) {
     u8 *p;
 
     for (i = 0, p = (u8 *)&game_w; i < 4; i++, p++) {
-        if (p[0x28] == stg) {
+        if (p[MH2V(0x28, 0x2A)] == stg) {
             return i;
         }
     }

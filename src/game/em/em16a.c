@@ -1405,7 +1405,7 @@ static void em_dmg03_005D3AB0(EMW *em, EM16W *w) {
     switch (em->x05) {
     case 0:
         em->x05++;
-        em_char_set(em, 0x23, 0, 0);
+        em_char_set(em, MH2V(0x23, 37), 0, 0);
         w->spd[0] = 0;
         w->spd[1] = (u16)(em->ang[1] - 0x4000);
         w->spd[2] = 0;
@@ -1422,7 +1422,7 @@ static void em_dmg03_005D3AB0(EMW *em, EM16W *w) {
             if (em->pos[1] <= em->x5AC) {
                 em->x05++;
                 em->x388 = 0;
-                em_char_set(em, 0x24, 0, 0);
+                em_char_set(em, MH2V(0x24, 38), 0, 0);
             }
         }
         break;
@@ -1441,7 +1441,7 @@ static void em_dmg04_005D3C30(EMW *em, EM16W *w) {
     switch (em->x05) {
     case 0:
         em->x05++;
-        em_char_set(em, 0x25, 0, 0);
+        em_char_set(em, MH2V(0x25, 35), 0, 0);
         w->spd[0] = 0;
         w->spd[1] = (u16)(em->ang[1] + 0x4000);
         w->spd[2] = 0;
@@ -1458,7 +1458,7 @@ static void em_dmg04_005D3C30(EMW *em, EM16W *w) {
             if (em->pos[1] <= em->x5AC) {
                 em->x05++;
                 em->x388 = 0;
-                em_char_set(em, 0x26, 0, 0);
+                em_char_set(em, MH2V(0x26, 36), 0, 0);
             }
         }
         break;

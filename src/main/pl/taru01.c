@@ -3,7 +3,7 @@
 #include "types.h"
 #include "game.h"
 int Taru_ok_ck(void) {
-    u8 a = game_w.stage;
+    stg_t a = game_w.stage;
     u8 b = game_w.x2F;
     unsigned int new_var; /* permuter: matching scheduling */
     if (a == b) {

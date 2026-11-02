@@ -251,7 +251,7 @@ asm u8 * em_cmd_kehai_pl_set(EMW *em, u8 *p)
 u8 *em_cmd_kehai_pl_set(EMW *em, u8 *p) {
     int i;
 
-    for (i = 0; i < *(u8 *)0x3F34C3; i++) {
+    for (i = 0; i < *(u8 *)MH2V(0x3F34C3, 0x6ADCEE); i++) {
         if (em->x915 & (1 << i)) {
             em->x829 = i;
         }
@@ -275,7 +275,7 @@ asm u8 * em_cmd_find_ck(EMW *em, u8 *p)
 u8 *em_cmd_find_ck(EMW *em, u8 *p) {
     int i;
 
-    for (i = 0; i < *(u8 *)0x3F34C3; i++) {
+    for (i = 0; i < *(u8 *)MH2V(0x3F34C3, 0x6ADCEE); i++) {
         if (em->x88F & (1 << i)) {
             em->x829 = i;
             em->x844 = em->x829;

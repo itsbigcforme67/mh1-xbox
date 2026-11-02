@@ -158,7 +158,7 @@ u8 *em_cmd_all_pl_same_stage_ck(EMW *em, u8 *p) {
     case 0:
         ok = 1;
         i = 0;
-        for (; i < *(u8 *)0x3F34C3; i++, pl++) {
+        for (; i < *(u8 *)MH2V(0x3F34C3, 0x6ADCEE); i++, pl++) {
             if (Pl_stg_ck_tw(em, pl) != 0 && pl->be_flag != 0) {
                 ok = 0;
                 break;

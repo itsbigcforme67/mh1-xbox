@@ -6,6 +6,9 @@
  * thrown egg that falls and breaks (spawning eft14 and Shell09) and 5 a
  * puff of steam. */
 #include "eft.h"
+#ifdef VERSION_MH2
+#define x07 x3E      /* the stage number moved */
+#endif
 #include "game.h"
 #include "pl.h"
 #include "shell.h"

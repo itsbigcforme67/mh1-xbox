@@ -289,7 +289,7 @@ static void sound_call_mov(EMW *em, int f0, int f1, int se, int joint, int vol) 
     f32 pos[3];
 
     sound_call_005937E0(em, f0, se, joint, vol);
-    if (em_frame_check3(em, 0, (f32)f0, (f32)f1) && (*(u16 *)0x3F340E % 4) == 0) {
+    if (em_frame_check3(em, 0, (f32)f0, (f32)f1) && (*(u16 *)MH2V(0x3F340E, 0x6ADCD0) % 4) == 0) {
         flmatGetTrans(pos, (u8 *)em->mdl->bone + joint * 400);
         Em_se_req2(em, se, 0, pos, vol, 1);
     }
@@ -299,7 +299,7 @@ void sound_call_mov2(EMW *em, int f0, int f1, int se, int joint, int vol) {
     f32 pos[3];
 
     sound_call_005937E0(em, f0, se, joint, vol);
-    if (em_frame_check3(em, 1, (f32)f0, (f32)f1) && (*(u16 *)0x3F340E % 4) == 0) {
+    if (em_frame_check3(em, 1, (f32)f0, (f32)f1) && (*(u16 *)MH2V(0x3F340E, 0x6ADCD0) % 4) == 0) {
         flmatGetTrans(pos, (u8 *)em->mdl->bone + joint * 400);
         Em_se_req2(em, se, 0, pos, vol, 1);
     }

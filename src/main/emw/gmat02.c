@@ -26,15 +26,15 @@ typedef struct PWK {            /* player/monster work, fields used here */
     u8 kind;                    /* 0x002 monster kind */
     u8 _pad003[0xAC - 3];
     f32 pos[3];                 /* 0x0AC */
-    u8 _pad0B8[0x415 - 0xB8];
+    u8 _pad0B8[MH2_EM(0x415) - MH2_EM(0xB8)];
     u8 cam;                     /* 0x415 */
-    u8 _pad416[0x70C - 0x416];
+    u8 _pad416[MH2_EM(0x70C) - MH2_EM(0x416)];
     u8 gkind;                   /* 0x70C ground kind under the actor */
-    u8 _pad70D[0x710 - 0x70D];
+    u8 _pad70D[MH2_EM(0x710) - MH2_EM(0x70D)];
     u8 *diffuse;                /* 0x710 */
     u8 shagami;                 /* 0x714 */
-    u8 _pad715[0x736 - 0x715];
-    u8 stg;                     /* 0x736 */
+    u8 _pad715[MH2_EM(0x736) - MH2_EM(0x715)];
+    stg_t stg;                  /* 0x736 */
 } PWK;
 
 typedef struct FMSTK {          /* frame memory stack: low end grows up, high end grows down */

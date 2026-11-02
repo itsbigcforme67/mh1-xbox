@@ -368,7 +368,7 @@ void em_atk05_005DE530(EMW *em, EM17W *w) {
         if (em_frame_check(em, 0, 196.0f) != 0) {
             shell19_set(em, 0xE);
         }
-        if ((em_frame_check2(em, 0, 124.0f) != 0) && (((s32) *(u16 *)0x3F340E % 24) == 0)) {
+        if ((em_frame_check2(em, 0, 124.0f) != 0) && (((s32) *(u16 *)MH2V(0x3F340E, 0x6ADCD0) % 24) == 0)) {
             Eft20_set(1.39999998f, em, 0x1D, 0);
         }
         temp_v1 = em->work08 - 1;

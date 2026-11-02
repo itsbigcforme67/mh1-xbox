@@ -12,7 +12,7 @@ s16 Pl_item_num_ck(PLW *, int);
 
 #if !defined(G_PART) || G_PART == 1
 s32 Pl_bari_ck(PLW *pl) {
-    if (act_ck(pl, 0, 0x36) != 0 || act_ck(pl, 0, 0x48) != 0) {
+    if (act_ck(pl, 0, MH2V(0x36, 22)) != 0 || act_ck(pl, 0, MH2V(0x48, 26)) != 0) {
         return 1;
     }
     return 0;

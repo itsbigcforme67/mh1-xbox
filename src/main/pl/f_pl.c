@@ -76,8 +76,8 @@ f32 *Stage_data_get(int stg);
 void flmatGetTrans(f32 *, u8 *);
 u8 Get_hit_id(void);
 typedef struct W24 { s32 a, b, c, d, e, f; } W24;
-ST_ITEM *Stage_item_data_get(u8);
-ST_UNIQ *Stage_unique_data_get(u8);
+ST_ITEM *Stage_item_data_get(stg_t);
+ST_UNIQ *Stage_unique_data_get(stg_t);
 u16 *Stage_item_probability_get(int);
 int Share_item_stack();
 #define ANG2RAD(a) (2.0f * (3.1415927f * (((360.0f * (f32)(a)) / 65536.0f) / 360.0f)))
@@ -483,7 +483,7 @@ void clr_pl_work(void) {
     int i;
     PLW *p = player_work;
     for (i = 0; i < GV(8, 10); i++) {
-        memset(p, 0, 0xA00);
+        memset(p, 0, MH2V(0xA00, sizeof(PLW)));
         p++;
     }
     memset(pl_cnt_w, 0, 0x10);
@@ -1182,22 +1182,22 @@ static void pl_item_sel(PLW *pl) {
     if (Pl_master_ck(pl) == 0) return;
     if (act_ck(pl, 2, 0x13) == 0 && (u32)(pl->flag14 - 3) > 1 && Game_clear_ck(1) != 1) {
         if (pl->sw.pad08[0] & 4) {
-            if (pl->work88C == 0) se_req(7, 0x11, 0);
+            if (pl->work88C == 0) se_req(MH2V(7, 0), 0x11, 0);
             pl->work88C = 1;
             if (item_blank_ck(pl) != 0) {
                 t = pl->sw.pad08[2];
                 if (t & 0x20) {
-                    se_req(7, 0x12, 0);
+                    se_req(MH2V(7, 0), 0x12, 0);
                     pl->work888 = item_sel_sub(pl, pl->work888, 0);
                     pl->work8F2 |= 2;
                 } else if (t & 0x200) {
-                    se_req(7, 0x12, 0);
+                    se_req(MH2V(7, 0), 0x12, 0);
                     pl->work888 = item_sel_sub(pl, pl->work888, 1);
                     pl->work8F2 |= 4;
                 }
             }
         } else if (pl->work88C != 0) {
-            se_req(7, 0x14, 0);
+            se_req(MH2V(7, 0), 0x14, 0);
             pl->work88C = 0;
         }
         return;
@@ -4391,11 +4391,11 @@ static void pl_mv037(PLW *pl, s32 unused_arg) {
     case 0:
         pl->x05 = s + 1;
         Pl_basic_flagset(pl, 0, 0, 0);
-        pl_chr_set2(pl, 0x27, 0, 0);
+        pl_chr_set2(pl, MH2V(0x27, 1412), 0, 0);
         break;
     case 1:
         if (pl->work194 == 0) {
-            pl_to_normal(pl, 0, 5, 0);
+            pl_to_normal(pl, 0, MH2V(5, 4), 0);
         }
         break;
     }
@@ -5845,7 +5845,7 @@ static void pl_mv084(PLW *pl, s32 arg1) {
     case 1:
         if ((frame_check(120.0f, pl, 0) != 0) && (Pl_master_ck(pl) == 1) && (Game_clear_ck(1) == 0)) {
             if (arg1 == 0) {
-                adx_se_set(pl, 8);
+                adx_se_set(pl, MH2V(8, 10));
                 Pl_item_stack(pl, pl->work88A, -1);
                 set01_set(0, 3, 0);
             } else {
@@ -7654,7 +7654,7 @@ static s32 we02_hit_sub(PLW *pl) {
             case 1:
                 pl->x40A = 0;
                 pl->work409 = 0;
-                Pl_act_set2(pl, 1, 0x1F, 0);
+                Pl_act_set2(pl, 1, MH2V(0x1F, 10), 0);
                 return 1;
             case 2:
             case 3:
@@ -7795,26 +7795,26 @@ static void tame_release(PLW *pl) {
     switch (p) {
     case 0:
         if (pl_flag_ck(pl, 0x1000) != 0) {
-            Pl_act_set2(pl, 1, 0x39, 4);
+            Pl_act_set2(pl, 1, MH2V(0x39, 16), 4);
             break;
         }
-        Pl_act_set2(pl, 1, 0x21, 4);
+        Pl_act_set2(pl, 1, MH2V(0x21, 15), 4);
         break;
     case 1:
         if (pl_flag_ck(pl, 0x1000) != 0) {
-            Pl_act_set2(pl, 1, 0x3A, 4);
+            Pl_act_set2(pl, 1, MH2V(0x3A, 17), 4);
             break;
         }
-        Pl_act_set2(pl, 1, 0x1D, 4);
+        Pl_act_set2(pl, 1, MH2V(0x1D, 6), 4);
         break;
     default:
     case 2:
         if (pl_flag_ck(pl, 0x1000) != 0) {
             pl->work880 = tame_pow_ck(pl);
-            Pl_act_set2(pl, 1, 0x1C, 4);
+            Pl_act_set2(pl, 1, MH2V(0x1C, 5), 4);
             break;
         }
-        Pl_act_set2(pl, 1, 0x1E, 4);
+        Pl_act_set2(pl, 1, MH2V(0x1E, 7), 4);
         break;
     }
 }
@@ -7927,12 +7927,12 @@ static void pl_at025(PLW *pl, s32 unused_arg) {
     switch (s) {
     case 0:
         pl->x05 = s + 1;
-        pl_chr_set2(pl, 0x3F0, 0x14, 0);
+        pl_chr_set2(pl, MH2V(0x3F0, 1411), MH2V(0x14, 0), 0);
         Pl_basic_flagset(pl, 0, 0, 0);
         break;
     case 1:
         if (pl->work194 == 0) {
-            pl_to_normal(pl, 0, 6, 0);
+            pl_to_normal(pl, 0, MH2V(6, 4), 0);
         }
         break;
     }
@@ -8020,7 +8020,7 @@ static void pl_at028(PLW *pl, s32 unused_arg) {
                         pl->ang[1] = pl->ang[1] - 0x2000;
                         pl->ang_y = pl->ang[1];
                     }
-                    Pl_act_set2(pl, 1, 0x3A, 4);
+                    Pl_act_set2(pl, 1, MH2V(0x3A, 17), 4);
                 }
                 break;
             case 3:
@@ -8035,7 +8035,7 @@ static void pl_at028(PLW *pl, s32 unused_arg) {
                         pl->ang[1] = pl->ang[1] - 0x2000;
                         pl->ang_y = pl->ang[1];
                     }
-                    Pl_act_set2(pl, 1, 0x4D, 4);
+                    Pl_act_set2(pl, 1, MH2V(0x4D, 9), 4);
                 }
                 break;
             case 0:
@@ -8192,7 +8192,7 @@ static void pl_at031(PLW *pl, s32 unused_arg) {
     case 1:
         if (pl->x06 != 0) {
             if (frame_check2(32.0f, pl, 0) != 0) {
-                Pl_act_set(pl, 1, 0x51, 0xC);
+                Pl_act_set(pl, 1, MH2V(0x51, 18), 0xC);
             }
         } else if ((frame_check3(2.0f, 30.0f, pl, 0) != 0) && (pl->x06 == 0) && (pl->work88C == 0) && (pl->sw.an_trg & 0x3C)) {
             pl->x06 = 1;
@@ -8357,7 +8357,7 @@ static s32 lance_kan_ck(PLW *pl) {
         Pl_set_quake_sub(pl, 0);
         pl->x40A = 0;
         pl->work409 = 0;
-        Pl_act_set2(pl, 1, 0x41, 0);
+        Pl_act_set2(pl, 1, MH2V(0x41, 7), 0);
         return 1;
     }
     return 0;
@@ -8462,10 +8462,10 @@ static void pl_at037(PLW *pl, s32 arg1) {
         Pl_stamina_calc(pl, -2);
         if (pl->work194 == 0) {
             if ((arg1 == 0) && (pl->x06 == 0)) {
-                Pl_act_set2(pl, 1, 0x26, 0);
+                Pl_act_set2(pl, 1, MH2V(0x26, 14), 0);
                 break;
             }
-            Pl_act_set2(pl, 1, 0x23, 0);
+            Pl_act_set2(pl, 1, MH2V(0x23, 4), 0);
             break;
         }
         if ((pl->sw.an_trg & 0x10) || (pl->sw.trg & 1)) {
@@ -8648,7 +8648,7 @@ static s32 we04_hit_sub(PLW *pl) {
         case 1:
             pl->x40A = 0;
             pl->work409 = 0;
-            Pl_act_set(pl, 1, 0x32, 0);
+            Pl_act_set(pl, 1, MH2V(0x32, 5), 0);
             return 1;
         case 2:
         case 3:
@@ -8951,7 +8951,7 @@ static void pl_at065(PLW *pl, s32 unused_arg) {
     case 1:
         if (pl->x06 != 0) {
             if (frame_check2(42.0f, pl, 0) != 0) {
-                Pl_act_set(pl, 1, 0x52, 0xC);
+                Pl_act_set(pl, 1, MH2V(0x52, 11), 0xC);
             }
         } else if ((frame_check3(10.0f, 40.0f, pl, 0) != 0) && (pl->x06 == 0) && (pl->work88C == 0) && (pl->sw.an_trg & 0x3C)) {
             pl->x06 = 1;
@@ -9093,7 +9093,7 @@ static void pl_at078(PLW *pl, s32 arg1) {
         if (we02_hit_sub(pl) != 1) {
             if (pl->work194 == 0) {
                 if ((Pl_master_ck(pl) == 1) && (pl->work08 != 0) && (arg1 == 0)) {
-                    Pl_act_set(pl, 1, 0x4F, 4);
+                    Pl_act_set(pl, 1, MH2V(0x4F, 19), 4);
                     break;
                 }
                 pl->x05++;
@@ -12168,7 +12168,7 @@ static void pl_chat11(PLW *pl, s32 unused_arg) {
         }
         if ((Pl_master_ck(pl) == 1) && (pl->work08 == 0)) {
             if ((pl->sw.pow[0] >= 0x28) || (Game_clear_ck(1) == 1)) {
-                pl_to_normal(pl, 0, 4, 0);
+                pl_to_normal(pl, 0, MH2V(4, 10), 0);
                 break;
             }
             if (pl->work8C4 != 0) {

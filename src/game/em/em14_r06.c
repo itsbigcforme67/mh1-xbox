@@ -339,7 +339,7 @@ void em_fly04_005B8090(EMW *em, EM14W *w) {
     u8 temp_a1;
     u8 temp_t0;
 
-    temp_t0 = *(u8 *)0x3F34C1;
+    temp_t0 = *(u8 *)MH2V(0x3F34C1, 0x6ADCEC);
     temp_a1 = em->x05;
     temp_s0 = &player_work[temp_t0];
     switch (temp_a1) {                              /* irregular */
@@ -368,7 +368,7 @@ void em_fly04_005B8090(EMW *em, EM14W *w) {
                 em->work08 = 1;
             }
         }
-        if (!(*(u16 *)0x3F340E & 7) && (Pl_stg_ck_tw(em, temp_s0) != 0) && (Pl_stg_ck(temp_s0) != 0) && (flvecCalcDistance(em->pos, temp_s0->pos) < 2000.0f)) {
+        if (!(*(u16 *)MH2V(0x3F340E, 0x6ADCD0) & 7) && (Pl_stg_ck_tw(em, temp_s0) != 0) && (Pl_stg_ck(temp_s0) != 0) && (flvecCalcDistance(em->pos, temp_s0->pos) < 2000.0f)) {
             vib_set(0, 2);
         }
         temp_v1_2 = em->work08 - 1;

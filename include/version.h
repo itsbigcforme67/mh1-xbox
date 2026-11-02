@@ -19,6 +19,10 @@
 #define IPREP_LIST 0x3D8
 #define IPREP_NUM 66
 #endif
+#ifdef VERSION_MH2
+#undef EMW_STRIDE
+#define EMW_STRIDE 0x9D0
+#endif
 /* G: its Em_Sleep_End / Em_Sleep2_End symbols (map names) sit at swapped call targets in the sleep/paralysis code */
 #ifdef VERSION_MHG
 #define EM_SLEEP_END Em_Sleep2_End

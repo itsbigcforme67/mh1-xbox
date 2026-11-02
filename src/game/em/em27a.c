@@ -165,7 +165,7 @@ void em27_init(EMW *em) {
     em->stay_tm = em27_stay_timer_tbl[em->stg];
     em->runaway_tm = em27_runaway_timer_tbl[em->stg];
     w->yobi_st = 0;
-    ((u8 *)w)[0x50] = 0;
+    ((u8 *)w)[MH2V(0x50, 0x5E)] = 0;
     em_dur_init(em);
     em->x734 = 3;
 }
@@ -525,7 +525,7 @@ static void em_mv03_0060E4C0(EMW *em, EM27W *w) {
     switch (em->x05) {
     case 0:
         em->x05++;
-        em_char_set(em, 9, 0, 0);
+        em_char_set(em, MH2V(9, 62), 0, 0);
         break;
     case 1:
         if (em->x194 == 0) {
@@ -1439,7 +1439,7 @@ static void em_dmg03_00610A70(EMW *em, EM27W *w) {
     switch (em->x05) {
     case 0:
         em->x05++;
-        em_char_set(em, EM27_G(0x25, 0x23), 0, 0);
+        em_char_set(em, EM27_G(0x25, MH2V(0x23, 37)), 0, 0);
         w->spd[0] = 0;
         w->spd[1] = (u16)(em->ang[1] - 0x4000);
         w->spd[2] = 0;
@@ -1456,7 +1456,7 @@ static void em_dmg03_00610A70(EMW *em, EM27W *w) {
             if (em->pos[1] <= em->x5AC) {
                 em->x05++;
                 em->x388 = 0;
-                em_char_set(em, EM27_G(0x26, 0x24), 0, 0);
+                em_char_set(em, EM27_G(0x26, MH2V(0x24, 38)), 0, 0);
             }
         }
         break;
@@ -1476,7 +1476,7 @@ static void em_dmg04_00610C00(EMW *em, EM27W *w) {
     switch (em->x05) {
     case 0:
         em->x05++;
-        em_char_set(em, 0x25, 0, 0);
+        em_char_set(em, MH2V(0x25, 35), 0, 0);
         w->spd[0] = 0;
         w->spd[1] = (u16)(em->ang[1] + 0x4000);
         w->spd[2] = 0;
@@ -1493,7 +1493,7 @@ static void em_dmg04_00610C00(EMW *em, EM27W *w) {
             if (em->pos[1] <= em->x5AC) {
                 em->x05++;
                 em->x388 = 0;
-                em_char_set(em, 0x26, 0, 0);
+                em_char_set(em, MH2V(0x26, 36), 0, 0);
             }
         }
         break;
@@ -1514,7 +1514,7 @@ static void em_dmg05_00610D90(EMW *em, EM27W *w) {
     case 0:
         em->x05++;
         em->x388 = 0;
-        em_char_set(em, 0x2A, 0, 0);
+        em_char_set(em, MH2V(0x2A, 30), 0, 0);
         em_cmd_reset(em);
         break;
     case 1:
@@ -1569,7 +1569,7 @@ static void em_die00_00610FC0(EMW *em, EM27W *w) {
     switch (em->x05) {
     case 0:
         em->x05++;
-        ((u8 *)w)[0x50] = 1;
+        ((u8 *)w)[MH2V(0x50, 0x5E)] = 1;
         Quest_enemy_die(em);
         em_char_set(em, 0x1F, 0, 0);
         w->spd[0] = 0;
@@ -1633,7 +1633,7 @@ static void em_die01_00611200(EMW *em, EM27W *w) {
     switch (em->x05) {
     case 0:
         em->x05++;
-        ((u8 *)w)[0x50] = 1;
+        ((u8 *)w)[MH2V(0x50, 0x5E)] = 1;
         Quest_enemy_die(em);
         em_char_set(em, 0x21, 0, 0);
         w->spd[0] = 0;
@@ -1697,7 +1697,7 @@ static void em_die02_00611450(EMW *em, EM27W *w) {
     switch (em->x05) {
     case 0:
         em->x05++;
-        ((u8 *)w)[0x50] = 1;
+        ((u8 *)w)[MH2V(0x50, 0x5E)] = 1;
         Quest_enemy_die(em);
         em_char_set(em, 0x23, 0, 0);
         w->spd[0] = 0;
@@ -1762,7 +1762,7 @@ static void em_die03_006116A0(EMW *em, EM27W *w) {
     switch (em->x05) {
     case 0:
         em->x05++;
-        ((u8 *)w)[0x50] = 1;
+        ((u8 *)w)[MH2V(0x50, 0x5E)] = 1;
         Quest_enemy_die(em);
         em_char_set(em, EM27_G(0x23, 0x25), 0, 0);
         w->spd[0] = 0;

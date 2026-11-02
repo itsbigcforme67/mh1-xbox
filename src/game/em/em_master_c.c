@@ -196,7 +196,7 @@ void em_tail_off_sub(EMW *em) {
 
     em->x388 = 0;
     em->x948 |= 1;
-    em->ex[0x4E7 - 0x444] = 0;
+    em->ex[MH2V(0x4E7 - 0x444, 0x4C9 - 0x438)] = 0;
     if (em->char0 != 0x43B) {
         em_char_set2(em, 0x43B, 0, 0, 0);
         em_char_set2(em, 0x503, 0, 0, 1);

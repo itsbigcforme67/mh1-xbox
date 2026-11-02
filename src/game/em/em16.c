@@ -76,7 +76,7 @@ void em16_move_act_set(EMW *em, u16 no, u16 arg) {
 }
 
 void em16_fly_act_set(EMW *em, u16 no, u16 arg) {
-    em_act_set(em, 2, no);
+    em_act_set(em, MH2V(2, 4), no);
 }
 
 void em16_atk_act_set(EMW *em, u16 no, u16 arg) {

@@ -85,6 +85,9 @@ typedef struct SH06W {
     GROW_UP *grow;      /* 0x1C */
     u8 ammo;            /* 0x20 copied from the player */
     u8 _pad21[3];
+#ifdef VERSION_MH2
+    u8 _mh2pad24[4];
+#endif
     SH06E eft[1];       /* 0x24 */
 } SH06W;
 

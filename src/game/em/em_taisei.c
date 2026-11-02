@@ -746,7 +746,7 @@ u8 Em_Dmg_Sys(EMW *em, u8 *flag) {
         if (em->x302 <= 0) {
             em->x839 = 0;
             if (em->x9E2 != 0) {
-                if (*(u8 *)0x3F3404 == em->stg) {
+                if (*(stg_t *)MH2V(0x3F3404, 0x6ADCC4) == em->stg) {
                     em->x302 = 0;
                     em->x7EE = 0;
                     return 1;

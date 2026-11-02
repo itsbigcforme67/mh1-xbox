@@ -46,7 +46,12 @@ typedef struct EM_SPOT {
     u8 _pad11;
     u8 flag;            /* 0x12 */
     u8 _pad13;
+#ifdef VERSION_MH2
+    u8 _mh2pad14[4];
+    u16 stg;            /* 0x18 */
+#else
     u8 stg;             /* 0x14 */
+#endif
 } EM_SPOT;
 
 /* View of a monster for em_eye_search_set and the sight checks. */

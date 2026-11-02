@@ -307,15 +307,15 @@ void em08_vib_set(EMW *em) {
 
     pl = player_work;
     i = 0;
-    if (0 < *(u8 *)0x3F34C3) {
+    if (0 < *(u8 *)MH2V(0x3F34C3, 0x6ADCEE)) {
         do {
-            if (i == *(u8 *)0x3F34C1 && pl->be_flag != 0 && Pl_stg_ck_tw(em, pl) != 0 && pl->be_flag != 0 &&
+            if (i == *(u8 *)MH2V(0x3F34C1, 0x6ADCEC) && pl->be_flag != 0 && Pl_stg_ck_tw(em, pl) != 0 && pl->be_flag != 0 &&
                 flvecCalcDistance(pl->pos, em->pos) <= 1000.0f) {
                 vib_set_pl(pl, 3);
             }
             i++;
             pl = (PLW *)((u8 *)pl + 0xA00);
-        } while (i < *(u8 *)0x3F34C3);
+        } while (i < *(u8 *)MH2V(0x3F34C3, 0x6ADCEE));
     }
 }
 #endif

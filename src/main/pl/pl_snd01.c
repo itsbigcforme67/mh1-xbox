@@ -102,7 +102,7 @@ static void sound_call_h(PLW *pl, int frame, int se) {
 #if !defined(G_PART) || G_PART == 1
 static void sound_call2(PLW *pl, int frame, int se) {
     if (pl->work7ED == 0 && GW8(0x1DC) == 0 && frame_check((f32)frame, pl, 0) != 0) {
-        Pl_se_req2(pl, se, 0, pl->pos, 1, 0);
+        Pl_se_req2(pl, se, 0, pl->pos, MH2V(1, 26), 0);
     }
 }
 #endif

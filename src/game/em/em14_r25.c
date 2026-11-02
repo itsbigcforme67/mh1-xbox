@@ -528,7 +528,7 @@ void em14_main(EMW *em) {
         break;
     }
     if ((quest_w.no == 0xAB) && (em->stg == 0x35) && (Event_flag_ck(0x12) == 0)) {
-        if ((*(u8 *)0x3F360F == 1) && (em->mode != 6)) {
+        if ((*(u8 *)MH2V(0x3F360F, 0x6ADF25) == 1) && (em->mode != 6)) {
             em14_act_set(em, 6, 0, 1);
         }
     } else {

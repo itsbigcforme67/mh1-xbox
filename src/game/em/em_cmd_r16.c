@@ -154,7 +154,7 @@ u8 *em_cmd_tenjostage_ck(EMW *em, u8 *p) {
     q = p;
     switch (*q++) {
     case 0:
-        if (em->stg != *(u8 *)0x3F3404 || GetTenjoHit(em->pos, &sp3C, (u16 *)&sp38) == 0) {
+        if (em->stg != *(stg_t *)MH2V(0x3F3404, 0x6ADCC4) || GetTenjoHit(em->pos, &sp3C, (u16 *)&sp38) == 0) {
             CMD_SKIP(em, q, 0x5C);
         }
         break;

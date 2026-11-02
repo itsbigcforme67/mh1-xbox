@@ -2,9 +2,14 @@
 #define GWX_H
 /* game_w raw access by MH1 byte offset: GWX(o) maps the offsets G moved (see GAME_W in game.h).
  * Every literal used with GWX needs a GWX_<literal> line. */
-#ifdef VERSION_MHG
+#if defined(VERSION_MHG) || defined(VERSION_MH2)
 #define GWX_(o) GWX_##o
+#ifdef VERSION_MH2
+#define MH2_GW(g) ((g) < 0x16 ? (g) : (g) < 0xD0 ? (g) + 2 : (g) < 0x180 ? (g) + 0x40 : (g) + 0x80)
+#define GWX(o) MH2_GW(GWX_(o))
+#else
 #define GWX(o) GWX_(o)
+#endif
 #define GWX_0 0
 #define GWX_0x12 0x12
 #define GWX_0x124 0xF4

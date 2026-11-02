@@ -15,7 +15,8 @@ typedef struct PL_ITEM {
 } PL_ITEM;
 #endif
 
-#ifdef VERSION_MHG
+#if defined(VERSION_MHG) || defined(VERSION_MH2)
+/* MH2's game_w is G's with room added: tools show (build notes in docs/mh2.md) G offset + 2 from 0x16, + 0x40 from x80, + 0x80 after reward_item */
 /* G game_w (0x35ED20, 0x240 bytes): G reordered the fields (offsets found with tools/mhg_fields.py and check.py;
  * the MH1 offset of each field is in the comment). Fields not seen in G code yet stay at their MH1 offset. */
 typedef struct GAME_W {
@@ -37,6 +38,7 @@ typedef struct GAME_W {
     u8 _pad013[0x14 - 0x13];
 #ifdef VERSION_MH2
     union { u16 stage; struct { u8 _stage_lo; u8 x15; }; };   /* 0x014 MH2: stage number is 16 bits (lhu) */
+    u8 _mh2pad16[2];
 #else
     u8 stage;           /* 0x014 */
     u8 x15;             /* 0x015 */
@@ -67,6 +69,9 @@ typedef struct GAME_W {
     s8 x78[4];          /* 0x086 (MH1 0x078; from select_w+0xB6) */
     u8 _pad08A[0xB0 - 0x8A];
     struct EFT_MDLW *area_mdlw[8]; /* 0x0B0 (MH1 0x0A8, 9 entries there; G's x80 sits at 0xD0); [0..3] = sub_ptr, see MH1 */
+#ifdef VERSION_MH2
+    u8 _mh2padD0[0x3E];
+#endif
     u8 x80[4];          /* 0x0D0 (MH1 0x080, Pl_item_cnt_up) */
     u8 _pad0D4[0xEC - 0xD4];
     s16 xCC;            /* 0x0EC (MH1 0x0CC) */
@@ -83,6 +88,9 @@ typedef struct GAME_W {
     u8 trap_num;        /* 0x0FE (MH1 0x212) */
     s8 x21D;            /* 0x0FF (MH1 0x21D) */
     PL_ITEM reward_item[32]; /* 0x100 (MH1 0x128) */
+#ifdef VERSION_MH2
+    u8 _mh2pad180[0x40];
+#endif
     s32 x1A8;           /* 0x180 (MH1 0x1A8) */
     s32 x1AC;           /* 0x184 (MH1 0x1AC) */
     u8 x1B2;            /* 0x188 (MH1 0x1B2) */

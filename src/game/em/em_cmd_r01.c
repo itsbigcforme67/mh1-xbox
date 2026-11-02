@@ -164,7 +164,7 @@ void em_cmd_init(EMW *em) {
     }
     if (0)
 #endif
-    switch (*(u8 *)0x3F341E) {
+    switch (*(u8 *)MH2V(0x3F341E, 0x6ADCE0)) {
     case 0:
     case 1:
         em->cmd_tbl = em_cmd0_tbl[em->kind];
@@ -612,7 +612,7 @@ u8 *em_cmd_kehai_ck(EMW *em, u8 *p) {
     q = p;
     switch (*q) {
     case 0:
-        n = *(u8 *)0x3F34C3;
+        n = *(u8 *)MH2V(0x3F34C3, 0x6ADCEE);
         q += 1;
         i = 0;
         cnt = 0;

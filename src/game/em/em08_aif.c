@@ -565,7 +565,7 @@ void em_fly16_0059E020(EMW *em, EM08W *w) {
             em->x388 = 4;
         }
         if (em->adj_y < 0.0f) {
-            if (*(u8 *)0x3F3404 == em->stg) {
+            if (*(stg_t *)MH2V(0x3F3404, 0x6ADCC4) == em->stg) {
                 if (em->x7E9 != 0) {
                     if (em->pos[1] < (em->x7E4 - em->x7E0)) {
                         em->x05++;
@@ -663,7 +663,7 @@ void em_fly17_0059E400(EMW *em, EM08W *w) {
             em->x388 = 4;
         }
         if (em->adj_y < 0.0f) {
-            if (*(u8 *)0x3F3404 == em->stg) {
+            if (*(stg_t *)MH2V(0x3F3404, 0x6ADCC4) == em->stg) {
                 if (em->x7E9 != 0) {
                     if (em->pos[1] < (em->x7E4 - em->x7E0)) {
                         em->x05++;
@@ -832,8 +832,8 @@ void em_fly21_0059EB70(EMW *em, EM08W *w) {
     case 0:
         em->x05++;
         em->x3F4 = 0;
-        em->x388 = 4;
-        em_char_set(em, 0x83, 0, 0);
+        em->x388 = MH2V(4, 2);
+        em_char_set(em, MH2V(0x83, 64), 0, 0);
         Em_Mahi_End(em);
         break;
     case 1:

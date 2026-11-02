@@ -22,43 +22,43 @@ typedef struct EMX {
     u8 _pad060[0xA0 - 0x60];
     s32 ang[3];                 /* 0x0A0 */
     f32 pos[3];                 /* 0x0AC */
-    u8 _pad0B8[0x1A0 - 0xB8];
+    u8 _pad0B8[MH2_EM(0x1A0) - MH2_EM(0xB8)];
     f32 spd0;                   /* 0x1A0 */
-    u8 _pad1A4[0x1F0 - 0x1A4];
+    u8 _pad1A4[MH2_EM(0x1F0) - MH2_EM(0x1A4)];
     f32 spd1;                   /* 0x1F0 */
-    u8 _pad1F4[0x240 - 0x1F4];
+    u8 _pad1F4[MH2_EM(0x240) - MH2_EM(0x1F4)];
     f32 spd2;                   /* 0x240 */
-    u8 _pad244[0x290 - 0x244];
+    u8 _pad244[MH2_EM(0x290) - MH2_EM(0x244)];
     f32 spd3;                   /* 0x290 */
-    u8 _pad294[0x2DC - 0x294];
+    u8 _pad294[MH2_EM(0x2DC) - MH2_EM(0x294)];
     u16 x2DC, x2DE, x2E0, x2E2; /* 0x2DC cleared by em_init */
-    u8 _pad2E4[0x300 - 0x2E4];
+    u8 _pad2E4[MH2_EM(0x300) - MH2_EM(0x2E4)];
     u16 parts;                  /* 0x300 */
-    u8 _pad302[0x388 - 0x302];
+    u8 _pad302[MH2_EM(0x388) - MH2_EM(0x302)];
     u8 x388;                    /* 0x388 */
-    u8 _pad389[0x3A8 - 0x389];
+    u8 _pad389[MH2_EM(0x3A8) - MH2_EM(0x389)];
     s32 x3A8;                   /* 0x3A8 */
-    u8 _pad3AC[0x3CC - 0x3AC];
+    u8 _pad3AC[MH2_EM(0x3CC) - MH2_EM(0x3AC)];
     void (**prog)(struct EMX *); /* 0x3CC per-monster program table */
-    u8 _pad3D0[0x4E6 - 0x3D0];
+    u8 _pad3D0[MH2_EM(0x4E6) - MH2_EM(0x3D0)];
     u8 hagi[0x20];              /* 0x4E6 set to 1 by em_init */
-    u8 _pad506[0x564 - 0x506];
+    u8 _pad506[MH2_EM(0x564) - MH2_EM(0x506)];
     PRIM_H *prim;               /* 0x564 */
     s16 prim_no;                /* 0x568 */
-    u8 _pad56A[0x5A0 - 0x56A];
+    u8 _pad56A[MH2_EM(0x5A0) - MH2_EM(0x56A)];
     f32 old_pos[3];             /* 0x5A0 */
     f32 floor;                  /* 0x5AC */
-    u8 _pad5B0[0x70C - 0x5B0];
+    u8 _pad5B0[MH2_EM(0x70C) - MH2_EM(0x5B0)];
     u8 x70C[0x2A];              /* 0x70C ground info */
-    u8 stg;                     /* 0x736 */
-    u8 _pad737[0x798 - 0x737];
+    stg_t stg;                  /* 0x736 */
+    u8 _pad737[MH2_EM(0x798) - MH2_EM(0x737)];
     f32 draw_mode;              /* 0x798 */
-    u8 _pad79C[0x7E4 - 0x79C];
+    u8 _pad79C[MH2_EM(0x7E4) - MH2_EM(0x79C)];
     u8 x7E4[0xA0];              /* 0x7E4 */
     s8 x884, x885;              /* 0x884 */
-    u8 _pad886[0x88E - 0x886];
+    u8 _pad886[MH2_EM(0x88E) - MH2_EM(0x886)];
     u8 x88E;                    /* 0x88E master player */
-    u8 _pad88F[0x930 - 0x88F];
+    u8 _pad88F[MH2_EM(0x930) - MH2_EM(0x88F)];
     f32 act_spd;                /* 0x930 */
 } EMX;
 

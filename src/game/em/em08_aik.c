@@ -306,7 +306,7 @@ asm void swim_eff_set_005A7070(f32 scale, EMW *em)
 void swim_eff_set_005A7070(f32 scale, EMW *em) {
     f32 v[3];
 
-    if (*(u8 *)0x3F3404 == em->stg && !(*(u16 *)0x3F340E & 3) &&
+    if (*(stg_t *)MH2V(0x3F3404, 0x6ADCC4) == em->stg && !(*(u16 *)MH2V(0x3F340E, 0x6ADCD0) & 3) &&
         !(em->pos[1] < (em->x7E4 - em->x7E0) - 100.0f)) {
         SetVector(v, em->pos[0], em->x7E4, em->pos[2]);
         Eft08_set(v, 2, 2, scale * EMF(em, f32, 0xB8));
@@ -328,7 +328,7 @@ unsigned short em_act_search(void *);   /* (declared before its first use) */
 void swim_eff_set2_005A7120(f32 scale, EMW *em) {
     f32 v[3];
 
-    if (*(u8 *)0x3F3404 == em->stg) {
+    if (*(stg_t *)MH2V(0x3F3404, 0x6ADCC4) == em->stg) {
         SetVector(v, em->pos[0], em->x7E4, em->pos[2]);
         Eft08_set(v, 5, 2, scale * EMF(em, f32, 0xB8));
         sound_call_sub_005A3CA0(em, 0x1A, 6);

@@ -3,7 +3,7 @@
 #ifdef VERSION_MHG
 #define PL_NUM_LIT (*(u8 *)0x35ED5C) /* game_w.pl_num: G's game_w is laid out differently (master is at +0x3A) */
 #else
-#define PL_NUM_LIT (*(u8 *)0x3F34C3)
+#define PL_NUM_LIT (*(u8 *)MH2V(0x3F34C3, 0x6ADCEE))
 #endif
 
 

@@ -155,7 +155,7 @@ u8 *em_cmd_st25_gate_ck(EMW *em, u8 *p) {
     var_a1 = p;
     switch (*var_a1++) {
     case 0:
-        if (*(u8 *)0x3F35D6 == 0) {
+        if (*(u8 *)MH2V(0x3F35D6, 0x6ADEBA) == 0) {
             CMD_SKIP(em, var_a1, 0x60);
         }
         break;

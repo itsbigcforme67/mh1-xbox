@@ -11,6 +11,11 @@
 #define EMW_SIZE   0xA10
 #endif
 
+#ifdef VERSION_MH2
+#undef EMW_SIZE
+#define EMW_SIZE   0x9D0
+#endif
+
 typedef struct LPV {            /* camera view (lpView): eye and target, field of view, roll */
     f32 eye[3];                 /* 0x00 */
     f32 at[3];                  /* 0x0C */
@@ -27,25 +32,25 @@ typedef struct EWK {
     u8 x10;                     /* 0x010 */
     u8 _pad011[2];
     u8 slot;                    /* 0x013 */
-    u8 _pad014[0x34F - 0x14];
+    u8 _pad014[MH2_EM(0x34F) - MH2_EM(0x14)];
     u8 x34F;                    /* 0x34F which model template (game_w+0x88 table) */
-    u8 _pad350[0x3F8 - 0x350];
-    u8 x3F8[0x410 - 0x3F8];     /* 0x3F8 per slot flags, indexed by slot */
+    u8 _pad350[MH2_EM(0x3F8) - MH2_EM(0x350)];
+    u8 x3F8[MH2_EM(0x410) - MH2_EM(0x3F8)];     /* 0x3F8 per slot flags, indexed by slot */
     u8 x410;                    /* 0x410 */
-    u8 _pad411[0x508 - 0x411];
+    u8 _pad411[MH2_EM(0x508) - MH2_EM(0x411)];
     s16 mdl_num;                /* 0x508 model work slots used */
     s16 mdl_start;              /* 0x50A first model work slot */
     struct MDLW *mdl;           /* 0x50C model work */
-    u8 _pad510[0x564 - 0x510];
+    u8 _pad510[MH2_EM(0x564) - MH2_EM(0x510)];
     s32 prim;                   /* 0x564 */
     s16 prim_no;                /* 0x568 */
-    u8 _pad56A[0x798 - 0x56A];
+    u8 _pad56A[MH2_EM(0x798) - MH2_EM(0x56A)];
     f32 x798;                   /* 0x798 */
-    u8 _pad79C[0x88D - 0x79C];
+    u8 _pad79C[MH2_EM(0x88D) - MH2_EM(0x79C)];
     s8 x88D;                    /* 0x88D */
-    u8 _pad88E[0x8C3 - 0x88E];
+    u8 _pad88E[MH2_EM(0x8C3) - MH2_EM(0x88E)];
     u8 x8C3;                    /* 0x8C3 player number of the master */
-    u8 _pad8C4[EMW_SIZE - 0x8C4];
+    u8 _pad8C4[EMW_SIZE - MH2_EM(0x8C4)];
 } EWK;
 
 extern u8 *lpView;
