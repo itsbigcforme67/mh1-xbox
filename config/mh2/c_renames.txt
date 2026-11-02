@@ -1,0 +1,1 @@
+# Section renames for MH2 C objects (none yet). Read by tools/build.py.

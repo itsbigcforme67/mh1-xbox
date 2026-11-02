@@ -984,3 +984,24 @@ capture card, not checked); no audio through the capture card yet (RetroTINK HDM
   (4.5 min idle in the village, no pause).
 - Cold-start black screen (rare, 1 in ~25): the audio setup no longer reads the sound chip's registers (the reads never
   worked: always 0000) and only writes them. 15 of 15 cold starts fine afterwards; likely fixed, not proven.
+
+## 2026-11-02: Monster Hunter 2 Phase 1, first matching C (docs/mh2.md)
+
+Owner's change of 1 Nov: MH2 is split and decompiled by us, from the owner's disc. Branch of an isolated worktree; the
+community mh2-decomp repo was not opened.
+- Split: main and all 12 overlays rebuild byte-identical (`tools/mh2_rebuild.sh`, VERSION=mh2 in tools/build.py). Verified by
+  `tools/mh2_check.py`: SHA-256 of each file against disc/mh2/overlays and against its bytes inside DATA.BIN, and of the
+  whole SLPM_662.80 with the rebuilt main.bin put in (ELF headers from the disc). 13 of 13 identical.
+- Names: 7,285 of 17,034 functions, 39.7% of code bytes, plus 659 data names, from MH1's symbol table directly or through G
+  (`tools/mh2_map.py`, docs/survey/mh2_map.csv). 3,034 are the same code bar addressing, 1,282 same shape, 2,927 edited
+  guesses. `tools/mh2_namecheck.py` agreement of callees: 98% identical, 96% good edited, 84% weak edited: an estimate.
+- Compiler: mwcps2-3.0b52-030722 -O4,p, as MH1/G, plus `-sdatathreshold 0`: MH2 has no small data, no code uses gp.
+  Survey of all 14 local compilers in docs/mh2.md: b50 and b52 tie on top, 3.0.1 far behind.
+- Matched: 201 functions, 34,280 bytes, 0.62% of code (`tools/mh2_progress.py`): 192 unchanged MH1 files
+  (`tools/mh2_carry.py`) and 8 new small functions, src/mh2/plsel. All in the build that passed the check above.
+- Not done: no data slots yet, so C with strings, literals or jump tables is not carried; nothing has been run, only rebuilt.
+Next: data slots for carried C, then the 300 files that compile but differ (docs/mh2.md section 6).
+- Regression from this worktree: `tools/rebuild.sh` (MH1) all five OK. `VERSION=mhg tools/rebuild.sh`: six modules OK, but G `main`
+  fails to link: "multiple definition of Lb_menu_win_size_mv" (menu09_p1 and menu09_p2 both get it: in src/main/menu/menu09.c the `#ifdef VERSION_MHG` block at line 161 sits outside the G_PART guards).
+  No file under src/main, src/mhg, src/lobby, src/game, config/mhg or include changed on this branch, so this is
+  not from the MH2 work; src/main/menu/menu09.c last changed in the G commits of 1 Nov. Left alone for the G side.

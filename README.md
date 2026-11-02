@@ -88,6 +88,8 @@ docs/survey/mh1_symbols.csv):
 and lobby (from AFS_DATA.AFS). The DNAS overlays are not built: they are
 Sony network security code that gets replaced.
 
+Monster Hunter 2 has its own steps: docs/mh2.md (`tools/mh2_rebuild.sh`, `tools/mh2_check.py`).
+
 To decompile code:
 
     python3 tools/draft.py main --file f_set12      # m2c first draft per function

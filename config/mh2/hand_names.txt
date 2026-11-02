@@ -1,0 +1,7 @@
+# MODULE NAME ADDRESS: globals the C in src/mh2 names, read from our own disassembly. Merged into
+# MODULE_aliases.txt by tools/mh2_setup.py. D_ADDRESS means the use is known, the real name is not.
+plsel D_005BB0AC 0x005BB0AC
+plsel D_006ADC93 0x006ADC93
+plsel D_006ADC98 0x006ADC98
+plsel D_006ADCBE 0x006ADCBE
+plsel D_006AE018 0x006AE018

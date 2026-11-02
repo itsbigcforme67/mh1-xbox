@@ -118,6 +118,9 @@ Kept as a fallback for any file that resists matching.
 - **Changed 1 Nov 2026 (owner):** the author never answered, so we split and decompile MH2 ourselves from the owner's disc with
   our tools, and do not start from their code. Their repo stays a reference for facts only (what a function does, offsets,
   formats). Their C, names, comments and file layout stay out of ours. Not legal advice; re-read their license state first.
+- 2 Nov 2026, agent (owner asleep, docs/mh2.md): MH2 lives beside G in the same tree (VERSION=mh2, config/mh2, src/mh2 for
+  MH2-only C), and shares unchanged MH1 C files. dnas_net/dnas_ins are split too, unlike MH1/G, because the task asked
+  for every overlay: bytes only, no work on them. Compiler 3.0b52 with -sdatathreshold 0. The community repo was not opened.
 - Our repo: MIT license for the project's own code (owner, 15 Oct 2026; LICENSE).
 
 **Online: our own server and our own open PS2 patches, PS2 + PC + Xbox together.** (owner, 15 Oct 2026)

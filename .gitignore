@@ -28,6 +28,8 @@ build/
 assets/
 config/*undefined_*_auto.txt
 config/mhg/*undefined_*_auto.txt
+config/mh2/*_aliases.txt
+!config/mh2/c_aliases.txt
 .splat/
 tools/m2c/
 tools/permuter/
