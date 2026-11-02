@@ -35,5 +35,7 @@ segments:
     subsegments:
       - [0x000000, textbin, header]
       - [0x000040, asm, text/select_6AF240]
+      - [0x005E30, c, select/edit10]
+      - [0x005FB0, asm, text/select_6B51B0]
       - [0x018B80, data, data/select_data]
   - [0x22F80]

@@ -35,5 +35,11 @@ segments:
     subsegments:
       - [0x000000, textbin, header]
       - [0x000040, asm, text/game_6AF240]
+      - [0x0822C0, c, game/em/em_cmd_r34]
+      - [0x08249C, asm, text/game_73169C]
+      - [0x083F50, c, game/em/em_cmd_r38]
+      - [0x083FFC, asm, text/game_7331FC]
+      - [0x1B6AF0, c, game/eft/eft11]
+      - [0x1B6B74, asm, text/game_865D74]
       - [0x1E6100, data, data/game_data]
   - [0x246000]

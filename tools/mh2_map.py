@@ -9,6 +9,8 @@ nothing comes from any other project. Functions with no counterpart stay func_AD
 Classes (one row per MH2 function in docs/survey/mh2_map.csv):
   identical  same instructions as MH1 outside MH1's relocated fields (call targets, addresses
              of globals, gp offsets), so the MH1 C should compile to these bytes.
+  absolute   the same as identical/shape, except that a global MH1 reaches through gp (lw x, off(gp)) takes
+             lui $at + lw x, lo($at) here: MH2 was built with no small data at all (docs/mh2.md).
   shape      same instruction shape; some other 16-bit immediates differ (offsets, constants),
              or the reference is a G function (G has no relocations to tell them apart).
   edited     same function name by similarity: >= 70% of the opcode sequence matches (how=ngram)
@@ -102,6 +104,24 @@ def g_refs(G):
             if m.text_lo <= a < m.text_hi and sz >= 4:
                 out.append(Ref("g", mod, a, r[1], trim(m.words(a, sz // 4)), m))
     return out
+
+
+def norm(words):
+    """instruction shapes without the difference gp makes: `lui $at` dropped, the base register and offset of
+    loads and stores through $at or gp masked. Returns (shapes, index of each kept word)."""
+    out, kept = [], []
+    for i, w in enumerate(words):
+        op = w >> 26
+        if op == 0xF and ((w >> 16) & 31) == 1:
+            continue
+        rs = (w >> 21) & 31
+        if (0x20 <= op < 0x30 or op in (0x1E, 0x1F, 0x31, 0x35, 0x37, 0x39, 0x3D, 0x3F)) and rs in (1, 28):
+            w &= 0xFC1F0000
+            out.append(w)
+        else:
+            out.append(shape(w))
+        kept.append(i)
+    return tuple(out), kept
 
 
 def base_name(n):
@@ -239,6 +259,22 @@ def main():
     amb = {k for k, rl in hits.items() if k in byaddr and k not in pair}
     print("exact: %d functions named, %d ambiguous" % (len(pair), len(amb)))
 
+    # ---- the same code once small-data addressing is set aside
+    bynorm = collections.defaultdict(list)
+    for r in refs:
+        bynorm[norm(r.w)[0]].append(r)
+    n0 = len(pair)
+    for f in funcs:
+        key = (f.mod, f.addr)
+        if key in pair:
+            continue
+        rl = bynorm.get(norm(trim(M2[f.mod].words(f.addr, f.size // 4)))[0])
+        if rl and len(rl[0].w) >= 4 and len({base_name(r.name) for r in rl}) == 1:
+            r = max(rl, key=lambda r: score(key, r))
+            pair[key] = (r, "absolute", "norm", 1.0)
+            amb.discard(key)
+    print("absolute: %d more" % (len(pair) - n0))
+
     # ---- edited: opcode 8-gram candidates, difflib score, one-to-one
     used_names = {base_name(v[0].name) for v in pair.values()}
     todo = [f for f in funcs if (f.mod, f.addr) not in pair and (f.mod, f.addr) not in amb and f.size >= 48]
@@ -300,7 +336,7 @@ def main():
     for _round in range(3):
         votes = collections.defaultdict(collections.Counter)
         for key, (r, c, _h, sc) in list(pair.items()):
-            if c not in ("identical", "shape") and sc < 0.8:
+            if c not in ("identical", "absolute", "shape") and sc < 0.8:
                 continue
             f = byaddr[key]
             b = M2[key[0]].words(key[1], f.size // 4)
@@ -363,6 +399,31 @@ def main():
             k -= 1
         return None, 0
 
+    def vote(mod, t1, sy, r, t2):
+        name, off = sym_of(r.mod, sy, t1 & 0xFFFFFFFF)
+        a = (t2 - off) & 0xFFFFFFFF
+        mm = mod2_of(mod, a)
+        if name and mm:
+            votes[name][(mm, a)] += 1
+
+    for key, (r, c, _h, _s) in pair.items():
+        if r.src != "mh1" or c != "absolute":
+            continue
+        rl = rel[r.mod]
+        b = M2[key[0]].words(key[1], byaddr[key].size // 4)
+        na, ia = norm(r.w)
+        nb_, ib = norm(trim(b))
+        lui, at = {}, None
+        for j, w in enumerate(b):
+            if w >> 26 == 0xF and ((w >> 16) & 31) == 1:
+                at = (w & 0xFFFF) << 16
+            lui[j] = at
+        for i, j in zip(ia, ib):
+            x, q = r.w[i], rl.get(r.addr + 4 * i)
+            if q and q[0] == GPREL and ((b[j] >> 21) & 31) == 1 and lui[j] is not None:
+                t1 = MH1_GP + (((x & 0xFFFF) ^ 0x8000) - 0x8000)
+                vote(key[0], t1, q[1], r, lui[j] + (((b[j] & 0xFFFF) ^ 0x8000) - 0x8000))
+
     for key, (r, c, _h, _s) in pair.items():
         if r.src != "mh1" or c not in ("identical", "shape"):
             continue
@@ -386,11 +447,7 @@ def main():
                 t2 = MH2_GP + (((b[i] & 0xFFFF) ^ 0x8000) - 0x8000)
             else:
                 continue
-            name, off = sym_of(r.mod, sy, t1 & 0xFFFFFFFF)
-            a = (t2 - off) & 0xFFFFFFFF
-            mm = mod2_of(key[0], a)
-            if name and mm:
-                votes[name][(mm, a)] += 1
+            vote(key[0], t1, sy, r, t2)
     data = {}
     for name, c in votes.items():
         if len(c) == 1:
@@ -426,21 +483,21 @@ def main():
         out[mm][a] = (name, 0, False)
         n_data += 1
 
-    print("\n| module | funcs | identical | shape | edited | rewritten | ambiguous | mh2-only | named bytes |")
-    print("|---|---|---|---|---|---|---|---|---|")
+    print("\n| module | funcs | identical | absolute | shape | edited | rewritten | ambiguous | mh2-only | named bytes |")
+    print("|---|---|---|---|---|---|---|---|---|---|")
     tot = collections.Counter()
     tb = nb = 0
     for m in ["main"] + MH2_OVL:
         rl = [x for x in rows if x[0] == m]
         c = collections.Counter(x[4] for x in rl)
         b = sum(x[2] for x in rl)
-        n = sum(x[2] for x in rl if x[4] in ("identical", "shape", "edited", "rewritten"))
+        n = sum(x[2] for x in rl if x[4] in ("identical", "absolute", "shape", "edited", "rewritten"))
         tb += b
         nb += n
         tot.update(c)
-        print("| %s | %d | %d | %d | %d | %d | %d | %d | %.1f%% |" % (m, len(rl), c["identical"], c["shape"], c["edited"],
+        print("| %s | %d | %d | %d | %d | %d | %d | %d | %d | %.1f%% |" % (m, len(rl), c["identical"], c["absolute"], c["shape"], c["edited"],
                                                                      c["rewritten"], c["ambiguous"], c["mh2-only"], 100 * n / b))
-    print("| all | %d | %d | %d | %d | %d | %d | %d | %.1f%% |" % (len(rows), tot["identical"], tot["shape"], tot["edited"],
+    print("| all | %d | %d | %d | %d | %d | %d | %d | %d | %.1f%% |" % (len(rows), tot["identical"], tot["absolute"], tot["shape"], tot["edited"],
                                                                   tot["rewritten"], tot["ambiguous"], tot["mh2-only"], 100 * nb / tb))
     src = collections.Counter(x[7] for x in rows if x[7])
     print("names by source: %s; data names: %d (from %d voted, kept when all votes agree)" % (dict(src), n_data, len(votes)))

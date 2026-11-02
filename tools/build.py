@@ -50,7 +50,7 @@ elif VERSION == "mh2":
     MODULES = ["main", "sub_main", "select", "game", "lobby", "yn", "plsel", "gm_sub", "lbguild", "nethttp",
                "test", "dnas_net", "dnas_ins"]
     BDIR, CONF, SPLIT = "build/mh2", "config/mh2", "build/mh2/split"
-    CFLAGS = CFLAGS + ["-DVERSION_MH2"]
+    CFLAGS = CFLAGS + ["-sdatathreshold", "0", "-DVERSION_MH2"]   # MH2 has no small data: no gp-relative access at all
 else:
     BDIR, CONF, SPLIT = "build", "config", "disc/mh1/split"
 

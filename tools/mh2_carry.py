@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 """mh2_carry.py - carry byte-matched C from MH1 into Monster Hunter 2 (docs/mh2.md).
 
-A file of config/c_files.txt is a candidate when every MH1 function in its range has an
-`identical` twin in docs/survey/mh2_map.csv, all in one MH2 module with the same spacing.
+A file of config/c_files.txt is a candidate when every MH1 function in its range has a named twin in
+docs/survey/mh2_map.csv in one MH2 module; compiling it and comparing with MH2's bytes decides.
 
   mh2_carry.py survey [--limit N]
       compile the candidates with every local Metrowerks compiler and count, per compiler and
@@ -29,13 +29,17 @@ import sys
 import tempfile
 from concurrent.futures import ThreadPoolExecutor
 
-ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+from mh2_setup import LOADED_WITH  # noqa: E402
+
+ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 GP = 0x1D05F0
 WIBO = os.path.join(ROOT, "tools/compilers/wibo")
 CC = "mwcps2-3.0b52-030722"
-BASE = ["-c", "-nostdinc", "-stderr", "-Iinclude", "-Ibuild/raw", "-pragma", "divbyzerocheck on", "-DVERSION_MH2"]
+BASE = ["-c", "-nostdinc", "-stderr", "-Iinclude", "-Ibuild/raw", "-pragma", "divbyzerocheck on", "-sdatathreshold", "0",
+        "-DVERSION_MH2"]
 OPT = ["-O4,p"]
+HAND = "# --- MH2 C written by hand (src/mh2): kept when tools/mh2_carry.py reruns"
 HI, LO, GPREL, R26, R32 = 5, 6, 7, 4, 2
 MASK = {R26: 0x03FFFFFF, HI: 0xFFFF, LO: 0xFFFF, GPREL: 0xFFFF, R32: 0xFFFFFFFF}
 SEC = {"main": "main", "select": "select.bin", "game": "game.bin", "yn": "yn.bin", "lobby": "lobby.bin"}
@@ -63,7 +67,7 @@ def orig(mod, addr, size):
 def candidates():
     tw = {}
     for r in csv.DictReader(open(P("docs/survey/mh2_map.csv"), encoding="utf-8")):
-        if r["class"] == "identical" and r["src"] == "mh1":
+        if r["class"] in ("identical", "absolute", "shape", "edited") and r["src"] == "mh1":
             tw[(r["ref_module"], int(r["ref_addr"], 16))] = (r["mh2_module"], int(r["mh2_addr"], 16))
     fn = collections.defaultdict(list)
     inv = {v: k for k, v in SEC.items()}
@@ -105,19 +109,20 @@ def candidates():
             why["has raw functions"] += 1
             continue
         if not all((mod, x[0]) in tw for x in fs):
-            why["not all identical twins"] += 1
+            why["a function has no twin"] += 1
             continue
         tm, t0 = tw[(mod, fs[0][0])]
-        if not all(tw[(mod, x[0])][0] == tm and tw[(mod, x[0])][1] - t0 == x[0] - fs[0][0] for x in fs):
-            why["layout differs"] += 1
+        if not all(tw[(mod, x[0])][0] == tm for x in fs):
+            why["twins in several modules"] += 1
             continue
+        at = {x[0]: tw[(mod, x[0])][1] for x in fs}
         if fs[0][0] != lo:
             why["range does not start at a function"] += 1
             continue
         if slots.get(path):
             why["has data slots"] += 1
             continue
-        out.append(dict(path=path, mod=mod, lo=lo, hi=hi, tm=tm, t0=t0, fs=fs))
+        out.append(dict(path=path, mod=mod, lo=lo, hi=hi, tm=tm, t0=t0, fs=fs, at=at))
     return out, why
 
 
@@ -178,8 +183,10 @@ def compare(c, objp):
                 hit = next(((a, s) for a, _n, s in c["fs"] if a == int(m.group(1), 16)), None)
         if hit is None:
             continue
-        addr = c["t0"] + hit[0] - c["lo"]
+        addr = c["at"][hit[0]]
         code = secs[sh][val:val + sz]
+        if addr - val != c["t0"]:              # the file must sit in MH2 as it sits in the object
+            continue
         o = orig(c["tm"], addr, sz)
         rs = [r for r in rel[sh] if val <= r[0] < val + sz]
         mk = {r[0] - val: MASK.get(r[1], 0) for r in rs}
@@ -193,7 +200,24 @@ def compare(c, objp):
                 break
         good += ok
         used[n] = (sh, val, sz, addr, rs)
-    return good, total, used, names, alloc, secs
+    size = sum(len(b) for i, b in secs.items() if names[i] == ".text")
+    return good, total, used, names, alloc, secs, size
+
+
+_vis = {}
+
+
+def visible(mod):
+    """name -> address as the link of MODULE sees them (tools/mh2_setup.py's symbol files)"""
+    if mod not in _vis:
+        tab = {}
+        for m in ["main", "sub_main", mod] + LOADED_WITH.get(mod, []):
+            for l in open(P("config/mh2/symbols/%s.txt" % m)):
+                r = re.match(r"^(\S+) = 0x([0-9A-F]+);", l)
+                if r:
+                    tab.setdefault(r[1], int(r[2], 16))
+        _vis[mod] = tab
+    return _vis[mod]
 
 
 def survey(args):
@@ -224,6 +248,7 @@ def register():
     known = collections.defaultdict(set)      # name -> set of addresses the original instructions want
     syms = {}
     kept = []
+    size_of, defs_of = {}, {}
     tmp = P("build/mh2/carry")
     shutil.rmtree(tmp, ignore_errors=True)
     os.makedirs(tmp)
@@ -237,7 +262,7 @@ def register():
         if not cmp_:
             why["does not compile"] += 1
             continue
-        good, total, used, names, alloc, secs = cmp_
+        good, total, used, names, alloc, secs, size = cmp_
         if good != total or len(used) != total or total != len(c["fs"]):
             why["not equal"] += 1
             continue
@@ -274,31 +299,51 @@ def register():
         if bad or any(len(v) != 1 for v in want.values()):
             why["a name needs two addresses inside the file"] += 1
             continue
+        # the link gives a name to whoever defines it, so the symbol files must agree with this file
+        tab = visible(c["tm"])
+        if any(n in tab and tab[n] != next(iter(a)) for n, a in want.items()):
+            why["a name it uses sits elsewhere in the symbol files"] += 1
+            continue
+        if any(n in tab and tab[n] != u[3] for n, u in used.items()):
+            why["a function it defines is another copy's name"] += 1
+            continue
         kept.append((c, want))
+        size_of[c["path"]] = size
+        defs_of[c["path"]] = {n: u[3] for n, u in used.items()}
     # one address per name over all files, per set of modules loaded together: first come, first kept
-    table = collections.defaultdict(dict)
+    table = collections.defaultdict(dict)      # per MH2 module: the module's link sees only its own lines
     final = []
     for c, want in sorted(kept, key=lambda t: t[0]["path"]):
-        scope = table["all"]
-        if any(n in scope and scope[n] != next(iter(a)) for n, a in want.items()):
+        scope = table[c["tm"]]
+        if any(n in scope and scope[n] != next(iter(a)) for n, a in want.items()) or \
+                any(scope.get(n, u) != u for n, u in defs_of[c["path"]].items()):
             why["a name conflicts with another file"] += 1
             continue
+        scope.update(defs_of[c["path"]])
         for n, a in want.items():
             scope[n] = next(iter(a))
+        c["size"] = size_of[c["path"]]
         final.append(c)
     why["registered"] = len(final)
     print(dict(why))
     final.sort(key=lambda c: (c["tm"], c["t0"]))
+    hand = ""
+    if os.path.exists(P("config/mh2/c_files.txt")):
+        txt = open(P("config/mh2/c_files.txt")).read()
+        if HAND in txt:
+            hand = txt[txt.index(HAND):]
     with open(P("config/mh2/c_files.txt"), "w") as fh:
         fh.write("# Generated by tools/mh2_carry.py: matched MH1 C files that rebuild MH2 unchanged.\n"
                  "# MODULE START END NAME, NAME relative to src/ (shared with the MH1 build).\n")
         for c in final:
-            fh.write("%s 0x%08X 0x%08X %s\n" % (c["tm"], c["t0"], c["t0"] + c["hi"] - c["lo"], c["path"]))
+            fh.write("%s 0x%08X 0x%08X %s\n" % (c["tm"], c["t0"], c["t0"] + c["size"], c["path"]))
+        fh.write(hand)
     with open(P("config/mh2/c_aliases.txt"), "w") as fh:
         fh.write("# Generated by tools/mh2_carry.py: names the carried C uses, at the MH2 address the original\n"
                  "# instruction holds. tools/mh2_setup.py merges them into MODULE_aliases.txt.\n")
-        for n, a_ in sorted(table["all"].items()):
-            fh.write("%s 0x%08X\n" % (n, a_))
+        for m in sorted(table):
+            for n, a_ in sorted(table[m].items()):
+                fh.write("%s %s 0x%08X\n" % (m, n, a_))
 
 
 if __name__ == "__main__":
