@@ -11,8 +11,9 @@ during this work: nothing here comes from it. No PC port yet. Numbers are from t
   table, directly or through G. The rest stay `func_ADDRESS`.
 - MH2 uses the same compiler as MH1 and G. The one difference: it was built with small data off, so it
   never uses the gp register. Add `-sdatathreshold 0` and MH1's C compiles to MH2's bytes.
-- 1,532 functions (208,104 bytes, 3.74% of the code) are matching C: 820 C objects carried unchanged from
-  MH1 and G, plus 8 small MH2-only functions written fresh from our disassembly (`tools/mh2_progress.py`).
+- 2,268 functions (353,996 bytes, 6.37% of the code) are matching C: 1,223 C objects built from MH1's and G's
+  sources, which now hold MH2's differences behind macros, plus 8 small MH2-only functions written fresh from our
+  disassembly (`tools/mh2_progress.py`).
 
 ## 1. Layout
 
@@ -136,17 +137,17 @@ the code fits a mid-2003 compiler, not the newer 3.0.1 line. `-O3` was only trie
 
 | module | functions | matched | code bytes | matched bytes | % |
 |---|---|---|---|---|---|
-| game | 4580 | 103 | 1963064 | 16304 | 0.83% |
-| gm_sub | 128 | 3 | 64152 | 388 | 0.60% |
+| game | 4580 | 514 | 1963064 | 110452 | 5.63% |
+| gm_sub | 128 | 4 | 64152 | 524 | 0.82% |
 | lbguild | 1 | 0 | 4 | 0 | 0.00% |
-| lobby | 3819 | 396 | 1205876 | 42276 | 3.51% |
-| main | 3188 | 128 | 602132 | 24548 | 4.08% |
-| nethttp | 1329 | 1 | 345532 | 24 | 0.01% |
+| lobby | 3819 | 541 | 1205876 | 67388 | 5.59% |
+| main | 3188 | 131 | 602132 | 24812 | 4.12% |
+| nethttp | 1329 | 8 | 345532 | 1332 | 0.39% |
 | plsel | 179 | 11 | 88364 | 428 | 0.48% |
-| select | 251 | 4 | 99636 | 760 | 0.76% |
-| sub_main | 3437 | 840 | 1154632 | 116704 | 10.11% |
-| yn | 122 | 46 | 36468 | 6672 | 18.30% |
-| **all** | **17034** | **1532** | **5559860** | **208104** | **3.74%** |
+| select | 251 | 5 | 99636 | 812 | 0.81% |
+| sub_main | 3437 | 1006 | 1154632 | 141220 | 12.23% |
+| yn | 122 | 48 | 36468 | 7028 | 19.27% |
+| **all** | **17034** | **2268** | **5559860** | **353996** | **6.37%** |
 
 The totals include Sony's libraries and middleware (CRI, OpenSSL), which have no marker yet, so the share of Capcom's
 game code is a little different.
@@ -158,12 +159,13 @@ is checked against what the original instruction holds. Results of the last run:
 
 | what | count |
 |---|---|
-| whole files that match | 471 (44 of them only in G's form, see below) |
-| parts of other files | 349 (15 in G's form) |
-| data slots | 25 |
-| code not found anywhere | 1,608 files |
-| several sites and no name to choose | 109 files, nearly all under 10 instructions |
-| a name needs two addresses | 8 files, 50 single functions: one global reached at two offsets that do not fit (a struct moved) |
+| whole files that match | 704 |
+| parts of other files | 519 |
+| data slots | 36 |
+| code not found anywhere | 1,361 files |
+| several sites and no name to choose | 118 files |
+| a name needs two addresses | 17 files, 51 single functions: one global reached at two offsets that do not fit |
+| overlaps a bigger match | 12 |
 | do not compile | 4 |
 
 - **The old count was wrong.** Earlier versions of this file said 300 of 500 files "compile but differ". At least 79 of
@@ -195,25 +197,68 @@ is checked against what the original instruction holds. Results of the last run:
   config/mh2/hand_names.txt. Struct and global names there are placeholders; what these functions do in the game is not known.
 - Every one is checked by the search above, by the full link (OK per module), and by tools/mh2_check.py.
 
-**Files that differ (docs/survey/mh2_differ.csv, counts only).** 977 files with at least one named twin, sorted by how many
-instructions differ from MH2 (relocated fields masked): 15 with none (all functions equal but not next to each other in MH2:
-already in as parts), 183 with 1-7, 370 with 8-63, 409 with 64 or more. `functions_same` says how many of a file's functions
-are equal, and those are mostly already in as parts. The MH1 and G views of one source can both be listed.
+**Files that differ (docs/survey/mh2_differ.csv, counts only).** 750 files with at least one named twin, sorted by how many
+instructions differ from MH2 (relocated fields masked): 37 with none, 90 with 1-7, 235 with 8-63, 388 with 64 or more. `functions_same`
+says how many of a file's functions are equal, and those are mostly already in as parts. The MH1 and G views of one source can both be
+listed. This list ranks only the MH1 form of many files, so it needs a G-form column before it can be trusted as an order of work (section 6).
 
-A sample of the 1-7 group says these are real content changes, not compiler noise: struct offsets (`sb zero,2077(a0)`
-against `1905`), packet and message numbers (a whole family of `__cnet_Send*` is off by 60), array sizes, loop limits. None was
-taken by a flag. They need edits, which this step was not for.
+**How MH2's differences live in the shared sources (the merge of 2 Nov 2026).** All of these are plain values for MH1, G and the PC.
+
+| thing | where | what it does |
+|---|---|---|
+| `MH2V(mh1, mh2)` | include/types.h | a constant MH2 changed |
+| `stg_t` | include/types.h | a stage number: u8, 16 bits in MH2 |
+| `MH2_OFS(p, o)` | include/types.h, include/mh2_ofs.h (generated) | MH1 offset o into what p points at; picks PLW's or EMW's map by `sizeof(*p)`, any other size keeps o |
+| `MH2_EM(o)` | include/types.h | the EMW map, for pads of local copies of EMW |
+| PLW, EMW | include/mh2_plw.h, mh2_emw.h (generated) | `tools/mh2_structs.py probe`, then `gen`; hand entries in config/mh2/struct_map.txt |
+| game_w | include/game.h | G's struct with room added, one definition for G and MH2 |
+| `GWX(o)` | include/gwx.h | G's table, then `MH2_GW` on the result |
+| CNET_SYS, `CNO(o)` | include/cnet_mh2.h (generated) | `tools/mh2_structs.py cnet` from include/lbnet.h and config/mh2/cnet_map.txt |
+| `SKO(o)` | include/sk_g.h | soft keyboard work offsets |
+| `PLW_AT(i)` | include/version.h | one player by index |
+| browser block | include/mh2_lb.h | see the facts below |
+
+**One rule follows, and the merge hit it three times:** `CNO`, `SKO`, `GWX` and `MH2_OFS` already map an MH1 offset for MH2. Inside them write the MH1
+offset alone. `CNO(MH2V(a, b))` or `SKO(MH2V(a, b))` applies the move twice. Macros that call `MH2_OFS` on a parameter (`EM_FIELD`, `M2C_FIELD`, `EMF`,
+`PU8` and others) follow the same rule. `MH2_OFS` needs a pointer to a complete type: a macro used with `void *` or an integer does not compile, which is why
+the macros of src/main/mc/netfile2*, src/main/chat, src/main/tu/chat_all.c and src/lobby/f/lb_shp.c stayed plain.
+
+**Facts, read from MH2's code.** PLW is 0x970 bytes, EMW 0x9D0. game_w is at 0x6ADCB0, CnetSys_w at 0x84A440. There are 10 players and lobby members, not 8.
+Stage numbers are 16 bits. LBCOMMER and CWPLAYER are 0x11C. The browser's globals sit in one block, reached through the pointer at 0x895270, the slot that is bsUrl
+in MH1 (include/mh2_lb.h). The HTTP task is 0xE4, BsLbsInfo 0x114 x 40, PIT_CHAT 0x4F, EQ_ARMOR 0x28, EQ_GUN 0x18, an Item_data row 24 bytes.
+`#pragma divbyzerocheck off` is needed around UpdateEndpoint. The extra nops in MH2 are 8-byte aligned branch targets.
+
+**Facts about the tools.** `register` deletes src/mh2/parts, so a hand copy cannot live there. mh2_carry.py's object cache now notices include/ (not a .h next to a source;
+empty build/mh2/carry then). mh2_diff.py always compiles fresh; it is the quick way to see why one function differs. `MH2_JOBS=N` sets register's jobs.
+A C function goes in at one site only. MH2 has shape twins (same code, other relocations), so the map's `_mh2_ADDRESS` twin can stay in the asm while its first site is C.
+
+**Name map errors found.** get_prim and get_prim2 are swapped (0x376EF0 is the 0x200 pool). config/mh2/c_symfix.txt has grown to 213 lines; each is a place to check.
+
+**Guessed, not proven.** GAME_W's size 0x2C0. CNET_SYS's size 0x4B000. reward_item[48] (only the room between its neighbours says so). area_mdlw at 0xF0 (no code seen; the
+pad has to sit before it because of alignment). Offsets in runs where no field sits on either side of a boundary. The end of SHLW. The G-only tail of EMW. Overlaid fields: 11 of EMW and
+4 of PLW sit in the unions at the end of the struct, because they land on a better placed field; they compile at the given offset, but their real place or type is
+not settled (MH1 offsets: EMW 50C, 616, 617, 74C, 762, 765, 766, 824, 9ED, 9EE, A00; PLW 4E3, 5FC, 73C, 8C3).
+
+**Where the two field generators disagreed (kept value, with the method's value).** Fields the probe has votes on stayed with the votes. PLW: 35F 35B (A 31F), 360 35C (A 368), 362 35E (A 36A),
+4D6 4BA (A 4CA), 4DD 4C1 (A 4D1), 4E0 4C4 (A 4D4; no votes), 615 417 (A 599), 934 890 (A 88C), 936 892 (A 88E). EMW: 73A 684 (A 686; two votes), 881 997 (A 7D5), 88B 437 (A 7DF; two votes), 88D 9A8 (A 7E1).
+With no votes the run-read value was tried in config/mh2/struct_map.txt and kept: the count rose by 5 with these, the game_w fix and the macros in the same run, so the gain is not proven for each line. PLW 601, 603, 714, 739, 73A, 800-818; EMW 600, 6E0, 6E2,
+7F0-7F2, 824, 828-82B, 9C8. Only x824 and x828 on are shown by code (em_cmd_sub_contents, `sb v1,1910(a0)`). EMW 734 and 73C stayed with the probe's fill, because the run-read 0x680 lands on the stage number.
 
 ## 6. Next
 
-1. docs/survey/mh2_differ.csv from the top: the 183 small ones are mostly one struct offset or one constant. Group them: the
-   `__cnet_Send*` family wants one enum change, the player offsets one struct change. Keep `#ifdef VERSION_MH2` out of G's and
-   MH1's paths. A source edit means rerunning register.
-2. Function bodies with no twin (1,608 files are not found at all): after the struct work, rerun; a fixed header frees many at once.
-3. Parts that left strings in the asm: when the rest of such a file matches, its data gets a slot by itself on the next register.
-4. Clean the map with c_symfix.txt: each line is a name the map has at the wrong place or twice.
-5. Type main's data block and name the Sony and CRI code properly.
-6. A PC port is not started. Whether to port MH2 onto the G engine is the owner's call later.
+Remaining work, by reason:
+
+1. Layouts not done: net_common_w, PitMenu, CameraWork, User_data, ConnWork, MemcardWork, quest_w.
+2. The third CnetSys_w send layout (cnlbs*).
+3. Array scale changes: an index multiplied by a new element size.
+4. False twins from the name map, and tiny sites with the wrong name.
+5. Real rewrites: MH2 changed what the function does.
+6. A few register-allocation stragglers: flGetMotionMatrix, SaveNetFileBr, dic_learn.
+7. Two-address files: a global reached at two offsets (17 files, 51 functions), mostly a struct still wrong.
+8. mh2_differ.csv needs a G-form column.
+9. Parts that left strings in the asm: when the rest of such a file matches, its data gets a slot by itself on the next register.
+10. Type main's data block and name the Sony and CRI code properly.
+11. A PC port is not started. Whether to port MH2 onto the G engine is the owner's call later.
 
 ## 7. Not done or not tested
 

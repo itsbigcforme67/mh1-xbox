@@ -1025,3 +1025,22 @@ Decided alone, the owner being away. Community mh2-decomp not opened.
 - tools/mh2_rebuild.sh now limits itself to `ulimit -v 3000000`. Not run in any emulator: proof is bytes only.
 
 Next: the small files in mh2_differ.csv by family (docs/mh2.md section 6).
+
+## 2026-11-02: MH2, four branches merged into one design, 6.37% (docs/mh2.md section 5)
+
+Decided alone, the owner being away. Community mh2-decomp not opened.
+
+- Merged A (CnetSys_w, MH2V sources), B (compiler probe for PLW and EMW, base of the merge), C (lobby and network), D (near-misses, SKO, mh2_diff.py). One set of generated
+  headers remains: mh2_plw.h, mh2_emw.h, mh2_ofs.h, cnet_mh2.h. A's pl_mh2.h, em_mh2.h, game_mh2.h, gwx_mh2.h and D's game_mh2.h, game_mh2_gwx.h are gone, STG_T became stg_t, PLW_MH2 became PLW_AT.
+- Result: 2,268 functions, 353,996 bytes, 6.37% (branches: 2,038, 2,037, 1,640, 1,598; union 2,274).
+- Against each branch: A 6 functions, B 2, C 2, D 0. Five of the six are one C function that a branch put at its other twin site; the merge has it at the first site, so one function counts
+  in each. The one real loss is 20 bytes, sub_main_func_00368E80, with all_sprite_free's twin at 0x368ED0: mhg/main/sprite/sysw_p2 no longer goes in whole, main/sprite/sysw parts took its place. Why it no longer goes in whole was not looked into.
+- Bug found in B's game_w: a pad after area_mdlw left the pointer at 0xB2, which aligned to 0xB4 and put every later field 2 too high. Taru_ok_ck showed it.
+- Double mappings fixed: MH2V inside SKO (6) once D's SKO arrived, and inside M2C_FIELD, EM_FIELD, PU8 (one each). Rule in docs/mh2.md.
+- MH2_OFS added to one-line macros in 60 more files, outside em and pl. Its gain was not measured on its own (it ran together with the game_w fix). 11 files went back: `void *` or integer arguments do not compile with it.
+- Tools: mh2_structs.py gained `cnet`; mh2_own.py works again (p00D61710.c: OK, 0 differ); the object cache in mh2_carry.py notices include/; MH2_JOBS sets register's jobs.
+- Verified: build/mh2/carry emptied, build/mh2/src/mh2/parts deleted, register, full tools/mh2_rebuild.sh, tools/mh2_check.py 13 of 13 identical. MH1 by the steps of tools/rebuild.sh at -j 2: 5 OK. G the same way: 7 OK.
+  tools/build_pc.sh builds build/pc/mhview. MH1, G and PC were run on the commit before the last header change, which touched only mh2_emw.h and mh2_ofs.h (MH2 only). PC build only: not run, full_check.sh is the owner's.
+- Not run in any emulator: proof is bytes only. What is a guess is listed in docs/mh2.md.
+
+Next: docs/mh2.md section 6.
