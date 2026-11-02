@@ -5,6 +5,11 @@ extern u8 * bsSys;
 extern u8 * bsCur;
 extern s8 BsCursorReq;
 
+#ifdef VERSION_MH2
+#include "mh2_lb.h"
+#define BsDialogReq BW_DIALOGREQ
+#define BsCursorReq BW_CURSORREQ
+#endif
 void To_BodyMain_ActDsp(void) {
     F(s8, bsSys, 0x2E) = 0xA;
     BsDialogReq = 1;

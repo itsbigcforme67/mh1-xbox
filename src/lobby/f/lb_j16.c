@@ -36,6 +36,72 @@ void pl_sleeping();
 
 
 
+#ifdef VERSION_MH2
+void lb_pl_mv031(PLW *pl) {
+    LBV3 in;
+    LBV3 out;
+    u8 t;
+    u8 s;
+    s = pl->x05;
+    switch (s) {
+    case 0:
+        pl->x05 = s + 1;
+        Lb_Pl_basic_flagset(pl, 0, 0, 0);
+        Lb_pl_flag_set(pl, 0x600);
+        F(s32, pl, 0x3A4) = 0;
+        F(s16, pl, 0x6AC) = 0x1E;
+        if (PLU8(pl, 0x844) != 0) {
+            if (F(u16, pl, 0x29C) != 0x27) {
+                pl_chr_set2(pl, 0x27, 4, 0);
+            }
+            F(f32, pl, 0x160) = 2.0f;
+            F(f32, pl, 0x1B0) = 2.0f;
+        } else if (F(u16, pl, 0x29C) == 3) {
+            F(f32, pl, 0x160) = 2.5f;
+            F(f32, pl, 0x1B0) = 2.5f;
+        } else {
+            pl_chr_set2(pl, 3, 0, 0x3A);
+            F(f32, pl, 0x160) = 2.5f;
+            F(f32, pl, 0x1B0) = 2.5f;
+        }
+        pl->ang_y = pl->ang[1];
+        return;
+    case 1:
+        if (pl->id == game_w.master && F(u16, pl, 0x38C) >= 0x28) {
+            pl->ang_y = Lb_stick_dir_set(pl, 0);
+        }
+        in.x = 0;
+        in.y = 0;
+        if (PLU8(pl, 0x844) != 0) {
+            *(s32 *)&in.z = 0x3F800000;
+        } else {
+            *(s32 *)&in.z = 0x40A00000;
+        }
+        flvecApplyMat33(&out, &in, (u8 *)pl + 0x20);
+        if (game_w.master == pl->id) {
+            pl->pos[0] = pl->pos[0] + out.x;
+            pl->pos[2] = pl->pos[2] + out.z;
+        }
+        if (Pl_master_ck(pl) == 0) {
+            return;
+        }
+        t = Lb_stick_pow_get(pl);
+        if (t != 5 && (game_w.master == pl->id || Online_ck() == 0)) {
+            if (t != 0) {
+                if (F(s16, pl, 0x6AC) == 0) {
+                    Lb_Pl_act_set(pl, 0, 3, 0);
+                    return;
+                }
+                lb_basic_com_ck(pl);
+                return;
+            }
+            Lb_Pl_act_set(pl, 0, 6, 0);
+            return;
+        }
+        lb_basic_com_ck(pl);
+    }
+}
+#else
 void lb_pl_mv031(PLW *pl) {
     LBV3 in;
     LBV3 out;
@@ -95,3 +161,4 @@ void lb_pl_mv031(PLW *pl) {
         lb_basic_com_ck(pl);
     }
 }
+#endif

@@ -8,7 +8,11 @@
 
 extern u8 *cw;                 /* client work (D_6DD7E0, 0xBF40 bytes): u8 accessed by offset */
 #define CW8(o)  (*(u8 *)(cw + (o)))
+#ifdef VERSION_MH2
+#define CWPLAYER(i) (cw + (i) * 0x11C)
+#else
 #define CWPLAYER(i) (cw + (i) * 0x2FC)  /* per member records start at cw+0x1334 */
+#endif
 
 #ifdef VERSION_MH2
 typedef struct LBCOMMER { s8 mac[6]; u8 _pad06[2]; char name[0x10]; u8 _pad18[0x11C - 0x18]; } LBCOMMER; /* MH2: 0x11C bytes */

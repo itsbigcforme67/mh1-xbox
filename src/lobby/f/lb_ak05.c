@@ -15,6 +15,10 @@ void setUpDnLtRtBlank();
 void UpdateEndpoint(int x, int y);
 int AppendWork(int, int, int, int, int, int, int, int, int, int, void *, void *, void *);
 
+#ifdef VERSION_MH2
+#include "mh2_lb.h"
+#define BsBgImgReq BW8(0x8EAF)
+#endif
 int stockBgImage(u8 *p) {
     int r;
     r = skipShadowImage();

@@ -8,6 +8,27 @@
 
 
 #if !defined(G_PART) || G_PART == 1
+#ifdef VERSION_MH2
+void lb_pl_mv045(PLW *pl) {
+    u8 s;
+    PLU8(pl, 0x863) = 1;
+    ItemPickingDeclaration(pl, (u8 *)pl + 0x83E);
+    s = pl->x05;
+    switch (s) {
+    case 0:
+        pl->x05 = s + 1;
+        Lb_Pl_basic_flagset(pl, 0, 0, 0);
+        pl_chr_set2(pl, 0x3C, 4, 0);
+        F(u8, pl, 0x862) = 0;
+        F(u8, pl, 0x848) = 0;
+        return;
+    case 1:
+        if (Pl_master_ck(pl) == 1 && ((F(u16, pl, 0x370) & 0x40) || F(u8, pl, 0x862) != 0 || lbCommer[F(u8, pl, 0x861)].mac[0] == 0)) {
+            Lb_Pl_act_set2(pl, 0, 0xC, 0);
+        }
+    }
+}
+#else
 void lb_pl_mv045(PLW *pl) {
     u8 s;
     PLU8(pl, 0x90B) = 1;
@@ -28,8 +49,43 @@ void lb_pl_mv045(PLW *pl) {
     }
 }
 #endif
+#endif
 
 #if !defined(G_PART)
+#ifdef VERSION_MH2
+void lb_pl_mv046(PLW *pl) {
+    int t;
+    u8 s;
+    PLU8(pl, 0x863) = 1;
+    ItemPickingDeclaration(pl, (u8 *)pl + 0x83E);
+    s = pl->x05;
+    switch (s) {
+    case 0:
+        pl->x05 = s + 1;
+        Lb_Pl_basic_flagset(pl, 0, 0, 0);
+        action_timer_calc(pl, 0);
+        if (F(u16, pl, 0x29C) != 1) {
+            pl_chr_set2(pl, 1, 6, 0);
+        }
+        F(u8, pl, 0x862) = 0;
+        pl->work08 = 0;
+        return;
+    case 1:
+        t = pl->work08 + 1;
+        pl->work08 = t;
+        if (t >= 0x259 || F(u8, pl, 0x862) != 0) {
+            if (F(u8, pl, 0x862) == 1) {
+                Lb_Pl_act_set2(pl, 0, 0xD, 0);
+            } else {
+                Lb_pl_to_normal(pl, 0, 2, 0);
+                if (pl->id == game_w.master) {
+                    lobby_func_007A0C80();
+                }
+            }
+        }
+    }
+}
+#else
 void lb_pl_mv046(PLW *pl) {
     int t;
     u8 s;
@@ -60,8 +116,29 @@ void lb_pl_mv046(PLW *pl) {
     }
 }
 #endif
+#endif
 
 #if !defined(G_PART)
+#ifdef VERSION_MH2
+void lb_pl_mv047(PLW *pl) {
+    u8 s;
+    PLU8(pl, 0x863) = 1;
+    ItemPickingDeclaration(pl, (u8 *)pl + 0x83E);
+    s = pl->x05;
+    switch (s) {
+    case 0:
+        pl->x05 = s + 1;
+        Lb_Pl_basic_flagset(pl, 0, 0, 0);
+        action_timer_calc(pl, 0);
+        pl_chr_set2(pl, 0x3D, 4, 0);
+        return;
+    case 1:
+        if (F(s32, pl, 0x154) == 0) {
+            Lb_pl_to_normal(pl, 0, 6, 0);
+        }
+    }
+}
+#else
 void lb_pl_mv047(PLW *pl) {
     u8 s;
     PLU8(pl, 0x90B) = 1;
@@ -81,6 +158,7 @@ void lb_pl_mv047(PLW *pl) {
         }
     }
 }
+#endif
 #endif
 
 #if !defined(G_PART) || G_PART == 2

@@ -8,6 +8,23 @@
 
 
 
+#ifdef VERSION_MH2
+#include "mh2_lb.h"
+#endif
+#ifdef VERSION_MH2
+void Lb_send_item_result(a0, res)
+int a0;
+s8 res;
+{
+    struct { s16 item; s16 num; u8 id[8]; s8 r; } t;
+    PLW *pl = PLW_MH2(game_w.master);
+    memcpy(t.id, CWPLAYER(PL_W909(pl)) + 0xA16, 8);
+    t.item = PL_W904(pl);
+    t.num = PL_W906(pl);
+    t.r = res;
+    lb_send_dataTU(0xE, 0xC, &t, a0);
+}
+#else
 void Lb_send_item_result(a0, res)
 int a0;
 s8 res;
@@ -20,3 +37,4 @@ s8 res;
     t.r = res;
     lb_send_dataTU(0xE, 0xE, &t, a0);
 }
+#endif

@@ -27,6 +27,39 @@ void Lb_chat_receipt(u8 *msg) {
 #endif
 
 #if !defined(G_PART) || G_PART == 2
+#ifdef VERSION_MH2
+#ifdef VERSION_MH2
+int Lb_get_plID(u8 *mac) {
+    int i;
+    LBCOMMER *c;
+    if (*(s8 *)mac == 0) {
+        return 0xFF;
+    }
+    i = 0;
+    c = lbCommer;
+    do {
+        if (memcmp(c, mac, 6) == 0) return i;
+        i = (i + 1) & 0xFF;
+        c++;
+    } while (i < 10);
+    return 0xFF;
+}
+#else
+int Lb_get_plID(u8 *mac) {
+    int i = 0;
+    LBCOMMER *c = lbCommer;
+    if (*(s8 *)mac == 0) {
+        return 0xFF;
+    }
+    do {
+        if (memcmp(c, mac, 6) == 0) return i;
+        i = (i + 1) & 0xFF;
+        c++;
+    } while (i < 10);
+    return 0xFF;
+}
+#endif
+#else
 int Lb_get_plID(u8 *mac) {
     int i = 0;
     LBCOMMER *c = lbCommer;
@@ -37,4 +70,5 @@ int Lb_get_plID(u8 *mac) {
     } while (i < GV(8, 10));
     return 0xFF;
 }
+#endif
 #endif

@@ -5,6 +5,11 @@ extern u8 * bsSys;
 extern s8 BsDialogReq;
 extern u8 * bsCur;
 
+#ifdef VERSION_MH2
+#include "mh2_lb.h"
+#define BsDialogReq BW_DIALOGREQ
+#define bsMainRetVal BW_MAINRET
+#endif
 void To_RetVal(s8 arg0) {
     bsMainRetVal = arg0;
     F(s8, bsSys, 1) = 3;
@@ -12,6 +17,23 @@ void To_RetVal(s8 arg0) {
     F(s8, bsSys, 3) = 0;
 }
 
+#ifdef VERSION_MH2
+void BsCloseCapDlg(s32 arg0) {
+    s32 temp_a0;
+
+    temp_a0 = arg0 & 0xFF;
+    switch (temp_a0) {                              /* irregular */
+    case 0:
+        cnWrap_SoundRequest(4);
+        break;
+    case 1:
+        cnWrap_SoundRequest(0);
+        break;
+    }
+    F(s8, bsCur, 1) = 0;
+    BsDialogReq = 1;
+}
+#else
 void BsCloseCapDlg(s32 arg0) {
     s32 temp_a0;
 
@@ -27,3 +49,4 @@ void BsCloseCapDlg(s32 arg0) {
     F(s8, bsCur, 1) = 0;
     BsDialogReq = 1;
 }
+#endif

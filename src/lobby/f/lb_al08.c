@@ -46,6 +46,11 @@ signed char SoftKeyboard_move();   /* the real return type (tools/check_kr_retur
 #endif
 void flfntSetSize();
 
+#ifdef VERSION_MH2
+#include "mh2_lb.h"
+#define BsCursorReq BW_CURSORREQ
+#define BsDoEmphasise BW8(0x8EB9)
+#endif
 void BsCursorCharSet(int a) {
     BSWK *w;
     switch (a) {
@@ -74,6 +79,23 @@ void BsCursorCharSet(int a) {
     }
 }
 
+#ifdef VERSION_MH2
+void BsCursorTask(BSWK *w) {
+    u8 r;
+    r = BW8(0x8EB6);
+    switch (r) {
+    case 2:
+        w->x06 = 0;
+        break;
+    case 1:
+        w->x06 = 1;
+        break;
+    case 3:
+        w->x06 = 0x63;
+        break;
+    }
+}
+#else
 void BsCursorTask(BSWK *w) {
     u8 r;
     r = BsCursorReq;
@@ -89,3 +111,4 @@ void BsCursorTask(BSWK *w) {
         break;
     }
 }
+#endif
