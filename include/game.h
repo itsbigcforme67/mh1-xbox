@@ -68,10 +68,10 @@ typedef struct GAME_W {
     u8 _pad080[0x86 - 0x80];
     s8 x78[4];          /* 0x086 (MH1 0x078; from select_w+0xB6) */
     u8 _pad08A[0xB0 - 0x8A];
-    struct EFT_MDLW *area_mdlw[8]; /* 0x0B0 (MH1 0x0A8, 9 entries there; G's x80 sits at 0xD0); [0..3] = sub_ptr, see MH1 */
 #ifdef VERSION_MH2
-    u8 _mh2padD0[0x3E];
+    u8 _mh2padB2[0x3E];  /* the pad must come first: a pointer at 0xB2 would align to 0xB4 and move all that follows */
 #endif
+    struct EFT_MDLW *area_mdlw[8]; /* 0x0B0 (MH1 0x0A8, 9 entries there; G's x80 sits at 0xD0); [0..3] = sub_ptr, see MH1; MH2 0xF0 */
     u8 x80[4];          /* 0x0D0 (MH1 0x080, Pl_item_cnt_up) */
     u8 _pad0D4[0xEC - 0xD4];
     s16 xCC;            /* 0x0EC (MH1 0x0CC) */
@@ -87,9 +87,10 @@ typedef struct GAME_W {
     u8 meat_num;        /* 0x0FD (MH1 0x211) */
     u8 trap_num;        /* 0x0FE (MH1 0x212) */
     s8 x21D;            /* 0x0FF (MH1 0x21D) */
-    PL_ITEM reward_item[32]; /* 0x100 (MH1 0x128) */
 #ifdef VERSION_MH2
-    u8 _mh2pad180[0x40];
+    PL_ITEM reward_item[48]; /* 0x140 (MH1 0x128): 48 is a guess from the room between its neighbours */
+#else
+    PL_ITEM reward_item[32]; /* 0x100 (MH1 0x128) */
 #endif
     s32 x1A8;           /* 0x180 (MH1 0x1A8) */
     s32 x1AC;           /* 0x184 (MH1 0x1AC) */

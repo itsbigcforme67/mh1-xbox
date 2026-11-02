@@ -181,7 +181,10 @@ typedef struct PLW {
     f32   x5AC; /* 0x574, MH1 0x5AC: votes 24 */
     u8 _pad578[0x8];
     u16   work5B8; /* 0x580, MH1 0x5B8: no votes, as the field before */
-    u8 _pad582[0x6];
+    u8 _pad582[0x3];
+    s8    work601; /* 0x585, MH1 0x601: hand */
+    u8 _pad586[0x1];
+    s8    work603; /* 0x587, MH1 0x603: hand */
     u8    flag604; /* 0x588, MH1 0x604: votes 24 */
     u8    work605; /* 0x589, MH1 0x605: no votes, as the field before */
     u8 _pad58A[0x2];
@@ -193,11 +196,7 @@ typedef struct PLW {
     u8    work613; /* 0x597, MH1 0x613: votes 6 */
     u8 _pad598[0x2];
     u8    work616; /* 0x59A, MH1 0x616: no votes, as the field before */
-    u8 _pad59B[0x2E];
-    s8    work601; /* 0x5C9, MH1 0x601: no votes, as the field before */
-    u8 _pad5CA[0x1];
-    s8    work603; /* 0x5CB, MH1 0x603: no votes, as the field before */
-    u8 _pad5CC[0x5C];
+    u8 _pad59B[0x8D];
     s8    work6A4; /* 0x628, MH1 0x6A4: votes 7 */
     s8    work6A5; /* 0x629, MH1 0x6A5: votes 7 */
     u16   work6A6; /* 0x62A, MH1 0x6A6: no votes, as the field before */
@@ -208,19 +207,20 @@ typedef struct PLW {
     u16   work6AE; /* 0x632, MH1 0x6AE: votes 9 */
     u8 _pad634[0x1F];
     u8    work6FF; /* 0x653, MH1 0x6FF: votes 8 */
-    u8 _pad654[0xE];
+    u8 _pad654[0xC];
+    u8 x714; /* 0x660, MH1 0x714: hand */
+    u8 _pad661[0x1];
     u16   x70E; /* 0x662, MH1 0x70E: no votes, as the field before */
-    u8 _pad664[0x4];
-    u8 x714; /* 0x668, MH1 0x714: no votes, as the field before */
-    u8 _pad669[0x3];
+    u8 _pad664[0x8];
     s8    work720[4]; /* 0x66C, MH1 0x720: votes 44 */
     s16   work724[4]; /* 0x670, MH1 0x724: votes 44 */
     u16   work72C[4]; /* 0x678, MH1 0x72C: votes 48 */
     u16    stg; /* 0x680, MH1 0x736: hand */
     u8    x738; /* 0x682, MH1 0x738: votes 5 */
-    u8    work739; /* 0x683, MH1 0x739: no votes, as the field before */
-    u16   x73A; /* 0x684, MH1 0x73A: no votes, as the field before */
-    u8 _pad686[0x6];
+    u8 _pad683[0x2];
+    u8    work739; /* 0x685, MH1 0x739: hand */
+    u16   x73A; /* 0x686, MH1 0x73A: hand */
+    u8 _pad688[0x4];
     f32   work740; /* 0x68C, MH1 0x740: votes 2 */
     f32   work744; /* 0x690, MH1 0x744: votes 2 */
     s16   stamina; /* 0x694, MH1 0x748: votes 28 */
@@ -267,15 +267,14 @@ typedef struct PLW {
     s8    work7EC; /* 0x738, MH1 0x7EC: votes 4 */
     u8    work7ED; /* 0x739, MH1 0x7ED: votes 16 */
     u8    work7EE; /* 0x73A, MH1 0x7EE: votes 10 */
-    u8 _pad73B[0x11];
-    f32   work800; /* 0x74C, MH1 0x800: no votes, as the field before */
-    f32   work804; /* 0x750, MH1 0x804: no votes, as the field before */
-    f32   work808; /* 0x754, MH1 0x808: no votes, as the field before */
-    f32   work80C; /* 0x758, MH1 0x80C: no votes, as the field before */
-    f32   work810; /* 0x75C, MH1 0x810: no votes, as the field before */
-    f32   work814; /* 0x760, MH1 0x814: no votes, as the field before */
-    s16   work818; /* 0x764, MH1 0x818: no votes, as the field before */
-    u8 _pad766[0x8];
+    u8 _pad73B[0x19];
+    f32   work800; /* 0x754, MH1 0x800: hand */
+    f32   work804; /* 0x758, MH1 0x804: hand */
+    f32   work808; /* 0x75C, MH1 0x808: hand */
+    f32   work80C; /* 0x760, MH1 0x80C: hand */
+    f32   work810; /* 0x764, MH1 0x810: hand */
+    f32   work814; /* 0x768, MH1 0x814: hand */
+    s16   work818; /* 0x76C, MH1 0x818: hand */
     s16   work81A; /* 0x76E, MH1 0x81A: votes 8 */
     u8    work81C; /* 0x770, MH1 0x81C: votes 2 */
     s8    work81D; /* 0x771, MH1 0x81D: votes 6 */

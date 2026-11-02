@@ -14,7 +14,7 @@ unsigned char Warehouse_search_space();   /* (declared before its first use) */
 unsigned short Get_sw2();   /* (declared before its first use) */
 unsigned short calc_vec_ang2();   /* (declared before its first use) */
 #endif
-#define M2C_FIELD(ptr, type, off) (*(type)((u8 *)(ptr) + (off)))
+#define M2C_FIELD(ptr, type, off) (*(type)((u8 *)(ptr) + MH2_OFS(ptr, off)))
 typedef double f64;
 #define NULL ((void *)0)
 

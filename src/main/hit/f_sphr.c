@@ -28,7 +28,7 @@
 #define SEEN(poly, n, seen, found)           \
     found = ((n) > 0 && (poly) == (seen)[0]);
 
-#define EF(e, T, o) (*(T *)((u8 *)(e) + (o)))
+#define EF(e, T, o) (*(T *)((u8 *)(e) + MH2_OFS(e, o)))
 
 typedef struct STAGE_SZ {
     u8 _pad00[0x10];

@@ -9,13 +9,13 @@
 #include "types.h"
 #include "fl.h"
 #include "clay.h"
-#define B8(p, o)   (*(u8 *)((u8 *)(p) + (o)))
-#define BS8(p, o)  (*(s8 *)((u8 *)(p) + (o)))
-#define B16(p, o)  (*(u16 *)((u8 *)(p) + (o)))
-#define BS16(p, o) (*(s16 *)((u8 *)(p) + (o)))
-#define B32(p, o)  (*(s32 *)((u8 *)(p) + (o)))
-#define BF(p, o)   (*(f32 *)((u8 *)(p) + (o)))
-#define BP(p, o)   (*(void **)((u8 *)(p) + (o)))
+#define B8(p, o)   (*(u8 *)((u8 *)(p) + MH2_OFS(p, o)))
+#define BS8(p, o)  (*(s8 *)((u8 *)(p) + MH2_OFS(p, o)))
+#define B16(p, o)  (*(u16 *)((u8 *)(p) + MH2_OFS(p, o)))
+#define BS16(p, o) (*(s16 *)((u8 *)(p) + MH2_OFS(p, o)))
+#define B32(p, o)  (*(s32 *)((u8 *)(p) + MH2_OFS(p, o)))
+#define BF(p, o)   (*(f32 *)((u8 *)(p) + MH2_OFS(p, o)))
+#define BP(p, o)   (*(void **)((u8 *)(p) + MH2_OFS(p, o)))
 typedef struct NPCW {
     u8 on0; /* 0x0 */
     u8 on; /* 0x1 */

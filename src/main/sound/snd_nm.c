@@ -8,8 +8,8 @@
 #include "types.h"
 #include "sysw.h"
 
-#define WB(w, o) (*(u8 *)((u8 *)(w) + (o)))
-#define WH(w, o) (*(u16 *)((u8 *)(w) + (o)))
+#define WB(w, o) (*(u8 *)((u8 *)(w) + MH2_OFS(w, o)))
+#define WH(w, o) (*(u16 *)((u8 *)(w) + MH2_OFS(w, o)))
 
 extern f32 se_cnfvol_tbl[];
 extern s8 emsnd_p[7];

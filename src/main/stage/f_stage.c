@@ -10,9 +10,9 @@ extern s16 flash_flag;
 extern s16 flash_timer;
 extern s16 Stg_env_type[];
 
-#define PL8(p, o)  (*(u8 *)((u8 *)(p) + (o)))
-#define PL16(p, o) (*(u16 *)((u8 *)(p) + (o)))
-#define PLF(p, o)  (*(f32 *)((u8 *)(p) + (o)))
+#define PL8(p, o)  (*(u8 *)((u8 *)(p) + MH2_OFS(p, o)))
+#define PL16(p, o) (*(u16 *)((u8 *)(p) + MH2_OFS(p, o)))
+#define PLF(p, o)  (*(f32 *)((u8 *)(p) + MH2_OFS(p, o)))
 
 /* Stage movement trigger zones (guess: stage change areas), 0x34 bytes each,
  * list ends with id 0xFFFF. kind 0 = circle on XZ, 1 = box. */

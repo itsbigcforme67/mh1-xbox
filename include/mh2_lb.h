@@ -2,6 +2,7 @@
    through the pointer at 0x895270, the slot that is bsUrl in MH1. Offsets read from MH2's code. */
 #ifndef MH2_LB_H
 #define MH2_LB_H
+#include "version.h"
 extern char *bsBw;
 typedef struct PLM {           /* the fields of MH2's player work that lobby code uses; 0x970 bytes */
     u8 be_flag;
@@ -20,7 +21,6 @@ typedef struct PLM {           /* the fields of MH2's player work that lobby cod
     u8 trade_st;               /* 0x862 */
     u8 _863[0x970 - 0x863];
 } PLM;
-#define PLW_MH2(i) ((PLW *)((u8 *)player_work + (i) * 0x970)) /* MH2's player_work stride */
 #define PL_W904(p) F(u16, p, 0x85C)
 #define PL_W906(p) F(s16, p, 0x85E)
 #define PL_W909(p) F(u8, p, 0x861)

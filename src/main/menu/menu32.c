@@ -4,7 +4,7 @@
 #include "pl.h"
 #include "fl.h"
 
-#define FX(p, o) (*(f32 *)((u8 *)(p) + (o)))
+#define FX(p, o) (*(f32 *)((u8 *)(p) + MH2_OFS(p, o)))
 extern u8 quest_w[];
 extern u8 room_member_id[];
 extern char *item_str[];

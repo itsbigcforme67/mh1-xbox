@@ -10,9 +10,9 @@ extern u8 *lpSKey;
 #define SKS16(o) (*(s16 *)(lpSKey + (o)))
 #define SKS32(o) (*(s32 *)(lpSKey + (o)))
 #define SKP(o) (*(u8 **)(lpSKey + (o)))
-#define F8(p, o) (*(u8 *)((u8 *)(p) + (o)))
-#define F16(p, o) (*(u16 *)((u8 *)(p) + (o)))
-#define FS16(p, o) (*(s16 *)((u8 *)(p) + (o)))
+#define F8(p, o) (*(u8 *)((u8 *)(p) + MH2_OFS(p, o)))
+#define F16(p, o) (*(u16 *)((u8 *)(p) + MH2_OFS(p, o)))
+#define FS16(p, o) (*(s16 *)((u8 *)(p) + MH2_OFS(p, o)))
 
 void se_req();
 void *memset(void *, int, int);

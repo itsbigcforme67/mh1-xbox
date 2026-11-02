@@ -73,7 +73,7 @@ void func_63ACA0();
 void set01_set();
 void set01_set2();
 
-#define EM8(e, o) (*(s8 *)((u8 *)(e) + (o)))
+#define EM8(e, o) (*(s8 *)((u8 *)(e) + MH2_OFS(e, o)))
 void *pull_enemy_work();
 void enemy_mv();
 
@@ -83,8 +83,8 @@ void func_5A8170();
 void push_em_work();
 void release_enemy_model();
 void enemy_insurance_sub();
-#define PL8(p, o) (*(u8 *)((u8 *)(p) + (o)))
-#define PL32(p, o) (*(s32 *)((u8 *)(p) + (o)))
+#define PL8(p, o) (*(u8 *)((u8 *)(p) + MH2_OFS(p, o)))
+#define PL32(p, o) (*(s32 *)((u8 *)(p) + MH2_OFS(p, o)))
 
 void em_next_tbl_ck();
 void func_5589F0();

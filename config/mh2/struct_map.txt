@@ -8,3 +8,30 @@ PLW 736 680 u16 # stage number: lhu in MH2
 EMW 736 680 u16
 EMW 9F4 978 # only [0xC] is used by name (em08_aic); place unverified
 EMW 56A 532 # as PLW
+# from the run-reading pass (config history: A's map). The probe has no vote on these; A's near-matches do show the runs around them
+EMW 824 776 u8 # sb/lbu in em_cmd_sub_contents, x826 votes 778
+EMW 828 77C
+EMW 829 77D
+EMW 82A 77E
+EMW 82B 77F
+EMW 600 584
+EMW 6E0 634
+EMW 6E2 636
+EMW 734 680
+EMW 73C 688
+EMW 7F0 744
+EMW 7F1 745
+EMW 7F2 746
+EMW 9C8 94C
+PLW 601 585
+PLW 603 587
+PLW 714 660
+PLW 739 685
+PLW 73A 686
+PLW 800 754
+PLW 804 758
+PLW 808 75C
+PLW 80C 760
+PLW 810 764
+PLW 814 768
+PLW 818 76C

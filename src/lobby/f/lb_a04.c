@@ -9,7 +9,7 @@ extern u8 D_3E54FB[];
 #endif
 #ifdef VERSION_MH2
 void lb_trade_result(u8 *data) {
-    PLW *pl = PLW_MH2(game_w.master);
+    PLW *pl = PLW_AT(game_w.master);
     LBTRADE2 t;
     void Ud_item_stack(u16, int);
     if ((s16)act_ck(pl, 0, 11) != 0) {

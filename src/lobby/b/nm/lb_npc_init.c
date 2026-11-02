@@ -10,8 +10,8 @@ void frame_move();
 void lb_npc_chr_sub();
 void Lb_World_calc();
 void set_se_type();
-#define EM_S8(em, o) (*(s8 *)((u8 *)(em) + (o)))
-#define EM_S16(em, o) (*(s16 *)((u8 *)(em) + (o)))
+#define EM_S8(em, o) (*(s8 *)((u8 *)(em) + MH2_OFS(em, o)))
+#define EM_S16(em, o) (*(s16 *)((u8 *)(em) + MH2_OFS(em, o)))
 void lb_npc_init(EMW *em) {
     LB_NPCMV *mv;
     int i;

@@ -48,7 +48,7 @@ extern u16 mix_manual_tbl[];
 extern u8 User_data[];
 extern u8 game_w[];
 
-#define PLB(p, o) (*(u8 *)((u8 *)(p) + (o)))
+#define PLB(p, o) (*(u8 *)((u8 *)(p) + MH2_OFS(p, o)))
 
 void *memset(void *, int, int);
 f32 flAbs(f32);

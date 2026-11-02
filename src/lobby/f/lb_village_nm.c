@@ -17,7 +17,7 @@
 #ifdef VERSION_MHG
 char *getenv(const char *);
 #endif
-#define M2C_FIELD(ptr, type, off) (*(type)((u8 *)(ptr) + (off)))
+#define M2C_FIELD(ptr, type, off) (*(type)((u8 *)(ptr) + MH2_OFS(ptr, off)))
 typedef double f64;
 #define NULL ((void *)0)
 #ifdef VERSION_MHG

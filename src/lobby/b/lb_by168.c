@@ -11,8 +11,8 @@ void frame_move();
 void lb_npc_chr_sub();
 void Lb_World_calc();
 void set_se_type();
-#define EM_S8(em, o) (*(s8 *)((u8 *)(em) + (o)))
-#define EM_S16(em, o) (*(s16 *)((u8 *)(em) + (o)))
+#define EM_S8(em, o) (*(s8 *)((u8 *)(em) + MH2_OFS(em, o)))
+#define EM_S16(em, o) (*(s16 *)((u8 *)(em) + MH2_OFS(em, o)))
 /* original bytes: build/raw/lb_npc_init.inc (config/c_rawfuncs.txt); the C below is a near-match, used by the PC build */
 #ifdef __MWERKS__
 asm void lb_npc_init(EMW *em)

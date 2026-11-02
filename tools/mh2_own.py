@@ -38,12 +38,13 @@ def main():
             print(p.stdout + p.stderr)
             bad += 1
             continue
-        _names, funcs, rel_, _alloc, secs = C.read_obj(C.P(obj))
-        for n, sh, val, sz in funcs:
+        ob = C.Obj(C.P(obj))
+        load, image = C.image(mod)[:2]
+        for n, sh, val, sz in ob.funcs:
             addr = int(re.search(r"([0-9A-F]{8})$", n).group(1), 16)
-            code = secs[sh][val:val + sz]
-            o = C.orig(mod, addr, size.get((mod, addr), sz))
-            mk = {r[0] - val: C.MASK.get(r[1], 0) for r in rel_[sh] if val <= r[0] < val + sz}
+            code = ob.d[ob.S[sh][4] + val:ob.S[sh][4] + val + sz]
+            o = image[addr - load:addr - load + size.get((mod, addr), sz)]
+            mk = {r[0] - val: C.MASK.get(r[1], 0) for r in ob.rel[sh] if val <= r[0] < val + sz}
             nd = abs(len(code) - len(o)) // 4
             lines = []
             for i in range(0, max(len(code), len(o)), 4):

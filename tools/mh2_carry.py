@@ -27,8 +27,8 @@ matches whole and no other part took it; otherwise it stays in the asm and is re
                                     docs/survey/mh2_differ.csv
   mh2_carry.py fix                  after a failed build: name the C files inside the mismatching bytes
 
-Objects stay in build/mh2/carry and are only recompiled when the .c is newer, so a rerun is cheap (delete it after
-editing a header). config/mh2/c_skip.txt lists src-relative names not to register, with the reason.
+Objects stay in build/mh2/carry and are recompiled when the .c or anything in include/ is newer, so a rerun after a .c edit
+is cheap. A header edit redoes everything; a .h next to a source is not watched (delete build/mh2/carry then). config/mh2/c_skip.txt lists src-relative names not to register, with the reason.
 The full build (tools/mh2_rebuild.sh, tools/mh2_check.py) stays the final word.
 """
 import collections
@@ -57,7 +57,7 @@ HI, LO, GPREL, R26, R32 = 5, 6, 7, 4, 2
 MASK = {R26: 0x03FFFFFF, HI: 0xFFFF, LO: 0xFFFF, R32: 0xFFFFFFFF}
 SHF_ALLOC, SHF_EXEC = 2, 4
 MODS = ["main", "sub_main", "select", "game", "lobby", "yn", "plsel", "gm_sub", "lbguild", "nethttp"]
-JOBS = 2
+JOBS = int(os.environ.get("MH2_JOBS", "2"))
 
 
 def P(*a):
@@ -340,11 +340,19 @@ def resolve(ob, mod, place, claimed=None):
     return ({n: next(iter(v)) for n, v in want.items()}, slots, defs, {y: next(iter(v)) for y, v in absol.items()})
 
 
+def headers_time():
+    """newest header in include/: every source reaches most of them, so one edited header redoes all objects"""
+    return max(os.path.getmtime(P("include", f)) for f in os.listdir(P("include")))
+
+
+_hdr = headers_time()
+
+
 def compile_one(path, cc=CC, tmp=None, gform=False):
     tmp = tmp or P("build/mh2/carry")
     obj = os.path.relpath(os.path.join(tmp, ("g_" if gform else "") + re.sub(r"\W", "_", path) + ".o"), ROOT)
     src = os.path.join("src", path + ".c")
-    if os.path.exists(P(obj)) and os.path.getmtime(P(obj)) >= os.path.getmtime(P(src)):
+    if os.path.exists(P(obj)) and os.path.getmtime(P(obj)) >= max(os.path.getmtime(P(src)), _hdr):
         return P(obj)
     try:
         p = subprocess.run([WIBO, P("tools/compilers", cc, "mwccps2.exe")] + OPT + BASE + (["-DVERSION_MHG"] if gform else []) + [src, "-o", obj],

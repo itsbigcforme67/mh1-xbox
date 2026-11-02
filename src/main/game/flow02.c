@@ -7,8 +7,8 @@
 
 typedef struct PLSEL { u16 kind[4]; u16 pad[2]; } PLSEL;
 
-#define EMB(p, o) (*(u8 *)((u8 *)(p) + (o)))
-#define PLH(p, o) (*(s16 *)((u8 *)(p) + (o)))
+#define EMB(p, o) (*(u8 *)((u8 *)(p) + MH2_OFS(p, o)))
+#define PLH(p, o) (*(s16 *)((u8 *)(p) + MH2_OFS(p, o)))
 #define SELB(o) FLD8(select_w, o)
 #define SELH(o) FLD16(select_w, o)
 #define SELA(o, i) (((u16 *)((u8 *)&select_w + (o)))[i])

@@ -14,11 +14,11 @@ extern PLW player_work[];
 void Set_equip_idx();
 void Set_equip_data();
 u8 Get_weapon_id();
-#define PLB(p, o) (*(u8 *)((u8 *)(p) + (o)))
-#define PLH(p, o) (*(s16 *)((u8 *)(p) + (o)))
-#define PLW32(p, o) (*(s32 *)((u8 *)(p) + (o)))
-#define UDB(p, o) (*(u8 *)((u8 *)(p) + (o)))
-#define UDH(p, o) (*(s16 *)((u8 *)(p) + (o)))
+#define PLB(p, o) (*(u8 *)((u8 *)(p) + MH2_OFS(p, o)))
+#define PLH(p, o) (*(s16 *)((u8 *)(p) + MH2_OFS(p, o)))
+#define PLW32(p, o) (*(s32 *)((u8 *)(p) + MH2_OFS(p, o)))
+#define UDB(p, o) (*(u8 *)((u8 *)(p) + MH2_OFS(p, o)))
+#define UDH(p, o) (*(s16 *)((u8 *)(p) + MH2_OFS(p, o)))
 /* the fields Set_equip_data touches, as overlays on the player work and the saved data */
 typedef struct { s16 a, b, c; } EQS3;
 typedef struct EQPL {

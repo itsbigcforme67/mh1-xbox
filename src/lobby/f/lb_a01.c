@@ -25,7 +25,7 @@ extern u8 D_3E54FB[];
 #endif
 #ifdef VERSION_MH2
 void lb_trade_start(s8 id, u8 *data) {
-    PLW *pl = PLW_MH2(id);
+    PLW *pl = PLW_AT(id);
     LBTRADE t;
     if (pl->be_flag != 0) {
         memcpy(&t, data, 0xE);
@@ -55,7 +55,7 @@ void lb_trade_start(s8 id, u8 *data) {
 typedef struct { u8 p[0x862]; u8 w; } PL862;
 #ifdef VERSION_MH2
 void lb_trade_check(int a0, u8 *data) {
-    PLM *pl = (PLM *)PLW_MH2(game_w.master);
+    PLM *pl = (PLM *)PLW_AT(game_w.master);
     LBTRADE t;
     memcpy(&t, data, 0xE);
     if ((s16)act_ck((PLW *)pl, 0, 10) != 0 && pl->trade_pl == (Lb_get_plID(t.plid) & 0xFF) && pl->trade_item == t.item
@@ -69,7 +69,7 @@ void lb_trade_check(int a0, u8 *data) {
 }
 #else
 void lb_trade_check(int a0, u8 *data) {
-    PLW *pl = PLW_MH2(game_w.master);
+    PLW *pl = PLW_AT(game_w.master);
     LBTRADE t;
     memcpy(&t, data, 0xE);
     if ((s16)act_ck(pl, 0, 10) != 0 && PL_W909(pl) == (Lb_get_plID(t.plid) & 0xFF) && PL_W904(pl) == t.item

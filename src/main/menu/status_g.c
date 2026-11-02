@@ -74,7 +74,7 @@ void SetFilterMode(int);
 void SetTextureStage(int);
 void reload_tex(int, int);
 
-#define GP8(p, o) (*(u8 *)((u8 *)(p) + (o)))
+#define GP8(p, o) (*(u8 *)((u8 *)(p) + MH2_OFS(p, o)))
 
 typedef struct GSK {       /* one row of the skill table */
     u16 key;               /* 0x0 sort key (larger first) */

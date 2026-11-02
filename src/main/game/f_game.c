@@ -4,8 +4,8 @@
 #include "g_alias.h"
 #include "f_game.h"
 
-#define PL8(p, o)  (*(u8 *)((u8 *)(p) + (o)))
-#define PL16(p, o) (*(u16 *)((u8 *)(p) + (o)))
+#define PL8(p, o)  (*(u8 *)((u8 *)(p) + MH2_OFS(p, o)))
+#define PL16(p, o) (*(u16 *)((u8 *)(p) + MH2_OFS(p, o)))
 
 #if !defined(G_PART)
 void game0(void) {

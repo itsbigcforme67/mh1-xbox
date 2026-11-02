@@ -14,7 +14,7 @@ void flCalcTrans(void *, FLMAT *);
 void flCalcTransSI(void *, FLMAT *);
 void flSetSkinTrans(void *);
 void cpAng2Rad_all(void *, f32 *);
-#define PF(p, T, o) (*(T *)((u8 *)(p) + (o)))
+#define PF(p, T, o) (*(T *)((u8 *)(p) + MH2_OFS(p, o)))
 extern u16 armor_pos[];
 void SetPartsTrans(void *, PLW *, s16, int);
 void SetPartsTrans2(void *, PLW *, s16, int);

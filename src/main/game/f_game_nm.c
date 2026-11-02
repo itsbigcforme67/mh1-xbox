@@ -242,8 +242,8 @@ void game1(void) {
     }
 }
 
-#define PL8(p, o)  (*(u8 *)((u8 *)(p) + (o)))
-#define PL16(p, o) (*(u16 *)((u8 *)(p) + (o)))
+#define PL8(p, o)  (*(u8 *)((u8 *)(p) + MH2_OFS(p, o)))
+#define PL16(p, o) (*(u16 *)((u8 *)(p) + MH2_OFS(p, o)))
 
 /* In-quest main loop (mode 2/3?): step 0 runs the quest, 2-6 reload the
  * stage for the next area. Guesses on meaning. */

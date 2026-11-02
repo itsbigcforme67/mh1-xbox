@@ -105,16 +105,17 @@ typedef struct EMW {
     u8 _pad533[0x35];
     f32 x5A0[3]; /* 0x568, MH1 0x5A0: votes 18 */
     f32 x5AC; /* 0x574, MH1 0x5AC: votes 156 */
-    u8 _pad578[0x10];
+    u8 _pad578[0xC];
+    f32 base_scale; /* 0x584, MH1 0x600: hand */
     f32 uv[4][3]; /* 0x588, MH1 0x5C0: no votes, as the field before */
     u16 uvtm[4]; /* 0x5B8, MH1 0x5F0: no votes, as the field before */
     u8 uvty[4]; /* 0x5C0, MH1 0x5F8: no votes, as the field before */
-    u8 _pad5C4[0x4];
-    f32 base_scale; /* 0x5C8, MH1 0x600: no votes, as the field before */
-    u8 _pad5CC[0x8];
+    u8 _pad5C4[0x10];
     u16 neck_tgt; /* 0x5D4, MH1 0x60C: no votes, as the field before */
     u16 neck_ang; /* 0x5D6, MH1 0x60E: no votes, as the field before */
-    u8 _pad5D8[0x60];
+    u8 _pad5D8[0x5C];
+    u16 x6E0; /* 0x634, MH1 0x6E0: hand */
+    u16 x6E2; /* 0x636, MH1 0x6E2: hand */
     struct EM_SEARCH * search; /* 0x638, MH1 0x6E4: votes 6 */
     u32 neck[4]; /* 0x63C, MH1 0x6E8: votes 8 */
     u16 neck_spd; /* 0x64C, MH1 0x6F8: no votes, as the field before */
@@ -127,21 +128,16 @@ typedef struct EMW {
     u8 _pad660[0x2];
     u16 x70E; /* 0x662, MH1 0x70E: no votes, as the field before */
     u8 _pad664[0x1C];
-    u16 stg; /* 0x680, MH1 0x736: hand */
-    u8 _pad682[0x2];
+    u8 x734; /* 0x680, MH1 0x734: hand */
+    u8 _pad681[0x3];
     s16 x73A; /* 0x684, MH1 0x73A: votes 2 */
     u8 _pad686[0x2];
-    u8 x734; /* 0x688, MH1 0x734: no votes, as the field before */
-    u8 _pad689[0x7];
-    f32 home[3]; /* 0x690, MH1 0x73C: no votes, as the field before */
+    f32 home[3]; /* 0x688, MH1 0x73C: hand */
+    u8 _pad694[0x4];
+    u32 x74C; /* 0x698, MH1 0x74C: votes 2 */
     u8 _pad69C[0xC];
-    u16 x6E0; /* 0x6A8, MH1 0x6E0: no votes, as the field before */
-    u16 x6E2; /* 0x6AA, MH1 0x6E2: no votes, as the field before */
-    u8 _pad6AC[0x2];
-    s8 x762; /* 0x6AE, MH1 0x762: votes 8 */
-    u8 _pad6AF[0x2];
-    u8 x765; /* 0x6B1, MH1 0x765: no votes, as the field before */
-    s16 dmg[8]; /* 0x6B2, MH1 0x766: no votes, as the field before */
+    f32 x754[3]; /* 0x6A8, MH1 0x754: no votes, as the field before */
+    u8 _pad6B4[0xE];
     s16 x776; /* 0x6C2, MH1 0x776: no votes, as the field before */
     s16 x778[4]; /* 0x6C4, MH1 0x778: votes 2 */
     s16 x780[4]; /* 0x6CC, MH1 0x780: votes 4 */
@@ -190,10 +186,11 @@ typedef struct EMW {
     u8 _pad736[0x4];
     u8 x7EE; /* 0x73A, MH1 0x7EE: votes 8 */
     u8 x7EF; /* 0x73B, MH1 0x7EF: no votes, as the field before */
-    u8 x7F0; /* 0x73C, MH1 0x7F0: no votes, as the field before */
-    u8 x7F1; /* 0x73D, MH1 0x7F1: no votes, as the field before */
-    u8 x7F2; /* 0x73E, MH1 0x7F2: no votes, as the field before */
-    u8 _pad73F[0x15];
+    u8 _pad73C[0x8];
+    u8 x7F0; /* 0x744, MH1 0x7F0: hand */
+    u8 x7F1; /* 0x745, MH1 0x7F1: hand */
+    u8 x7F2; /* 0x746, MH1 0x7F2: hand */
+    u8 _pad747[0xD];
     u8 *** cmd_tbl; /* 0x754, MH1 0x800: votes 30 */
     u8 * cmd_pc; /* 0x758, MH1 0x804: votes 4 */
     u8 * cmd_p808; /* 0x75C, MH1 0x808: no votes, as the field before */
@@ -204,12 +201,13 @@ typedef struct EMW {
     f32 x81C; /* 0x770, MH1 0x81C: no votes, as the field before */
     u16 cmd_idx; /* 0x774, MH1 0x820: no votes, as the field before */
     u16 x822; /* 0x776, MH1 0x822: no votes, as the field before */
-    u16 x824; /* 0x778, MH1 0x824: no votes, as the field before */
-    u8 x828; /* 0x77A, MH1 0x828: no votes, as the field before */
-    u8 x829; /* 0x77B, MH1 0x829: no votes, as the field before */
-    s8 x82A; /* 0x77C, MH1 0x82A: no votes, as the field before */
-    u8 x82B; /* 0x77D, MH1 0x82B: no votes, as the field before */
-    u8 _pad77E[0x2];
+    u8 x826; /* 0x778, MH1 0x826: votes 4 */
+    u8 x827; /* 0x779, MH1 0x827: votes 20 */
+    u8 _pad77A[0x2];
+    u8 x828; /* 0x77C, MH1 0x828: hand */
+    u8 x829; /* 0x77D, MH1 0x829: hand */
+    s8 x82A; /* 0x77E, MH1 0x82A: hand */
+    u8 x82B; /* 0x77F, MH1 0x82B: hand */
     u8 * cmd_route; /* 0x780, MH1 0x82C: votes 4 */
     u8 x830; /* 0x784, MH1 0x830: no votes, as the field before */
     u8 x831; /* 0x785, MH1 0x831: no votes, as the field before */
@@ -331,9 +329,8 @@ typedef struct EMW {
     u8 x95C; /* 0x8B0, MH1 0x95C: votes 12 */
     s8 x95D; /* 0x8B1, MH1 0x95D: votes 2 */
     u16 x95E; /* 0x8B2, MH1 0x95E: no votes, as the field before */
-    u8 _pad8B4[0x68];
-    f32 x9C8[3]; /* 0x91C, MH1 0x9C8: no votes, as the field before */
-    u8 _pad928[0x30];
+    u8 _pad8B4[0x98];
+    f32 x9C8[3]; /* 0x94C, MH1 0x9C8: hand */
     struct EMW * boss; /* 0x958, MH1 0x9D4: votes 5 */
     u8 _pad95C[0x1];
     u8 x9D9; /* 0x95D, MH1 0x9D9: no votes, as the field before */
@@ -371,10 +368,11 @@ typedef struct EMW {
     struct { u8 _o4EC[0x4EC]; struct EM_MDL *mdl; }; /* 0x4EC, MH1 0x50C: votes 8, overlaps */
     struct { u8 _o59A[0x59A]; u8 x616; }; /* 0x59A, MH1 0x616: votes 2, overlaps */
     struct { u8 _o59B[0x59B]; s8 x617; }; /* 0x59B, MH1 0x617: votes 12, overlaps */
-    struct { u8 _o698[0x698]; u32 x74C; }; /* 0x698, MH1 0x74C: votes 2, overlaps */
-    struct { u8 _o6A8[0x6A8]; f32 x754[3]; }; /* 0x6A8, MH1 0x754: no votes, as the field before, overlaps */
-    struct { u8 _o778[0x778]; u8 x826; }; /* 0x778, MH1 0x826: votes 4, overlaps */
-    struct { u8 _o779[0x779]; u8 x827; }; /* 0x779, MH1 0x827: votes 20, overlaps */
+    struct { u8 _o680[0x680]; u16 stg; }; /* 0x680, MH1 0x736: hand, overlaps */
+    struct { u8 _o6AE[0x6AE]; s8 x762; }; /* 0x6AE, MH1 0x762: votes 8, overlaps */
+    struct { u8 _o6B1[0x6B1]; u8 x765; }; /* 0x6B1, MH1 0x765: no votes, as the field before, overlaps */
+    struct { u8 _o6B2[0x6B2]; s16 dmg[8]; }; /* 0x6B2, MH1 0x766: no votes, as the field before, overlaps */
+    struct { u8 _o776[0x776]; u8 x824; }; /* 0x776, MH1 0x824: hand, overlaps */
     struct { u8 _o969[0x969]; s8 x9ED; }; /* 0x969, MH1 0x9ED: votes 1, overlaps */
     struct { u8 _o96A[0x96A]; s8 range_no; }; /* 0x96A, MH1 0x9EE: votes 1, overlaps */
     struct { u8 _o984[0x984]; u16 size; }; /* 0x984, MH1 0xA00: hand, overlaps */

@@ -9,11 +9,11 @@
 #include "game.h"
 #include "version.h"
 
-#define EB(p, o) (*(u8 *)((u8 *)(p) + (o)))
-#define EH(p, o) (*(u16 *)((u8 *)(p) + (o)))
-#define EW(p, o) (*(u32 *)((u8 *)(p) + (o)))
-#define EF(p, o) (*(f32 *)((u8 *)(p) + (o)))
-#define EP(p, o) (*(u8 **)((u8 *)(p) + (o)))
+#define EB(p, o) (*(u8 *)((u8 *)(p) + MH2_OFS(p, o)))
+#define EH(p, o) (*(u16 *)((u8 *)(p) + MH2_OFS(p, o)))
+#define EW(p, o) (*(u32 *)((u8 *)(p) + MH2_OFS(p, o)))
+#define EF(p, o) (*(f32 *)((u8 *)(p) + MH2_OFS(p, o)))
+#define EP(p, o) (*(u8 **)((u8 *)(p) + MH2_OFS(p, o)))
 
 extern u8 *cam_data_area;
 extern f32 *stage_camera_data_tbl[4];  /* per zoom level 1-4: 7 floats per stage */

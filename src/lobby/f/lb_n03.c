@@ -17,7 +17,7 @@ int a0;
 s8 res;
 {
     struct { s16 item; s16 num; u8 id[8]; s8 r; } t;
-    PLW *pl = PLW_MH2(game_w.master);
+    PLW *pl = PLW_AT(game_w.master);
     memcpy(t.id, CWPLAYER(PL_W909(pl)) + 0xA16, 8);
     t.item = PL_W904(pl);
     t.num = PL_W906(pl);

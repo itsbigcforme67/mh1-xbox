@@ -37,7 +37,7 @@ extern char lit_660_0036B270[];
 void func_63ACA0();
 void set01_set();
 void set01_set2();
-#define EM8(e, o) (*(s8 *)((u8 *)(e) + (o)))
+#define EM8(e, o) (*(s8 *)((u8 *)(e) + MH2_OFS(e, o)))
 void *pull_enemy_work();
 void enemy_mv();
 s32 *Em_data_com_adrs_get();
@@ -45,8 +45,8 @@ s32 *Em_data_st_adrs_get(s32 *, int, int, s8);
 void func_5A8170();
 void push_em_work();
 void release_enemy_model();
-#define PL8(p, o) (*(u8 *)((u8 *)(p) + (o)))
-#define PL32(p, o) (*(s32 *)((u8 *)(p) + (o)))
+#define PL8(p, o) (*(u8 *)((u8 *)(p) + MH2_OFS(p, o)))
+#define PL32(p, o) (*(s32 *)((u8 *)(p) + MH2_OFS(p, o)))
 void func_5589F0();
 void em_create_model();
 extern s8 item_regained_tbl[8];

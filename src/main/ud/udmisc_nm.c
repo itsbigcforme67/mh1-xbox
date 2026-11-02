@@ -16,11 +16,11 @@ void Set_equip_idx();
 void Set_equip_data();
 u8 Get_weapon_id();
 
-#define PLB(p, o) (*(u8 *)((u8 *)(p) + (o)))
-#define PLH(p, o) (*(s16 *)((u8 *)(p) + (o)))
-#define PLW32(p, o) (*(s32 *)((u8 *)(p) + (o)))
-#define UDB(p, o) (*(u8 *)((u8 *)(p) + (o)))
-#define UDH(p, o) (*(s16 *)((u8 *)(p) + (o)))
+#define PLB(p, o) (*(u8 *)((u8 *)(p) + MH2_OFS(p, o)))
+#define PLH(p, o) (*(s16 *)((u8 *)(p) + MH2_OFS(p, o)))
+#define PLW32(p, o) (*(s32 *)((u8 *)(p) + MH2_OFS(p, o)))
+#define UDB(p, o) (*(u8 *)((u8 *)(p) + MH2_OFS(p, o)))
+#define UDH(p, o) (*(s16 *)((u8 *)(p) + MH2_OFS(p, o)))
 
 /* UD_SLOT (ud.h): 0x480 in MH1, 0xE00 in G. With MH1's 0x480 hard-coded the G build saved only the first 0x480 bytes
  * of the hunter, at the wrong slot stride: money, the item box and the equipment box came back, the worn equipment
