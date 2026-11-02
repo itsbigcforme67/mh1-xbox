@@ -44,8 +44,18 @@ if VERSION == "mhg":
     MODULES = ["main", "sub_main", "select", "game", "yn", "lobby", "nethttp"]
     BDIR, CONF, SPLIT = "build/mhg", "config/mhg", "build/mhg/split"
     CFLAGS = CFLAGS + ["-DVERSION_MHG"]
+elif VERSION == "mh2":
+    # PS2 Monster Hunter 2 (docs/mh2.md): config/mh2, asm/mh2, build/mh2. NAME in c_files.txt is relative
+    # to src/, as for G; everything else about this branch only touches mh2 paths.
+    MODULES = ["main", "sub_main", "select", "game", "lobby", "yn", "plsel", "gm_sub", "lbguild", "nethttp",
+               "test", "dnas_net", "dnas_ins"]
+    BDIR, CONF, SPLIT = "build/mh2", "config/mh2", "build/mh2/split"
+    CFLAGS = CFLAGS + ["-DVERSION_MH2"]
 else:
     BDIR, CONF, SPLIT = "build", "config", "disc/mh1/split"
+
+
+AUTO = "build/mh2/auto" if VERSION == "mh2" else CONF    # splat's undefined_*_auto lists (mh2: never in config/)
 
 
 def gen_raw_mhg():
@@ -258,9 +268,9 @@ def main():
             shutil.rmtree(os.path.join(ROOT, d), ignore_errors=True)
 
     gen_raw()
-    if VERSION == "mhg":
-        sources = glob.glob(os.path.join(ROOT, "asm/mhg/**/*.s"), recursive=True)
-        bins = glob.glob(os.path.join(ROOT, "assets/mhg/**/*.bin"), recursive=True)
+    if VERSION in ("mhg", "mh2"):
+        sources = glob.glob(os.path.join(ROOT, "asm/%s/**/*.s" % VERSION), recursive=True)
+        bins = glob.glob(os.path.join(ROOT, "assets/%s/**/*.bin" % VERSION), recursive=True)
         csrc = sorted(set(os.path.join(ROOT, "src", l.split("#", 1)[0].split()[3] + ".c")
                           for l in open(os.path.join(ROOT, CONF, "c_files.txt"))
                           if len(l.split("#", 1)[0].split()) == 4)) \
@@ -268,15 +278,15 @@ def main():
     else:
         # asm/mhg, assets/mhg and src/mhg belong to the G build (VERSION=mhg)
         sources = [f for f in glob.glob(os.path.join(ROOT, "asm/**/*.s"), recursive=True)
-                   if "/asm/mhg/" not in f]
+                   if "/asm/mhg/" not in f and "/asm/mh2/" not in f]
         sources += glob.glob(os.path.join(ROOT, "src/**/*.s"), recursive=True)
         bins = [f for f in glob.glob(os.path.join(ROOT, "assets/**/*.bin"), recursive=True)
-                if "/assets/mhg/" not in f]
+                if "/assets/mhg/" not in f and "/assets/mh2/" not in f]
         csrc = glob.glob(os.path.join(ROOT, "src/**/*.c"), recursive=True)
         # src/pc is the native PC/Xbox platform layer (tools/build_pc.sh), not PS2 code; src/ps2patch is the
         # online patch, built only by tools/ps2_patch.py; src/lobby/gonl is PC C of G's lobby code (tools/mhg_gonl.py,
         # linked only by the PC G online build)
-        csrc = [c for c in csrc if "/src/pc/" not in c and "/src/mhg/" not in c and "/src/ps2patch/" not in c
+        csrc = [c for c in csrc if "/src/pc/" not in c and "/src/mhg/" not in c and "/src/mh2/" not in c and "/src/ps2patch/" not in c
                 and "/src/lobby/gonl/" not in c]
     with ThreadPoolExecutor(args.j) as pool:
         errors = [e for e in pool.map(compile_c, csrc) if e]
@@ -370,8 +380,8 @@ def link_and_check(module):
     err = run([BU + "ld", "-EL", "-nostdlib", "--no-warn-mismatch",
                "-Map", "%s/%s.map" % (BDIR, module),
                "-T", split_rodata_objects(module),
-               "-T", "%s/%s_undefined_syms_auto.txt" % (CONF, module),
-               "-T", "%s/%s_undefined_funcs_auto.txt" % (CONF, module)]
+               "-T", "%s/%s_undefined_syms_auto.txt" % (AUTO, module),
+               "-T", "%s/%s_undefined_funcs_auto.txt" % (AUTO, module)]
               + (["-T", "%s/%s_aliases.txt" % (CONF, module)]
                  if os.path.exists(os.path.join(ROOT, CONF, "%s_aliases.txt" % module)) else [])
               + (["-T", "config/mhg/g_names.txt", "-T", "config/mhg/g_funcnames.txt"] if VERSION == "mhg" else [])
