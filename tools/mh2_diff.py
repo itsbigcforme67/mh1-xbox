@@ -5,7 +5,7 @@ Compiles src/PATH.c with MH2's flags (always fresh, so header edits count) and c
 function the name map gives it, relocated fields masked. Left column is MH2, right column is ours. The output goes to the
 terminal only: never commit it.
 
-  mh2_diff.py [-g] [-q] [-a MODULE:ADDR[,NAME]] PATH ...   PATH relative to src/, no .c; -g: VERSION_MHG on; -q: summary only
+  mh2_diff.py [-g] [-q] [-a MODULE:ADDR] [-o NAME,NAME] PATH ...   PATH relative to src/, no .c; -g: VERSION_MHG on; -q: summary only
 """
 import difflib
 import os
@@ -123,6 +123,11 @@ def main():
             mod, ad = spec.split(":")
             force[mod] = int(ad, 16)
         del args[i:i + 2]
+    only = None
+    if "-o" in args:                  # only these functions, comma separated
+        i = args.index("-o")
+        only = args[i + 1].split(",")
+        del args[i:i + 2]
     hint = C.hints()
     for path in [x for x in args if x not in ("-g", "-q")]:
         ob = build(path, g)
@@ -132,6 +137,8 @@ def main():
         tot = 0
         funcs = sorted(ob.funcs, key=lambda f: (ob.layout.get(f[1], 0), f[2]))
         for name, sh, val, sz in funcs:
+            if only and name not in only:
+                continue
             if force:
                 m = list(force)[0]
                 tot += one(ob, name, sh, val, sz, (m, force[m] + ob.layout[sh] + val), q)

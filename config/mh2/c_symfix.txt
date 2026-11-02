@@ -29,7 +29,7 @@ mh2/parts/game_eft_eft19_9 get_prim get_prim_mh2_00376EF0
 mh2/parts/game_eft_eft23_21 get_prim get_prim_mh2_00376EF0
 mh2/parts/game_em_em01_aih_87 game_w game_w_mh2_006ADCB0
 mh2/parts/game_em_em01_aih_88 em01_to_fly em01_to_fly_mh2_007E79E0
-mh2/parts/game_em_em01_g_338 em01_init em01_init_mh2_0082CF80
+mh2/parts/game_em_em01_g_337 em01_init em01_init_mh2_0082CF80
 mh2/parts/game_em_em08_aih_91 em_fly00_0059C810 em_fly00_0059C810_mh2_0077FA20
 mh2/parts/game_em_em08_aih_91 em_fly01_0059C8A0 em_fly01_0059C8A0_mh2_0077FAB0
 mh2/parts/game_em_em08_aih_91 em_fly02_0059C930 em_fly02_0059C930_mh2_0077FB40
@@ -48,7 +48,7 @@ mh2/parts/game_em_em08_aih_91 em_fly22_0059EC00 em_fly22_0059EC00_mh2_00780EA0
 mh2/parts/game_em_em09c_60 em_mov11 em_mov11_mh2_007E2140
 mh2/parts/game_em_em09c_60 em_mov12 em_mov12_mh2_007E2220
 mh2/parts/game_em_em27a_63 em_move03_006105E0 em_move03_006105E0_mh2_0074DB20
-mh2/parts/game_set_set22_g_336 get_prim get_prim_mh2_00376EF0
+mh2/parts/game_set_set22_g_335 get_prim get_prim_mh2_00376EF0
 mh2/parts/game_shell_shell06b_31 get_prim get_prim_mh2_00376EF0
 mh2/parts/game_shell_shell12_6 get_prim2 get_prim2_mh2_00376F90
 mh2/parts/lobby_b_lb_bz09_160 Online_ck Online_ck_mh2_007BCAD0
@@ -103,7 +103,7 @@ mh2/parts/main_load_lf03_108 pl_area_top pl_area_top_mh2_006AE004
 mh2/parts/main_mc_netfile2_01_156 net_common_w net_common_w_mh2_005D468C
 mh2/parts/main_net_power01_198 sceCdPOffCallback sceCdPOffCallback_mh2_00118378
 mh2/parts/main_prim_prim2_98 get_prim2 get_prim2_mh2_00376F90
-mh2/parts/main_quest_qstb03_g_344 quest_w quest_w_mh2_005D8260
+mh2/parts/main_quest_qstb03_g_343 quest_w quest_w_mh2_005D8260
 mh2/parts/main_set_setwork2_g clr_set_work clr_set_work_mh2_00364100
 mh2/parts/main_sys_adxs03_178 str_init str_init_mh2_003549F0
 mh2/parts/main_sys_adxs03_178 str_master_vol str_master_vol_mh2_007CA280
@@ -114,13 +114,12 @@ mh2/parts/mhg_lobby_cnet_cnlbsg_p16_g CnetSys_g CnetSys_g_mh2_0084A6E8
 mh2/parts/mhg_lobby_cnet_cnlbsg_p17_g CnetSys_g CnetSys_g_mh2_0084A92C
 mh2/parts/mhg_lobby_cnet_cnlbsg_p40_g CnetSys_g CnetSys_g_mh2_0084E64A
 mh2/parts/mhg_main_cam_camd_p1_g NPCZoomInCameraCancel NPCZoomInCameraCancel_mh2_0031D980
-mh2/parts/mhg_main_hk_f_hk_p7_g sk_yn_check sk_yn_check_mh2_00312720
 mh2/parts/mhg_main_menu_menu20_p2_g font_print font_print_mh2_003694A0
-mh2/parts/mhg_main_pl_f_pl_p21_317 Pl_stamina_calc Pl_stamina_calc_mh2_003B3930
-mh2/parts/mhg_main_quest_f_quest_p14_325 quest_w quest_w_mh2_005D8260
+mh2/parts/mhg_main_pl_f_pl_p21_316 Pl_stamina_calc Pl_stamina_calc_mh2_003B3930
+mh2/parts/mhg_main_quest_f_quest_p14_324 quest_w quest_w_mh2_005D8260
 mh2/parts/mhg_main_quest_f_quest_p4_g_348 quest_w quest_w_mh2_005D8194
 mh2/parts/mhg_main_set_set06_p3_g Set06_set Set06_set_mh2_003813A0
-mh2/parts/mhg_main_ud_f_ud_p6_331 User_data User_data_mh2_005D4AA0
+mh2/parts/mhg_main_ud_f_ud_p6_330 User_data User_data_mh2_005D4AA0
 mh2/parts/mhg_main_ud_f_ud_p6_g_349 option_w option_w_mh2_005D4AA0
 mh2/parts/yn_ui08_g yn_proxy_wk_load yn_proxy_wk_load_mh2_00ACE3F0
 mh2/parts/yn_ui16_g yn_printf yn_printf_mh2_00ACDA70
@@ -133,7 +132,9 @@ mhg/main/eft/eft06_p1 eft06_i eft06_i_mh2_003C8EA0
 mhg/main/eft/eft06_p1 eft06_m eft06_m_mh2_003C9200
 mhg/main/eft/eft06_p2 flmatCopy flmatCopy_mh2_002EDFF0
 mhg/main/emw/emu03_p1 Em_hagi_point_clr Em_hagi_point_clr_mh2_003A69E0
+mhg/main/hk/f_hk_p7 sk_yn_check sk_yn_check_mh2_00312720
 mhg/main/pl/pl78_main clr_set_work clr_set_work_mh2_00364100
+mhg/main/sk/cmd02_p5 sk_yn_check sk_yn_check_mh2_00312720
 mhg/main/sprite/sysw_p2 all_sprite_free all_sprite_free_mh2_00368ED0
 mhg/main/ud/f_ud_p20 game_w game_w_mh2_006ADD3E
 mhg/main/ud/f_ud_p7 Now_equip_ck Now_equip_ck_mh2_003BAD40
