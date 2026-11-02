@@ -13,6 +13,16 @@
 
 
 
+#ifdef VERSION_MH2
+void Lb_chidori_cnt_up(u8 *pl) {
+    if (pl[0x844] == 0) {
+        pl[0x867]++;
+        if (pl[0x867] >= 0xA && Online_ck() == 1) {
+            pl[0x844] = 1;
+        }
+    }
+}
+#else
 void Lb_chidori_cnt_up(u8 *pl) {
     if (pl[0x8EC] == 0) {
         pl[0x90F]++;
@@ -21,3 +31,4 @@ void Lb_chidori_cnt_up(u8 *pl) {
         }
     }
 }
+#endif

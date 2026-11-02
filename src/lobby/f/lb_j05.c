@@ -38,6 +38,29 @@ void lb_pl_mv083(PLW *pl) {
     }
 }
 
+#ifdef VERSION_MH2
+void lb_pl_mv084(PLW *pl) {
+    u8 s;
+    s = pl->x05;
+    switch (s) {
+    case 0:
+        pl->x05 = s + 1;
+        Lb_Pl_basic_flagset(pl, 1, 0, 0);
+        Lb_pl_chr_set(pl, 0x26A, 6, 0);
+        return;
+    case 1:
+        if (F(s32, pl, 0x154) <= 0) {
+            pl->x05 = s + 1;
+        }
+        break;
+    case 2:
+        if (Pl_master_ck(pl) == 1 && (F(u16, pl, 0x370) & 0x3C60)) {
+            Lb_act_set(pl, 0, 0x9);
+        }
+        break;
+    }
+}
+#else
 void lb_pl_mv084(PLW *pl) {
     u8 s;
     s = pl->x05;
@@ -59,7 +82,26 @@ void lb_pl_mv084(PLW *pl) {
         break;
     }
 }
+#endif
 
+#ifdef VERSION_MH2
+void lb_pl_mv043(PLW *pl) {
+    u8 s;
+    s = pl->x05;
+    switch (s) {
+    case 0:
+        pl->x05 = s + 1;
+        Lb_Pl_basic_flagset(pl, 1, 0, 0);
+        Lb_pl_chr_set(pl, 0x282, 8, 0);
+        return;
+    case 1:
+        if (F(s32, pl, 0x154) <= 0) {
+            Lb_act_set(pl, 0, 0x25);
+        }
+        break;
+    }
+}
+#else
 void lb_pl_mv043(PLW *pl) {
     u8 s;
     s = pl->x05;
@@ -76,3 +118,4 @@ void lb_pl_mv043(PLW *pl) {
         break;
     }
 }
+#endif

@@ -14,6 +14,19 @@
 #define F32(p, o) (*(u32 *)((u8 *)(p) + (o)))
 #define FS32(p, o) (*(s32 *)((u8 *)(p) + (o)))
 #define PM ((u8 *)&PitMenu)
+#ifdef VERSION_MH2
+typedef struct PLZCHAT {        /* MH2: the plaza chat log's state at 0x5BC500 (lobby overlay's copy of PitMenu's fields) */
+    u16 x0C;
+    s8 x0F;
+    u8 logtop;
+    u8 lognum;
+    u8 logscr;
+    u8 x21;
+    u8 x22;
+} PLZCHAT;
+extern PLZCHAT PlazaChat;
+int plaza_chat_log_disp_line();
+#endif
 void KinshiYogo_chk(char *);
 struct PIT_CHAT;
 static void chat_log_add(int, s8 *, struct PIT_CHAT *);
@@ -98,6 +111,28 @@ void Disp_name_or_id(s16 v) {
 extern u8 button_icon_uv[][8];
 
 #if !defined(G_PART) || G_PART == 3
+#ifdef VERSION_MH2
+void PutButtonICON(u8 *p, u8 n) {
+    PFLP8 q;
+
+    SetOpeMode(1);
+    SetTrnslMode(4, 5);
+    reload_tex(1, 0x155);
+    SetTextureStage(0x155);
+    while (n > 0) {
+        q.p[0] = FS16(p, 0);
+        q.p[1] = FS16(p, 2);
+        q.p[2] = FS16(p, 4);
+        q.p[3] = FS16(p, 4);
+        *(S2 *)&q.uv[0] = *(S2 *)(button_icon_uv[F8(p, 6)] + 0);
+        *(S2 *)&q.uv[2] = *(S2 *)(button_icon_uv[F8(p, 6)] + 4);
+        q.col = (F8(p, 7) << 24) | 0xFFFFFF;
+        flps0008(&q);
+        n--;
+        p += 8;
+    }
+}
+#else
 void PutButtonICON(u8 *p, u8 n) {
     PFLP8 q;
 
@@ -117,18 +152,28 @@ void PutButtonICON(u8 *p, u8 n) {
     }
 }
 #endif
+#endif
 
 extern u8 equip_color_rare_idx[];
 extern u32 equip_color_rare_tbl[];
 extern u8 moji_color_rare_2099[5];
 
 #if !defined(G_PART) || G_PART == 3
+#ifdef VERSION_MH2
+int Equip_icon_color_rare(int a, int alpha, int sub) {
+    if (sub & 0xFF) {
+        a = (a + 7) & 0xFF;
+    }
+    return ((alpha & 0xFF) << 24) | equip_color_rare_tbl[equip_color_rare_idx[a & 0xFF]];
+}
+#else
 int Equip_icon_color_rare(int a, int alpha, int sub) {
     if (sub & 0xFF) {
         a = (a + GV(5, 7)) & 0xFF;
     }
     return ((alpha & 0xFF) << 24) | equip_color_rare_tbl[equip_color_rare_idx[a & 0xFF]];
 }
+#endif
 #endif
 
 #if !defined(G_PART) || G_PART == 3
@@ -591,6 +636,19 @@ int Get_chat_line_num(void) {
 #endif
 
 #if !defined(G_PART) || G_PART == 6
+#ifdef VERSION_MH2
+
+int Plaza_get_chat_line_num(void) {
+    int n = 0;
+    int i = PlazaChat.logtop - 1;
+    int c = PlazaChat.lognum;
+
+    for (; c > 0; c--, i--) {
+        n += *((u8 *)&PlazaChat + (i & 0x3F) * 0x61 + 0x63);
+    }
+    return n;
+}
+#else
 int Plaza_get_chat_line_num(void) {
     int n = 0;
     int i = PitMenu.logtop - 1;
@@ -601,6 +659,7 @@ int Plaza_get_chat_line_num(void) {
     }
     return n;
 }
+#endif
 #endif
 
 extern u8 Snd_em_id_conv_tbl[];
@@ -975,6 +1034,17 @@ void ChatLogAdd_Q(int who, int mask, s8 *msg) {
 #endif
 
 #if !defined(G_PART) || G_PART == 8
+#ifdef VERSION_MH2
+void sub_main_func_0035AB20();
+int Menu_chatlog_i(void) {
+    if (Online_ck() == 0) {
+        return 1;
+    }
+    PM[0x2C] = 0;
+    sub_main_func_0035AB20();
+    return 0;
+}
+#else
 int Menu_chatlog_i(void) {
     if (Online_ck() == 0) {
         return -1;
@@ -988,10 +1058,46 @@ int Menu_chatlog_i(void) {
     return 0;
 }
 #endif
+#endif
 
 static u32 chat_log_disp_line(u8 top);
 
 #if !defined(G_PART) || G_PART == 8
+#ifdef VERSION_MH2
+int Menu_chatlog_mv(int sw) {
+    PM[0x2C] = 0;
+    PlazaChat.x22 = 0x80;
+    if ((u32)Plaza_get_chat_line_num() > 0xB) {
+        if (PlazaChat.logscr != 0) {
+            PlazaChat.x22 |= 2;
+        }
+        if ((u8)plaza_chat_log_disp_line(PlazaChat.logscr) > 0xB) {
+            PlazaChat.x22 |= 1;
+            if (((u16)sw & 0x2000) && PlazaChat.logscr < PlazaChat.lognum - 1) {
+                PlazaChat.x21 = 0;
+                PlazaChat.logscr++;
+                PlazaChat.x22 |= 4;
+                se_req(0, 0x17, 0);
+                if ((u8)plaza_chat_log_disp_line(PlazaChat.logscr) < 0xC) {
+                    PlazaChat.x21 = 1;
+                }
+            }
+        } else {
+            PlazaChat.x21 = 1;
+        }
+        if (((u16)sw & 0x1000) && PlazaChat.logscr > 0) {
+            PlazaChat.logscr--;
+            PlazaChat.x22 |= 8;
+            se_req(0, 0x17, 0);
+            PlazaChat.x21 = 0;
+        }
+    }
+    if (PlazaChat.logscr == 0) {
+        PlazaChat.x0F = PlazaChat.x0C = 0;
+    }
+    return sw;
+}
+#else
 int Menu_chatlog_mv(int sw) {
     PitMenu.x10 = 0;
     PitMenu.x22 = 0x80;
@@ -1025,6 +1131,7 @@ int Menu_chatlog_mv(int sw) {
     }
     return sw;
 }
+#endif
 #endif
 
 #if !defined(G_PART) || G_PART == 8

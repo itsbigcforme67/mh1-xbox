@@ -39,6 +39,35 @@ void flfntInit();
 int strcmp();
 char *strcpy();
 
+#ifdef VERSION_MH2
+#include "mh2_lb.h"
+#define bsMainRetVal BW_MAINRET
+#define bsIsOnRequesting BW8(0x8EAE)
+#endif
+#ifdef VERSION_MH2
+void BsPoster00_PostData0(void) {
+    u8 *c;
+    u8 *p;
+    c = bsCsv;
+    if (c[0] != 0 && BsRequestPostAdd(lit_429_00667370, c) >= 0) {
+        c = bsCsv;
+        p = c + 0x11;
+        if (c[0x11] != 0 && BsRequestPostAdd(lit_430_00667378, p) >= 0) {
+            c = bsCsv;
+            p = c + 0x11D;
+            if (c[0x11D] != 0) {
+                BsUrlSet(bsBw, p);
+                BsRequestHtmlPost(bsBw);
+                bsIsOnRequesting = 1;
+                bsMainRetVal = 0;
+                bsSys->x02 = 5;
+                return;
+            }
+        }
+    }
+    bsSys->x01 = 2;
+}
+#else
 void BsPoster00_PostData0(void) {
     u8 *c;
     u8 *p;
@@ -61,3 +90,4 @@ void BsPoster00_PostData0(void) {
     }
     bsSys->x01 = 2;
 }
+#endif

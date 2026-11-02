@@ -6,6 +6,31 @@
 extern u8 *data_load_ptr;
 int load_file_mdl();
 
+#ifdef VERSION_MH2
+int Net_Icon_Data_Load(arg)
+int arg;
+{
+    int r;
+    r = 0;
+    switch (net_common_w.x03) {
+    case 0:
+        net_common_w.x03++;
+        if (arg == 0) {
+            load_file_mdl((int)data_load_ptr + 0x20000, 0x1715);
+            McActAvailSet((int)data_load_ptr + 0x20000);
+        } else {
+            load_file_mdl((int)data_load_ptr + 0x20000, 0x1714);
+        }
+        break;
+    case 1:
+        net_common_w.x03++;
+    case 2:
+        r = 1;
+        break;
+    }
+    return r;
+}
+#else
 int Net_Icon_Data_Load(arg)
 int arg;
 {
@@ -29,3 +54,4 @@ int arg;
     }
     return r;
 }
+#endif

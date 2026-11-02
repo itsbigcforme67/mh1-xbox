@@ -107,6 +107,39 @@ int CpInetGetStatus(void) {
     return Inet_interface_problem_status[0];
 }
 /* Starts the TCP stack for the interface kind (1 ethernet, 2/3 modem / ppp) and provider; returns the Ave result. */
+#ifdef VERSION_MH2
+int CpInetTcpInitialize(int kind, int prov) {
+    int r;
+
+    switch (kind) {
+    case 3:
+    case 2:
+        switch (prov) {
+        case 5:
+            r = (s16)Ave_TcpInitialize(0, 1);
+            break;
+        default:
+            r = (s16)Ave_TcpInitialize(0, 4);
+            break;
+        }
+        break;
+    case 1:
+        switch (prov) {
+        case 1:
+        case 6:
+            r = (s16)Ave_TcpInitialize(1, 5);
+            break;
+        default:
+            r = (s16)Ave_TcpInitialize(0, 2);
+            break;
+        }
+        break;
+    }
+    Initialized_flags[0] = 1;
+    Inet_interface_status[0] = 1;
+    return r;
+}
+#else
 int CpInetTcpInitialize(int kind, int prov) {
     int r;
 
@@ -139,6 +172,7 @@ int CpInetTcpInitialize(int kind, int prov) {
     CpInetTcpDelayCloseReset();
     return r;
 }
+#endif
 typedef struct TCPOPEN {
     s32 addr;                   /* 0x00 */
     u16 port;                   /* 0x04 */

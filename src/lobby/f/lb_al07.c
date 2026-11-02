@@ -46,6 +46,10 @@ signed char SoftKeyboard_move();   /* the real return type (tools/check_kr_retur
 #endif
 void flfntSetSize();
 
+#ifdef VERSION_MH2
+#include "mh2_lb.h"
+#define BsSoftKbdReq BW8(0x8EB6)
+#endif
 void BsSoftKbdCharSet(int a) {
     BSWK *w;
     switch (a) {

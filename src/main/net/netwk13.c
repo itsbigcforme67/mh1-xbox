@@ -201,6 +201,23 @@ extern SKMODE skey_mode_tbl_910[];
 
 
 
+#ifdef VERSION_MH2
+void lobby_func_007D0040();
+void Ncm_spr_kill(int m) {
+    net_common_w.x2C = net_common_w.x2C & ~m;
+    if (m == 0x10) {
+        net_common_w.x3E = 0;
+        net_common_w.x3F = 1;
+        net_common_w.x2C = net_common_w.x2C | 0x4000;
+        lobby_func_007D0040(0);
+    } else if (m == 0x2000) {
+        net_common_w.x3E = 0;
+        net_common_w.x3F = 1;
+        net_common_w.x2C = net_common_w.x2C | 0x8000;
+        lobby_func_007D0040(1);
+    }
+}
+#else
 void Ncm_spr_kill(int m) {
     net_common_w.x2C = net_common_w.x2C & ~m;
     if (m == 0x100) {
@@ -213,3 +230,4 @@ void Ncm_spr_kill(int m) {
         net_common_w.x3F = 1;
     }
 }
+#endif

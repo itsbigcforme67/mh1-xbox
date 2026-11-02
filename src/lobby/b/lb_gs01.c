@@ -2,6 +2,26 @@
 #include "lobby_a.h"
 extern char BsLbsInfo[];
 extern char ConnectLbsId[];
+#ifdef VERSION_MH2
+int Get_ServerName(void) {
+    s32 i;
+    char *p;
+
+    i = 0;
+    p = BsLbsInfo;
+    do {
+        if (memcmp(ConnectLbsId, p, 0xC) == 0) {
+            break;
+        }
+        i++;
+        p += 0x114;
+    } while (i < 0x28);
+    if (i < 0x28) {
+        return (int)(BsLbsInfo + i * 0x114 + 0xD);
+    }
+    return 0;
+}
+#else
 int Get_ServerName(void) {
     s32 i;
     char *p;
@@ -20,3 +40,4 @@ int Get_ServerName(void) {
     }
     return 0;
 }
+#endif

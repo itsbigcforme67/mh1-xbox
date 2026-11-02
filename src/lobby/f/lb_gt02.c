@@ -10,6 +10,10 @@ extern s16 BsTimer0;
 extern u8 *bsSys;
 char *strcpy(char *, const char *);
 
+#ifdef VERSION_MH2
+#include "mh2_lb.h"
+#define BsTimer0 BW_TIMER0
+#endif
 void stockMetaRefresh(int a, char *s) {
     memset(bsSys + 0x3B, 0, 0x100);
     strcpy((char *)bsSys + 0x3B, s);

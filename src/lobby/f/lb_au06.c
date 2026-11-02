@@ -1,5 +1,8 @@
 /* lb_au06 - browser quit/poster/init states, page work 0x005FD2C0-0x005FD3A4: To_ReqCancelWait, SetNextURL. Whole file in lb_au.c. */
 #include "lobby_f.h"
+#ifdef VERSION_MH2
+#include "mh2_lb.h"
+#endif
 extern BSSYS *bsSys;
 extern u8 *bsCsv;
 extern u8 *lpSKey;
@@ -40,6 +43,72 @@ int strcmp();
 char *strcpy();
 
 #if !defined(G_PART)
+#ifdef VERSION_MH2
+#ifdef VERSION_MH2
+#ifdef VERSION_MH2
+void To_ReqCancelWait(int a, int b, int c) {
+    int s;
+    s = (s8)a;
+    switch (s) {
+    case 0xB:
+    case 0xC:
+    case 0xD:
+    case 0xE:
+    case 0xF:
+        goto go;
+    default:
+        if (bsSys->x38 == 0 && F(s8, bsSys, 0x3A) == 0) {
+            goto go;
+        }
+        return;
+    }
+go:
+    BsRequestCancelAll();
+    bsSys->x02 = a;
+}
+#else
+void To_ReqCancelWait(int a, int b, int c) {
+    int s;
+    s = (s8)a;
+    switch (s) {
+    case 0xB:
+    case 0xC:
+    case 0xD:
+    case 0xE:
+    case 0xF:
+        goto go;
+    default:
+        if (bsSys->x38 == 0 && F(s8, bsSys, 0x3A) == 0) {
+            goto go;
+        }
+        return;
+    }
+go:
+    BsRequestCancelAll(s, b);
+    bsSys->x02 = a;
+}
+#endif
+#else
+void To_ReqCancelWait(int a, int b, int c) {
+    int s;
+    s = (s8)a;
+    switch (s) {
+    case 0xB:
+    case 0xC:
+    case 0xD:
+    case 0xE:
+    case 0xF:
+        goto go;
+    default:
+        if (bsSys->x38 == 0 && F(s8, bsSys, 0x3A) == 0) {
+go:
+            BsRequestCancelAll(s, b);
+            bsSys->x02 = a;
+        }
+    }
+}
+#endif
+#else
 void To_ReqCancelWait(int a, int b, int c) {
     int s;
     s = (s8)a;
@@ -59,11 +128,16 @@ go:
     }
 }
 #endif
+#endif
 
 #if !defined(G_PART) || G_PART == 1
 int SetNextURL(char *url, int b, int c) {
     memset(bsSys->meta, 0, 0x100);
     strcpy(bsSys->meta, url);
+#ifdef VERSION_MH2
+    return BsUrlSet(bsBw, bsSys->meta);
+#else
     return BsUrlSet(bsUrl, bsSys->meta);
+#endif
 }
 #endif

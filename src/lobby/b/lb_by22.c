@@ -4,6 +4,27 @@ extern char BsLbsInfo[];
 extern char ConnectLbsId[];
 extern char netr_sub01_col[];
 
+#ifdef VERSION_MH2
+s32 Get_ServerColor(void) {
+    s32 var_s1;
+    int var_s0;
+    var_s1 = 0;
+    var_s0 = (int)&BsLbsInfo;
+loop_1:
+    if (memcmp(&ConnectLbsId, var_s0, 0xC) != 0) {
+        var_s1 += 1;
+        var_s0 += 0x114;
+        if (var_s1 >= 0x28) {
+        } else {
+            goto loop_1;
+        }
+    }
+    if (var_s1 < 0x28) {
+        return var_s1;
+    }
+    return 0;
+}
+#else
 s32 Get_ServerColor(void) {
     s32 var_s1;
     int var_s0;
@@ -25,3 +46,4 @@ loop_1:
     }
     return -1;
 }
+#endif

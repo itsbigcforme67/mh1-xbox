@@ -5,6 +5,37 @@
 #include "types.h"
 
 
+#ifdef VERSION_MH2
+s32 decode_data_for_net(buf)
+u16 *buf;
+{
+    int i;
+    u16 key;
+    u16 stored;
+    int sum;
+
+    if (*buf != 0x100) {
+        return -1;
+    }
+    sum = 0;
+    i = 0;
+    buf++;
+    key = *buf++;
+    stored = *buf++;
+    buf++;
+    do {
+        *buf ^= key;
+        sum = (sum + *buf) & 0xFFFF;
+        buf++;
+        if ((key & 0xFFFF) == 0) {
+            key = 1;
+        }
+        key = ((key & 0xFFFF) * 0xB0) % 65363 & 0xFFFF;
+        i++;
+    } while (i < 0x2A0);
+    return -((stored & 0xFFFF) != (sum & 0xFFFF));
+}
+#else
 s32 decode_data_for_net(buf)
 u16 *buf;
 {
@@ -34,3 +65,4 @@ u16 *buf;
     } while (i < GV(0x8A20, 0x9860));
     return -((stored & 0xFFFF) != (sum & 0xFFFF));
 }
+#endif

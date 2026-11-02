@@ -129,6 +129,58 @@ int parsetag();
 
 
 /* http state 1: parse the request url (and the optional proxy / referer urls) */
+#ifdef VERSION_MH2
+void http_test_01(u8 *arg0) {
+    s32 temp_v1;
+    u8 temp_a0;
+
+    temp_a0 = arg0[0x47];
+    switch (temp_a0) {
+    case 0:
+        arg0[0x47] = 5;
+        CpInetInterfaceProblemEnable(0);
+        return;
+    case 5:
+        if (*(s8 *)(arg0 + 0x35) != 0) {
+            *(s8 *)(arg0 + 0x44) = 0x11;
+            *(s32 *)(arg0 + 0x40) = 0;
+            arg0[0x46] = 0xB;
+            return;
+        }
+        *(s32 *)(arg0 + 0x84) = sceHTTPParseURI(*(s32 *)(arg0 + 4), 0x60);
+        if (*(s32 *)(arg0 + 0x84) == 0) {
+            *(s8 *)(arg0 + 0x44) = 1;
+            *(s32 *)(arg0 + 0x40) = 0;
+            arg0[0x46] = 0xB;
+            return;
+        }
+        temp_v1 = *(s8 *)(arg0 + 1);
+        if (temp_v1 != 0) {
+            if (((s8)temp_v1) & 1) {
+                *(s32 *)(arg0 + 0x88) = sceHTTPParseURI(*(s32 *)(arg0 + 8), 0);
+                if (*(s32 *)(arg0 + 0x88) == 0) {
+                    *(s8 *)(arg0 + 0x44) = 1;
+                    *(s32 *)(arg0 + 0x40) = 1;
+                    arg0[0x46] = 0xB;
+                    return;
+                }
+            }
+            if (*(s8 *)(arg0 + 1) & 2) {
+                *(s32 *)(arg0 + 0x8C) = sceHTTPParseURI(*(s32 *)(arg0 + 0xC), 0);
+                if (*(s32 *)(arg0 + 0x8C) == 0) {
+                    *(s8 *)(arg0 + 0x44) = 1;
+                    *(s32 *)(arg0 + 0x40) = 1;
+                    arg0[0x46] = 0xB;
+                    return;
+                }
+            }
+        }
+block_16:
+        arg0[0x46] = arg0[0x46] + 1;
+        arg0[0x47] = 0;
+    }
+}
+#else
 void http_test_01(u8 *arg0) {
     s32 temp_v1;
     u8 temp_a0;
@@ -179,3 +231,4 @@ block_16:
         arg0[0x41] = 0;
     }
 }
+#endif

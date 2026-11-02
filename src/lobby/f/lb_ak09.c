@@ -15,6 +15,8 @@ void setUpDnLtRtBlank();
 void UpdateEndpoint(int x, int y);
 int AppendWork(int, int, int, int, int, int, int, int, int, int, void *, void *, void *);
 
+#ifdef VERSION_MH2
+#pragma divbyzerocheck off
 void UpdateEndpoint(int x, int y) {
     if (bsSys->x10 < y) {
         bsSys->x10 = y;
@@ -31,3 +33,22 @@ void UpdateEndpoint(int x, int y) {
         }
     }
 }
+#pragma divbyzerocheck on
+#else
+void UpdateEndpoint(int x, int y) {
+    if (bsSys->x10 < y) {
+        bsSys->x10 = y;
+        bsSys->x22 = 0x20490 / bsSys->x10;
+        if (bsSys->x10 > 0x17C) {
+            bsSys->x2A = 1;
+        }
+    }
+    if (x >= bsSys->x0C) {
+        bsSys->x0C = x;
+        bsSys->x26 = 0x4EB40 / bsSys->x0C;
+        if (bsSys->x0C > 0x248) {
+            bsSys->x2B = 1;
+        }
+    }
+}
+#endif

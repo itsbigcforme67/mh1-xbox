@@ -5,6 +5,37 @@ extern u8 BsDialogReq;
 extern u8 BsSoftKbdReq;
 extern char BsPsw[];
 
+#ifdef VERSION_MH2
+#include "mh2_lb.h"
+#define BsDialogReq BW_DIALOGREQ
+#define BsSoftKbdReq BW8(0x8EB6)
+#endif
+#ifdef VERSION_MH2
+void BsBody05_ActDsp(void) {
+    s8 sx1;
+    int temp_a0;
+    int temp_a1;
+
+    temp_a0 = bsSys;
+    temp_a1 = temp_a0 + 0x2E;
+    if ((F(u8, temp_a0, 0x2E) == 8) && (F(u8, temp_a0, 0x38) == 0)) {
+        if ((((F(u16, temp_a0, 0x18) & 0x20) >> 5) != 0) && (BW16(0x1A64C) & 0x8000) && (F(u8, temp_a0, 0x34) == 0) && (BsDialogReq == 1) && (BsSoftKbdReq == 2)) {
+            *(u8 *)temp_a1 = 9;
+            To_ReqCancelWait(6);
+            return;
+        }
+        if ((sx1 = CheckAllImages()) == -1) {
+            refreshPage();
+            F(s8, bsSys, 0x3A) = 0;
+            return;
+        }
+        goto block_11;
+    }
+block_11:
+    MoveAndTransSet();
+    BsCountdownTimer();
+}
+#else
 void BsBody05_ActDsp(void) {
     s8 sx1;
     int temp_a0;
@@ -29,3 +60,4 @@ block_11:
     MoveAndTransSet();
     BsCountdownTimer();
 }
+#endif

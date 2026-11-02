@@ -6,6 +6,16 @@ void Plaza_disp_chat(void) {
     plaza_disp_chat_log_sub(0, 0, *(u8 *)0x39DAD4);
 }
 
+#ifdef VERSION_MH2
+void Plaza_chatlog_i(void) {
+    *(s8 *)0x5BC505 = 0;
+    if (Plaza_get_chat_line_num() < 0xCU) {
+        *(s8 *)0x5BC506 = 1;
+        return;
+    }
+    *(u8 *)0x5BC506 = 0;
+}
+#else
 void Plaza_chatlog_i(void) {
     *(s8 *)0x39DAE0 = 0;
     if (Plaza_get_chat_line_num() < 0xAU) {
@@ -14,3 +24,4 @@ void Plaza_chatlog_i(void) {
     }
     *(u8 *)0x39DAE1 = 0;
 }
+#endif

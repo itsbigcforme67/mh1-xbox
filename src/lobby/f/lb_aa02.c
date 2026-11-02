@@ -6,6 +6,45 @@
 extern u8 chatIDList[];
 char *strcpy();
 void Lb_send_chat();
+#ifdef VERSION_MH2
+void Lb_send_chat_plus(a, b, c)
+int a;
+int b;
+int c;
+{
+    int i;
+    int bit;
+    u8 *p;
+    u8 *id;
+    if (*(u8 *)0x5BB09A != 0) {
+        cw[0x3967] = 0;
+    } else {
+        bit = 1;
+        cw[0x3967] = 1;
+        i = 0;
+        p = (u8 *)lb_player;
+        id = chatIDList;
+        bit = 1;
+        chatIDList[0] = 0;
+        chatIDList[8] = 0;
+        chatIDList[0x10] = 0;
+        chatIDList[0x18] = 0;
+        chatIDList[0x20] = 0;
+        chatIDList[0x28] = 0;
+        chatIDList[0x30] = 0;
+        do {
+            if (i != game_w.master && (*(u16 *)0x5BB098 & bit)) {
+                strcpy((char *)id, (char *)p);
+                id += 8;
+            }
+            i += 1;
+            p += 0x11C;
+            bit += bit;
+        } while (i < 10);
+    }
+    Lb_send_chat(a, b, c);
+}
+#else
 void Lb_send_chat_plus(a, b, c)
 int a;
 int b;
@@ -43,3 +82,4 @@ int c;
     }
     Lb_send_chat(a, b, c);
 }
+#endif

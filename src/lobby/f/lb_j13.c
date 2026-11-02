@@ -35,6 +35,39 @@ void pl_sleeping();
 
 
 #if !defined(G_PART)
+#ifdef VERSION_MH2
+void lb_pl_mv095(PLW *pl, s8 m) {
+    u8 s;
+    s = pl->x05;
+    switch (s) {
+    case 0:
+        pl->x05 = s + 1;
+        F(s32, pl, 0x3A4) = 0;
+        Lb_Pl_basic_flagset(pl, 0, 0, 0);
+        Lb_pl_chr_set(pl, 0x262, 4, 0);
+        return;
+    case 1:
+        if (F(s32, pl, 0x154) <= 0) {
+            pl->x05 = s + 1;
+            if (m == 0) {
+                Lb_pl_chr_set(pl, 0x27D, 6, 0);
+            } else {
+                Lb_pl_chr_set(pl, 0x197, 6, 0x14);
+                Eft06_set(4.0f, pl, 0, 8, 0xA);
+            }
+        }
+        break;
+    case 2:
+        if (F(s32, pl, 0x154) <= 0) {
+            Lb_pl_to_normal(pl, 0, 6, 0);
+            if (pl->id == game_w.master) {
+                Lb_eat_to_end(pl);
+            }
+        }
+        break;
+    }
+}
+#else
 void lb_pl_mv095(PLW *pl, s8 m) {
     u8 s;
     s = pl->x05;
@@ -68,6 +101,7 @@ void lb_pl_mv095(PLW *pl, s8 m) {
         break;
     }
 }
+#endif
 #endif
 
 #if !defined(G_PART) || G_PART == 1

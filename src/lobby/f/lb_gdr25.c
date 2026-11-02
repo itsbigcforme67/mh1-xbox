@@ -129,6 +129,52 @@ int parsetag();
 
 
 /* http state 6: pick up the response body into the task buffer (converted to Shift-JIS when the page is EUC) */
+#ifdef VERSION_MH2
+void http_test_06(u8 *arg0) {
+    s32 temp_a1;
+    s32 temp_v0_2;
+    s32 var_s1;
+    u8 *temp_v0;
+    u8 *temp_v1;
+
+    if (*(s8 *)(arg0 + 0x35) != 0) {
+        *(s8 *)(arg0 + 0x44) = 0x11;
+        *(s32 *)(arg0 + 0x40) = 3;
+        *(u8 *)(arg0 + 0x46) = 0xB;
+        return;
+    }
+    temp_v0 = sceHTTPGetResponse(*(s32 *)(arg0 + 0x80));
+    *(u8 **)(arg0 + 0x90) = temp_v0;
+    if (temp_v0 == 0) {
+        *(s8 *)(arg0 + 0x44) = 7;
+        *(s32 *)(arg0 + 0x40) = 3;
+        *(u8 *)(arg0 + 0x46) = 0xB;
+        return;
+    }
+    temp_v1 = *(u8 **)(arg0 + 0x90);
+    temp_a1 = *(s32 *)(temp_v1 + 0x18);
+    if (temp_a1 != 0) {
+        var_s1 = *(s32 *)(temp_v1 + 0x20);
+        temp_v0_2 = *(s32 *)(arg0 + 0x14);
+        if (temp_v0_2 <= var_s1) {
+            var_s1 = temp_v0_2 - 1;
+        }
+        memcpy(*(char **)(arg0 + 0x10), (void *)temp_a1, var_s1);
+        (*(char **)(arg0 + 0x10))[var_s1] = 0;
+        *(s32 *)(arg0 + 0x38) = var_s1;
+        if (*(s8 *)(arg0 + 0x34) != 0) {
+            if (is_sjis(arg0, *(u8 **)(arg0 + 0x10), var_s1) == 0) {
+                KanjiEuc2SjisEx(*(char **)(arg0 + 0x10));
+            }
+            *(s32 *)(arg0 + 0x38) = strlen(*(char **)(arg0 + 0x10));
+        }
+    } else {
+        **(char **)(arg0 + 0x10) = 0;
+        *(s32 *)(arg0 + 0x38) = 0;
+    }
+    *(u8 *)(arg0 + 0x46) = *(u8 *)(arg0 + 0x46) + 1;
+}
+#else
 void http_test_06(u8 *arg0) {
     s32 temp_a1;
     s32 temp_v0_2;
@@ -173,3 +219,4 @@ void http_test_06(u8 *arg0) {
     }
     *(u8 *)(arg0 + 0x40) = *(u8 *)(arg0 + 0x40) + 1;
 }
+#endif

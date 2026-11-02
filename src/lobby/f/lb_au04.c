@@ -5,7 +5,11 @@ extern u8 *bsCsv;
 extern u8 *lpSKey;
 extern BSWK *bsOW[0x1F4];
 extern u8 BsPsw[0x18];
+#ifdef VERSION_MH2
+extern char *bsUrl;
+#else
 extern u8 bsUrl[4];
+#endif
 extern s8 bsIsOnRequesting;
 extern s8 bsMainRetVal;
 extern u8 bsGoHidePage;
@@ -39,6 +43,28 @@ void flfntInit();
 int strcmp();
 char *strcpy();
 
+#ifdef VERSION_MH2
+void BsQuit02_Push2(void) {
+    int i;
+    int o;
+    BSWK *w;
+    i = 0;
+    o = 0;
+    for (;;) {
+        w = *(BSWK **)(bsUrl + o + 0x5EC);
+        if (w != 0) {
+            BsWorkPush(w);
+            i = (i + 1) & 0xFFFF;
+            o += 4;
+            if (i < 0x1F4) {
+                continue;
+            }
+        }
+        break;
+    }
+    bsSys->x02 = 3;
+}
+#else
 void BsQuit02_Push2(void) {
     int i;
     BSWK **p;
@@ -59,3 +85,4 @@ void BsQuit02_Push2(void) {
     }
     bsSys->x02 = 3;
 }
+#endif

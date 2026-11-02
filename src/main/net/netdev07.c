@@ -4,6 +4,17 @@ extern u8 Search_sif[0x28];
 extern u8 SifRpcWork_buf[0x20];
 int sceSifCallRpc();
 
+#ifdef VERSION_MH2
+int search_sif_call_rpc(int cmd) {
+    int r;
+    FlushCache(0);
+    r = sceSifCallRpc(Search_sif, cmd, 0, SifRpcWork_buf, 0x40, SifRpcWork_buf, 0x40, 0, 0);
+    if (r < 0) {
+        return -1;
+    }
+    return r;
+}
+#else
 int search_sif_call_rpc(int cmd) {
     int r;
 
@@ -13,3 +24,4 @@ int search_sif_call_rpc(int cmd) {
     }
     return r;
 }
+#endif
