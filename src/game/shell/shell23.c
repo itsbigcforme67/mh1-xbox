@@ -23,7 +23,7 @@ void shell23_set(EMW *em, int arg) {
     if (Em_stg_ck(em) != 0) {
         sh = pull_shell_work(0);
         if (sh != 0) {
-            sh->type = 1;
+            sh->type = MH2V(1, 23);
             sh->arg = arg;
             sh->move = shell23_move;
             sh->em_no = em->id;

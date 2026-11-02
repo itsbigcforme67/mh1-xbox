@@ -442,7 +442,7 @@ void em_dmg06_0059FFE0(EMW *em, EM08W *w) {
             em->x05++;
             em->x388 = 0;
             em->pos[1] = em->x5AC;
-            em08_act_set(em, 4, 0x10, 2);
+            em08_act_set(em, 4, 0x10, MH2V(2, 3));
         }
         break;
     }

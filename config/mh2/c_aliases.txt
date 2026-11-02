@@ -321,6 +321,7 @@ game em_dmg04_00582100 0x007FFFC0
 game em_dmg04_0059FD40 0x007D8EB0
 game em_dmg05_00582220 0x008000E0
 game em_dmg06_00582350 0x00800200
+game em_dmg06_0059FFE0 0x007D9280
 game em_dmg07_00582410 0x008002C0
 game em_dmg08_00570AB0 0x007F1810
 game em_dmg08_005824A0 0x00800350
@@ -515,6 +516,7 @@ game func_006CA500 0x006CA500
 game func_006CA5A0 0x006CA5A0
 game func_006CA6F0 0x006CA6F0
 game func_006CA730 0x006CA730
+game func_006D50D0 0x006D50D0
 game func_006D56F0 0x006D56F0
 game func_006D5CE0 0x006D5CE0
 game func_006D5D00 0x006D5D00
@@ -529,7 +531,9 @@ game func_006D8770 0x006D8770
 game func_006D8C10 0x006D8C10
 game func_006D8F80 0x006D8F80
 game func_006D90D0 0x006D90D0
+game func_006D9200 0x006D9200
 game func_006D9380 0x006D9380
+game func_006DBC10 0x006DBC10
 game func_006EF280 0x006EF280
 game func_006EF8F0 0x006EF8F0
 game func_006FC760 0x006FC760
@@ -879,6 +883,7 @@ game func_007D84A0 0x007D84A0
 game func_007D8A00 0x007D8A00
 game func_007D8A80 0x007D8A80
 game func_007D8EB0 0x007D8EB0
+game func_007D9280 0x007D9280
 game func_007D97A0 0x007D97A0
 game func_007DE9C0 0x007DE9C0
 game func_007DEA70 0x007DEA70
@@ -1067,6 +1072,7 @@ game set17_trans 0x006FC980
 game set_cmd 0x00733B90
 game shell00_set2 0x006C2950
 game shell01_body_tbl 0x008988B0
+game shell01_set 0x006D50D0
 game shell01_tbl 0x00898D98
 game shell02_set 0x006C3B70
 game shell05_body_tbl 0x0089AC10
@@ -1099,7 +1105,9 @@ game shell18_tbl 0x008A2430
 game shell20_body_tbl 0x008A36F0
 game shell20_tbl 0x008A3990
 game shell21_body_tbl 0x008A4030
+game shell21_set 0x006D9200
 game shell21_tbl 0x008A4340
+game shell23_set 0x006DBC10
 game shell_flag_set 0x003ABE70
 game smell_cnt 0x005D8A60
 game smell_dmg_set 0x00707FF0
