@@ -503,6 +503,7 @@ lobby Online_ck_mh2_007BCAD0 0x007BCAD0
 lobby Option_tag_close_check 0x007463B0
 lobby Psw 0x006AE0B0
 lobby PutButtonICON 0x00356020
+lobby Quest_f_dra_ck 0x007A2A70
 lobby ReadedDataLength 0x008F8D08
 lobby ScrollXY 0x00741080
 lobby SetNextURL 0x00741010
@@ -1054,6 +1055,7 @@ lobby func_00793760 0x00793760
 lobby func_00793950 0x00793950
 lobby func_007939F0 0x007939F0
 lobby func_0079F640 0x0079F640
+lobby func_007A2A70 0x007A2A70
 lobby func_007A6F60 0x007A6F60
 lobby func_007A7030 0x007A7030
 lobby func_007A8220 0x007A8220
@@ -1874,6 +1876,7 @@ sub_main Ave_TcpSend 0x003065D0
 sub_main Ave_TcpStat 0x00306520
 sub_main Ave_TcpTerminate 0x00306210
 sub_main Ave_wrap_sif 0x0059BB30
+sub_main CalcPoint 0x00364BF0
 sub_main CamAreaAttribChk 0x003208D0
 sub_main CamRailPoint 0x00321CD0
 sub_main CameraAreaCheck 0x00320720
@@ -1939,6 +1942,7 @@ sub_main CpInetTcpTerminate 0x00307910
 sub_main CpInetTerminate 0x00307600
 sub_main CurDevice 0x0059E1F8
 sub_main D_0034ABEC 0x0040317C
+sub_main D_008EA910 0x008EA910
 sub_main D_63BD60 0x008B19A0
 sub_main D_6EAEBC 0x008BDC18
 sub_main DeviceGetOptionalStatus 0x00309B90
@@ -2035,9 +2039,13 @@ sub_main Now_equip_ck_mh2_003BAD40 0x003BAD40
 sub_main NvecFloatAdjust 0x003378C0
 sub_main Omake_flag_ck 0x003BD4F0
 sub_main Online_ck 0x0036BA40
+sub_main PIT_TEX 0x0042F1A0
 sub_main PitMenu 0x005BB09F
+sub_main Pit_shot_ok_chk 0x00355E90
 sub_main Pl_chat_act_req 0x003B3DB0
+sub_main Pl_horm_adj 0x003B25C0
 sub_main Pl_item_cnt_up 0x003B2990
+sub_main Pl_item_num_ck 0x003B1F50
 sub_main Pl_master_ck 0x003ACDA0
 sub_main Pl_se_req2 0x00194DC0
 sub_main Pl_se_req2_com 0x00194A60
@@ -2087,6 +2095,8 @@ sub_main SetCameraData 0x0031A640
 sub_main SetDiffuseColor 0x00377380
 sub_main SetFilterMode 0x00369010
 sub_main SetOpeMode_mh2_003691A0 0x003691A0
+sub_main SetPartsTrans 0x0036DAF0
+sub_main SetPartsTrans2 0x0036DC60
 sub_main SetTextureStage 0x00369060
 sub_main SetTrnslMode 0x00368F90
 sub_main SetVector 0x00337410
@@ -2132,7 +2142,7 @@ sub_main add_kana_buf 0x003052A0
 sub_main add_prim 0x003770F0
 sub_main add_prim2 0x003772D0
 sub_main all_kouho 0x00302040
-sub_main all_sprite_free_mh2_00368ED0 0x00368ED0
+sub_main all_sprite_free 0x00368D50
 sub_main alloc_bsmem 0x00303C90
 sub_main alloc_chmem 0x00303C60
 sub_main alloc_khmem 0x00303CF0
@@ -2291,6 +2301,10 @@ sub_main dst_mode_256 0x0043C950
 sub_main e_khstr 0x00589880
 sub_main e_ustr 0x0059B7D0
 sub_main efct_circle 0x00351690
+sub_main eft01_d 0x003C8100
+sub_main eft01_e 0x003C81D0
+sub_main eft01_m 0x003C7D20
+sub_main eft01_t 0x003C8400
 sub_main eft02_move 0x003C8E10
 sub_main eft06_continue 0x003CB710
 sub_main eft06_d_mh2_003C9500 0x003C9500
@@ -2516,6 +2530,7 @@ sub_main flmatMul33 0x002EDE70
 sub_main flmatMul33_2 0x002EDED0
 sub_main flmatRotX33 0x002ECFF0
 sub_main flmatRotXYZ33 0x002ED560
+sub_main flmatRotXYZ33_mh2_002ED880 0x002ED880
 sub_main flmatRotY33 0x002ED090
 sub_main flmatRotZ33 0x002ED130
 sub_main flmatRotZXY33 0x002EDA20
@@ -2592,6 +2607,7 @@ sub_main front_land_ck2 0x003B1060
 sub_main func_00111040 0x00337150
 sub_main func_001193E0 0x0033E470
 sub_main func_0013E750 0x002EE2A0
+sub_main func_0018D320 0x0018D320
 sub_main func_0020C5A0 0x0031A4D0
 sub_main func_002E3EE0 0x002E3EE0
 sub_main func_002E3F30 0x002E3F30
@@ -3199,6 +3215,8 @@ sub_main func_003250A0 0x003250A0
 sub_main func_00325150 0x00325150
 sub_main func_00325270 0x00325270
 sub_main func_00325E70 0x00325E70
+sub_main func_00326C90 0x00326C90
+sub_main func_00326D10 0x00326D10
 sub_main func_003274F0 0x003274F0
 sub_main func_003286B0 0x003286B0
 sub_main func_003288F0 0x003288F0
@@ -3244,6 +3262,8 @@ sub_main func_00337A20 0x00337A20
 sub_main func_00337B00 0x00337B00
 sub_main func_00337B90 0x00337B90
 sub_main func_00337BD0 0x00337BD0
+sub_main func_00338020 0x00338020
+sub_main func_003380D0 0x003380D0
 sub_main func_0033D240 0x0033D240
 sub_main func_0033D530 0x0033D530
 sub_main func_0033D590 0x0033D590
@@ -3260,7 +3280,9 @@ sub_main func_00351520 0x00351520
 sub_main func_00351580 0x00351580
 sub_main func_00353C30 0x00353C30
 sub_main func_00353D80 0x00353D80
+sub_main func_003549F0 0x003549F0
 sub_main func_003553D0 0x003553D0
+sub_main func_00355E90 0x00355E90
 sub_main func_00356160 0x00356160
 sub_main func_003627A0 0x003627A0
 sub_main func_003629E0 0x003629E0
@@ -3279,6 +3301,7 @@ sub_main func_00364370 0x00364370
 sub_main func_00364540 0x00364540
 sub_main func_00364780 0x00364780
 sub_main func_00364BB0 0x00364BB0
+sub_main func_00364BF0 0x00364BF0
 sub_main func_003655C0 0x003655C0
 sub_main func_00365670 0x00365670
 sub_main func_00366640 0x00366640
@@ -3286,10 +3309,9 @@ sub_main func_00368B50 0x00368B50
 sub_main func_00368C40 0x00368C40
 sub_main func_00368C50 0x00368C50
 sub_main func_00368C70 0x00368C70
+sub_main func_00368D50 0x00368D50
 sub_main func_00368D90 0x00368D90
-sub_main func_00368E80 0x00368E80
 sub_main func_00368EA0 0x00368EA0
-sub_main func_00368ED0 0x00368ED0
 sub_main func_00368F10 0x00368F10
 sub_main func_00368F60 0x00368F60
 sub_main func_00368F90 0x00368F90
@@ -3312,6 +3334,14 @@ sub_main func_0036C1C0 0x0036C1C0
 sub_main func_0036C560 0x0036C560
 sub_main func_0036CD10 0x0036CD10
 sub_main func_0036CF60 0x0036CF60
+sub_main func_0036DAF0 0x0036DAF0
+sub_main func_0036DC60 0x0036DC60
+sub_main func_0036DDB0 0x0036DDB0
+sub_main func_0036DE70 0x0036DE70
+sub_main func_0036DFB0 0x0036DFB0
+sub_main func_00376A20 0x00376A20
+sub_main func_00376B50 0x00376B50
+sub_main func_00376C00 0x00376C00
 sub_main func_00376C90 0x00376C90
 sub_main func_00376CD0 0x00376CD0
 sub_main func_00376D70 0x00376D70
@@ -3412,6 +3442,7 @@ sub_main func_003C6DF0 0x003C6DF0
 sub_main func_003C7840 0x003C7840
 sub_main func_003C7850 0x003C7850
 sub_main func_003C7AE0 0x003C7AE0
+sub_main func_003C7B70 0x003C7B70
 sub_main func_003C81D0 0x003C81D0
 sub_main func_003C8E10 0x003C8E10
 sub_main func_003C9520 0x003C9520
@@ -3462,6 +3493,11 @@ sub_main func_5C5E20 0x0075F5C0
 sub_main func_mode 0x00581B78
 sub_main gAskRom 0x00581C30
 sub_main gaku_mode 0x00581C40
+sub_main game1 0x00326D10
+sub_main game10 0x003262E0
+sub_main game11 0x003264B0
+sub_main game12 0x00326770
+sub_main game13 0x00326B20
 sub_main game5 0x003274F0
 sub_main game_w 0x006ADCB0
 sub_main game_w_mh2_006ADC1B 0x006ADC1B
@@ -3635,9 +3671,11 @@ sub_main load_enemy_sub_model 0x00334D90
 sub_main load_file_mdl 0x00334970
 sub_main load_file_mdl_mh2_003349D0 0x003349D0
 sub_main load_page 0x002FED20
+sub_main load_pit 0x003549F0
 sub_main load_pl_motion 0x00334A10
 sub_main load_plcom_motion 0x00334A30
 sub_main load_temp 0x002FF7C0
+sub_main load_texlist_mh2_00333E50 0x00333E50
 sub_main localTaskNum 0x00581990
 sub_main lock_mode 0x00403170
 sub_main lpPit 0x005B3930
@@ -3662,6 +3700,8 @@ sub_main mem_tex 0x006AE3D0
 sub_main memcpy 0x00107D10
 sub_main memset 0x00107EC8
 sub_main mission_area 0x006AE024
+sub_main mkTexture 0x00334680
+sub_main mkmapTexture 0x00334840
 sub_main mmbbc_encode 0x0030AE10
 sub_main module_load_00232F60 0x00309D00
 sub_main module_loadhigh 0x00309D00
@@ -3740,7 +3780,12 @@ sub_main pl_motion_load 0x00328920
 sub_main pl_move 0x00722600
 sub_main pl_sw_set 0x003AC670
 sub_main pl_voice_req 0x003AC9A0
+sub_main player_mat_calc 0x00376A20
+sub_main player_mk 0x00376C00
+sub_main player_modify 0x00376B50
 sub_main player_mv 0x0039A2F0
+sub_main player_work 0x005F89D0
+sub_main plmatCopy33 0x002F9230
 sub_main plplAdd 0x002F97F0
 sub_main plplAdd2 0x00376D70
 sub_main plplInit 0x002F96F0
@@ -3762,6 +3807,7 @@ sub_main prim_free_top2 0x006A38C0
 sub_main prim_init 0x00376E40
 sub_main prim_init2 0x00376E70
 sub_main prot_jmp_tbl_362 0x004054C0
+sub_main ptmat_tbl 0x0043E5B0
 sub_main pull_eft_work 0x003242A0
 sub_main pull_eft_work2 0x00324380
 sub_main pull_em_yobi 0x00378650
@@ -3898,7 +3944,7 @@ sub_main sprintf 0x0010A8D0
 sub_main sprite_area 0x006AE014
 sub_main sprite_w 0x006AE1A0
 sub_main sprite_work_free 0x00368EA0
-sub_main sprite_work_init 0x00368E80
+sub_main sprite_work_free_mh2_00368CD0 0x00368CD0
 sub_main src_mode_255 0x0043C920
 sub_main srch_node 0x002FF510
 sub_main srch_page 0x002FE940
@@ -3987,6 +4033,9 @@ sub_main wait_http_static_sema 0x00308BA0
 sub_main wd_learn 0x00305AD0
 sub_main wdsbuf 0x005898B0
 sub_main wdsbuf_mh2_00589880 0x00589880
+sub_main weapon_dat_make 0x0036DDB0
+sub_main weapon_dat_make2 0x0036DE70
+sub_main weapon_dat_make3 0x0036DFB0
 sub_main work_heap_area 0x006ADFF0
 sub_main write_page 0x002FEC50
 sub_main write_temp 0x002FF970
@@ -3997,6 +4046,7 @@ sub_main yn_mask_char_check 0x00319FF0
 sub_main yn_spell_tbl_2236 0x00416460
 sub_main yomi_buf 0x00581BE0
 sub_main yoroi_sd_req 0x00388560
+sub_main yure_init 0x003380D0
 yn CurDevice 0x0059E1F8
 yn D_530394 0x005BE6C4
 yn D_5306B0 0x005BE9E0
@@ -4048,6 +4098,7 @@ yn func_00ACE3F0 0x00ACE3F0
 yn func_00ACE430 0x00ACE430
 yn func_00ACF7D0 0x00ACF7D0
 yn func_00ACF850 0x00ACF850
+yn func_00ACF900 0x00ACF900
 yn func_00ACF9A0 0x00ACF9A0
 yn func_00ACFA60 0x00ACFA60
 yn func_00ACFC50 0x00ACFC50
@@ -4075,13 +4126,17 @@ yn lit_1846_0053E3A0 0x00AD3A00
 yn lit_1847_0053E3B0 0x00AD3A10
 yn lit_1903 0x00AD3A28
 yn lit_197_00541180 0x00AD2770
+yn lit_203_0053E360 0x00AD39C0
+yn lit_204_0053E380 0x00AD39E0
 yn memset 0x00107EC8
 yn module_load_00535140 0x00AD0F70
+yn module_unload_00535090 0x00AD0EC0
 yn netcnf_arg 0x00AD21E0
 yn netcnfif_arg 0x00AD2260
 yn sceNetcnfifAllocWorkarea 0x00AC8CF8
 yn sceNetcnfifCheck 0x00AC82B0
 yn sceNetcnfifDataInit 0x00AC91E0
+yn sceNetcnfifFreeWorkarea 0x00AC8D38
 yn sceNetcnfifGetCount 0x00AC83B0
 yn sceNetcnfifGetList 0x00AC8418
 yn sceNetcnfifGetResult 0x00AC82D0
@@ -4089,6 +4144,8 @@ yn sceNetcnfifInit 0x00AC8128
 yn sceNetcnfifLoadEntry 0x00AC84A8
 yn sceNetcnfifSetFNoDecode 0x00AC83A0
 yn sceNetcnfifSetup 0x00AC8080
+yn sceNetcnfifTerm 0x00AC8DC0
+yn sceSifSearchModuleByName 0x0011C440
 yn sprintf 0x0010A8D0
 yn strcmp 0x0010AF18
 yn strcpy 0x0010B060
@@ -4116,6 +4173,7 @@ yn yn_mess_cnt_tbl 0x00AD15E0
 yn yn_mess_mes_tbl 0x00AD1570
 yn yn_message_font_sub 0x00ACC060
 yn yn_netcnf_dev_to_work 0x00ACFE90
+yn yn_netcnf_exit 0x00ACF900
 yn yn_netcnf_get_filename 0x00AD0910
 yn yn_netcnf_get_list 0x00AD0510
 yn yn_netcnf_get_num 0x00AD0450
