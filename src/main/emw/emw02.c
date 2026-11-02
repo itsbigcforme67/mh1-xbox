@@ -1,10 +1,10 @@
 /* emw02 - view and monster work 0x0016A010-0x0016A858: em_work_set, pull_enemy_work, smell_init, push_smell, pull_smell, smoke_init, push_smoke, pull_smoke, move_smoke, senko_init, push_senko, pull_senko, move_senko, ear_init, em_yobi_init, push_em_yobi, pull_em_yobi. Whole file in emwork_nm.c. */
 #include "types.h"
 
-#define B8(p, o)   (*(u8 *)((u8 *)(p) + (o)))
-#define S16(p, o)  (*(s16 *)((u8 *)(p) + (o)))
-#define S32(p, o)  (*(s32 *)((u8 *)(p) + (o)))
-#define PTR(p, o)  (*(u8 **)((u8 *)(p) + (o)))
+#define B8(p, o)   (*(u8 *)((u8 *)(p) + MH2_OFS(p, o)))
+#define S16(p, o)  (*(s16 *)((u8 *)(p) + MH2_OFS(p, o)))
+#define S32(p, o)  (*(s32 *)((u8 *)(p) + MH2_OFS(p, o)))
+#define PTR(p, o)  (*(u8 **)((u8 *)(p) + MH2_OFS(p, o)))
 #ifdef VERSION_MHG
 #ifdef __MWERKS__
 #define EMW_SIZE   0xA00

@@ -4,10 +4,10 @@
  * pointers each, with a count). Field names guessed from use; offsets are exact. */
 #include "types.h"
 
-#define B8(p, o)   (*(u8 *)((u8 *)(p) + (o)))
-#define S16(p, o)  (*(s16 *)((u8 *)(p) + (o)))
-#define S32(p, o)  (*(s32 *)((u8 *)(p) + (o)))
-#define PTR(p, o)  (*(u8 **)((u8 *)(p) + (o)))
+#define B8(p, o)   (*(u8 *)((u8 *)(p) + MH2_OFS(p, o)))
+#define S16(p, o)  (*(s16 *)((u8 *)(p) + MH2_OFS(p, o)))
+#define S32(p, o)  (*(s32 *)((u8 *)(p) + MH2_OFS(p, o)))
+#define PTR(p, o)  (*(u8 **)((u8 *)(p) + MH2_OFS(p, o)))
 #define EMW_SIZE   0xA10
 
 typedef struct LPV {            /* camera view (lpView): eye and target, field of view, roll */

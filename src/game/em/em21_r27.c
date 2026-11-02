@@ -13,7 +13,7 @@ typedef struct EML {
 } EML;
 #define EM_LYR(em, i) (((EML *)&(em)->x194)[i].v)
 #define GAME_X1E16 (*(u16 *)((u8 *)&game_w + 0x1E))
-#define M2C_FIELD(ptr, type, off) (*(type)((u8 *)(ptr) + (off)))
+#define M2C_FIELD(ptr, type, off) (*(type)((u8 *)(ptr) + MH2_OFS(ptr, off)))
 
 f32 CalcDistanceXZ(f32 *, f32 *);
 u16 Em_Calc_angY(f32 *, f32 *);

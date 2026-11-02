@@ -1,10 +1,10 @@
 /* ems01 - monster status init 0x0010BAD0-0x0010BE28: em_status_init. Whole file in emstat_nm.c. */
 #include "types.h"
 
-#define B8(w, o)  (*(u8 *)((u8 *)(w) + (o)))
-#define B16(w, o) (*(u16 *)((u8 *)(w) + (o)))
-#define B32(w, o) (*(s32 *)((u8 *)(w) + (o)))
-#define BF(w, o)  (*(f32 *)((u8 *)(w) + (o)))
+#define B8(w, o)  (*(u8 *)((u8 *)(w) + MH2_OFS(w, o)))
+#define B16(w, o) (*(u16 *)((u8 *)(w) + MH2_OFS(w, o)))
+#define B32(w, o) (*(s32 *)((u8 *)(w) + MH2_OFS(w, o)))
+#define BF(w, o)  (*(f32 *)((u8 *)(w) + MH2_OFS(w, o)))
 
 typedef struct EMK {
     u8 _pad00[2];

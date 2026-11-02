@@ -29,7 +29,7 @@ typedef struct EML {
     u8 _pad[0x4C];
 } EML;
 #define EM_LYR(em, i) (((EML *)&(em)->x194)[i].v)
-#define M2C_FIELD(ptr, type, off) (*(type)((u8 *)(ptr) + (off)))
+#define M2C_FIELD(ptr, type, off) (*(type)((u8 *)(ptr) + MH2_OFS(ptr, off)))
 
 f32 CalcDistanceXZ(f32 *, f32 *);
 u16 Em_Calc_angY(f32 *, f32 *);

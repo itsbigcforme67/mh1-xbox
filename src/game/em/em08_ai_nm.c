@@ -9,7 +9,7 @@
 #include "quest.h"
 
 /* Raw access to EMW fields that em.h does not name yet. */
-#define EMF(em, T, o) (*(T *)((u8 *)(em) + (o)))
+#define EMF(em, T, o) (*(T *)((u8 *)(em) + MH2_OFS(em, o)))
 
 /* em08's part of the per-monster work at EMW+0x444. */
 typedef struct EM08W {

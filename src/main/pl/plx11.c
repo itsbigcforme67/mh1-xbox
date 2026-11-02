@@ -4,7 +4,7 @@
 #include "em.h"
 #include "game.h"
 #include "plf.h"
-#define PU8(p, o) (*(u8 *)((u8 *)(p) + (o)))
+#define PU8(p, o) (*(u8 *)((u8 *)(p) + MH2_OFS(p, o)))
 extern EMW em_work[];
 f32 flSqrt(f32);
 

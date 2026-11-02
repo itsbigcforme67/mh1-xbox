@@ -25,8 +25,8 @@ void Pl_act_set(PLW *, int, int, int);
 void pl_to_normal(PLW *, int, int, int);
 void rate_clear(PLW *);
 
-#define PB(p, o) (*(u8 *)((u8 *)(p) + (o)))
-#define PF(p, o) (*(f32 *)((u8 *)(p) + (o)))
+#define PB(p, o) (*(u8 *)((u8 *)(p) + MH2_OFS(p, o)))
+#define PF(p, o) (*(f32 *)((u8 *)(p) + MH2_OFS(p, o)))
 
 void em_ride_sub(EMW *em) {
     PLW *pl = player_work;

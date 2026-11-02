@@ -148,8 +148,8 @@ void Pl_se_req2_com(void *w, int code, int id, f32 *pos, int type, int chg);
 int ran_suu(int);
 void Pl_die_set(PLW *pl);
 void Pl_dm_clear(PLW *pl);
-#define PB(pl, o) (*(u8 *)((u8 *)(pl) + (o)))
-#define PH(pl, o) (*(s16 *)((u8 *)(pl) + (o)))
+#define PB(pl, o) (*(u8 *)((u8 *)(pl) + MH2_OFS(pl, o)))
+#define PH(pl, o) (*(s16 *)((u8 *)(pl) + MH2_OFS(pl, o)))
 /* G sub_main 0x4CC810: the hunter is stunned or in one of G's status states (+0x43E stun gauge, +0x93E timer,
  * +0x93D state): then a knock-back only shows the "dizzy" reaction */
 static int pl_dazed_g(PLW *pl)

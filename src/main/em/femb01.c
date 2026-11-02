@@ -5,12 +5,12 @@
 unsigned char Em_max_parts_get(int);   /* (declared before its first use) */
 #endif
 
-#define EB(o) (*(u8 *)((u8 *)em + (o)))
-#define ESB(o) (*(s8 *)((u8 *)em + (o)))
-#define EH(o) (*(s16 *)((u8 *)em + (o)))
-#define EW(o) (*(s32 *)((u8 *)em + (o)))
-#define EF(o) (*(f32 *)((u8 *)em + (o)))
-#define EP(o) (*(void **)((u8 *)em + (o)))
+#define EB(o) (*(u8 *)((u8 *)em + MH2_OFS(em, o)))
+#define ESB(o) (*(s8 *)((u8 *)em + MH2_OFS(em, o)))
+#define EH(o) (*(s16 *)((u8 *)em + MH2_OFS(em, o)))
+#define EW(o) (*(s32 *)((u8 *)em + MH2_OFS(em, o)))
+#define EF(o) (*(f32 *)((u8 *)em + MH2_OFS(em, o)))
+#define EP(o) (*(void **)((u8 *)em + MH2_OFS(em, o)))
 
 typedef void (*EM_PROG)(EMW *);
 

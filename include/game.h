@@ -35,8 +35,12 @@ typedef struct GAME_W {
     u8 x11;             /* 0x011 */
     u8 x12;             /* 0x012 */
     u8 _pad013[0x14 - 0x13];
+#ifdef VERSION_MH2
+    union { u16 stage; struct { u8 _stage_lo; u8 x15; }; };   /* 0x014 MH2: stage number is 16 bits (lhu) */
+#else
     u8 stage;           /* 0x014 */
     u8 x15;             /* 0x015 */
+#endif
     u8 _pad016[0x1E - 0x16];
     u8 x1E;             /* 0x01E */
     u8 _pad01F[0x20 - 0x1F];
@@ -117,8 +121,12 @@ typedef struct GAME_W {
     u8 x11;             /* 0x011 */
     u8 x12;             /* 0x012 */
     u8 _pad013[0x14 - 0x13];
+#ifdef VERSION_MH2
+    union { u16 stage; struct { u8 _stage_lo; u8 x15; }; };   /* 0x014 MH2: stage number is 16 bits (lhu) */
+#else
     u8 stage;           /* 0x014 stage number (0x4E, 0x57 in set06) */
     u8 x15;             /* 0x015 copied with stage (Quest_pl_stage_init) */
+#endif
     u8 _pad016[0x1E - 0x16];
     u8 x1E;             /* 0x01E counter scrolling the smoke screen UVs (eft12_t01) */
     u8 _pad01F[0x20 - 0x1F];

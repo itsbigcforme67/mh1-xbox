@@ -10,7 +10,7 @@ unsigned short em_act_search(void *);   /* (declared before its first use) */
 #endif
 
 /* Raw access to EMW fields that em.h does not name yet. */
-#define EMF(em, T, o) (*(T *)((u8 *)(em) + (o)))
+#define EMF(em, T, o) (*(T *)((u8 *)(em) + MH2_OFS(em, o)))
 /* x3AC holds a float distance in atk 11 (em.h calls it s32). */
 #define EM_F3AC(em) (*(f32 *)&(em)->x3AC)
 

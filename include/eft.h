@@ -26,14 +26,20 @@ typedef struct EFTW {
     void *work;         /* 0x18 per-effect work area (eft24) */
     u8 _pad1C[2];
     u8 x1E;             /* 0x1E owner's id (eft24) */
+#ifdef VERSION_MH2
+    u8 prim2;           /* 0x1F MH2: moved from 0x3E */
+#else
     u8 _pad1F;
+#endif
     void (*move)(struct EFTW *);    /* 0x20 */
     f32 pos[3];         /* 0x24 */
     f32 scale;          /* 0x30 eft07: glow size */
     EMW *owner;         /* 0x34 */
     struct PRIM *prim;  /* 0x38 */
     s16 prim_no;        /* 0x3C */
+#ifndef VERSION_MH2
     u8 prim2;           /* 0x3E 1: prim from the second pool (get_prim2) */
+#endif
 } EFTW;
 
 EFTW *pull_eft_work(int);

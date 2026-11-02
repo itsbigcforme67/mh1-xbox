@@ -1,10 +1,10 @@
 /* emw01 - view and monster work 0x00169DA0-0x0016A004: RollView, SetAngleOfView, Get_dist_to_view, Get_view_dir, clr_em_work, push_em_work, push_em_work_all. Whole file in emwork_nm.c. */
 #include "types.h"
 
-#define B8(p, o)   (*(u8 *)((u8 *)(p) + (o)))
-#define S16(p, o)  (*(s16 *)((u8 *)(p) + (o)))
-#define S32(p, o)  (*(s32 *)((u8 *)(p) + (o)))
-#define PTR(p, o)  (*(u8 **)((u8 *)(p) + (o)))
+#define B8(p, o)   (*(u8 *)((u8 *)(p) + MH2_OFS(p, o)))
+#define S16(p, o)  (*(s16 *)((u8 *)(p) + MH2_OFS(p, o)))
+#define S32(p, o)  (*(s32 *)((u8 *)(p) + MH2_OFS(p, o)))
+#define PTR(p, o)  (*(u8 **)((u8 *)(p) + MH2_OFS(p, o)))
 #if defined(VERSION_MHG) && defined(__MWERKS__)
 #define EMW_SIZE   0xA00
 #else   /* MH1, and G on the PC (keeps MH1's EMW stride, include/em.h) */

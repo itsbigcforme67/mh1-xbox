@@ -69,11 +69,20 @@ typedef struct SHLW {
     s16 prim_no;        /* 0xC0 */
     u8 _padC2[0xC4 - 0xC2];
     s32 xC4;            /* 0xC4 cleared by pull_shell_work */
+#ifdef VERSION_MH2                 /* tools/mh2_structs.py show SHLW */
+    u8 _mh2padC8[4];
+    u16 xC8;            /* 0xCC */
+    u16 stg;            /* 0xCE 16 bits in MH2 */
+    u8 _mh2padD0[3];
+    u8 xCC;             /* 0xD3 */
+    u8 _mh2padD4[4];    /* the end is a guess */
+#else
     u16 xC8;            /* 0xC8 */
     u8 stg;             /* 0xCA */
     u8 _padCB;
     u8 xCC;             /* 0xCC shell05: passed to set4 */
     u8 _padCD[0xD4 - 0xCD];
+#endif
 } SHLW;
 
 SHLW *pull_shell_work(int);

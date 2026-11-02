@@ -26,7 +26,7 @@ from concurrent.futures import ThreadPoolExecutor
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import mh2_carry as C  # noqa: E402
 
-PAD = {"PLW": (0x2000, "pl.h"), "EMW": (0x4000, "em.h")}
+PAD = {"PLW": (0x2000, "pl.h"), "EMW": (0x4000, "em.h"), "SHLW": (0x1000, "shell.h"), "EFTW": (0x3000, "eft.h")}
 PROBE = C.P("build/mh2/probe")
 IMM_OPS = {0x09, 0x19, 0x1A, 0x1B, 0x1E, 0x1F, 0x20, 0x21, 0x22, 0x23, 0x24, 0x25, 0x26, 0x27, 0x28, 0x29, 0x2A, 0x2B, 0x2C, 0x2D,
            0x2E, 0x31, 0x37, 0x39, 0x3F}
@@ -35,16 +35,24 @@ SIZES = {"PLW": 0x970, "EMW": 0x9D0}   # the stride in MH2 (votes at MH1's sizeo
 TYPES = {"u8": 1, "s8": 1, "char": 1, "u16": 2, "s16": 2, "u32": 4, "s32": 4, "f32": 4, "PLSW": 0x24, "PL_ITEM": 4,
          "EM_HAGI": 8}
 ALIGN = {"u16": 2, "s16": 2, "u32": 4, "s32": 4, "f32": 4, "PLSW": 2, "PL_ITEM": 2, "EM_HAGI": 2, "union": 2}
+EXTRA = {"EMW": [(0x9EF, 1, "u8 _pad9EF[1];"), (0x9F4, 0xD, "u8 _pad9F4[0xD];")]}   # padding that C reaches by name
 OUT = {"PLW": "mh2_plw.h", "EMW": "mh2_emw.h"}
 
 
 def make_headers():
-    os.makedirs(PROBE, exist_ok=True)
-    for name, (pad, h) in PAD.items():
-        t = open(C.P("include", h)).read()
-        key = "typedef struct %s {" % name
-        assert key in t
-        open(os.path.join(PROBE, h), "w").write(t.replace(key, key + " u8 _probe[0x%X];" % pad))
+    """build/mh2/probe/base and pad: pl.h and em.h with MH1's structs, pad with the pad at the top; MH2_OFS as each needs"""
+    for d in ("base", "pad"):
+        os.makedirs(os.path.join(PROBE, d), exist_ok=True)
+        for name, (pad, h) in PAD.items():
+            t = open(C.P("include", h)).read()
+            key = "typedef struct %s {" % name
+            t = t.replace("#ifdef VERSION_MH2\n#include", "#if 0\n#include")
+            if d == "pad":
+                t = t.replace(key, key + " u8 _probe[0x%X];" % pad)
+            open(os.path.join(PROBE, d, h), "w").write(t)
+        with open(os.path.join(PROBE, d, "mh2_ofs.h"), "w") as fh:
+            fh.write("#define MH2_OFS(p, o) " + ("(o)\n" if d == "base" else
+                     "(sizeof(*(p)) == 0x2A00 ? (o) + 0x2000 : sizeof(*(p)) == 0x10D4 ? (o) + 0x1000 : (sizeof(*(p)) == 0x4A10 || sizeof(*(p)) == 0x4A00) ? (o) + 0x4000 : (o))\n"))
 
 
 def includes_struct(path, seen=None, cache={}):
@@ -55,7 +63,7 @@ def includes_struct(path, seen=None, cache={}):
     seen.add(path)
     t = open(path, errors="replace").read()
     for inc in re.findall(r'#\s*include\s+"([^"]+)"', t):
-        if os.path.basename(inc) in ("pl.h", "em.h"):
+        if os.path.basename(inc) in ("pl.h", "em.h", "shell.h", "eft.h"):
             return True
         for q in (os.path.join(os.path.dirname(path), inc), C.P("include", inc)):
             if includes_struct(q, seen):
@@ -63,21 +71,22 @@ def includes_struct(path, seen=None, cache={}):
     return False
 
 
-def compile_probe(path, gform):
-    obj = os.path.join(PROBE, ("g_" if gform else "") + re.sub(r"\W", "_", path) + ".o")
-    src = C.P("src", path + ".c")
-    if os.path.exists(obj) and os.path.getmtime(obj) >= os.path.getmtime(src) and os.path.getmtime(obj) >= os.path.getmtime(C.P("include/pl.h")):
+def compile_probe(path, gform, d):
+    os.makedirs(os.path.join(PROBE, "obj"), exist_ok=True)
+    obj = os.path.join(PROBE, "obj", d + ("_g_" if gform else "_") + re.sub(r"\W", "_", path) + ".o")
+    if os.path.exists(obj) and os.path.getmtime(obj) >= os.path.getmtime(C.P("src", path + ".c")) \
+            and os.path.getmtime(obj) >= os.path.getmtime(os.path.join(PROBE, d, "em.h")):
         return obj
     base = [x for x in C.BASE if x != "-Iinclude"]
-    p = subprocess.run([C.WIBO, C.P("tools/compilers", C.CC, "mwccps2.exe")] + C.OPT + base[:3] + ["-Ibuild/mh2/probe", "-Iinclude"] + base[3:]
-                       + (["-DVERSION_MHG"] if gform else []) + ["src/%s.c" % path, "-o", os.path.relpath(obj, C.ROOT)],
+    p = subprocess.run([C.WIBO, C.P("tools/compilers", C.CC, "mwccps2.exe")] + C.OPT + base[:3] + ["-Ibuild/mh2/probe/" + d, "-Iinclude"]
+                       + base[3:] + (["-DVERSION_MHG"] if gform else []) + ["src/%s.c" % path, "-o", os.path.relpath(obj, C.ROOT)],
                        cwd=C.ROOT, capture_output=True, text=True, timeout=120)
     return obj if p.returncode == 0 and os.path.exists(obj) else None
 
 
 def votes_of(path, gform, hint, out):
-    base = compile_one_base(path, gform)
-    probe = compile_probe(path, gform)
+    base = compile_probe(path, gform, "base")
+    probe = compile_probe(path, gform, "pad")
     if not base or not probe:
         return
     a, b = C.Obj(base), C.Obj(probe)
@@ -120,10 +129,6 @@ def votes_of(path, gform, hint, out):
                 out[(s, off, -1)] += 1
                 continue
             out[(s, off, C.sext(o[j] & 0xFFFF))] += 1
-
-
-def compile_one_base(path, gform):
-    return C.compile_one(path, gform=gform)
 
 
 def probe():
@@ -194,7 +199,7 @@ def parse(name):
             off += 8
         decl = s[:s.index(";") + 1]
         out.append((off, n, decl))
-    return out
+    return out + EXTRA.get(name, [])
 
 
 def mapping(name, f):
@@ -213,13 +218,19 @@ def mapping(name, f):
 
 
 def gen():
+    """the headers, and include/mh2_ofs.h"""
     fix = {}
+    retype = {}
+    ofs = ["/* Generated by tools/mh2_structs.py gen: MH2_OFS(p, o), an MH1 offset o into the struct p points at, as MH2 has it.\n"
+           " * For C that reaches PLW and EMW by number. p of any other size keeps o. */\n"]
     if os.path.exists(C.P("config/mh2/struct_map.txt")):
         for l in open(C.P("config/mh2/struct_map.txt")):
             x = l.split("#", 1)[0].split()
             if x:
                 fix[(x[0], int(x[1], 16))] = int(x[2], 16)
-    for name in PAD:
+                if len(x) > 3:
+                    retype[(x[0], int(x[1], 16))] = x[3]
+    for name in SIZES:
         f = sorted(parse(name))
         best = mapping(name, f)
         # anchors: well voted fields whose shift agrees with a neighbouring anchor. A field moved far away is not one
@@ -229,6 +240,9 @@ def gen():
         placed = []
         weak = []
         for off, size, decl in f:
+            if (name, off) in retype:
+                decl = re.sub(r"^\w+", retype[(name, off)], decl.strip())
+                size = TYPES[retype[(name, off)]]
             last = ([s for o, s in anchors if o <= off] or [0])[-1]
             # a shift near the anchor counts four times: stray votes come from wrongly paired instructions
             cand = sorted(((n * (4 if abs(s - last) <= 0x20 else 1), s, n) for n, s in best.get(off, [])),
@@ -268,11 +282,38 @@ def gen():
                 pad = "u8 _o%03X[0x%X]; " % (new, new) if new else ""
                 fh.write("    struct { %s%s }; /* 0x%03X, MH1 0x%03X: %s, overlaps */\n" % (pad, decl, new, off, how))
             fh.write("    };\n} %s;\n" % name)
+        ofs.append(ofs_macro(name, placed, anchors, read_votes()[name]))
         print(name, len(placed), "fields,", len(over), "overlap,", sum("votes" in t[4] or t[4] == "hand" for t in placed), "with votes")
         for w in weak:
             print("  weak:", w)
         for o in over:
             print("  over: %03X MH1 %03X size %X %s" % (o[0], o[1], o[2], o[4]), o[3][:50])
+    ofs.append("#define MH2_OFS(p, o) (sizeof(*(p)) == 0x%X ? MH2_OFS_PLW(o) : sizeof(*(p)) == 0x%X ? MH2_OFS_EMW(o) : (o))\n"
+               % (SIZES["PLW"], SIZES["EMW"]))
+    open(C.P("include/mh2_ofs.h"), "w").write("".join(ofs))
+
+
+def ofs_macro(name, placed, anchors, votes):
+    """the map as ranges: fields first, votes on numbers no field covers, the anchor's shift elsewhere"""
+    size = {"PLW": 0xA00, "EMW": 0xA10}[name]
+    shift = [None] * size
+    for new, off, sz, _d, _h in placed:
+        for k in range(off, min(off + sz, size)):
+            shift[k] = new - off
+    for o in range(size):
+        last = ([s for a, s in anchors if a <= o] or [0])[-1]
+        if shift[o] is None:
+            c = [(n * (4 if abs(k - o - last) <= 0x20 else 1), k - o) for k, n in votes.get(o, {}).items() if k >= 0]
+            shift[o] = max(c)[1] if c else last
+    seg = []
+    for o in range(size):
+        if not seg or seg[-1][1] != shift[o]:
+            seg.append([o, shift[o]])
+    expr = ""
+    for k, (lo, sh) in enumerate(seg):
+        hi = seg[k + 1][0] if k + 1 < len(seg) else 0x10000
+        expr += "(o) < 0x%X ? (o) %s 0x%X : \\\n    " % (hi, "+" if sh >= 0 else "-", abs(sh))
+    return "#define MH2_OFS_%s(o) (%s(o))\n" % (name, expr)
 
 
 def show(name):

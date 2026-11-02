@@ -216,8 +216,7 @@ typedef struct PLW {
     s8    work720[4]; /* 0x66C, MH1 0x720: votes 44 */
     s16   work724[4]; /* 0x670, MH1 0x724: votes 44 */
     u16   work72C[4]; /* 0x678, MH1 0x72C: votes 48 */
-    u8    stg; /* 0x680, MH1 0x736: votes 2 */
-    u8 _pad681[0x1];
+    u16    stg; /* 0x680, MH1 0x736: hand */
     u8    x738; /* 0x682, MH1 0x738: votes 5 */
     u8    work739; /* 0x683, MH1 0x739: no votes, as the field before */
     u16   x73A; /* 0x684, MH1 0x73A: no votes, as the field before */
