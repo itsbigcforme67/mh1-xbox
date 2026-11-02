@@ -152,7 +152,7 @@ void clr_em_work(void) {
     u8 *w = em_work;
 
     for (i = 0; i < 0x14; i++) {
-        memset(w, 0, 0xA00);
+        memset(w, 0, MH2V(0xA00, 2416));
         w += EMW_SIZE;
     }
 }

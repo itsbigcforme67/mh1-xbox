@@ -36,7 +36,9 @@ void shell05_set(EMW *em, int arg) {
             sh->ang[0] = em->ang[0];
             sh->ang[1] = em->ang[1];
             sh->ang[2] = em->ang[2];
+            MH2_SHELL_END1(sh, em)
             em->x19 = 0;
+            MH2_SHELL_END2(em)
             sh->x05 = 0;
             sh->xCC = 0;
         }
@@ -60,7 +62,9 @@ void shell05_set4(EMW *em, int arg, int cc) {
             sh->ang[0] = em->ang[0];
             sh->ang[1] = em->ang[1];
             sh->ang[2] = em->ang[2];
+            MH2_SHELL_END1(sh, em)
             em->x19 = 0;
+            MH2_SHELL_END2(em)
             sh->x05 = 0;
             sh->xCC = cc;
         }
@@ -85,7 +89,9 @@ void shell05_set2(EMW *em, f32 *pos, int arg) {
         sh->pos2.x = pos[0];
         sh->pos2.y = pos[1];
         sh->pos2.z = pos[2];
+        MH2_SHELL_END1(sh, em)
         em->x19 = 0;
+        MH2_SHELL_END2(em)
         sh->x05 = 1;
         sh->xCC = 0;
     }
@@ -119,7 +125,9 @@ void shell05_set3(SHL_SRC *src, int arg) {
         sh->pos2.x = src->pos.x;
         sh->pos2.y = src->pos.y;
         sh->pos2.z = src->pos.z;
+        MH2_SHELL_END1(sh, em)
         em->x19 = 0;
+        MH2_SHELL_END2(em)
         sh->x05 = 1;
         sh->xCC = 0;
     }

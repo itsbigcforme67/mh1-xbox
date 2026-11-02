@@ -497,8 +497,12 @@ game func_006B7D60 0x006B7D60
 game func_006BFFB0 0x006BFFB0
 game func_006C2030 0x006C2030
 game func_006C35D0 0x006C35D0
+game func_006C35F0 0x006C35F0
 game func_006C3910 0x006C3910
 game func_006C3A60 0x006C3A60
+game func_006C3B70 0x006C3B70
+game func_006C67F0 0x006C67F0
+game func_006C68B0 0x006C68B0
 game func_006C6BD0 0x006C6BD0
 game func_006C6D40 0x006C6D40
 game func_006C94B0 0x006C94B0
@@ -516,6 +520,7 @@ game func_006D5CE0 0x006D5CE0
 game func_006D5D00 0x006D5D00
 game func_006D5D30 0x006D5D30
 game func_006D6250 0x006D6250
+game func_006D6310 0x006D6310
 game func_006D6490 0x006D6490
 game func_006D7390 0x006D7390
 game func_006D7860 0x006D7860
@@ -1033,6 +1038,7 @@ game pl_to_normal 0x003AC480
 game player_work 0x005F89D0
 game pull_eft_work 0x003242A0
 game pull_set_work 0x00364170
+game pull_shell_work 0x003645D0
 game push_eft_work 0x00324490
 game push_set_work 0x00364260
 game push_shell_work 0x003646C0
@@ -1064,6 +1070,8 @@ game shell01_body_tbl 0x008988B0
 game shell01_tbl 0x00898D98
 game shell02_set 0x006C3B70
 game shell05_body_tbl 0x0089AC10
+game shell05_set4 0x006C68B0
+game shell05_set_mh2_006C67F0 0x006C67F0
 game shell05_tbl 0x0089B4A0
 game shell06_d 0x006C96A0
 game shell06_eft_d 0x006CA6F0
@@ -1086,6 +1094,7 @@ game shell14_trans 0x006D7520
 game shell15_body_tbl 0x0089FB50
 game shell15_tbl 0x0089FCB0
 game shell18_body_tbl 0x008A20B0
+game shell18_set 0x006C35F0
 game shell18_tbl 0x008A2430
 game shell20_body_tbl 0x008A36F0
 game shell20_tbl 0x008A3990
@@ -1122,14 +1131,19 @@ game we04_hit_sub_mh2_006B67E0 0x006B67E0
 game xang_calc_pl 0x00705F20
 game xang_calc_target 0x00705FC0
 game yobi_ptr_set 0x00733D00
+gm_sub Em_hagi_point_clr_mh2_003A69E0 0x003A69E0
+gm_sub Quest_enemy_die 0x003A2460
 gm_sub cursor_se 0x0036B9D0
 gm_sub em21_trans_sub 0x00905C80
+gm_sub em_erase 0x00905810
 gm_sub flSetRenderState 0x00183F20
 gm_sub flmatInit 0x002ECDD0
 gm_sub func_008FB570 0x008FB570
+gm_sub func_00905810 0x00905810
 gm_sub func_00905C80 0x00905C80
 gm_sub game_w 0x006ADCB2
 gm_sub key_rept_du 0x0036AD20
+gm_sub push_em_work 0x00377CB0
 gm_sub sel_sel_sub 0x008FB570
 lobby AppendWork 0x007349F0
 lobby BFontSizeH 0x007EF0F0
@@ -3071,6 +3085,7 @@ sub_main clear_prevwd 0x00305C80
 sub_main clear_rtime 0x002FD4A0
 sub_main close_dic 0x002FE410
 sub_main clr_eft_work 0x00324230
+sub_main clr_em_work 0x00377C50
 sub_main clr_move_work 0x00363D50
 sub_main clr_pl_work 0x0039A280
 sub_main clr_set_work_mh2_00364100 0x00364100
@@ -4183,6 +4198,7 @@ sub_main func_003775C0 0x003775C0
 sub_main func_00377610 0x00377610
 sub_main func_00377690 0x00377690
 sub_main func_00377B50 0x00377B50
+sub_main func_00377C50 0x00377C50
 sub_main func_003780B0 0x003780B0
 sub_main func_00378140 0x00378140
 sub_main func_003781E0 0x003781E0

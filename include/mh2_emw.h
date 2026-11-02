@@ -100,7 +100,9 @@ typedef struct EMW {
     u8 _pad41A[0x1D];
     u8 x88B; /* 0x437, MH1 0x88B: votes 2 */
     u8 ex[0x50C - 0x444]; /* 0x438, MH1 0x444: votes 123 */
-    u8 _pad500[0x68];
+    u8 _pad500[0x32];
+    u8 x56A; /* 0x532, MH1 0x56A: hand */
+    u8 _pad533[0x35];
     f32 x5A0[3]; /* 0x568, MH1 0x5A0: votes 18 */
     f32 x5AC; /* 0x574, MH1 0x5AC: votes 156 */
     u8 _pad578[0x10];
@@ -367,7 +369,6 @@ typedef struct EMW {
     u8 _pad9A9[0x27];
     };
     struct { u8 _o4EC[0x4EC]; struct EM_MDL *mdl; }; /* 0x4EC, MH1 0x50C: votes 8, overlaps */
-    struct { u8 _o56C[0x56C]; u8 x56A; }; /* 0x56C, MH1 0x56A: no votes, as the field before, overlaps */
     struct { u8 _o59A[0x59A]; u8 x616; }; /* 0x59A, MH1 0x616: votes 2, overlaps */
     struct { u8 _o59B[0x59B]; s8 x617; }; /* 0x59B, MH1 0x617: votes 12, overlaps */
     struct { u8 _o698[0x698]; u32 x74C; }; /* 0x698, MH1 0x74C: votes 2, overlaps */

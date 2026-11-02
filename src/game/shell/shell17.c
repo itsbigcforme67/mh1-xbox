@@ -47,7 +47,9 @@ void shell17_set(EMW *em, int arg) {
             sh->ang[0] = em->ang[0];
             sh->ang[1] = em->ang[1];
             sh->ang[2] = em->ang[2];
+            MH2_SHELL_END1(sh, em)
             em->x19 = 0;
+            MH2_SHELL_END2(em)
         }
     }
 }
@@ -69,7 +71,9 @@ void shell17_set3(EMW *em, int arg) {
             sh->ang[0] = em->ang[0];
             sh->ang[1] = em->ang[1];
             sh->ang[2] = em->ang[2];
+            MH2_SHELL_END1(sh, em)
             em->x19 = 0;
+            MH2_SHELL_END2(em)
         }
     }
 }

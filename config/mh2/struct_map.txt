@@ -7,3 +7,4 @@ PLW 35F 35B # votes for 0x002 are stray; 0x360/0x362 move by -4
 PLW 736 680 u16 # stage number: lhu in MH2
 EMW 736 680 u16
 EMW 9F4 978 # only [0xC] is used by name (em08_aic); place unverified
+EMW 56A 532 # as PLW

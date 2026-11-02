@@ -73,7 +73,9 @@ typedef struct SHLW {
     u8 _mh2padC8[4];
     u16 xC8;            /* 0xCC */
     u16 stg;            /* 0xCE 16 bits in MH2 */
-    u8 _mh2padD0[3];
+    u8 _mh2padD0;
+    u8 xD1;             /* 0xD1 MH2: copied from the owner's +0x409 when a monster fires */
+    u8 _mh2padD2;
     u8 xCC;             /* 0xD3 */
     u8 _mh2padD4[4];    /* the end is a guess */
 #else
@@ -84,6 +86,15 @@ typedef struct SHLW {
     u8 _padCD[0xD4 - 0xCD];
 #endif
 } SHLW;
+
+/* at the end of a monster's shellNN_set MH2 adds these around the clear of x19 */
+#ifdef VERSION_MH2
+#define MH2_SHELL_END1(sh, em) (sh)->xD1 = ((u8 *)(em))[0x409];
+#define MH2_SHELL_END2(em) ((u8 *)(em))[0x74C] = 0;
+#else
+#define MH2_SHELL_END1(sh, em)
+#define MH2_SHELL_END2(em)
+#endif
 
 SHLW *pull_shell_work(int);
 void push_shell_work(SHLW *);

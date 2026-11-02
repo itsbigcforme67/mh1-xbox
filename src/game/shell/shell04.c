@@ -34,7 +34,9 @@ void shell04_set(EMW *em, int arg) {
             sh->ang[0] = em->ang[0];
             sh->ang[1] = em->ang[1];
             sh->ang[2] = em->ang[2];
+            MH2_SHELL_END1(sh, em)
             em->x19 = 0;
+            MH2_SHELL_END2(em)
         }
     }
 }
@@ -67,7 +69,9 @@ void shell04_set2(SHL_SRC *src, int arg) {
         sh->pos2.x = src->pos.x;
         sh->pos2.y = src->pos.y;
         sh->pos2.z = src->pos.z;
+        MH2_SHELL_END1(sh, em)
         em->x19 = 0;
+        MH2_SHELL_END2(em)
         sh->x05 = 1;
     }
 }
