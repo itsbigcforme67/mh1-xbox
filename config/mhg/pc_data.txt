@@ -716,3 +716,5 @@ tuto_flag_tbl = 0x006CD770; // size:0x20    # round 11 scan: MH1 0x14; G data co
 em02_rain_ofs_g = 0x002ECFC8; // size:0x20 noptr
 [game]
 em02_rain2_ofs_g = 0x00695EC0; // size:0xC noptr
+pf_item_box_base = 0x0025E810; // size:0x28    # G's Reference list follows at +0x10 (Pit_disp_data, G 0x125A90); symbols stop at 0x10
+data_list_str = 0x002EC5F0; // size:0x8    # that list's labels: Monster List, Combo List (no name before; the pointer at 0x25E82C landed on another table)

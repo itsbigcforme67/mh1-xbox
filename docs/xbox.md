@@ -2195,3 +2195,9 @@ Checked on the PC, hidden: tools/g_eng_tour.py pause_rows (all 7 rows, Options M
 Options, six rows, the cursor on row 6), town_menu on the local test server (15 of 16 rows open and go back, English). Not checked: the Xbox; G's real disc
 next to it; Log Out; Current Location prints "(null)" for the server name on the test server (Get_ServerName compares the server list's ID with the connected
 one, the test server's list has none: not looked into further).
+
+**On the real Xbox, 1 Nov 2026 evening:** the village menu's seven rows, right pages and help lines; village Options, MEDIUM, LARGE, SMALL, LARGE. Then one more bug,
+older than the menu work: Reference offered "Exchange / Discard". G's list is at pf_item_box_base + 0x10 (the symbol's size stopped at 0x10) with labels at
+0x2EC5F0, which had no name, so the pointer at 0x25E82C landed in another table. config/mhg/pc_data.txt names and sizes both; Monster List / Combo List, both pages
+open, on the PC and the Xbox. Still only on the PC: quest pause Options, online menu, chat window sizes in play.
+
