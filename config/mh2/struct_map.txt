@@ -1,0 +1,39 @@
+# How MH2 moved the fields of the player and monster work (tools/mh2_structs.py). Read from near-matching functions:
+# the same instruction with another offset, many times over. Boundaries inside a stretch with no known field are a guess
+# that costs nothing; a run with a known field on each side is what the code shows.
+struct PLW 0x970
+RUN 0x0D0 -64
+RUN 0x360 8
+RUN 0x3A0 4
+RUN 0x3F5 1
+RUN 0x40C 2
+RUN 0x420 -12
+RUN 0x50C -32
+RUN 0x560 -56
+RUN 0x5B0 -124
+RUN 0x6C0 -172
+RUN 0x710 -180
+RUN 0x7F0 -172
+RUN 0x878 -168
+RUN 0x937 -164
+FIELD 0x4D4 0x437
+FIELD 0x736 0x680 u16
+FIELD 0x738 0x682
+struct EMW 0x9D0
+RUN 0x0D0 -64
+RUN 0x360 8
+RUN 0x3A0 4
+RUN 0x3F5 1
+RUN 0x40C 2
+RUN 0x420 -12
+RUN 0x4D5 -30
+RUN 0x50C -32
+RUN 0x560 -56
+RUN 0x5B0 -124
+RUN 0x6C0 -172
+RUN 0x710 -180
+RUN 0x7F0 -172
+RUN 0x824 -174
+RUN 0x828 -172
+RUN 0x960 -124
+FIELD 0x736 0x680 u16

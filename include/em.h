@@ -49,6 +49,9 @@ typedef struct EM_HAGI {
     u8 _pad3[5];
 } EM_HAGI;
 
+#ifdef VERSION_MH2
+#include "em_mh2.h"
+#else
 typedef struct EMW {
     u8 be_flag;         /* 0x000 alive; shells end when it clears (shell11_m) */
     u8 x01;             /* 0x001 (set10_m) */
@@ -438,6 +441,7 @@ typedef struct EMW {
     u8 _pad9F4[0xA10 - 0x9F4];
 #endif
 } EMW;
+#endif
 
 extern EMW em_work[];
 
