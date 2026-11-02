@@ -225,6 +225,7 @@ lobby 0x00732C20 0x00732D08 lobby/f/lb_as01
 lobby 0x00732DB0 0x00732E84 lobby/f/lb_au01
 lobby 0x00732E90 0x00732F08 lobby/f/lb_z50
 lobby 0x00733090 0x007330B8 lobby/f/lb_z27
+lobby 0x00734160 0x0073425C lobby/f/lb_gz02
 lobby 0x00734260 0x00734354 lobby/f/lb_dd04
 lobby 0x00734360 0x007343EC mh2/parts/lobby_f_lb_at01_168
 lobby 0x00734540 0x0073461C mh2/parts/lobby_f_lb_at01_169
@@ -234,6 +235,7 @@ lobby 0x00738A00 0x00738A5C lobby/f/lb_z29
 lobby 0x00738A60 0x00738AAC lobby/f/lb_as05
 lobby 0x00738CC0 0x00738D88 lobby/f/lb_z52
 lobby 0x00738D90 0x00738E04 lobby/f/lb_au04
+lobby 0x00738E10 0x00738F0C lobby/f/lb_z53
 lobby 0x00739070 0x00739098 lobby/f/lb_as06
 lobby 0x007390A0 0x007390F8 lobby/f/lb_z54
 lobby 0x0073C220 0x0073C294 lobby/f/lb_z57

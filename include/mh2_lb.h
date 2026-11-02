@@ -3,7 +3,6 @@
 #ifndef MH2_LB_H
 #define MH2_LB_H
 extern char *bsBw;
-typedef struct BSBW { u8 _p[0xDF0]; s32 outerHdl[20]; s16 outerW[20]; s16 outerH[20]; } BSBW;
 typedef struct PLM {           /* the fields of MH2's player work that lobby code uses; 0x970 bytes */
     u8 be_flag;
     u8 _01[0xB];
@@ -36,9 +35,6 @@ typedef struct PLM {           /* the fields of MH2's player work that lobby cod
 #define BW_TIMER0       BW16(0x1C27E)
 #define BW_GOHIDEPAGE   BW8(0xE99)
 #define BW_OW           ((s32 *)(bsBw + 0x5EC))
-#define BW_OUTERHDL(i)  (*(s32 *)(bsBw + (i) * 4 + 0xDF0))
-#define BW_OUTERW(i)    (*(s16 *)(bsBw + (i) * 2 + 0xE40))
-#define BW_OUTERH(i)    (*(s16 *)(bsBw + (i) * 2 + 0xE68))
 #define BW_DIALOGREQ    BW8(0x8EB7)
 #define BW_CURSORREQ    BW8(0x8EB5)
 #endif

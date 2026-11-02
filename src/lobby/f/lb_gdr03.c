@@ -31,20 +31,6 @@ int atoi();
 void load_file_mdl();
 int afs_file_length();
 
-#ifdef VERSION_MH2
-#include "mh2_lb.h"
-#ifdef VERSION_MH2
-#include "mh2_lb.h"
-void drawOuterImage(u16 idx, f32 x, f32 y, f32 w, f32 h) {
-    BsDrawSprite(-1, ((BSBW *)bsBw)->outerHdl[idx], (int)x, (int)y, (int)w, (int)h, 0, 0, ((BSBW *)bsBw)->outerW[idx], ((BSBW *)bsBw)->outerH[idx]);
-}
-#else
-void drawOuterImage(u16 idx, f32 x, f32 y, f32 w, f32 h) {
-    BsDrawSprite(-1, BW_OUTERHDL(idx), (int)x, (int)y, (int)w, (int)h, 0, 0, BW_OUTERW(idx), BW_OUTERH(idx));
-}
-#endif
-#else
 void drawOuterImage(u16 idx, f32 x, f32 y, f32 w, f32 h) {
     BsDrawSprite(-1, BsOuterTexHdl[idx], (int)x, (int)y, (int)w, (int)h, 0, 0, BsOuterTexWidth[idx], BsOuterTexHeight[idx]);
 }
-#endif

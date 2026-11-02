@@ -355,6 +355,7 @@ lobby BFontSizeN 0x007EF0E0
 lobby BS_MODE_R_NO 0x00895228
 lobby BsBgImgCharSet 0x0072CB50
 lobby BsBgImgTrans 0x0072CB40
+lobby BsBody05_ActDsp 0x00734160
 lobby BsBody06_WaitCancel1 0x00734260
 lobby BsBody07_WaitCancel2 0x00734360
 lobby BsBody11_WaitCancel6 0x00734540
@@ -363,6 +364,7 @@ lobby BsBody14_WaitCancel9 0x00734690
 lobby BsCheckInetProblem 0x007329E0
 lobby BsCheckLbsError 0x00732910
 lobby BsCloseCapDlg 0x007411A0
+lobby BsCountdownTimer 0x007388A0
 lobby BsCsInit 0x007390A0
 lobby BsCsMain 0x00739070
 lobby BsCursorCharSet 0x0072ED90
@@ -400,6 +402,7 @@ lobby BsPoster04_PostData4 0x00732EF0
 lobby BsPosterMode 0x00732CE0
 lobby BsQuit01_Push1 0x00738CC0
 lobby BsQuit02_Push2 0x00738D90
+lobby BsQuit03_OtherInit 0x00738E10
 lobby BsQuitMain 0x00738A60
 lobby BsRequestCancelAll 0x007252D0
 lobby BsRequestCancelHtml 0x007251B0
@@ -419,6 +422,7 @@ lobby BsSoftKbdCharSet 0x0072E3C0
 lobby BsSoftKbdSprTrans 0x0072E4D0
 lobby BsSoftKbdTask 0x0072E470
 lobby BsSoftKbdTrans 0x0072E3B0
+lobby BsTextureFreeAll 0x00731FB0
 lobby BsTitleBarCharSet 0x0072DB90
 lobby BsTitleBarSprTrans 0x0072DD30
 lobby BsTitleBarTask 0x0072DCA0
@@ -438,6 +442,7 @@ lobby BsVScrlBarCharSet 0x0072D760
 lobby BsVScrlBarSprTrans 0x0072D940
 lobby BsVScrlBarTask 0x0072D850
 lobby BsVScrlBarTrans 0x0072D750
+lobby BsWorkInitAll 0x00731B40
 lobby BsWorkMove 0x00731EF0
 lobby BsWorkPull 0x00731D30
 lobby BsWorkPush 0x00731E40
@@ -796,6 +801,7 @@ lobby flMemcpy 0x0017FEB0
 lobby flSetRenderState 0x00183F20
 lobby flfntLocate 0x002E66F0
 lobby flfntPrintf_mh2_00369C70 0x00369C70
+lobby flfntSetHalftype 0x002E6940
 lobby flfntSetSize 0x002E6670
 lobby flvecApplyMat33 0x002EE140
 lobby flvecCopy 0x002EE740
@@ -985,6 +991,7 @@ lobby func_00732ED0 0x00732ED0
 lobby func_00732EF0 0x00732EF0
 lobby func_00733090 0x00733090
 lobby func_007330B0 0x007330B0
+lobby func_00734160 0x00734160
 lobby func_00734260 0x00734260
 lobby func_00734360 0x00734360
 lobby func_00734540 0x00734540
@@ -995,6 +1002,7 @@ lobby func_00738A00 0x00738A00
 lobby func_00738A60 0x00738A60
 lobby func_00738CC0 0x00738CC0
 lobby func_00738D90 0x00738D90
+lobby func_00738E10 0x00738E10
 lobby func_00739070 0x00739070
 lobby func_007390A0 0x007390A0
 lobby func_0073C220 0x0073C220

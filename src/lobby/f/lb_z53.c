@@ -7,6 +7,45 @@ extern u8 BS_MODE_R_NO;
 extern u8 BsLbsErrNum;
 extern u8 bsPleaseReboot;
 
+#ifdef VERSION_MH2
+#include "mh2_lb.h"
+#define bsGameMenuNum (*(s8 *)(bsBw + 0xE9B))
+#define bsPleaseReboot BW8(0xE9A)
+#endif
+#ifdef VERSION_MH2
+void BsQuit03_OtherInit(void) {
+    s8 temp_a0;
+    void *temp_v1;
+
+    if (BS_MODE_R_NO == 0) {
+        BsTextureFreeAll();
+    }
+    BsWorkInitAll();
+    flfntSetHalftype(1);
+    if (*(s8 *)(bsBw + 0xE96) == 0 && *(s8 *)(bsBw + 0xE94) != 0) {
+        To_RetVal(-1);
+        return;
+    }
+    temp_v1 = bsSys;
+    F(u8, temp_v1, 0) = (u8) F(u8, temp_v1, 0x2E);
+    temp_a0 = bsGameMenuNum;
+    if (temp_a0 != 0) {
+        To_RetVal(temp_a0);
+        return;
+    }
+    if (BsLbsErrNum != 0) {
+        BsLbsErrNum = 3U;
+    }
+    if (bsPleaseReboot != 0) {
+        To_RetVal(-100);
+    } else {
+        To_RetVal(1);
+    }
+    if (*(s8 *)(bsBw + 0xE96) != 0) {
+        BW_MAINRET = -100;
+    }
+}
+#else
 void BsQuit03_OtherInit(void) {
     s8 temp_a0;
     void *temp_v1;
@@ -36,3 +75,4 @@ void BsQuit03_OtherInit(void) {
     }
     To_RetVal(1);
 }
+#endif
