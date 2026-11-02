@@ -270,3 +270,7 @@ Remaining work, by reason:
   is taken, so a tiny function can sit under the wrong name although the bytes are right. Bytes prove the code, not the name.
 - A part's data left in the asm means that part cannot move in memory yet (it holds absolute addresses): fine for a byte match,
   to be fixed before any relink or port.
+
+## Shared C and the PC build
+
+`MH2V(mh1, mh2)` around an absolute address is safe in shared C only because `tools/pc_abs.py` drops it before rewriting addresses for the PC (and the `grep` in `tools/build_pc.sh` lets such files through). Without that the PC build read address 0x3F3404 directly and crashed: found by full check on the four-branch merge, 6 of 47 steps failed (monster death, `Em_Dmg_Sys`), and all 47 passed after the fix. MH1/G byte checks cannot catch this kind of bug, so run `tools/full_check.sh` after edits to shared C, and `tools/mh2_rebuild.sh` + `tools/mh2_check.py` too, since the full check does not cover MH2.

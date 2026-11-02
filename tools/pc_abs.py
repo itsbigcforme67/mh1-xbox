@@ -24,6 +24,8 @@ import sys
 
 LINE = re.compile(r"^(\w+) = 0x([0-9A-Fa-f]+);(?:\s*//\s*(?:type:(\w+))?\s*(?:size:0x([0-9A-Fa-f]+))?)?")
 CAST = re.compile(r"\(\s*(\w+(?:\s*\*)+)\s*\)\s*0x([0-9A-Fa-f]{6,8})\b")
+# MH2V(mh1, mh2): the PC build is never MH2, so the MH1 address stands (done first, or CAST would not see it)
+MH2V_ADDR = re.compile(r"\bMH2V\(\s*(0x[0-9A-Fa-f]{6,8})\s*,\s*0x[0-9A-Fa-f]+\s*\)")
 
 
 def main_mhg(src):
@@ -70,7 +72,7 @@ def main_mhg(src):
 
 
 def main():
-    src = open(sys.argv[1]).read()
+    src = MH2V_ADDR.sub(r"\1", open(sys.argv[1]).read())
     if os.environ.get("VERSION") == "mhg":
         out, used = main_mhg(src)
         if not used:

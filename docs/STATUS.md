@@ -1044,3 +1044,7 @@ Decided alone, the owner being away. Community mh2-decomp not opened.
 - Not run in any emulator: proof is bytes only. What is a guess is listed in docs/mh2.md.
 
 Next: docs/mh2.md section 6.
+
+## 2 Nov 2026: MH Dos near-misses, four agents merged
+
+Carried code 3.74% to 6.37% (2,268 of 17,034 functions). Verified on the merged tree: full check 47 of 47, mh2_check 13 of 13 identical. First full check failed 6 runtime steps (`MH2V` hid addresses from `tools/pc_abs.py`), fixed. Nothing of MH2 has run: proof is bytes only. Next: remaining struct layouts in docs/mh2.md.
