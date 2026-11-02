@@ -2169,8 +2169,11 @@ AppRun in ~/ps2dev/pcsx2/x/squashfs-root; start it from a script file, or pcsx2_
   Differences we keep: proportional English, breaks at spaces (docs/REVIEW.md).
 * **Tan view, not a port bug.** Same picture on the real G disc with the same warp to the departure spot, hunter hidden
   too. Not tested: walking there by hand (the test warps both).
-* Open: with the English table the room's rule stays 3 (4 hunters) on the server though the sheet shows 2; the Japanese
-  HUNT=1 test passes. The Xbox test folder still has no G save.
+* Fixed 1 Nov 2026: with the English table the room's rule stayed 3 (4 hunters) on the server though the sheet showed 2.
+  lb_guild_make_room compares lb_rule_member's "１人".."４人" with the server's choice names, and the table had made them
+  "1P".."4P", so nothing matched and the server's default stayed. The strings are never shown: tools/text_map.py G_WIRE
+  leaves them out. Checked: RT_TEXT_TABLE=<en.txt> ROOM=1 tools/test_online_g.sh failed with rule 0 = 3 before, passes
+  with rule 0 = 1 after. The Xbox test folder still has no G save.
 
 ## Pause menu: G's rows (1 Nov 2026)
 
@@ -2193,8 +2196,8 @@ wrong help lines. It also explains the earlier empty logs in menu_move: the vill
 
 Checked on the PC, hidden: tools/g_eng_tour.py pause_rows (all 7 rows, Options MEDIUM, LARGE, SMALL, MEDIUM, back to the menu), quest_pause (5 rows on page 1,
 Options, six rows, the cursor on row 6), town_menu on the local test server (15 of 16 rows open and go back, English). Not checked: the Xbox; G's real disc
-next to it; Log Out; Current Location prints "(null)" for the server name on the test server (Get_ServerName compares the server list's ID with the connected
-one, the test server's list has none: not looked into further).
+next to it; Log Out; Current Location printed "(null)" for the server name: fixed the same day. G's MH_lobbyClear clears 0xC0 bytes at BsProxyUrlstr+0x110, a list of 8 entries past
+the symbol's 0x110; on the PC that landed on BsLbsInfo. config/mhg/pc_data.txt sizes it 0x1D0. Checked: 186 Get_ServerName calls in town_menu, all "Local test server".
 
 **On the real Xbox, 1 Nov 2026 evening:** the village menu's seven rows, right pages and help lines; village Options, MEDIUM, LARGE, SMALL, LARGE. Then one more bug,
 older than the menu work: Reference offered "Exchange / Discard". G's list is at pf_item_box_base + 0x10 (the symbol's size stopped at 0x10) with labels at

@@ -2609,6 +2609,10 @@ G_TERMS = [(re.compile(rb"\b([Dd])ual([ \n])([Ss])word(s?)\b"),
 # G's Options row SCREEN ADJUST: paired by position with QUICK CONTINUE, the US name is ADJUST SCREEN
 G_LABELS = {("sub_main", 0x5414B0): b"ADJUST SCREEN", ("sub_main", 0x537EB8): b"~C10Quick Phrase", ("lobby", 0x640920): b" ~C05Current Location"}
 
+# never translated: lb_rule_member's "１人".."４人" are not shown; lb_guild_make_room compares them with the server's rule
+# choices, which are Japanese on the wire, so "2P" left the room at the server's default of 4 hunters
+G_WIRE = {("lobby", a) for a in (0x63EE68, 0x63EE70, 0x63EE78, 0x63EE80)}
+
 
 NAME_AREAS = ("items", "weapons", "armour", "skills", "monsters")
 
@@ -3430,7 +3434,7 @@ def main():
                                                           k in talk_g and k in fr_g) else
                                                               talk_layout(fr_names(k, v)) if k in talk_g else
                                                               even_rows(k, fr_names(k, v)))
-                                                      for k, v in merged(en_g, gk_slot, {**slot_g, **own_fb, **fr_slots, **G_LABELS}).items()}, hdr)
+                                                      for k, v in merged(en_g, set(gk_slot) | G_WIRE, {**slot_g, **own_fb, **fr_slots, **G_LABELS}).items()}, hdr)
     log("G: %d description lines G shares between items set per item (Freedom, pointer slots)" % len(fr_slots))
     log("G: Freedom's names put into %d MH1 US / own lines" % nterm[True])
     # fit: Freedom's PSP lines are laid out for the PSP's windows. Talk: the PSP talk window has the same 22 columns

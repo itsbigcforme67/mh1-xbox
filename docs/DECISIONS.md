@@ -115,6 +115,9 @@ Kept as a fallback for any file that resists matching.
 - Its repo has no license yet (the author's stated intent is collaboration): reading it and using facts
   (names, offsets, behaviour) is fine; copying its code needs a license or the author's go-ahead first.
 - Possible exchange: our symbol-backed MH1/G names for shared engine code; our platform layer.
+- **Changed 1 Nov 2026 (owner):** the author never answered, so we split and decompile MH2 ourselves from the owner's disc with
+  our tools, and do not start from their code. Their repo stays a reference for facts only (what a function does, offsets,
+  formats). Their C, names, comments and file layout stay out of ours. Not legal advice; re-read their license state first.
 - Our repo: MIT license for the project's own code (owner, 15 Oct 2026; LICENSE).
 
 **Online: our own server and our own open PS2 patches, PS2 + PC + Xbox together.** (owner, 15 Oct 2026)

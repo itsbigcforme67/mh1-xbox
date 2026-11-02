@@ -4,6 +4,7 @@
 # MH1 address. (A G MWCC build of the same C would need these names placed at G addresses.)
 # Addresses and sizes only (from asm/mhg data labels and the code that reads them); agent A.
 [main]
+BsProxyUrlstr = 0x003020C0; // size:0x1D0      # G put 8 entries of 0x18 bytes right after the 0x110 URL (+0x110, a friend-type list; MH_lobbyClear clears it): at 0x110 the PC placed BsLbsInfo there
 quest_w = 0x0032D010; // size:0x290            # G grew it (Quest_init memsets 0x290)
 select_w = 0x0035EC30; // size:0xF0            # quest number at +0xD0 (MH1 +0xAC)
 start_area_lists = 0x002EECF0; // size:0x88           # start-area lists {weight, stage}.., 0xFF and their pointer lists (Quest_pl_stage_init)
