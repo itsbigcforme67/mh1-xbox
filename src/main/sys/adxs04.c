@@ -86,8 +86,13 @@ void Card_task(void) {
 #endif
 #if !defined(G_PART) || G_PART == 1
 void init_card_w(void) {
+#ifdef VERSION_MH2
+    memset(card_w, 0, 0xBC);
+    memset(card_w2, 0, 0xBC);
+#else
     memset(card_w, 0, 0x84);
     memset(card_w2, 0, 0x84);
+#endif
     system_w[0x3C] = 0;
 }
 #endif
@@ -202,8 +207,13 @@ EFTL *pull_eft_work2(int n) {
         return 0;
     }
     eft_ctr--;
+#ifdef VERSION_MH2
+    e = *eft_sp++;
+    t = eft_w_top;
+#else
     t = eft_w_top;
     e = *eft_sp++;
+#endif
     if (t == 0) {
         eft_w_top = e;
         e->prev = 0;
@@ -299,7 +309,11 @@ void eft_vec_linear(f32 t, EKEY3 *k, f32 *out) {
 
     for (;; k++) {
         if (k->t == -1.0f) {
+#ifdef VERSION_MH2
+            goto last;
+#else
             return;
+#endif
         }
         if (t == k->t) {
             out[0] = k->v[0];
@@ -315,6 +329,12 @@ void eft_vec_linear(f32 t, EKEY3 *k, f32 *out) {
             return;
         }
     }
+#ifdef VERSION_MH2
+last:
+    out[0] = k[-1].v[0];
+    out[1] = k[-1].v[1];
+    out[2] = k[-1].v[2];
+#endif
 }
 #endif
 #if !defined(G_PART) || G_PART == 1
@@ -323,7 +343,11 @@ void eft_alpha_linear(f32 t, EKEY1 *k, f32 *out) {
 
     for (;; k++) {
         if (k->t == -1.0f) {
+#ifdef VERSION_MH2
+            goto last;
+#else
             return;
+#endif
         }
         if (t == k->t) {
             *out = k->v;
@@ -335,6 +359,10 @@ void eft_alpha_linear(f32 t, EKEY1 *k, f32 *out) {
             return;
         }
     }
+#ifdef VERSION_MH2
+last:
+    *out = k[-1].v;
+#endif
 }
 #endif
 typedef struct ERGBA { s32 frame; u32 col; } ERGBA;

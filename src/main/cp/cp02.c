@@ -112,6 +112,18 @@ void nlCalcPoint(f32 *out, f32 *in, f32 *m) {
     out[2] += m[14];
 }
 
+#ifdef VERSION_MH2
+f32 flvecCalcLength(f32 *);
+
+f32 CalcDistanceXZ(f32 *a, f32 *b) {
+    f32 v[3];
+
+    v[0] = a[0] - b[0];
+    v[1] = 0.0f;
+    v[2] = a[2] - b[2];
+    return flvecCalcLength(v);
+}
+#else
 f32 CalcDistanceXZ(f32 *a, f32 *b) {
     f32 v[6];
 
@@ -119,3 +131,4 @@ f32 CalcDistanceXZ(f32 *a, f32 *b) {
     SetVector(v + 3, b[0], 0, b[2]);
     return flvecCalcDistance(v, v + 3);
 }
+#endif

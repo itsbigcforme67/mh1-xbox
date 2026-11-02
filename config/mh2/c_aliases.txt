@@ -1876,6 +1876,7 @@ sub_main Ave_TcpSend 0x003065D0
 sub_main Ave_TcpStat 0x00306520
 sub_main Ave_TcpTerminate 0x00306210
 sub_main Ave_wrap_sif 0x0059BB30
+sub_main CalcDistanceXZ 0x00337C70
 sub_main CalcPoint 0x00364BF0
 sub_main CamAreaAttribChk 0x003208D0
 sub_main CamRailPoint 0x00321CD0
@@ -1956,7 +1957,9 @@ sub_main Device_driver_rollbacked 0x0059CC28
 sub_main Device_get_usb_id_r_no 0x0059CC30
 sub_main Disp_back 0x0036C560
 sub_main Eft02_set2 0x003CA250
+sub_main Eft02_set3 0x003CA310
 sub_main Eft02_set4 0x003CA3F0
+sub_main Eft02_set5 0x003CA4A0
 sub_main Eft02_set6 0x003CA5C0
 sub_main Eft02_set_pos 0x003CA650
 sub_main Eft02_set_pos2 0x003CA6E0
@@ -2136,6 +2139,7 @@ sub_main _device_check 0x0030B530
 sub_main _reset_dialtype 0x0030B600
 sub_main _reset_recognize 0x0030B680
 sub_main aan_ctr_get 0x002E5020
+sub_main aan_ofs_calc 0x002E4F80
 sub_main acosf 0x00124618
 sub_main act_ck 0x003ABD40
 sub_main add_kana_buf 0x003052A0
@@ -2216,6 +2220,7 @@ sub_main camera_data_tbl 0x004224E0
 sub_main can_daku 0x002FBC20
 sub_main can_handaku 0x002FBCA0
 sub_main card_w 0x006AEF90
+sub_main card_w2 0x005AFAA0
 sub_main change_kind 0x003035C0
 sub_main chk_entry2 0x002FE7F0
 sub_main cinpc_buf 0x0059B960
@@ -2241,6 +2246,7 @@ sub_main cmd_muhenkan 0x00313BC0
 sub_main cmd_next_kouho 0x00314580
 sub_main cmd_prev_kouho 0x003143E0
 sub_main cntab 0x00403AA0
+sub_main com_mot_han_ofs 0x005DE5A0
 sub_main com_motion_load 0x003288F0
 sub_main common_error 0x00307640
 sub_main common_motion_data 0x0041ED80
@@ -2274,7 +2280,8 @@ sub_main dakuten_1257 0x00418760
 sub_main dakuten_ck 0x00317C30
 sub_main dakuten_ck_han 0x00319500
 sub_main dakuten_ck_ten 0x003194F0
-sub_main data_load_ptr 0x006ADFE8
+sub_main data_load_ptr 0x006AE004
+sub_main data_load_ptr_mh2_006ADFE8 0x006ADFE8
 sub_main delwd 0x002FDB60
 sub_main dic_close 0x002FC250
 sub_main dic_delete 0x002FD980
@@ -2306,13 +2313,17 @@ sub_main eft01_e 0x003C81D0
 sub_main eft01_m 0x003C7D20
 sub_main eft01_t 0x003C8400
 sub_main eft02_move 0x003C8E10
+sub_main eft02_set 0x003CA1A0
 sub_main eft06_continue 0x003CB710
+sub_main eft06_d 0x003CCC10
 sub_main eft06_d_mh2_003C9500 0x003C9500
 sub_main eft06_e 0x003C9520
+sub_main eft06_e_mh2_003CCCF0 0x003CCCF0
 sub_main eft06_em_scale 0x00466810
 sub_main eft06_i_mh2_003C8EA0 0x003C8EA0
 sub_main eft06_m_mh2_003C9200 0x003C9200
 sub_main eft06_move 0x003C8E10
+sub_main eft06_num 0x00466740
 sub_main eft06_se_req 0x003CD530
 sub_main eft06_set_com 0x003CD680
 sub_main eft06_type3_init_sub 0x003CB230
@@ -2352,6 +2363,7 @@ sub_main ekana_buf 0x0059B810
 sub_main em_frame_check2 0x002E5DC0
 sub_main em_frame_check3 0x002E5E40
 sub_main em_model_data 0x004216F0
+sub_main em_mot_han_ofs 0x005DE3E0
 sub_main em_motion_data 0x00421820
 sub_main em_motion_load 0x00328950
 sub_main em_parts_num 0x0090DDC0
@@ -2420,6 +2432,7 @@ sub_main flFCVSetBaseAddress 0x002EB290
 sub_main flFindGroupRoot 0x002EF670
 sub_main flFloor 0x002EEAB0
 sub_main flGetFcurveValue 0x002F0540
+sub_main flGetFrame 0x0017FFC0
 sub_main flGetHierarchy3 0x002EFDE0
 sub_main flGetHierarchy3_sub 0x002EFF10
 sub_main flGetHierarchyData2 0x002F0490
@@ -2480,6 +2493,7 @@ sub_main flPs2State 0x00218C70
 sub_main flQuatSetRot 0x002EEC10
 sub_main flQuatSetRot2 0x002EECE0
 sub_main flReleaseClayHandle 0x002EB1B0
+sub_main flReleaseFrame 0x0017FFE0
 sub_main flReleaseInitMotionSetHandle 0x002EEFE0
 sub_main flReleaseMotionSetHandle 0x002EF000
 sub_main flReloadTexture 0x0017D240
@@ -2614,6 +2628,9 @@ sub_main func_002E3F30 0x002E3F30
 sub_main func_002E3F60 0x002E3F60
 sub_main func_002E3FA0 0x002E3FA0
 sub_main func_002E47B0 0x002E47B0
+sub_main func_002E4A30 0x002E4A30
+sub_main func_002E4B60 0x002E4B60
+sub_main func_002E4CB0 0x002E4CB0
 sub_main func_002E5020 0x002E5020
 sub_main func_002E5030 0x002E5030
 sub_main func_002E5070 0x002E5070
@@ -3204,11 +3221,14 @@ sub_main func_003229C0 0x003229C0
 sub_main func_003229D0 0x003229D0
 sub_main func_00322A00 0x00322A00
 sub_main func_00322A50 0x00322A50
+sub_main func_00324080 0x00324080
 sub_main func_003240E0 0x003240E0
 sub_main func_00324490 0x00324490
 sub_main func_00324540 0x00324540
 sub_main func_003245A0 0x003245A0
 sub_main func_00324630 0x00324630
+sub_main func_003246C0 0x003246C0
+sub_main func_00324860 0x00324860
 sub_main func_00324E20 0x00324E20
 sub_main func_00324FD0 0x00324FD0
 sub_main func_003250A0 0x003250A0
@@ -3262,6 +3282,7 @@ sub_main func_00337A20 0x00337A20
 sub_main func_00337B00 0x00337B00
 sub_main func_00337B90 0x00337B90
 sub_main func_00337BD0 0x00337BD0
+sub_main func_00337C70 0x00337C70
 sub_main func_00338020 0x00338020
 sub_main func_003380D0 0x003380D0
 sub_main func_0033D240 0x0033D240
@@ -3349,6 +3370,9 @@ sub_main func_00376DE0 0x00376DE0
 sub_main func_00376E40 0x00376E40
 sub_main func_00376E70 0x00376E70
 sub_main func_00376EA0 0x00376EA0
+sub_main func_00376EB0 0x00376EB0
+sub_main func_00376ED0 0x00376ED0
+sub_main func_00376EF0 0x00376EF0
 sub_main func_00376F90 0x00376F90
 sub_main func_00377020 0x00377020
 sub_main func_00377070 0x00377070
@@ -3443,11 +3467,15 @@ sub_main func_003C7840 0x003C7840
 sub_main func_003C7850 0x003C7850
 sub_main func_003C7AE0 0x003C7AE0
 sub_main func_003C7B70 0x003C7B70
+sub_main func_003C8100 0x003C8100
 sub_main func_003C81D0 0x003C81D0
 sub_main func_003C8E10 0x003C8E10
 sub_main func_003C9520 0x003C9520
+sub_main func_003CA1A0 0x003CA1A0
 sub_main func_003CA250 0x003CA250
+sub_main func_003CA310 0x003CA310
 sub_main func_003CA3F0 0x003CA3F0
+sub_main func_003CA4A0 0x003CA4A0
 sub_main func_003CA5C0 0x003CA5C0
 sub_main func_003CA650 0x003CA650
 sub_main func_003CA6E0 0x003CA6E0
@@ -3458,7 +3486,10 @@ sub_main func_003CB600 0x003CB600
 sub_main func_003CB6D0 0x003CB6D0
 sub_main func_003CB710 0x003CB710
 sub_main func_003CB740 0x003CB740
+sub_main func_003CCC10 0x003CCC10
+sub_main func_003CCCF0 0x003CCCF0
 sub_main func_003CD530 0x003CD530
+sub_main func_003CD750 0x003CD750
 sub_main func_003CD840 0x003CD840
 sub_main func_003CD8A0 0x003CD8A0
 sub_main func_003CD9C0 0x003CD9C0
@@ -3564,6 +3595,7 @@ sub_main ignore_syn 0x00304300
 sub_main im_state 0x00581B80
 sub_main inc_gun 0x00303110
 sub_main info 0x00581A60
+sub_main init_card_w 0x00324080
 sub_main init_edit0 0x002FB080
 sub_main init_eft_work 0x003240E0
 sub_main init_entid_tab 0x002FEE70
@@ -3707,6 +3739,7 @@ sub_main module_load_00232F60 0x00309D00
 sub_main module_loadhigh 0x00309D00
 sub_main module_unload_00232D00 0x00309C50
 sub_main month_str_tbl 0x00402240
+sub_main motion_set_handle_tbl 0x005DA080
 sub_main move_eft 0x00324540
 sub_main move_set 0x00364310
 sub_main move_shell 0x00364780
@@ -3765,6 +3798,7 @@ sub_main plAMOGetTextureData 0x002F6DE0
 sub_main plAMOGetTextureHead 0x002F6D30
 sub_main plAMOSetMaterialData 0x002F6C30
 sub_main plBMPGetPixelAddressFromImage 0x002F8F00
+sub_main plCreateMotionSetFromAAN 0x002F5490
 sub_main plMakePlaneFromPoints 0x002F93B0
 sub_main plMemset 0x00183350
 sub_main plReport 0x001832E0
@@ -3775,6 +3809,7 @@ sub_main pl_atck_data_set2 0x003B09B0
 sub_main pl_cnt_w 0x005F89C0
 sub_main pl_flag_ck 0x003ABD80
 sub_main pl_init 0x0039A350
+sub_main pl_mot_han_ofs 0x005DE460
 sub_main pl_motion_data 0x0041ED50
 sub_main pl_motion_load 0x00328920
 sub_main pl_move 0x00722600
@@ -4117,6 +4152,7 @@ yn func_00AD0910 0x00AD0910
 yn func_00AD0940 0x00AD0940
 yn func_00AD09B0 0x00AD09B0
 yn func_00AD09D0 0x00AD09D0
+yn func_00AD0A10 0x00AD0A10
 yn func_00AD0AD0 0x00AD0AD0
 yn func_00AD0BB0 0x00AD0BB0
 yn lit_1349_0053E398 0x00AD39F8
@@ -4149,6 +4185,7 @@ yn sceSifSearchModuleByName 0x0011C440
 yn sprintf 0x0010A8D0
 yn strcmp 0x0010AF18
 yn strcpy 0x0010B060
+yn sub_main_func_0030A090 0x0030A090
 yn table 0x00AD5B40
 yn yn_adname_font_sub 0x00ACCB70
 yn yn_backup_allwork 0x00ACE370
@@ -4160,6 +4197,7 @@ yn yn_dialog_mes_tbl 0x00AD1D00
 yn yn_get_halftype 0x00ACDAE0
 yn yn_hard_init 0x00AD09D0
 yn yn_hard_select_set 0x00AD0BB0
+yn yn_hard_status_check 0x00AD0A10
 yn yn_hard_type_check 0x00AD0AD0
 yn yn_key_repeat 0x00ACDD70
 yn yn_keyboard_server 0x00ACDF60

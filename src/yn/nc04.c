@@ -131,7 +131,7 @@ s32 yn_hard_status_check(char *name, char *vendor) {
         d++;
     } while (i < 0x23);
 #ifdef VERSION_MH2
-    return sub_main_func_0030A090(name, vendor) == 0 ? -2 : -1;
+    return sub_main_func_0030A090(name, vendor) ? -1 : -2;
 #else
     return -1;
 #endif

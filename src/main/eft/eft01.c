@@ -149,11 +149,6 @@ static void eft01_move(EFTW *ew) {
 #endif
 
 #if !defined(G_PART) || G_PART == 1
-#ifdef VERSION_MH2
-#define EW_PRIM2(ew) ((ew)->_pad1F)
-#else
-#define EW_PRIM2(ew) ((ew)->prim2)
-#endif
 static void eft01_i(EFTW *ew) {
     EFT01_WORK *w;
     s16 i;
@@ -179,13 +174,13 @@ static void eft01_i(EFTW *ew) {
         }
         break;
     default:
-        if (EW_PRIM2(ew) != 0) {
+        if (ew->prim2 != 0) {
             ew->prim_no = get_prim2();
         } else {
             ew->prim_no = get_prim();
         }
         if (ew->prim_no != -1) {
-            if (EW_PRIM2(ew) != 0) {
+            if (ew->prim2 != 0) {
                 ew->prim = get_prim_ptr2(ew->prim_no);
             } else {
                 ew->prim = get_prim_ptr(ew->prim_no);
