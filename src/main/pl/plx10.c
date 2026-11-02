@@ -4,7 +4,7 @@
 #include "game.h"
 #include "plf.h"
 #include "plst.h"
-ST_ITEM *Stage_item_data_get(u8);
+ST_ITEM *Stage_item_data_get(STG_T);
 u16 Item_get_ck(int);
 f32 flSqrt(f32);
 #if defined(VERSION_MHG) && !defined(__MWERKS__)

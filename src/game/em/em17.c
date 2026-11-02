@@ -55,7 +55,7 @@ void cmd_target_kind_set(EMW *, f32 *);
 void em17_horm_init(EMW *);
 int Online_ck(void);
 s16 act_ck(EMW *, u16, u16);
-STAGE_DATA *Stage_data_get(u8);
+STAGE_DATA *Stage_data_get(STG_T);
 void em_char_set(EMW *, int, int, int);
 void speed_add(EMW *, s32 *);
 void speed_add_g(EMW *, s32 *);

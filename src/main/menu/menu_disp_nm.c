@@ -566,7 +566,7 @@ extern f32 ofs_x_3192[];
 extern s16 ofs_y_3193[];
 void flps0008(void *);
 void flps000C(void *);
-void *Stage_data_get(u8);
+void *Stage_data_get(STG_T);
 int enemy_mark_chk(PLW *, EMW *);
 void wyvern_area(f32 *, f32 *, f32 *, u8);
 void maru_disp_sub(int col, f32 x, f32 y, f32 r);

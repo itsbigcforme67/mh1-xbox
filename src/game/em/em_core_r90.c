@@ -227,7 +227,7 @@ typedef struct EM_ROUTE {
 } EM_ROUTE;
 
 extern f32 (*em_cmd_pos_tbl[])[3];
-STAGE_DATA *Stage_data_get(u8);
+STAGE_DATA *Stage_data_get(STG_T);
 void NextStage_No_Set(void);
 EM_STG_POS *gp_ck(EMW *em, EM_STG_POS *p, s16 stg);
 typedef f32 (*EM_POSP)[3];

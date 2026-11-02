@@ -57,7 +57,7 @@ void Put_megaphone(s16 x, s16 y, s8 level) {
 }
 #endif
 
-void *Stage_data_get(u8);
+void *Stage_data_get(STG_T);
 void flSetRenderState(int, u32);
 extern u32 *stage_fog_tbl[];
 

@@ -3,8 +3,8 @@
 #include "game.h"
 #include "plf.h"
 #include "plst.h"
-ST_ITEM *Stage_item_data_get(u8);
-ST_UNIQ *Stage_unique_data_get(u8);
+ST_ITEM *Stage_item_data_get(STG_T);
+ST_UNIQ *Stage_unique_data_get(STG_T);
 u16 *Stage_item_probability_get(int);
 u16 Item_get_ck(int);
 f32 flSqrt(f32);

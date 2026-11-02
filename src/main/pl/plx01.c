@@ -58,8 +58,8 @@ void flmatGetTrans(f32 *, u8 *);
 #include "hit.h"
 u8 Get_hit_id(void);
 typedef struct W24 { s32 a, b, c, d, e, f; } W24;
-ST_ITEM *Stage_item_data_get(u8);
-ST_UNIQ *Stage_unique_data_get(u8);
+ST_ITEM *Stage_item_data_get(STG_T);
+ST_UNIQ *Stage_unique_data_get(STG_T);
 u16 *Stage_item_probability_get(int);
 int Share_item_stack();
 #include "flow.h"

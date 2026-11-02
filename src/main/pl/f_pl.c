@@ -76,8 +76,8 @@ f32 *Stage_data_get(int stg);
 void flmatGetTrans(f32 *, u8 *);
 u8 Get_hit_id(void);
 typedef struct W24 { s32 a, b, c, d, e, f; } W24;
-ST_ITEM *Stage_item_data_get(u8);
-ST_UNIQ *Stage_unique_data_get(u8);
+ST_ITEM *Stage_item_data_get(STG_T);
+ST_UNIQ *Stage_unique_data_get(STG_T);
 u16 *Stage_item_probability_get(int);
 int Share_item_stack();
 #define ANG2RAD(a) (2.0f * (3.1415927f * (((360.0f * (f32)(a)) / 65536.0f) / 360.0f)))

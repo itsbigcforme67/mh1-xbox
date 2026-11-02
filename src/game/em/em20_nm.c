@@ -54,7 +54,7 @@ void target_kind_set(EMW *, f32 *);
 void cmd_target_kind_set(EMW *, f32 *);
 void em20_horm_init(EMW *);
 s16 act_ck(EMW *, u16, u16);
-STAGE_DATA *Stage_data_get(u8);
+STAGE_DATA *Stage_data_get(STG_T);
 void em_char_set(EMW *, int, int, int);
 void em_pl_pos_set(EMW *, u8, f32 *);
 void World_calc2(u8, f32 *, f32 *);

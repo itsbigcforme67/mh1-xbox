@@ -2953,9 +2953,15 @@ sub_main SoftkeyTextureSet 0x003634C0
 sub_main Softkey_free_0 0x003151C0
 sub_main Softkey_free_1 0x003151D0
 sub_main Spline 0x003225D0
+sub_main St_pick_ck 0x003B12E0
+sub_main St_unique_adr_set 0x003B1760
+sub_main St_unique_ck 0x003B1640
 sub_main Stage_data_get 0x003A0D10
+sub_main Stage_item_data_get 0x003A0D80
+sub_main Stage_unique_data_get 0x003A0E20
 sub_main Start_item_data_adrs_get 0x003A1040
 sub_main SubVector 0x003374A0
+sub_main Taru_ok_ck 0x00364AA0
 sub_main Ticket_id 0x0059D460
 sub_main ToUpper 0x00305010
 sub_main TotalDeviceNum 0x0059DE10
@@ -4140,6 +4146,7 @@ sub_main func_00364370 0x00364370
 sub_main func_00364540 0x00364540
 sub_main func_00364780 0x00364780
 sub_main func_00364800 0x00364800
+sub_main func_00364AA0 0x00364AA0
 sub_main func_00364BB0 0x00364BB0
 sub_main func_003655C0 0x003655C0
 sub_main func_00365670 0x00365670
@@ -4294,6 +4301,9 @@ sub_main func_003B11B0 0x003B11B0
 sub_main func_003B11D0 0x003B11D0
 sub_main func_003B11F0 0x003B11F0
 sub_main func_003B1260 0x003B1260
+sub_main func_003B12E0 0x003B12E0
+sub_main func_003B1640 0x003B1640
+sub_main func_003B1760 0x003B1760
 sub_main func_003B22B0 0x003B22B0
 sub_main func_003B2340 0x003B2340
 sub_main func_003B27F0 0x003B27F0
@@ -4332,6 +4342,7 @@ sub_main func_003C6C00 0x003C6C00
 sub_main func_003C6C70 0x003C6C70
 sub_main func_003C6D90 0x003C6D90
 sub_main func_003C6DF0 0x003C6DF0
+sub_main func_003C6E00 0x003C6E00
 sub_main func_003C7840 0x003C7840
 sub_main func_003C7850 0x003C7850
 sub_main func_003C7AE0 0x003C7AE0
