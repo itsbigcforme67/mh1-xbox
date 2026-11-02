@@ -338,7 +338,11 @@ int rt_import_data(void)
  * pointers: lobby functions to the host function of that name (rt_host_sym),
  * lobby data into rt_lb_mem, main addresses as for the ELF (map_ptr).
  * Call after rt_import_data. */
+#ifdef VERSION_MH2
+#define LB_SPAN 0x2C0000u       /* lobby.bin 0x19AD80 + .bss 0xB0E80 ends at nethttp's address, 0x8FAE00; nethttp and lbguild follow */
+#else
 #define LB_SPAN 0x220000u       /* lobby.bin 0x134E00 + .bss 0xEA680, rounded up */
+#endif
 uint8_t rt_lb_mem[LB_SPAN] __attribute__((aligned(16)));
 static uint8_t *lb_image;       /* rt_lb_mem as rt_import_lobby left it */
 static uint32_t lb_image_n;
@@ -433,7 +437,11 @@ void rt_lb_reload(void)
  * aliases into it (tools/gen_rt_auto.py, config/symbols/select.txt).
  * Pointer words (.relselect.bin): select functions to the host function
  * of that name, select data into rt_sel_mem, main as for the ELF. */
+#ifdef VERSION_MH2
+#define SEL_SPAN 0x30000u       /* select.bin is 0x22F80 bytes + .bss 0x1100 */
+#else
 #define SEL_SPAN 0x10000u       /* select.bin is 0x8000 bytes (G: 0xAE00) */
+#endif
 uint8_t rt_sel_mem[SEL_SPAN] __attribute__((aligned(16)));
 
 static void *map_sel(uint32_t v)

@@ -24,7 +24,7 @@ import sys
 
 LINE = re.compile(r"^(\w+) = 0x([0-9A-Fa-f]+);(?:\s*//\s*(?:type:(\w+))?\s*(?:size:0x([0-9A-Fa-f]+))?)?")
 CAST = re.compile(r"\(\s*(\w+(?:\s*\*)+)\s*\)\s*0x([0-9A-Fa-f]{6,8})\b")
-# MH2V(mh1, mh2): the PC build is never MH2, so the MH1 address stands (done first, or CAST would not see it)
+# MH2V(mh1, mh2): on MH1 and G the MH1 address stands (done first, or CAST would not see it)
 MH2V_ADDR = re.compile(r"\bMH2V\(\s*(0x[0-9A-Fa-f]{6,8})\s*,\s*0x[0-9A-Fa-f]+\s*\)")
 
 
@@ -71,10 +71,58 @@ def main_mhg(src):
     return CAST.sub(fix, src), used
 
 
+def main_mh2(src):
+    """VERSION=mh2: MH2V(mh1, mh2) gives the MH2 address itself; any other literal is an MH1 address (or a G one inside
+    a VERSION_MHG block), moved through build/mh2/pc/addr.txt (names both have, tools/mh2_pcmeta.py). No entry: left as it is."""
+    tr = {}
+    for l in open("build/mh2/pc/addr.txt"):
+        f = l.split()
+        tr[int(f[0], 16)] = int(f[1], 16)
+    tk = sorted(tr)
+    syms = []
+    for fn in ("main", "lobby"):
+        for line in open("build/mh2/pc/symbols/%s.txt" % fn):
+            m = re.match(r"^(\w+) = 0x([0-9A-Fa-f]+); // (type:func )?size:0x([0-9A-Fa-f]+)", line)
+            if m and not m.group(3):
+                va, sz = int(m.group(2), 16), int(m.group(4), 16)
+                if (fn == "main" and va < 0x6AF200) or (fn == "lobby" and va >= 0x6AF200):
+                    syms.append((va, sz, m.group(1), fn))
+    syms.sort()
+    starts = [x[0] for x in syms]
+    used = {}
+
+    def host(cast, g, orig):
+        i = bisect.bisect_right(starts, g) - 1
+        if i < 0 or g >= syms[i][0] + max(syms[i][1], 4):
+            return orig
+        va, sz, name, fn = syms[i]
+        if fn == "lobby":
+            used["rt_lb_mem"] = 1
+            return "(%s)(rt_lb_mem + 0x%X)" % (cast, g - 0x6AF200)
+        used[name] = 1
+        return "(%s)(rt_abs_%s + 0x%X)" % (cast, name, g - va)
+
+    def fix(m):
+        a = int(m.group(2), 16)
+        g = tr.get(a)
+        if g is None:
+            i = bisect.bisect_right(tk, a) - 1
+            if i < 0 or a - tk[i] > 0x40:
+                return m.group(0)
+            g = tr[tk[i]] + (a - tk[i])
+        return host(m.group(1), g, m.group(0))
+
+    src = re.sub(r"\(\s*(\w+(?:\s*\*)+)\s*\)\s*MH2V\(\s*0x[0-9A-Fa-f]{6,8}\s*,\s*(0x[0-9A-Fa-f]+)\s*\)",
+                 lambda m: host(m.group(1), int(m.group(2), 16), m.group(0)), src)
+    return CAST.sub(fix, src), used
+
+
 def main():
-    src = MH2V_ADDR.sub(r"\1", open(sys.argv[1]).read())
-    if os.environ.get("VERSION") == "mhg":
-        out, used = main_mhg(src)
+    src = open(sys.argv[1]).read()
+    if os.environ.get("VERSION") != "mh2":
+        src = MH2V_ADDR.sub(r"\1", src)
+    if os.environ.get("VERSION") in ("mhg", "mh2"):
+        out, used = (main_mh2 if os.environ.get("VERSION") == "mh2" else main_mhg)(src)
         if not used:
             sys.exit(1)
         head = ('#define RTAB_S_(x) #x\n#define RTAB_S(x) RTAB_S_(x)\n'

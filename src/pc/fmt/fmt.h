@@ -55,9 +55,12 @@ typedef struct {
     uint32_t count;
     uint32_t *off, *size;
     char (*name)[32];
+    int raw_ok;     /* fmt_afs_load: a file that is not Meltw is returned as stored (MH2) */
 } fmt_afs;
 
 int  fmt_afs_open(fmt_afs *a, const char *path);
+int  fmt_afs_open_sub(fmt_afs *a, const char *path, int entry);
+int  fmt_afs_find_mwo(const fmt_afs *a, const char *name);
 void fmt_afs_close(fmt_afs *a);
 int  fmt_afs_find(const fmt_afs *a, const char *name);      /* -1 if absent */
 /* Read entry raw (malloc'd, caller frees). */

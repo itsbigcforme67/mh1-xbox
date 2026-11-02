@@ -67,7 +67,7 @@ def main():
          "typedef struct { uint32_t va, size; const char *name; int func; } rt_meta_sym;",
          "typedef struct { uint32_t mh1, size, va; } rt_meta_va;"]
     sets = ["main", "game", "lobby", "select"]
-    if ver != "mhg":
+    if ver not in ("mhg", "mh2"):
         o += ["const int rt_meta_version = 0;", 'const char rt_meta_elf[] = "SLPM_654.95";',
               "const uint32_t rt_meta_main_data = 0;"]
         o += c_u32("rt_meta_main_lobby", [])
@@ -76,14 +76,20 @@ def main():
             o += ["const rt_meta_va rt_meta_va_%s[] = { { 0, 0, 0 } };" % s, "const size_t rt_meta_va_%s_n = 0;" % s]
         open(out_path, "w").write("\n".join(o) + "\n")
         return
-    o += ["const int rt_meta_version = 1;", 'const char rt_meta_elf[] = "SLPM_658.69";',
-          "const uint32_t rt_meta_main_data = 0x253D20;     /* tools/setup_split.py G_MAIN data_start */"]
-    ml = [int(l.split()[0], 16) for l in open(P("config/mhg/pc_main_lobby.txt")) if l.strip() and not l.startswith("#")]
-    o += c_u32("rt_meta_main_lobby", sorted(set(ml)))     # main data words that point into lobby.bin (tools/mhg_main_lobby.py)
-    view = {s: read_syms(P("build/mhg/pc/symbols/%s.txt" % s)) for s in sets}
+    mh2 = ver == "mh2"
+    if mh2:     # tools/mh2_pcmeta.py; docs/mh2.md for the data start. main -> lobby words: none known yet (docs/mh2_port.md)
+        o += ["const int rt_meta_version = 2;", 'const char rt_meta_elf[] = "SLPM_662.80";',
+              "const uint32_t rt_meta_main_data = 0x195C00;"]
+        o += c_u32("rt_meta_main_lobby", [])
+    else:
+        o += ["const int rt_meta_version = 1;", 'const char rt_meta_elf[] = "SLPM_658.69";',
+              "const uint32_t rt_meta_main_data = 0x253D20;     /* tools/setup_split.py G_MAIN data_start */"]
+        ml = [int(l.split()[0], 16) for l in open(P("config/mhg/pc_main_lobby.txt")) if l.strip() and not l.startswith("#")]
+        o += c_u32("rt_meta_main_lobby", sorted(set(ml)))     # main data words that point into lobby.bin (tools/mhg_main_lobby.py)
+    view = {s: read_syms(P("build/%s/pc/symbols/%s.txt" % (ver, s))) for s in sets}
     ptrs = {}
     cur = None
-    for l in open(P("config/mhg/pc_ptrs.txt")):
+    for l in open(P("build/mh2/pc/ptrs.txt" if mh2 else "config/mhg/pc_ptrs.txt")):
         l = l.strip()
         if not l or l.startswith("#"):
             continue
@@ -92,8 +98,8 @@ def main():
             ptrs.setdefault(cur, [])
             continue
         ptrs[cur].append(int(l, 16))
-    pset = {"main": ptrs["main"] + ptrs["sub_main"], "game": ptrs["game"],
-            "lobby": ptrs["lobby"] + ptrs["nethttp"], "select": ptrs["select"]}
+    pset = {"main": ptrs["main"] + ptrs["sub_main"], "game": ptrs["game"] + ptrs.get("gm_sub", []),
+            "lobby": ptrs["lobby"] + ptrs["nethttp"] + ptrs.get("lbguild", []), "select": ptrs["select"]}
     for s in sets:
         o += c_syms("rt_meta_syms_" + s, view[s]) + c_u32("rt_meta_ptrs_" + s, sorted(pset[s]))
     # MH1 address -> G address, by name (main and game together: one address space)

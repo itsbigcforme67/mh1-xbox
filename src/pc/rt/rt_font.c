@@ -206,7 +206,7 @@ void rt_font_init(void)
     size_t n = 0;
     int i;
     if (!font_data) {
-        font_data = rt_file_load(rt_ver_mhg() ? 0x9AE : 0x6D2, &n);    /* G: font table 0x2EBF10[0] */
+        font_data = rt_file_load(rt_ver_mh2() ? 5906 : rt_ver_mhg() ? 0x9AE : 0x6D2, &n);    /* G: font table 0x2EBF10[0] */
         if (font_data && n < NGLYPH * 100) {
             fprintf(stderr, "rt_font: font file too small (%zu)\n", n);
             free(font_data);
@@ -780,7 +780,7 @@ int rt_font_dbg_ready(void)
 {
     size_t n = 0;
     if (!font_data) {
-        font_data = rt_file_load(rt_ver_mhg() ? 0x9AE : 0x6D2, &n);
+        font_data = rt_file_load(rt_ver_mh2() ? 5906 : rt_ver_mhg() ? 0x9AE : 0x6D2, &n);
         if (font_data && n < NGLYPH * 100) {
             free(font_data);
             font_data = NULL;

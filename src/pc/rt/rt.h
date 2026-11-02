@@ -18,6 +18,7 @@
 /* ------------------------------------------------------------ game version
  * (rt_ver.c, docs/mhg.md): MH1 JP or Monster Hunter G (VERSION=mhg build). */
 int rt_ver_mhg(void);
+int rt_ver_mh2(void);
 const char *rt_ver_elf(void);           /* "SLPM_654.95" / "SLPM_658.69" */
 /* This version's address of what MH1 has at `mh1` (set 0: main + game.bin,
  * 1: lobby.bin, 2: select.bin), through a name both versions have; MH1: mh1

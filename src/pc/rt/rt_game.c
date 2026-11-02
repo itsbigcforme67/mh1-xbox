@@ -59,11 +59,17 @@ static int rt_code_ptr(const void *f)
 /* The game C stores pointers in u32 fields: only a 32-bit build works. */
 _Static_assert(sizeof(void *) == 4, "build the port runtime and game C with -m32");
 #ifdef VERSION_MHG
+#ifndef VERSION_MH2
 _Static_assert(sizeof(GAME_W) == 0x240, "GAME_W size");
+#endif
 #else
 _Static_assert(sizeof(GAME_W) == 0x224, "GAME_W size");
 #endif
+#ifdef VERSION_MH2
+_Static_assert(sizeof(PLW) == 0x970, "PLW size");
+#else
 _Static_assert(sizeof(PLW) == 0xA00, "PLW size");
+#endif
 #ifndef VERSION_MHG
 _Static_assert(offsetof(SETW, move) == 0x20 && offsetof(SETW, prim) == 0x38, "SETW layout");
 #endif

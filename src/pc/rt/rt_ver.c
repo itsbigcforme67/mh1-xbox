@@ -17,7 +17,8 @@ extern const char rt_meta_elf[];
 extern const rt_meta_va rt_meta_va_main[], rt_meta_va_lobby[], rt_meta_va_select[];
 extern const size_t rt_meta_va_main_n, rt_meta_va_lobby_n, rt_meta_va_select_n;
 
-int rt_ver_mhg(void) { return rt_meta_version == 1; }
+int rt_ver_mhg(void) { return rt_meta_version >= 1; }     /* G, or MH2 (which runs G's form of the C) */
+int rt_ver_mh2(void) { return rt_meta_version == 2; }
 const char *rt_ver_elf(void) { return rt_meta_elf; }
 
 uint32_t rt_va_mh1(int set, uint32_t mh1)

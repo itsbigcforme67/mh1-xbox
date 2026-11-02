@@ -41,10 +41,12 @@ OVL = 0x533980
 # (tools/mhg_map.py placed the D_ names the C uses), else through the MH1 symbol that holds
 # the address and the same name in G. Names G's map lacks become zeroed data that is not
 # imported (listed in build/pc/mhg_auto_missing.txt).
-G = os.environ.get("VERSION") == "mhg"
-SYMDIR = "build/mhg/pc/symbols" if G else "config/symbols"
+# VERSION=mh2 is the same on build/mh2/pc/symbols and config/mh2/*_aliases.txt, overlays at 0x6AF200.
+V = os.environ.get("VERSION")
+G = V in ("mhg", "mh2")
+SYMDIR = "build/%s/pc/symbols" % V if G else "config/symbols"
 if G:
-    OVL = 0x542600
+    OVL = 0x6AF200 if V == "mh2" else 0x542600
 
 
 class MH1toG:
@@ -58,7 +60,7 @@ class MH1toG:
         self.prov = {}
         for m in ("main", "sub_main", "game", "lobby", "select"):
             try:
-                for line in open("config/mhg/%s_aliases.txt" % m):
+                for line in open("config/%s/%s_aliases.txt" % (V, m)):
                     mm = re.match(r"^PROVIDE\((\w+) = 0x([0-9A-Fa-f]+)\);", line)
                     if mm:
                         self.prov.setdefault(mm.group(1), int(mm.group(2), 16))
@@ -115,6 +117,13 @@ def main():
     game_s = load(SYMDIR + "/game.txt") if G else {}
     m1_main_data = {k: v[2] for k, v in load("config/symbols/main.txt").items() if v[1] != "func"} if G else {}
     gmiss = []
+    ref_data = {}
+    if V == "mh2":
+        for d in ("config/symbols", "config/mhg/pc_symbols"):
+            for m in ("main", "game", "lobby", "select", "yn"):
+                for k, v in load("%s/%s.txt" % (d, m)).items():
+                    if v[1] != "func":
+                        ref_data[k] = max(ref_data.get(k, 0), v[2])
 
     def hexva(n, h):
         """the address a D_/lit_ name's hex part stands for in this version (None: unknown in G)"""
@@ -204,6 +213,11 @@ def main():
             # G moved this MH1 main object into game.bin (event_demo: MH1 0x531910 -> G 0x6E0560): data
             # all the same, read from the game image (rt_addr knows the overlay)
             ent = ("main", game_s[n][0], "data", game_s[n][2] or m1_main_data[n])
+        if V == "mh2" and n in ref_data and (ent is None or ent[2] == "func"):
+            # data in MH1 or G that MH2's map has no address for: a zeroed work area, not a function stand-in (the C writes to it)
+            gmiss.append(n)
+            data.append(("zero", n, 0, max(ref_data[n], 4)))
+            continue
         if ent is None or ent[2] == "func":
             funcs.append(n)
             continue

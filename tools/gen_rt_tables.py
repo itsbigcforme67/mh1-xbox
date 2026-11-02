@@ -30,8 +30,11 @@ SYMFILES = ("config/symbols/main.txt", "config/symbols/game.txt")
 # (build/mhg/pc/symbols, tools/mhg_pcmeta.py); the host array keeps MH1's size (the C
 # was written for it) and only min(MH1, G) bytes are imported. Names G's map lacks
 # are left as zeroed arrays and listed in build/pc/mhg_tables_missing.txt.
-G = os.environ.get("VERSION") == "mhg"
-G_SYMFILES = ("build/mhg/pc/symbols/main.txt", "build/mhg/pc/symbols/game.txt")
+# VERSION=mh2 works the same way on build/mh2/pc/symbols; config/mh2/pc_data.txt holds its addresses, and G's list only
+# gives the names and sizes of tables the G-form C expects (not found in MH2: zeroed arrays, listed as missing).
+V = os.environ.get("VERSION")
+G = V in ("mhg", "mh2")
+G_SYMFILES = ("build/%s/pc/symbols/main.txt" % V, "build/%s/pc/symbols/game.txt" % V)
 LINE = re.compile(r"^(\S+) = 0x([0-9A-Fa-f]+); // (?:type:\S+ )?size:0x([0-9A-Fa-f]+)")
 
 
@@ -49,12 +52,17 @@ def load_symbols(files=SYMFILES):
 def load_pc_data():
     """config/mhg/pc_data.txt: {name: (G address, G size)} (see tools/mhg_pcmeta.py)"""
     out = {}
-    for raw in open("config/mhg/pc_data.txt"):
-        line = raw.split("#", 1)[0].strip()
-        m = LINE.match(line)
-        if m and "noimport" not in line:   # noimport: a name for the symbol view only (rt_data.c reads it)
-            lst = re.search(r"\blist:0x([0-9A-Fa-f]+)", line)    # list:N: import (and map pointers into) N bytes only
-            out[m.group(1)] = (int(m.group(2), 16), int(m.group(3), 16), int(lst.group(1), 16) if lst else int(m.group(3), 16))
+    for path in ["config/mhg/pc_data.txt"] + (["config/mh2/pc_data.txt"] if V == "mh2" else []):
+        if not os.path.exists(path):
+            continue
+        for raw in open(path):
+            line = raw.split("#", 1)[0].strip()
+            m = LINE.match(line)
+            if m and "noimport" not in line:   # noimport: a name for the symbol view only (rt_data.c reads it)
+                lst = re.search(r"\blist:0x([0-9A-Fa-f]+)", line)    # list:N: import (and map pointers into) N bytes only
+                # mh2: a G address means nothing; address 0 until config/mh2/pc_data.txt (read second) gives one
+                g_only = V == "mh2" and path.startswith("config/mhg")
+                out[m.group(1)] = (0 if g_only else int(m.group(2), 16), int(m.group(3), 16), int(lst.group(1), 16) if lst else int(m.group(3), 16))
     return out
 
 
@@ -83,6 +91,12 @@ def main():
             continue
         name, work = line[0], len(line) > 1 and line[1] == "work"
         if G and name in gdata:     # G's own address and size (host array at G's size); config/mhg/pc_data.txt
+            if V == "mh2" and not gdata[name][0]:         # G's size, MH2's address by name
+                gva = gsyms[name][0] if name in gsyms else 0
+                if not gva:
+                    missing.append(name)
+                entries.append((name, gva, gdata[name][1], work or not gva, gdata[name][2]))
+                continue
             entries.append((name, gdata[name][0], gdata[name][1], work, gdata[name][2]))     # wins over an MH1 address too
             continue
         if len(line) == 3 and line[1].startswith("0x"):     # NAME 0xADDR 0xSIZE: not in the symbol files
@@ -121,8 +135,8 @@ def main():
     if G:
         with open(os.path.join(os.path.dirname(sys.argv[2]), "mhg_tables_missing.txt"), "w") as f:
             f.write("".join(n + "\n" for n in missing))
-        print("gen_rt_tables (G): %d tables, %d not in G's map (zeros, build/pc/mhg_tables_missing.txt)"
-              % (len(entries), len(missing)))
+        print("gen_rt_tables (%s): %d tables, %d not in its map (zeros, build/pc/mhg_tables_missing.txt)"
+              % (V, len(entries), len(missing)))
 
 
 if __name__ == "__main__":

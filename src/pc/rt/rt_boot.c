@@ -148,6 +148,19 @@ static int intro_skipped;       /* skip_intros_tick (below): the title has been 
 /* ------------------------------------------------------------ boot */
 void rt_boot_init(void)
 {
+#ifdef VERSION_MH2
+    {   /* MH2 boots through its own small path so far (src/select/title_mh2.c; docs/mh2_port.md): G's boot tasks and
+         * InitSystemData do not fit its data */
+        void mh2_Init_task(u8 *t);
+        SchedulerInit();
+        Tsk_Execute((void *)mh2_Init_task, 0);
+        boot_active = 1;
+        boot_done = 0;
+        boot_ticks = 0;
+        rt_log("boot: MH2 power-on (title_mh2.c)");
+        return;
+    }
+#endif
     /* InitSystemData (f_ioread.c) */
     system_w_init();
     option_default_set();

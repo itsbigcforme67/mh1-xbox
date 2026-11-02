@@ -35,7 +35,82 @@ static void col32(uint8_t *o, const uint8_t *p, int be)
 int fmt_apx_is_bare(fmt_blob f, int be)
 {
     /* +0 of a bare APX is its total size; a link file starts with a count */
+    if (f.n >= 0x40 && !memcmp(f.p, "TIM2", 4))
+        return 1;
     return f.n >= 0x20 && fmt_u32(f.p, be) == f.n;
+}
+
+/* TIM2 (MH2's textures, Sony's format). Seen in DATA.BIN (docs/mh2_port.md): version 4, align 16 or 128, one picture, one
+ * mip level, 4-bit, 8-bit or 32-bit images, palette 16 or 32 bit. Palette not flagged 0x80 is in the GS's CSM1 order. */
+static uint8_t tim2_alpha(uint8_t a)     /* the GS's 0x80 is opaque; the host's alpha is 0-255 */
+{
+    return (uint8_t)(a >= 0x80 ? 255 : a * 2);
+}
+
+static int tim2_decode(apx_image *img, fmt_blob f)
+{
+    const uint8_t *h = f.p + (f.p[5] ? 0x80 : 0x10), *px, *pal;
+    uint32_t cs, is, i, w, h2, npx, c32[256];
+    unsigned hs, ncol, ct, it;
+    if ((size_t)(h - f.p) + 0x30 > f.n)
+        return -1;
+    cs = fmt_u32(h + 4, FMT_LE);
+    is = fmt_u32(h + 8, FMT_LE);
+    hs = fmt_u16(h + 0xC, FMT_LE);
+    ncol = fmt_u16(h + 0xE, FMT_LE);
+    ct = h[0x12];
+    it = h[0x13];
+    w = fmt_u16(h + 0x14, FMT_LE);
+    h2 = fmt_u16(h + 0x16, FMT_LE);
+    px = h + hs;
+    pal = px + is;
+    if (!w || !h2 || w > 4096 || h2 > 4096 || (size_t)(pal - f.p) + cs > f.n)
+        return -1;
+    npx = w * h2;
+    if (is < (it == 3 ? npx * 4 : it == 5 ? npx : it == 4 ? npx / 2 : 0xFFFFFFFFu))
+        return -1;
+    img->w = (int)w;
+    img->h = (int)h2;
+    img->rgba = malloc((size_t)npx * 4);
+    img->src_bytes = (int)(is + cs);
+    if (!img->rgba)
+        return -1;
+    if (it == 3) {
+        for (i = 0; i < npx; i++) {
+            col32(img->rgba + 4 * i, px + 4 * i, FMT_LE);
+            img->rgba[4 * i + 3] = tim2_alpha(img->rgba[4 * i + 3]);
+        }
+        return 0;
+    }
+    memset(c32, 0, sizeof c32);
+    for (i = 0; i < ncol && i < 256; i++) {
+        uint8_t c[4];
+        if ((ct & 0x7F) == 3)
+            col32(c, pal + 4 * i, FMT_LE);
+        else
+            col16(c, fmt_u16(pal + 2 * i, FMT_LE));
+        c[3] = tim2_alpha(c[3]);
+        memcpy(&c32[i], c, 4);
+    }
+    if (it == 5 && !(ct & 0x80) && ncol == 256)     /* CSM1: blocks 8-15 and 16-23 of each 32 swapped */
+        for (i = 0; i < 256; i += 32) {
+            uint32_t t[8];
+            memcpy(t, &c32[i + 8], 32);
+            memcpy(&c32[i + 8], &c32[i + 16], 32);
+            memcpy(&c32[i + 16], t, 32);
+        }
+    {
+        uint32_t *o = (uint32_t *)img->rgba;
+        if (it == 5)
+            for (i = 0; i < npx; i++)
+                o[i] = c32[px[i]];
+        else
+            for (i = 0; i < npx; i++) {
+                unsigned b = px[i >> 1];
+                o[i] = c32[i & 1 ? b >> 4 : b & 15];
+            }
+    }
+    return 0;
 }
 
 static int apx_decode(apx_image *img, fmt_blob f, int be)
@@ -46,6 +121,8 @@ static int apx_decode(apx_image *img, fmt_blob f, int be)
     uint8_t clut[256][4];
 
     memset(img, 0, sizeof *img);
+    if (f.n >= 0x40 && !memcmp(f.p, "TIM2", 4))
+        return tim2_decode(img, f);
     if (f.n < 0x20)
         return -1;
     pix = fmt_u32(f.p + 4, be);

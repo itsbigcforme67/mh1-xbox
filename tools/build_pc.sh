@@ -11,6 +11,8 @@ cd "$(dirname "$0")/.."
 # PC_SYS (skips the multilib check).
 CC=${CC:-gcc}; OBJCOPY=${OBJCOPY:-objcopy}; NM=${NM:-nm}; M32=${M32--m32}
 mkdir -p build/pc
+# VERSION=mh2 (Monster Hunter Dos, docs/mh2_port.md) builds on G's form of the shared C: the same lists, plus -DVERSION_MH2
+GFORM=; case "$VERSION" in mhg|mh2) GFORM=1 ;; esac
 # nm with the target's C symbol prefix removed (SYM_PREFIX=_ for COFF i386, the Windows build)
 nmc() { if [ -n "$SYM_PREFIX" ]; then $NM "$@" | sed "s/^\\([0-9a-fA-F]* [A-Za-z] \\)$SYM_PREFIX/\\1/"; else $NM "$@"; fi; }
 PC="src/pc/viewer.c src/pc/fl/fl_model.c src/pc/gfx/gfx_gl.c \
@@ -97,7 +99,7 @@ QUEST="src/main/evdemo/evdemo.c src/main/quest/f_quest_nm.c src/game/tuto/tutori
        src/main/ud/ud_nm.c src/main/font/disp2_nm.c src/main/font/disp1_nm.c"
 EM="$EM src/game/em/em01_ai_nm.c src/game/em/em_cmd_nm.c"
 # G's quest result module (G rewrote result_prog and the screens around it): f_reward_g.c replaces MH1's first three reward files
-[ "$VERSION" = mhg ] && QUEST=$(echo " $QUEST " | sed 's# src/main/reward/f_reward.c # #; s# src/main/reward/f_reward2.c # #; s# src/main/reward/f_reward3.c # #')" src/main/reward/f_reward_g.c"
+[ -n "$GFORM" ] && QUEST=$(echo " $QUEST " | sed 's# src/main/reward/f_reward.c # #; s# src/main/reward/f_reward2.c # #; s# src/main/reward/f_reward3.c # #')" src/main/reward/f_reward_g.c"
 # More monster families (round 20): the AI draft (emNN_ai_nm.c or the
 # whole-file emNN_nm.c), the matched setter files, and the setters'
 # near-match copy linked weak (WEAK_EM) for what is still asm there.
@@ -128,7 +130,7 @@ EM="$EM src/game/em/em02_ai_nm.c src/game/em/em02.c src/game/em/em02_init.c"
 EM="$EM src/game/em/em07_ai_nm.c src/game/em/em07.c"
 EM="$EM src/game/em/em10_nm.c src/game/em/em33.c"
 # G's unused kind 40 (a cut-down Felyne, written from G's asm; docs/FINDS.md)
-[ "$VERSION" = mhg ] && EM="$EM src/game/em/em40_g.c"
+[ -n "$GFORM" ] && EM="$EM src/game/em/em40_g.c"
 WEAK_EM="em20_nm em17_nm em27_nm em04_nm em09_nm em08_ai_nm em21_nm em14_nm em15_nm"
 # The village (lobby.bin: Kokoto village offline, the town online): agent
 # F's whole-file lobby C (src/lobby/f/lb_X.c, the lb_zNN singletons) and
@@ -139,7 +141,7 @@ WEAK_EM="em20_nm em17_nm em27_nm em04_nm em09_nm em08_ai_nm em21_nm em14_nm em15
 LOBBY="$(ls src/lobby/f/lb_[a-p].c src/lobby/f/lb_z*.c | tr '\n' ' ') src/lobby/f/lb_pl_nm.c \
        $(ls src/lobby/lb/*_nm.c | tr '\n' ' ') src/lobby/lb/lb_talk.c"
 [ -f src/lobby/f/lb_village_nm.c ] && LOBBY="$LOBBY src/lobby/f/lb_village_nm.c"
-[ "$VERSION" = mhg ] && LOBBY="$LOBBY src/lobby/f/lb_guild_g.c"     # the G quest counter (written from G's asm; the MH1 copies are #ifndef VERSION_MHG)
+[ -n "$GFORM" ] && LOBBY="$LOBBY src/lobby/f/lb_guild_g.c"     # the G quest counter (written from G's asm; the MH1 copies are #ifndef VERSION_MHG)
 # the village start menu (Lb_ck_menu -> lbmw = lb_menu_w): Lb_Menu_Init and
 # the menu's move and draw (matched b/ runs)
 LOBBY="$LOBBY src/lobby/b/lb_bz15.c src/lobby/b/lb_bz17.c src/lobby/b/lb_bz19.c src/lobby/b/lb_bz135.c \
@@ -163,7 +165,8 @@ MC="$MC src/main/ud/udmisc_nm.c"
 BOOT="src/select/select00.c src/select/demo.c src/select/edit_nm.c src/main/omake/omake.c \
       src/main/fade/fade_nm.c src/main/sys/tsk_nm.c src/main/weapon/trans.c"
 # G's GAME MENU has NETWORK OPTIONS (G's Omake_task) and the GALLERY (G's omake) where MH1 has its movie menu
-[ "$VERSION" = mhg ] && BOOT="$BOOT src/main/omake/omake_g.c src/mhg/main/sprite/putspr_g.c src/main/menu/status_g.c src/main/menu/equip_g.c"   # (putspr_g: G's two triangle helpers were no-op stand-ins on the PC)
+[ "$VERSION" = mh2 ] && BOOT="$BOOT src/select/title_mh2.c"   # MH2's own boot as far as the title (written from its asm)
+[ -n "$GFORM" ] && BOOT="$BOOT src/main/omake/omake_g.c src/mhg/main/sprite/putspr_g.c src/main/menu/status_g.c src/main/menu/equip_g.c"   # (putspr_g: G's two triangle helpers were no-op stand-ins on the PC)
 # Village features beyond the walk-and-talk loop (agent F's lobby f/ files,
 # agent B's b/ runs and b/nm near-matches): the item box (lb_ib.c whole
 # file; Lb_ItemBox_init from lb_tu_ib.c), the shops (item shop, forge
@@ -193,7 +196,7 @@ BMATCH="$(ls src/lobby/b/lb_by13[5-9].c src/lobby/b/lb_by14[0-9].c src/lobby/b/l
 BMATCH="$BMATCH $(grep -v '^#' tools/pc_lobby_matched.txt | tr '\n' ' ')"
 # VERSION=mhg: the MH1-matched copies listed in tools/pc_lobby_g_exclude.txt do not run on G (its functions are edited);
 # the G versions live in lb_village_nm.c / #ifdef VERSION_MHG in the shared file
-if [ "$VERSION" = mhg ] && [ -f tools/pc_lobby_g_exclude.txt ]; then
+if [ -n "$GFORM" ] && [ -f tools/pc_lobby_g_exclude.txt ]; then
     for x in $(grep -v '^#' tools/pc_lobby_g_exclude.txt); do BMATCH=$(echo " $BMATCH " | sed "s# $x # #"); done
 fi
 # matched lobby functions that were stand-ins (gen_rt_auto) until now:
@@ -273,7 +276,7 @@ if [ -n "$ONLINE" ]; then
            src/ps2patch/online.c $NETLB_MCS"   # (online.c: the server table fill shared with the PS2 online patch)
     GAME="$GAME $NETMAIN $NETLB src/lobby/b/lb_cmcs01.c src/main/boot/boot02.c src/main/plsel/plsel_nm.c"
     # G: its lobby-server receive handlers that differ from MH1's (named per table address in config/mhg/pc_names.txt)
-    [ "$VERSION" = mhg ] && GAME="$GAME src/lobby/cnet/cnet_g.c"
+    [ -n "$GFORM" ] && GAME="$GAME src/lobby/cnet/cnet_g.c"
     # G: its lobby client, plaza and town functions that differ from MH1's or are G's own (src/lobby/gonl/gen,
     # tools/mhg_gonl.py): they win over MH1's copies of the same names (BMATCH)
     if [ "$VERSION" = mhg ]; then
@@ -414,7 +417,7 @@ MATCHED_B="src/main/cam/cam.c \
 MATCHED_A="$MATCHED_A $MATCHED_B"
 WEAK_B="cam_nm camarea_nm camr_nm camr2_nm camr4_nm camr5_nm hit2_nm menu_nm menu_disp_nm ud_nm udmisc_nm"
 # VERSION=mhg: matched MH1 copies of functions G edited (tools/pc_g_exclude.txt); their near-match copies, linked weak, hold the G code
-if [ "$VERSION" = mhg ] && [ -f tools/pc_g_exclude.txt ]; then
+if [ -n "$GFORM" ] && [ -f tools/pc_g_exclude.txt ]; then
     for x in $(grep -v '^#' tools/pc_g_exclude.txt); do MATCHED_A=$(echo " $MATCHED_A " | sed "s# $x # #"); done
 fi
 [ -n "$MATCHED_SKIP" ] && MATCHED_A=$(echo $MATCHED_A | tr ' ' '\n' | grep -vE "$MATCHED_SKIP" | tr '\n' ' ')   # bisecting aid
@@ -448,7 +451,8 @@ GAME_NOAGG=${GAME_NOAGG--fno-aggressive-loop-optimizations}   # gcc only (empty 
 if [ -z "${FPSSE+x}" ]; then FPSSE=""; [ "$M32" = "-m32" ] && [ "${CC:-gcc}" = gcc ] && FPSSE="-msse2 -mfpmath=sse"; fi
 GAMEFLAGS="$M32 $FPSSE $GAME_EXTRA ${COV:+-finstrument-functions} -std=gnu99 -O2 -g -fno-strict-aliasing $GAME_NOAGG -ftrivial-auto-var-init=zero -Dsprintf=rt_text_sprintf -Dstrcpy=rt_text_strcpy -Dstrcat=rt_text_strcat -Iinclude -w"
 # VERSION=mhg: PS2 Monster Hunter G (docs/mhg.md); run through tools/build_pc_mhg.sh, which builds in its own tree
-if [ "$VERSION" = mhg ]; then
+[ "$VERSION" = mh2 ] && { GAMEFLAGS="$GAMEFLAGS -DVERSION_MH2"; CFLAGS="$CFLAGS -DVERSION_MH2"; }
+if [ -n "$GFORM" ]; then
     GAMEFLAGS="$GAMEFLAGS -DVERSION_MHG"; CFLAGS="$CFLAGS -DVERSION_MHG"
     # the G online build: lbnet.h / cnlbs01 / cnlbs03 take G's command indices and work sizes (g_alias.h MHG_NET)
     [ -n "$ONLINE" ] && { GAMEFLAGS="$GAMEFLAGS -DMHG_ONLINE=1"; CFLAGS="$CFLAGS -DMHG_ONLINE=1"; }
@@ -462,7 +466,8 @@ EXE=${EXE:-}               # ".exe" for the Windows build (tools/build_win.sh)  
 cc_obj() {
     mkdir -p build/pc/cmd
     echo "$2" > "build/pc/cmd/$1.sh"
-    if [ -f "build/pc/adapt/$1.h" ]; then sh -c "$2 -include build/pc/adapt/$1.h"; else sh -c "$2"; fi || exit 1
+    # PC_KEEP_GOING=1: list every compile error of a new version in one run (the link then fails)
+    if [ -f "build/pc/adapt/$1.h" ]; then sh -c "$2 -include build/pc/adapt/$1.h"; else sh -c "$2"; fi || [ -n "$PC_KEEP_GOING" ] || exit 1
 }
 # MH1_JOBS=N compiles up to N game files at a time (default 1: one after the other, as before; ./mh1 sets it)
 JOBS=${MH1_JOBS:-1}; NJ=0

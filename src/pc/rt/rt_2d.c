@@ -28,7 +28,11 @@
 #include <stdlib.h>
 #include <string.h>
 
+#ifdef VERSION_MH2
+#define SCR_W 640               /* MH2's flps0008 (main 0x187A80) scales x by frame width / 640: its 2D coordinates are 640 wide */
+#else
 #define SCR_W 512
+#endif
 #define SCR_H 448
 
 /* ------------------------------------------------------------ textures */

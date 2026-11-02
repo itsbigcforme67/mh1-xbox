@@ -62,7 +62,7 @@ extern char *hunt_group_tbl[];
 extern u8 my_user_handle[0x10];
 extern u8 ud_pouch_backup[0x50];        /* src/main/ud/udmisc_nm.c: the master's pouch at departure (G 0x32C1C0) */
 
-extern u8 Item_data[][0x14];
+extern u8 Item_data[][ITEM_ROW];
 extern PLW player_work[];
 
 int Event_flag_ck(int);

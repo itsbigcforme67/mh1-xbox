@@ -2436,7 +2436,7 @@ block_136:
                                         temp_a1_7 = M2C_FIELD(temp_a1_6, u8 *, 0x32C5);
                                         if (temp_a1_7 == 1) {
                                             if ((M2C_FIELD(lb_sys, s32 *, LBSYS_OFS(0x68)) != 7) && (M2C_FIELD(lb_sys, s32 *, LBSYS_OFS(0x68)) != 8)) {
-                                                if ((M2C_FIELD(cw, u16 *, CW_OFS(0x32C6)) + 1) >= (s32) M2C_FIELD(Lbs_GetRoomInfo(((s16)((M2C_FIELD(ClassInfo, u8 *, 8) - 1))), temp_a1_7), u16 *, 2)) {
+                                                if ((M2C_FIELD(cw, u16 *, CW_OFS(0x32C6)) + 1) >= (s32) M2C_FIELD((u8 *)Lbs_GetRoomInfo(((s16)((M2C_FIELD(ClassInfo, u8 *, 8) - 1))), temp_a1_7), u16 *, 2)) {
                                                     SetDialogData(0x36, 2);
                                                     SetDialogYesNo(0);
                                                     *(s8 *)0x3F36AB = 0;

@@ -2772,12 +2772,20 @@ int main(int argc, char **argv)
     }
     if (!rt_log_started())
         rt_log_init(disc, argc, argv);
+#ifdef VERSION_MH2
+    snprintf(path, sizeof path, "%s/DATA.BIN", disc);   /* an archive of two: entry 0 the data files, entry 1 the overlays */
+    if (fmt_afs_open_sub(&afs, path, 0) != 0) {
+#else
     snprintf(path, sizeof path, "%s/AFS_DATA.AFS", disc);
     if (fmt_afs_open(&afs, path) != 0) {
+#endif
         fprintf(stderr, "cannot open %s\n", path);
         rt_warn("cannot open %s: wrong disc directory? (it must hold AFS_DATA.AFS and SLPM_654.95)", rt_log_path(path));
         return 1;
     }
+#ifdef VERSION_MH2
+    afs.raw_ok = 1;
+#endif
     rt_log("boot: AFS_DATA.AFS opened (%u entries)", (unsigned)afs.count);
     snprintf(path, sizeof path, "%s/%s", disc, rt_ver_elf());     /* SLPM_654.95 (G: SLPM_658.69) */
     if (rt_load_elf(path) != 0) {
@@ -2787,6 +2795,20 @@ int main(int argc, char **argv)
         rt_log("boot: %s loaded", rt_ver_elf());
     {
         const char *mso = rt_ms_push("overlay binaries (game/lobby/select.bin)");
+#ifdef VERSION_MH2
+        static const char *const nm[4] = { "sub_main.bin", "game.bin", "lobby.bin", "select.bin" };
+        void (*const set[4])(uint8_t *, size_t) = { rt_set_sub_main, rt_set_overlay, rt_set_lobby, rt_set_select };
+        fmt_afs oa;
+        int k;
+        snprintf(path, sizeof path, "%s/DATA.BIN", disc);
+        if (fmt_afs_open_sub(&oa, path, 1) == 0) {
+            for (k = 0; k < 4; k++) {
+                uint8_t *o2 = fmt_afs_read(&oa, fmt_afs_find_mwo(&oa, nm[k]), &n);
+                set[k](o2, o2 ? n : 0);
+            }
+            fmt_afs_close(&oa);
+        }
+#else
         /* stored raw in MH1, packed in G (fmt_mwo_unpack) */
         uint8_t *ovl = fmt_afs_read(&afs, fmt_afs_find(&afs, "game.bin"), &n);
         ovl = fmt_mwo_unpack(ovl, ovl ? n : 0, &n);
@@ -2802,6 +2824,7 @@ int main(int argc, char **argv)
             ovl = fmt_mwo_unpack(ovl, ovl ? n : 0, &n);
             rt_set_sub_main(ovl, ovl ? n : 0);
         }
+#endif
         rt_ms_pop(mso);
     }
     if (rt_import_data() != 0) {
@@ -2847,7 +2870,9 @@ int main(int argc, char **argv)
         hide = 1;       /* G on the PC: always hidden (above). Not on the Xbox: the console is played by
                          * hand, and hide also turned off the controller there (owner, 14 Oct) */
 #endif
-#ifdef VERSION_MHG
+#ifdef VERSION_MH2
+    if (gfx_init(W, H, "Monster Hunter 2", hide) != 0) {
+#elif defined(VERSION_MHG)
     if (gfx_init(W, H, "Monster Hunter G", hide) != 0) {
 #else
     if (gfx_init(W, H, "Monster Hunter", hide) != 0) {
@@ -2871,6 +2896,15 @@ int main(int argc, char **argv)
     rt_set_file_loader(afs_entry);
     rt_set_em_model_loader(em_model_load);  /* before the quest's em_create_model calls */
     rt_set_em_pose_fn(em_pose_now);         /* enemy_mk's joints for em_ride_sub (rt_em.c) */
+#ifdef VERSION_MH2
+    /* The host's quest and stage scaffolding below reads tables MH2 does not have names for yet: --boot goes straight
+     * to the boot tasks, and nothing else runs (docs/mh2_port.md) */
+    if (!boot) {
+        fprintf(stderr, "MH2: only --boot works so far\n");
+        return 1;
+    }
+    goto mh2_boot;
+#endif
     if (quest_no) {
         /* --quest N: Quest_init + Quest_start as game11 does. The hunt
          * starts where the game starts it: the quest's start stage
@@ -3043,6 +3077,9 @@ int main(int argc, char **argv)
 #ifndef XBOX                            /* no mouse on the Xbox: nxdk's SDL asserts in relative mode */
     if (!shot)
         SDL_SetRelativeMouseMode(SDL_TRUE);
+#endif
+#ifdef VERSION_MH2
+mh2_boot:
 #endif
     rt_flow_set_core(sim_tick);
     rt_set_stage_loader(load_stage_models);
