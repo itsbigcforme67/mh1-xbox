@@ -345,3 +345,10 @@ current Xbox bug round.
   (more lines, or wider than the US line, G's Japanese and the table's widest US line; talk excepted), that drops the US
   line's colour codes or page counter, or that is Freedom's placeholder "dummy", leaves the MH1 US line in place.
   MH1 JP keeps its own US disc text, unchanged. tools/text_map.py; numbers in docs/english_g.md.
+
+### MH Dos gets PC and Xbox ports (owner, 2 Nov 2026)
+- MH Dos (MH2, JP 1.04, disc/mh2) gets PC and Xbox ports like MH1 and G. PC first; the Xbox follows through the same platform layer. Same method: matched C plus the host
+  runtime in src/pc/rt, no recompiler, and it does not need 100% decompiled.
+- Decided for the first step, by the agent: VERSION=mh2 builds on G's form of the shared C (-DVERSION_MHG -DVERSION_MH2) in its own tree, tools/build_pc_mh2.sh. `rt_ver_mhg()` is true on MH2 until each use is reviewed.
+  MH2's boot is its own PC file, src/pc/title_mh2.c, because MH2 rewrote it. Decompile agents work on what the port needs: ranked list in docs/mh2_port.md section 6.
+- Open for the owner: first town or first quest through a `--quest` shortcut, as G did (docs/mh2_port.md section 6).

@@ -149,7 +149,7 @@ static int intro_skipped;       /* skip_intros_tick (below): the title has been 
 void rt_boot_init(void)
 {
 #ifdef VERSION_MH2
-    {   /* MH2 boots through its own small path so far (src/select/title_mh2.c; docs/mh2_port.md): G's boot tasks and
+    {   /* MH2 boots through its own small path so far (src/pc/title_mh2.c; docs/mh2_port.md): G's boot tasks and
          * InitSystemData do not fit its data */
         void mh2_Init_task(u8 *t);
         SchedulerInit();

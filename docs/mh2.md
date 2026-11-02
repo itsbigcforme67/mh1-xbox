@@ -258,11 +258,11 @@ Remaining work, by reason:
 8. mh2_differ.csv needs a G-form column.
 9. Parts that left strings in the asm: when the rest of such a file matches, its data gets a slot by itself on the next register.
 10. Type main's data block and name the Sony and CRI code properly.
-11. A PC port is not started. Whether to port MH2 onto the G engine is the owner's call later.
+11. PC port: started 2 Nov 2026, reaches the title, on G's form of the C. docs/mh2_port.md.
 
 ## 7. Not done or not tested
 
-- Nothing here has been run: no PC build, no PCSX2 boot. Proof is byte identity with the disc only.
+- Nothing here has been run in PCSX2. The matching proof is byte identity with the disc only. The PC build (docs/mh2_port.md) does not prove the matched C either: it runs only a small boot.
 - The English v1.03 ISO in disc/mh2 was not used.
 - dnas_net and dnas_ins only rebuild as bytes. No work was done on what is in them, by design.
 - No names or conclusions were cross-checked with the community repo; the allowance to do so was not needed.

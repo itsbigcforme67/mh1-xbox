@@ -1048,3 +1048,11 @@ Next: docs/mh2.md section 6.
 ## 2 Nov 2026: MH Dos near-misses, four agents merged
 
 Carried code 3.74% to 6.37% (2,268 of 17,034 functions). Verified on the merged tree: full check 47 of 47, mh2_check 13 of 13 identical. First full check failed 6 runtime steps (`MH2V` hid addresses from `tools/pc_abs.py`), fixed. Nothing of MH2 has run: proof is bytes only. Next: remaining struct layouts in docs/mh2.md.
+
+## 2 Nov 2026: MH Dos on the PC, first step: the title screen (docs/mh2_port.md)
+
+Owner's new goal: PC and Xbox ports of MH Dos. `tools/build_pc_mh2.sh` builds build/mh2/pc/mhview_2 from G's form of the C. A hidden `--boot --shot` shows MH2's title art, PRESS START BUTTON and the copyright, read from DATA.BIN and its overlays. The boot itself is about 150 lines from MH2's asm (src/pc/title_mh2.c); no game logic beyond fade, font and sprites has run, and Start does nothing.
+New: DATA.BIN and TIM2 readers, tools/mh2_pcmeta.py (symbols, pointer scan: unchecked), tools/mh2_datamap.py (1,499 more data names, 640 of 641 agree on names already placed, 930 on one vote).
+Formats: models, skeletons, motion and collision load with our readers (not drawn or played); quests (.mib 0x74 header in mib.afs) and MOMO textures are new. The font is byte-identical to G's.
+Gap: 933 of 1,340 tables have no address, 344 function stand-ins; about 23% of the linked functions are identical to MH2 or the same shape. Xbox not tried.
+Next: docs/mh2_port.md section 6.

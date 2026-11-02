@@ -165,7 +165,7 @@ MC="$MC src/main/ud/udmisc_nm.c"
 BOOT="src/select/select00.c src/select/demo.c src/select/edit_nm.c src/main/omake/omake.c \
       src/main/fade/fade_nm.c src/main/sys/tsk_nm.c src/main/weapon/trans.c"
 # G's GAME MENU has NETWORK OPTIONS (G's Omake_task) and the GALLERY (G's omake) where MH1 has its movie menu
-[ "$VERSION" = mh2 ] && BOOT="$BOOT src/select/title_mh2.c"   # MH2's own boot as far as the title (written from its asm)
+[ "$VERSION" = mh2 ] && BOOT="$BOOT src/pc/title_mh2.c"   # MH2's own boot as far as the title (written from its asm)
 [ -n "$GFORM" ] && BOOT="$BOOT src/main/omake/omake_g.c src/mhg/main/sprite/putspr_g.c src/main/menu/status_g.c src/main/menu/equip_g.c"   # (putspr_g: G's two triangle helpers were no-op stand-ins on the PC)
 # Village features beyond the walk-and-talk loop (agent F's lobby f/ files,
 # agent B's b/ runs and b/nm near-matches): the item box (lb_ib.c whole
