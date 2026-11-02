@@ -154,13 +154,13 @@ asm void Set_userdata(PLW *pl)
 
 #if !defined(G_PART) || G_PART == 13
 void ItemCopy_Pl2Ud(PLW *pl) {
-    memcpy((u8 *)User_data[0].item, (u8 *)pl + 0x828, 0x50);
+    memcpy((u8 *)User_data[0].item, (u8 *)pl + MH2V(0x828, 0x77C), 0x50);
 }
 #endif
 
 #if !defined(G_PART) || G_PART == 14
 void ItemCopy_Ud2Pl(PLW *pl) {
-    memcpy((u8 *)pl + 0x828, (u8 *)User_data[0].item, 0x50);
+    memcpy((u8 *)pl + MH2V(0x828, 0x77C), (u8 *)User_data[0].item, 0x50);
 }
 #endif
 

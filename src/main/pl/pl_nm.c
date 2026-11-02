@@ -607,8 +607,8 @@ void atck_data_set_shl2(HSHL *sh, int idx) {
     sh->hit_id = Get_hit_id();
 }
 
-ST_ITEM *Stage_item_data_get(u8);
-ST_UNIQ *Stage_unique_data_get(u8);
+ST_ITEM *Stage_item_data_get(stg_t);
+ST_UNIQ *Stage_unique_data_get(stg_t);
 u16 *Stage_item_probability_get(int);
 
 

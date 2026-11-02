@@ -12,18 +12,18 @@ extern u8 *bsSys;
 char *strcpy(char *, const char *);
 
 void http_test_14(u8 *p) {
-    if (*(s32 *)(cw + CW_OFS(0x35F4)) < 0) {
+    if (*(s32 *)(cw + CW_OFS(MH2V(0x35F4, 0x390C))) < 0) {
         CnetSys_w[0xFED] = 2;
-        *(s8 *)(p + 0x3D) = 0x11;
+        *(s8 *)(p + MH2V(0x3D, 0x44)) = 0x11;
         *(s8 *)(p + 0x3C) = 0;
-        *(s8 *)(p + 0x40) = 0x10;
+        *(s8 *)(p + MH2V(0x40, 0x46)) = 0x10;
         return;
     }
     if (*(s8 *)(p + 0x35) != 0) {
         CnetSys_w[0xFED] = 2;
-        *(s8 *)(p + 0x3D) = 0x11;
+        *(s8 *)(p + MH2V(0x3D, 0x44)) = 0x11;
         *(s8 *)(p + 0x3C) = 0;
-        *(s8 *)(p + 0x40) = 0x10;
+        *(s8 *)(p + MH2V(0x40, 0x46)) = 0x10;
         return;
     }
 }

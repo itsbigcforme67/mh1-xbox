@@ -171,7 +171,7 @@ void cmd_dakuten(void) {
 
     if (sk[0x2F] == 0) {
         c = sk[0x1E];
-        if (c > 1 && c != 6 && (sk[0x1F] != 4 || (sk[0x35] & 0xF) == 0)) {
+        if (c > 1 && c != 6 && (sk[0x1F] != MH2V(4, 0xD) || (sk[0x35] & 0xF) == 0)) {
             sk_cmd_input(*(s32 *)(sk + 8));
             return;
         }
@@ -187,7 +187,7 @@ void cmd_handakuten(void) {
 
     if (sk[0x2F] == 0) {
         c = sk[0x1E];
-        if (c > 1 && c != 6 && (sk[0x1F] != 4 || (sk[0x35] & 0xF) == 0)) {
+        if (c > 1 && c != 6 && (sk[0x1F] != MH2V(4, 0xD) || (sk[0x35] & 0xF) == 0)) {
             sk_cmd_input(*(s32 *)(sk + 8));
             return;
         }

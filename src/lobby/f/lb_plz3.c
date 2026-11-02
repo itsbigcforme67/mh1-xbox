@@ -674,7 +674,7 @@ LB_NETW *a;
 int Lb_get_cursor_col() {
     f32 a = 0.0000958738f * (f32)(u32)(u16)((System_timer & 0x3F) << 10);
 
-    return (((s8)(int)(80.0f * flSin(a)) + 0x9F) << 24) | 0xFF00;
+    return (((s8)(int)(80.0f * flSin(a)) + 0x9F) << 24) | MH2V(0xFF00, 0x8020);
 }
 #endif
 

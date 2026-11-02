@@ -1404,7 +1404,7 @@ extern char *menu_stat_job_str[];
 
 #if !defined(G_PART) || G_PART == 10
 void PrintPlayerJob(void *pl) {
-    font_print_uf(menu_stat_job_str[Get_weapon_job2(F8(pl, 0x35F), F16(pl, 0x360)) & 0xFF]);
+    font_print_uf(menu_stat_job_str[Get_weapon_job2(F8(pl, MH2V(0x35F, 0x35B)), F16(pl, MH2V(0x360, 0x35C))) & 0xFF]);
 }
 #endif
 
@@ -1793,7 +1793,7 @@ void Init_reibun(void);
 
 #if !defined(G_PART) || G_PART == 27
 void Default_reibun_set(void) {
-    memcpy((u8 *)&option_w + GV(0xDB0, 0x2A30), default_reibun, 0x21C);
+    memcpy((u8 *)&option_w + GV(0xDB0, 0x2A30), default_reibun, MH2V(0x21C, 0x10));
     Init_reibun();
 }
 #endif

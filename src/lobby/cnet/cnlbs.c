@@ -53,7 +53,7 @@ void _cnet_RecvFromLbs_AnswerSendMail(void) {
 
 #if !defined(G_PART) || G_PART == 59
 int __cnet_SendReq_SendMail(int arg0, int arg1) {
-    int cmd = SetSendCommand(&send_work, GV(0xF1, 0x11A)) & 0xFFFF;
+    int cmd = SetSendCommand(&send_work, MH2V(GV(0xF1, 0x11A), 0x148)) & 0xFFFF;
     SetSendStringData2(&send_work, arg0, 6);
     SetSendStringData2(&send_work, arg1, strlen(arg1) & 0xFFFF);
     SetSendCommandLen(&send_work);
@@ -106,8 +106,8 @@ void _cnet_RecvFromLbs_AnswerSearchUser(void) {
 
 #if !defined(G_PART) || G_PART == 60
 int __cnet_SendReq_SearchUser(int arg0) {
-    int cmd = SetSendCommand(&send_work, GV(0xEA, 0x109)) & 0xFFFF;
-    SetSendStringData2(&send_work, arg0, 6);
+    int cmd = SetSendCommand(&send_work, MH2V(GV(0xEA, 0x109), 0x151)) & 0xFFFF;
+    SetSendStringData2(&send_work, arg0, MH2V(6, 0xC));
     SetSendCommandLen(&send_work);
     Write_Socket(&send_work);
     return cmd;
@@ -146,7 +146,7 @@ int cb;
     int slot;
 
     c = *cond;
-    memset(&CnetSys_w.csearch, 0, GV(0x1CC4, 0x23F4));
+    memset(&CnetSys_w.csearch, 0, MH2V(GV(0x1CC4, 0x23F4), 0x6EF4));
     slot = __cnetSub_Set_BgProcess(1, 0, cb);
     if (slot != -1) {
         CnetSys_w.bg[slot].cmd = __cnet_SendReq_ConditionSearchUser(c);
@@ -171,7 +171,7 @@ int __cnet_SendReq_ConditionSearchUser(CNET_COND c) {
     int i;
     u8 *e;
 
-    cmd = SetSendCommand(&send_work, GV(0xEC, 0x10B)) & 0xFFFF;
+    cmd = SetSendCommand(&send_work, MH2V(GV(0xEC, 0x10B), 0x130)) & 0xFFFF;
     SetSendData8(&send_work, c.b[0]);
     n = c.b[1];
     SetSendData8(&send_work, n);
@@ -215,7 +215,7 @@ int __cnet_SendReq_ConditionSearchUser(CNET_COND c) {
 
 #if !defined(G_PART) || G_PART == 64
 int __cnet_Send_ConditionSearchUserCertify(int arg0) {
-    int cmd = SetSendCommand(&send_work, GV(0xEE, 0x10D)) & 0xFFFF;
+    int cmd = SetSendCommand(&send_work, MH2V(GV(0xEE, 0x10D), 0x132)) & 0xFFFF;
     SetSendData8(&send_work, arg0);
     SetSendCommandLen(&send_work);
     Write_Socket(&send_work);
@@ -237,7 +237,7 @@ void _cnet_RecvFromLbs_AnswerConditionSearchUser(void) {
         r = GetRecvData8(&sp3C, GetRecvData8(&sp3D, GetRecvData8(&sp3E, GetRecvData8(&sp3F, recv_work))));
         p = &CnetSys_w.csearch.rec[sp3E];
         for (i = 0; i < sp3D; i++) {
-            r = GetRecvDataOption3(p->b + 0x1C, 0x40, GetRecvDataOption3(p->b + 8, 0x10, GetRecvDataOption3(p->b, 8, r)));
+            r = GetRecvDataOption3(p->b + 0x1C, MH2V(0x40, 0x100), GetRecvDataOption3(p->b + 8, 0x10, GetRecvDataOption3(p->b, 8, r)));
             p++;
         }
         if (sp3C == 0) {
@@ -1622,7 +1622,7 @@ int cb;
 {
     int slot;
 
-    memset(CnetSys_w.room_member, 0, GV(0x300, 0x3C0));
+    memset(CnetSys_w.room_member, 0, MH2V(GV(0x300, 0x3C0), 0x3CC));
     slot = __cnetSub_Set_BgProcess(1, 0, cb);
     if (slot != -1) {
         CnetSys_w.bg[slot].cmd = __cnet_SendReq_RoomMember(arg);
@@ -1643,7 +1643,7 @@ void *d3;
 
     strcpy(d1, t + CNO(0x39EE));
     strcpy(d2, t + CNO(0x39F6));
-    memcpy(d3, t + CNO(0x3A0A), 0x40);
+    memcpy(d3, t + CNO(0x3A0A), MH2V(0x40, 0x100));
     return 0;
 }
 #endif
@@ -1812,7 +1812,7 @@ void _cnet_RecvFromLbs_BothGameJoin(void) {
     if (CNW(s8, 0xFEC) == 0) {
         __cnet_Recv_GameJoin();
     }
-    _cnet_Return_CallBack(GV(0xD, 0xF));
+    _cnet_Return_CallBack(MH2V(GV(0xD, 0xF), 0x9));
 }
 #endif
 

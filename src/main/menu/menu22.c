@@ -89,7 +89,7 @@ extern f32 ofs_x_3192[];
 extern s16 ofs_y_3193[];
 void flps0008(void *);
 void flps000C(void *);
-void *Stage_data_get(u8);
+void *Stage_data_get(stg_t);
 int enemy_mark_chk(PLW *, EMW *);
 void wyvern_area(f32 *, f32 *, f32 *, u8);
 void maru_disp_sub(int col, f32 x, f32 y, f32 r);
@@ -343,9 +343,9 @@ void wyvn_efct_ripple(void) {
     if (lpPit->x3F != 0) {
         SetTrnslMode(4, 1);
         SetFilterMode(1);
-        reload_tex(1, GSLOT(0x118, 0x13F));
-        SetTextureStage(GSLOT(0x118, 0x13F));
-        efct_circle(0x199, 0xAC, 0xFFFFFF, 120.0f, (f32)lpPit->x3F);
+        reload_tex(1, GSLOT(MH2V(0x118, 0x144), 0x13F));
+        SetTextureStage(GSLOT(MH2V(0x118, 0x144), 0x13F));
+        efct_circle(MH2V(0x199, 0x200), 0xAC, 0xFFFFFF, 120.0f, (f32)lpPit->x3F);
         SetTrnslMode(4, 5);
     }
 }

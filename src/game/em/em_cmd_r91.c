@@ -150,12 +150,12 @@ u8 *area_route_rnd32(EMW *em, u8 *a) {
     cum = 0;
     i = 0;
     rnd = em->x39A & 0x1F;
-    a += 3;
+    a += MH2V(3, 0x6);
     for (; i < n; i++) {
         w = a[2];
-        a += 3;
+        a += MH2V(3, 0x6);
         if (w == 0) {
-            a += 1;
+            a += MH2V(1, 0x2);
         } else {
             if ((u8)w == 0xFF) {
                 break;
@@ -164,7 +164,7 @@ u8 *area_route_rnd32(EMW *em, u8 *a) {
             if (rnd < cum) {
                 break;
             }
-            a += 1;
+            a += MH2V(1, 0x2);
         }
     }
     return a;

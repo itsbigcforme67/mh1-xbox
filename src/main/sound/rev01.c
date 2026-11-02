@@ -5,7 +5,7 @@
 int flSndSetRev();
 
 void Init_rev_set(void) {
-    flSndSetRev(0, 4, 0x1800, 0, 0);
+    flSndSetRev(0, 4, MH2V(0x1800, 0x1000), 0, 0);
     flSndSetRev(1, 4, 0xA00, 0, 0);
 }
 

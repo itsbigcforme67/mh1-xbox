@@ -124,10 +124,10 @@ void sk_henkan_sub(void) {
 void kbd_yn_kigou_kakutei(void) {
     int r;
 
-    if (SKS8(0x458) != 0 && SKB(0x2F) != 0) {
-        r = kbd_insert(lpSKey + SKO(0x44), lpSKey + SKO(0x458), SKU16(0x2A), SKU16(0x3A));
+    if (SKS8(MH2V(0x458, 0x468)) != 0 && SKB(0x2F) != 0) {
+        r = kbd_insert(lpSKey + SKO(MH2V(0x44, 0x4C)), lpSKey + SKO(MH2V(0x458, 0x468)), SKU16(0x2A), SKU16(0x3A));
         SKU16(0x2A) = SKU16(0x2A) + r;
-        memset(lpSKey + SKO(0x158), 0, GV(0x100, 0xFF));
+        memset(lpSKey + SKO(MH2V(0x158, 0x168)), 0, MH2V(GV(0x100, 0xFF), 0xFF));
         SKB(0x2F) = 0;
         SKS8(0x26) = 0;
         SKS16(0x2C) = 0;

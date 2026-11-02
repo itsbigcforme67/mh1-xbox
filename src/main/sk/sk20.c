@@ -53,8 +53,8 @@ void SoftkeyLoad(void) {
 
 #if !defined(G_PART) || G_PART == 1
 void SoftkeyTextureSet(void) {
-    reload_tex(1, GSLOT(0x11C, 0x143));
-    SetTextureStage(GSLOT(0x11C, 0x143));
+    reload_tex(1, GSLOT(MH2V(0x11C, 0x148), 0x143));
+    SetTextureStage(GSLOT(MH2V(0x11C, 0x148), 0x143));
 }
 #endif
 

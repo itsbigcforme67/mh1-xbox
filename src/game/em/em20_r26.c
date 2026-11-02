@@ -21,7 +21,7 @@ typedef struct STAGE_DATA {
     f32 depth;
     f32 floor_y;
 } STAGE_DATA;
-STAGE_DATA *Stage_data_get(u8);
+STAGE_DATA *Stage_data_get(stg_t);
 #define GAME_X1E16 (*(u16 *)((u8 *)&game_w + 0x1E))
 typedef struct EML {
     s32 v;              /* 0x194 + i * 0x50: layer i is busy while non-zero (as EMW.x194) */

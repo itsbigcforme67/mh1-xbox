@@ -1,0 +1,31 @@
+# for tools/mh2_structs.py cnet. RUN OLD DELTA: fields at MH1 offset >= OLD move by DELTA until the next RUN.
+# FIELD OLD NEW [TYPE]: one field. DECL OLD NEW text: the same with a new declaration.
+# CnetSys_w, offsets as MH1's. Read from near-matching lobby code; a gap here between two known offsets is a guess.
+struct CNET_SYS 0x4B000
+RUN 0xF00 108
+RUN 0xFC8 656
+RUN 0x10D0 848
+RUN 0x145E 1146
+RUN 0x1462 1145
+RUN 0x1576 1721
+RUN 0x15D2 1913
+RUN 0x162E 2105
+RUN 0x168A 2878
+RUN 0x36EE 3070
+RUN 0x39EE 5182
+RUN 0x3FEE 9406
+RUN 0x4054 9598
+RUN 0x6CE4 27000
+RUN 0x6E48 27548
+RUN 0x7BC0 4172
+RUN 0x302EC 27863
+RUN 0x302F0 27862
+RUN 0x30300 27864
+RUN 0x308E4 30088
+RUN 0x375B8 4172
+RUN 0x39D8C 3984
+RUN 0x3BA50 25024
+RUN 0x3BA54 61132
+RUN 0x3BA58 60996
+FIELD 0x1436 0x4AD7C
+DECL 0xE18 0xE18 CNET_BURST burst[16];

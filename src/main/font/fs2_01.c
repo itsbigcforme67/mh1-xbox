@@ -88,7 +88,7 @@ void font_stack_reset(void) {
 void font_draw(void) {
     s16 i;
 
-    for (i = 0; i < GV(5, 6); i++) {
+    for (i = 0; i < MH2V(GV(5, 6), 0x7); i++) {
         flfntDraw(i);
     }
     font_reset_flag = 1;

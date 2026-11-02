@@ -482,7 +482,7 @@ void player_init0(PLW *pl) {
 void clr_pl_work(void) {
     int i;
     PLW *p = player_work;
-    for (i = 0; i < GV(8, 10); i++) {
+    for (i = 0; i < MH2V(GV(8, 10), 10); i++) {
         memset(p, 0, MH2V(0xA00, sizeof(PLW)));
         p++;
     }

@@ -47,7 +47,7 @@ typedef struct CNET_BURST {
     u8 x21;             /* 0x21 progress */
     u8 res;             /* 0x22 result: 1 ok, 2 failed */
     u8 cnt;             /* 0x23 */
-#if LBNET_G
+#if LBNET_G || defined(VERSION_MH2)
     u8 gx24[4];         /* 0x24 G: the slot is 0x28 bytes (4 more at the end: a guess) */
 #endif
 } CNET_BURST;
@@ -96,7 +96,7 @@ typedef struct CNET_COND {
 } CNET_COND;
 
 /* blobs copied by value out of CnetSys_w (struct assignment; the element type fixes the copy loop) */
-typedef struct CNET_B5C { u8 b[0x5C]; } CNET_B5C;
+typedef struct CNET_B5C { u8 b[MH2V(0x5C, 0x11C)]; } CNET_B5C;
 typedef struct CNET_BATRES {    /* battle result being reported (0x24 bytes) */
     char name[0x10];    /* 0x00 */
     u8 flag;            /* 0x10 0 = nothing to report */
@@ -115,7 +115,7 @@ typedef struct CNET_H1004 { s16 h[0x802]; } CNET_H1004;
 #if LBNET_G
 typedef struct CNET_W5D4 { s32 w[0x1C1]; } CNET_W5D4;   /* G: 0x704 bytes */
 #else
-typedef struct CNET_W5D4 { s32 w[0x175]; } CNET_W5D4;
+typedef struct CNET_W5D4 { s32 w[MH2V(0x175, 0x391)]; } CNET_W5D4;
 #endif
 typedef struct CNET_T3 { u8 a, b, c; } CNET_T3;
 typedef struct CNET_RULEENT {   /* one room rule (0x14A5 bytes) */
@@ -157,7 +157,7 @@ typedef struct CNET_LUSER {     /* a user returned by the login server (0x5C byt
     char id[8];         /* 0x00 */
     char handle[0x10];  /* 0x08 */
     u8 pad18[4];        /* 0x18 */
-    u8 mini[0x40];      /* 0x1C mini data */
+    u8 mini[MH2V(0x40, 0x100)]; /* 0x1C mini data */
 } CNET_LUSER;
 
 /* room rule block (0x16B bytes) */
@@ -261,6 +261,8 @@ typedef struct CNET_SYS {
     u8 last_pwinfo;  /* 0x3A6E3  [G offset unknown] */
     char last_name[0x42];  /* 0x3A6E4 name of the last item [G offset unknown] */
 } CNET_SYS;
+#elif defined(VERSION_MH2)
+#include "cnet_mh2.h"
 #else
 typedef struct CNET_SYS {
     s32 active;  /* 0x000  */
@@ -373,7 +375,7 @@ typedef unsigned long long u64;
     (o) < 0x302EC ? 0x361C : (o) < 0x302EE ? 0x361F : (o) < 0x302EF ? 0x3620 : (o) < 0x30300 ? 0x361E : \
     (o) < 0x308E4 ? 0x3620 : (o) < 0x375B8 ? 0x3750 : (o) < 0x39BC0 ? -0x31BE : (o) < 0x39D8C ? -0x31FA : \
     (o) < 0x3BA50 ? -0x327C : (o) < 0x3BA54 ? -0x2B4C : -0x13D4))
-#else
+#elif !defined(VERSION_MH2)
 #define CNO(o) (o)
 #endif
 #define CNWP(off) ((u8 *)&CnetSys_w + CNO(off))

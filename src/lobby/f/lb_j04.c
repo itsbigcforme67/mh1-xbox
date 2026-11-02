@@ -62,7 +62,7 @@ void lb_pl_mv079(PLW *pl) {
         t = pl->work08 - 1;
         pl->work08 = t;
         if (t <= 0) {
-            Lb_Pl_act_set2(pl, 0, 0x35, 0);
+            Lb_Pl_act_set2(pl, 0, MH2V(0x35, 0x10), 0);
         }
         break;
     }

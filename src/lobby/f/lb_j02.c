@@ -10,7 +10,7 @@
 #if !defined(G_PART) || G_PART == 1
 void lb_pl_mv045(PLW *pl) {
     u8 s;
-    PLU8(pl, 0x90B) = 1;
+    PLU8(pl, MH2V(0x90B, 0x863)) = 1;
     ItemPickingDeclaration(pl, &pl->x8E6);
     s = pl->x05;
     switch (s) {
@@ -22,8 +22,8 @@ void lb_pl_mv045(PLW *pl) {
         pl->work8F0 = 0;
         return;
     case 1:
-        if (Pl_master_ck(pl) == 1 && ((F(u16, pl, 0x368) & 0x40) || pl->work90A != 0 || lbCommer[pl->work909].mac[0] == 0)) {
-            Lb_Pl_act_set2(pl, 0, 0x2F, 0);
+        if (Pl_master_ck(pl) == 1 && ((F(u16, pl, MH2V(0x368, 0x370)) & 0x40) || pl->work90A != 0 || lbCommer[pl->work909].mac[0] == 0)) {
+            Lb_Pl_act_set2(pl, 0, MH2V(0x2F, 0xC), 0);
         }
     }
 }

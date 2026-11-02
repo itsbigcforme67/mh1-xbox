@@ -100,7 +100,7 @@ typedef struct STAGE_DATA {
     f32 floor_y;        /* 0x18 */
 } STAGE_DATA;
 typedef f32 (*EM_POSP)[3];
-STAGE_DATA *Stage_data_get(u8);
+STAGE_DATA *Stage_data_get(stg_t);
 EM_POSP gp_ptr_ck(EMW *em, EM_STG_POS *p);
 void em_area_move_init(EMW *);
 void get_joint_pos_em(EMW *, int, f32 *);

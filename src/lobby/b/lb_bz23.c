@@ -8,7 +8,7 @@ void cnLbc_Set_NgServerId(void) {
     u8 temp_a0;
 
     temp_a0 = lbs_tryed_ctr;
-    if (temp_a0 < 0xA) {
+    if (temp_a0 < MH2V(0xA, 0x28)) {
         memcpy((u8 *)&LbsTryedWork + (temp_a0 * 0x14), &ConnectLbsId, 0x14);
         lbs_tryed_ctr = (u8) (lbs_tryed_ctr + 1);
     }

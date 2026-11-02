@@ -57,7 +57,7 @@ HI, LO, GPREL, R26, R32 = 5, 6, 7, 4, 2
 MASK = {R26: 0x03FFFFFF, HI: 0xFFFF, LO: 0xFFFF, R32: 0xFFFFFFFF}
 SHF_ALLOC, SHF_EXEC = 2, 4
 MODS = ["main", "sub_main", "select", "game", "lobby", "yn", "plsel", "gm_sub", "lbguild", "nethttp"]
-JOBS = 3
+JOBS = 2
 
 
 def P(*a):

@@ -5,7 +5,7 @@ extern char LbsTryedWork[];
 extern char CnetWork[];
 
 void cnLbc_Init_NgServerId(void) {
-    memset(&LbsTryedWork, 0, 0xC8);
+    memset(&LbsTryedWork, 0, MH2V(0xC8, 0x320));
     lbs_tryed_ctr = 0;
     F(s8, &CnetWork, 6) = 0;
 }

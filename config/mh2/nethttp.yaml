@@ -35,7 +35,11 @@ segments:
     subsegments:
       - [0x000000, textbin, header]
       - [0x000040, asm, text/nethttp_8FAE40]
+      - [0x0005D0, c, lobby/f/lb_z121]
+      - [0x000600, asm, text/nethttp_8FB400]
       - [0x000620, c, lobby/f/lb_m01]
       - [0x000638, asm, text/nethttp_8FB438]
+      - [0x000640, c, lobby/f/lb_gdr11]
+      - [0x0006A8, asm, text/nethttp_8FB4A8]
       - [0x055080, data, data/nethttp_data]
   - [0x5FC00]

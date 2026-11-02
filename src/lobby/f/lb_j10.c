@@ -158,9 +158,9 @@ void lb_pl_mv041(PLW *pl) {
         Lb_pl_chr_set(pl, 0x266, 8, 0);
         return;
     case 1:
-        if (F(s32, pl, 0x194) <= 0) {
+        if (F(s32, pl, MH2V(0x194, 0x154)) <= 0) {
             Lb_pl_chr_set(pl, 0x261, 6, 0);
-            Lb_act_set(pl, 0, 0x5D);
+            Lb_act_set(pl, 0, MH2V(0x5D, 0x25));
         }
         break;
     }

@@ -15,10 +15,10 @@ void yure_move(void) {
     i = 0;
     p = player_work;
     do {
-        if (p[0] != 0 && p[1] != 0 && (game_w.x1DC == 0 || (s8)cw[i + CW_OFS(0x2BFE)] != 0)) {
+        if (p[0] != 0 && p[1] != 0 && (game_w.x1DC == 0 || (s8)cw[i + CW_OFS(MH2V(0x2BFE, 0x152E))] != 0)) {
             yure_move_hair(p);
         }
         i++;
-        p += 0xA00;
-    } while (i < GV(8, 10));
+        p += MH2V(0xA00, 0x970);
+    } while (i < MH2V(GV(8, 10), 0xA));
 }

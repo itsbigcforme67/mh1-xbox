@@ -18,8 +18,8 @@
 
 #if !defined(G_PART) || G_PART == 1
 void Lb_send_myChair(void) {
-    lb_send_data(1, 0x11, &lb_sys.x66);
-    Lb_send_data_to_myself(1, 0x11, &lb_sys.x66);
+    lb_send_data(1, MH2V(0x11, 0x1D), &lb_sys.x66);
+    Lb_send_data_to_myself(1, MH2V(0x11, 0x1D), &lb_sys.x66);
 }
 #endif
 
