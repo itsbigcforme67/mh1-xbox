@@ -20,7 +20,11 @@ void cmcs_01(void) {
         if (Vs_Cnt_1 > 3) {
             COM_R_No_1 = 7U;
             Vs_Cnt_0 = 0;
+#ifdef VERSION_MH2
+
+#else
             *(s8 *)((u8 *)InetGame + 3) = 5;
+#endif
             Vs_Cnt_1 = 0;
             return;
         }

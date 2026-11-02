@@ -113,6 +113,32 @@ extern u8 INTCTYPE_MAP_006535E0[];
 
 
 /* set up the http library: clear the task table and header strings, hook the allocator, load the root certificate */
+#ifdef VERSION_MH2
+#include "mh2_lb.h"
+void CpInetHttpResolvCacheInitialize();
+int HttpTaskInitialize(void) {
+    CAINFO ca[2];
+    memset(HttpWork, 0, 0x720);
+    CpInetHttpInitialize();
+    CpInetHttpResolvCacheInitialize();
+    BsMemAllocInitialize();
+    sceHTTPSetMallocFunction(BsMemAlloc);
+    sceHTTPSetReallocFunction(BsMemRealloc);
+    sceHTTPSetFreeFunction(BsMemFree);
+    if (sceHTTPInit() < 0) {
+        return -1;
+    }
+    ca[0].data = (char *)BW32(0x1C2A8);
+    ca[0].size = get_CA_size(0);
+    ca[1].data = (char *)BW32(0x1C2AC);
+    ca[1].size = get_CA_size(1);
+    if (sceHTTPSInitCertFromMemory(0, 2, ca, 0, 0) < 0) {
+        return -1;
+    }
+    *(s32 *)0x249A78 = 1;
+    return 0;
+}
+#else
 int HttpTaskInitialize(void) {
     CAINFO ca;
     Pragma_nocache = 0;
@@ -132,3 +158,4 @@ int HttpTaskInitialize(void) {
     ca.size = get_CA_size();
     return -(sceHTTPSInitCertFromMemory(0, 1, &ca, 0, 0) < 0);
 }
+#endif

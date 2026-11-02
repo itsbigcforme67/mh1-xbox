@@ -20,11 +20,21 @@ void TransReset();
 void BsCsMain();
 void BsSetRenderState();
 
+#ifdef VERSION_MH2
+#include "mh2_lb.h"
+#define bsMainRetVal BW_MAINRET
+void sub_main_func_003692F0();
+#endif
 s8 MainBrowser(void) {
     BsKeySet();
     BsRequestTask();
     BsCheckInetProblem();
+#ifdef VERSION_MH2
     main_browser_jmp_378[BS_MODE_R_NO]();
+    sub_main_func_003692F0();
+#else
+    main_browser_jmp_378[BS_MODE_R_NO]();
+#endif
     return bsMainRetVal;
 }
 

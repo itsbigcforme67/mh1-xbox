@@ -28,6 +28,24 @@ void pl_sleeping();
 
 
 
+#ifdef VERSION_MH2
+void lb_pl_mv042(PLW *pl) {
+    u8 s;
+    s = pl->x05;
+    switch (s) {
+    case 0:
+        pl->x05 = s + 1;
+        Lb_pl_chr_set(pl, 0x25A, 4, 0);
+        return;
+    case 1:
+        if (F(s32, pl, 0x154) <= 0) {
+            Lb_pl_chr_set(pl, 0x261, 6, 0);
+            Lb_act_set(pl, 0, 0x25);
+        }
+        break;
+    }
+}
+#else
 void lb_pl_mv042(PLW *pl) {
     u8 s;
     s = pl->x05;
@@ -45,3 +63,4 @@ void lb_pl_mv042(PLW *pl) {
         break;
     }
 }
+#endif

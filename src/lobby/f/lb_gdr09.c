@@ -114,6 +114,24 @@ extern u8 INTCTYPE_MAP_006535E0[];
 
 
 /* claim the first free http task slot (only slot 0 is ever looked at: the loop ends when the s8 counter leaves 0) */
+#ifdef VERSION_MH2
+u8 *HttpTaskPull(void) {
+    int i;
+    u8 *w;
+    i = 0;
+    w = HttpWork;
+    for (; i < *(volatile u8 *)0x94FF98; i++, w += 0xE4) {
+        if (*(s8 *)(w + 0x7C) == 0) {
+            memset(w, 0, 0xE4);
+            *(s8 *)(w + 0x7C) = 1;
+            *(void **)(w + 0x78) = http_test_proc;
+            *(s8 *)(w + 0x4C) = i;
+            return w;
+        }
+    }
+    return 0;
+}
+#else
 u8 *HttpTaskPull(void) {
     int i;
     u8 *w;
@@ -134,3 +152,4 @@ loop_1:
     }
     goto loop_1;
 }
+#endif

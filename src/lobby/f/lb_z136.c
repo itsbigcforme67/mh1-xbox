@@ -5,6 +5,11 @@ extern u8 * bsCur;
 extern u8 * bsSys;
 extern u8 bsRetryCtr;
 
+#ifdef VERSION_MH2
+#include "mh2_lb.h"
+#define bsRetryCtr BW_RETRYCTR
+#define bsNetErrOccur BW_NETERROCCUR
+#endif
 s32 RetryShadowPost(void) {
     s8 sx1;
     u8 temp_v1;

@@ -137,7 +137,11 @@ void tagoutprintf2(u8 *arg0) {
             var_a3 = (var_a3 + 1) & 0xFF;
         } while (var_a3 < (*(volatile s32 *)np - 1));
     }
+#ifdef VERSION_MH2
+    if (!((var_a3 & 0xFF) < temp_a1) && (var_a3 & 0xFF) != temp_a0) {
+#else
     if ((var_a3 & 0xFF) == temp_a1) {
+#endif
         temp_a0_2 = (u8 *)(temp_a0 + (int)arg0);
         temp_v1 = temp_a0_2[-1];
         if (INTCTYPE_MAP_006535E0[temp_v1] & 1) {

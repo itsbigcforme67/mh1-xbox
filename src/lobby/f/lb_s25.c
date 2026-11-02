@@ -6,6 +6,12 @@ extern int bsSys;
 extern u8 bsGoHidePage;
 extern int bsOW[];
 
+#ifdef VERSION_MH2
+#include "mh2_lb.h"
+#define BsTimer0 BW_TIMER0
+#define bsGoHidePage BW_GOHIDEPAGE
+#define bsOW BW_OW
+#endif
 void To_BodyMain_RcvSrc(s32 arg0) {
     int temp_a0;
 

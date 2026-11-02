@@ -6,7 +6,11 @@ extern u8 InetSys[0x40];
 int InetDisconnectAll();
 
 int prot_02(s8 *a, s8 *b, s8 *c, s16 *d, s16 *e, s16 *f, s16 *g, s8 *h) {
+#ifdef VERSION_MH2
+
+#else
     InetSys[0xD] = (InetSys[0xD] < InetSys[0xC]) ? InetSys[0xD] + 1 : InetSys[0xC];
+#endif
     switch (*b) {
     case 0:
         *b = *b + 1;
