@@ -631,10 +631,16 @@ def register():
             else:
                 runs.append([m, [sec], a + ob.S[sec][5]])
         claimed = set()
-        for m, secs, end in runs:
+        work = collections.deque(runs)
+        while work:
+            m, secs, end = work.popleft()
             pl = {sec: place[sec][1] for sec in secs}
             a = pl[secs[0]]
             r = resolve(ob, m, pl, claimed)
+            if isinstance(r, str) and len(secs) > 1:      # one function of the run may be the trouble: one at a time
+                for sec in reversed(secs):
+                    work.appendleft([m, [sec], place[sec][1] + ob.S[sec][5]])
+                continue
             if isinstance(r, str):
                 why["part: " + r] += 1
                 continue
