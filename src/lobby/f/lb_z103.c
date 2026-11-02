@@ -5,7 +5,7 @@ extern char lit_1068_00665D70[];
 
 void Lb_put_inputMsgForHTML(void) {
     if (System_timer & 0x20) {
-        font_set_stack_no(3);
+        font_set_stack_no(MH2V(3, 0x5));
         flfntLocate(0xC8, 0x17C);
         font_set_palette(5);
         font_print(&lit_1068_00665D70);

@@ -26,8 +26,8 @@ void CpInetHttpInitialize(void) {
         sp.init = 0;
         Inet_http_thread_sema[0] = CreateSema(&sp);
     }
-    memset(Fd_tbl, 0xFF, 0xC);
-    memset(Cancel_id, 0xFF, 0xC);
+    memset(Fd_tbl, 0xFF, MH2V(0xC, 0x20));
+    memset(Cancel_id, 0xFF, MH2V(0xC, 0x20));
     Err_no[0] = 0;
     Err_hno[0] = 0;
 }

@@ -22,7 +22,7 @@ int cnLBS_Answer_LoginWarningMessage(void) {
 
 #if !defined(G_PART) || G_PART == 3
 void __cnet_SendAns_WarningMessage(int arg0) {
-    SetSendCommand(&send_work, GV(0x14, 0x12));
+    SetSendCommand(&send_work, MH2V(GV(0x14, 0x12), 0x12));
     SetSendData8(&send_work, arg0);
     SetSendCommandLen(&send_work);
     Write_Socket(&send_work);
@@ -81,7 +81,7 @@ int cnLBS_Get_TopInformation(CNET_B1004 *d) {
 
 #if !defined(G_PART) || G_PART == 4
 int __cnet_SendReq_TopInformation(void) {
-    int cmd = SetSendCommand(&send_work, GV(0x1F, 0x1B)) & 0xFFFF;
+    int cmd = SetSendCommand(&send_work, MH2V(GV(0x1F, 0x1B), 0x1B)) & 0xFFFF;
     SetSendCommandLen(&send_work);
     Write_Socket(&send_work);
     return cmd;

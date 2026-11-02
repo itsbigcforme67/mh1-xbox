@@ -28,7 +28,7 @@ void lb_trade_start(s8 id, u8 *data) {
         pl->work909 = Lb_get_plID(t.plid);
         pl->work904 = t.item;
         pl->work906 = t.num;
-        Lb_Pl_act_set2(pl, 0, 0x2D, 0x10);
+        Lb_Pl_act_set2(pl, 0, MH2V(0x2D, 0xA), 0x10);
     }
 }
 #endif

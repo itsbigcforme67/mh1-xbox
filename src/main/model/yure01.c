@@ -19,6 +19,6 @@ void yure_move(void) {
             yure_move_hair(p);
         }
         i++;
-        p += 0xA00;
-    } while (i < GV(8, 10));
+        p += MH2V(0xA00, 0x970);
+    } while (i < MH2V(GV(8, 10), 0xA));
 }

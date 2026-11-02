@@ -10,7 +10,7 @@ s32 net_Check_FriendSuu(char *p, s32 n) {
     for (i = 0; i < n; i++) {
         if (*p == 0) break;
         cnt++;
-        p += 0x30;
+        p += MH2V(0x30, 0x18);
     }
     return cnt;
 }

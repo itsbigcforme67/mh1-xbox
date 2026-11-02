@@ -448,7 +448,7 @@ void _cnet_RecvFromLbs_AnswerLobbyMatchEntryUser(void) {
     if (CNW(s8, 0xFEC) == 0) {
         GetRecvData16(CNWP(0x302F4), GetRecvData16(CNWP(0x302F2), GetRecvData16(CNWP(0x302F0), &recv_work)));
     }
-    _cnet_Return_CallBack(GV(0x22, 0x1C));
+    _cnet_Return_CallBack(MH2V(GV(0x22, 0x1C), 0x1C));
 }
 #endif
 
@@ -509,7 +509,7 @@ int cb;
     int slot = __cnetSub_Set_BgProcess(1, 0, cb);
 
     if (slot != -1) {
-        memset(CnetSys_w.lobby_member, 0, GV(0x300, 0x3C0));
+        memset(CnetSys_w.lobby_member, 0, MH2V(GV(0x300, 0x3C0), 0xB40));
         CnetSys_w.bg[slot].cmd = __cnet_SendReq_LobbyMemberList(arg);
         return slot;
     }
@@ -526,9 +526,9 @@ void *d3;
 {
     u8 *t = (u8 *)&CnetSys_w + (u16)idx * 0x60;
 
-    strcpy(d1, t + CNO(0x36EE));
-    strcpy(d2, t + CNO(0x36F6));
-    memcpy(d3, t + CNO(0x370A), 0x40);
+    strcpy(d1, t + CNO(MH2V(0x36EE, 0x4E2C)));
+    strcpy(d2, t + CNO(MH2V(0x36F6, 0x4E34)));
+    memcpy(d3, t + CNO(MH2V(0x370A, 0x4E48)), MH2V(0x40, 0x100));
     return 0;
 }
 #endif
@@ -554,7 +554,7 @@ void _cnet_RecvFromLbs_AnswerLobbyMember(void) {
 
 #if !defined(G_PART) || G_PART == 21
 void __cnet_Recv_LobbyMember(void) {
-    memset(CnetSys_w.lobby_member, 0, GV(0x300, 0x3C0));
+    memset(CnetSys_w.lobby_member, 0, MH2V(GV(0x300, 0x3C0), 0xB40));
     __cnet_Recv_MemberSub(&CnetSys_w.n_lobby_member, CnetSys_w.lobby_member);
 }
 #endif
@@ -573,13 +573,13 @@ u8 *arg1;
     int j;
 
     r = GetRecvData8(&sp4E, GetRecvData8(&sp4F, GetRecvData16(&sp4C, recv_work)));
-    if (sp4E > GV(8, 10)) {
-        sp4E = GV(8, 10);
+    if (sp4E > MH2V(GV(8, 10), 0xA)) {
+        sp4E = MH2V(GV(8, 10), 0xA);
     }
     *arg0 = sp4E;
     for (i = 0; i < sp4E; i++) {
-        r = GetRecvDataOption3(arg1 + 0x1C, 0x40, GetRecvDataOption3(arg1 + 8, 0x10, GetRecvDataOption3(arg1, 8, r)));
-        arg1 += 0x60;
+        r = GetRecvDataOption3(arg1 + 0x1C, MH2V(0x40, 0x100), GetRecvDataOption3(arg1 + 8, 0x10, GetRecvDataOption3(arg1, 8, r)));
+        arg1 += MH2V(0x60, 0x120);
         if (sp4F > 3) {
             for (j = 0; j < sp4F - 3; j++) {
                 x = GetRecvData16(&sp4C, r); r = x + sp4C;
@@ -657,7 +657,7 @@ void _cnet_RecvFromLbs_NoticeMatchEntryUser(void) {
 
 #if !defined(G_PART) || G_PART == 31
 int __cnet_SendReq_MatchEntryUser(int arg0) {
-    int cmd = SetSendCommand(&send_work, GV(0x9D, 0xBB)) & 0xFFFF;
+    int cmd = SetSendCommand(&send_work, MH2V(GV(0x9D, 0xBB), 0xD9)) & 0xFFFF;
     SetSendData16(&send_work, arg0);
     SetSendCommandLen(&send_work);
     Write_Socket(&send_work);
@@ -687,12 +687,12 @@ void _cnet_RecvFromLbs_AnswerRoomMatchEntryTypeList(void) {
                     k = 0;
                     s2 = (u8 *)&CnetSys_w;
                     do {
-                        if (memcmp(name, s2 + CNO(0x39EE), 8) == 0) {
+                        if (memcmp(name, s2 + CNO(MH2V(0x39EE, 0x4E2C)), 8) == 0) {
                             s2[CNO(0x3A4A)] = type;
                         }
                         k++;
-                        s2 += 0x60;
-                    } while (k < GV(8, 10));
+                        s2 += MH2V(0x60, 0x120);
+                    } while (k < MH2V(GV(8, 10), 0xA));
                     i++;
                 } while (i < cnt);
             }
@@ -709,17 +709,17 @@ void _cnet_RecvFromLbs_NoticeRoomMatchEntryTypeList(void) {
     u8 *s0;
 
     if (CnetSys_w.rres == 0) {
-        memset(CnetSys_w.extra_member, 0, 0x60);
+        memset(CnetSys_w.extra_member, 0, MH2V(0x60, 0x120));
         p = GetRecvData16(&id, recv_work);
         if (id == CNW(u8, 0x4060)) {
             s0 = CnetSys_w.room_member;
             CnetSys_w.n_room_member = 1;
-            GetRecvData8(s0 + 0x5C, GetRecvDataOption3(s0, 8, p));
+            GetRecvData8(s0 + MH2V(0x5C, 0x11C), GetRecvDataOption3(s0, 8, p));
             goto cb;
         }
     } else {
 cb:
-        _cnet_Return_CallBack(GV(0x28, 0x27));
+        _cnet_Return_CallBack(MH2V(GV(0x28, 0x27), 0x27));
     }
 }
 #endif
@@ -844,7 +844,7 @@ void _cnet_RecvFromLbs_AnswerCurrentPlace(void) {
 
 #if !defined(G_PART) || G_PART == 23
 int __cnet_SendReq_CurrentPlace(void) {
-    int cmd = SetSendCommand(&send_work, GV(0xD6, 0xF4)) & 0xFFFF;
+    int cmd = SetSendCommand(&send_work, MH2V(GV(0xD6, 0xF4), 0x115)) & 0xFFFF;
     SetSendCommandLen(&send_work);
     Write_Socket(&send_work);
     return cmd;
@@ -856,7 +856,7 @@ void cnLBS_Init_LoginLobbyServer(void) {
     *(int *)((u8 *)CNWP(8)) = 0;
     *(int *)((u8 *)CNWP(0)) = 0;
     memset(CNWP(0x18), 0, 0xE00);
-    memset(CNWP(0xE18), 0, GV(0x1B0, 0x258));
+    memset(CNWP(0xE18), 0, MH2V(GV(0x1B0, 0x258), 0x280));
     memset(CNWP(0x4058), 0, 0xA);
     memset(CNWP(0x1436), 0, 0x28);
 }
@@ -933,7 +933,7 @@ char *d;
 {
     int k = idx & 0xFF;
 
-    strcpy(d, (u8 *)&CnetSys_w + k * 0x5C + CNO(0x1462));
+    strcpy(d, (u8 *)&CnetSys_w + k * 0x5C + CNO(MH2V(0x1462, 0x18DB)));
     return 0;
 }
 #endif
@@ -945,7 +945,7 @@ char *d;
 {
     int k = idx & 0xFF;
 
-    strcpy(d, (u8 *)&CnetSys_w + k * 0x5C + CNO(0x146A));
+    strcpy(d, (u8 *)&CnetSys_w + k * 0x5C + CNO(MH2V(0x146A, 0x18E3)));
     return 0;
 }
 #endif
@@ -957,7 +957,7 @@ void *d;
 {
     int k = idx & 0xFF;
 
-    memcpy(d, (u8 *)&CnetSys_w + k * 0x5C + CNO(0x147E), 0x40);
+    memcpy(d, (u8 *)&CnetSys_w + k * 0x5C + CNO(MH2V(0x147E, 0x18F7)), MH2V(0x40, 0x100));
     return 0;
 }
 #endif

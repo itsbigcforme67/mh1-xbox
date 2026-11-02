@@ -14,7 +14,7 @@ s8 res;
 {
     struct { s16 item; s16 num; u8 id[8]; s8 r; } t;
     PLW *pl = &player_work[game_w.master];
-    memcpy(t.id, CWPLAYER(pl->work909) + 0x132C, 8);
+    memcpy(t.id, CWPLAYER(pl->work909) + MH2V(0x132C, 0xA16), 8);
     t.item = pl->work904;
     t.num = pl->work906;
     t.r = res;

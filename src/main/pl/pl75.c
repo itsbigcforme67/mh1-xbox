@@ -21,6 +21,6 @@ s32 Nikuyaki_ck(PLW *pl) {
 #ifdef VERSION_MHG
     return Pl_item_num_ck(pl, 0x25) != 0; /* G: item ids shifted */
 #else
-    return Pl_item_num_ck(pl, 0x12) != 0;
+    return Pl_item_num_ck(pl, MH2V(0x12, 0x28)) != 0;
 #endif
 }

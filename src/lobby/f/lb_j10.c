@@ -160,7 +160,7 @@ void lb_pl_mv041(PLW *pl) {
     case 1:
         if (F(s32, pl, 0x194) <= 0) {
             Lb_pl_chr_set(pl, 0x261, 6, 0);
-            Lb_act_set(pl, 0, 0x5D);
+            Lb_act_set(pl, 0, MH2V(0x5D, 0x25));
         }
         break;
     }

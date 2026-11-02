@@ -14,17 +14,17 @@ s32 Lb_select(void) {
             cnWrap_SoundRequest(0);
             return 0;
         }
-        cnWrap_SoundRequest(3);
-        return 3;
+        cnWrap_SoundRequest(MH2V(3, 0x4));
+        return MH2V(3, 0x4);
     }
     if (temp_v1 & 0x40) {
         if (F(u8, pNet, PNET_OFS(0xF)) != 1) {
             SetDialogYesNo(1);
-            cnWrap_SoundRequest(3);
+            cnWrap_SoundRequest(MH2V(3, 0x4));
             goto block_15;
         }
-        cnWrap_SoundRequest(3);
-        return 3;
+        cnWrap_SoundRequest(MH2V(3, 0x4));
+        return MH2V(3, 0x4);
     }
     if (temp_v1 & 0x800) {
         if (F(u8, pNet, PNET_OFS(0xF)) != 0) {

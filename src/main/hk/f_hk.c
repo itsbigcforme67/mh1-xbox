@@ -868,7 +868,7 @@ static int hk_roma_ck(int mode) {
         off = 0;
     }
     n = 8 - off;
-    strncpy(b + off, (char *)lpSKey + (SKU16(0x2C) - n) + SKO(0x158), n);
+    strncpy(b + off, (char *)lpSKey + (SKU16(0x2C) - n) + SKO(MH2V(0x158, 0x168)), n);
     if (roma_ck_sub(mode, b + 2) != 0) {
         return 1;
     }
@@ -885,7 +885,7 @@ static int hk_roma_ck(int mode) {
         return 0;
     }
     p = (char *)lpSKey + (SKU16(0x2C) - 4);
-    strncpy(p + SKO(0x158), nn_tbl[mode], 2);
+    strncpy(p + SKO(MH2V(0x158, 0x168)), nn_tbl[mode], 2);
     return 1;
 }
 #endif

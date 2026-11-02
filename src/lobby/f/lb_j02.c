@@ -23,7 +23,7 @@ void lb_pl_mv045(PLW *pl) {
         return;
     case 1:
         if (Pl_master_ck(pl) == 1 && ((F(u16, pl, 0x368) & 0x40) || pl->work90A != 0 || lbCommer[pl->work909].mac[0] == 0)) {
-            Lb_Pl_act_set2(pl, 0, 0x2F, 0);
+            Lb_Pl_act_set2(pl, 0, MH2V(0x2F, 0xC), 0);
         }
     }
 }

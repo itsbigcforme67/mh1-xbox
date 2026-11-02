@@ -482,8 +482,8 @@ void player_init0(PLW *pl) {
 void clr_pl_work(void) {
     int i;
     PLW *p = player_work;
-    for (i = 0; i < GV(8, 10); i++) {
-        memset(p, 0, 0xA00);
+    for (i = 0; i < MH2V(GV(8, 10), 0xA); i++) {
+        memset(p, 0, MH2V(0xA00, 0x970));
         p++;
     }
     memset(pl_cnt_w, 0, 0x10);
@@ -7927,12 +7927,12 @@ static void pl_at025(PLW *pl, s32 unused_arg) {
     switch (s) {
     case 0:
         pl->x05 = s + 1;
-        pl_chr_set2(pl, 0x3F0, 0x14, 0);
+        pl_chr_set2(pl, MH2V(0x3F0, 0x583), 0x14, 0);
         Pl_basic_flagset(pl, 0, 0, 0);
         break;
     case 1:
         if (pl->work194 == 0) {
-            pl_to_normal(pl, 0, 6, 0);
+            pl_to_normal(pl, 0, MH2V(6, 0x4), 0);
         }
         break;
     }
@@ -8020,7 +8020,7 @@ static void pl_at028(PLW *pl, s32 unused_arg) {
                         pl->ang[1] = pl->ang[1] - 0x2000;
                         pl->ang_y = pl->ang[1];
                     }
-                    Pl_act_set2(pl, 1, 0x3A, 4);
+                    Pl_act_set2(pl, 1, MH2V(0x3A, 0x11), 4);
                 }
                 break;
             case 3:
@@ -8035,7 +8035,7 @@ static void pl_at028(PLW *pl, s32 unused_arg) {
                         pl->ang[1] = pl->ang[1] - 0x2000;
                         pl->ang_y = pl->ang[1];
                     }
-                    Pl_act_set2(pl, 1, 0x4D, 4);
+                    Pl_act_set2(pl, 1, MH2V(0x4D, 0x9), 4);
                 }
                 break;
             case 0:
@@ -12168,7 +12168,7 @@ static void pl_chat11(PLW *pl, s32 unused_arg) {
         }
         if ((Pl_master_ck(pl) == 1) && (pl->work08 == 0)) {
             if ((pl->sw.pow[0] >= 0x28) || (Game_clear_ck(1) == 1)) {
-                pl_to_normal(pl, 0, 4, 0);
+                pl_to_normal(pl, 0, MH2V(4, 0xA), 0);
                 break;
             }
             if (pl->work8C4 != 0) {

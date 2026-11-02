@@ -10,7 +10,7 @@
 void lb_pl_mv044(PLW *pl) {
     u8 s;
     if (PLU8(pl, 0x8EC) != 0) {
-        Lb_act_set(pl, 0, 0x55);
+        Lb_act_set(pl, 0, MH2V(0x55, 0x1D));
         Lb_Pl_basic_flagset(pl, 0, 0, 0);
         return;
     }

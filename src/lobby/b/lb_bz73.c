@@ -6,7 +6,7 @@ extern char Friend_data[];
 
 #if !defined(G_PART) || G_PART == 2
 void cpn_PutCNData(void) {
-    memcpy(&CNFile, Friend_data, GV(2400, 80));
+    memcpy(&CNFile, Friend_data, MH2V(GV(2400, 80), 0x50));
 }
 #endif
 

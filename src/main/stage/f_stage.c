@@ -127,7 +127,7 @@ void stage_mv_ck(void) {
 
 #if !defined(G_PART) || G_PART == 1
 void clr_stg_work(void) {
-    memset(&stage_work, 0, GV(0x64, 0x100));
+    memset(&stage_work, 0, MH2V(GV(0x64, 0x100), 0x120));
 }
 #endif
 

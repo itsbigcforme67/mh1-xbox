@@ -35,7 +35,7 @@ segments:
     subsegments:
       - [0x000000, textbin, header]
       - [0x000040, asm, text/gm_sub_8FAE40]
-      - [0x000770, c, mh2/parts/mhg_main_omake_omake_a_409]
+      - [0x000770, c, mh2/parts/mhg_main_omake_omake_a_407]
       - [0x00083C, asm, text/gm_sub_8FB63C]
       - [0x00AA10, c, mhg/main/emw/emu03_p1]
       - [0x00AA44, asm, text/gm_sub_905844]

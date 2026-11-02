@@ -341,8 +341,8 @@ extern u8 *em17_act_add[3];
 
 void em17_soukou_dm_sel_set(EMW *em) {
     if ((s32) em->hagi[6].cnt > 1) {
-        em17_act_set(em, 4, 0, 2);
+        em17_act_set(em, 4, 0, MH2V(2, 0x3));
         return;
     }
-    em17_act_set(em, 4, 0xF, 2);
+    em17_act_set(em, 4, 0xF, MH2V(2, 0x3));
 }

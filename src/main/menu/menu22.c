@@ -343,9 +343,9 @@ void wyvn_efct_ripple(void) {
     if (lpPit->x3F != 0) {
         SetTrnslMode(4, 1);
         SetFilterMode(1);
-        reload_tex(1, GSLOT(0x118, 0x13F));
-        SetTextureStage(GSLOT(0x118, 0x13F));
-        efct_circle(0x199, 0xAC, 0xFFFFFF, 120.0f, (f32)lpPit->x3F);
+        reload_tex(1, GSLOT(MH2V(0x118, 0x144), 0x13F));
+        SetTextureStage(GSLOT(MH2V(0x118, 0x144), 0x13F));
+        efct_circle(MH2V(0x199, 0x200), 0xAC, 0xFFFFFF, 120.0f, (f32)lpPit->x3F);
         SetTrnslMode(4, 5);
     }
 }

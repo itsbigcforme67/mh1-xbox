@@ -3,7 +3,7 @@
 
 s32 HttpTaskPush(int arg0) {
     if (F(s8, arg0, 0x68) != 0) {
-        memset(arg0, 0, 0xC0);
+        memset(arg0, 0, MH2V(0xC0, 0xE4));
     }
     return 0;
 }

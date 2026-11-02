@@ -8,7 +8,7 @@ void lb_trade_result(u8 *data) {
     PLW *pl = &player_work[game_w.master];
     LBTRADE2 t;
     void Ud_item_stack(u16, int);
-    if ((s16)act_ck(pl, 0, 0x2E) != 0) {
+    if ((s16)act_ck(pl, 0, MH2V(0x2E, 0xB)) != 0) {
         memcpy(&t, data, 0xE);
         if (t.result == 0) {
             pl->work90A = 1;

@@ -61,7 +61,7 @@ void load_work_init(void) {
     int i;
 
     memset(&load_w, 0, 0x10);
-    for (i = 0; i < GV(64, 32); i++) {
+    for (i = 0; i < MH2V(GV(64, 32), 0x100); i++) {
         load_q[i].kind = -1;
     }
 }

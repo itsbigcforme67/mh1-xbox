@@ -15,5 +15,5 @@ s32 tk_sw_new_ck(s32 arg0) {
 
 void cpn_GetCNData(void) {
     memcpy(&Friend_data, &CNFile, 0x960);
-    memcpy(&tmp_friend_data, &CNFile, GV(0x960, 192));
+    memcpy(&tmp_friend_data, &CNFile, MH2V(GV(0x960, 192), 0xC0));
 }
