@@ -10,6 +10,7 @@ full build and tools/mh2_check.py); nothing here has run on the PC.
 | stage_set_set | sub_main 0x378A30 | 2,684 | src/mh2/sub_main/p00378A30.c | per-stage set objects (G: src/main/stage/stage_set.c). Fixed sun block, a 4-byte table per stage at 0x4485D0, then MH2's stage switch |
 | clr_flash | sub_main 0x3797C0 | 20 | (carried C) | named in func_fix.txt: stage_set_set's first call, as in G |
 | game_func_0080D270 | game 0x80D270 | 2,684 | src/mh2/game/p0080D270.c | a monster's act_set (kinds 0x33-0x35 at least), with its three jump tables 0x8F2020-0x8F20E4 |
+| em01_senkai_sub | game 0x70A290 | 3,136 | src/mh2/game/em01_senkai_sub.c | the flying monsters' turn (bank, yaw, sink, climb, pitch), MH1's code with its numbers moved into a parameter table (third argument, `SENKAI`) |
 | game_func_0075FBF0 | game 0x75FBF0 | 3,504 | src/mh2/game/p0075FBF0.c | a monster's act_set placed where MH1's em03_act_set is (between em03_move_sub and em03_to_normal), with MH1's distance block; jump tables 0x8EE4F0-0x8EE5C4 |
 
 0x75FBF0 is probably MH2's em03_act_set (file order, and MH1's code inside it), but the map gives that name to 0x7C4960 by a 0.40
@@ -36,6 +37,10 @@ callsite vote, so it was not renamed: a guess either way.
   compare chain left in a register). m2c's trailing arguments there are leftovers, not arguments.
 - `x - 0.0f` is not folded by MWCC only when 0.0f comes from a variable (`v = 0.0f; ... - v`); with the literal it is folded.
 - Chained assignment `a = b = c = f()` stores c first.
+- em01_senkai_sub: `em_char_set` is prototyped with `int no` (with u16 the andi before three calls goes missing), the bank-table
+  switch value is assigned right after the first store (`TURN = ...; mode = !(flags & 0x20);`), and `!((f32)(2000.0f + top) < y)`
+  where MH1 wrote it without the cast (the cast moves the register pair). Its SENKAI field meanings are read from MH1's use: guesses.
+  MH1's em01.c still holds the old em01_senkai_sub(em, flags, mode) for the PC: on MH2 its callers pass a table pointer.
 
 ## func_fix.txt: game 0x72B240
 
@@ -55,4 +60,4 @@ em_cmd_myemtype_sel is 0x1D4) is em_cmd_myemtype_sel. So docs/mh2/data.md's "no 
 - The 114 missing quest-path tables: only what the new C places (stage_set_set's 0x4485D0 table and the jump tables) on the next
   datamap run. None of the 80 low candidates were checked by hand.
 - CameraWork: not laid out, camera C not touched.
-- em01_senkai_sub, shell08_m, Pl_damage_sub, hit_hit_sub_em: not written.
+- shell08_m (11,904 bytes), Pl_damage_sub (pl_damageb.c, not tried), hit_hit_sub_em (main/hit/hitd.c, 198 instructions off as carried): not done.

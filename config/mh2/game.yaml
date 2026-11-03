@@ -165,6 +165,8 @@ segments:
       - [0x05A3EC, asm, text/game_7095EC]
       - [0x05AB90, c, mh2/parts/game_em_em03_139]
       - [0x05ABF0, asm, text/game_709DF0]
+      - [0x05B090, c, mh2/game/em01_senkai_sub]
+      - [0x05BCD0, asm, text/game_70AED0]
       - [0x05E020, c, mhg/main/pl/f_pl_p1]
       - [0x05E160, asm, text/game_70D360]
       - [0x05E840, c, mh2/parts/mhg_main_pl_f_pl_p2_438]
