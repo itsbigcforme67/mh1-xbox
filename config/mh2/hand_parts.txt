@@ -1,0 +1,4 @@
+# NAME @FUNCTIONS STATICS: hand C in src/mh2 of which only @FUNCTIONS stay in the link. The other functions of the file are there because
+# the original's code generation depends on seeing them (a same-file static: MWCC keeps a caller-saved register across the call);
+# their bytes stay in the asm. STATICS gives each static its MH2 address (name=0xADDRESS,...), - if none. Read by tools/mh2_setup.py.
+mh2/game/next_cmd_search @next_cmd_search game_func_007262D0=0x007262D0

@@ -691,7 +691,10 @@ extern s16 em_atk_mode_timer_tbl[];
  * (2 dead without a hit, 1 killed, 0 nothing, 3/4 hagitori states, 5-8 status
  * effects, 9 eye damage, 0xA-0x10 reaction to a hit). *flag receives x888. */
 /* G: original bytes (build/mhg/raw/Em_Dmg_Sys.inc, config/mhg/c_rawfuncs.txt); the C below is the MH1 version */
-#if defined(VERSION_MHG) && defined(__MWERKS__)
+#if defined(VERSION_MH2)
+#define EM_TAISEI_IN
+#include "../../mh2/game/em_dmg_sys_nm.c"
+#elif defined(VERSION_MHG) && defined(__MWERKS__)
 asm u8 Em_Dmg_Sys(EMW *em, u8 *flag)
 {
 #include "Em_Dmg_Sys.inc"

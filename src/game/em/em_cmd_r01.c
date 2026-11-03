@@ -208,7 +208,9 @@ void em_cmd_init(EMW *em) {
 #endif
 
 /* G: original bytes (build/mhg/raw/em_cmd_ck.inc, config/mhg/c_rawfuncs.txt); the C below is the MH1 version */
-#if defined(VERSION_MHG) && defined(__MWERKS__)
+#if defined(VERSION_MH2)
+#include "../../mh2/game/em_cmd_ck.c"
+#elif defined(VERSION_MHG) && defined(__MWERKS__)
 asm void em_cmd_ck(EMW *em)
 {
 #include "em_cmd_ck.inc"

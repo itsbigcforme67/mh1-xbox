@@ -173,7 +173,9 @@ u8 *cmd_end_search(EMW *em, u8 *p, int a2, int a3) {
 }
 
 /* G: original bytes (build/mhg/raw/next_cmd_search.inc, config/mhg/c_rawfuncs.txt); the C below is the MH1 version */
-#if defined(VERSION_MHG) && defined(__MWERKS__)
+#if defined(VERSION_MH2)
+#include "../../mh2/game/next_cmd_search.c"
+#elif defined(VERSION_MHG) && defined(__MWERKS__)
 asm u8 * next_cmd_search(EMW *em, u8 *p)
 {
 #include "next_cmd_search.inc"
