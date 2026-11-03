@@ -1,2 +1,11 @@
 # MH2 data names found by hand for the PC build (tools/mh2_pcmeta.py): module name 0xADDR [0xSIZE]  # how
 lobby helpLineTbl 0x00740170  # the address config/lobby_aliases.txt's helpLineTbl_c2 moves to (config/mh2/lobby_aliases.txt)
+sub_main quest_w 0x005D8260 0x560  # STRUCTS: base proven by its memset
+sub_main User_data 0x005D4A60 0x37F8  # STRUCTS: memset
+sub_main net_common_w 0x005D46A0 0xE0  # STRUCTS: memset (tools/mh2_datamap.py had 0x5D4690, a field)
+sub_main CameraWork 0x005AF420  # STRUCTS: base (data map agrees)
+lobby lb_sys 0x008BDC10  # STRUCTS: base (data map agrees)
+sub_main MemcardWork 0x006AF100  # STRUCTS: base (data map agrees)
+sub_main game_w 0x006ADCB0 0x2BC  # address: data map; size: STRUCTS
+sub_main system_w 0x006ADF90 0xF4  # address: data map; size: STRUCTS
+sub_main shell_work 0x005B70D0 0x3500  # address: data map (medium, one edited function); size: STRUCTS

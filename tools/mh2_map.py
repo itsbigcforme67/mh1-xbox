@@ -518,6 +518,8 @@ def main():
                 name, sz, isf = out[m][a]
                 attrs = (["type:func"] if isf else []) + (["size:0x%X" % sz] if sz else [])
                 fh.write("%s = 0x%08X;%s\n" % (name, a, (" // " + " ".join(attrs)) if attrs else ""))
+    import mh2_funcfix             # hand corrections, config/mh2/func_fix.txt
+    mh2_funcfix.main()
 
 
 if __name__ == "__main__":
