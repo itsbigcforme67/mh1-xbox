@@ -298,12 +298,9 @@ void parts_init(void *pl)
     u8 *b = parts_work_h[PU16(pl, 0xC) & 7];
     for (i = 0; i < 32; i++, b += 0xB0) {
 #ifdef VERSION_MH2
-        /* MH2: where the 32 part pointers live is not known (MH1 0x110..0x18F; MH2 has other fields there, mh2_plw.h): the
-         * host keeps its blocks to itself (rt_player_parts) */
-        mh2_parts[PU16(pl, 0xC) & 7][i] = b;
-#else
-        PU32(pl, 0x110 + i * 4) = (u32)(uintptr_t)b;
+        mh2_parts[PU16(pl, 0xC) & 7][i] = b;     /* and in the PLW: MH2 keeps the 32 part pointers at 0xD0..0x14F (WALK; MH2_OFS_PLW maps MH1 0x110 there with its struct_map) */
 #endif
+        PU32(pl, 0x110 + i * 4) = (u32)(uintptr_t)b;
         memset(b, 0, 0xB0);
         b[0] = 0;
         ((f32 *)b)[0] = ((f32 *)b)[5] = ((f32 *)b)[10] = ((f32 *)b)[15] = 1.0f;
