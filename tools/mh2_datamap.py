@@ -16,6 +16,8 @@ is scored, not proof. For every data object of MH1 (symbols, relocations) and G 
   content  the object's bytes (pointer words masked) occur in MH2's data once, or once in the window the neighbours give.
   chunk    a table MH2 edited a little: its 8-byte pieces point at one base address in MH2's data.
   layout   between two placed neighbours at the same distance in both (exact), or next to one with the bytes there agreeing (near).
+  c        not scored: a data name the byte-matched carried C uses (config/mh2/c_aliases.txt) is placed there before anything else
+           (config/mh2/pc_names.txt, STRUCTS' proven bases, still wins). Written high with c:9.0 when the symbol files lack it.
   bytes    not a method: the bytes at a candidate raise or lower its score (same as the reference / clearly not).
 
 Several rounds: what one places anchors the next. Confidence per name, by the rule in place() calibrated with --eval:
@@ -342,6 +344,11 @@ class Mapper:
             f = l.split("#", 1)[0].split()
             if len(f) >= 3 and f[1] in self.names:
                 self.known[f[1]] = (f[0], int(f[2], 16))
+        self.sym_known = dict(self.known)     # --eval's truth: the same sample as before the c names
+        self.cnames = self.c_names()
+        for n, k in self.cnames.items():
+            if self.known.setdefault(n, k) != k:     # the symbol files and pc_names.txt (STRUCTS' proven bases) first
+                print("c name %s at %s 0x%X, kept at %s 0x%X" % ((n,) + k + self.known[n]))
         self.base_known = dict(self.known)
         self.code = code_votes(self.R, self.M2, self.pairs, fresh)
         self.placed = {}                      # name -> (m, a, conf, methods, score)
@@ -353,6 +360,34 @@ class Mapper:
                     if 0x100000 <= v < 0x1000000:
                         self.idx[v].append((m, a))
         self.refs_cache = {}
+
+    def c_names(self):
+        """data names the byte-matched carried C uses (config/mh2/c_aliases.txt, tools/mh2_carry.py): the address comes from the
+        MH2 instruction the C's relocation lands on, so it is proof for that code. One address per name only (NAME_mh2_ADDR is NAME)."""
+        out, two = {}, set()
+        p = P("config/mh2/c_aliases.txt")
+        if not os.path.exists(p):
+            return out
+        funcs = set()
+        for s in self.R.values():
+            funcs |= set(s.func.values())
+        for l in open(p):
+            f = l.split()
+            if len(f) != 3 or l[0] == "#":
+                continue
+            n = re.sub(r"_mh2_[0-9A-F]{8}$", "", f[1])
+            a = int(f[2], 16)
+            if n not in self.names or n in funcs or f[0] not in SEES:
+                continue
+            m = mh2_mod(self.M2, f[0], a)
+            if m is None:
+                continue
+            if out.get(n, (m, a)) != (m, a):
+                two.add(n)
+            out[n] = (m, a)
+        for n in two:
+            del out[n]
+        return out
 
     # ---------------------------------------------------------------- helpers
     def in_data(self, m, a):
@@ -887,6 +922,9 @@ class Mapper:
 
     def write(self):
         rows = []
+        for n, k in self.cnames.items():
+            if self.known.get(n) == k and n not in self.placed and self.taken.get(k) != n:
+                self.placed[n] = (k[0], k[1], "high", {"c": 9.0}, 9.0)     # not in the symbol files: the PC build reads it here
         for n, (m, a, conf, ms, sc) in self.placed.items():
             meth = "+".join("%s:%.1f" % (k, w) for k, w in sorted(ms.items()) if w and k != "sim") or "-"
             if ms.get("sim") is not None:
@@ -907,7 +945,7 @@ def evaluate(fresh, mode):
     "noref": they lose their aligned-code votes (tests refseq, pointers, content, layout);
     "single": they keep one edited-pair vote and no twin vote (tests what a single-vote name is worth)."""
     mp = Mapper(fresh)
-    truth = dict(mp.base_known)
+    truth = dict(mp.sym_known)
     hold = sorted(truth)[::4 if mode != "all" else 8]
     hs = set(hold)
     for n in hold:

@@ -59,10 +59,11 @@ game 0x006DBCC0 shell23_move mh1 game 0x00639A80 items 0.96
 game 0x006DBD90 shell23_i mh1 game 0x00639B40 items 0.90
 game 0x006DD400 set15_move_fb mh1 game 0x00624AB0 items 0.46
 game 0x006DE360 shell21_move g game 0x0066AB10 items 0.96
+game 0x006DF5B0 set21_i g sub_main 0x004E20B0 items 0.67
 game 0x006E06A0 eft22_t mh1 game 0x00556A90 items 0.44
 game 0x006E0BD0 eft20_move mh1 main 0x00218590 items 0.71
 game 0x006E37C0 shell20_move g game 0x0066A720 items 0.96
-game 0x006E4AE0 eft12_i02 mh1 game 0x00547720 items 0.42
+game 0x006E4AE0 eft09_i g game 0x0056E230 items 0.45
 game 0x006E9B90 eft05_i mh1 game 0x00542DD0 items 0.44
 game 0x006EEE00 set00_trans mh1 game 0x006217D0 items 0.56
 game 0x006EF2D0 eft16_move mh1 game 0x0054D660 items 1.00
@@ -595,6 +596,7 @@ game 0x008621A0 game_func_0056C660 g game 0x0056C660 items 0.72
 game 0x00862460 game_func_0056C880 g game 0x0056C880 items 1.00
 game 0x00864410 eft09_move mh1 game 0x00544DD0 items 1.00
 game 0x00865350 eft10_move mh1 game 0x005454D0 items 1.00
+game 0x00865960 eft10_d g game 0x0056EFB0 items 0.95
 game 0x00866690 eft12_move g game 0x0056FDE0 items 1.00
 game 0x0086AE00 eft14_t mh1 game 0x0054AFB0 items 0.60
 game 0x0086BF30 eft15_move g game 0x00574E70 items 1.00
@@ -748,7 +750,7 @@ lobby 0x00719140 __cnet_Recv_ByteByte mh1 lobby 0x005ADD90 order 1.00
 lobby 0x00719180 __cnet_Recv_WordByte mh1 lobby 0x005ADDD0 order 1.00
 lobby 0x007191C0 __cnet_Recv_WordWord mh1 lobby 0x005ADE10 order 1.00
 lobby 0x00719200 __cnet_Recv_WordLong mh1 lobby 0x005ADE50 order 1.00
-lobby 0x00722B50 BsCacheInitialize g lobby 0x005B5010 items 0.45
+lobby 0x00722B50 BsCacheInitialize mh1 lobby 0x005E66D0 items 0.45
 lobby 0x00723750 BsRouteReload g lobby 0x005B55B0 order 0.64
 lobby 0x00724790 bs_request_set_task_image g lobby 0x005B6280 items 0.67
 lobby 0x007249D0 BsRequestCheck g lobby 0x005B64B0 order 0.60
@@ -888,6 +890,7 @@ lobby 0x0075D770 em10_local_init_0053DCE0 mh1 lobby 0x0053DCE0 table 1.00
 lobby 0x0075D780 dummy_em_prog_0053DCF0 mh1 lobby 0x0053DCF0 table 1.00
 lobby 0x0075E550 lb_trade_result g lobby 0x005590A0 items 0.42
 lobby 0x0075F6A0 lobby_func_0055A020 g lobby 0x0055A020 items 0.98
+lobby 0x0075F7C0 lobby_func_0055A140 g lobby 0x0055A140 items 0.88
 lobby 0x0075FE60 lobby_func_0055E300 g lobby 0x0055E300 items 0.58
 lobby 0x00762390 lobby_func_00552470 g lobby 0x00552470 items 0.77
 lobby 0x007623F0 Lb_ItemBox_open mh1 lobby 0x00609770 order 0.51
@@ -903,7 +906,6 @@ lobby 0x007697D0 lobby_func_005569F0 g lobby 0x005569F0 items 0.93
 lobby 0x0076A5E0 lobby_func_005572D0 g lobby 0x005572D0 items 0.81
 lobby 0x0076AF50 Disp_lb_item_box g lobby 0x005577B0 items 0.45
 lobby 0x0076D700 lobby_func_00558920 g lobby 0x00558920 items 0.80
-lobby 0x0076DC20 Clear_lobby_ram mh1 lobby 0x005D58C0 items 0.53
 lobby 0x00770970 Lb_Menu_Init g lobby 0x0058E150 items 0.76
 lobby 0x00770C50 lobby_func_0058E300 g lobby 0x0058E300 items 0.70
 lobby 0x00770CB0 lobby_func_0058E340 g lobby 0x0058E340 items 0.61
@@ -931,6 +933,7 @@ lobby 0x0077A890 Lb_chat_receipt mh1 lobby 0x005C55D0 items 0.64
 lobby 0x0077A8D0 lb_check_chair g lobby 0x00559850 items 0.67
 lobby 0x0077ADD0 lb_send_my_status mh1 lobby 0x005C5C70 items 0.50
 lobby 0x0077AFB0 lb_npc_item_trans mh1 lobby 0x005C31A0 items 0.56
+lobby 0x0077BCE0 lb_npc_init_sub g lobby 0x00590330 items 0.56
 lobby 0x0077BE00 lb_npc_init mh1 lobby 0x005C3C10 items 0.59
 lobby 0x0077DEB0 lb_npc_move mh1 lobby 0x005C4330 items 0.66
 lobby 0x0077E140 lb_npc_chr_sub mh1 lobby 0x005C45B0 items 1.00
@@ -942,7 +945,7 @@ lobby 0x0078CB00 lobby_func_00565470 g lobby 0x00565470 items 0.92
 lobby 0x0078F3C0 lb_disp_name mh1 lobby 0x005CB980 items 0.54
 lobby 0x00790C00 Lb_put_armorIcon mh1 lobby 0x0053BFD0 items 0.67
 lobby 0x00790EC0 lobby_func_005935C0 g lobby 0x005935C0 items 1.00
-lobby 0x007916F0 put_member_info mh1 lobby 0x0059B640 items 0.43
+lobby 0x007916F0 Lb_num_to_str mh1 lobby 0x005CCF60 items 0.40
 lobby 0x00791800 Put_page_num mh1 lobby 0x0059A760 items 0.54
 lobby 0x00792B40 Plaza_log_id_chk mh1 lobby 0x0060DFA0 items 0.66
 lobby 0x00792C70 Lb_PlayerStatus g lobby 0x0059DE40 items 0.67
@@ -964,6 +967,7 @@ lobby 0x0079D6C0 lobby_func_00598DD0 g lobby 0x00598DD0 items 0.93
 lobby 0x0079DDD0 lb_pl_chat03 g lobby 0x005995E0 items 1.00
 lobby 0x0079EA00 lobby_func_0059A1F0 g lobby 0x0059A1F0 items 0.60
 lobby 0x0079EA30 lobby_func_0059A210 g lobby 0x0059A210 items 0.83
+lobby 0x0079EAA0 Clear_lobby_ram mh1 lobby 0x005D58C0 items 0.49
 lobby 0x0079EDC0 lobby_func_0059A590 g lobby 0x0059A590 items 0.71
 lobby 0x0079F4A0 Lb_send_commer mh1 lobby 0x005D5ED0 items 0.62
 lobby 0x007A2B90 Lb_mix_item_checkMax mh1 lobby 0x00535540 items 0.49
@@ -1372,6 +1376,7 @@ main 0x00194910 se_req g main 0x00128630 items 0.92
 main 0x00194F40 sound_call_005937E0 mh1 game 0x005937E0 items 0.71
 main 0x001950A0 Em_se_req2 g main 0x00128FC0 items 0.77
 main 0x00195240 snd_joint_load_init g main 0x001291A0 items 0.93
+nethttp 0x008FB320 HttpTaskPullCheck g nethttp 0x00A06420 items 0.70
 nethttp 0x008FCF80 http_test_10 mh1 lobby 0x005DB270 table 1.00
 nethttp 0x008FD1B0 http_test_12 mh1 lobby 0x005DB4A0 table 1.00
 nethttp 0x008FD6A0 http_test_15 mh1 lobby 0x005DB980 table 1.00
@@ -1499,6 +1504,8 @@ select 0x006B35C0 select_func_005485B0 g select 0x005485B0 order 0.84
 select 0x006B3B50 Cont_task g select 0x00548AC0 order 0.62
 select 0x006B5660 title_disp mh1 select 0x005341E0 items 0.60
 select 0x006B5DE0 select_func_00542640 g select 0x00542640 items 0.51
+select 0x006B62C0 select_func_00542A20 g select 0x00542A20 items 0.91
+select 0x006B6350 select_func_00542AB0 g select 0x00542AB0 items 0.91
 sub_main 0x002E3980 NetDisp mh1 main 0x00120020 items 0.47
 sub_main 0x002E3A30 ACRMain g main 0x0010FDE0 items 0.51
 sub_main 0x002E3B40 func_0010FFA0 g main 0x0010FFA0 items 0.80
@@ -1558,6 +1565,7 @@ sub_main 0x003174D0 setup_rw_sub g main 0x0020A850 items 0.69
 sub_main 0x00317650 setup_rw_moji g main 0x0020A960 items 0.68
 sub_main 0x00317E70 disp_keybase2 g main 0x0020AEC0 items 0.46
 sub_main 0x00319450 sk_set_etc_data g main 0x0020B860 items 1.00
+sub_main 0x00319480 dakuten_ck_sub g main 0x0020B890 items 0.56
 sub_main 0x00319A30 sk_disp_palette_set g main 0x0020BD00 items 0.82
 sub_main 0x00319F80 kbd_free_set g main 0x0020C070 items 0.84
 sub_main 0x0031A580 CameraWorkInit g main 0x001D9700 items 1.00
@@ -1596,7 +1604,7 @@ sub_main 0x003322A0 Item_preparation_rate g main 0x0010D7D0 items 1.00
 sub_main 0x00333640 light_move g main 0x0010E1B0 items 0.56
 sub_main 0x00333EB0 func_0010EF50 g main 0x0010EF50 items 0.93
 sub_main 0x00334060 func_0010F0B0 g main 0x0010F0B0 items 0.96
-sub_main 0x00334190 init_mode_sel mh1 main 0x0023A370 items 0.50
+sub_main 0x003343B0 init_mode_sel mh1 main 0x0023A370 items 0.47
 sub_main 0x00334BE0 load_eft_model mh1 main 0x0011EE50 items 0.80
 sub_main 0x003367F0 release_tex_all mh1 main 0x0011E860 items 0.66
 sub_main 0x00336A90 flfntMakeHandle mh1 main 0x00216CF0 items 0.43
@@ -1703,7 +1711,11 @@ sub_main 0x0036D5E0 Lb_trans_pl g main 0x0012EA30 items 0.86
 sub_main 0x0036D640 Ed_trans_pl mh1 main 0x00163DE0 items 0.86
 sub_main 0x00370E00 weapon_trans mh1 main 0x00166380 items 0.60
 sub_main 0x00374340 lb_pl_item_trans mh1 main 0x00167ED0 items 0.51
+sub_main 0x00376E40 prim_init mh1 main 0x00169290 items 0.95
+sub_main 0x00376E70 prim_init2 mh1 main 0x001692C0 items 0.95
 sub_main 0x00376EA0 pit_prim_init g main 0x00134620 items 1.00
+sub_main 0x00376EB0 get_prim_ptr g main 0x00134630 items 1.00
+sub_main 0x00376ED0 get_prim_ptr2 g main 0x00134650 items 1.00
 sub_main 0x003776D0 View_initialize g main 0x00134D10 items 0.61
 sub_main 0x00377800 View_move mh1 main 0x00169A80 items 0.64
 sub_main 0x00377A50 Create_FOV g main 0x00135030 items 0.76
@@ -1720,6 +1732,7 @@ sub_main 0x0037A690 stage_m g sub_main 0x004A1E70 items 0.45
 sub_main 0x0037AEF0 make_mat_srt mh1 main 0x001018C0 items 0.62
 sub_main 0x0037B370 trans_stage_sub g sub_main 0x004A2270 order 0.71
 sub_main 0x0037E780 stage_spr_disp mh1 main 0x00160AB0 items 0.44
+sub_main 0x00380530 Info_Initialization g sub_main 0x004C3D40 items 0.41
 sub_main 0x00380BE0 set01_move mh1 main 0x00155AC0 items 1.00
 sub_main 0x00380C70 set01_i mh1 main 0x00155B50 items 0.45
 sub_main 0x00383170 set13_move mh1 main 0x00156AB0 items 1.00
