@@ -11,25 +11,39 @@ scored evidence from MH1 (symbols, relocations) and G (our names, config/mhg). W
     python3 tools/mh2_funcfix.py            # config/mh2/func_fix.txt onto docs/survey/mh2_map.csv and config/mh2/symbols (mh2_map.py runs it last)
     python3 tools/mh2_callgraph.py          # stage reach table, docs/survey/mh2_reach.csv
 
-Run order: datamap --fresh, pairmore, datamap --fresh (twice is enough; the third round adds nothing). Both tools re-run themselves
-with PYTHONHASHSEED=0, so two runs give the same files (checked by md5). The aligned-code votes are cached in build/mh2/datamap_ref.pickle;
+Run order: mh2_map.py (it runs mh2_funcfix.py last), then datamap --fresh, pairmore, datamap --fresh, pairmore, datamap --fresh
+(scratch iter.sh of the DATA agent; a fourth round only swaps 1-2 low/medium names back and forth). Both tools re-run themselves
+with PYTHONHASHSEED=0, so the same inputs give the same files (checked by md5). datamap and funcfix read config/mh2/c_aliases.txt,
+which mh2_carry.py register writes, so after a register run mh2_map.py again: on 2 Nov it gave the same files (a fixed point). The aligned-code votes are cached in build/mh2/datamap_ref.pickle;
 --fresh rebuilds it (needed after mh2_map.csv or func_pairs.txt change).
 
 - **mh2_datamap.py** now works like mhg_datamap.py: aligned code (`ref`, now also through `lui; addu; lw lo()`, the indexed table read),
   reference sequences in edited pairs (`refseq`), pointer words in and out, content, `chunk` (8-byte pieces of a table MH2 edited a little),
   layout. Confidence column: high / medium / low; mh2_pcmeta.py takes high and medium. A name can share an address with an alias in the
   reference, or with a table of identical bytes (MH2 merged equal tables).
+  `c` (later on 2 Nov): a data name the byte-matched carried C uses (config/mh2/c_aliases.txt) is placed at the address its relocation
+  lands on, before any vote; config/mh2/pc_names.txt still wins. Checked against the data names of the symbol files: 213 of 214 agree.
+  The miss is MemcardWork (+0x28): an alias is the MH2 address minus G's offset, so a struct whose field moved gets a shifted base.
+  323 names written high as `c:9.0`; 19 of them moved from the earlier map (CNFile 0x5D6AA0, flViewportDH/DW 0x20CBA0/0x20CBA8,
+  set01_stack 0x6AE9E0 with set01_stack_timer/ptr/suu 0x6AE9C8/D0/D8, fly_adj*2_hosei_tbl, pl_motion_data 0x41ED50 ...).
+  refseq votes now survive when every code vote for the name is misaligned (inside another known object): em_hate_add_tbl 0x8BC200
+  (its words point at the em*_hate_add_tbl placed just before it), Silencer_Grow_Up_Tbl, eft10_all_time.
 - **mh2_pairmore.py** finds function pairs mh2_map.py missed: `table` (a placed object holds the reference function where MH2 holds an
   unpaired one), `order` (between sure pairs, a file keeps its order: aligned by opcode ratio), `items` (same placed data and same paired callees,
   ratio >= 0.4). 1,868 pairs (items 829, order 727, table 312). mh2_datamap.py reads them as edited pairs.
 - **mh2_funcfix.py / config/mh2/func_fix.txt**: name corrections that outrank mh2_map.py (78 lines: 34 em_cmd handlers, 43 by file order, gp_ptr_ck).
+  A line is left out when the byte-matched C (c_aliases.txt) holds that name at another address or another name at that address
+  (NAME_mh2_ADDR counts as NAME; func_ADDR placeholders do not count; names compared across modules, because resident sub_main names
+  reach an overlay's link). 4 left out: ADXM_Lock (C: 0x161EC0), Menu_chatlog_mv at sub_main 0x35ABD0 (lobby C calls lobby 0x7B91F0 by
+  that name; naming sub_main's broke lobby, tried), Stage_unique_data_get (C: 0x3A0E20), em01_act_set (C: em20_act_set at 0x7516D0).
+  A fixed name leaves other addresses of its own module only.
 
 ## Numbers
 
 | | before | now |
 |---|---|---|
-| data names placed (config/mh2/data_map.txt, high+medium) | 1,499 (one vote rule) | 6,764 (high 3,833, medium 2,931; low 1,836 written, not used) |
-| PC tables with no MH2 address (gen_rt_tables, mhg_tables_missing.txt) | 933 of 1,340 | 592 of 1,340 |
+| data names placed (config/mh2/data_map.txt, high+medium) | 1,499 (one vote rule) | 7,084 (high 4,014, medium 3,070; low 1,811 written, not used) |
+| PC tables with no MH2 address (gen_rt_tables, mhg_tables_missing.txt) | 933 of 1,340 | 584 of 1,340 |
 | other data names zeroed (mhg_auto_missing.txt) | 462 | 249 |
 | MH1 data addresses mapped for pc_abs (addr.txt) | | 7,308 |
 
@@ -40,6 +54,7 @@ from the tool, maps them like unplaced names and compares.
 
 | mode | held out | high right | medium right | low right | not placed |
 |---|---|---|---|---|---|
+| (numbers below: before the c names; after them, same sample: noref high 79 of 79, medium 67 of 67, low 5 of 7, 15 not placed; single high 58 of 58, medium 6 of 7, low 0 of 3) | | | | | |
 | all (every 8th, keeps its code votes: the easy case) | 84 | 72 of 72 | 12 of 12 | - | 0 |
 | noref (every 4th, aligned-code votes removed: tests refseq, pointers, content, layout) | 168 | 80 of 80 | 65 of 65 | 6 of 8 | 15 |
 | single (every 4th that has an edited-pair vote; it keeps only that one vote) | 68 | 57 of 57 | 6 of 7 | 0 of 3 | 1 |
@@ -74,7 +89,8 @@ Changed, for QUEST and STRUCTS: 0x1C mind_no_ck reads EMW 0x2C2 and 0x6DE where 
 where G read + 0x11; 0x0E/0x15 read the stage through 0x379B20 and + 0x680 (MH1 + 0x736); 0x3D/0x3E + 0x882 (MH1 + 0x92E).
 
 **QUEST must rename in src/mh2/game/em_cmd_ck.c on merge** (the map's old names there now point elsewhere): each game_func_ADDR of the
-list in config/mh2/func_fix.txt becomes that line's name; em_cmd_stand_ck (case 0x1F) -> em_cmd_op1F, em_cmd_emtype_ck (0x0E) ->
+list in config/mh2/func_fix.txt becomes that line's name (all em_cmd lines apply now, including stand_ck 0x7279D0, mind_ck 0x7292F0,
+type_sel 0x72A190, which the first funcfix check had left out); em_cmd_stand_ck (case 0x1F) -> em_cmd_op1F, em_cmd_emtype_ck (0x0E) ->
 em_cmd_stage_no_ck, em_cmd_stage_no_ck (0x63) -> em_cmd_male_ck, em_cmd_male_ck (0x37) -> em_cmd_op37, em_cmd_stage_no_sel (0x73) -> em_cmd_op73,
 em_cmd_type_sel (0x76) -> em_cmd_op76; em_cmd_near_pos_ck_mh2_00729CE0 stays. tools/mh2_check.py will show any left over.
 
@@ -90,7 +106,7 @@ reached through data. Overlays loaded per stage are an assumption (column 2); th
 | char select | plsel, gm_sub, game | 1,460, 380,116 | 9,434 | 3,341,920 | 224,160 | 480,760 | 821,636 | 2,039,524 |
 | game task | game, gm_sub, plsel | 6,197, 1,868,232 | 9,434 | 3,341,920 | 224,160 | 480,760 | 821,636 | 2,039,524 |
 | quest | game, gm_sub, plsel | 6,204, 1,870,756 | 9,441 | 3,344,444 | 224,160 | 480,760 | 822,976 | 2,040,708 |
-| quest, other monsters' named code cut | game, gm_sub, plsel | 4,631, 1,405,276 | 7,837 | 2,843,268 | 169,724 | 373,824 | 740,316 | 1,729,128 |
+| quest, other monsters' named code cut | game, gm_sub, plsel | 4,625, 1,401,808 | 7,831 | 2,839,800 | 169,756 | 373,824 | 740,560 | 1,725,416 |
 | town | lobby, lbguild, nethttp, plsel, gm_sub | 2,120, 503,764 | 9,444 | 2,804,336 | 185,992 | 474,560 | 678,724 | 1,651,052 |
 
 How to read it:
@@ -106,13 +122,15 @@ yn -> lobby 56, gm_sub -> select 37, nethttp -> lobby 27, lobby -> nethttp 20, g
 game -> nethttp 11, plsel -> game 7, plsel -> lobby 7, lobby -> gm_sub 6, lobby -> yn 6, select -> plsel 4. Overlays share addresses, so a
 count can be a collision; game and gm_sub look like one load, yn with lobby.
 
-## Tables still missing (592), ranked for the quest
+## Tables still missing (584), ranked for the quest
 
 docs/survey/mh2_reach.csv and the reference functions that read each missing table (scratch script, numbers only):
-- 120 read by a function on the one-monster quest path that has a pair: 91 have a low-confidence candidate (contested or bytes differ),
-  7 a medium one in plsel, 22 none. Examples: set01_stack* (two bases 8 apart), em_hit_push_tbl (twin reads two tables: MH2 split it),
-  em01_stay/runaway_timer_tbl, option_w, Snd_bgm_tbl, st*_id_tbl, set19_s*_pos_tbl. These need a look by hand, one by one.
-- 377 whose readers have no pair yet (137 of them literals, lit_*), 50 read elsewhere, 43 with no reader in the reference code (G-only
+- 114 read by a function on the one-monster quest path that has a pair (was 120: set01_stack_timer/ptr/suu, quest_price, eft10_num by
+  the c names, eft10_time_tbl, shell08_rate_g_tbl): 80 have a low-confidence candidate (contested or bytes differ), 7 a medium one in
+  plsel, 1 high in select (default_reibun 0x6CAB60, by the C; gen_rt_tables reads only the main and game views), 26 none. Examples: em_hit_push_tbl (twin reads two tables: MH2 split it),
+  em01_stay/runaway_timer_tbl, option_w, Snd_bgm_tbl, st*_id_tbl, set19_s*_pos_tbl. These need a look by hand, one by one; most have one reader and a refseq vote of 0.3-1.3, too weak to
+  place without it. The fastest proof for any of them is QUEST's byte-matched C: once a reader matches, its c_aliases line places the table.
+- 376 whose readers have no pair yet (136 of them literals, lit_*), 51 read elsewhere, 43 with no reader in the reference code (G-only
   tables found by hand, gal_*, *_contents_tbl).
 
 ## Notes for the other areas

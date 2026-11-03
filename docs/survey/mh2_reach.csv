@@ -880,7 +880,7 @@ game,0x00707C70,80,Em_Sleep_Flag_Ck2,shape,0,0,1,1,1,1,0
 game,0x00707CC0,40,game_func_00707CC0,mh2-only,0,0,1,1,1,1,0
 game,0x00707CF0,120,game_func_00707CF0,mh2-only,0,1,1,1,1,1,0
 game,0x00707D70,208,gp_ck,edited,0,0,1,1,1,1,0
-game,0x00707E40,204,game_func_00707E40,mh2-only,0,0,1,1,1,1,0
+game,0x00707E40,204,gp_ptr_ck,edited,0,0,1,1,1,1,0
 game,0x00707F10,32,em_wall_bit_set,shape,0,0,1,1,1,1,0
 game,0x00707F30,184,em_boss_work_set,edited,0,0,1,1,1,0,0
 game,0x00707FF0,124,smell_dmg_set,identical,0,0,1,1,1,1,0
@@ -1676,12 +1676,12 @@ game,0x007509C0,24,ground_land_eff_set_005A7050,identical,0,0,1,1,1,1,0
 game,0x007509E0,12,em14_atk_end_sel,rewritten,0,0,1,1,1,0,0
 game,0x007509F0,8,game_func_007509F0,mh2-only,0,0,1,1,1,1,0
 game,0x00750A00,248,game_func_00750A00,mh2-only,0,0,1,1,1,1,0
-game,0x00750B00,504,game_func_00750B00,mh2-only,0,0,1,1,1,1,0
-game,0x00750D00,552,game_func_00750D00,mh2-only,0,0,1,1,1,1,0
-game,0x00750F30,752,game_func_00750F30,mh2-only,0,0,1,1,1,1,0
-game,0x00751220,692,game_func_00751220,mh2-only,0,0,1,1,1,1,0
-game,0x007514E0,484,game_func_007514E0,mh2-only,0,0,1,1,1,1,0
-game,0x007516D0,484,em01_act_set,edited,0,0,1,1,1,1,0
+game,0x00750B00,504,game_func_00750B00,mh2-only,0,0,1,1,1,0,0
+game,0x00750D00,552,game_func_00750D00,mh2-only,0,0,1,1,1,0,0
+game,0x00750F30,752,game_func_00750F30,mh2-only,0,0,1,1,1,0,0
+game,0x00751220,692,game_func_00751220,mh2-only,0,0,1,1,1,0,0
+game,0x007514E0,484,game_func_007514E0,mh2-only,0,0,1,1,1,0,0
+game,0x007516D0,484,em15_act_set,edited,0,0,1,1,1,0,0
 game,0x007518C0,268,game_func_007518C0,ambiguous,0,0,1,1,1,1,0
 game,0x007519D0,272,game_func_007519D0,ambiguous,0,0,1,1,1,1,0
 game,0x00751AE0,8,fly_adjy2_subx_0057DB40,edited,0,0,1,1,1,1,0
@@ -2968,7 +2968,7 @@ game,0x007D2570,24,em07_act_act_set,shape,0,0,1,1,1,0,0
 game,0x007D2590,468,em07_move_act_set,edited,0,0,1,1,1,0,0
 game,0x007D2770,24,game_func_007D2770,ambiguous,0,0,1,1,1,1,0
 game,0x007D2790,24,game_func_007D2790,ambiguous,0,0,1,1,1,1,0
-game,0x007D27B0,292,game_func_007D27B0,mh2-only,0,0,1,1,1,1,0
+game,0x007D27B0,292,em01_act_set,edited,0,0,1,1,1,1,0
 game,0x007D28E0,6896,game_func_007D28E0,mh2-only,0,0,1,1,1,0,0
 game,0x007D43D0,128,game_func_007D43D0,mh2-only,0,0,1,1,1,1,0
 game,0x007D4450,56,game_func_007D4450,ambiguous,0,0,1,1,1,1,0
@@ -3427,7 +3427,7 @@ game,0x0080D270,2684,game_func_0080D270,mh2-only,0,0,1,1,1,1,0
 game,0x0080DCF0,36,game_func_0080DCF0,ambiguous,0,0,1,1,1,1,0
 game,0x0080DD20,48,game_func_0080DD20,mh2-only,0,0,1,1,1,1,0
 game,0x0080DD50,280,game_func_0080DD50,mh2-only,0,0,1,1,1,1,0
-game,0x0080DE70,80,game_func_0080DE70,mh2-only,0,0,1,1,1,1,0
+game,0x0080DE70,80,BsSoftKbdTask,edited,0,0,1,1,1,1,0
 game,0x0080DEC0,80,game_func_0080DEC0,mh2-only,0,0,1,1,1,1,0
 game,0x0080DF10,188,game_func_0080DF10,mh2-only,0,0,1,1,1,1,0
 game,0x0080DFD0,48,game_func_0080DFD0,mh2-only,0,0,1,1,1,1,0
@@ -8031,7 +8031,7 @@ lobby,0x007B9070,92,lobby_func_007B9070,mh2-only,0,0,0,0,0,0,1
 lobby,0x007B90D0,152,lobby_func_007B90D0,mh2-only,0,0,0,0,0,0,1
 lobby,0x007B9170,68,Plaza_chatlog_i,shape,0,0,0,0,0,0,1
 lobby,0x007B91C0,36,lobby_func_007B91C0,mh2-only,0,0,0,0,0,0,1
-lobby,0x007B91F0,420,lobby_func_007B91F0,mh2-only,0,0,0,0,0,0,1
+lobby,0x007B91F0,420,Menu_chatlog_mv,edited,0,0,0,0,0,0,1
 lobby,0x007B93A0,516,Plaza_disp_chatlog,edited,0,0,0,0,0,0,1
 lobby,0x007B95B0,120,plaza_log_id_chk_sub,edited,0,0,0,0,0,0,1
 lobby,0x007B9630,320,Plaza_log_id_chk,edited,0,0,0,0,0,0,1
@@ -10450,7 +10450,7 @@ main,0x00161C50,204,func_00161C50,ambiguous,0,0,0,0,0,0,0
 main,0x00161D20,204,func_00161D20,ambiguous,0,0,0,0,0,0,0
 main,0x00161DF0,204,func_00161DF0,ambiguous,0,0,0,0,0,0,0
 main,0x00161EC0,20,MWSFD_SetProgOut_mh2_00161EC0,shape,1,1,1,1,1,1,1
-main,0x00161ED8,20,ADXM_Lock,edited,1,1,1,1,1,1,1
+main,0x00161ED8,20,ADXM_Unlock,edited,1,1,1,1,1,1,1
 main,0x00161EF0,12,func_00161EF0,mh2-only,0,0,0,0,0,0,0
 main,0x00161F00,268,ADXPS2_ExecVint,identical,0,0,1,1,1,1,1
 main,0x00162010,44,SFADXT_ExecServer,shape,0,0,0,0,0,0,0
@@ -15207,7 +15207,7 @@ sub_main,0x0035A9A0,60,sub_main_func_0035A9A0,mh2-only,0,0,1,1,1,1,1
 sub_main,0x0035A9E0,320,ChatLogAdd_Q,edited,0,0,0,0,0,0,0
 sub_main,0x0035AB20,100,sub_main_func_0035AB20,mh2-only,0,0,1,1,1,1,1
 sub_main,0x0035AB90,60,Menu_chatlog_i,edited,0,0,1,1,1,1,1
-sub_main,0x0035ABD0,460,Menu_chatlog_mv,edited,0,0,1,1,1,1,1
+sub_main,0x0035ABD0,460,Plaza_chatlog_mv,edited,0,0,1,1,1,1,1
 sub_main,0x0035ADA0,120,chat_log_disp_line,edited,0,0,1,1,1,1,1
 sub_main,0x0035AE20,84,Pit_disp_chat,edited,0,0,1,1,1,1,1
 sub_main,0x0035AE80,180,sub_main_func_0035AE80,mh2-only,0,0,1,1,1,1,1
@@ -15795,8 +15795,8 @@ sub_main,0x003A0B60,264,sub_main_func_003A0B60,mh2-only,0,0,1,1,1,1,1
 sub_main,0x003A0C70,148,Stage_mv_data_get,edited,0,0,1,1,1,1,1
 sub_main,0x003A0D10,108,Stage_data_get,edited,0,0,1,1,1,1,1
 sub_main,0x003A0D80,152,sub_main_func_003A0D80,mh2-only,0,0,1,1,1,1,1
-sub_main,0x003A0E20,152,sub_main_func_003A0E20,mh2-only,0,0,1,1,1,1,1
-sub_main,0x003A0EC0,84,Stage_unique_data_get,edited,0,0,1,1,1,1,0
+sub_main,0x003A0E20,152,Stage_unique_data_get,rewritten,0,0,1,1,1,1,1
+sub_main,0x003A0EC0,84,Stage_item_probability_get,rewritten,0,0,1,1,1,1,0
 sub_main,0x003A0F20,96,Em_data_com_adrs_get,edited,0,0,1,1,1,1,1
 sub_main,0x003A0F80,184,Em_data_st_adrs_get,edited,0,0,1,1,1,1,1
 sub_main,0x003A1040,48,Start_item_data_adrs_get,edited,0,0,1,1,1,1,1
