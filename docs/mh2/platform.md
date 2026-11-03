@@ -71,8 +71,8 @@ reader (the word does not change the layout).
 
 ## Textures
 
-TIM2 (one picture, version 4): alpha is 0-255 in the files, not doubled (**Conflict** with docs/mh2_port.md section 3, which said
-"alpha doubled (GS 0x80 = opaque)"; commit c2671f0 "TIM2 alpha, (C) box fixed" suggests this file is the later reading). .tex packs: MOMO-style (Meltw, count, offset/size pairs)
+TIM2 (one picture, version 4): alpha is 0-255 in the files, not doubled. This replaces docs/mh2_port.md section 3's earlier "alpha doubled": of a sample
+of 779 pictures none tops out at 0x80 and 762 reach 0xFF (commit c2671f0, comment at src/pc/fmt/apx.c:43-45). .tex packs: MOMO-style (Meltw, count, offset/size pairs)
 read as link files of TIM2 (loading, load_stg, psp_con, q_clear); endroll.tex and gallery.tex are AFS archives of TIM2 files.
 Hunter part textures are one .tm2 per part (viewer: PL_TEX_EXT).
 

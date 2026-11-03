@@ -6,7 +6,7 @@
 - **Numbers:** from the tools named. Scripts not named here were throwaway reading aids. Guesses are marked.
 - **Newer notes:** sections 1-5 describe the state of 2 Nov. The four agents of 2 Nov and the CODE and HUNT agents of 3 Nov
   moved things on: docs/mh2/data.md, structs.md, quest.md, platform.md, code.md, hunt.md. Section 6 says what is done.
-  Where a newer note disagrees with sections 1-5, the row is marked **Conflict** or **Later**.
+  Where a newer note changes sections 1-5, the row is marked **Later**.
 
 ## Where it stands on 3 Nov 2026
 
@@ -73,7 +73,7 @@ byte-identical to those inside the ISO named English v1.03 in that folder, so th
 | Streams | AFS00, AFS01 | AFS00 309 ADX, AFS01 414 sound packs, AFS02 13 SFD movies | only in the ISO; not read by the port yet. Install must carve them. **Later:** install, ADX and MOMO v3 decode done (docs/mh2/platform.md); AFS02 movies not read |
 | Overlays | packed | stored raw, 12, by MWo3 name | works. gm_sub, plsel, lbguild are new modules with no loader in the runtime yet |
 | Compression | Meltw | Meltw; some files stored raw | works. Which files are raw is **guessed**: `fmt_afs_load` returns raw when a file does not parse as Meltw. softkey1.tm2 starts like Meltw and fails: not looked into |
-| Textures | APX | TIM2 version 4, one picture, one mip, 4/8/32-bit | new reader; 1,695 sampled pictures fit these shapes. Title, sprites and font-sized art seen. Alpha doubled (GS 0x80 = opaque). The (C) sprite still shows a white box, so one case is wrong. **Conflict:** docs/mh2/platform.md says alpha is 0-255 in the files, not doubled; commit c2671f0 ("TIM2 alpha, (C) box fixed") is later than this table |
+| Textures | APX | TIM2 version 4, one picture, one mip, 4/8/32-bit | new reader; 1,695 sampled pictures fit these shapes. Title, sprites and font-sized art seen. Alpha doubled (GS 0x80 = opaque). The (C) sprite still shows a white box, so one case is wrong. **Later (settled):** alpha is 0-255 in the files, not doubled (779 pictures sampled, src/pc/fmt/apx.c:43-45); the (C) box was fixed by the same commit, c2671f0 (docs/mh2/platform.md) |
 | Other textures | | MOMO `.tex`, nested AFS of TIM2 (endroll, gallery) | not read. MOMO texture layout unknown |
 | Models (AMO) | yes | same container. Many files carry header word 0x040C1B00 where G has 0x020B1C00 | reader returns OK on 6 samples, part counts sensible. **Not drawn yet**, so vertex layout is unproven; that word changing suggests a difference. **Later:** docs/mh2/platform.md: the 0x040C1B00 models draw with the existing reader (the word does not change the layout) |
 | Skeleton (AHI) | yes | same | reader OK on 6 samples, bone counts sensible |

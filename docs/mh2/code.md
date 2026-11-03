@@ -23,7 +23,7 @@ callsite vote, so it was not renamed: a guess either way.
 | function | before | now | what is left |
 |---|---|---|---|
 | sub_main 0x3A9230 (quest script) | 11 | 11 (unchanged) | two a0/a1 (and v0/v1) swaps: the first FIND's pointer and key, and case 11's table read. Declaration order, loop shape, a temp for the key, `p` for `q`, a third parameter, quest_w-relative globals (241, worse): none fixes both; the permuter (1,150 iterations) found nothing |
-| sub_main 0x3A2E30 (quest state machine) | 117 aligned (quest.md had "about 8 bytes short": **Conflict**) | 96 | quest_w fields now go through `quest_w + offset` (a store to a byte of quest_w makes MWCC reload an int of it, as the original does). Left: the saved-register pairing of the two player loops, `x | 1 << n` operand order, the case 3 switch shape |
+| sub_main 0x3A2E30 (quest state machine) | 117 aligned (quest.md's older "about 8 bytes short" is superseded) | 96 | quest_w fields now go through `quest_w + offset` (a store to a byte of quest_w makes MWCC reload an int of it, as the original does). Left: the saved-register pairing of the two player loops, `x | 1 << n` operand order, the case 3 switch shape |
 | game 0x725860 Em_Dmg_Sys | 214 aligned | 214 | EMW + 0x3D0 is a real field now (`EMW.x3CC`, type `EM_X3CC`, include/em.h). "One register off" was too kind: em sits in s2 and `first` in s1 in the original; case 8 holds `(s8)i` in a saved register across em_dur_set; 8 instructions short. Declaration order does not move it |
 
 ## What was learned (for the next matcher)

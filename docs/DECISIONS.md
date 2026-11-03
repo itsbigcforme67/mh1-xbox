@@ -10,17 +10,17 @@ earlier one are noted in both places.
 |---|---|---|
 | Which game is released | Monster Hunter G (PS2, Japanese) is the main release; MH1 JP is finished too; MH1 US later | 13 Oct |
 | Repo layout | One codebase for every version, a `VERSION` switch, shared C | 13 Oct |
-| Method | Decompile to portable C, byte-match as the correctness check, never as a blocker | 3 Oct, 4 Oct, 5 Oct |
+| Method | Decompile to portable C, byte-match as the correctness check, never as a blocker; no static recompiler | 3 Oct, 4 Oct, 5 Oct, 3 Nov |
 | Compiler | mwcps2-3.0b52-030722 -O4,p (MH2 adds `-sdatathreshold 0`) | 4 Oct, 2 Nov |
 | Platform | Written from scratch for PC and Xbox, nothing PS2-specific emulated; PC first; 32-bit host | 3 Oct, 5 Oct |
 | Xbox SDK | nxdk | 3 Oct |
 | Online | Our own server and our own open PS2 patches; PS2, PC and Xbox together; wire protocol kept, DNAS removed | 3 Oct, 15 Oct, 16 Oct |
-| English for G | Monster Hunter Freedom first, MH1 US second, our own lines last; "Dual Blades" | 25 Oct, 28 Oct |
-| MH2 (Dos) | We split and decompile it ourselves; PC and Xbox ports like MH1 and G | 1 Nov, 2 Nov |
+| English for G | Monster Hunter Freedom first, MH1 US second, our own lines last; "Dual Blades". The community MH1j patch is a very-low-priority option for later | 25 Oct, 28 Oct, 3 Nov |
+| MH2 (Dos) | We split and decompile it ourselves; PC and Xbox ports like MH1 and G. The community mh2-decomp repo is an allowed source of facts | 1 Nov, 2 Nov, 3 Nov |
 | Movies | libmpeg2 | 7 Oct |
 | License | MIT for the project's own code | 15 Oct |
 
-Items still open are in "Open" at the end. Some of them were partly settled by later decisions; those are marked there.
+Items still open are in "Open" at the end. Three were settled by the owner on 3 Nov 2026 ("Settled 3 Nov 2026" below).
 
 ## Decided
 
@@ -38,7 +38,8 @@ Static recompilation was considered and rejected:
 - PS2Recomp is experimental, targets modern PCs, and its graphics and VU1 support are incomplete.
 - Its runtime model is a poor fit for a 733 MHz CPU with 64 MB of RAM.
 
-(See also "Open: hybrid build" and the owner's notes of 5 Oct below: a recompiler may still be used as scaffolding.)
+(The owner's notes of 5 Oct below left a recompiler open as scaffolding. On 3 Nov 2026 the owner closed that: "we're long
+past PS2Recomp". See "Settled 3 Nov 2026".)
 
 ### Use nxdk for the Xbox side (3 Oct 2026)
 
@@ -348,9 +349,9 @@ with our tools, and do not start from their code.
 - Their repo stays a reference for facts only (what a function does, offsets, formats). Their C, names, comments and file
   layout stay out of ours.
 - Not legal advice; re-read their license state first.
-- Note (readability pass, 3 Nov): every MH2 doc written since says the repo was not opened at all, and the brief for this
-  pass says not to use it (no names, comments or text). That is stricter than the 1 Nov rule above. Both are kept here; the
-  owner may want to settle which one applies.
+- Confirmed by the owner, 3 Nov 2026: the repo **is** an allowed source of facts. The MH2 docs written so far did not
+  open it (they say so), and the readability-pass brief kept away from it; neither of those is a rule. What stays out
+  is their C, names, comments, text and file layout.
 
 How MH2 lives in the repo (agent, 2 Nov 2026, owner asleep; docs/mh2.md):
 - MH2 lives beside G in the same tree (VERSION=mh2, config/mh2, src/mh2 for MH2-only C), and shares unchanged MH1 C
@@ -391,32 +392,41 @@ Other rejections are listed inside their decisions above: static recompilation a
 decompilation as the default (4 Oct), separate repos per game (13 Oct), a compile-time game switch for the Xbox loader
 (16 Oct), the other movie options (7 Oct).
 
+## Settled 3 Nov 2026 (owner)
+
+### Static recompilation (PS2Recomp, hybrid build): no
+
+The owner: "we're long past PS2Recomp". The port is matched or near-matched C plus the host runtime, for MH1, G and MH2.
+This closes the "hybrid build" question that was open since 5 Oct.
+
+What was open, kept for the record: recompile the remaining PS2 code mechanically (PS2Recomp or our own) and link it with
+the native graphics/sound/input layer, swapping in decompiled C as it lands. Faster to playable on PC; probably too slow
+for the original Xbox, which still needs real C. Untested on this game. (PS2Recomp was tried once, 5 Oct, docs/STATUS.md.)
+
+### English text: official sources first, the community MH1j patch much later if at all
+
+For G the order is Freedom, then MH1 US, then our own lines (28 Oct). MH1 JP uses its own US disc text. The community
+MH1j English patch stays a possible option far down the line, very low priority. If it is ever used, it needs the
+translators' consent and credit (CLAUDE.md rules).
+
+What was open, kept for the record: the community MH1j English patch (needs the translators' consent), text from the US
+disc (supplied by the user's own copy), or a fresh translation.
+
+### The community mh2-decomp repo: an allowed source of facts
+
+See "MH2 (Dos)" above. Facts (what a function does, offsets, formats) may be taken from it. Its C, names, comments, text
+and file layout stay out of ours while it has no license.
+
 ## Open
-
-### Where the English text comes from
-
-Options: the community MH1j English patch (needs the translators' consent), text from the US disc (supplied by the user's
-own copy), or a fresh translation.
-
-**Partly settled later:** for G, Freedom first, MH1 US second, our own lines last (28 Oct). MH1 JP uses its own US disc
-text (28 Oct). Whether the community MH1j patch is used at all is not recorded as decided.
 
 ### Server
 
 Ask MH Oldschool about an unofficial client, or build a private server. Their game server code did not appear to be
 public.
 
-**Partly settled later:** on 15 Oct the owner chose our own server ("Online: our own server" above). Never connect to MH
-Oldschool's public server without their operators' permission still holds.
-
-### Hybrid build
-
-Recompile the remaining PS2 code mechanically (PS2Recomp or our own) and link it with the native graphics/sound/input
-layer, swapping in decompiled C as it lands. Faster to playable on PC; probably too slow for the original Xbox, which
-still needs real C. Untested on this game.
-
-**Conflict to settle:** this sits beside the 3 Oct rejection of static recompilation as the method, and CLAUDE.md says
-PS2Recomp "is being tested as a stop-gap". The 2 Nov MH Dos decision says "no recompiler" for MH2.
+**Mostly settled:** on 15 Oct the owner chose our own server ("Online: our own server" above). What is left open is only
+whether to ask MH Oldschool about letting an unofficial client in. Never connect to their public server without their
+operators' permission.
 
 ### mh1-relay mode
 

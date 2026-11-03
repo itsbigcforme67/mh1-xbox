@@ -37,7 +37,7 @@ comes from Monster Hunter Freedom first, then MH1 US, on 28 Oct). docs/DECISIONS
 | Question | Decision | Why |
 |---|---|---|
 | Which build to port | Japanese (NTSC-J) | Its executable ships with a symbol table, and it is the version the community servers speak to. The US/EU builds use different netcode that nobody has revived. |
-| English | Second string table plus a language toggle | English text can come from the community MH1j translation (with the authors' permission) or be retranslated. (Later: official English from the player's own US disc and Freedom; see docs/DECISIONS.md.) |
+| English | Second string table plus a language toggle | English text can come from the community MH1j translation (with the authors' permission) or be retranslated. (Later: official English from the player's own US disc and Freedom; the MH1j patch is a very-low-priority option for later. See docs/DECISIONS.md.) |
 | Xbox SDK | nxdk (open source) | Gives a GPU library (pbkit), vertex program and register combiner compilers, an lwIP network stack, SDL2 and USB. Avoids the leaked Microsoft XDK. |
 | Method | Decompile to portable C, then retarget | Static recompilation tools for PS2 are too immature and too heavy for a 733 MHz, 64 MB machine. |
 | Online | Same wire protocol as the PS2 client, DNAS removed | Lets an Xbox client share lobbies with PS2 and PCSX2 players, if the server operators agree. |

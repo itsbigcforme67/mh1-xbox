@@ -193,8 +193,8 @@ Results of the last run:
 | parts of other files | 520 |
 | data slots | 38 (with the hand ones) |
 | code not found anywhere | 1,358 files |
-| several sites and no name to choose | 118 files (**Conflict:** section 7 says 109 files) |
-| a name needs two addresses | 14 files, 44 single functions: one global reached at two offsets that do not fit (**Conflict:** section 6 item 7 says 17 files, 51 functions) |
+| several sites and no name to choose | 118 files (section 7's 109 is from the earlier run of 2 Nov morning, at 3.74%) |
+| a name needs two addresses | 14 files, 44 single functions: one global reached at two offsets that do not fit (was 17 files, 51 functions at the 6.37% merge of 2 Nov) |
 | overlaps a bigger match | 12 |
 | do not compile | 4 |
 
@@ -225,8 +225,8 @@ Results of the last run:
   wrapper that defines it, so nothing changes for MH1 or G.
 - **Renames.** A name that the symbol files or another file place elsewhere is renamed in that object only
   (config/mh2/c_symfix.txt, `objcopy --redefine-sym` through c_renames.txt). Mostly these are map names that are wrong or
-  that exist twice, so treat that list as a to-do for the name map. **Conflict:** this paragraph said 145 lines; the
-  "Name map errors" paragraph below says it has grown to 213.
+  that exist twice, so treat that list as a to-do for the name map. The list's length moves with each
+  register: 145 lines on 2 Nov morning, 213 at the merge of 2 Nov midday, 198 in the committed file on 3 Nov (`wc -l`).
 - Files with `.inc` raw functions are not carried: those hold original bytes, not C.
 - **Written for MH2 (11 files at the 3 Nov merge):** src/mh2/plsel/p00D*.c, plsel_func_00D61710 and friends; src/mh2/game:
   next_cmd_search, cmd_target (cmd_target_kind_set and target_kind_set, C in include/em_core_g_mh2.h, with a jump-table
@@ -315,12 +315,12 @@ the full check does not cover MH2.
   if it jumps. (docs/mh2/code.md, 3 Nov: each compile now gets a second try with a 600 s limit; a timeout is the guess.)
 
 **Name map errors found.** get_prim and get_prim2 are swapped (0x376EF0 is the 0x200 pool). config/mh2/c_symfix.txt has
-grown to 213 lines; each is a place to check.
+grown to 213 lines (198 on 3 Nov, see 5.1); each is a place to check.
 
 ### 5.5 Guessed, not proven
 
-- GAME_W's size 0x2C0. **Conflict:** the memsets above (and docs/mh2/structs.md) prove 0x2BC; the merge of 3 Nov already
-  called 0x2C0 wrong. Kept here because it was the earlier claim.
+- (Settled, no longer a guess: GAME_W's size was guessed at 0x2C0; seven memsets prove 0x2BC, see 5.4 and
+  docs/mh2/structs.md.)
 - CNET_SYS's size 0x4B000.
 - reward_item[48] (only the room between its neighbours says so).
 - area_mdlw at 0xF0 (no code seen; the pad has to sit before it because of alignment).
@@ -365,8 +365,8 @@ Remaining work, by reason. Status notes in brackets were added on 3 Nov from doc
 4. False twins from the name map, and tiny sites with the wrong name.
 5. Real rewrites: MH2 changed what the function does.
 6. A few register-allocation stragglers: flGetMotionMatrix, SaveNetFileBr, dic_learn.
-7. Two-address files: a global reached at two offsets (17 files, 51 functions), mostly a struct still wrong. (**Conflict**
-   with the table in 5.1: 14 files, 44 functions.)
+7. Two-address files: a global reached at two offsets (14 files, 44 functions at the merge of 3 Nov;
+   17 files, 51 functions at the 6.37% merge of 2 Nov), mostly a struct still wrong.
 8. mh2_differ.csv needs a G-form column.
 9. Parts that left strings in the asm: when the rest of such a file matches, its data gets a slot by itself on the next
    register.
@@ -390,8 +390,8 @@ Remaining work, by reason. Status notes in brackets were added on 3 Nov from doc
 - The English v1.03 ISO in disc/mh2 was not used here. (docs/mh2/platform.md uses it for the install and the streams.)
 - dnas_net and dnas_ins only rebuild as bytes. No work was done on what is in them, by design.
 - No names or conclusions were cross-checked with the community repo; the allowance to do so was not needed.
-- Ties: when a file has several sites and no name chooses, it is left out (109 files; **Conflict:** the table in 5.1 says
-  118). When the map names a site, its word is taken, so a tiny function can sit under the wrong name although the bytes are
+- Ties: when a file has several sites and no name chooses, it is left out (118 files at the last run, table in 5.1;
+  109 at the earlier run of 2 Nov morning). When the map names a site, its word is taken, so a tiny function can sit under the wrong name although the bytes are
   right. Bytes prove the code, not the name.
 - A part's data left in the asm means that part cannot move in memory yet (it holds absolute addresses). That is fine for a
   byte match, but it must be fixed before any relink or port.

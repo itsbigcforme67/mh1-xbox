@@ -546,39 +546,27 @@ Not byte-matched, so these are about behaviour only. All are rename/comment only
 
 ## Appendix: disagreements found in the docs during this pass
 
-The docs pass kept both sides of each and marked them **Conflict** (or **Later** where one side is simply newer). Listed
-here so they can be settled in one place.
+Status after the follow-up of 3 Nov evening (owner's answers plus git history and the code). **Open** = still needs a run
+with the disc or an owner decision.
 
-1. **game_w size (MH2):** 0x2C0 in docs/mh2.md "Guessed"; 0x2BC proven by seven memsets (docs/mh2/structs.md and
-   docs/mh2.md 5.4).
-2. **Files left out for ties (MH2):** 118 files in the carry table (docs/mh2.md 5.1); 109 files in section 7.
-3. **Two-address files (MH2):** 14 files / 44 functions (docs/mh2.md 5.1); 17 files / 51 functions (section 6 item 7).
-4. **config/mh2/c_symfix.txt size:** 145 lines (docs/mh2.md 5.1 "Renames"); 213 lines (5.4 "Name map errors").
-5. **"No opcode moved" (em_cmd):** docs/mh2/data.md says no opcode moved; docs/mh2/code.md shows opcode 0x2C's handler
-   moved to 0x70 in G (MH2 keeps G's layout). Related: docs/mh2/quest.md lists 0x70-0x7C as "new in MH2", but 0x70 is
-   already G's.
-6. **Em_Dmg_Sys near-match:** "one register off" (docs/mh2/quest.md); 214 instructions aligned, 8 short, "one register"
-   too kind (docs/mh2/code.md); "214 of 667 instructions off" (docs/mh2/hunt.md).
-7. **0x3A2E30 near-match:** "about 8 bytes short" (docs/mh2/quest.md); 117 → 96 instructions differ (docs/mh2/code.md).
-8. **MH2 sleep tables:** data_map.txt has em_sleep2_data_tbl 0x8BCCB0 and em_sleep_data_tbl 0x8BD550; docs/mh2/hunt.md,
-   by the EMW field each fills, reads sleep 0x8BDA00, poison 0x8BCCB0, sleep2 0x8BDB50, new 0x8BD550.
-9. **quest_w byte 0x9D:** config/mh2/layouts.txt calls it x168; docs/mh2/hunt.md thinks x168 and x169 are swapped
-   (guess).
-10. **TIM2 alpha:** docs/mh2_port.md section 3 says doubled (GS 0x80 = opaque); docs/mh2/platform.md says 0-255, not
-    doubled (commit c2671f0 "TIM2 alpha, (C) box fixed" suggests platform.md is the later reading).
-11. **MH1 match percentage:** CLAUDE.md says "about 8% of all code matches as of 5 Oct"; docs/STATUS.md has 13.1% on
-    5 Oct evening and 59.668% on 12 Oct. (CLAUDE.md was not edited: it is outside this pass's file list.)
-12. **Full check on the 2 Nov MH2 merge:** the long STATUS entry says full_check.sh was not run; the short one (now
-    folded in) says 47 of 47 passed after a fix. Probably run later by the coordinator; the log does not say.
-13. **STATUS entry "2026-10-05 (afternoon)":** its numbers (35%) come after the 5 Oct evening entry (13.1%), so the date is
-    probably 6 Oct. Heading now says "5 or 6 Oct".
-14. **Static recompilation:** rejected as the method (DECISIONS, 3 Oct); "hybrid build" still open (DECISIONS, Open);
-    CLAUDE.md says PS2Recomp "is being tested as a stop-gap"; the MH Dos decision (2 Nov) says "no recompiler".
-15. **Community mh2-decomp repo:** DECISIONS (1 Nov) allows it as a reference for facts; all MH2 docs say it was never
-    opened, and the brief for this pass says not to use it at all.
-16. **English sources:** README's first-decisions table and DECISIONS "Open" still list the community MH1j patch as an
-    option; the 28 Oct decision set Freedom → MH1 US → our own lines for G.
-17. **Server:** DECISIONS "Open" still asks whether to ask MH Oldschool or build a private server; 15 Oct decided our own
-    server.
-18. **MH2 "11 files written fresh":** docs/mh2.md said 11; after the CODE round there are 15 matched hand files plus 3
-    near-matches. docs/mh2.md now says "11 at the 3 Nov merge" and lists the four later ones.
+1. game_w size (MH2): 0x2C0 guess vs 0x2BC from seven memsets. **Settled: 0x2BC.**
+2. Files left out for ties: 118 vs 109. **Settled:** two runs; 109 on 2 Nov morning (3.74%), 118 at the later merge.
+3. Two-address files: 14/44 vs 17/51. **Settled:** 17/51 at the 2 Nov merge, 14/44 at the 3 Nov merge.
+4. c_symfix.txt size: 145 vs 213. **Settled:** it grows and shrinks with each register: 145, then 213, 198 lines on 3 Nov.
+5. "No opcode moved" (em_cmd). **Settled by docs/mh2/code.md:** 0x2C's handler moved to 0x70 in G; MH2 keeps G's layout.
+   Which other "new in MH2" opcodes are really G's: **open** (only 0x2C/0x70 checked).
+6. Em_Dmg_Sys near-match size. **Settled:** code.md (newer) wins: 214 aligned, 8 short.
+7. 0x3A2E30 near-match size. **Settled:** code.md: 117 → 96 instructions differ.
+8. MH2 sleep table names (data_map.txt vs docs/mh2/hunt.md). **Open:** needs a check against MH2's code.
+9. quest_w byte 0x9D, x168 or x169. **Open:** needs a check against MH2's code.
+10. TIM2 alpha. **Settled:** 0-255, not doubled (src/pc/fmt/apx.c:43-45, commit c2671f0; 779 pictures sampled).
+11. MH1 match percentage in CLAUDE.md. **Settled:** CLAUDE.md updated, points at the STATUS summary.
+12. Full check on the 2 Nov MH2 merge. **Settled:** "not run" was written at 11:17 (25adb3b), 47 of 47 at 13:19 (67debca).
+    Who ran it is not recorded.
+13. Date of the STATUS entry "5 or 6 Oct". **Open, cannot be settled:** git history starts on 29 Oct.
+14. Static recompilation. **Settled (owner):** no PS2Recomp, no hybrid build.
+15. Community mh2-decomp repo. **Settled (owner):** an allowed source of facts; its code, names, comments and text stay out.
+16. English sources. **Settled (owner):** Freedom → MH1 US → our own lines for G; the MH1j patch is a very-low-priority
+    option for later.
+17. Server. **Mostly settled:** our own server (15 Oct). Only "ask MH Oldschool about an unofficial client" stays open.
+18. MH2 "11 files written fresh". **Settled:** docs/mh2.md says 11 at the 3 Nov merge and lists the four later ones.

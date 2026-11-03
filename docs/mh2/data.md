@@ -81,7 +81,7 @@ relocated (97.7%).
 
 Read from QUEST's em_cmd_ck.c (MH2) and src/game/em/em_cmd_r01.c (MH1), handler by handler. **No opcode moved.**
 
-**Conflict (found 3 Nov, docs/mh2/code.md):** the opcode 0x2C handler did move, but in G, not in MH2. G put
+**Correction (3 Nov, docs/mh2/code.md, which is newer):** the opcode 0x2C handler did move, but in G, not in MH2. G put
 em_cmd_myemtype_sel at opcode 0x70 and a new handler at 0x2C; MH2 keeps G's layout. So "no opcode moved" holds against G, not
 against MH1. The paragraph below is kept as written on 2 Nov.
  All 109 opcodes MH1 has

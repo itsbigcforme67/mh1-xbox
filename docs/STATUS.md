@@ -10,8 +10,8 @@ named for each.
 
 - **MH1 (Japanese, the test bench).** All five modules rebuild byte-identical. 59.668% of the code matched (7,204 of
   12,585 functions; 12 Oct). The PC build plays the whole single-player game and the online town against our own server.
-  The real Xbox runs a full quest loop at ~30 fps with sound and saves (13 Oct). **Conflict:** CLAUDE.md still says
-  "about 8% of all code matches as of 5 Oct"; the log has 13% on 5 Oct evening and 59.668% on 12 Oct.
+  The real Xbox runs a full quest loop at ~30 fps with sound and saves (13 Oct). (CLAUDE.md said "about 8% as of 5 Oct"
+  until 3 Nov; it now points here.)
 - **MH G (the main release).** Rebuilds byte-identical (7 modules) with `VERSION=mhg`. 19.8% matched (15 Oct, last number in
   this log). Village and all 98 offline quests on the PC; installed on the real Xbox and runs the village at 30 game frames a
   second (29 Oct). English: 47% official text on 15 Oct; the source order (Freedom first) was decided on 28 Oct
@@ -718,7 +718,8 @@ row plus silencer/long-barrel rows. Matching notes:
   (procedure in docs/agents/COORDINATOR.md, which also lists assignments).
 - The agent running as "A" was replaced by a fresh agent on the port-runtime
   skeleton task (run decompiled game C natively on top of src/pc/gfx).
-- PS2Recomp runner build: last attempt was stopped by the app restart; rerun
+- PS2Recomp runner build (no longer needed: the owner dropped PS2Recomp on 3 Nov 2026, docs/DECISIONS.md): last attempt was
+  stopped by the app restart; rerun
   `ninja -C tools/ps2recomp/out/build ps2EntryRunner` (the isnan fix is applied).
 - Usage pacing (hourly check, pause at ~88%) was a session-only cron; recreate it
   when resuming agents.
@@ -738,7 +739,8 @@ row plus silencer/long-barrel rows. Matching notes:
 ## 5 or 6 Oct 2026: 35% matched, PC hunt works
 
 (This heading used to say "2026-10-05 (afternoon)". It comes after the 5 Oct evening entry, which had 13.1%, so the date or
-the time of day is probably wrong: likely 6 Oct. Kept in its place in the order of progress.)
+the time of day is probably wrong: likely 6 Oct. Kept in its place in the order of progress. Not checkable from git: the
+repo's history starts on 29 Oct 2026.)
 
 ```
 main           6525    1516544   304460 20.076%
@@ -1094,8 +1096,9 @@ Decided alone, the owner being away. Community mh2-decomp not opened.
   carried code 3.74% to 6.37% (2,268 of 17,034 functions). Verified on the merged tree: full check 47 of 47, mh2_check
   13 of 13 identical. The first full check failed 6 runtime steps (`MH2V` hid addresses from `tools/pc_abs.py`); fixed
   (docs/mh2.md 5.3). Next: remaining struct layouts in docs/mh2.md.
-  **Conflict:** the bullet "Verified" above says full_check.sh was not run (it is the owner's); this bullet says 47 of 47
-  passed. Probably run later by the coordinator, but the log does not say who ran it.
+  Order, from the commit times: "full_check.sh not run" was written at 11:17 (commit 25adb3b); the 47 of 47 came with the
+  `MH2V`/pc_abs fix at 13:19 (commit 67debca). So the full check was run after the first write-up. Who ran it is not
+  recorded.
 
 Next: docs/mh2.md section 6.
 
@@ -1146,3 +1149,18 @@ entry. Details: docs/mh2/code.md and docs/mh2/hunt.md.
   in the game camera and the HUD, then stops at the blockers listed in docs/mh2/hunt.md. Monsters only with `RT_MH2_EM=1`.
 - Progress after the merge: 6.88%, per the message of commit 0a67047 (docs/survey/mh2_differ.csv regenerated). The
   function count was not recorded.
+
+## 3 Nov 2026 (evening): docs follow-up, three open questions settled by the owner
+
+- Owner decisions (docs/DECISIONS.md, "Settled 3 Nov 2026"): PS2Recomp / a hybrid build is off the table; the community
+  MH1j English patch is a very-low-priority option for later; the community mh2-decomp repo is an allowed source of facts
+  (not of code, names, comments or text).
+- CLAUDE.md "Where things stand" updated (it still said 8% matched and that PS2Recomp was being tested) and now points at
+  the summary at the top of this file.
+- Doc conflicts from the readability pass settled from git history and the code: game_w 0x2BC; the em_cmd near-match
+  counts and the opcode 0x2C/0x70 move (code.md is newer); TIM2 alpha 0-255 (src/pc/fmt/apx.c:43-45, commit c2671f0);
+  118 vs 109 tie files and 14/44 vs 17/51 two-address files are two runs, not a disagreement; c_symfix.txt was 145, 213,
+  and is 198 lines now; the 2 Nov full check ran after the first write-up (commits 25adb3b, 67debca).
+- Still open, need a run with the disc: the MH2 sleep table names (docs/mh2/hunt.md vs data_map.txt) and quest_w byte 0x9D
+  (x168 or x169). The date of the "5 or 6 Oct" entry cannot be checked: git history starts on 29 Oct.
+- Docs only; no C, header, tool or config file changed.
