@@ -69,3 +69,9 @@ Without --time the viewer shoots the first frame (frames = 1), which is why a ba
    to 0xD0). eft01_m reads part[10] (PLW 0xF8) for the hunter's shadow: NULL crash at tick 3 without it.
 3. src/pc/rt/rt_pl.c `player_work_ptr` steps 0xA00 per player; MH2's PLW is 0x970 (only player 0 is right).
 4. Blocker 7's per-stage tables at MH1/G sizes are the same kind of bug as 1.
+
+**Without 1 and 2 this branch alone crashes `--quest 1014 --time ...` at tick 3** (SIGFPE in Get_cam_grid_XZ, then a NULL part
+pointer in eft01_m). Before it, the hunter never got through frame_init, so G's CameraMove returned at `pl->be_flag == 0` and the camera
+code never ran (that is why main's run went on to tick 158: a guess from the code, main was not rebuilt to check). Merge with both.
+The exact test patch: /tmp/claude-1000/-home-james-claude-projects/780e2c66-a32c-48a8-b1d5-3f56feafbde2/scratchpad/walk/host_test.patch
+(rt_pl.c keeps its mh2_parts copy as well, for rt_player_parts).
