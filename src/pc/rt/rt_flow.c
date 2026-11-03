@@ -81,7 +81,7 @@ int rt_flow_tick(void)
     if (getenv("RT_QUEST_TRACE")) {     /* the money (User_data+0x20) when it changes: the reward (Gold_add, f_ud.c), fees */
         extern u8 User_data[];
         static s32 old_gold = -1;
-        s32 g = *(s32 *)(User_data + 0x20);
+        s32 g = *(s32 *)(User_data + 0x20);        /* MH2: gold is at +0x2984 (STRUCTS' UDMO), this trace reads the wrong word */
         if (old_gold >= 0 && g != old_gold)
             fprintf(stderr, "rt_quest: tick %d money %+d -> %d\n", tick, g - old_gold, g);
         old_gold = g;

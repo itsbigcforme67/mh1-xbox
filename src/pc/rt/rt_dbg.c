@@ -343,6 +343,7 @@ int rt_dbg_item_max(int id)
 
 int rt_dbg_in_quest(void) { return !rt_village_active() && rt_flow_mode() >= 2 && rt_flow_mode() <= 5; }
 
+/* MH2: wrong, G's offset (rt_ver_mhg() is true on MH2). MH2's User_data (0x5D4A60, 0x37F8 bytes): warehouse 500 x 12 at 0xBC, item box 500 at 0x182C, pouch 0x2040, worn equipment 0x2090, gold 0x2984; to switch with STRUCTS' UDMO()/MH2 UDW (also money, rank, EQ_BASE below) */
 static u8 *inv(int which, int *n)
 {
     if (which == DBG_POUCH) {
