@@ -164,24 +164,7 @@ static int clear_ck(int a)
         return -1;
     return 0;
 }
-/* Quest_time_get 0x3A1FC0: 1 the quest's time (info+0x1C), else the time left. G's copy (f_quest.c, renamed away for MH2 by
- * tools/build_pc.sh) read the time at G's info+0x10, which in MH2 is the fee: Quest_timer_reset set 800 ticks for quest 1014. */
-int Quest_time_get(int a)
-{
-    if (a == 1)
-        return Q_INFO ? *(s32 *)(Q_INFO + 0x1C) : 0;
-    return Q_TIMER >= 0 ? Q_TIMER : 0;
-}
-/* Game_clear_ck 0x36BB10: G's cases, on MH2's game_w+0x40 (dsp01.c reads G's +0x3E: renamed away for MH2 by tools/build_pc.sh) */
-int Game_clear_ck(int a)
-{
-    switch (G_STATE) {
-    case 3: return a == 0;
-    case 5: return a != 2;
-    case 4: case 6: case 7: case 8: return 1;
-    }
-    return 0;
-}
+int Quest_time_get(int);   /* f_quest.c (MH2 form: include/quest.h MISSION2); Game_clear_ck is dsp01.c's */
 /* Quest_error_set2 0x3A1CA0, Quest_error_set 0x3A1CD0 */
 static void error_set(void)
 {

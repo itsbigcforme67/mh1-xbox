@@ -283,14 +283,6 @@ void em_init(u8 *em)
         fprintf(stderr, "rt_mh2_em: em_init kind %d done\n", KIND);
 }
 
-/* em_effect_move (gm_sub 0x90A990): the kind's program slot 3 from EMW+0x3D0. emt02.c's (matched, weakened by the build
- * against this host copy) reads the table at MH1's 0x3CC */
-void em_effect_move(u8 *em)
-{
-    void (**prog)(u8 *) = (void (**)(u8 *))(uintptr_t)W32(0x3D0);
-    if (prog && prog[3])
-        prog[3](em);
-}
 /* ---- em_move (gm_sub 0x904CF0), step 1 of enemy_mv ----
  * MH2 restructured G's: no Stage_Hate_Add (G's f_em_nm.c called it and crashed on stage_hate_add_tbl, which MH2 does not have),
  * the kind's main by a 74-entry jump table (0x904AB0), MH2's own counters and the hagi (carve point) effect (sub_main 0x3A66B0).
