@@ -46,6 +46,23 @@ void rt_set_sub_main(uint8_t *bin, size_t n)
     sub_bss = bin && n >= 0x40 ? rd32(bin + 0x14) : 0;
 }
 
+/* MH2's overlays that sit at addresses of their own next to game.bin (gm_sub 0x8FAE00, plsel 0xD60200, docs/mh2/platform.md):
+ * read only through rt_addr and rt_in_bss, like sub_main. Which load together on the PS2 is still an assumption */
+#define MAX_EXTRA 4
+static struct { uint8_t *img; size_t n; uint32_t va, bss; } extra[MAX_EXTRA];
+static int nextra;
+
+void rt_add_overlay(uint8_t *bin, size_t n)
+{
+    if (!bin || n < 0x40 || nextra >= MAX_EXTRA)
+        return;
+    extra[nextra].img = bin;
+    extra[nextra].n = n;
+    extra[nextra].va = rd32(bin + 8);
+    extra[nextra].bss = rd32(bin + 0x14);
+    nextra++;
+}
+
 /* generated per version (tools/gen_rt_meta.py): G's symbols and pointer words */
 typedef struct { uint32_t va, size; const char *name; int func; } rt_meta_sym;
 extern const uint32_t rt_meta_main_data;
@@ -158,6 +175,9 @@ const uint8_t *rt_addr(uint32_t va, size_t n)
         return sub_img + (va - sub_va);
     if (ovl && va >= OVL_GAME_VRAM && va - OVL_GAME_VRAM + n <= ovl_n)
         return ovl + (va - OVL_GAME_VRAM);
+    for (i = 0; i < (unsigned)nextra; i++)
+        if (va >= extra[i].va && va - extra[i].va + n <= extra[i].n)
+            return extra[i].img + (va - extra[i].va);
     if (!elf && main_img && va < main_va && nph && va >= ph[0].vaddr)
         fprintf(stderr, "rt: read of main code at 0x%X after rt_mem_trim (not kept)\n", (unsigned)va);
     return NULL;
@@ -173,6 +193,9 @@ int rt_in_bss(uint32_t va, size_t n)
             return 1;
     if (sub_img && va >= sub_va + sub_n && va + n <= sub_va + sub_n + sub_bss)
         return 1;
+    for (i = 0; i < (unsigned)nextra; i++)
+        if (va >= extra[i].va + extra[i].n && va + n <= extra[i].va + extra[i].n + extra[i].bss)
+            return 1;
     return ovl && va >= OVL_GAME_VRAM + ovl_n && va + n <= OVL_GAME_VRAM + ovl_n + OVL_GAME_BSS;
 }
 

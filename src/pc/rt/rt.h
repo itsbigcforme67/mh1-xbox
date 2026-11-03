@@ -32,6 +32,7 @@ uint32_t rt_va_mh1(int set, uint32_t mh1);
 uint32_t rt_ovl_vram(void);
 /* G's resident sub_main.bin (0x4A0C80, after main's .bss): part of main's space */
 void rt_set_sub_main(uint8_t *bin, size_t n);   /* takes ownership */
+void rt_add_overlay(uint8_t *bin, size_t n);    /* MH2: gm_sub, plsel; takes ownership */
 
 /* ------------------------------------------------------------ PS2 memory */
 /* Main ELF (SLPM_654.95) and the game.bin overlay (vram 0x533980), kept in

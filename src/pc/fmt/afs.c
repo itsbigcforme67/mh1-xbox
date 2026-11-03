@@ -91,6 +91,14 @@ int fmt_afs_open_sub(fmt_afs *a, const char *path, int entry)
     return afs_open_at(a, path, base);
 }
 
+/* An archive stored as file idx of an open archive (MH2's mib.afs, em_cmd.afs, endroll.tex, gallery.tex) */
+int fmt_afs_open_nested(fmt_afs *a, const fmt_afs *parent, const char *path, int idx)
+{
+    if (idx < 0 || (uint32_t)idx >= parent->count)
+        return -1;
+    return afs_open_at(a, path, (long)parent->off[idx]);
+}
+
 /* An overlay by the name in its MWo3 header (+0x20): MH2's overlay archive has no name directory; -1 if absent */
 int fmt_afs_find_mwo(const fmt_afs *a, const char *name)
 {

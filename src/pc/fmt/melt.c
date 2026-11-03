@@ -99,8 +99,17 @@ uint8_t *fmt_melt(const uint8_t *src, size_t srclen, size_t *outlen, int be)
     return r;
 }
 
+/* MH2's .tex packs (loading.tex, q_clear.tex, ...) are a link file with a header: after Meltw "MOMO", u32 count, then count x
+ * {u32 offset, u32 size} of TIM2 pictures. Link files start with their count, which is never this magic */
+static int link_momo(fmt_blob f)
+{
+    return f.n >= 8 && !memcmp(f.p, "MOMO", 4);
+}
+
 int fmt_link_count(fmt_blob f, int be)
 {
+    if (link_momo(f))
+        return (int)fmt_u32(f.p + 4, be);
     return f.n >= 4 ? (int)fmt_u32(f.p, be) : 0;
 }
 
@@ -108,10 +117,11 @@ fmt_blob fmt_link_entry(fmt_blob f, int i, int be)
 {
     fmt_blob r = { NULL, 0 };
     uint32_t off, size;
-    if (i < 0 || i >= fmt_link_count(f, be) || 4 + 8 * (size_t)i + 8 > f.n)
+    size_t base = link_momo(f) ? 8 : 4;
+    if (i < 0 || i >= fmt_link_count(f, be) || base + 8 * (size_t)i + 8 > f.n)
         return r;
-    off = fmt_u32(f.p + 4 + 8 * i, be);
-    size = fmt_u32(f.p + 8 + 8 * i, be);
+    off = fmt_u32(f.p + base + 8 * i, be);
+    size = fmt_u32(f.p + base + 4 + 8 * i, be);
     if ((size_t)off + size > f.n)
         return r;
     r.p = f.p + off;

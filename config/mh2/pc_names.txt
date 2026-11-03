@@ -1,2 +1,4 @@
 # MH2 data names found by hand for the PC build (tools/mh2_pcmeta.py): module name 0xADDR [0xSIZE]  # how
 lobby helpLineTbl 0x00740170  # the address config/lobby_aliases.txt's helpLineTbl_c2 moves to (config/mh2/lobby_aliases.txt)
+main ope_mode_00300678 0x0043C980 0x10  # what SetOpeMode (0x3691A0, state 0x0D) indexes
+main filter_mode_00387900 0x0043C978 0x8  # what SetFilterMode (0x369010, state 0x63) indexes

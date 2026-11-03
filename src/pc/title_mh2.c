@@ -19,7 +19,8 @@ void Tsk_Exit(void *t);
 void Fade_task(void *t);
 void all_reset(void);
 void fade_set(int n);
-void SetOpeMode(int m);
+void SetFilterMode(int m);
+void SetTrnslMode(int src, int dst);
 void SetTextureStage(int id);
 void flps0008(void *spr);
 void flfntSetSize(int w, int h);
@@ -77,7 +78,8 @@ static void title_disp(int alpha)               /* select 0x6B5660 */
     u32 col = (u32)(alpha & 0xFF) << 24 | 0xFFFFFF;
     SPR8 s = { 0, 0, 0x280, 0x1C0, col, 0, 0, 0x1FF, 0x1BF };
     SPR8 m = { 0x1A7, 0xC7, 0x14, 0x16, col, 0x60, 0x89, 0x7F, 0xA8 };
-    SetOpeMode(1);
+    SetFilterMode(1);           /* sub_main 0x369010: state 0x63 through the table at 0x43C978. The map's name there, SetOpeMode, is wrong */
+    SetTrnslMode(4, 5);         /* the host's trans() sets this for G's tasks; this title draws outside it, and without it the alpha is off (the box round the (C)) */
     SetTextureStage(3);
     flps0008(&s);
     if (mem_tex[0x155]) {       /* a small mark on the logo; what loads slot 0x155 is not known yet */

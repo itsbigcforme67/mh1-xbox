@@ -60,6 +60,7 @@ typedef struct {
 
 int  fmt_afs_open(fmt_afs *a, const char *path);
 int  fmt_afs_open_sub(fmt_afs *a, const char *path, int entry);
+int  fmt_afs_open_nested(fmt_afs *a, const fmt_afs *parent, const char *path, int idx);
 int  fmt_afs_find_mwo(const fmt_afs *a, const char *name);
 void fmt_afs_close(fmt_afs *a);
 int  fmt_afs_find(const fmt_afs *a, const char *name);      /* -1 if absent */
