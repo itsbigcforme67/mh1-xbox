@@ -153,8 +153,15 @@ void func_5A8170(void *e) { Em09_item_sub((EMW *)e); }
 extern s32 *Fish_hani_tbl[];
 void func_5589F0(int stage)
 {
-    s32 *sp = Fish_hani_tbl[stage];
+    s32 *sp;
     int n;
+#ifdef VERSION_MH2
+    /* MH2: Fish_hani_tbl has no address yet (the host's array is G's 90 zero entries and stages run to 198): no fish */
+    (void)sp; (void)n; (void)stage;
+    rt_log_standin("MH2 Fish_set (Fish_hani_tbl not found)");
+    return;
+#endif
+    sp = Fish_hani_tbl[stage];
     for (; sp && sp[4] >= 0; sp += 6)
         for (n = sp[5]; n > 0; n--)
             Eft23_set(sp[4], (f32 *)sp);

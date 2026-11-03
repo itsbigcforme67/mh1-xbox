@@ -485,6 +485,24 @@ static int event_quest_ready(int no)
 int rt_quest_mission_given;
 int rt_quest_load(int no)
 {
+#ifdef VERSION_MH2
+    {   /* MH2: its own Quest_start (rt_mh2.c, from sub_main 0x3A11A0) on Quest_init; G's game11 steps after it as for G */
+        int rt_mh2_quest_start(int no);
+        if (no <= 0 || no >= 50000) {
+            rt_warn("quest %d: not a valid quest number", no);
+            return -1;
+        }
+        rt_log("quest %d: loading the mission file (--quest)", no);
+        rt_quest_mem_init();
+        Quest_init();
+        game_w.master = 0;
+        game_w.pl_num = 1;
+        game_w.pl_state[0] = 1;
+        if (rt_mh2_quest_start(no) != 0)
+            return -1;
+        goto started;
+    }
+#endif
     if (rt_ver_mhg() ? (no <= 0 || (no >= 50000 && !rt_quest_mission_given)) :   /* G: quest groups 00xxx..20xxx (mNNNNN.mib) */
             (no <= 0 || (no >= 0xB2 && !event_quest_ready(no)))) {
         rt_warn("quest %d: not a valid quest number", no);
@@ -510,6 +528,9 @@ int rt_quest_load(int no)
             fclose(f);
         }
     }
+#ifdef VERSION_MH2
+started:
+#endif
     Start_item_init();      /* game11: the quest's supply box (game_w+0x128 list, dsp03) */
     {   /* game11 next: the quest's event demos (first sight of a monster:
          * Kut-Ku 148, Cephadrome 154, Monoblos 171 ...; evdemo.c). The

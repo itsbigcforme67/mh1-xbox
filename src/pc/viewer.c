@@ -1336,6 +1336,17 @@ static int mh2_mission_load(int no, const char *var)
     return mh2_mission ? 0 : -1;
 }
 
+/* rt_mh2.c's Quest_start reads the mission file through this: RT_MIB picks the file (default d0; the game's pick by day / night
+ * and variant, 0x18D970 / 0x18DA70, is not read yet) */
+static size_t mh2_mib_read(int no, uint8_t *dst, size_t max)
+{
+    const char *var = getenv("RT_MIB") ? getenv("RT_MIB") : "d0";
+    if (mh2_mission_load(no, var) != 0 || mh2_mission_n > max)
+        return 0;
+    memcpy(dst, mh2_mission, mh2_mission_n);
+    return mh2_mission_n;
+}
+
 static uint32_t mh2_mw(uint32_t o)
 {
     uint32_t v = 0;
@@ -3382,13 +3393,18 @@ int main(int argc, char **argv)
     mh2_disc = disc;
     if (mh2_model)
         return mh2_model_shot(mh2_model, shot, W, H);
-    if (quest_no && !boot)
+    if (quest_no && !boot && getenv("RT_MH2_VIEW"))     /* the drawing check of 2 Nov: the quest's stage and monsters, no game code */
         return mh2_quest_shot(quest_no, shot, W, H);
-    if (!boot) {
-        fprintf(stderr, "MH2: only --boot works so far\n");
+    if (!boot && !quest_no) {
+        fprintf(stderr, "MH2: only --boot and --quest work so far\n");
         return 1;
     }
-    goto mh2_boot;
+    if (boot)
+        goto mh2_boot;
+    {   /* --quest: the G path below, with MH2's Quest_start (rt_mh2.c) */
+        void rt_mh2_set_mib_loader(size_t (*fn)(int, uint8_t *, size_t));
+        rt_mh2_set_mib_loader(mh2_mib_read);
+    }
 #endif
     if (quest_no) {
         /* --quest N: Quest_init + Quest_start as game11 does. The hunt
