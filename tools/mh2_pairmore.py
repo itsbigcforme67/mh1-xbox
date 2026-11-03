@@ -5,6 +5,9 @@ Most tables the PC still lacks have readers with no pair in docs/survey/mh2_map.
 (or 50% and a call site). Two kinds of evidence it does not use, both from the data names tools/mh2_datamap.py has placed:
 
   table    a placed object holds a function pointer in the reference and an unpaired function at the same offset in MH2.
+  order    functions keep their file's order. Between two sure pairs, the reference's functions and MH2's are aligned in order by
+           opcode ratio: unnamed ones get pairs, and a weak name out of place is listed (build/mh2/order_suspects.txt; --fix writes
+           the clear ones into config/mh2/func_fix.txt).
   items    a reference function and an unpaired MH2 function touch the same placed objects and call the same paired functions.
            Rare items count more; the opcode sequence must still agree (ratio >= 0.4) and the winner must stand clear.
 
@@ -20,6 +23,10 @@ import difflib
 import math
 import os
 import sys
+
+if os.environ.get("PYTHONHASHSEED") != "0" and __name__ == "__main__":      # same output on every run: set order feeds ties
+    os.environ["PYTHONHASHSEED"] = "0"
+    os.execv(sys.executable, [sys.executable] + sys.argv)
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import mh2_datamap as D  # noqa: E402
@@ -125,6 +132,99 @@ class Pairs:
                 n += 1
         return n
 
+    def order(self):
+        """see the module's text: sure pairs in order (longest increasing run), gaps between them aligned"""
+        mp = self.mp
+        rows = self.rows
+        n = 0
+        self.suspects = []
+        name_at = {}
+        for k, r in rows.items():
+            name_at[k] = r["name"]
+        for src, ref in mp.R.items():
+            byname = {}
+            for (rm, a), nm in ref.func.items():
+                if (rm, a) in ref.fsize and ref.fsize[(rm, a)] >= 8:
+                    byname.setdefault(nm, (rm, a))
+            for rm in ref.mods:
+                flist = sorted(a for (m, a) in ref.fsize if m == rm and ref.fsize[(m, a)] >= 8)
+                if not flist:
+                    continue
+                for m2 in D.DATA_TO.get(rm, ()):
+                    mf = sorted(a for (m, a) in rows if m == m2)
+                    if not mf:
+                        continue
+                    anchors = []
+                    for a in mf:
+                        r = rows[(m2, a)]
+                        if r["class"] in ("identical", "absolute", "shape") or (r["class"] == "edited" and float(r["sim"] or 0) >= 0.9):
+                            h = byname.get(r["name"])
+                            if h and h[0] == rm:
+                                anchors.append((h[1], a))
+                    if len(anchors) < 3:
+                        continue
+                    anchors.sort()
+                    # longest increasing subsequence of the MH2 addresses
+                    tails, prev, idx = [], [-1] * len(anchors), []
+                    import bisect
+                    for i, (_r, a) in enumerate(anchors):
+                        j = bisect.bisect_left(tails, a)
+                        if j == len(tails):
+                            tails.append(a)
+                            idx.append(i)
+                        else:
+                            tails[j] = a
+                            idx[j] = i
+                        prev[i] = idx[j - 1] if j else -1
+                    i = idx[-1] if idx else -1
+                    run = []
+                    while i >= 0:
+                        run.append(anchors[i])
+                        i = prev[i]
+                    run.reverse()
+                    for (r0, m0), (r1, m1) in zip(run, run[1:]):
+                        F = [a for a in flist if r0 < a < r1]
+                        X = [a for a in mf if m0 < a < m1 and 16 <= int(rows[(m2, a)]["size"]) <= 0x8000]
+                        F = [a for a in F if 16 <= ref.fsize[(rm, a)] <= 0x8000]
+                        if not F or not X or len(F) * len(X) > 900:
+                            continue
+                        n += self.align_gap(src, ref, rm, m2, F, X)
+        return n
+
+    def align_gap(self, src, ref, rm, m2, F, X):
+        mp = self.mp
+        tf = [[token(v) for v in ref.mods[rm].words(a, ref.fsize[(rm, a)] // 4)] for a in F]
+        tx = [[token(v) for v in mp.M2[m2].words(a, int(self.rows[(m2, a)]["size"]) // 4)] for a in X]
+        R = [[0.0] * len(X) for _ in F]
+        for i, p in enumerate(tf):
+            for j, q in enumerate(tx):
+                if 0.4 <= len(p) / len(q) <= 2.5:
+                    R[i][j] = difflib.SequenceMatcher(None, p, q, autojunk=False).ratio()
+        S = [[0.0] * (len(X) + 1) for _ in range(len(F) + 1)]
+        for i in range(len(F) - 1, -1, -1):
+            for j in range(len(X) - 1, -1, -1):
+                S[i][j] = max(S[i + 1][j], S[i][j + 1], S[i + 1][j + 1] + max(R[i][j] - 0.4, -0.2 if R[i][j] else -9))
+        i = j = n = 0
+        while i < len(F) and j < len(X):
+            if S[i][j] == S[i + 1][j]:
+                i += 1
+            elif S[i][j] == S[i][j + 1]:
+                j += 1
+            else:
+                fk, k, r = (src, rm, F[i]), (m2, X[j]), R[i][j]
+                row = self.rows[k]
+                i += 1
+                j += 1
+                if r < 0.5:
+                    continue
+                unnamed = k not in self.m2_done
+                if unnamed and fk not in self.ref_done:
+                    self.add(fk, k, "order", r)
+                    n += 1
+                elif not unnamed and row["class"] in ("edited", "rewritten") and ref.func.get(fk[1:]) not in (None, row["name"]):
+                    self.suspects.append((k, row["name"], row["sim"], ref.func[fk[1:]], r))
+        return n
+
     def add(self, fk, k, how, score):
         self.new[k] = (fk, how, score)
         self.ref_done.add(fk)
@@ -190,9 +290,10 @@ def run(mp, hide=()):
     pr = Pairs(mp, hide)
     for rnd in range(3):
         a = pr.tables()
+        c = pr.order()
         b = pr.items()
-        print("round %d: %d from tables, %d from shared items" % (rnd + 1, a, b))
-        if not a + b:
+        print("round %d: %d from tables, %d by order, %d from shared items" % (rnd + 1, a, c, b))
+        if not a + b + c:
             break
     return pr
 
@@ -235,7 +336,14 @@ def main():
         for (m, a), ((src, rm, a1), how, sc) in sorted(pr.new.items()):
             nm = mp.R[src].func.get((rm, a1), "-")
             o.write("%s 0x%08X %s %s %s 0x%08X %s %.2f\n" % (m, a, nm, src, rm, a1, how, sc))
-    print("wrote config/mh2/func_pairs.txt: %d pairs" % len(pr.new))
+    print("wrote config/mh2/func_pairs.txt: %d pairs; %s" % (len(pr.new), collections.Counter(v[1] for v in pr.new.values())))
+    with open(P("build/mh2/order_suspects.txt"), "w") as o:
+        seen = set()
+        for k, nm, sim, other, r in pr.suspects:
+            if k not in seen:
+                seen.add(k)
+                o.write("%s 0x%08X map=%s sim=%s order=%s ratio=%.2f\n" % (k[0], k[1], nm, sim, other, r))
+    print("order suspects: %d (build/mh2/order_suspects.txt)" % len(seen))
 
 
 if __name__ == "__main__":

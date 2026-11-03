@@ -38,6 +38,10 @@ import pickle
 import re
 import sys
 
+if os.environ.get("PYTHONHASHSEED") != "0" and __name__ == "__main__":      # same output on every run: set order feeds ties
+    os.environ["PYTHONHASHSEED"] = "0"
+    os.execv(sys.executable, [sys.executable] + sys.argv)
+
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import mhg_map as MM  # noqa: E402
 from mhg_map import P, token, load_mh1, load_g, read_split_names, MH1_GP  # noqa: E402
@@ -766,7 +770,7 @@ class Mapper:
             return "high" if len(methods) >= 2 and second * 2 <= sc else "medium"
         if ms.get("ref", 0) >= 5 and second * 3 <= sc:      # several functions agree: the address stands even when the bytes changed (a table MH2 edited)
             return "high"
-        if second * 2 > sc or (simv is not None and simv < 0.25 and "content" not in ms):
+        if second * 1.5 > sc or (simv is not None and simv < 0.25 and "content" not in ms and ms.get("ref", 0) < 3):
             return "low"
         if len(methods) >= 2 and sc >= 3:
             return "high"
