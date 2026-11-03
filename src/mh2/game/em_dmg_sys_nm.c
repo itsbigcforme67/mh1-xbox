@@ -1,20 +1,16 @@
 /* Monster Hunter 2: Em_Dmg_Sys, per-frame damage handling of a monster (game 0x725860). Written from our own disassembly of the owner's disc, on MH1's C in
-   em_taisei.c, which includes this for the PC. NOT byte-matched and not in the MH2 build: same shape, the registers differ (hit/em/first one off) and about 10 instructions. */
+   em_taisei.c, which includes this for the PC. NOT byte-matched and not in the MH2 build: 214 of 667 instructions differ (tools/mh2_own.py). The original keeps em in s2 and
+   `first` in s1, and holds (s8)i in a saved register across em_dur_set in case 8; ours does neither. EMW + 0x3D0 is EMW.x3CC now (include/em.h). */
 #ifdef EM_TAISEI_IN
-#define HEAD u8 Em_Dmg_Sys(EMW *e0, u8 *flag) { EMT *t = (EMT *)e0;
+#define HEAD u8 Em_Dmg_Sys(EMW *em, u8 *flag) {
 #else
 #define Em_Dmg_Sys Em_Dmg_Sys_
 #include "em_cmd.h"
 #include "em_sys.h"
 #undef Em_Dmg_Sys
-#define HEAD u8 Em_Dmg_Sys(union EMT *t, u8 *flag) {
+#define HEAD u8 Em_Dmg_Sys(EMW *em, u8 *flag) {
 #endif
 
-typedef union EMT {
-    EMW e;
-    struct { char a[0x3D0]; struct { char b[0x18]; int (*f)(); } *tbl; } m;
-} EMT;
-#define em (&t->e)
 
 #ifndef EM_TAISEI_IN
 void Em_Damage_Stock();
@@ -115,7 +111,7 @@ HEAD
                 HAGI(i).hp -= d;
                 if (HAGI(i).hp <= 0) {
                     if (i == 8) {
-                        int (*f)() = t->m.tbl->f;
+                        int (*f)() = em->x3CC->brk;
                         if (f != 0 && f(em) != 0) {
                             if (em->x8BB != 0) {
                                 HAGI(i).hp = 1;
@@ -288,4 +284,3 @@ fin:
     game_func_007080D0(em);
     return r;
 }
-#undef em

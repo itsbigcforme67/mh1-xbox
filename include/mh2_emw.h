@@ -86,7 +86,8 @@ typedef struct EMW {
     f32 adj_y; /* 0x3BC, MH1 0x3B8: votes 144 */
     f32 adj_z; /* 0x3C0, MH1 0x3BC: votes 171 */
     f32 x3C0[3]; /* 0x3C4, MH1 0x3C0: votes 148 */
-    u8 _pad3D0[0x20];
+    EM_X3CC *x3CC; /* 0x3D0, MH1 0x3CC: no votes, as the field before */
+    u8 _pad3D4[0x1C];
     u16 dm_ang; /* 0x3F0, MH1 0x3EC: votes 21 */
     u8 _pad3F2[0x2];
     u16 x3F0; /* 0x3F4, MH1 0x3F0: no votes, as the field before */

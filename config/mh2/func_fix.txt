@@ -17,7 +17,7 @@ game 0x007297A0 em_cmd_pl_ang_sel opcode 0.63 # opcode 0x20, was game_func_00729
 game 0x00729E60 em_cmd_emtype_ck opcode 0.70 # opcode 0x23, was game_func_00729E60
 game 0x0072A180 em_cmd_demo_flag_set opcode 1.00 # opcode 0x26, was game_func_0072A180
 game 0x0072A190 em_cmd_type_sel opcode 1.00 # opcode 0x27, was game_func_0072A190
-game 0x0072B240 em_cmd_myemtype_sel opcode 0.72 # opcode 0x2C, was game_func_0072B240
+game 0x0072B3A0 em_cmd_myemtype_sel opcode - # opcode 0x70: G already moved it there (src/game/em/em_cmd_nm.c: 0x2C calls game_func_005885E0, select by species); size 0x1D4 = G's 0x588740. 0x72B240 (op 0x2C, size 0x160 = G's 0x5885E0) is game_func_005885E0 below (CODE, 3 Nov)
 game 0x0072B580 em_cmd_smell_set opcode 0.75 # opcode 0x2D, was game_func_0072B580
 game 0x0072C300 em_cmd_before_stage_ck opcode 0.80 # opcode 0x3D, was game_func_0072C300
 game 0x0072C470 em_cmd_before_stage_sel opcode 0.67 # opcode 0x3E, was game_func_0072C470
@@ -81,3 +81,6 @@ nethttp 0x0094F658 X509_SIG_free order 0.88 # file order puts it here; map had X
 nethttp 0x0094F768 d2i_X509_VAL order 1.00 # file order puts it here; map had d2i_X509_SIG at 1.00
 # From QUEST (2 Nov 2026): read from the code
 game 0x00707E40 gp_ptr_ck hand -
+# CODE agent, 3 Nov: read from the byte-matched src/mh2/sub_main/p00378A30.c against G's stage_set_set (src/main/stage/stage_set.c)
+sub_main 0x00378A30 stage_set_set by-hand - # same flow as G 0x4A0E50: sun block at stage_work+0xC8 (x4D < 2), clr_flash, Shell10/Eft14 at stages 0x11/0x15 with G's numbers
+sub_main 0x003797C0 clr_flash by-hand - # stage_set_set's first call, as in G; clears two halfwords (MH1: two bytes flash_flag, flash_timer)

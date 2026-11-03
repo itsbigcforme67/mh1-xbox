@@ -3597,6 +3597,7 @@ sub_main clear_rtime 0x002FD4A0
 sub_main close_dic 0x002FE410
 sub_main clr_eft_work 0x00324230
 sub_main clr_em_work 0x00377C50
+sub_main clr_flash 0x003797C0
 sub_main clr_move_work 0x00363D50
 sub_main clr_pl_work 0x0039A280
 sub_main clr_set_work_mh2_00364100 0x00364100
@@ -3892,7 +3893,9 @@ sub_main flViewportDW 0x0020CBA8
 sub_main flViewportLX 0x0020CB88
 sub_main flViewportLY 0x0020CB80
 sub_main fl_check 0x00300A60
+sub_main flash_flag 0x005BACE0
 sub_main flash_move 0x00333220
+sub_main flash_timer 0x005BACE8
 sub_main flfntDraw 0x002E6CF0
 sub_main flfntInit 0x002E6590
 sub_main flfntLocate 0x002E66F0
@@ -4814,6 +4817,7 @@ sub_main func_00378450 0x00378450
 sub_main func_003785C0 0x003785C0
 sub_main func_00378650 0x00378650
 sub_main func_003797A0 0x003797A0
+sub_main func_003797C0 0x003797C0
 sub_main func_0037AC80 0x0037AC80
 sub_main func_00380530 0x00380530
 sub_main func_00380770 0x00380770

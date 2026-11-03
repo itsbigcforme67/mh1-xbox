@@ -26,7 +26,7 @@ u8 *game_func_0072A370();
 u8 *game_func_0072A760();
 u8 *game_func_0072A970();
 u8 *game_func_005885E0();
-u8 *game_func_0072B3A0();
+u8 *em_cmd_myemtype_sel();
 u8 *em_cmd_smell_set();
 u8 *em_cmd_before_stage_ck();
 u8 *em_cmd_before_stage_sel();
@@ -225,7 +225,7 @@ void em_cmd_ck(EMW *em) {
                 p = game_func_005885E0(em, p + 1);
                 break;
             case 0x70:
-                p = game_func_0072B3A0(em, p + 1);
+                p = em_cmd_myemtype_sel(em, p + 1);
                 break;
             case 0x2D:
                 p = em_cmd_smell_set(em, p + 1);

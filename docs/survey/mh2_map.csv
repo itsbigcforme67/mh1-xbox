@@ -1238,7 +1238,7 @@ game,0x0072AD40,268,em_cmd_stay_timer_ck,shape,neighbour,1.00,mh1,game,0x0055EAC
 game,0x0072AE50,268,em_cmd_runaway_timer_ck,shape,neighbour,1.00,mh1,game,0x0055EBD0
 game,0x0072AF60,736,em_cmd_flag_ck,edited,ngram,0.92,g,game,0x00588360
 game,0x0072B240,352,game_func_005885E0,edited,order,1.00,g,game,0x005885E0
-game,0x0072B3A0,468,game_func_0072B3A0,ambiguous,,,,,
+game,0x0072B3A0,468,em_cmd_myemtype_sel,edited,opcode,,g,game,0x00588740
 game,0x0072B580,32,em_cmd_smell_set,edited,opcode,0.75,g,game,0x00588920
 game,0x0072B5A0,44,em_cmd_search_data_set,identical,exact,1.00,mh1,game,0x0055F140
 game,0x0072B5D0,348,em_cmd_egg_ck,shape,exact,1.00,mh1,game,0x0055F170
@@ -15599,11 +15599,11 @@ sub_main,0x00378650,80,pull_em_yobi,edited,ngram,0.95,mh1,main,0x0016A810
 sub_main,0x003786A0,588,sub_main_func_003786A0,mh2-only,,,,,
 sub_main,0x003788F0,200,stage_fog_set,edited,ngram,0.70,g,sub_main,0x004A0DB0
 sub_main,0x003789C0,108,sub_main_func_003789C0,mh2-only,,,,,
-sub_main,0x00378A30,2684,sub_main_func_00378A30,mh2-only,,,,,
+sub_main,0x00378A30,2684,stage_set_set,edited,by-hand,,g,sub_main,0x004A0E50
 sub_main,0x003794B0,48,sub_main_func_003794B0,mh2-only,,,,,
 sub_main,0x003794E0,704,stage_mv_ck,edited,ngram,0.91,g,sub_main,0x004A1690
 sub_main,0x003797A0,20,clr_stg_work,edited,callsite,1.00,mh1,main,0x0015C490
-sub_main,0x003797C0,20,sub_main_func_003797C0,mh2-only,,,,,
+sub_main,0x003797C0,20,clr_flash,edited,by-hand,,g,sub_main,0x004A1940
 sub_main,0x003797E0,408,sub_main_func_003797E0,mh2-only,,,,,
 sub_main,0x00379980,28,Stage_env_ck,shape,exact,1.00,mh1,main,0x0015C4C0
 sub_main,0x003799A0,56,sub_main_func_003799A0,mh2-only,,,,,

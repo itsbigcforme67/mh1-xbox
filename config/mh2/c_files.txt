@@ -1114,7 +1114,7 @@ sub_main 0x003780B0 0x00378190 mh2/parts/main_emw_emw02_211
 sub_main 0x003781E0 0x003782C0 mh2/parts/main_emw_emw02_212
 sub_main 0x00378390 0x003784A0 mh2/parts/main_emw_emw02_213
 sub_main 0x003785C0 0x003786A0 mh2/parts/main_emw_emw02_214
-sub_main 0x003797A0 0x003797B4 mh2/parts/main_stage_f_stage_121
+sub_main 0x003797A0 0x003797D4 mh2/parts/main_stage_f_stage_121
 sub_main 0x0037AC80 0x0037ACD4 mh2/parts/main_stage_f_stageb_122
 sub_main 0x00380530 0x00380570 mh2/parts/mhg_main_set_set01_p1_g
 sub_main 0x00380770 0x003807EC mh2/parts/mhg_main_set_set01_p2_g
@@ -1280,3 +1280,4 @@ game 0x00731DA0 0x00733148 mh2/game/next_cmd_search
 game 0x00704120 0x00705518 mh2/game/cmd_target
 game:data 0x008EC4E0 0x008EC5F8 mh2/game/cmd_target
 game 0x00726380 0x007275C4 mh2/game/em_cmd_ck
+sub_main 0x00378A30 0x003794AC mh2/sub_main/p00378A30

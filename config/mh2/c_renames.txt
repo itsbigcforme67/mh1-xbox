@@ -120,7 +120,7 @@ build/mh2/src/mh2/parts/game_em_em16a_117.c.o keep:245 -
 build/mh2/src/mh2/parts/game_em_em16a_118.c.o keep:265,267 99=0x7BDAE0,102=0x7BDD00,105=0x7BDF20,108=0x7BE140,110=0x7BE360,112=0x7BEB30
 build/mh2/src/mh2/parts/game_em_em16a_119.c.o keep:285 -
 build/mh2/src/mh2/parts/game_em_em16a_120.c.o keep:303,307,311 -
-build/mh2/src/mh2/parts/main_stage_f_stage_121.c.o keep:9 -
+build/mh2/src/mh2/parts/main_stage_f_stage_121.c.o keep:9,13 -
 build/mh2/src/mh2/parts/main_stage_f_stageb_122.c.o keep:13 -
 build/mh2/src/mh2/parts/main_menu_menu01_123.c.o keep:13 -
 build/mh2/src/mh2/parts/main_menu_menu11_124.c.o keep:5 -

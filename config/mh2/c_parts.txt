@@ -122,7 +122,7 @@ mh2/parts/game_em_em16a_117 245 -
 mh2/parts/game_em_em16a_118 265,267 99=0x7BDAE0,102=0x7BDD00,105=0x7BDF20,108=0x7BE140,110=0x7BE360,112=0x7BEB30
 mh2/parts/game_em_em16a_119 285 -
 mh2/parts/game_em_em16a_120 303,307,311 -
-mh2/parts/main_stage_f_stage_121 9 -
+mh2/parts/main_stage_f_stage_121 9,13 -
 mh2/parts/main_stage_f_stageb_122 13 -
 mh2/parts/main_menu_menu01_123 13 -
 mh2/parts/main_menu_menu11_124 5 -
