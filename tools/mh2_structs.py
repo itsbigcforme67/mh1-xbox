@@ -364,7 +364,8 @@ def field_size(decl, sizes):
     if "*" in d:
         return 4 * n
     if d.startswith("union {"):
-        return sizes[d.split()[2]]
+        k = d.split()[2]
+        return 4 if "*" in d.split(";")[0] or k.startswith("QW_X") else sizes[k]
     if d.startswith("struct {"):
         return sizes[d[:d.index("}") + 1]] * n
     if d.startswith("QW_X"):

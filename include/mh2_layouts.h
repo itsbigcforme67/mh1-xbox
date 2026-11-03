@@ -30,8 +30,8 @@ typedef struct QUEST_W {
     s16 x38;                     /* 0x020 (MH1 0x038): code */
     s8 x3A;                      /* 0x022 (MH1 0x03A): code */
     s8 x3B;                      /* 0x023 (MH1 0x03B): code Ext_pick_point_* */
-    void *x3C;                   /* 0x024 (MH1 0x03C): code */
-    s32 x40;                     /* 0x028 (MH1 0x040): code bgm_server, em_cmd_male_ck */
+    union { void *x3C; struct PLW *p3C; }; /* 0x024 (MH1 0x03C): code; p3C is the camera files' name */
+    union { s32 x40; s32 flags; }; /* 0x028 (MH1 0x040): code bgm_server, em_cmd_male_ck */
     s16 x1C[4];                  /* 0x02C (MH1 0x01C): guess Quest_start no longer clears these in place; the share list was rewritten */
     s16 x24[4];                  /* 0x034 (MH1 0x024): guess one vote says 0x158, but that field is written next to new ones in Quest_start */
     s16 x2C[2];                  /* 0x03C (MH1 0x02C): guess */
@@ -50,13 +50,13 @@ typedef struct QUEST_W {
     s32 *x88;                    /* 0x070 (MH1 0x088): code */
     s32 *x8C;                    /* 0x074 (MH1 0x08C): code */
     s32 *x90;                    /* 0x078 (MH1 0x090): code */
-    QW_X94_T x94;                /* 0x07C (MH1 0x094): code */
+    union { QW_X94_T x94; struct QUEST_DATA *data; }; /* 0x07C (MH1 0x094): code */
     QPAIR x98[5];                /* 0x080 (MH1 0x098): code Item_regained */
     s8 xAC;                      /* 0x094 (MH1 0x0AC): code */
     s8 xAD;                      /* 0x095 (MH1 0x0AD): code */
     s8 xAE;                      /* 0x096 (MH1 0x0AE): code Quest_start sets 1 */
     s8 xAF;                      /* 0x097 (MH1 0x0AF): code */
-    void *xB0;                   /* 0x098 (MH1 0x0B0): code Em_direct_set */
+    union { void *xB0; struct PLW *pB0; }; /* 0x098 (MH1 0x0B0): code Em_direct_set */
     s8 x169;                     /* 0x09C (MH1 0x169): code Quest_start, after x165; G's name, stores in that order: 0x9D then 0x9C. See next line */
     u8 x168;                     /* 0x09D (MH1 0x168): code */
     u16 rnd_seed;                /* 0x09E (MH1 0x16A): code 0x3A3850 reads the 15 bytes and steps this, lhu/sh */
