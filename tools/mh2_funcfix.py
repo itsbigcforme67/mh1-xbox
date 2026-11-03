@@ -23,6 +23,21 @@ def main():
         f = l.split("#", 1)[0].split()
         if len(f) >= 4:
             fix[(f[0], int(f[1], 16))] = (f[2], f[3], f[4])
+    # byte-matched C is proof: a name carried C calls at an address (config/mh2/c_aliases.txt) is not moved off it
+    al = {}
+    if os.path.exists(P("config/mh2/c_aliases.txt")):
+        for l in open(P("config/mh2/c_aliases.txt")):
+            f = l.split()
+            if len(f) == 3 and not l.startswith("#"):
+                al.setdefault(f[1], set()).add((f[0], int(f[2], 16)))
+    at = {}
+    for n, s in al.items():
+        for k in s:
+            at.setdefault(k, set()).add(n)
+    for k, v in list(fix.items()):
+        if (v[0] in al and k not in al[v[0]]) or at.get(k, set()) - {v[0]}:
+            print("mh2_funcfix: %s 0x%08X %s left out: byte-matched C says otherwise" % (k[0], k[1], v[0]))
+            del fix[k]
     names = set(v[0] for v in fix.values())
     refs = {}
     for src, d, mods in (("mh1", "config/symbols", ("game", "main", "lobby", "select", "yn")),

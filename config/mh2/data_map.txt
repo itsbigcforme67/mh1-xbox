@@ -1831,7 +1831,7 @@ game lit_819_00689DA0 0x008ED890 medium ref:3.0
 game lit_963_00689DE0 0x008ED930 low ref:2.0+refseq:0.7
 game lit_3358 0x008EDC00 medium ref:1.4+refseq:0.5
 game lit_3452 0x008EDCE0 medium ref:1.4+refseq:0.5
-game lit_401_00686190 0x008EE090 medium ref:1.6+refseq:0.5
+game lit_355_006888E0 0x008EE090 medium ref:1.6+refseq:0.5
 game lit_2004 0x008EE640 medium ref:1.8+refseq:0.6
 game lit_2058 0x008EE730 medium ref:1.9+refseq:0.7
 game lit_2087 0x008EE770 medium ref:1.9+refseq:0.7
@@ -1882,7 +1882,6 @@ game lit_2518 0x008EFEE0 medium ref:1.5+refseq:1.5
 game lit_2517 0x008EFF00 medium ref:1.5+refseq:1.5
 game lit_293_00688830 0x008EFF80 medium ref:1.7+refseq:1.0
 game lit_335_006888C0 0x008F0010 high ref:1.9+refseq:1.1
-game lit_355_006888E0 0x008F0060 medium ref:1.4
 game lit_307_00688940 0x008F01B0 medium ref:1.4+refseq:0.5
 game lit_1009_006889A0 0x008F0220 medium ref:1.4+refseq:0.5
 game lit_1151_00688A00 0x008F0290 medium ref:1.4+refseq:0.5
@@ -1906,7 +1905,7 @@ game lit_377_006866F0 0x008F0850 high layout:2.5+ref:3.0
 game lit_1309_006867E0 0x008F0940 high ref:1.7+refseq:1.7
 game lit_1308_00686800 0x008F0960 medium ref:1.7+refseq:1.0
 game lit_1327_00686840 0x008F09B0 medium ref:1.7+refseq:0.6
-game lit_151_00686860 0x008F09D0 medium ref:1.9+refseq:0.7
+game lit_401_00686190 0x008F09D0 medium ref:1.9+refseq:0.7
 game lit_1760_006868C0 0x008F0A10 medium ref:1.8+refseq:0.6
 game lit_2179 0x008F0B20 medium ref:2.0+refseq:0.7
 game lit_2207 0x008F0B50 medium ref:1.8+refseq:0.6
@@ -2863,7 +2862,7 @@ lobby normal_browser_jmp_383 0x007EEAD0 high ptr-out:4.0+ref:1.8+refseq:1.1
 lobby poster_browser_jmp_388 0x007EEAE0 high ptr-out:2.0+ref:1.4+refseq:0.8
 lobby bs_poster_jmp_397 0x007EEAF0 high ptr-out:8.0
 lobby bs_init_jmp_503 0x007EEB10 medium ref:1.4+refseq:0.8
-lobby bs_body_jmp_560 0x007EEB20 high ptr-out:8.0
+lobby bsGoHidePage 0x007EEB20 low refseq:0.8
 lobby bs_quit_jmp_2477 0x007EEB60 high ptr-out:6.0+ref:1.8
 lobby cs_main_jmp_2535 0x007EEB78 high ptr-out:4.0+ref:1.6+refseq:1.0
 lobby bsCur_body_jmp_2544 0x007EEB90 high ptr-out:8.0
@@ -3764,7 +3763,6 @@ lobby bsCallCpInetGetStatus 0x00895270 low refseq:2.5
 lobby bsDoReload 0x00895270 low refseq:2.4
 lobby bsFirstOpen 0x00895270 low refseq:2.5
 lobby bsGameMenuNum 0x00895270 low refseq:2.5
-lobby bsGoHidePage 0x00895270 low refseq:2.5
 lobby bsImgNo 0x00895270 low refseq:2.5
 lobby bsIsOnRequesting 0x00895270 low refseq:2.5
 lobby bsMainRetVal 0x00895270 low refseq:2.5

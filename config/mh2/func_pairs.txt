@@ -143,6 +143,10 @@ game 0x00724AB0 Em_Taisei_Ck mh1 game 0x00559DC0 items 0.55
 game 0x00725260 sleep_stock_set g game 0x00583A40 items 1.00
 game 0x00725460 em_mahi_dmg_timer_set g game 0x00583B40 items 1.00
 game 0x00725490 em_sleep_dmg_timer_set g game 0x00583B70 items 1.00
+game 0x007279D0 em_cmd_area_move_ck mh1 game 0x0055C440 order 0.80
+game 0x00727AE0 em_cmd_stand_ck g game 0x00585BE0 order 1.00
+game 0x007292F0 em_cmd_mind_ck g game 0x00587190 order 1.00
+game 0x0072A370 em_cmd_type_sel g game 0x00587DC0 order 1.00
 game 0x0072B3A0 em_cmd_myemtype_sel g game 0x00588740 order 1.00
 game 0x0072CF20 game_func_0058A020 g game 0x0058A020 order 0.92
 game 0x00731480 game_func_0058DD00 g game 0x0058DD00 order 1.00
@@ -205,7 +209,6 @@ game 0x0074AFF0 em_dmg11_00570E50 mh1 game 0x00570E50 order 0.85
 game 0x0074B0F0 em_dmg12_00570F20 mh1 game 0x00570F20 order 0.90
 game 0x0074B210 em_dmg13_00571050 mh1 game 0x00571050 order 0.79
 game 0x0074B330 em_dmg14_00571180 mh1 game 0x00571180 order 0.80
-game 0x0074B7A0 em_dmg14_00571180 g game 0x0059B780 items 0.76
 game 0x0074B880 em_dmg15_00571290 mh1 game 0x00571290 order 0.88
 game 0x0074B8F0 em_dmg16_00571310 mh1 game 0x00571310 order 0.73
 game 0x0074BB90 em_dmg17_00571430 mh1 game 0x00571430 order 0.80
@@ -449,7 +452,6 @@ game 0x007B60A0 em_move06_005CAE00 g game 0x005F6B50 order 0.93
 game 0x007B6CE0 ef_move_sub_005CBC40 g game 0x005F7A60 order 0.60
 game 0x007B8690 em15_effect_move mh1 game 0x005CEFD0 table 1.00
 game 0x007B8700 dummy_em_prog_005CF0E0 mh1 game 0x005CF0E0 table 1.00
-game 0x007B9270 em15_act_set g game 0x005FBB20 order 0.63
 game 0x007BABF0 em_act03_005D0D50 g game 0x005FCCC0 order 0.98
 game 0x007BACF0 em_act04_005D0E50 g game 0x005FCDC0 order 1.00
 game 0x007BAD60 em_act05_005D0EC0 g game 0x005FCE30 order 1.00
@@ -496,7 +498,6 @@ game 0x007CEF60 em07_main_sub mh1 game 0x005934E0 items 0.84
 game 0x007CF080 ef_move_sub_00593B30 mh1 game 0x00593B30 items 0.63
 game 0x007D2260 em07_effect_move mh1 game 0x00599C10 table 1.00
 game 0x007D2560 dummy_em_prog_00599EC0 mh1 game 0x00599EC0 table 1.00
-game 0x007D27B0 em07_act_set mh1 game 0x0059A140 items 0.93
 game 0x007D4450 em21_local_init mh1 game 0x005FFFD0 table 1.00
 game 0x007D49D0 em_atk05_005DE530 mh1 game 0x005DE530 items 0.41
 game 0x007D5FD0 em_fly04_00602030 mh1 game 0x00602030 items 0.86
@@ -547,7 +548,7 @@ game 0x007F9730 em17_fly_adjy g game 0x006057E0 items 1.00
 game 0x007FCBE0 em_act08_0059B0D0 mh1 game 0x0059B0D0 items 0.61
 game 0x007FCE20 em_dmg03_00581FA0 mh1 game 0x00581FA0 items 0.55
 game 0x007FEFA0 game_func_005ACFB0 g game 0x005ACFB0 items 0.98
-game 0x008000E0 em_dmg07_005A00F0 mh1 game 0x005A00F0 items 0.71
+game 0x008000E0 em_dmg18_005A0E60 mh1 game 0x005A0E60 items 0.76
 game 0x00800A10 em_move00_00582B40 mh1 game 0x00582B40 items 1.00
 game 0x00800B30 em_move02_00582C40 mh1 game 0x00582C40 items 0.82
 game 0x00800C70 em_move03_00582D30 mh1 game 0x00582D30 items 0.73
@@ -758,7 +759,6 @@ lobby 0x007249D0 BsRequestCheck g lobby 0x005B64B0 order 0.60
 lobby 0x0072C0A0 stockShadowPageNum mh1 lobby 0x005E2430 order 0.90
 lobby 0x0072E340 SoftKeyboard mh1 lobby 0x005E43C0 order 0.80
 lobby 0x0072E4D0 BsSoftKbdSprTrans mh1 lobby 0x005E4520 order 0.64
-lobby 0x0072EE60 BsCursorTask mh1 lobby 0x005E4D40 order 0.86
 lobby 0x0072FBC0 BsMcSetupIDPW mh1 lobby 0x005E5990 order 0.87
 lobby 0x00730830 BsKeySet g lobby 0x005B6FC0 order 0.58
 lobby 0x00730AE0 BsUrlBaseSet g lobby 0x005B71D0 order 0.83
@@ -781,15 +781,15 @@ lobby 0x00733290 BsPullPageWork g lobby 0x005C92B0 order 0.64
 lobby 0x007333D0 BsPushPageWork g lobby 0x005C9390 order 0.81
 lobby 0x00733450 BsInit00_BootInit g lobby 0x005C9400 order 0.78
 lobby 0x00733520 BsInit01_LoadWait g lobby 0x005C94A0 order 0.70
-lobby 0x00733A30 BsBody02_PrsInit g lobby 0x005C98C0 order 0.73
-lobby 0x007343F0 BsBody08_WaitCancel3 g lobby 0x005CA0D0 order 0.91
-lobby 0x00734450 BsBody09_WaitCancel4 g lobby 0x005CA130 order 0.78
-lobby 0x007344E0 BsBody10_WaitCancel5 g lobby 0x005CA1B0 order 0.91
-lobby 0x00734540 BsBody11_WaitCancel6 g lobby 0x005CA210 order 0.81
-lobby 0x007345B0 BsBody12_WaitCancel7 g lobby 0x005CA280 order 0.81
-lobby 0x00734620 BsBody13_WaitCancel8 g lobby 0x005CA2F0 order 0.71
-lobby 0x00734690 BsBody14_WaitCancel9 g lobby 0x005CA340 order 0.86
-lobby 0x00734710 BsBody15_WaitCancel10 g lobby 0x005CA3B0 order 0.65
+lobby 0x00733A30 BsBody02_PrsInit mh1 lobby 0x005F32A0 table 1.00
+lobby 0x007343F0 BsBody08_WaitCancel3 mh1 lobby 0x005F3AB0 table 1.00
+lobby 0x00734450 BsBody09_WaitCancel4 mh1 lobby 0x005F3B10 table 1.00
+lobby 0x007344E0 BsBody10_WaitCancel5 mh1 lobby 0x005F3B90 table 1.00
+lobby 0x00734540 BsBody11_WaitCancel6 mh1 lobby 0x005F3BF0 table 1.00
+lobby 0x007345B0 BsBody12_WaitCancel7 mh1 lobby 0x005F3C60 table 1.00
+lobby 0x00734620 BsBody13_WaitCancel8 mh1 lobby 0x005F3CD0 table 1.00
+lobby 0x00734690 BsBody14_WaitCancel9 mh1 lobby 0x005F3D20 table 1.00
+lobby 0x00734710 BsBody15_WaitCancel10 mh1 lobby 0x005F3D90 table 1.00
 lobby 0x00738AB0 BsQuit00_Init mh1 lobby 0x005F7110 table 1.00
 lobby 0x00738F10 lobby_func_005CD9C0 g lobby 0x005CD9C0 order 0.57
 lobby 0x007390A0 BsCsInit mh1 lobby 0x005F73C0 table 1.00
@@ -916,6 +916,7 @@ lobby 0x007714C0 lb_menu_item_mv mh1 lobby 0x005B4330 items 0.86
 lobby 0x00771510 lobby_func_0058E690 g lobby 0x0058E690 items 0.84
 lobby 0x00771550 lb_menu_mix_mv mh1 lobby 0x005B4380 items 0.86
 lobby 0x00771980 lm_place_trans g lobby 0x0058BD90 table 1.00
+lobby 0x00771A60 Lb_menu_move_Core mh1 lobby 0x005B3ED0 items 0.44
 lobby 0x00771D10 lm_mail_box_trans g lobby 0x0058CF00 table 1.00
 lobby 0x00773D40 lm_member_list_mv mh1 lobby 0x005B2E90 items 0.60
 lobby 0x007746D0 lobby_func_0058C970 g lobby 0x0058C970 items 0.72
@@ -1009,7 +1010,6 @@ lobby 0x007B7990 server_select_sub_03 mh1 lobby 0x005C2990 table 1.00
 lobby 0x007B8250 Get_ServerName g lobby 0x005C1FF0 items 0.88
 lobby 0x007B85A0 ss_text_lobby_trans_ot g lobby 0x005C2150 items 0.89
 lobby 0x007B8C30 plaza_disp_chat_log_sub mh1 lobby 0x0060D920 order 0.63
-lobby 0x007B91F0 Plaza_chatlog_mv mh1 lobby 0x0060DC40 order 0.85
 lobby 0x007BB0E0 vs_square_event g lobby 0x0059E280 items 0.42
 lobby 0x007BB2C0 vs_square_init_se mh1 lobby 0x005D8C10 items 0.66
 lobby 0x007BB880 vs_square_init_pre mh1 lobby 0x005D8790 table 1.00
@@ -1740,6 +1740,7 @@ sub_main 0x0039DAA0 Oki_item_set mh1 main 0x0014DC90 items 0.50
 sub_main 0x003A0670 Modori_dama_ck g sub_main 0x004B35C0 order 0.59
 sub_main 0x003A06E0 game5 mh1 main 0x00110E60 items 0.61
 sub_main 0x003A0AA0 em_data_st_adrs_set g sub_main 0x004B7740 items 0.45
+sub_main 0x003A0D80 Stage_unique_data_get g sub_main 0x004B37E0 items 0.52
 sub_main 0x003A11A0 Quest_start g sub_main 0x004B3AA0 order 0.69
 sub_main 0x003A2030 Quest_em_init_set g sub_main 0x004B4700 order 0.92
 sub_main 0x003A2D80 Quest_remuneration_calc g sub_main 0x004B4C20 order 0.59

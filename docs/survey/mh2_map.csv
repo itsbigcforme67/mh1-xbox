@@ -1196,7 +1196,7 @@ game,0x007275E0,332,em_cmd_kehai_ck,shape,exact,1.00,mh1,game,0x0055C1E0
 game,0x00727730,260,em_cmd_ninshiki_ck,shape,exact,1.00,mh1,game,0x0055C330
 game,0x00727840,384,em_cmd_area_move_ck,edited,opcode,0.77,g,game,0x00585A50
 game,0x007279C0,12,em_cmd_main_jump,edited,opcode,0.67,g,game,0x00585BD0
-game,0x007279D0,268,em_cmd_stand_ck,edited,opcode,1.00,g,game,0x00585BE0
+game,0x007279D0,268,game_func_007279D0,ambiguous,,,,,
 game,0x00727AE0,268,em_cmd_op1F,mh2-only,opcode-new,,,,
 game,0x00727BF0,268,em_cmd_fly_ck,shape,exact,1.00,mh1,game,0x0055C6E0
 game,0x00727D00,16,em_cmd_body_status_set,edited,opcode,1.00,g,game,0x00585E00
@@ -1216,7 +1216,7 @@ game,0x00728CB0,104,em_cmd_area_route_set,shape,exact,1.00,mh1,game,0x0055D620
 game,0x00728D20,344,em_cmd_area_route_move,edited,ngram,0.86,mh1,game,0x0055D690
 game,0x00728E80,28,em_cmd_area_route_ck,edited,opcode,0.57,g,game,0x00586E40
 game,0x00728EA0,1104,em_cmd_escape_area_set,edited,opcode,0.66,g,game,0x00586E60
-game,0x007292F0,268,em_cmd_mind_ck,edited,opcode,1.00,g,game,0x00587190
+game,0x007292F0,268,game_func_007292F0,ambiguous,,,,,
 game,0x00729400,376,em_cmd_mind_no_ck,edited,opcode,0.63,g,game,0x005872A0
 game,0x00729580,468,em_cmd_mind_sel,shape,neighbour,1.00,mh1,game,0x0055DD40
 game,0x00729760,52,em_cmd_mind_move_end,shape,exact,1.00,mh1,game,0x0055DF20
@@ -1228,7 +1228,7 @@ game,0x00729E60,512,em_cmd_emtype_ck,edited,opcode,0.70,g,game,0x00587AA0
 game,0x0072A060,260,em_cmd_repeat_cnt_set,shape,exact,1.00,mh1,game,0x0055E610
 game,0x0072A170,12,em_cmd_repeat_cnt_clr,shape,exact,1.00,mh1,game,0x0055E720
 game,0x0072A180,16,em_cmd_demo_flag_set,edited,opcode,1.00,g,game,0x00587DB0
-game,0x0072A190,468,em_cmd_type_sel,edited,opcode,1.00,g,game,0x00587DC0
+game,0x0072A190,468,game_func_0072A190,ambiguous,,,,,
 game,0x0072A370,468,game_func_0072A370,ambiguous,,,,,
 game,0x0072A550,516,em_cmd_op76,mh2-only,opcode-new,,,,
 game,0x0072A760,524,game_func_0072A760,mh2-only,,,,,
@@ -1681,7 +1681,7 @@ game,0x00750D00,552,game_func_00750D00,mh2-only,,,,,
 game,0x00750F30,752,game_func_00750F30,mh2-only,,,,,
 game,0x00751220,692,game_func_00751220,mh2-only,,,,,
 game,0x007514E0,484,game_func_007514E0,mh2-only,,,,,
-game,0x007516D0,484,em01_act_set,edited,order,0.78,g,game,0x005A64D0
+game,0x007516D0,484,em15_act_set,edited,ngram,0.78,g,game,0x005FBB20
 game,0x007518C0,268,game_func_007518C0,ambiguous,,,,,
 game,0x007519D0,272,game_func_007519D0,ambiguous,,,,,
 game,0x00751AE0,8,fly_adjy2_subx_0057DB40,edited,callsite,1.00,mh1,game,0x0057DB40
@@ -2968,7 +2968,7 @@ game,0x007D2570,24,em07_act_act_set,shape,exact,1.00,mh1,game,0x00599ED0
 game,0x007D2590,468,em07_move_act_set,edited,ngram,0.76,mh1,game,0x00599EF0
 game,0x007D2770,24,game_func_007D2770,ambiguous,,,,,
 game,0x007D2790,24,game_func_007D2790,ambiguous,,,,,
-game,0x007D27B0,292,game_func_007D27B0,mh2-only,,,,,
+game,0x007D27B0,292,em01_act_set,edited,ngram,0.93,mh1,game,0x0057B950
 game,0x007D28E0,6896,game_func_007D28E0,mh2-only,,,,,
 game,0x007D43D0,128,game_func_007D43D0,mh2-only,,,,,
 game,0x007D4450,56,game_func_007D4450,ambiguous,,,,,
@@ -3427,7 +3427,7 @@ game,0x0080D270,2684,game_func_0080D270,mh2-only,,,,,
 game,0x0080DCF0,36,game_func_0080DCF0,ambiguous,,,,,
 game,0x0080DD20,48,game_func_0080DD20,mh2-only,,,,,
 game,0x0080DD50,280,game_func_0080DD50,mh2-only,,,,,
-game,0x0080DE70,80,game_func_0080DE70,mh2-only,,,,,
+game,0x0080DE70,80,BsSoftKbdTask,edited,ngram,0.90,mh1,lobby,0x005E44D0
 game,0x0080DEC0,80,game_func_0080DEC0,mh2-only,,,,,
 game,0x0080DF10,188,game_func_0080DF10,mh2-only,,,,,
 game,0x0080DFD0,48,game_func_0080DFD0,mh2-only,,,,,
@@ -6375,7 +6375,7 @@ lobby,0x0072C6F0,104,receiveID,edited,ngram,0.92,mh1,lobby,0x005E2A30
 lobby,0x0072C760,96,To_DisplayDialog,rewritten,callsite,0.36,mh1,lobby,0x005E2A90
 lobby,0x0072C7C0,356,finalAccount,edited,ngram,0.89,mh1,lobby,0x005E2AC0
 lobby,0x0072C930,216,UpdateEndpoint,edited,ngram,0.84,mh1,lobby,0x005E2C00
-lobby,0x0072CA10,80,skipShadowImage,edited,order,0.89,g,lobby,0x005AB650
+lobby,0x0072CA10,80,kb_input_ck_enter,edited,ngram,0.76,mh1,main,0x00162CA0
 lobby,0x0072CA60,224,setUpDnLtRtBlank,edited,callsite,0.67,mh1,lobby,0x005E2D10
 lobby,0x0072CB40,8,lobby_func_0072CB40,mh2-only,,,,,
 lobby,0x0072CB50,164,BsBgImgCharSet,edited,ngram,0.95,mh1,lobby,0x005E2DE0
@@ -6405,7 +6405,7 @@ lobby,0x0072E270,196,SoftKeyboardInitialize,edited,ngram,0.84,mh1,lobby,0x005E43
 lobby,0x0072E340,108,lobby_func_0072E340,mh2-only,,,,,
 lobby,0x0072E3B0,8,lobby_func_0072E3B0,mh2-only,,,,,
 lobby,0x0072E3C0,164,BsSoftKbdCharSet,edited,ngram,0.92,mh1,lobby,0x005E4430
-lobby,0x0072E470,96,BsSoftKbdTask,edited,order,0.86,g,lobby,0x005B2DE0
+lobby,0x0072E470,96,BsCursorTask,edited,ngram,0.86,mh1,lobby,0x005E4D40
 lobby,0x0072E4D0,2216,lobby_func_0072E4D0,mh2-only,,,,,
 lobby,0x0072ED80,8,lobby_func_0072ED80,mh2-only,,,,,
 lobby,0x0072ED90,196,BsCursorCharSet,edited,ngram,0.91,mh1,lobby,0x005E4C90
@@ -7561,7 +7561,7 @@ lobby,0x00798A90,216,lb_pl_mv077,edited,ngram,0.85,g,lobby,0x00595490
 lobby,0x00798B70,200,lobby_func_00798B70,mh2-only,,,,,
 lobby,0x00798C40,168,lobby_func_00798C40,mh2-only,,,,,
 lobby,0x00798CF0,956,lb_pl_mv076,edited,ngram,0.73,g,lobby,0x00595600
-lobby,0x007990B0,80,lobby_func_007990B0,mh2-only,,,,,
+lobby,0x007990B0,80,skipShadowImage,edited,ngram,0.84,mh1,lobby,0x005E2CC0
 lobby,0x00799100,144,lobby_func_00799100,ambiguous,,,,,
 lobby,0x00799190,224,lb_pl_mv079,edited,ngram,0.98,mh1,lobby,0x005D1B60
 lobby,0x00799270,1128,lobby_func_00799270,mh2-only,,,,,
@@ -8031,7 +8031,7 @@ lobby,0x007B9070,92,lobby_func_007B9070,mh2-only,,,,,
 lobby,0x007B90D0,152,lobby_func_007B90D0,mh2-only,,,,,
 lobby,0x007B9170,68,Plaza_chatlog_i,shape,exact,1.00,mh1,lobby,0x0060DBF0
 lobby,0x007B91C0,36,lobby_func_007B91C0,mh2-only,,,,,
-lobby,0x007B91F0,420,lobby_func_007B91F0,mh2-only,,,,,
+lobby,0x007B91F0,420,Menu_chatlog_mv,edited,ngram,0.95,mh1,main,0x002782E0
 lobby,0x007B93A0,516,Plaza_disp_chatlog,edited,ngram,0.73,mh1,lobby,0x0060DDC0
 lobby,0x007B95B0,120,plaza_log_id_chk_sub,edited,ngram,0.93,mh1,lobby,0x0060DF20
 lobby,0x007B9630,320,Plaza_log_id_chk,edited,ngram,0.84,g,lobby,0x0058F460
@@ -10450,7 +10450,7 @@ main,0x00161C50,204,func_00161C50,ambiguous,,,,,
 main,0x00161D20,204,func_00161D20,ambiguous,,,,,
 main,0x00161DF0,204,func_00161DF0,ambiguous,,,,,
 main,0x00161EC0,20,MWSFD_SetProgOut_mh2_00161EC0,shape,exact,1.00,g,main,0x00195B50
-main,0x00161ED8,20,ADXM_Lock,edited,order,1.00,g,main,0x001BBCB8
+main,0x00161ED8,20,ADXM_Unlock,edited,callsite,1.00,mh1,main,0x001FCDC0
 main,0x00161EF0,12,func_00161EF0,mh2-only,,,,,
 main,0x00161F00,268,ADXPS2_ExecVint,identical,exact,1.00,mh1,main,0x001FCDE8
 main,0x00162010,44,SFADXT_ExecServer,shape,exact,1.00,g,main,0x00198420
@@ -15207,7 +15207,7 @@ sub_main,0x0035A9A0,60,sub_main_func_0035A9A0,mh2-only,,,,,
 sub_main,0x0035A9E0,320,ChatLogAdd_Q,edited,ngram,0.90,g,main,0x002219C0
 sub_main,0x0035AB20,100,sub_main_func_0035AB20,mh2-only,,,,,
 sub_main,0x0035AB90,60,Menu_chatlog_i,edited,ngram,0.75,mh1,main,0x00278270
-sub_main,0x0035ABD0,460,Menu_chatlog_mv,edited,order,0.87,g,main,0x00221B80
+sub_main,0x0035ABD0,460,Plaza_chatlog_mv,edited,ngram,0.81,mh1,lobby,0x0060DC40
 sub_main,0x0035ADA0,120,chat_log_disp_line,edited,ngram,1.00,g,main,0x00221D20
 sub_main,0x0035AE20,84,Pit_disp_chat,edited,ngram,0.86,g,main,0x00221DA0
 sub_main,0x0035AE80,180,sub_main_func_0035AE80,mh2-only,,,,,
@@ -15795,8 +15795,8 @@ sub_main,0x003A0B60,264,sub_main_func_003A0B60,mh2-only,,,,,
 sub_main,0x003A0C70,148,Stage_mv_data_get,edited,ngram,0.92,g,sub_main,0x004B3660
 sub_main,0x003A0D10,108,Stage_data_get,edited,ngram,0.89,g,sub_main,0x004B3700
 sub_main,0x003A0D80,152,sub_main_func_003A0D80,mh2-only,,,,,
-sub_main,0x003A0E20,152,sub_main_func_003A0E20,mh2-only,,,,,
-sub_main,0x003A0EC0,84,Stage_unique_data_get,edited,order,0.71,g,sub_main,0x004B37E0
+sub_main,0x003A0E20,152,Stage_unique_data_get,rewritten,callsite,0.48,mh1,main,0x00226980
+sub_main,0x003A0EC0,84,Stage_item_probability_get,rewritten,callsite,0.30,mh1,main,0x002269E0
 sub_main,0x003A0F20,96,Em_data_com_adrs_get,edited,ngram,0.91,g,sub_main,0x004B3860
 sub_main,0x003A0F80,184,Em_data_st_adrs_get,edited,ngram,0.98,g,sub_main,0x004B38C0
 sub_main,0x003A1040,48,Start_item_data_adrs_get,edited,callsite,0.78,mh1,main,0x00226B10
