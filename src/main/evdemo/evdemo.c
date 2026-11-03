@@ -106,7 +106,7 @@ s32 *Em_data_com_adrs_get(s32 *p, int which);
 static int evdemo_g_kinds(u8 *k)       /* G sub_main 0x4B5DA0: the quest's monster kinds (mission list 0) */
 {
     extern u8 quest_w[];
-    s32 *mis = *(s32 **)(quest_w + 0x78);
+    s32 *mis = *(s32 **)(quest_w + QWO(0x78));
     s32 *l0 = Em_data_com_adrs_get(mis, 0);
     int n = 0;
 

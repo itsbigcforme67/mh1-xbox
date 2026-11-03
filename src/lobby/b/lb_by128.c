@@ -49,7 +49,7 @@ void lb_armor_tag_decide01(void) {
         if ((1 << pl[0x11]) & (Get_equip_bit(User_data, &q) & 0xFF)) {
             strcpy(sl->name, (char *)Get_equip_name((u8)e->kind, (u16)e->id));
             sl->price = Get_equip_price((u8)e->kind, (u16)e->id);
-            sl->state = ((u32)sl->price > *(u32 *)(User_data + 0x20) || full == 1) ? 1 : 0;
+            sl->state = ((u32)sl->price > *(u32 *)(User_data + UDMO(0x20)) || full == 1) ? 1 : 0;
             cnt++;
             sl++;
         }

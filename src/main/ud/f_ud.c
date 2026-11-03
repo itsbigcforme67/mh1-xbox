@@ -592,11 +592,11 @@ s16 Get_equip_value(u8 kind) {
         }
         break;
     case 1:
-        r += *(&Armor_Head_Data[0][8] + u->armor[1] * 0x14);
-        r += *(&Armor_Body_Data[0][8] + u->armor[2] * 0x14);
-        r += *(&Armor_Arm_Data[0][8] + u->armor[3] * 0x14);
-        r += *(&Armor_Waist_Data[0][8] + u->armor[4] * 0x14);
-        r += *(&Armor_Leg_Data[0][8] + u->armor[0] * 0x14);
+        r += *(&Armor_Head_Data[0][8] + UD_ARMOR(u, 1) * MH2V(0x14, 0x28));
+        r += *(&Armor_Body_Data[0][8] + UD_ARMOR(u, 2) * MH2V(0x14, 0x28));
+        r += *(&Armor_Arm_Data[0][8] + UD_ARMOR(u, 3) * MH2V(0x14, 0x28));
+        r += *(&Armor_Waist_Data[0][8] + UD_ARMOR(u, 4) * MH2V(0x14, 0x28));
+        r += *(&Armor_Leg_Data[0][8] + UD_ARMOR(u, 0) * MH2V(0x14, 0x28));
         if (u->wkind == 7) {
             r += *(&Gun_data[0][0xA] + u->wid * 0x14);
         } else {
@@ -604,32 +604,32 @@ s16 Get_equip_value(u8 kind) {
         }
         break;
     case 2:
-        r += (s8)*(&Armor_Head_Data[0][9] + u->armor[1] * 0x14);
-        r += (s8)*(&Armor_Body_Data[0][9] + u->armor[2] * 0x14);
-        r += (s8)*(&Armor_Arm_Data[0][9] + u->armor[3] * 0x14);
-        r += (s8)*(&Armor_Waist_Data[0][9] + u->armor[4] * 0x14);
-        r += (s8)*(&Armor_Leg_Data[0][9] + u->armor[0] * 0x14);
+        r += (s8)*(&Armor_Head_Data[0][9] + UD_ARMOR(u, 1) * MH2V(0x14, 0x28));
+        r += (s8)*(&Armor_Body_Data[0][9] + UD_ARMOR(u, 2) * MH2V(0x14, 0x28));
+        r += (s8)*(&Armor_Arm_Data[0][9] + UD_ARMOR(u, 3) * MH2V(0x14, 0x28));
+        r += (s8)*(&Armor_Waist_Data[0][9] + UD_ARMOR(u, 4) * MH2V(0x14, 0x28));
+        r += (s8)*(&Armor_Leg_Data[0][9] + UD_ARMOR(u, 0) * MH2V(0x14, 0x28));
         break;
     case 3:
-        r += (s8)*(&Armor_Head_Data[0][0xA] + u->armor[1] * 0x14);
-        r += (s8)*(&Armor_Body_Data[0][0xA] + u->armor[2] * 0x14);
-        r += (s8)*(&Armor_Arm_Data[0][0xA] + u->armor[3] * 0x14);
-        r += (s8)*(&Armor_Waist_Data[0][0xA] + u->armor[4] * 0x14);
-        r += (s8)*(&Armor_Leg_Data[0][0xA] + u->armor[0] * 0x14);
+        r += (s8)*(&Armor_Head_Data[0][0xA] + UD_ARMOR(u, 1) * MH2V(0x14, 0x28));
+        r += (s8)*(&Armor_Body_Data[0][0xA] + UD_ARMOR(u, 2) * MH2V(0x14, 0x28));
+        r += (s8)*(&Armor_Arm_Data[0][0xA] + UD_ARMOR(u, 3) * MH2V(0x14, 0x28));
+        r += (s8)*(&Armor_Waist_Data[0][0xA] + UD_ARMOR(u, 4) * MH2V(0x14, 0x28));
+        r += (s8)*(&Armor_Leg_Data[0][0xA] + UD_ARMOR(u, 0) * MH2V(0x14, 0x28));
         break;
     case 4:
-        r += (s8)*(&Armor_Head_Data[0][0xB] + u->armor[1] * 0x14);
-        r += (s8)*(&Armor_Body_Data[0][0xB] + u->armor[2] * 0x14);
-        r += (s8)*(&Armor_Arm_Data[0][0xB] + u->armor[3] * 0x14);
-        r += (s8)*(&Armor_Waist_Data[0][0xB] + u->armor[4] * 0x14);
-        r += (s8)*(&Armor_Leg_Data[0][0xB] + u->armor[0] * 0x14);
+        r += (s8)*(&Armor_Head_Data[0][0xB] + UD_ARMOR(u, 1) * MH2V(0x14, 0x28));
+        r += (s8)*(&Armor_Body_Data[0][0xB] + UD_ARMOR(u, 2) * MH2V(0x14, 0x28));
+        r += (s8)*(&Armor_Arm_Data[0][0xB] + UD_ARMOR(u, 3) * MH2V(0x14, 0x28));
+        r += (s8)*(&Armor_Waist_Data[0][0xB] + UD_ARMOR(u, 4) * MH2V(0x14, 0x28));
+        r += (s8)*(&Armor_Leg_Data[0][0xB] + UD_ARMOR(u, 0) * MH2V(0x14, 0x28));
         break;
     case 5:
-        r += (s8)*(&Armor_Head_Data[0][0xC] + u->armor[1] * 0x14);
-        r += (s8)*(&Armor_Body_Data[0][0xC] + u->armor[2] * 0x14);
-        r += (s8)*(&Armor_Arm_Data[0][0xC] + u->armor[3] * 0x14);
-        r += (s8)*(&Armor_Waist_Data[0][0xC] + u->armor[4] * 0x14);
-        r += (s8)*(&Armor_Leg_Data[0][0xC] + u->armor[0] * 0x14);
+        r += (s8)*(&Armor_Head_Data[0][0xC] + UD_ARMOR(u, 1) * MH2V(0x14, 0x28));
+        r += (s8)*(&Armor_Body_Data[0][0xC] + UD_ARMOR(u, 2) * MH2V(0x14, 0x28));
+        r += (s8)*(&Armor_Arm_Data[0][0xC] + UD_ARMOR(u, 3) * MH2V(0x14, 0x28));
+        r += (s8)*(&Armor_Waist_Data[0][0xC] + UD_ARMOR(u, 4) * MH2V(0x14, 0x28));
+        r += (s8)*(&Armor_Leg_Data[0][0xC] + UD_ARMOR(u, 0) * MH2V(0x14, 0x28));
         break;
     case 6: if (u->wkind == 6) { r = *(&Ken_data[0][0xB] + u->wid * 0x18); } break;
     case 7: if (u->wkind == 6) { r = *(&Ken_data[0][0xC] + u->wid * 0x18); } break;
@@ -741,11 +741,11 @@ static void Equip_idx_renew(UDW *u) {
     u8 m = 0;
     if (u->x01 == 0) { m |= 1; } else { m |= 2; }
     if (u->wkind == 7) { m |= 8; } else { m |= 4; }
-    if (m != (m & *(&Armor_Head_Data[0][2] + u->armor[1] * 0x14))) { u->widx[2] = UD_NONE; }
-    if (m != (m & *(&Armor_Body_Data[0][2] + u->armor[2] * 0x14))) { u->widx[3] = UD_NONE; }
-    if (m != (m & *(&Armor_Waist_Data[0][2] + u->armor[4] * 0x14))) { u->widx[5] = UD_NONE; }
-    if (m != (m & *(&Armor_Arm_Data[0][2] + u->armor[3] * 0x14))) { u->widx[4] = UD_NONE; }
-    if (m != (m & *(&Armor_Leg_Data[0][2] + u->armor[0] * 0x14))) { u->widx[1] = UD_NONE; }
+    if (m != (m & *(&Armor_Head_Data[0][2] + UD_ARMOR(u, 1) * MH2V(0x14, 0x28)))) { u->widx[2] = UD_NONE; }
+    if (m != (m & *(&Armor_Body_Data[0][2] + UD_ARMOR(u, 2) * MH2V(0x14, 0x28)))) { u->widx[3] = UD_NONE; }
+    if (m != (m & *(&Armor_Waist_Data[0][2] + UD_ARMOR(u, 4) * MH2V(0x14, 0x28)))) { u->widx[5] = UD_NONE; }
+    if (m != (m & *(&Armor_Arm_Data[0][2] + UD_ARMOR(u, 3) * MH2V(0x14, 0x28)))) { u->widx[4] = UD_NONE; }
+    if (m != (m & *(&Armor_Leg_Data[0][2] + UD_ARMOR(u, 0) * MH2V(0x14, 0x28)))) { u->widx[1] = UD_NONE; }
 }
 #endif
 
@@ -820,29 +820,29 @@ void Set_equip_idx(UDW *u) {
     }
     Equip_idx_renew(u);
     if (equip_idx_ck(u, u->widx[1], 0, 0) == 1) {
-        u->armor[0] = u->ware[u->widx[1]].id;
+        UD_ARMOR(u, 0) = u->ware[u->widx[1]].id;
     } else {
-        u->armor[0] = 0;
+        UD_ARMOR(u, 0) = 0;
     }
     if (equip_idx_ck(u, u->widx[2], 2, 2) == 1) {
-        u->armor[1] = u->ware[u->widx[2]].id;
+        UD_ARMOR(u, 1) = u->ware[u->widx[2]].id;
     } else {
-        u->armor[1] = 0;
+        UD_ARMOR(u, 1) = 0;
     }
     if (equip_idx_ck(u, u->widx[3], 3, 3) == 1) {
-        u->armor[2] = u->ware[u->widx[3]].id;
+        UD_ARMOR(u, 2) = u->ware[u->widx[3]].id;
     } else {
-        u->armor[2] = 0;
+        UD_ARMOR(u, 2) = 0;
     }
     if (equip_idx_ck(u, u->widx[4], 4, 4) == 1) {
-        u->armor[3] = u->ware[u->widx[4]].id;
+        UD_ARMOR(u, 3) = u->ware[u->widx[4]].id;
     } else {
-        u->armor[3] = 0;
+        UD_ARMOR(u, 3) = 0;
     }
     if (equip_idx_ck(u, u->widx[5], 5, 5) == 1) {
-        u->armor[4] = u->ware[u->widx[5]].id;
+        UD_ARMOR(u, 4) = u->ware[u->widx[5]].id;
     } else {
-        u->armor[4] = 0;
+        UD_ARMOR(u, 4) = 0;
     }
 }
 #endif

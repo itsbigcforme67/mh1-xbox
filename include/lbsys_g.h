@@ -89,7 +89,11 @@ typedef struct LBSYS_G {       /* at 0x6548F0, 0x98 bytes; comments: G offset (M
 #else
 #define IBO(o) (o)
 #endif
-#ifdef VERSION_MHG
+#ifdef VERSION_MH2
+#define UDEQO(i) (0x2186 + 2 * (i))
+#define UDEQ(u, i) (*(u16 *)((u8 *)(u) + UDEQO(i)))
+#define UDO(o) UDMO(o)
+#elif defined(VERSION_MHG)
 /* G's User_data (0x32C210, tools/mhg_addrmap.py votes: pouch 0x1C4 -> 0x74C, item box 0x37C -> 0xC24, the six equipped-slot
  * bytes at 0x456.. -> u16 at 0xCFE..): UDO(MH1 offset) = G offset for the places the village C reads by raw offset */
 #define UDO(o) ((o) < 0x1C4 ? (o) : (o) < 0x37C ? (o) + 0x588 : (o) + 0x8A8)

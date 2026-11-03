@@ -63,7 +63,7 @@ void transSelectHandleName(void *arg0) {
     DispFrameMessage(&sp30, NULL);
     font_print_double(0x34, 0x90, 1, 0, (*(void * *)((u8 *)&tl_mail_tbl + 0x8)));
     flfntSetSize(0x18, 0x14);
-    font_print_double(0x70, 0x90, 1, 0, &(*(s32 *)((u8 *)&User_data + 0x8)));
+    font_print_double(0x70, 0x90, 1, 0, &(*(s32 *)((u8 *)&User_data + UDMO(0x8))));
     var_s1 = 0;
     do {
         temp_a1 = var_s1 & 0xFF;

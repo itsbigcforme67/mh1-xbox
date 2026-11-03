@@ -39,12 +39,19 @@ extern u8 ot0[];
 extern u8 ot1[];
 extern u8 player_work[];
 
+#ifdef VERSION_MH2
+#include "mh2_layouts.h"
+typedef QUEST_W QUEST_W_EM_M;
+#define QUEST_W_EM QUEST_W_EM_M
+#else
 typedef struct QUEST_W_EM {
     u8 _pad00[8];
-    s16 no;             /* 0x08 quest number (0: free hunt) */
+    qno_t no;             /* 0x08 quest number (0: free hunt) */
     u8 _pad0A[0x14E - 0xA];
     s8 x14E;            /* 0x14E G: the quest's monster level (Quest_start) */
 } QUEST_W_EM;
+
+#endif
 extern QUEST_W_EM quest_w;
 
 s16 get_prim(void);

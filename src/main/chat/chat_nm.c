@@ -356,7 +356,7 @@ void Put_mini_sight(f32 scale, s16 ofs, int col) {
 }
 
 #ifdef VERSION_MHG
-#define MLIST_OFS 0xC98     /* G keeps the monster list bits at User_data+0xC98 (main 0x220540: 0x32CEA8) */
+#define MLIST_OFS 0xC98     /* G keeps the monster list bits at User_data + UDMO(0xC98) (main 0x220540: 0x32CEA8) */
 #else
 #define MLIST_OFS 0x3F0
 #endif
@@ -1282,11 +1282,11 @@ void ItemListWindow(int page, int cursel, int mode) {
     u8 *w;
 
 #ifdef VERSION_MHG
-    /* G (main 0x11EA80): mode 2 lists the village pouch (User_data+0xC24) instead of the player's, mode 0x10 shows the pouch merged
+    /* G (main 0x11EA80): mode 2 lists the village pouch (User_data + UDMO(0xC24)) instead of the player's, mode 0x10 shows the pouch merged
      * and sorted by item id (the fuller stack first) with no cursor, on the cursor's page (mode 0x20, the hint frame, is not drawn) */
     static UD_ITEM sorted[20];
     if (mode & 2) {
-        w = (u8 *)&User_data + 0xC24;
+        w = (u8 *)&User_data + UDMO(0xC24);
     } else {
         w = (u8 *)&player_work[GW(0xD1)] + 0x828;
     }
@@ -1450,7 +1450,7 @@ void PlayerStatusWindow(u8 *pl, int tab) {
         font_print(lit_3593, (u8)(s16)*(f32 *)(pl + 0x928));
         flfntLocate(0x21C, 0x106);
         font_print(lit_3593, (u8)(s16)*(f32 *)(pl + 0x92C));
-        Put_comment(0x132, 0x126, 0x14, (u8 *)&User_data + 0x3F4);
+        Put_comment(0x132, 0x126, 0x14, (u8 *)&User_data + UDMO(0x3F4));
         return;
     case 1:
         PlayerEquipmentWindow((PLW *)pl);

@@ -5,10 +5,15 @@
  * case) and em04_main_sub (mode dispatch). */
 #include "em04.h"
 
+#ifdef VERSION_MH2
+#include "mh2_layouts.h"
+#else
 typedef struct QUEST_W {
     u8 _pad00[8];
-    s16 x08;            /* 0x08 quest number */
+    qno_t x08;            /* 0x08 quest number */
 } QUEST_W;
+
+#endif
 extern QUEST_W quest_w;
 extern GAME_W game_w;
 

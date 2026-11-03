@@ -1,0 +1,85 @@
+# MH2 layouts of the smaller work structs, for tools/mh2_structs.py gen: writes include/mh2_layouts.h.
+#   STRUCT NAME SIZE MACRO     MACRO(o): the MH2 offset of a byte written as an MH1 (or G) offset, for C that uses raw numbers
+#   OLD NEW DECL ; TAG note    one field; OLD = 0x... MH1/G offset, - for a field MH1 and G do not have
+# TAG says how the place is known:
+#   code   read from MH2's code with the twin function's order or a vote from aligned code
+#   order  no instruction says it directly: sits between proven neighbours, types fit
+#   guess  no place in MH2 was found. The field sits in a stretch no code touches, so C compiles; it is NOT MH2's real place
+#
+# quest_w: 0x5D8260, 0x560 bytes: Quest_init (0x3A1070) memsets exactly that. The older data map's 0x5D8248 was one of the moved fields.
+STRUCT QUEST_W 0x560 QWO
+0x00 0x00 s8 x00; ; code Quest_start
+0x01 0x01 s8 x01; ; code
+0x02 0x02 u8 _pad02; ; order
+0x03 0x03 s8 x03; ; code
+0x04 0x04 s8 x04; ; code
+0x05 0x05 u8 _pad05; ; order
+0x06 0x06 s8 x06; ; code
+0x07 0x07 u8 _pad07; ; order
+0x08 0x08 union { u16 no; u16 x08; }; ; code lhu, 106 uses; x08 is the name in the monsters' copies
+0x0A 0x0A s8 x0A; ; code
+0x0B 0x0B s8 x0B; ; code
+0x0C 0x0C s32 x0C; ; code
+0x10 0x10 s32 x10; ; code
+0x14 0x14 s32 x14; ; code Quest_start, x94->x08 goes here
+0x18 0x18 s32 x18; ; code
+0x34 0x1C s16 x34; ; code Quest_enemy_die
+0x36 0x1E s16 x36; ; code
+0x38 0x20 s16 x38; ; code
+0x3A 0x22 s8 x3A; ; code
+0x3B 0x23 s8 x3B; ; code Ext_pick_point_*
+0x3C 0x24 void *x3C; ; code
+0x40 0x28 s32 x40; ; code bgm_server, em_cmd_male_ck
+0x1C 0x2C s16 x1C[4]; ; guess Quest_start no longer clears these in place; the share list was rewritten
+0x24 0x34 s16 x24[4]; ; guess one vote says 0x158, but that field is written next to new ones in Quest_start
+0x2C 0x3C s16 x2C[2]; ; guess
+0x30 0x40 s16 x30[2]; ; guess
+0x144 0x44 s16 x144[2]; ; guess
+0x148 0x48 s16 x148[2]; ; guess
+0x64 0x4C QW_X64_T x64; ; code
+0x68 0x50 u8 _pad68[4]; ; order
+0x6C 0x54 s32 *x6C; ; code Quest_start order
+0x70 0x58 s32 *x70; ; code
+0x74 0x5C s32 *x74; ; code
+0x78 0x60 s32 *x78; ; code
+0x7C 0x64 s32 *x7C; ; code
+0x80 0x68 s32 *x80; ; code
+0x84 0x6C s32 *x84; ; code
+0x88 0x70 s32 *x88; ; code
+0x8C 0x74 s32 *x8C; ; code
+0x90 0x78 s32 *x90; ; code
+0x94 0x7C QW_X94_T x94; ; code
+0x98 0x80 QPAIR x98[5]; ; code Item_regained
+0xAC 0x94 s8 xAC; ; code
+0xAD 0x95 s8 xAD; ; code
+0xAE 0x96 s8 xAE; ; code Quest_start sets 1
+0xAF 0x97 s8 xAF; ; code
+0xB0 0x98 void *xB0; ; code Em_direct_set
+0x169 0x9C s8 x169; ; code Quest_start, after x165; G's name, stores in that order: 0x9D then 0x9C. See next line
+0x168 0x9D u8 x168; ; code
+0x16A 0x9E u16 rnd_seed; ; code 0x3A3850 reads the 15 bytes and steps this, lhu/sh
+0xB4 0xA0 struct { s8 a, b; } xB4[4]; ; code Quest_start
+0xBC 0xA8 QPAIR xBC[32]; ; order the 0x80 bytes between xB4 and x13C
+0x13C 0x128 s32 x13C; ; code Quest_start
+0x140 0x12C s32 x140; ; code
+- 0x130 s32 x130; ; code new, 0x3A2E30
+0x14C 0x134 s16 x14C; ; code Em_direct_set
+0x14E 0x136 s8 x14E; ; code Quest_start after x40, as G. The vote for 0x149 was a wrong pairing
+0x14F 0x137 s8 x14F; ; code
+0x150 0x138 s8 x150; ; code
+0x155 0x139 u8 rnd[15]; ; code G's name; sub 0x3A3850 reads 15 bytes
+- 0x148 s8 x148b; ; code new, Quest_start (votes), written with the mission header
+0x165 0x149 s8 x165[3]; ; code Quest_start
+0x23C 0x14C s16 x23C; ; guess gone from Quest_enemy_die
+0x23E 0x14E s16 x23E; ; guess
+0x240 0x150 s16 x240; ; guess
+- 0x155 u8 x155; ; code new, kept over Quest_init's memset
+0x16C 0x34C u16 x16C[80]; ; code Quest_enemy_die, Quest_start; arrays of 0xA0 bytes
+0x1D4 0x20C u16 x1D4[80]; ; code
+- 0x53A u16 x53A; ; code new, Quest_start
+0x180 0x550 s8 x180; ; code net_receive_sys
+0x181 0x551 s8 x181; ; code net_send_sys
+0x182 0x552 s16 x182; ; code
+0x184 0x554 s16 x184; ; code net_send_sys order
+0x186 0x556 s16 x186; ; code
+- 0x558 u16 x188; ; code new third word, q_net_send_em_capture

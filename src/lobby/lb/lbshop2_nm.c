@@ -101,7 +101,7 @@ int lb_shop_select(void) {
                 return 0;
             }
 #ifdef VERSION_MHG
-        } else if (id == 472 || id == 473) {    /* G: one-off items (User_data+0xC97 bit id-472) */
+        } else if (id == 472 || id == 473) {    /* G: one-off items (User_data + UDMO(0xC97) bit id-472) */
             if ((((u8 *)User_data)[0xC97] >> ((id - 472) & 1)) & 1) {
                 return 0;
             }
@@ -321,7 +321,7 @@ void lb_shop_tag_decide(void) {
                     sl->state = 0;
                 }
 #ifdef VERSION_MHG
-            } else if (v == 472 || v == 473) {  /* G: two one-off items, bought once (User_data+0xC97 bit v-472) */
+            } else if (v == 472 || v == 473) {  /* G: two one-off items, bought once (User_data + UDMO(0xC97) bit v-472) */
                 if ((((u8 *)User_data)[0xC97] >> ((v - 472) & 1)) & 1) {
                     sl->state = 1;
                 } else if (*(u32 *)0x3C6FE0 < (u32)sl->price) {

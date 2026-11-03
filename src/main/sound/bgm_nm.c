@@ -43,7 +43,7 @@ int em_status_ck(void) {
     if (game_w[GWX(0x21F)] != 0) {
         return 0;
     }
-    if (*(s32 *)(quest_w + 0x40) & 0x600) {
+    if (*(s32 *)(quest_w + QWO(0x40)) & 0x600) {
         return 0;
     }
     for (i = 0; i < 20; i++) {
@@ -81,7 +81,7 @@ void bgm_server(void) {
         int r = Quest_clear_ck(1);
         if (r != 0) {
             if (r == 1) {
-                if (*(s32 *)(quest_w + 0x40) & 2) {
+                if (*(s32 *)(quest_w + QWO(0x40)) & 2) {
                     game_w[0x11] = 7;
                     *(u16 *)(game_w + 0x26) = 0x50;
                 } else {
@@ -403,13 +403,13 @@ void stage_bgm_set(int n)
   }
   else
   {
-    if ((*((s32 *) (quest_w + 0x40))) & 0x800)
+    if ((*((s32 *) (quest_w + QWO(0x40)))) & 0x800)
     {
       str_play_f_vol(0, GBGM(0x55), 0xF, 0x7F);
       game_w[0x25] = GBGM(0x55);
     }
     else
-      if ((*((s32 *) (quest_w + 0x40))) & 0x400)
+      if ((*((s32 *) (quest_w + QWO(0x40)))) & 0x400)
     {
       fight_bgm_set();
     }

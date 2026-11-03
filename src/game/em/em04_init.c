@@ -6,7 +6,7 @@
 /* quest_w (0x3C7440): only the quest number is used here. */
 typedef struct QUEST_W {
     u8 _pad00[8];
-    s16 no;             /* 0x08 current quest (0: free play?) */
+    qno_t no;             /* 0x08 current quest (0: free play?) */
 } QUEST_W;
 
 /* Part of the per-monster work at EMW+0x444 set up by the init code. */

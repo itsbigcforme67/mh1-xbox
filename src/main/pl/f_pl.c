@@ -147,7 +147,14 @@ void Item_box_get_item(u16, u8);
 void net_send_host(int, u8);
 s32 Ext_pick_point_ck(PLW *);
 void SetVector(f32 *, f32, f32, f32);
+#ifdef VERSION_MH2
+#include "mh2_layouts.h"
+typedef QUEST_W PL_QUEST_W_M;
+#define PL_QUEST_W PL_QUEST_W_M
+#else
 typedef struct { u8 _pad00[0x14]; s32 x14; } PL_QUEST_W;
+
+#endif
 extern PL_QUEST_W quest_w;
 extern u8 lit_6243[], lit_6244[], lit_6245[];
 s8 Quest_remuneration_calc(void);

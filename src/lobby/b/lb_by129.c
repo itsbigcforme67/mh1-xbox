@@ -46,7 +46,7 @@ void lb_armor_tag_decide00(void) {
         lbShop.x6C = 0;
         lbShop.help = *(s32 *)(shop_armor_help + 0x18);
         for (i = 0; i < n; i++, sl++, t++) {
-            u8 *w = (u8 *)User_data + 0x44 + i * 6;
+            u8 *w = (u8 *)User_data + UDMO(0x44) + i * 6;
             if (Warehouse_space_ck(User_data, i) == 1) {
                 sl->state = 2;
                 t->kind = 0;

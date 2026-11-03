@@ -7,7 +7,7 @@ extern u8 User_data;
 s32 Lb_get_lb_rank(void) {
     u8 temp_v0;
 
-    temp_v0 = (*(u8 *)((u8 *)&User_data + 0xC23));
+    temp_v0 = (*(u8 *)((u8 *)&User_data + UDMO(0xC23)));
     if ((s32) temp_v0 < 5) {
         return 0;
     }

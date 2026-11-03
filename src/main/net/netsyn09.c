@@ -8,6 +8,11 @@ extern NGW game_w;
 extern u8 player_work[];
 extern u8 select_w[];
 
+#ifdef VERSION_MH2
+#include "mh2_layouts.h"
+typedef QUEST_W NQWR_M;
+#define NQWR NQWR_M
+#else
 typedef struct NQWR {
 #ifdef VERSION_MHG
     u8 x00[0x280];      /* G: the 0x180.. block is at 0x280 (netsyn08.c, include/quest.h) */
@@ -20,6 +25,8 @@ typedef struct NQWR {
     s16 x184;
     s16 x186;
 } NQWR;
+
+#endif
 extern NQWR quest_w;
 
 void Quest_net_sub(u8);

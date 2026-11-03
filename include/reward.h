@@ -33,9 +33,16 @@ void trans_result_3(void);
 void end_fade_set(void);
 int movie_add_check(GAME_W *, int);
 
+#ifdef VERSION_MH2
+#define QW_X64_T s32 *
+#define QW_X94_T s32 *
+#include "mh2_layouts.h"
+typedef QUEST_W QUEST_WR_M;
+#define QUEST_WR QUEST_WR_M
+#else
 typedef struct QUEST_WR {
     u8 _pad00[8];
-    s16 no;             /* 0x08 current quest number */
+    qno_t no;             /* 0x08 current quest number */
     u8 _pad0A[0x14 - 0xA];
     s32 x14;            /* 0x14 reward money (gold_init) */
     u8 _pad18[0x34 - 0x18];
@@ -47,6 +54,8 @@ typedef struct QUEST_WR {
     u8 _pad98[0x14C - 0x98];
     s16 x14C;           /* 0x14C */
 } QUEST_WR;
+
+#endif
 extern QUEST_WR quest_w;
 
 typedef struct MOVIE_ADD {
@@ -108,7 +117,7 @@ void result_disp();
 void add_disp();
 void error_disp();
 void add_prim2();
-#define USER_x1A (*(s16 *)((u8 *)&User_data + 0x1A))
+#define USER_x1A (*(s16 *)((u8 *)&User_data + UDMO(0x1A)))
 
 typedef struct RESULT_W {
     s32 gold;           /* 0x00 points/money left to hand out on the result screen */

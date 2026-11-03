@@ -122,7 +122,7 @@ loop_30:
         goto block_48;
     case 5:                                         /* switch 1 */
         (*(s8 *)((u8 *)(&g_lb_654830) + 7)) = (s8) ((*(s8 *)((u8 *)(&g_lb_654830) + 7)) + 1);
-        temp_v0_4 = (*(s16 *)((u8 *)&User_data + 0x1A));
+        temp_v0_4 = (*(s16 *)((u8 *)&User_data + UDMO(0x1A)));
         (*(u16 *)((u8 *)&select_w + 0xD0)) = (*(u16 *)((u8 *)&mhRule + 0x52));
         (*(s16 *)((u8 *)&game_w + 0xFA)) = temp_v0_4;
         (*(s32 *)((u8 *)&mhRule + 0x58)) = ((*(s32 *)((u8 *)&mhRule + 0x58)) & 0xFFFF0000) | (*(u16 *)((u8 *)&mhRule + 0x52));

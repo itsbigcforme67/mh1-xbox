@@ -26,12 +26,17 @@ typedef struct QUEST_DATA {
     u8 no;              /* 0x1D quest number (picks the gate's start state) */
 } QUEST_DATA;
 
+#ifdef VERSION_MH2
+#include "mh2_layouts.h"
+#else
 typedef struct QUEST_W {
     u8 _pad00[8];
-    s16 x08;            /* 0x08 non-zero while a quest is set up */
+    qno_t x08;            /* 0x08 non-zero while a quest is set up */
     u8 _pad0A[0x94 - 0x0A];
     QUEST_DATA *data;   /* 0x94 */
 } QUEST_W;
+
+#endif
 
 extern QUEST_W quest_w;
 extern SET_MDLW *set_mdlw;

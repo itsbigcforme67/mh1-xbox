@@ -110,7 +110,7 @@ static void clear_prim(void)
         memset(card_prim + i * 0x20, 0, 0x20);
 }
 
-/* the hunting log helpers (sub_main 0x4C8510-0x4C8910): kills per kind at User_data+0xD76, size record per kind at +0xD10 */
+/* the hunting log helpers (sub_main 0x4C8510-0x4C8910): kills per kind at User_data + UDMO(0xD76), size record per kind at +0xD10 */
 static u8 *hgrp(int kind)
 {
     return (u8 *)hunt_group_tbl[kind & 0xFF];
@@ -452,7 +452,7 @@ static int record_add_check(GAME_W *t, int go)
 }
 
 /* 0x4F4780: a training course opened: per row (a monster's training, after its quest is cleared) five weapon
- * classes, each opened by a kill count of the row's kind; the opened bits are at User_data+0xDDC + training */
+ * classes, each opened by a kill count of the row's kind; the opened bits are at User_data + UDMO(0xDDC) + training */
 static int train_add_check(GAME_W *t, int go)
 {
     u8 *r;
@@ -589,7 +589,7 @@ void result_prog(void)                                  /* 0x4F4A60 */
             }
             return;
         }
-        /* (G 0x12AE80 also stores a new random number of its channel-2 generator at User_data+0xD0A here and at
+        /* (G 0x12AE80 also stores a new random number of its channel-2 generator at User_data + UDMO(0xD0A) here and at
          * title time; no reader found; the PC's Rnd_w has two channels: not ported) */
         quest_price = 0;
         TRANS = (void *)trans_result_0;

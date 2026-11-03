@@ -426,9 +426,9 @@ block_119:
                     pl->x73A = 0x51;
                     lb_sys.x03 = 5;
                     lb_sys.x71 = 0;
-                    n = User_data[0x3E8];
+                    n = User_data[UDMO(0x3E8)];
                     if (n < 0x96) {
-                        User_data[0x3E8] = n + 1;
+                        User_data[UDMO(0x3E8)] = n + 1;
                     }
                 }
                 return;

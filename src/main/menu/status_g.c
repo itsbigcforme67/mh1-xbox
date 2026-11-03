@@ -612,7 +612,7 @@ void PlayerStatusWindow(u8 *pl, int tab)
         } else {
             flfntLocate(0x17A, 0x8E);
         }
-        font_print(gstat_str[3], *(s32 *)(User_data + 0x20));
+        font_print(gstat_str[3], *(s32 *)(User_data + UDMO(0x20)));
         flfntLocate(0x18C, 0xCA);
         font_print("%4d", *(s16 *)(pl + 0x792));
         flfntLocate(0x18C, 0xDE);
@@ -630,7 +630,7 @@ void PlayerStatusWindow(u8 *pl, int tab)
         font_print("%3d", (s16)*(f32 *)(pl + 0x928));
         flfntLocate(0x21C, 0x106);
         font_print("%3d", (s16)*(f32 *)(pl + 0x92C));
-        Put_comment(0x132, 0x126, 0x14, User_data + 0xC9C);
+        Put_comment(0x132, 0x126, 0x14, User_data + UDMO(0xC9C));
         return;
     case 1:
         PlayerEquipmentWindow((PLW *)pl);

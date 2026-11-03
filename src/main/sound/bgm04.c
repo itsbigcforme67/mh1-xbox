@@ -83,13 +83,13 @@ void stage_bgm_set(int n)
   }
   else
   {
-    if ((*((s32 *) (quest_w + 0x40))) & 0x800)
+    if ((*((s32 *) (quest_w + QWO(0x40)))) & 0x800)
     {
       str_play_f_vol(0, GBGM(0x55), 0xF, 0x7F);
       game_w[0x25] = GBGM(0x55);
     }
     else
-      if ((*((s32 *) (quest_w + 0x40))) & 0x400)
+      if ((*((s32 *) (quest_w + QWO(0x40)))) & 0x400)
     {
       fight_bgm_set();
     }

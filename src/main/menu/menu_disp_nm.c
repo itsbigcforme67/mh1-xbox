@@ -170,7 +170,7 @@ void font_print_BBQquest(void *pl, int y) {
     flfntLocate(0x167, y);
     player_name_id_print(pl);
     flfntLocate(0x1F7, y);
-    sprintf(buf, (char *)lit_2264, (s16)Share_item_num_ck(*(u16 *)(quest_w + 0x1C), *(u16 *)((u8 *)pl + 0xC) + 2));
+    sprintf(buf, (char *)lit_2264, (s16)Share_item_num_ck(*(u16 *)(quest_w + QWO(0x1C)), *(u16 *)((u8 *)pl + 0xC) + 2));
     o = out;
     for (p = buf; *p != 0; p++, o++) {
         *o = ((*p + 0x1F) << 8) | 0x82;
@@ -193,9 +193,9 @@ void quest_condition_print(u8 unused) {
     font_set_palette(0);
     if (lpPit->x47 != 4) {
         flfntLocate(0x1C1, 0xF2);
-        font_print_quest_money(*(s32 *)(*(u8 **)(quest_w + 0x94) + 8));
+        font_print_quest_money(*(s32 *)(*(u8 **)(quest_w + QWO(0x94)) + 8));
         flfntLocate(0x1C1, 0x106);
-        font_print_quest_money(*(s32 *)(quest_w + 0x14));
+        font_print_quest_money(*(s32 *)(quest_w + QWO(0x14)));
     }
     flfntLocate(0x1C1, 0x12E);
     font_print_quest_time(0);
@@ -236,7 +236,7 @@ void quest_condition_print(u8 unused) {
     }
     case 2:
         flfntLocate(0x167, 0xB6);
-        font_print(lit_2331, enemy_name[*(s16 *)(quest_w + 0x2C)]);
+        font_print(lit_2331, enemy_name[*(s16 *)(quest_w + QWO(0x2C))]);
         flfntLocate(0x209, 0xB6);
         font_print_quest_target((u16)Share_item_num_ck(0x90, 0), 1);
         return;
@@ -288,7 +288,7 @@ int func_0011A730(u16 id) {
         return 0;
     }
     for (i = 0; i < 4; i++) {
-        if (*(s16 *)(quest_w + 0x1C + i * 2) == id) {
+        if (*(s16 *)(quest_w + QWO(0x1C) + i * 2) == id) {
             return 1;
         }
     }
@@ -1315,7 +1315,7 @@ void disp_timer(void) {
         case 0xCE:
         case 0x6B:
         case 0x65:
-            if (*(s16 *)(quest_w + 0x34) != 0) {
+            if (*(s16 *)(quest_w + QWO(0x34)) != 0) {
                 lpPit->time0 = 0;
             }
             break;
@@ -1864,7 +1864,7 @@ void disp_mix_list(int sw, PIT_W *p) {
 #ifdef VERSION_MHG
 /* G's hunting log (main 0x125CE0-0x126440, agent A 15 Oct 2026, from G's asm; not byte-checked). G replaced the
  * monster list page with a log: three pages of six monster species (the kinds sub_main 0x4B7920 lists), each with
- * the number hunted (User_data+0xD76, summed over the species' kinds) and the biggest size (User_data+0xD10, the
+ * the number hunted (User_data + UDMO(0xD76), summed over the species' kinds) and the biggest size (User_data + UDMO(0xD10), the
  * largest of the kinds, in cm = value x the kind's base size / 100) with a silver / gold crown at the monster's
  * thresholds; circle opens one monster's page (the MH1 page: number, name, picture, text, plus hunted / size).
  * The records are written at quest end (result_prog, src/main/reward/f_reward_g.c). */

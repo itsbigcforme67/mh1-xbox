@@ -57,10 +57,10 @@ void result_disp(GAME_W *t)
     case 0:
         flfntLocate(0x176, 0x16F);
         font_print_sp(lit_473_00386690, t->x08 / 30);
-        sprintf(buf, lit_474_003866B0, (u8 *)&User_data + 8);
+        sprintf(buf, lit_474_003866B0, (u8 *)&User_data + UDMO(8));
         flfntLocate(CENTER_X(buf), 0x46);
         font_print_sp(lit_467_00386620, buf);
-        sprintf(buf, lit_639_00386810, *(s32 *)((u8 *)&User_data + 0x1C));
+        sprintf(buf, lit_639_00386810, *(s32 *)((u8 *)&User_data + UDMO(0x1C)));
         flfntLocate(CENTER_X(buf), 0x127);
         font_print_sp(lit_467_00386620, buf);
         sprintf(buf, lit_640_00386830, result_w.rank_new, hunter_appellation[result_w.rank_new]);

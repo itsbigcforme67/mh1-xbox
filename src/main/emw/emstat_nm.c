@@ -16,7 +16,14 @@ typedef struct EMK {
 } EMK;
 #define KIND(w) ((w)->kind)
 
-typedef struct QW { u8 _pad00[8]; s16 x08; } QW;
+#ifdef VERSION_MH2
+#include "mh2_layouts.h"
+typedef QUEST_W QW_M;
+#define QW QW_M
+#else
+typedef struct QW { u8 _pad00[8]; qno_t x08; } QW;
+
+#endif
 extern QW quest_w;
 extern f32 D_63BBB0[];
 extern u8 D_63BB80[];

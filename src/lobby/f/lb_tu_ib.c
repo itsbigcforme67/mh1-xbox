@@ -15,9 +15,9 @@ extern u8 D_3396D3[];
 extern u8 D_3396D5[];
 void se_req();
 u8 *Get_equip_data_ptr();
-/* item box slots: 4 bytes per slot at User_data + 0x37C (u16 item id, s16 amount) */
+/* item box slots: 4 bytes per slot at User_data + UDMO(0x37C) (u16 item id, s16 amount) */
 typedef struct IBS4 { u16 w[2]; } IBS4;
-/* pouch (User_data + 0x1C4) and item box (User_data + 0x37C) slots, 4 bytes each: u16 item id, s16 amount */
+/* pouch (User_data + UDMO(0x1C4)) and item box (User_data + UDMO(0x37C)) slots, 4 bytes each: u16 item id, s16 amount */
 #define UPID(i) F(u16, User_data + (i) * 4, 0x1C4)
 #define UPNUM(i) F(s16, User_data + (i) * 4, 0x1C6)
 #define IBID2(i) F(u16, User_data + (i) * 4, 0x37C)

@@ -71,7 +71,7 @@ int lb_shop_select(void) {
                 return 0;
             }
 #ifdef VERSION_MHG
-        } else if (id == 472 || id == 473) {    /* G: one-off items (User_data+0xC97 bit id-472) */
+        } else if (id == 472 || id == 473) {    /* G: one-off items (User_data + UDMO(0xC97) bit id-472) */
             if ((((u8 *)User_data)[0xC97] >> ((id - 472) & 1)) & 1) {
                 return 0;
             }

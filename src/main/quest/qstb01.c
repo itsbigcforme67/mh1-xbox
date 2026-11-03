@@ -24,9 +24,9 @@ void *memset(void *, int, unsigned int);
 void Quest_failed_set(void)
 {
 #ifdef VERSION_MHG
-    *((u8 *)&quest_w + 0x154) = 1;
+    *((u8 *)&quest_w + QWO(0x154)) = 1;
 #else
-    *((u8 *)&quest_w + 0x150) = 1;
+    *((u8 *)&quest_w + QWO(0x150)) = 1;
 #endif
 }
 

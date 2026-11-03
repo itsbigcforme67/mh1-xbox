@@ -28,10 +28,17 @@ extern u8 ot0[];
 extern u8 ot1[];
 extern u8 player_work[];
 
+#ifdef VERSION_MH2
+#include "mh2_layouts.h"
+typedef QUEST_W QUEST_W_EM_M;
+#define QUEST_W_EM QUEST_W_EM_M
+#else
 typedef struct QUEST_W_EM {
     u8 _pad00[8];
-    s16 no;             /* 0x08 quest number (0: free hunt) */
+    qno_t no;             /* 0x08 quest number (0: free hunt) */
 } QUEST_W_EM;
+
+#endif
 extern QUEST_W_EM quest_w;
 
 s16 get_prim(void);

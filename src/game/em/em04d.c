@@ -82,10 +82,15 @@ extern f32 em05_rev_set_tbl_st18[][6];
 void em04_next_act_set(EMW *em);
 
 
+#ifdef VERSION_MH2
+#include "mh2_layouts.h"
+#else
 typedef struct QUEST_W {
     u8 _pad00[8];
-    s16 x08;            /* 0x08 quest number */
+    qno_t x08;            /* 0x08 quest number */
 } QUEST_W;
+
+#endif
 extern QUEST_W quest_w;
 extern GAME_W game_w;
 

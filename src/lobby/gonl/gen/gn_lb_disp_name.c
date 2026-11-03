@@ -158,7 +158,7 @@ block_17:
                                     var_s2_2 = ((s16) (temp_s5));
                                     var_s0_2 = ((s16) (temp_s6));
                                     var_s5 = var_s2_2 - 4;
-                                    Lb_put_job((s32) (((s16) ((var_s0_2 - 0x16)))), (s32) (((s16) (var_s5))), 0x16, -1, (s32) (((s8) (Get_weapon_job(&(*(s32 *)((u8 *)&User_data + 0xC74)))))), 0);
+                                    Lb_put_job((s32) (((s16) ((var_s0_2 - 0x16)))), (s32) (((s16) (var_s5))), 0x16, -1, (s32) (((s8) (Get_weapon_job(&(*(s32 *)((u8 *)&User_data + UDMO(0xC74))))))), 0);
                                 } else {
                                     var_s2_2 = ((s16) (temp_s5));
                                     var_s0_2 = ((s16) (temp_s6));

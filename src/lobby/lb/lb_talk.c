@@ -471,7 +471,7 @@ void Lb_event_story(void) {
             }
             break;
         case 5: {
-            if (((u8 *)&User_data)[0xC23] == 0) {       /* sub_main 0x4C50B0: the registration is done once (User_data+0xC23) */
+            if (((u8 *)&User_data)[0xC23] == 0) {       /* sub_main 0x4C50B0: the registration is done once (User_data + UDMO(0xC23)) */
                 ((u8 *)&User_data)[0xC23] = 1;
                 Lbc_SendMiniData();
             }

@@ -628,7 +628,7 @@ int push;
         break;
     case 2:
         tsk->sub++;
-        if (tsk->sel == 1 && User_data[0x3ED] != 0) {
+        if (tsk->sel == 1 && User_data[UDMO(0x3ED)] != 0) {
             tsk->sel2 = 1;
         } else {
             tsk->sel2 = 0;
@@ -645,7 +645,7 @@ int push;
             if (tsk->x10 == 0) {
                 tsk->step = 3;
                 decide_se(k);
-                User_data[0x3ED] = tsk->sel2;
+                User_data[UDMO(0x3ED)] = tsk->sel2;
                 switch (tsk->sel) {
                 case 0:
                     fade_set(1);
