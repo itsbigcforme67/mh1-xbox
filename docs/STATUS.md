@@ -1056,3 +1056,28 @@ New: DATA.BIN and TIM2 readers, tools/mh2_pcmeta.py (symbols, pointer scan: unch
 Formats: models, skeletons, motion and collision load with our readers (not drawn or played); quests (.mib 0x74 header in mib.afs) and MOMO textures are new. The font is byte-identical to G's.
 Gap: 933 of 1,340 tables have no address, 344 function stand-ins; about 23% of the linked functions are identical to MH2 or the same shape. Xbox not tried.
 Next: docs/mh2_port.md section 6.
+
+## 3 Nov 2026: MH Dos, the four port agents merged (QUEST, STRUCTS, PLATFORM, DATA)
+
+Decided alone, the owner being away. Community mh2-decomp not opened. Area notes stay in docs/mh2/data.md, structs.md, quest.md, platform.md;
+docs/mh2.md and docs/mh2_port.md section 6 now say what of the plan is done.
+
+- Result: 2,290 functions, 370,408 bytes, 6.66% (tools/mh2_progress.py). Branches: QUEST 2,272 (6.63%), STRUCTS 2,280 (6.39%), PLATFORM and DATA
+  2,268. 2,290 is the union of the four sets (a scratch script compared each worktree's config/mh2/c_files.txt by function): nothing lost.
+- On the way: STRUCTS' PLW had moved wpn_ammo to 0x30C (two probe votes), which dropped two pl_ammo parts; MH2 reads it at 0x35E, now pinned in
+  config/mh2/struct_map.txt. QUEST's `union EMT` in include/em_core_g_mh2.h is gone (STRUCTS' EMW has those u16 fields; bytes identical); the one in
+  em_dmg_sys_nm.c stays (EMW + 0x3D0 is still padding). em_cmd_ck.c calls its handlers by DATA's opcode names (em_cmd_op1F, 37, 73, 76 declared).
+  The PC host's User_data reads (rt_dbg, rt_player, rt_flow) go through UDMO. data_map.txt: DATA's, which already pins STRUCTS' bases through
+  config/mh2/pc_names.txt (quest_w 0x5D8260, User_data 0x5D4A60, net_common_w 0x5D46A0, MemcardWork 0x6AF100); pc_names.txt is the union.
+- DATA's pipeline (mh2_map.py, datamap --fresh, pairmore, datamap, pairmore, datamap) rerun on the merged C, three times: identical md5s each time,
+  so kept. It moved 8 data names (c names from the new matched C: PitMenu, User_data, quest_w now `c:9.0`) and added one function pair. Symbols unchanged.
+- Verified: build/mh2/carry emptied, build/mh2/src/mh2/parts deleted, register, full tools/mh2_rebuild.sh, tools/mh2_check.py 13 of 13 identical.
+  MH1 by the steps of tools/rebuild.sh at -j 2: 5 OK; G the same: 7 OK. tools/build_pc.sh, build_pc_mhg.sh, build_pc_mh2.sh build.
+  `python3 tools/test_all_quests.py 138 10`: both PASS. Hidden `--boot --shot` of mhview_2 at 5 s: MH2 title, PRESS START BUTTON and the copyright, looked at.
+  Hidden `--quest 1014` with RT_QUEST_STAGE=1: stage 120 with Rathian (kind 1), four kind-66 monsters and the hunter beside her, looked at.
+  full_check.sh not run (the coordinator's).
+- Noticed: the first register after emptying the cache said 17 files "do not compile" (4 on the later runs of the same tree); cause not found, so check
+  that count. func_fix.txt names game 0x72B240 twice (opcode 0x2C em_cmd_myemtype_sel, and by file order game_func_005885E0); the later wins.
+- Nothing of MH2's game code has run: proof is bytes, plus drawing checks on the PC.
+
+Next: docs/mh2_port.md section 6, the part after "What is left".

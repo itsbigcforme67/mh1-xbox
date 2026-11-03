@@ -11,9 +11,11 @@ during this work: nothing here comes from it. No PC port yet. Numbers are from t
   table, directly or through G. The rest stay `func_ADDRESS`.
 - MH2 uses the same compiler as MH1 and G. The one difference: it was built with small data off, so it
   never uses the gp register. Add `-sdatathreshold 0` and MH1's C compiles to MH2's bytes.
-- 2,268 functions (353,996 bytes, 6.37% of the code) are matching C: 1,223 C objects built from MH1's and G's
-  sources, which now hold MH2's differences behind macros, plus 8 small MH2-only functions written fresh from our
-  disassembly (`tools/mh2_progress.py`).
+- 2,290 functions (370,408 bytes, 6.66% of the code) are matching C: 1,230 C objects built from MH1's and G's
+  sources, which now hold MH2's differences behind macros, plus 11 files written fresh from our disassembly, among them
+  the monster command interpreter em_cmd_ck and next_cmd_search (`tools/mh2_progress.py`, merge of 3 Nov 2026).
+- Area notes of the agents of 2 Nov: docs/mh2/data.md (data names, pairs, call graph), docs/mh2/structs.md (layouts),
+  docs/mh2/quest.md (quest core), docs/mh2/platform.md (PC host, formats). docs/mh2_port.md is the port plan.
 
 ## 1. Layout
 
@@ -137,17 +139,17 @@ the code fits a mid-2003 compiler, not the newer 3.0.1 line. `-O3` was only trie
 
 | module | functions | matched | code bytes | matched bytes | % |
 |---|---|---|---|---|---|
-| game | 4580 | 514 | 1963064 | 110452 | 5.63% |
+| game | 4580 | 523 | 1963064 | 125364 | 6.39% |
 | gm_sub | 128 | 4 | 64152 | 524 | 0.82% |
 | lbguild | 1 | 0 | 4 | 0 | 0.00% |
-| lobby | 3819 | 541 | 1205876 | 67388 | 5.59% |
+| lobby | 3819 | 543 | 1205876 | 67484 | 5.60% |
 | main | 3188 | 131 | 602132 | 24812 | 4.12% |
 | nethttp | 1329 | 8 | 345532 | 1332 | 0.39% |
 | plsel | 179 | 11 | 88364 | 428 | 0.48% |
 | select | 251 | 5 | 99636 | 812 | 0.81% |
-| sub_main | 3437 | 1006 | 1154632 | 141220 | 12.23% |
+| sub_main | 3437 | 1017 | 1154632 | 142624 | 12.35% |
 | yn | 122 | 48 | 36468 | 7028 | 19.27% |
-| **all** | **17034** | **2268** | **5559860** | **353996** | **6.37%** |
+| **all** | **17034** | **2290** | **5559860** | **370408** | **6.66%** |
 
 The totals include Sony's libraries and middleware (CRI, OpenSSL), which have no marker yet, so the share of Capcom's
 game code is a little different.
@@ -159,12 +161,12 @@ is checked against what the original instruction holds. Results of the last run:
 
 | what | count |
 |---|---|
-| whole files that match | 704 |
-| parts of other files | 519 |
-| data slots | 36 |
-| code not found anywhere | 1,361 files |
+| whole files that match | 710 |
+| parts of other files | 520 |
+| data slots | 38 (with the hand ones) |
+| code not found anywhere | 1,358 files |
 | several sites and no name to choose | 118 files |
-| a name needs two addresses | 17 files, 51 single functions: one global reached at two offsets that do not fit |
+| a name needs two addresses | 14 files, 44 single functions: one global reached at two offsets that do not fit |
 | overlaps a bigger match | 12 |
 | do not compile | 4 |
 
@@ -192,9 +194,13 @@ is checked against what the original instruction holds. Results of the last run:
   (config/mh2/c_symfix.txt, 145 lines, `objcopy --redefine-sym` through c_renames.txt). Mostly these are map names that
   are wrong or that exist twice, so treat that list as a to-do for the name map.
 - Files with `.inc` raw functions are not carried: those hold original bytes, not C.
-- **Written for MH2 (8):** src/mh2/plsel/p00D*.c, plsel_func_00D61710 and friends, from our own disassembly
-  (`tools/mh2_own.py -v` shows a side-by-side). Registered by hand at the end of config/mh2/c_files.txt, globals in
-  config/mh2/hand_names.txt. Struct and global names there are placeholders; what these functions do in the game is not known.
+- **Written for MH2 (11 files):** src/mh2/plsel/p00D*.c, plsel_func_00D61710 and friends; src/mh2/game: next_cmd_search, cmd_target
+  (cmd_target_kind_set and target_kind_set, C in include/em_core_g_mh2.h, with a jump-table slot) and em_cmd_ck (docs/mh2/quest.md).
+  From our own disassembly (`tools/mh2_own.py -v` shows a side-by-side; it takes map names too). Registered by hand at the end of
+  config/mh2/c_files.txt, globals in config/mh2/hand_names.txt; both blocks survive `register`. config/mh2/hand_parts.txt keeps only
+  named functions of a hand file whose same-file static must be compiled for the right registers (next_cmd_search). Near-matches,
+  not in the MH2 build: src/mh2/game/em_dmg_sys_nm.c (Em_Dmg_Sys, linked by the PC through em_taisei.c), src/mh2/sub_main/p003A2E30_nm.c
+  and p003A9230_nm.c.
 - Every one is checked by the search above, by the full link (OK per module), and by tools/mh2_check.py.
 
 **Files that differ (docs/survey/mh2_differ.csv, counts only).** 750 files with at least one named twin, sorted by how many
@@ -217,6 +223,9 @@ listed. This list ranks only the MH1 form of many files, so it needs a G-form co
 | `SKO(o)` | include/sk_g.h | soft keyboard work offsets |
 | `PLW_AT(i)` | include/version.h | one player by index |
 | browser block | include/mh2_lb.h | see the facts below |
+| QUEST_W and four more | include/mh2_layouts.h (generated) | `tools/mh2_structs.py layouts` from config/mh2/layouts.txt |
+| `QWO`, `UDMO`, `NCO`, `LBM`, `PMO` | include/mh2_lay_ofs.h (generated), types.h | MH1 offset (UDMO: also G's) into quest_w, User_data, net_common_w, lb_sys, PitMenu |
+| `qno_t` | include/types.h | quest number in copies of quest_w's head: u16 in MH2 |
 
 **One rule follows, and the merge hit it three times:** `CNO`, `SKO`, `GWX` and `MH2_OFS` already map an MH1 offset for MH2. Inside them write the MH1
 offset alone. `CNO(MH2V(a, b))` or `SKO(MH2V(a, b))` applies the move twice. Macros that call `MH2_OFS` on a parameter (`EM_FIELD`, `M2C_FIELD`, `EMF`,
@@ -244,11 +253,24 @@ not settled (MH1 offsets: EMW 50C, 616, 617, 74C, 762, 765, 766, 824, 9ED, 9EE, 
 With no votes the run-read value was tried in config/mh2/struct_map.txt and kept: the count rose by 5 with these, the game_w fix and the macros in the same run, so the gain is not proven for each line. PLW 601, 603, 714, 739, 73A, 800-818; EMW 600, 6E0, 6E2,
 7F0-7F2, 824, 828-82B, 9C8. Only x824 and x828 on are shown by code (em_cmd_sub_contents, `sb v1,1910(a0)`). EMW 734 and 73C stayed with the probe's fill, because the run-read 0x680 lands on the stage number.
 
+**Merge of 3 Nov 2026 (QUEST, STRUCTS, PLATFORM, DATA).** Result 2,290 functions, the union of the four branches' sets (QUEST 2,272,
+STRUCTS 2,280, PLATFORM and DATA 2,268): nothing lost. Two parts of pl_ammo (Pl_scope_ck at sub_main 0x3B54C0, 0x3B5590, 48 bytes each)
+were lost on STRUCTS' branch because the probe's votes moved PLW wpn_ammo to 0x30C; MH2 reads it at 0x35E (lhu 862), so
+config/mh2/struct_map.txt pins it there. QUEST's temporary `union EMT` in include/em_core_g_mh2.h is gone: STRUCTS' EMW has x828 0x77A,
+x829 0x77C, x882 0x998, x883 0x99A, x92F 0x986, x95A 0x98C (u16) and cmd_idx 0x774 (byte), and the bytes stay identical. The EMT in
+src/mh2/game/em_dmg_sys_nm.c stays: it reaches EMW + 0x3D0, a pointer to a table with a function at +0x18, which EMW still has as
+padding. em_cmd_ck.c calls its handlers by DATA's opcode names. Facts proven by memsets (docs/mh2/structs.md): quest_w 0x5D8260 (0x560),
+User_data 0x5D4A60 (0x37F8), net_common_w 0x5D46A0 (0xE0), PitMenu 0x5BB080, game_w 0x6ADCB0 (0x2BC, so 0x2C0 above was wrong),
+system_w 0x6ADF90 (0xF4), MemcardWork 0x6AF100 (0xF4), lb_sys 0x8BDC10 (0xF68).
+`mh2_carry.py register` once reported 17 files "do not compile" right after the carry cache was emptied (4 on the reruns, same tree);
+the cause was not found (heat at 95 C, other agents compiling). Check that count after a register and rerun if it jumps.
+
 ## 6. Next
 
 Remaining work, by reason:
 
-1. Layouts not done: net_common_w, PitMenu, CameraWork, User_data, ConnWork, MemcardWork, quest_w.
+1. Layouts not done: CameraWork (restructured, docs/mh2/structs.md), ConnWork, MemcardWork, system_w. quest_w, User_data,
+   net_common_w, lb_sys and PitMenu are done (3 Nov).
 2. The third CnetSys_w send layout (cnlbs*).
 3. Array scale changes: an index multiplied by a new element size.
 4. False twins from the name map, and tiny sites with the wrong name.
@@ -258,7 +280,12 @@ Remaining work, by reason:
 8. mh2_differ.csv needs a G-form column.
 9. Parts that left strings in the asm: when the rest of such a file matches, its data gets a slot by itself on the next register.
 10. Type main's data block and name the Sony and CRI code properly.
-11. PC port: started 2 Nov 2026, reaches the title, on G's form of the C. docs/mh2_port.md.
+11. PC port: started 2 Nov 2026, reaches the title, on G's form of the C; `--quest` draws a quest's stage, monsters and hunter
+    (no game code runs). docs/mh2_port.md.
+12. Quest core (docs/mh2/quest.md): the near-matches Em_Dmg_Sys, 0x3A2E30, 0x3A9230; em01_senkai_sub (rewritten); game 0x80D270, 0x75FBF0.
+13. Names: the 584 tables the PC cannot place yet, 114 of them on the one-monster quest path (docs/mh2/data.md). func_fix.txt has two
+    lines for game 0x72B240 (opcode 0x2C em_cmd_myemtype_sel, and file order game_func_005885E0); the later wins, so em_cmd_ck.c calls
+    game_func_005885E0. One of them is wrong.
 
 ## 7. Not done or not tested
 

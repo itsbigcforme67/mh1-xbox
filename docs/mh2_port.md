@@ -21,7 +21,8 @@ throwaway reading aids. Guesses are marked.
 ## 1. What was built
 
     tools/build_pc_mh2.sh                  # build/mh2/pc/mhview_2, in its own tree build/mh2/pctree
-    build/mh2/pc/mhview_2 disc/mh2 --boot --shot build/mh2/x/s.png --time 5     # always hidden, as G. Only --boot works
+    build/mh2/pc/mhview_2 disc/mh2 --boot --shot build/mh2/x/s.png --time 5     # always hidden, as G
+    build/mh2/pc/mhview_2 disc/mh2 --quest 1014 --shot x.png    # drawing check: stage, monsters, hunter (docs/mh2/platform.md)
 
 | piece | what | status |
 |---|---|---|
@@ -47,7 +48,8 @@ where MH2 has no name the address stays and crashes when used. There are 371 C f
 are G addresses that pc_abs reads as MH1 ones. How many of those are wrong is unknown.
 
 `rt_ver_mhg()` true on MH2 is a stand-in decision: it takes G's field offsets in rt_player, rt_village and others (User_data 0xC1C, 10 players,
-225 weapon models), which MH2 probably changed. Every use needs a look before town.
+225 weapon models), which MH2 probably changed. Every use needs a look before town. User_data: done on 3 Nov for rt_dbg, rt_player
+and rt_flow (UDMO maps G's offsets to MH2's: worn equipment 0x2090, pouch 0x2040, gold 0x2984; armour one byte per 12); not run in a game.
 
 ## 3. Data formats against G
 
@@ -117,13 +119,30 @@ The title tasks' large "no counterpart" share looks like Sony and CRI library co
 
 **Mode menu and hunter (gm_sub, plsel).** MH2 has new tasks where G has Select_task and Edit_task; 98 of gm_sub's 128 functions and 165 of plsel's 179 have no name. The runtime needs gm_sub and plsel loaded at 0x8FAE00 and 0xD60200: today there are only game, lobby, select. **The overlay table is the first runtime design change** (rt_mem.c `rt_addr`, rt_set_*, LOAD groups in tools/mh2_pcmeta.py; which load together is still an assumption from addresses).
 
-**Save data.** User_data and MemcardWork layouts are not done (docs/mh2.md section 6). A hunter cannot exist without it.
+**Save data.** User_data is laid out (3 Nov, docs/mh2/structs.md); MemcardWork is not (base 0x6AF100, 0xF4 bytes). A hunter cannot exist without both.
 
 **Town.** Local_main 0x7B97B0 (edited, 0.82). lb_sys, CW and Clear_lobby_ram were the G blockers and will be again. Stage files with a third entry; the village is split in cocot/town models with lbcom_* motions.
 
-**Quest.** quest_w layout, the .mib 0x74 header, em_cmd.afs, then the monster and player tables. PLW and EMW exist (generated, with guesses listed in docs/mh2.md). `enemy_mv` and `em_move` moved to gm_sub, so monster code now spans two overlays. The host's hunter and monster models are G's; MH2 armor adds new parts.
+**Quest.** quest_w is laid out (3 Nov); the .mib 0x74 header is partly read (docs/mh2/platform.md); em_cmd.afs, then the monster and player tables. PLW and EMW exist (generated, with guesses listed in docs/mh2.md). `enemy_mv` and `em_move` moved to gm_sub, so monster code now spans two overlays. The host's hunter and monster models are G's; MH2 armor adds new parts.
 
 ## 6. Ranked work for the decompile agents (for the port, not the percentage)
+
+**Done by the four agents of 2 Nov 2026, merged 3 Nov** (notes: docs/mh2/data.md, structs.md, quest.md, platform.md):
+- Item 1, data names: tools/mh2_datamap.py has the pointer, content, chunk, layout and `c` methods with a confidence column; 7,084 names
+  placed high or medium. Tables the PC build cannot place: 584 of 1,340 (was 933). Item 8, the pointer call graph: tools/mh2_callgraph.py,
+  docs/survey/mh2_reach.csv. The game task and the quest are one graph once game and gm_sub are loaded.
+- Item 2, layouts: quest_w, User_data, net_common_w, lb_sys and PitMenu laid out (config/mh2/layouts.txt, include/mh2_layouts.h), with
+  QWO, UDMO, NCO, LBM, PMO for raw offsets (about 1,000 uses). Bases and sizes proven by memsets in config/mh2/pc_names.txt (also game_w,
+  system_w, shell_work, MemcardWork, CameraWork). Still open: CameraWork (MH2 restructured it), MemcardWork, system_w, ConnWork, CW.
+- Item 9, quest core: next_cmd_search, cmd_target_kind_set, target_kind_set and em_cmd_ck byte-matched; Em_Dmg_Sys a near-match the PC
+  links. em_cmd's handlers are named by opcode (config/mh2/func_fix.txt): no opcode moved. Item 7: 0x3A2E30 (the quest's state machine)
+  and 0x3A9230 (a quest event script, new in MH2) are near-matches, not linked.
+- Item 10, platform: gm_sub and plsel load as extra images; `--model` and `--quest` draw MH2 models, stages, the quest's monsters from the
+  .mib and a hunter; random-start stages; install from the disc image with the AFS00-02 streams; ADX and MOMO v3 sound packs decode.
+  None of this runs game code: they are drawing and format checks. The host's User_data reads go through UDMO.
+
+What is left of the list, in order for the `--quest` hunt: the .mib header beyond what docs/mh2/platform.md has, the 114 missing tables
+on the one-monster quest path (docs/mh2/data.md), CameraWork, em01_senkai_sub and the rest of item 9, then a game task that runs.
 
 1. **Data names first.** 933 of 1,340 tables are zeros, and it is cheap. Extend tools/mh2_datamap.py the way tools/mhg_datamap.py goes (pointer words in and out, content, layout), add a confidence column, and check its 930 single-vote names. Unlocks every stage.
 2. **Struct layouts the runtime touches:** User_data, quest_w, MemcardWork, system_w, CameraWork, PitMenu, lb_sys and CW. docs/mh2.md section 6 item 1 lists most. Each one fixes C already linked.
