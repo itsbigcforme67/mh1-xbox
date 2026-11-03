@@ -710,6 +710,8 @@ void *Em_direct_set(void *qv)
     B8(0x96F) = (u8)*(s16 *)(q + 0x2C);
     ts = rt_addr(0x8BEE60 + KIND, 1);
     H16(0x680) = ts && *ts ? *(u16 *)(q + 8) : G_STAGE;
+    if (getenv("RT_MH2_EM_HERE") && KIND == atoi(getenv("RT_MH2_EM_HERE")))   /* test aid: that kind on the hunter's stage, by his start */
+        H16(0x680) = G_STAGE;
     W32(0x7F0) = *(s32 *)(q + 0xC);
     W32(0x7EC) = *(s32 *)(q + 0x10);
     W32(0x7F4) = *(s32 *)(q + 0x14);
@@ -721,6 +723,10 @@ void *Em_direct_set(void *qv)
     W32(0xA4) = *(s32 *)(q + 0x1C);
     H16(0x984) = *(u16 *)(q + 0x30);
     S8(0x98A) = *(s8 *)(q + 0x36);
+    if (getenv("RT_MH2_EM_HERE") && KIND == atoi(getenv("RT_MH2_EM_HERE"))) {
+        F32(0xAC) = *(f32 *)(player_work + 0xAC) + 1500.0f;
+        F32(0xB4) = *(f32 *)(player_work + 0xB4) + 1500.0f;
+    }
     q[0x34] = (u8)H16(0xC);
     enemy_mv(em);
     {   /* gm_sub 0x9043C0: the scale by the size in percent */
