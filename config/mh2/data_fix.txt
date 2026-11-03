@@ -1,0 +1,17 @@
+# Data name corrections that outrank tools/mh2_map.py (tools/mh2_funcfix.py writes them into config/mh2/symbols; tools/mh2_datamap.py
+# then takes them as known). module 0xADDR name [0xSIZE] # evidence. A name given here leaves any other address of its module.
+# MH2 keeps MH1's resident heap pointers (MH1 0x38A20C stage_hit_area_w .. 0x38A244 app_mem_top) in reverse order: stage_hit_area_w
+# 0x6AE01C down to app_mem_top 0x6ADFE4 (data map). In that order pl_area_top sits between mdlw_heap_area and stage_model, and
+# data_load_ptr between arc_ptr and app_mem_top. Code agrees: carried load_lf03 (byte-matched) reads pl_area_top at 0x6AE004
+# (c_symfix.txt had to rename it), and load_stage_hit (sub_main 0x3289C0) loads the stage hit file to 0x6ADFE8, where G's reads
+# data_load_ptr. The map had pl_area_top at 0x6ADFE8 and the data map data_load_ptr at 0x6AE004: swapped.
+sub_main 0x006AE004 pl_area_top 0x4
+sub_main 0x006ADFE8 data_load_ptr 0x4
+# Em_Taisei_Set (game 0x7077F0) loads five per-kind pointer tables (35 kinds) and stores each one's first s16 in the EMW in MH1's
+# order (MH1 em_master: sleep2, poison, mahi, sleep): 0x8BDB50 -> sleep2_tol 0x716, 0x8BCCB0 -> poison_tol 0x704, 0x8BD180 ->
+# mahi_tol 0x70E, 0x8BDA00 -> sleep_tol 0x6FC; the fifth, 0x8BD550 -> EMW 0x7D4 (MH1 has no such table: no name).
+# The data map had sleep2 at 0x8BCCB0 and sleep at 0x8BD550.
+game 0x008BDB50 em_sleep2_data_tbl 0x8C
+game 0x008BCCB0 em_poison_data_tbl 0x8C
+game 0x008BD180 em_mahi_data_tbl 0x8C
+game 0x008BDA00 em_sleep_data_tbl 0x8C

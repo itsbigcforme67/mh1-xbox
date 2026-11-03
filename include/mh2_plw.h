@@ -53,17 +53,17 @@ typedef struct PLW {
     s32   ang[3]; /* 0x0A0, MH1 0x0A0: votes 151 */
     f32   pos[3]; /* 0x0AC, MH1 0x0AC: votes 420 */
     f32   scl[3]; /* 0x0B8, MH1 0x0B8: votes 10 */
-    u8 _pad0C4[0x20];
+    u8 _pad0C4[0xC];
+    void *part[2]; /* 0x0D0, MH1 0x110: hand (32 words: parts_init, sub_main 0x337D30, stores parts_work blocks from 0xD0) */
+    u8 _pad0D8[0xC];
     s32   work124; /* 0x0E4, MH1 0x124: votes 2 */
     u8 _pad0E8[0x8];
     s32   work130; /* 0x0F0, MH1 0x130: votes 2 */
-    u8 _pad0F4[0x1C];
-    void *part[2]; /* 0x110, MH1 0x110: no votes, as the field before */
-    u8 _pad118[0x8];
+    u8 _pad0F4[0x14];
+    u8 *mdl148; /* 0x108, MH1 0x148: hand (part[14], as part) */
+    u8 _pad10C[0x14];
     s32   work160; /* 0x120, MH1 0x160: votes 2 */
-    u8 _pad124[0x24];
-    u8 *mdl148; /* 0x148, MH1 0x148: no votes, as the field before */
-    u8 _pad14C[0x8];
+    u8 _pad124[0x30];
     s32   work194; /* 0x154, MH1 0x194: votes 218 */
     s32   chr_no0; /* 0x158, MH1 0x198: votes 10 */
     f32   work19C; /* 0x15C, MH1 0x19C: votes 8 */

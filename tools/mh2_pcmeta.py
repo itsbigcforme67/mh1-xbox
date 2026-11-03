@@ -5,7 +5,8 @@ docs/mh2_port.md). SLPM_662.80 is stripped and has no relocations, so this makes
   build/mh2/pc/symbols/{main,game,lobby,select,yn}.txt   config/mh2/symbols in the MH1 format, with a size on every data
       name (MH1's size of that name, cut at the next MH2 symbol), sub_main folded into main (resident), nethttp and
       lbguild into lobby, gm_sub into game. config/mh2/pc_names.txt adds hand-found names (`module name 0xADDR [0xSIZE]  # how`).
-      config/mh2/data_map.txt (tools/mh2_datamap.py) adds the data names found through aligned code.
+      config/mh2/data_map.txt (tools/mh2_datamap.py) adds the data names found through aligned code; config/mh2/func_pairs.txt
+      names placeholder functions (fold_pairs: score >= 0.9, unique), so function pointers in data reach the host's function.
   build/mh2/pc/ptrs.txt   pointer words of the data, by a scan (no relocations to carry over; rule as mhg_pcmeta's, simpler:
       a word counts when it is a known symbol, or points into a module's data and is word aligned or starts a string).
       Not checked on MH2 against anything: there is no MH2 relocation list.
@@ -79,6 +80,37 @@ def sizes(syms, end, m1):
     return out
 
 
+PLACEHOLDER = re.compile(r"^\w*func_[0-9A-Fa-f]{8}$")
+
+
+def fold_pairs(per, floor=0.9):
+    """config/mh2/func_pairs.txt (tools/mh2_pairmore.py) names the reference function of MH2 functions the map left as
+    placeholders (game_func_...). In the PC's symbol view only, such a placeholder takes the pair's name when the score is
+    >= floor, no other pair of that score gives the same name, and no MH2 symbol has the name already: a function pointer
+    in MH2's data then imports as the host's function of that name instead of NULL. config/mh2/symbols is left alone."""
+    p = P("config/mh2/func_pairs.txt")
+    if not os.path.exists(p):
+        return 0
+    rows = [l.split() for l in open(p) if l.strip() and not l.startswith("#")]
+    rows = [r for r in rows if len(r) >= 8 and float(r[7]) >= floor]
+    count = {}
+    for r in rows:
+        count[r[2]] = count.get(r[2], 0) + 1
+    taken = set(e[2] for m in per for e in per[m])
+    done = 0
+    for r in rows:
+        m, a, n = r[0], int(r[1], 16), r[2]
+        if m not in per or count[n] > 1 or n in taken:
+            continue
+        for i, e in enumerate(per[m]):
+            if e[0] == a and e[3] and PLACEHOLDER.match(e[2]):
+                per[m][i] = (e[0], e[1], n, True)
+                taken.add(n)
+                done += 1
+                break
+    return done
+
+
 def main():
     mods = {m: Mod(m) for m in ("main", "sub_main", "game", "gm_sub", "lobby", "nethttp", "lbguild", "select", "yn")}
     per = {m: read_syms(P("config/mh2/symbols/%s.txt" % m)) for m in mods}
@@ -99,6 +131,7 @@ def main():
             if len(f) >= 3:
                 sz = int(f[3], 16) if len(f) > 3 else 0
                 per[f[0]] = sorted([e for e in per[f[0]] if e[2] != f[1]] + [(int(f[2], 16), sz, f[1], False)])
+    folded = fold_pairs(per)
     m1 = {}
     for fn in ("main", "game", "lobby", "select", "yn"):
         for a, sz, n, f in read_syms(P("config/symbols/%s.txt" % fn)):
@@ -151,8 +184,8 @@ def main():
                 if n in names and not f:
                     o.write("%X %X\n" % (a, names[n]))
                     rows += 1
-    print("mh2_pcmeta: %s symbols, %d pointer words, %d MH1 data addresses mapped" % (
-        " ".join("%s %d" % (v, len(view[v])) for v in view), total, rows))
+    print("mh2_pcmeta: %s symbols (%d placeholders named from func_pairs.txt), %d pointer words, %d MH1 data addresses mapped" % (
+        " ".join("%s %d" % (v, len(view[v])) for v in view), folded, total, rows))
 
 
 if __name__ == "__main__":

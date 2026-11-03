@@ -51,6 +51,39 @@ typedef struct EFT01_BONE {
 } EFT01_BONE;
 
 /* The owner (PLW or EMW), fields used here. */
+#ifdef VERSION_MH2
+/* MH2's places, from its eft01_m / eft01_t (sub_main 0x3C7D20, 0x3C8400; one function for PLW and EMW): the part pointers moved
+ * down 0x40 as in PLW (0x110 -> 0xD0), the rest as include/mh2_plw.h and mh2_emw.h place them (alpha: both headers, not seen here). */
+typedef struct EFT01_CHR {
+    u8 be_flag;         /* 0x000 */
+    u8 x01;             /* 0x001 */
+    u8 kind;            /* 0x002 */
+    u8 _pad003[0x0C - 0x03];
+    u16 id;             /* 0x00C */
+    u8 _pad00E[2];
+    u8 x10;             /* 0x010 */
+    u8 _pad011[0xA4 - 0x11];
+    u16 ang;            /* 0x0A4 */
+    u8 _pad0A6[0xB8 - 0xA6];
+    f32 scale[3];       /* 0x0B8 */
+    u8 _pad0C4[0xE4 - 0xC4];
+    EFT01_BONE *foot0;  /* 0x0E4 (MH1 0x124) */
+    u8 _padE8[0xF0 - 0xE8];
+    EFT01_BONE *foot1;  /* 0x0F0 (MH1 0x130) */
+    u8 _padF4[0xF8 - 0xF4];
+    PL_HAND *x138;      /* 0x0F8 (MH1 0x138) */
+    u8 _padFC[0x574 - 0xFC];
+    f32 x5AC;           /* 0x574 (MH1 0x5AC) */
+    u8 _pad578[0x680 - 0x578];
+    u16 stg;            /* 0x680 (MH1 0x736, lhu) */
+    u8 _pad682[0x6AF - 0x682];
+    u8 x763;            /* 0x6AF (MH1 0x763) */
+    u8 _pad6B0[0x6E4 - 0x6B0];
+    f32 alpha;          /* 0x6E4 (MH1 0x798) */
+    u8 _pad6E8[0x722 - 0x6E8];
+    u8 x7D6;            /* 0x722 (MH1 0x7D6) */
+} EFT01_CHR;
+#else
 typedef struct EFT01_CHR {
     u8 be_flag;         /* 0x000 */
     u8 x01;             /* 0x001 */
@@ -80,6 +113,7 @@ typedef struct EFT01_CHR {
     u8 _pad79C[0x7D6 - 0x79C];
     u8 x7D6;            /* 0x7D6 non-zero: no shadow */
 } EFT01_CHR;
+#endif
 
 /* Work area for kind 2. */
 typedef struct EFT01_WORK {

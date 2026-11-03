@@ -39,3 +39,15 @@ PLW 80C 760
 PLW 810 764
 PLW 814 768
 PLW 818 76C
+# WALK (3 Nov): MH1's 32 part pointers PLW 0x110..0x18F are at 0xD0..0x14F in MH2 (parts_init, sub_main 0x337D30: sw of each parts_work
+# block from PLW+0xD0; its flag bytes go to 0x4C8+i, MH1 0x4E6+i). The named words inside that array move with it (work124 0xE4,
+# work130 0xF0, work160 0x120 had votes). Hand-applied to include/mh2_plw.h and mh2_ofs.h too (build/mh2/probe has no votes to regenerate).
+PLW 110 D0
+PLW 148 108
+# EMW too: eft01_t (sub_main 0x3C8400), one function for hunter and monster shadows, reads the foot part pointers at 0xE4 / 0xF0
+# (MH1 0x124 / 0x130). Hand-applied to include/mh2_ofs.h.
+EMW 110 D0
+# PLW 0x4E4 (s16, cleared by pl_create_model) and the 32 part flag bytes 0x4E6.. (parts_init): MH2 0x4C6 and 0x4C8..0x4E7
+# (sub_main 0x338190 pl_create_model, 0x337D30 parts_init). Hand-applied to include/mh2_ofs.h.
+PLW 4E4 4C6
+PLW 4E6 4C8

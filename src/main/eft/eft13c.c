@@ -34,12 +34,22 @@ typedef struct EFT13_CHR {
     s32 ang[3];         /* 0x0A0 */
     f32 pos[3];         /* 0x0AC */
     f32 scale[3];       /* 0x0B8 */
+#ifdef VERSION_MH2
+    /* MH2: eft13_set_pos (sub_main) reads char0 0x29C and 0x574; eft13_set_sub 0x861 */
+    u8 _pad0C4[0x29C - 0xC4];
+    u16 char0;          /* 0x29C (MH1 0x2DC) */
+    u8 _pad29E[0x574 - 0x29E];
+    f32 x5AC;           /* 0x574 (MH1 0x5AC) */
+    u8 _pad578[0x861 - 0x578];
+    u8 x909;            /* 0x861 (MH1 0x909) */
+#else
     u8 _pad0C4[0x2DC - 0xC4];
     u16 char0;          /* 0x2DC */
     u8 _pad2DE[0x5AC - 0x2DE];
     f32 x5AC;           /* 0x5AC ground height */
     u8 _pad5B0[0x909 - 0x5B0];
     u8 x909;            /* 0x909 */
+#endif
 } EFT13_CHR;
 
 /* One piece (0x30 bytes) of the work area. */

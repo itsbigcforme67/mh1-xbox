@@ -49,6 +49,38 @@ typedef struct FRMDL {
 } FRMDL;
 
 /* The parts of PLW/EMW this file uses. */
+#ifdef VERSION_MH2
+/* MH2's places, read from its frame_init / frame_move (sub_main 0x2E5190, 0x2E5780: one function for PLW and EMW, so both
+ * structs agree); the same as include/mh2_plw.h. */
+typedef struct FRW {
+    u8 be_flag;     /* 0x000 */
+    u8 _pad001[0xC - 0x1];
+    u16 id;         /* 0x00C */
+    u8 _pad00E[0x10 - 0xE];
+    u8 x10;         /* 0x010 */
+    u8 _pad011[0x1E - 0x11];
+    u8 x1E;         /* 0x01E */
+    u8 x1F;         /* 0x01F */
+    u8 _pad020[0xA0 - 0x20];
+    s32 ang[3];     /* 0x0A0 */
+    f32 pos[3];     /* 0x0AC */
+    f32 scl[3];     /* 0x0B8 */
+    u8 _pad0C4[0x154 - 0xC4];
+    FRMT mt[4];     /* 0x154 (MH1 0x194) */
+    u8 _pad294[0x29C - 0x294];
+    u16 chr[4];     /* 0x29C (MH1 0x2DC) */
+    u8 _pad2A4[0x2C0 - 0x2A4];
+    u16 layers;     /* 0x2C0 (MH1 0x300) */
+    u8 _pad2C2[0x30F - 0x2C2];
+    u8 mdl_no;      /* 0x30F (MH1 0x34F) */
+    u8 _pad310[0x4EC - 0x310];
+    FRMDL *mdl;     /* 0x4EC (MH1 0x50C) */
+    u8 _pad4F0[0x66C - 0x4F0];
+    u8 sub_on[4];   /* 0x66C (MH1 0x720) */
+    u16 sub_chr[4]; /* 0x670 (MH1 0x724) */
+    u16 sub_rate[4];/* 0x678 (MH1 0x72C) */
+} FRW;
+#else
 typedef struct FRW {
     u8 be_flag;     /* 0x000 */
     u8 _pad001[0xC - 0x1];
@@ -77,6 +109,7 @@ typedef struct FRW {
     u16 sub_chr[4]; /* 0x724 its motion id */
     u16 sub_rate[4];/* 0x72C its weight, 0..100 */
 } FRW;
+#endif
 
 extern u32 motion_set_handle_tbl[];
 extern s32 com_mot_han_ofs[];

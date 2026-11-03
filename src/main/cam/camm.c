@@ -40,8 +40,25 @@ typedef struct CAMDATA {
 
 typedef void (*CAMFN)(CAMW *, CAMS *);
 
+#if defined(VERSION_MH2) && !defined(__MWERKS__)
+/* MH2 PC: MH2 rewrote the camera (CameraWork not laid out yet; its CameraMove runs 6 slots from sub_main 0x41CD90 / 0x41CDB0,
+ * where G has 5). Until that is done the PC runs G's camera on G's CAMW, so its slot functions are G's own, not MH2's tables. */
+void cam_init_sub_std(CAMW *, CAMS *);
+void cam_init_sub_stg(CAMW *, CAMS *);
+void cam_init_sub_pchngr(CAMW *, CAMS *);
+void cam_init_sub_playerEX(CAMW *, CAMS *);
+void cam_init_sub_demo(CAMW *, CAMS *);
+void cam_sub_std(CAMW *, CAMS *);
+void cam_sub_stg(CAMW *, CAMS *);
+void cam_sub_pchngr(CAMW *, CAMS *);
+void cam_sub_playerEX(CAMW *, CAMS *);
+void cam_sub_demo(CAMW *, CAMS *);
+static CAMFN cam_init_sub_jmp[5] = { cam_init_sub_std, cam_init_sub_stg, cam_init_sub_pchngr, cam_init_sub_playerEX, cam_init_sub_demo };
+static CAMFN cam_sub_jmp[5] = { cam_sub_std, cam_sub_stg, cam_sub_pchngr, cam_sub_playerEX, cam_sub_demo };
+#else
 extern CAMFN cam_init_sub_jmp[];
 extern CAMFN cam_sub_jmp[];
+#endif
 extern CAMCNF cam_cnf_chs;
 extern CAMCNFE stage_camera_data_ex;
 extern s16 quake_time_tbl[];

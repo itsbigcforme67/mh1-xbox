@@ -56,6 +56,54 @@ typedef struct WMAT {
 } WMAT;                 /* 0xC */
 
 /* entity (player 0xA00 / monster 0xA10 bytes): the fields HitWallPlayer reads */
+#ifdef VERSION_MH2
+/* MH2's places (PLW 0x970 / EMW 0x9D0 bytes), each read from MH2's own functions of this file: GetGroundHitStatusAreaPl/Em
+ * (sub_main 0x32D7A0, 0x32DD20), GetGroundHitArea(Upper), GetWallHitBitPl/Em (0x328CD0, 0x3294A0), HitWallPlayer 0x330EB0,
+ * GetEyeHitLine 0x32F220. One function serves both structs, so these hold for PLW and EMW. */
+typedef struct HENT {
+    u8 _pad000[2];
+    u8 kind;            /* 0x002 */
+    u8 _pad003[0xC - 3];
+    u16 x0C;            /* 0x00C */
+    u8 _pad00E[0x10 - 0xE];
+    u8 mon;             /* 0x010 */
+    u8 _pad011[0x14 - 0x11];
+    u8 x14;             /* 0x014 */
+    u8 x15;             /* 0x015 */
+    u8 _pad016[0xA4 - 0x16];
+    s32 ang_y;          /* 0x0A4 */
+    u8 _pad0A8[4];
+    f32 pos[3];         /* 0x0AC */
+    f32 scl[3];         /* 0x0B8 */
+    u8 _pad0C4[0x390 - 0xC4];
+    u8 st;              /* 0x390 (MH1 0x388) */
+    u8 _pad391[0x437 - 0x391];
+    u8 x4D4;            /* 0x437 (MH1 0x4D4) */
+    u8 _pad438[0x564 - 0x438];
+    u8 x59C;            /* 0x564 (MH1 0x59C) */
+    u8 _pad565[3];
+    f32 old[3];         /* 0x568 (MH1 0x5A0) */
+    u8 _pad574[0x584 - 0x574];
+    f32 x600;           /* 0x584 (MH1 0x600) */
+    u8 x604;            /* 0x588 (MH1 0x604) */
+    u8 _pad589[0x660 - 0x589];
+    GATTR gat;          /* 0x660 (MH1 0x70C) */
+    u8 _pad664[0x680 - 0x664];
+    u16 stg;            /* 0x680 (MH1 0x736, a byte there; MH2 reads a halfword) */
+    u8 _pad682[0x698 - 0x682];
+    s32 hitdir;         /* 0x698 (MH1 0x74C) */
+    u8 _pad69C[0x72C - 0x69C];
+    f32 x7E0;           /* 0x72C (MH1 0x7E0) */
+    u8 _pad730[0x734 - 0x730];
+    u8 x7E8;            /* 0x734 (MH1 0x7E8) */
+    u8 gkind;           /* 0x735 (MH1 0x7E9) */
+    u8 _pad736[0x8B1 - 0x736];
+    u8 x95D;            /* 0x8B1 (MH1 0x95D) */
+    u16 wmask;          /* 0x8B2 (MH1 0x95E) */
+    u8 _pad8B4[0x984 - 0x8B4];
+    u16 size_pct;       /* 0x984 (MH1 0xA02), monster only */
+} HENT;
+#else
 typedef struct HENT {
     u8 _pad000[2];
     u8 kind;            /* 0x002 */
@@ -99,6 +147,7 @@ typedef struct HENT {
     u8 _pad960[0xA02 - 0x960];
     u16 size_pct;       /* 0xA02 (G 0x9F8: the PC keeps MH1's monster layout, see EMW in include/em.h) monster size in percent (60-200) */
 } HENT;
+#endif
 
 void UnitNormalVectorCCW(f32 *, f32 *, f32 *, f32 *);
 void PointToPoint(f32 *, f32 *, f32 *);
@@ -2249,7 +2298,11 @@ int GetEyeHitLine(void *ent, f32 *a, f32 *b, f32 *out, int mask) {
                 if (cp != (s32 *)-1 && *cp != -1) {
                     do {
                         pl = (HPOLY *)*cp;
+#ifdef VERSION_MH2
+                        hk = &ground_tbl_add[((HENT *)ent)->stg][pl->kind];     /* MH2: lhu 0x680 */
+#else
                         hk = &ground_tbl_add[EF(ent, u8, 0x736)][pl->kind];
+#endif
                         attr = hk->water;
                         if (EF(ent, u8, 2) == 8 || EF(ent, u8, 2) == 0x22 || EF(ent, u8, 2) == 0xE || EF(ent, u8, 2) == 0x1A) {
                             attr = (attr | hk->x0E) & 0xFF;
@@ -2512,7 +2565,11 @@ void HitWallPlayer(HENT *ent, int keep) {
                 seg[1].z = ent->pos[2] + p[2] * sz;
             }
             if (ent->mon != 0) {
+#ifdef VERSION_MH2
+                mask = ent->wmask;
+#else
                 mask = EF(ent, u16, 0x95E);
+#endif
                 if (ent->st == 2) mask |= 0x200;
                 if (game_w.gate_open != 0) mask |= 0x4000;
                 GetWallHitBitEm(r, &seg[0].x, mask, ent);

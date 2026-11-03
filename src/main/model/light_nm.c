@@ -24,7 +24,11 @@ void light_set(int n) {
 }
 
 typedef struct PLLIGHT {
+#ifdef VERSION_MH2
+    u8 _pad00[0x540];           /* MH2: Pl_light_init / Pl_light_set (sub_main 0x333850, 0x333860) use 0x540 */
+#else
     u8 _pad00[0x578];
+#endif
     s32 col[3];                 /* 0x578 colour override of the three lights (0 = none) */
 } PLLIGHT;
 
@@ -78,10 +82,19 @@ void light_change_normal(int n) {
    five separate compares and three separate copy blocks; this form gets the layout but not the registers). Linked on the PC
    (PICK_X) only; the PS2 build keeps the original bytes. */
 typedef struct PLLC {
+#ifdef VERSION_MH2
+    /* MH2's places, from its twin (sub_main 0x333640, which also changed its stage tests and calls 0x332C70: the PC uses a
+     * host stand-in on MH2, src/pc/rt/rt_mh2.c) */
+    u8 _pad00[0x597];
+    u8 near_em;                 /* 0x597 (MH1 0x613) */
+    u8 _pad598[0x664 - 0x598];
+    f32 *tbl;                   /* 0x664 (MH1 0x710) */
+#else
     u8 _pad00[0x613];
     u8 near_em;                 /* 0x613 near-monster light flag */
     u8 _pad614[0x710 - 0x614];
     f32 *tbl;                   /* 0x710 own light rows (0 = none) */
+#endif
 } PLLC;
 
 extern f32 *pl_light_tbl2[];

@@ -3,6 +3,7 @@
 
 Line: `module 0xADDR name how sim # evidence` (sim: opcode-sequence ratio against the reference of that name, or -). Name `-` takes a wrong name away (the address goes back to module_func_ADDR).
 Updates docs/survey/mh2_map.csv and config/mh2/symbols/*.txt in place; running it twice changes nothing. tools/mh2_map.py runs it last.
+config/mh2/data_fix.txt does the same for data names in the symbol files: `module 0xADDR name [0xSIZE] # evidence`.
 A name given here leaves any other address of its module that held it: that address becomes module_func_ADDR unless the file names it too.
 Usage: python3 tools/mh2_funcfix.py
 """
@@ -91,7 +92,40 @@ def main():
                 l = "%s = 0x%s;%s\n" % (d[int(r.group(2), 16)], r.group(2), r.group(3))
             out.append(l)
         open(p, "w").writelines(out)
-    print("mh2_funcfix: %d names changed" % len(changed))
+    print("mh2_funcfix: %d names changed, %d data names fixed" % (len(changed), data_fix()))
+
+
+def data_fix():
+    """config/mh2/data_fix.txt: data names placed by hand. The name leaves other lines of its module; the address gets it."""
+    p = P("config/mh2/data_fix.txt")
+    if not os.path.exists(p):
+        return 0
+    fix = {}
+    for l in open(p):
+        f = l.split("#", 1)[0].split()
+        if len(f) >= 3:
+            fix.setdefault(f[0], {})[int(f[1], 16)] = (f[2], int(f[3], 16) if len(f) > 3 else 0)
+    n = 0
+    for m, d in fix.items():
+        sp = P("config/mh2/symbols/%s.txt" % m)
+        names = set(v[0] for v in d.values())
+        out, rows = [], []
+        for l in open(sp):
+            r = re.match(r"^(\S+) = 0x([0-9A-Fa-f]+);(.*)$", l.rstrip("\n"))
+            if r and (r.group(1) in names or int(r.group(2), 16) in d) and "type:func" not in r.group(3):
+                continue
+            if r:
+                rows.append((int(r.group(2), 16), l))
+            else:
+                out.append(l)
+        for a, (name, sz) in d.items():
+            rows.append((a, "%s = 0x%08X;%s\n" % (name, a, " // size:0x%X" % sz if sz else "")))
+        rows.sort(key=lambda e: e[0])
+        new = out + [l for a, l in rows]
+        if new != open(sp).readlines():
+            open(sp, "w").writelines(new)
+        n += len(d)
+    return n
 
 
 if __name__ == "__main__":

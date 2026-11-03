@@ -47,7 +47,9 @@ s32 CameraAreaCheck(CAMAREA *a, PLW *pl, s32 mask);
 
 /* 0x00223070: the area the camera's player is in. -1 no camera data,
  * 0 none found (area = first block), 1 found (area set). */
-#ifdef VERSION_MH2
+#if defined(VERSION_MH2) && defined(__MWERKS__)
+/* MH2's own (byte-matched): CameraWork as MH2 lays it out (data 0x388, area 0x38C, grid 0x390...). The PC keeps the rest of the
+ * camera C on MH1's CAMW (include/cam.h; MH2's CameraWork is not laid out yet), so it takes the form below, which agrees with it. */
 s32 SetAreaData(CAMW *cw) {
     PLW *pl = PLW_AT(EB(&game_w, GWX(0xD1)));
     u8 *d = EP(cw, 0x388);
@@ -82,7 +84,11 @@ s32 SetAreaData(CAMW *cw) {
 }
 #else
 s32 SetAreaData(CAMW *cw) {
+#ifdef VERSION_MH2
+    PLW *pl = PLW_AT(EB(&game_w, GWX(0xD1)));
+#else
     PLW *pl = &player_work[EB(&game_w, GW_MASTER)];
+#endif
     u8 *d = cw->data;
     u8 *cell;
     CAMAREA **l;

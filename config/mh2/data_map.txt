@@ -719,7 +719,6 @@ game em30_poison_data_tbl 0x008BCA98 medium content:3.0,sim=1.00
 game em31_poison_data_tbl 0x008BCAA8 low bytes:1.5+layout:2.0,sim=1.00
 game em33_poison_data_tbl 0x008BCAB8 low bytes:1.5+layout:2.0,sim=1.00
 game em00_sleep2_data_tbl 0x008BCAC8 low ptr-in:2.0
-game em_sleep2_data_tbl 0x008BCCB0 medium ref:1.8+refseq:0.6
 game em00_mahi_data_tbl 0x008BCDD8 high content:2.0+layout:2.0+ptr-in:2.0,sim=1.00
 game em01_mahi_data_tbl 0x008BCDE8 medium content:3.0,sim=1.00
 game em11_mahi_data_tbl 0x008BCDF8 high content:2.0+layout:2.5+ptr-in:2.0,sim=1.00
@@ -749,9 +748,6 @@ game em28_mahi_data_tbl 0x008BCF68 high content:2.0+layout:2.0+ptr-in:2.0,sim=1.
 game em30_mahi_data_tbl 0x008BCF78 high bytes:1.5+layout:2.0+ptr-in:2.0,sim=1.00
 game em31_mahi_data_tbl 0x008BCF88 high bytes:1.5+layout:2.0+ptr-in:2.0,sim=1.00
 game em34_mahi_data_tbl 0x008BCF98 high content:2.0+layout:2.0+ptr-in:2.0,sim=1.00
-game em_mahi_data_tbl 0x008BD180 high ref:3.7+refseq:1.8
-game em_poison_data_tbl 0x008BD180 low ref:1.8+refseq:1.0
-game em_sleep_data_tbl 0x008BD550 high ref:5.8+refseq:2.0
 game em00_sleep_data_tbl 0x008BD678 low content:2.0+layout:2.0,sim=1.00
 game em01_sleep_data_tbl 0x008BD688 low content:2.0+layout:2.0,sim=1.00
 game em11_sleep_data_tbl 0x008BD698 medium content:3.0,sim=1.00
@@ -8526,7 +8522,6 @@ sub_main clay_heap_area 0x006ADFF4 medium ref:1.6+refseq:0.6
 sub_main material_heap_area 0x006ADFF8 medium ref:1.5+refseq:0.5
 sub_main hierarchy_heap_area 0x006ADFFC medium ref:1.6+refseq:0.6
 sub_main mdlw_heap_area 0x006AE000 high ref:3.2+refseq:1.1
-sub_main data_load_ptr 0x006AE004 high ref:8.9+refseq:2.5
 sub_main stage_model 0x006AE008 high ref:1.2+refseq:2.5
 sub_main pit_model 0x006AE00C low refseq:0.9
 sub_main common_motion 0x006AE010 low refseq:0.9
