@@ -636,8 +636,8 @@ started:
                             l->id = (s16)to, cnt++;
                 }
             for (i = 0; i < 4; i++)
-                if (PU8(&game_w, 0x28 + i) == from) {
-                    PU8(&game_w, 0x28 + i) = (u8)to;
+                if (game_w.x28[i] == from) {
+                    game_w.x28[i] = (u8)to;
                     em_create_model(i);
                 }
             fprintf(stderr, "rt_quest: RT_QEM_KIND %d -> %d: %d monster entries\n", from, to, cnt);
@@ -736,6 +736,10 @@ int rt_monster_spawn(int kind, const float pos[3], int ang_y)
 {
     QEM *q, dflt;
     EMW *em;
+#ifdef VERSION_MH2
+    if (getenv("RT_MH2_NO_EM"))     /* test aid (rt_quest.c): the hunter alone */
+        return -1;
+#endif
     if (quest_w.no != 0) {
         /* the quest's monsters, as the game sets them up when the stage
          * is entered: station_em_set (the quest's own) + Quest_next_em_set

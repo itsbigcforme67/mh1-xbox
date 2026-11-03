@@ -1347,6 +1347,33 @@ static size_t mh2_mib_read(int no, uint8_t *dst, size_t max)
     return mh2_mission_n;
 }
 
+/* entry idx of the archive MH2 opens as slot 6 (func_001942F0: DATA.BIN entry 6587, em_cmd.afs) for rt_mh2.c's em_cmd loader */
+static size_t mh2_em_cmd_read(int idx, uint8_t *dst, size_t max)
+{
+    static fmt_afs ec;
+    static int open = 0;
+    uint8_t *p;
+    size_t n = 0;
+    if (!open) {
+        char path[1024];
+        int i = fmt_afs_find(&afs, "em_cmd.afs");
+        snprintf(path, sizeof path, "%s/DATA.BIN", mh2_disc);
+        if (i < 0)
+            i = 6587;
+        open = fmt_afs_open_nested(&ec, &afs, path, i) == 0 ? 1 : -1;
+        if (open > 0)
+            rt_log("MH2: em_cmd archive = DATA.BIN entry %d (%s), %u files", i, afs.name[i], (unsigned)ec.count);
+    }
+    if (open < 0 || idx < 0 || (uint32_t)idx >= ec.count || !(p = fmt_afs_read(&ec, idx, &n)))
+        return 0;
+    if (n > max)
+        n = 0;
+    else
+        memcpy(dst, p, n);
+    free(p);
+    return n;
+}
+
 static uint32_t mh2_mw(uint32_t o)
 {
     uint32_t v = 0;
@@ -3403,7 +3430,9 @@ int main(int argc, char **argv)
         goto mh2_boot;
     {   /* --quest: the G path below, with MH2's Quest_start (rt_mh2.c) */
         void rt_mh2_set_mib_loader(size_t (*fn)(int, uint8_t *, size_t));
+        void rt_mh2_set_em_cmd_loader(size_t (*fn)(int, uint8_t *, size_t));
         rt_mh2_set_mib_loader(mh2_mib_read);
+        rt_mh2_set_em_cmd_loader(mh2_em_cmd_read);
     }
 #endif
     if (quest_no) {

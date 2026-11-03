@@ -80,6 +80,42 @@ static int start_stage(void)
  * (gm_sub is loaded as an extra image, rt_addr reads it). Words of other ranges were relocated by the import already. */
 void *rt_host_sym(const char *n);
 size_t rt_table_size(const char *name);
+/* em_prog_tbl (gm_sub 0x90DE70, 35 kinds): each kind's table {local init, local init, ?, effect move, two more functions MH2
+ * added, then data}. MH2's monster functions have no names the PC knows, so those slots import as NULL and em_create_model
+ * refuses the kind. Stand-in: G's functions of the same kind number (emNN_local_init, emNN_effect_move, host C) in a copy of
+ * the table. Whether MH2's kind N is G's kind N is checked for kind 1 only (its model is em01, the Rathian); for the other
+ * kinds it is a guess. RT_MH2_EM_PROG=0 turns this off. */
+extern void *em_prog_tbl[];
+static void rt_nop_em(void *em) { (void)em; }
+static void em_prog_fix(void)
+{
+    static void *copy[35][16];
+    char a[48], b[48];
+    int k, j;
+    if (getenv("RT_MH2_EM_PROG") && !atoi(getenv("RT_MH2_EM_PROG")))
+        return;
+    for (k = 1; k < 35; k++) {
+        void **t = em_prog_tbl[k], *init, *eff;
+        if (!t || (t[0] && t[3]))
+            continue;
+        snprintf(a, sizeof a, "em%02d_local_init", k);
+        snprintf(b, sizeof b, "em%02d_effect_move", k);
+        init = rt_host_sym(a);
+        eff = rt_host_sym(b);
+        if (!init || !eff)
+            continue;
+        for (j = 0; j < 16; j++)
+            copy[k][j] = t[j];
+        copy[k][0] = copy[k][0] ? copy[k][0] : init;
+        copy[k][1] = copy[k][1] ? copy[k][1] : init;
+        copy[k][2] = copy[k][2] ? copy[k][2] : (void *)rt_nop_em;
+        copy[k][3] = copy[k][3] ? copy[k][3] : eff;
+        em_prog_tbl[k] = copy[k];
+        rt_log_standin("MH2 em_prog_tbl: a kind's program slots from G's emNN functions");
+        if (getenv("RT_QUEST_TRACE"))
+            fprintf(stderr, "rt_mh2: em_prog_tbl[%d]: G's %s / %s stand in\n", k, a, b);
+    }
+}
 static void gm_sub_ptrs(void)
 {
     static const char *const nm[] = { "ground_tbl_add", "wall_tbl_add", "shadow_tbl_add", "diffuse_tbl_add", "light_tbl_add" };
@@ -96,6 +132,7 @@ static void gm_sub_ptrs(void)
                 w[i] = h ? (uint32_t)(uintptr_t)h : 0;
             }
     }
+    em_prog_fix();
 }
 
 int rt_mh2_quest_start(int no)
@@ -277,5 +314,98 @@ void pl_light_change(u8 *pl, int n)
         else
             light_rows(b, st, i, 1);
     }
+}
+
+/* ------------------------------------------------ monster command data (gm_sub 0x90AAA0-0x90AC24, game 0x7262E0, no C yet)
+ * MH2 loads each kind's command tables from em_cmd.afs (DATA.BIN entry 6587) when its model is made: Quest_next_em_set
+ * (0x3A4370) calls 0x90AB00(game_w.x2E, kind) before em_create_model. 0x932C70[game_w.x2E] is a per-kind list of em_cmd.afs
+ * entries (-1 none); the file's last two non-zero words are the offsets of its outer table and of a table of byte counts per
+ * outer entry; 0x90A9D0 turns the outer words and each entry's inner words into pointers (-1 to 0, words not below the
+ * file's address left alone). 0x939450[kind] keeps the outer table: em_cmd_init (0x7262E0) puts it in EMW.cmd_tbl. The PC loads
+ * from em_create_model (rt_quest.c), each kind once per run (the PS2 clears the list at Quest_start and the stage load). */
+static size_t (*emcmd_fn)(int idx, u8 *dst, size_t max);
+void rt_mh2_set_em_cmd_loader(size_t (*fn)(int idx, u8 *dst, size_t max)) { emcmd_fn = fn; }
+static u8 *emcmd[64];
+static void emcmd_reloc(u8 *base, u32 *outer, u32 *cnt)
+{
+    int n = (int)(cnt - outer), i, j;
+    for (i = 0; i < n; i++) {
+        u32 v = outer[i], *in;
+        int m;
+        if (v == 0xFFFFFFFFu) {
+            outer[i] = 0;
+            continue;
+        }
+        if (v == 0 || v >= (u32)(uintptr_t)base)
+            continue;
+        outer[i] = v + (u32)(uintptr_t)base;
+        in = (u32 *)(uintptr_t)outer[i];
+        m = (int)(cnt[i] >> 2);
+        for (j = 0; j < m; j++) {
+            if (in[j] == 0xFFFFFFFFu)
+                in[j] = 0;
+            else if (in[j] < (u32)(uintptr_t)base)
+                in[j] += (u32)(uintptr_t)base;
+            else
+                break;
+        }
+    }
+}
+void rt_mh2_em_cmd_load(int level, int kind)
+{
+    const s32 *l;
+    u32 lva;
+    int idx;
+    size_t n;
+    u8 *f;
+    u32 *e;
+    if (kind <= 0 || kind >= 64 || emcmd[kind] || !emcmd_fn)
+        return;
+    lva = word_va(0x932C70 + 4 * (uint32_t)level);
+    l = lva ? (const s32 *)rt_addr(lva + 4 * (uint32_t)kind, 4) : NULL;
+    if (!l || (idx = *l) < 0)
+        return;
+    if (!(f = calloc(1, 0x10000)) || (n = emcmd_fn(idx, f, 0x10000)) < 8) {
+        free(f);
+        rt_warn("MH2 em_cmd.afs entry %d (kind %d) not read", idx, kind);
+        return;
+    }
+    for (e = (u32 *)(f + (n & ~3u)) - 1; e > (u32 *)f && *e == 0; e--)
+        ;
+    if (e - 1 <= (u32 *)f || e[-1] >= n || e[0] >= n) {
+        free(f);
+        rt_warn("MH2 em_cmd.afs entry %d: no table offsets at its end", idx);
+        return;
+    }
+    emcmd_reloc(f, (u32 *)(f + e[-1]), (u32 *)(f + e[0]));
+    emcmd[kind] = f + e[-1];
+    if (getenv("RT_QUEST_TRACE"))
+        fprintf(stderr, "rt_mh2: em_cmd.afs entry %d for kind %d (level %d): %u bytes, %d tables\n", idx, kind, level, (unsigned)n,
+                (int)((e[0] - e[-1]) / 4));
+}
+/* em_cmd_init (game 0x7262E0); em_cmd_nm.c's G copy is renamed away for MH2 (tools/build_pc.sh). Raw MH2 EMW offsets as the asm
+ * has them; the named ones are mh2_emw.h's (cmd_tbl 0x754, cmd_pc 0x758, cmd_top 0x7C4) */
+#define EB2(o) (*(u8 *)((u8 *)em + (o)))
+#define EH2(o) (*(u16 *)((u8 *)em + (o)))
+#define EW2(o) (*(u32 *)((u8 *)em + (o)))
+extern s32 em_atk_bit;
+u8 *em_cmd_top(void *em);
+void em_cmd_init(u8 *em)
+{
+    EB2(0x774) = EB2(0x775) = EB2(0x776) = EB2(0x778) = 0;
+    EB2(0x7A2) = 0;
+    EB2(0x798) = 0xFF;
+    EW2(0x754) = (u32)(uintptr_t)emcmd[em[2] < 64 ? em[2] : 0];
+    EW2(0x758) = EW2(0x754) ? (u32)(uintptr_t)em_cmd_top(em) : 0;     /* PC: no tables (no em_cmd.afs entry for the kind): no program */
+    EB2(0x87C) = EB2(0x87D) = EB2(0x881) = EB2(0x880) = 0xFF;
+    EH2(0x986) = 0xFFFF;
+    EH2(0x882) = 0xFFFF;
+    EW2(0x7A8) = 0;
+    em_atk_bit = 0;
+    EW2(0x7C4) = EW2(0x758);
+    EB2(0x779) = 0;
+    EH2(0x77A) = EH2(0x77C) = 0;
+    EB2(0x997) = 0;
+    EH2(0x998) = EH2(0x99A) = 0;
 }
 #endif

@@ -48,22 +48,32 @@ static void (*em_model_fn)(int slot, int kind);
 void rt_set_em_model_loader(void (*fn)(int slot, int kind)) { em_model_fn = fn; }
 void em_create_model(int slot)
 {
-    int kind = PU8(&game_w, 0x28 + slot);
+    int kind = game_w.x28[slot];
     {   /* test aid RT_QEM_KIND "from:to" (rt_em.c): the model slot of kind `from` holds kind `to` */
         int from, to;
         if (getenv("RT_QEM_KIND") && sscanf(getenv("RT_QEM_KIND"), "%d:%d", &from, &to) == 2 && kind == from)
-            PU8(&game_w, 0x28 + slot) = (u8)(kind = to);
+            game_w.x28[slot] = (u8)(kind = to);
     }
-    if (!em_prog_tbl[kind] || !((void **)em_prog_tbl[kind])[0] || !((void **)em_prog_tbl[kind])[3]) {
+    if (!em_prog_tbl[kind] || !((void **)em_prog_tbl[kind])[0] || !((void **)em_prog_tbl[kind])[3]
+#ifdef VERSION_MH2
+        || getenv("RT_MH2_NO_EM")   /* test aid: no monsters (the hunter alone on the quest's stage) */
+#endif
+        ) {
         /* [0] local init and [3] the per-tick effect script (em_effect_move)
          * are called unconditionally: both must be ported */
         if (qtrace())
             fprintf(stderr, "rt_quest: monster kind %d not ported, not spawned\n", kind);
-        PU8(&game_w, 0x28 + slot) = 0;
+        game_w.x28[slot] = 0;
         return;
     }
     if (qtrace())
         fprintf(stderr, "rt_quest: em_create_model slot %d kind %d\n", slot, kind);
+#ifdef VERSION_MH2
+    {   /* MH2 loads the kind's command tables first (Quest_next_em_set: gm_sub 0x90AB00(game_w.x2E, kind), rt_mh2.c) */
+        void rt_mh2_em_cmd_load(int level, int kind);
+        rt_mh2_em_cmd_load(game_w.x2E, kind);
+    }
+#endif
     if (em_model_fn)
         em_model_fn(slot, kind);      /* the host's model and the motions of the slot */
     rt_snd_em_add(kind);              /* its sounds (port 6) */
