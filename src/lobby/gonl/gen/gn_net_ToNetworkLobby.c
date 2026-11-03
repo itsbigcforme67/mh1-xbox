@@ -78,7 +78,7 @@ void net_ToNetworkLobby(void) {
     memset((*(u8 **)&cw) + 0xEE6, 0, 0x9A);
     memset(&(*(s32 *)((u8 *)&tl_member_buff + 0x1398)), 0, 0x618);
     var_a1_2 = 0;
-    var_a4 = &(*(s16 *)((u8 *)&lb_sys + 0xA0));
+    var_a4 = &(*(s16 *)((u8 *)&lb_sys + LBM(0xA0)));
     var_a3 = 0;
     do {
         (*(s16 *)var_a4) = 0;

@@ -1320,7 +1320,7 @@ void em09_main(EMW *em) {
         extern unsigned char quest_w[];
         int Event_flag_ck(int);
         void em09_act_set(EMW *, int, int, int);
-        if (*(u16 *)(quest_w + 8) == 10028 && em->kind == 23 && em->stg == 69 && Event_flag_ck(20) == 0) {
+        if (*(u16 *)(quest_w + QWO(8)) == 10028 && em->kind == 23 && em->stg == 69 && Event_flag_ck(20) == 0) {
             if (game_w.info_stop == 1 && em->mode != 6)
                 em09_act_set(em, 6, 0, 1);
             goto sub;

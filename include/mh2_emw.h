@@ -6,7 +6,7 @@ typedef struct EMW {
     struct {
     u8 be_flag; /* 0x000, MH1 0x000: votes 44 */
     u8 x01; /* 0x001, MH1 0x001: votes 30 */
-    u8 kind; /* 0x002, MH1 0x002: votes 72 */
+    u8 kind; /* 0x002, MH1 0x002: votes 76 */
     u8 _pad003[0x1];
     u8 x04; /* 0x004, MH1 0x004: votes 24 */
     u8 x05; /* 0x005, MH1 0x005: votes 1486 */
@@ -24,7 +24,7 @@ typedef struct EMW {
     u8 mode_old; /* 0x016, MH1 0x016: votes 26 */
     u8 x15_old; /* 0x017, MH1 0x017: votes 26 */
     u8 _pad018[0x1];
-    u8 x19; /* 0x019, MH1 0x019: votes 18 */
+    u8 x19; /* 0x019, MH1 0x019: votes 22 */
     u8 _pad01A[0x1];
     u8 type; /* 0x01B, MH1 0x01B: votes 12 */
     u8 _pad01C[0x4];
@@ -107,7 +107,10 @@ typedef struct EMW {
     f32 x5AC; /* 0x574, MH1 0x5AC: votes 156 */
     u8 _pad578[0xC];
     f32 base_scale; /* 0x584, MH1 0x600: hand */
-    f32 uv[4][3]; /* 0x588, MH1 0x5C0: no votes, as the field before */
+    u8 _pad588[0x12];
+    u8 x616; /* 0x59A, MH1 0x616: votes 2 */
+    s8 x617; /* 0x59B, MH1 0x617: votes 12 */
+    u8 _pad59C[0x1C];
     u16 uvtm[4]; /* 0x5B8, MH1 0x5F0: no votes, as the field before */
     u8 uvty[4]; /* 0x5C0, MH1 0x5F8: no votes, as the field before */
     u8 _pad5C4[0x10];
@@ -133,11 +136,13 @@ typedef struct EMW {
     s16 x73A; /* 0x684, MH1 0x73A: votes 2 */
     u8 _pad686[0x2];
     u8 x734; /* 0x688, MH1 0x734: no votes, as the field before */
-    u8 _pad689[0x7];
-    f32 home[3]; /* 0x690, MH1 0x73C: no votes, as the field before */
-    u8 _pad69C[0xC];
-    f32 x754[3]; /* 0x6A8, MH1 0x754: no votes, as the field before */
-    u8 _pad6B4[0xE];
+    u8 _pad689[0xF];
+    u32 x74C; /* 0x698, MH1 0x74C: votes 2 */
+    u8 _pad69C[0x12];
+    s8 x762; /* 0x6AE, MH1 0x762: votes 8 */
+    u8 _pad6AF[0x2];
+    u8 x765; /* 0x6B1, MH1 0x765: no votes, as the field before */
+    s16 dmg[8]; /* 0x6B2, MH1 0x766: no votes, as the field before */
     s16 x776; /* 0x6C2, MH1 0x776: no votes, as the field before */
     s16 x778[4]; /* 0x6C4, MH1 0x778: votes 2 */
     s16 x780[4]; /* 0x6CC, MH1 0x780: votes 4 */
@@ -199,13 +204,14 @@ typedef struct EMW {
     f32 x814; /* 0x768, MH1 0x814: no votes, as the field before */
     f32 x818; /* 0x76C, MH1 0x818: no votes, as the field before */
     f32 x81C; /* 0x770, MH1 0x81C: no votes, as the field before */
-    u16 cmd_idx; /* 0x774, MH1 0x820: no votes, as the field before */
-    u16 x822; /* 0x776, MH1 0x822: no votes, as the field before */
+    u8 cmd_idx; /* 0x774, MH1 0x820: hand */
+    u8 _pad775[0x1];
+    u8 x824; /* 0x776, MH1 0x824: hand */
+    u8 _pad777[0x1];
     u8 x826; /* 0x778, MH1 0x826: votes 4 */
     u8 x827; /* 0x779, MH1 0x827: votes 20 */
-    u8 _pad77A[0x2];
-    u8 x828; /* 0x77C, MH1 0x828: hand */
-    u8 x829; /* 0x77D, MH1 0x829: hand */
+    u16 x828; /* 0x77A, MH1 0x828: hand */
+    u16 x829; /* 0x77C, MH1 0x829: hand */
     s8 x82A; /* 0x77E, MH1 0x82A: hand */
     u8 x82B; /* 0x77F, MH1 0x82B: hand */
     u8 * cmd_route; /* 0x780, MH1 0x82C: votes 4 */
@@ -249,9 +255,7 @@ typedef struct EMW {
     u8 x87D; /* 0x7D1, MH1 0x87D: no votes, as the field before */
     u8 x87E; /* 0x7D2, MH1 0x87E: no votes, as the field before */
     s8 x87F; /* 0x7D3, MH1 0x87F: votes 4 */
-    u8 _pad7D4[0x2];
-    u8 x882; /* 0x7D6, MH1 0x882: no votes, as the field before */
-    u8 x883; /* 0x7D7, MH1 0x883: no votes, as the field before */
+    u8 _pad7D4[0x4];
     s8 x884; /* 0x7D8, MH1 0x884: votes 2 */
     s8 x885; /* 0x7D9, MH1 0x885: votes 4 */
     s16 x886; /* 0x7DA, MH1 0x886: votes 2 */
@@ -305,7 +309,7 @@ typedef struct EMW {
     s8 x92C; /* 0x880, MH1 0x92C: votes 14 */
     s8 x92D; /* 0x881, MH1 0x92D: votes 12 */
     u8 x92E; /* 0x882, MH1 0x92E: no votes, as the field before */
-    u8 x92F; /* 0x883, MH1 0x92F: no votes, as the field before */
+    u8 _pad883[0x1];
     f32 act_spd; /* 0x884, MH1 0x930: votes 39 */
     f32 tgt_pos[3]; /* 0x888, MH1 0x934: votes 128 */
     struct EM_AREA *area; /* 0x894, MH1 0x940: votes 4 */
@@ -324,7 +328,7 @@ typedef struct EMW {
     u8 x957; /* 0x8AB, MH1 0x957: no votes, as the field before */
     s8 x958; /* 0x8AC, MH1 0x958: no votes, as the field before */
     u8 x959; /* 0x8AD, MH1 0x959: votes 4 */
-    s8 x95A; /* 0x8AE, MH1 0x95A: no votes, as the field before */
+    u8 _pad8AE[0x1];
     u8 x95B; /* 0x8AF, MH1 0x95B: votes 4 */
     u8 x95C; /* 0x8B0, MH1 0x95C: votes 12 */
     s8 x95D; /* 0x8B1, MH1 0x95D: votes 2 */
@@ -356,25 +360,27 @@ typedef struct EMW {
     u8 _pad976[0x1];
     u8 x9F3; /* 0x977, MH1 0x9F3: no votes, as the field before */
     u8 _pad9F4[0xD]; /* 0x978, MH1 0x9F4: hand */
-    u8 _pad985[0x2];
-    s8 meat_no; /* 0x987, MH1 0xA03: hand */
+    u8 _pad985[0x1];
+    u16 x92F; /* 0x986, MH1 0x92F: hand */
     s8 lv; /* 0x988, MH1 0xA04: hand */
-    u8 _pad989[0xE];
+    u8 _pad989[0x3];
+    s16 x95A; /* 0x98C, MH1 0x95A: hand */
+    u8 _pad98E[0x9];
     u8 x881; /* 0x997, MH1 0x881: votes 11 */
-    u8 _pad998[0x10];
+    u16 x882; /* 0x998, MH1 0x882: hand */
+    u16 x883; /* 0x99A, MH1 0x883: hand */
+    u8 _pad99C[0xC];
     s8 x88D; /* 0x9A8, MH1 0x88D: votes 4 */
     u8 _pad9A9[0x27];
     };
     struct { u8 _o4EC[0x4EC]; struct EM_MDL *mdl; }; /* 0x4EC, MH1 0x50C: votes 8, overlaps */
-    struct { u8 _o59A[0x59A]; u8 x616; }; /* 0x59A, MH1 0x616: votes 2, overlaps */
-    struct { u8 _o59B[0x59B]; s8 x617; }; /* 0x59B, MH1 0x617: votes 12, overlaps */
-    struct { u8 _o698[0x698]; u32 x74C; }; /* 0x698, MH1 0x74C: votes 2, overlaps */
-    struct { u8 _o6AE[0x6AE]; s8 x762; }; /* 0x6AE, MH1 0x762: votes 8, overlaps */
-    struct { u8 _o6B1[0x6B1]; u8 x765; }; /* 0x6B1, MH1 0x765: no votes, as the field before, overlaps */
-    struct { u8 _o6B2[0x6B2]; s16 dmg[8]; }; /* 0x6B2, MH1 0x766: no votes, as the field before, overlaps */
-    struct { u8 _o776[0x776]; u8 x824; }; /* 0x776, MH1 0x824: hand, overlaps */
+    struct { u8 _o588[0x588]; f32 uv[4][3]; }; /* 0x588, MH1 0x5C0: no votes, as the field before, overlaps */
+    struct { u8 _o690[0x690]; f32 home[3]; }; /* 0x690, MH1 0x73C: no votes, as the field before, overlaps */
+    struct { u8 _o6A8[0x6A8]; f32 x754[3]; }; /* 0x6A8, MH1 0x754: no votes, as the field before, overlaps */
+    struct { u8 _o776[0x776]; u16 x822; }; /* 0x776, MH1 0x822: no votes, as the field before, overlaps */
     struct { u8 _o969[0x969]; s8 x9ED; }; /* 0x969, MH1 0x9ED: votes 1, overlaps */
     struct { u8 _o96A[0x96A]; s8 range_no; }; /* 0x96A, MH1 0x9EE: votes 1, overlaps */
     struct { u8 _o984[0x984]; u16 size; }; /* 0x984, MH1 0xA00: hand, overlaps */
+    struct { u8 _o987[0x987]; s8 meat_no; }; /* 0x987, MH1 0xA03: hand, overlaps */
     };
 } EMW;

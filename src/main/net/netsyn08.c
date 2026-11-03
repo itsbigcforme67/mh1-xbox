@@ -27,6 +27,11 @@ typedef struct NSEL {
     u16 xAC;
     u8 xAE[4];
 } NSEL;
+#ifdef VERSION_MH2
+#include "mh2_layouts.h"
+typedef QUEST_W NQW_M;
+#define NQW NQW_M
+#else
 typedef struct NQW {
 #ifdef VERSION_MHG
     u8 x00[0x281];      /* G moved MH1's 0x180.. block of quest_w to 0x280 (include/quest.h): with MH1's offsets the PC's
@@ -40,6 +45,8 @@ typedef struct NQW {
     s16 x184;
     s16 x186;
 } NQW;
+
+#endif
 extern NSEL select_w;
 extern NQW quest_w;
 extern s16 no_send_timer;

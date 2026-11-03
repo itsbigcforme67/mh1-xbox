@@ -24,7 +24,7 @@ s32 lobby_func_00542A60(s32 arg0, s32 unused_a1, s32 arg2, s32 arg3) {
     case 0x1:
         return Event_flag_ck(4);
     case 0x2:
-        if ((s32) (*(u8 *)((u8 *)&User_data + 0xC23)) >= 4) {
+        if ((s32) (*(u8 *)((u8 *)&User_data + UDMO(0xC23))) >= 4) {
             return lobby_func_00542790(0, 0, arg2, arg3);
         }
 block_127:
@@ -38,21 +38,21 @@ block_127:
     case 0x4:
         return Quest_clear_bit_ck(0x27);
     case 0x5:
-        if ((s32) (*(u8 *)((u8 *)&User_data + 0xC23)) >= 8) {
+        if ((s32) (*(u8 *)((u8 *)&User_data + UDMO(0xC23))) >= 8) {
             return lobby_func_00542790(0, 1, arg2, arg3);
         }
         goto block_127;
     case 0x6:
         return Quest_clear_bit_ck(9);
     case 0x7:
-        if ((s32) (*(u8 *)((u8 *)&User_data + 0xC23)) >= 0xC) {
+        if ((s32) (*(u8 *)((u8 *)&User_data + UDMO(0xC23))) >= 0xC) {
             return lobby_func_00542790(0, 2, arg2, arg3);
         }
         goto block_127;
     case 0x8:
         return Quest_clear_bit_ck(0xBB9);
     case 0x9:
-        if ((s32) (*(u8 *)((u8 *)&User_data + 0xC23)) >= 0x10) {
+        if ((s32) (*(u8 *)((u8 *)&User_data + UDMO(0xC23))) >= 0x10) {
             return lobby_func_00542790(0, 3, arg2, arg3);
         }
         goto block_127;
@@ -63,7 +63,7 @@ block_127:
     case 0x30:
         return sub_main_func_004C8600((s32) &User_data, 1, 0x76, arg3);
     case 0xB:
-        if ((s32) (*(u8 *)((u8 *)&User_data + 0xC23)) >= 0x14) {
+        if ((s32) (*(u8 *)((u8 *)&User_data + UDMO(0xC23))) >= 0x14) {
             return lobby_func_00542790(0, 4, arg2, arg3);
         }
         goto block_127;
@@ -78,7 +78,7 @@ block_127:
     case 0x10:
         return sub_main_func_004C8600((s32) &User_data, 8, 0x7A, arg3);
     case 0x11:
-        if ((s32) (*(u8 *)((u8 *)&User_data + 0xC23)) >= 0x17) {
+        if ((s32) (*(u8 *)((u8 *)&User_data + UDMO(0xC23))) >= 0x17) {
             return lobby_func_00542790(0, 5, arg2, arg3);
         }
         goto block_127;
@@ -89,7 +89,7 @@ block_127:
     case 0x14:
         return sub_main_func_004C8600((s32) &User_data, 0xF, 0x87, arg3);
     case 0x15:
-        if ((s32) (*(u8 *)((u8 *)&User_data + 0xC23)) >= 0x1A) {
+        if ((s32) (*(u8 *)((u8 *)&User_data + UDMO(0xC23))) >= 0x1A) {
             return lobby_func_00542790(0, 6, arg2, arg3);
         }
         goto block_127;
@@ -109,7 +109,7 @@ block_127:
         }
         goto block_127;
     case 0x1C:
-        if ((s32) (*(u8 *)((u8 *)&User_data + 0xC23)) >= 0x1C) {
+        if ((s32) (*(u8 *)((u8 *)&User_data + UDMO(0xC23))) >= 0x1C) {
             return lobby_func_00542790(0, 7, arg2, arg3);
         }
         goto block_127;
@@ -119,7 +119,7 @@ block_127:
         }
         goto block_127;
     case 0x1E:
-        if ((s32) (*(u8 *)((u8 *)&User_data + 0xC23)) >= 0x1E) {
+        if ((s32) (*(u8 *)((u8 *)&User_data + UDMO(0xC23))) >= 0x1E) {
             return Event_flag_ck(0x1F);
         }
         goto block_127;

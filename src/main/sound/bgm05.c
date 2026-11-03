@@ -18,7 +18,7 @@ int em_status_ck(void) {
     if (game_w[GWX(0x21F)] != 0) {
         return 0;
     }
-    if (*(s32 *)(quest_w + 0x40) & 0x600) {
+    if (*(s32 *)(quest_w + QWO(0x40)) & 0x600) {
         return 0;
     }
     for (i = 0; i < 20; i++) {

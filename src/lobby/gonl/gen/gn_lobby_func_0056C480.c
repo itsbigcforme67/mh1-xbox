@@ -21,7 +21,7 @@ void lobby_func_0056C480(void) {
     u8 *var_a3;   /* (u16 *) */
 
     var_a5 = 0;
-    var_a3 = &(*(u16 *)((u8 *)&lb_sys + 0xA0));
+    var_a3 = &(*(u16 *)((u8 *)&lb_sys + LBM(0xA0)));
     var_a2 = 0;
     do {
         var_a4 = 0;

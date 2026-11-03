@@ -190,15 +190,15 @@ int juchu_chk(void) {
 
 #if !defined(G_PART)
 void Menu_quest_i(void) {
-    if (FLDS16(quest_w, 0x24) == 0x63) {
+    if (FLDS16(quest_w, QWO(0x24)) == 0x63) {
         lpPit->x47 = 4;
-    } else if (FLDS16(quest_w, 8) == 0x65 || FLDS16(quest_w, 8) == 0x6B || FLDS16(quest_w, 8) == 0xCE) {
+    } else if (FLDS16(quest_w, QWO(8)) == 0x65 || FLDS16(quest_w, QWO(8)) == 0x6B || FLDS16(quest_w, QWO(8)) == 0xCE) {
         lpPit->x47 = 3;
-    } else if (FLD32(quest_w, 0x40) & 1) {
+    } else if (FLD32(quest_w, QWO(0x40)) & 1) {
         lpPit->x47 = 0;
-    } else if (FLD32(quest_w, 0x40) & 2) {
+    } else if (FLD32(quest_w, QWO(0x40)) & 2) {
         lpPit->x47 = 1;
-    } else if (FLD32(quest_w, 0x40) & 4) {
+    } else if (FLD32(quest_w, QWO(0x40)) & 4) {
         lpPit->x47 = 2;
     }
     juchu_chk();

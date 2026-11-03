@@ -8,7 +8,7 @@ s32 Online_ck();                                    /* extern */
 
 s32 lobby_func_0058BD30(void) {
     if (Online_ck() == 1) {
-        (*(s8 *)((u8 *)&PitMenu + 0x10)) = 0;
+        (*(s8 *)((u8 *)&PitMenu + PMO(0x10))) = 0;
         return 0;
     }
     return 1;

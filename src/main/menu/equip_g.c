@@ -121,11 +121,11 @@ static int gequip_element(u8 *d, int *idx)
     return -1;
 }
 
-/* G 0x226030: can the hunter (sex from User_data+1, job from pl+0x35F) put on piece eq */
+/* G 0x226030: can the hunter (sex from User_data + UDMO(1), job from pl+0x35F) put on piece eq */
 static int gequip_wearable(PLW *pl, u8 *eq)
 {
     u8 *d = Get_equip_data_ptr(eq);
-    int v = User_data[1] == 0 ? 1 : 2;
+    int v = User_data[UDMO(1)] == 0 ? 1 : 2;
 
     v |= pl->work35F == 6 ? 4 : 8;
     return v == (v & d[2]);

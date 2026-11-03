@@ -34,10 +34,15 @@ typedef struct EM27W {
     s32 x4C;            /* 0x4C */
 } EM27W;
 
+#ifdef VERSION_MH2
+#include "mh2_layouts.h"
+#else
 typedef struct QUEST_W {
     u8 _pad00[8];
-    s16 x08;            /* 0x08 quest number (0: free play) */
+    qno_t x08;            /* 0x08 quest number (0: free play) */
 } QUEST_W;
+
+#endif
 
 extern QUEST_W quest_w;
 extern GAME_W game_w;

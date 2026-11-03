@@ -425,7 +425,7 @@ void font_print_BBQquest(void *pl, int y) {
     flfntLocate(0x167, y);
     player_name_id_print(pl);
     flfntLocate(0x1F7, y);
-    sprintf(buf, (char *)lit_2264, (s16)Share_item_num_ck(*(u16 *)(quest_w + 0x1C), *(u16 *)((u8 *)pl + 0xC) + 2));
+    sprintf(buf, (char *)lit_2264, (s16)Share_item_num_ck(*(u16 *)(quest_w + QWO(0x1C)), *(u16 *)((u8 *)pl + 0xC) + 2));
     o = out;
     for (p = buf; *p != 0; p++, o++) {
         *o = ((*p + 0x1F) << 8) | 0x82;

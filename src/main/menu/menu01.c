@@ -3,7 +3,7 @@
 #include "lbsys_g.h"
 extern u8 lb_sys[];
 #if defined(__MWERKS__) && !defined(VERSION_MHG)
-extern u8 D_6EAEBC[];       /* lb_sys + 0x6C (the PS2 MH1 main module only sees the address name) */
+extern u8 D_6EAEBC[];       /* lb_sys + LBM(0x6C) (the PS2 MH1 main module only sees the address name) */
 #define LB_X6C (*(int *)D_6EAEBC)
 #else
 #define LB_X6C (*(int *)(lb_sys + LBSYS_OFS(0x6C)))

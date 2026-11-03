@@ -10,8 +10,8 @@ extern s32 net_sel_drive;
 
 void func_00235C80(void) {
     Last_sel_drive = (*(s32 *)((u8 *)&card_w + 0x18));
-    (*(u8 *)((u8 *)&net_common_w + 0xD)) = (u8) net_sel_drive;
-    (*(u8 *)((u8 *)&net_common_w + 0x79)) = (*(u8 *)((u8 *)&net_common_w + 0xD));
-    (*(s32 *)((u8 *)&card_w + 0x18)) = (s32) (s8) (*(u8 *)((u8 *)&net_common_w + 0x79));
+    (*(u8 *)((u8 *)&net_common_w + NCO(0xD))) = (u8) net_sel_drive;
+    (*(u8 *)((u8 *)&net_common_w + NCO(0x79))) = (*(u8 *)((u8 *)&net_common_w + NCO(0xD)));
+    (*(s32 *)((u8 *)&card_w + 0x18)) = (s32) (s8) (*(u8 *)((u8 *)&net_common_w + NCO(0x79)));
 }
 

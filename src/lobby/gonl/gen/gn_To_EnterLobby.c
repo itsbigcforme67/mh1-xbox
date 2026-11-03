@@ -29,7 +29,7 @@ void To_EnterLobby(void) {
     (*(s8 *)((u8 *)((*(void **)&cw)) + 0xFA5F)) = 0;
     (*(s8 *)((u8 *)((*(void **)&cw)) + 0xFA60)) = 0;
     (*(s8 *)&D_0035EFEB) = 1;
-    (*(s8 *)((u8 *)&lb_sys + 0x7B)) = 0;
+    (*(s8 *)((u8 *)&lb_sys + LBM(0x7B))) = 0;
     Plaza_chat_clear();
     Lb_clearChatList(M2C_ERROR(/* Read from unset register $a0 */), M2C_ERROR(/* Read from unset register $a1 */), M2C_ERROR(/* Read from unset register $a2 */), M2C_ERROR(/* Read from unset register $a3 */));
     cnLBS_Read_PlazaJoinUser(cnLbc_CheckInFloorOrder(1, M2C_ERROR(/* Read from unset register $a1 */), M2C_ERROR(/* Read from unset register $a2 */), M2C_ERROR(/* Read from unset register $a3 */)) & 0xFFFF, CallBack_Result_Lobby_JoinUser);

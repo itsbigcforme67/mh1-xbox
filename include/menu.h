@@ -135,6 +135,45 @@ typedef struct PIT_CHAT {
     char name[0x11];    /* 0x4C handle */
 } PIT_CHAT;
 
+#ifdef VERSION_MH2
+/* MH2's PitMenu at 0x5BB080. By name, from the twins' order: Join_pl_chk x19 x1A, Chat_move x0C x0F, Cockpit_menu_chk open,
+ * chat_log_add logtop, lognum, Chat_log_clear x21 logscr; x10-x14 by votes from aligned code. x15, x16, x18 and x1C: guesses. */
+typedef struct PIT_MENU {
+    s32 x00;            /* 0x00 */
+    s16 x04;            /* 0x04 */
+    s8 x06;             /* 0x06 */
+    s8 x07;             /* 0x07 */
+    s32 x08;            /* 0x08 */
+    s32 x0C2;           /* 0x0C new (Disp_NPC_message) */
+    s32 x10b;           /* 0x10 new */
+    u8 x14b;            /* 0x14 new */
+    u8 _pad15[2];
+    u8 x14;             /* 0x17 (votes: 5 files) */
+    u16 x16;            /* 0x18 guess: 16 bits wide */
+    u8 x15;             /* 0x1A guess */
+    s8 x17;             /* 0x1B Chat_move, chat_log_add */
+    u8 x18;             /* 0x1C guess */
+    u8 x19;             /* 0x1D Join_pl_chk */
+    u8 x1A;             /* 0x1E */
+    s8 x1B;             /* 0x1F */
+    u8 _pad20[0x2C - 0x20];
+    u8 x10;             /* 0x2C */
+    u8 x11;             /* 0x2D */
+    u16 x12;            /* 0x2E */
+    u8 _pad30[0x38 - 0x30];
+    u8 open;            /* 0x38 Cockpit_menu_chk */
+    s8 x1C;             /* 0x39 guess */
+    u16 x0C;            /* 0x3A Chat_move */
+    union { struct { s8 x0E; }; s8 x0F; };  /* 0x3C Chat_move writes x0F here; x0E has no place of its own that was found */
+    u8 logtop;          /* 0x3D */
+    u8 lognum;          /* 0x3E */
+    u8 logscr;          /* 0x3F */
+    u8 x21;             /* 0x40 */
+    u8 x22;             /* 0x41 */
+    PIT_CHAT log[64];   /* 0x42 */
+    s8 xend;
+} PIT_MENU;
+#else
 typedef struct PIT_MENU {           /* PitMenu, 0x1764 bytes */
     s32 x00;            /* 0x00 */
     s16 x04;            /* 0x04 (f_chat NPC_Message char count) */
@@ -158,9 +197,6 @@ typedef struct PIT_MENU {           /* PitMenu, 0x1764 bytes */
 #ifdef VERSION_MHG
     u8 _padG[7];        /* G: everything from here on sits 7 bytes later (PitMenu is 0x...290 there) */
 #endif
-#ifdef VERSION_MH2
-    u8 _padH[0x1F];     /* MH2: everything from here on sits 0x1F bytes later (from logtop 0x5BB0BD and the log's fields) */
-#endif
     s8 x1C;             /* 0x1C message halt flag (f_chat) */
     u8 open;            /* 0x1D non-zero while the menu is open (Cockpit_menu_chk) */
     u8 logtop;          /* 0x1E chat log write index (f_chat) */
@@ -171,7 +207,8 @@ typedef struct PIT_MENU {           /* PitMenu, 0x1764 bytes */
     PIT_CHAT log[64];   /* 0x23 */
     s8 xend;            /* G: 0x17EA right after the log; MH1 0x1763 (unused there) */
 } PIT_MENU;
-#ifdef VERSION_MHG
+#endif
+#if defined(VERSION_MHG) && !defined(VERSION_MH2)
 #define PIT_HALT PitMenu.xend   /* G keeps the message halt flag behind the log */
 #else
 #define PIT_HALT PitMenu.x1C

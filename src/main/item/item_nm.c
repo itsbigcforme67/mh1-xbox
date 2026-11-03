@@ -1,7 +1,7 @@
 /* item_nm - dropped item work (SLPM_654.95 0x0011CDF0-0x0011D940, main.bin): the 64-slot field item pool
  * (free-slot stack, doubly linked list of live items, per-frame move and "is a player close enough to pick it up"
  * check) and the item preparation (mix recipe) tables: lookup of a recipe by its two ingredients, success rate,
- * the "known recipes" bit list in User_data+0x3D8 (66 bits). Field names are guesses from use. */
+ * the "known recipes" bit list in User_data + UDMO(0x3D8) (66 bits). Field names are guesses from use. */
 #include "gwx.h"
 #include "types.h"
 #include "pl.h"
@@ -295,9 +295,9 @@ int mode;
 #define POP8(x) POP3(POP2(POP1(x)))
 
 int Item_preparation_list_num(void) {
-    return (u8)((u8)((u8)((u8)((u8)((u8)((u8)((u8)(POP8(User_data[0x3D8]) + POP8(User_data[0x3D9])) + POP8(User_data[0x3DA])) +
-                                         POP8(User_data[0x3DB])) + POP8(User_data[0x3DC])) + POP8(User_data[0x3DD])) +
-                   POP8(User_data[0x3DE])) + POP8(User_data[0x3DF])) + POP8(User_data[0x3E0] & 3));
+    return (u8)((u8)((u8)((u8)((u8)((u8)((u8)((u8)(POP8(User_data[UDMO(0x3D8)]) + POP8(User_data[UDMO(0x3D9)])) + POP8(User_data[UDMO(0x3DA)])) +
+                                         POP8(User_data[UDMO(0x3DB)])) + POP8(User_data[UDMO(0x3DC)])) + POP8(User_data[UDMO(0x3DD)])) +
+                   POP8(User_data[UDMO(0x3DE)])) + POP8(User_data[UDMO(0x3DF)])) + POP8(User_data[UDMO(0x3E0)] & 3));
 }
 
 int Item_preparation_list_chk_0(IPREP *e) {

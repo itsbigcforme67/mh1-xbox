@@ -45,11 +45,18 @@ typedef struct EM40W {
 
 extern GAME_W game_w;
 
-/* quest_w (G): only the quest number (G 0x32D018 = quest_w + 8, as MH1) */
+/* quest_w (G): only the quest number (G 0x32D018 = quest_w + QWO(8), as MH1) */
+#ifdef VERSION_MH2
+#include "mh2_layouts.h"
+typedef QUEST_W QUEST_W40_M;
+#define QUEST_W40 QUEST_W40_M
+#else
 typedef struct QUEST_W40 {
     u8 _pad00[8];
     u16 no;             /* 0x08 */
 } QUEST_W40;
+
+#endif
 extern QUEST_W40 quest_w;
 
 void em_act_set(EMW *, int, u16);

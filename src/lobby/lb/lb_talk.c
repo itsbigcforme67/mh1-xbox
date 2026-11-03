@@ -365,7 +365,7 @@ static void lb_msg_g(int i)
 {
     if (i < 0x18) {
         set01_set2(lb_set01_msg[i]);
-        *((u8 *)&lb_sys + 0x7D) = 0x5A;
+        *((u8 *)&lb_sys + LBM(0x7D)) = 0x5A;
     }
 }
 /* lobby 0x58DC30: the banner's prompt, drawn from its prim once the 90 ticks are over */
@@ -385,7 +385,7 @@ static void banner_prim(void)
     }
 }
 /* G's story events (lobby 0x544760, mode 49 on the PS2, 47 here): the elder and the village's story NPCs talk (the row chosen in
- * lb_talk_init by lb_sys+4) and the talk ends with the reward of that story point: zenny, items, stored equipment, event / extra
+ * lb_talk_init by lb_sys + LBM(4)) and the talk ends with the reward of that story point: zenny, items, stored equipment, event / extra
  * flags. The mode 48 banner (the hunter's registration card shown for 90 ticks, lobby 0x58DCC0) is shortened to its result. */
 void Lb_event_story(void) {
     EMW *pl = player_work[*(u8 *)0x3F34C1].x3B0;
@@ -410,7 +410,7 @@ void Lb_event_story(void) {
         r = Lb_put_npc_default(pl);
         if (r != 0 && r != 3)
             return;
-        sub = *(s32 *)((u8 *)&lb_sys + 4);
+        sub = *(s32 *)((u8 *)&lb_sys + LBM(4));
         switch (sub) {
         case 0:
             Gold_add(1500);
@@ -471,7 +471,7 @@ void Lb_event_story(void) {
             }
             break;
         case 5: {
-            if (((u8 *)&User_data)[0xC23] == 0) {       /* sub_main 0x4C50B0: the registration is done once (User_data+0xC23) */
+            if (((u8 *)&User_data)[0xC23] == 0) {       /* sub_main 0x4C50B0: the registration is done once (User_data + UDMO(0xC23)) */
                 ((u8 *)&User_data)[0xC23] = 1;
                 Lbc_SendMiniData();
             }
@@ -494,7 +494,7 @@ void Lb_event_story(void) {
             NPCZoomInCameraCancel();
             lb_sys.x87 = 0x14;
             cnWrap_SoundRequest(3);
-            *(s32 *)((u8 *)&lb_sys + 4) = 0;
+            *(s32 *)((u8 *)&lb_sys + LBM(4)) = 0;
             lb_sys.step = 0;
             return;
         }
@@ -534,7 +534,7 @@ void Lb_event_story(void) {
         }
         npc->x2E = 0;
         lb_sys.x68 = 0;
-        *(s32 *)((u8 *)&lb_sys + 4) = 0;
+        *(s32 *)((u8 *)&lb_sys + LBM(4)) = 0;
         NPCZoomInCameraCancel();
         lb_sys.x6C = 0;
         lb_sys.x87 = 0x14;
@@ -788,7 +788,7 @@ void lb_talk_init(EMW *pl) {
     LB_NPCW *npc = (LB_NPCW *)pl->ex;
     LB_NPCTALK *t = lb_npc_talk_tbl;
     int i, row;
-    s32 sub = *(s32 *)((u8 *)&lb_sys + 4);      /* G lb_sys+4: the story event number (mode 47 here = G's 49) */
+    s32 sub = *(s32 *)((u8 *)&lb_sys + LBM(4));      /* G lb_sys + LBM(4): the story event number (mode 47 here = G's 49) */
     int story = lb_sys.x68 == 47;
 
     lb_pit.x0 = 0;

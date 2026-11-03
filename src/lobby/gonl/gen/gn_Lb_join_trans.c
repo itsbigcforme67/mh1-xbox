@@ -13,12 +13,12 @@ s32 lb_select_trans();                        /* extern */
 void Lb_join_trans(void *arg0, s32 arg1, s32 arg2, s32 arg3) {
     lobby_func_00559C30((s32) (*(u16 *)&joinQuest), arg1, arg2, arg3);
     font_set_stack_no((*(s32 *)((u8 *)(arg0) + 0x18)));
-    switch ((*(s8 *)((u8 *)&lb_sys + 0x1C))) {                           /* irregular */
+    switch ((*(s8 *)((u8 *)&lb_sys + LBM(0x1C)))) {                           /* irregular */
     case 3:
-        lb_select_tag((*(s8 *)((u8 *)&lb_sys + 0x1C)));
+        lb_select_tag((*(s8 *)((u8 *)&lb_sys + LBM(0x1C))));
         return;
     case 6:
-        lb_select_trans((*(s8 *)((u8 *)&lb_sys + 0x1C)));
+        lb_select_trans((*(s8 *)((u8 *)&lb_sys + LBM(0x1C))));
         return;
     }
 }

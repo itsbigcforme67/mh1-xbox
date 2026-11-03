@@ -1411,7 +1411,7 @@ sub_main pword 0x004046C0 1 1
 sub_main pwordmap 0x00404CC0 2 2
 sub_main qinpc_buf 0x0059B968 1 1
 sub_main quest_data_tbl 0x004414B0 9 11
-sub_main quest_w 0x005D8248 98 141
+sub_main quest_w 0x005D8260 98 141
 sub_main result_str 0x00469E00 5 5
 sub_main retire_yesno_str 0x00445FB4 2 2
 sub_main roma_tbl 0x004154E0 2 2

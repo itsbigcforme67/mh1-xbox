@@ -71,7 +71,7 @@ void lb_select_set_data(s32 arg0, s32 arg1, s32 arg2, s32 arg3) {
         extern void *stderr;
         int fprintf();
         fprintf(stderr, "online: lb_select_set_data quest %d sel %d room %p (%04X %04X %04X %04X %04X) quest data %p map %d\n",
-                arg0 & 0xFFFF, lb_sys[0x7E], (void *)temp_s2, ((u16 *)temp_s2)[0], ((u16 *)temp_s2)[1], ((u16 *)temp_s2)[2],
+                arg0 & 0xFFFF, lb_sys[LBM(0x7E)], (void *)temp_s2, ((u16 *)temp_s2)[0], ((u16 *)temp_s2)[1], ((u16 *)temp_s2)[2],
                 ((u16 *)temp_s2)[3], ((u16 *)temp_s2)[4], (void *)(long)temp_v0, temp_v0 ? *(s32 *)((u8 *)(long)temp_v0 + 0x14) : -1);
     }
     temp_v0_2 = Lb_get_quest_type(temp_v0);

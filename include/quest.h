@@ -5,12 +5,14 @@
 #include "f_game.h"
 #include "em.h"
 
+#ifndef VERSION_MH2
 /* A (value, flag) pair, 4 bytes (quest_w+0x98 and +0xBC lists). */
 typedef struct QPAIR {
     s16 v;
     s8 f;
     u8 _pad3;
 } QPAIR;
+#endif
 
 /* Mission data header in mission_area: offsets of the tables (loaded from the
  * quest file). */
@@ -37,6 +39,9 @@ typedef struct QCMD {
     s16 c;              /* 0x06 */
 } QCMD;
 
+#ifdef VERSION_MH2
+#include "mh2_layouts.h"    /* MH2 moved most of quest_w */
+#else
 typedef struct QUEST_W {
     s8 x00;             /* 0x00 condition type */
     s8 x01;             /* 0x01 step */
@@ -131,6 +136,7 @@ typedef struct QUEST_W {
     s16 x186;           /* 0x186 */
 #endif
 } QUEST_W;
+#endif
 extern QUEST_W quest_w;
 
 /* One monster entry of the mission's enemy table (0x30 bytes). */

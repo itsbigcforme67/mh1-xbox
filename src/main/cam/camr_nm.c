@@ -75,6 +75,11 @@ f32 RollAngleRail(f32 t, s16 *rail, int i)
 #endif
 
 /* Quest state, only the fields used here (QUEST_W is declared per file). */
+#ifdef VERSION_MH2
+#include "mh2_layouts.h"
+typedef QUEST_W QW_M;
+#define QW QW_M
+#else
 typedef struct QW {
     u8 _pad00[0x34];
     s16 x34;            /* 0x34 */
@@ -84,6 +89,8 @@ typedef struct QW {
     u8 _pad44[0xB0 - 0x44];
     PLW *pB0;           /* 0xB0 */
 } QW;
+
+#endif
 
 extern QW quest_w;
 extern u8 quest_clear_camera_tbl[];

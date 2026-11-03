@@ -413,7 +413,7 @@ int lb_key_quest_ck(u16 id)
 
 int lb_guild_check_keyQuest(u32 n)
 {
-    int rank = *(u8 *)(User_data + 0xC23);            /* G 0x32CE33 */
+    int rank = *(u8 *)(User_data + UDMO(0xC23));            /* G 0x32CE33 */
     switch (n) {
     case 0: return rank >= 4;
     case 1: return rank >= 8;
@@ -431,7 +431,7 @@ int lb_get_quest_level(int a)
 {
     int rank;
     if (Online_ck() == 1) {
-        rank = *(u8 *)(User_data + 0xC23);
+        rank = *(u8 *)(User_data + UDMO(0xC23));
         if (rank < 5) return 0;
         if (rank < 9) return 1;
         if (rank < 0xD) return 2;
@@ -763,7 +763,7 @@ int Lb_check_money(u32 id)                            /* 0x559BD0: the quest's f
 {
     u8 *row = lobby_g_quest_row((u16)id);
     s32 fee = *(s32 *)(row + 4);
-    if (*(s32 *)(User_data + 0x20) < fee) {
+    if (*(s32 *)(User_data + UDMO(0x20)) < fee) {
         return 1;
     }
     Gold_add(-fee);
@@ -777,7 +777,7 @@ static int quest_cond(int kind, int online)
     int rank = my_user_mini_data[1];
     u8 *pl = PLAYER(MASTER);
     int wk = pl[2];
-    int gold = *(s32 *)(User_data + 0x20);
+    int gold = *(s32 *)(User_data + UDMO(0x20));
     online &= 0xFF;
     switch (kind & 0xFF) {
     case 1: return rank >= 5 || !online;
@@ -808,13 +808,13 @@ static int quest_cond(int kind, int online)
     case 0x1A: return wk == 2;
     case 0x1B: return wk == 4;
     case 0x1C: return wk == 1 || wk == 5;
-    case 0x1E: return *(u16 *)(User_data + 0xDAA) != 0;      /* G 0x32CFBA */
+    case 0x1E: return *(u16 *)(User_data + UDMO(0xDAA)) != 0;      /* G 0x32CFBA */
     case 0x1F: return Quest_clear_bit_ck(0x2740);
     case 0x20: return rank >= 0x11 && rank < 0x1F;
-    case 0x24: return User_data[0xC75] == 6 && *(u16 *)(User_data + 0xC76) == 0x9C;
+    case 0x24: return User_data[UDMO(0xC75)] == 6 && *(u16 *)(User_data + UDMO(0xC76)) == 0x9C;
     case 0x25: return gold < 0x65;
-    case 0x30: return *(u16 *)(User_data + 0xD84) != 0;      /* G 0x32CF94 */
-    case 0x31: return *(u16 *)(User_data + 0xD7A) != 0;      /* G 0x32CF8A */
+    case 0x30: return *(u16 *)(User_data + UDMO(0xD84)) != 0;      /* G 0x32CF94 */
+    case 0x31: return *(u16 *)(User_data + UDMO(0xD7A)) != 0;      /* G 0x32CF8A */
     case 0x33: return wk == 5;
     case 0x34: return wk == 1;
     case 0x35: return wk == 6;

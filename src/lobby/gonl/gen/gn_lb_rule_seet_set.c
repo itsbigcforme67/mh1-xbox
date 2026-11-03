@@ -54,9 +54,9 @@ s32 lb_rule_seet_set(void) {
     temp_s1 = Lb_get_cursor_col();
     temp_s0 = Get_sw2(0) & 0xFFFF;
     GetRoomRule();
-    switch ((*(s8 *)((u8 *)&lb_sys + 0x1E))) {                           /* switch 1; irregular */
+    switch ((*(s8 *)((u8 *)&lb_sys + LBM(0x1E)))) {                           /* switch 1; irregular */
     case 0:                                         /* switch 1 */
-        (*(s8 *)((u8 *)&lb_sys + 0x1E)) += 1;
+        (*(s8 *)((u8 *)&lb_sys + LBM(0x1E))) += 1;
         Lbc_set_prim(0, (s32) &Lb_guild_trans, 0, 0);
         (*(s32 *)((u8 *)&lb_rule_data_tbl + 0x30)) = 0x80206020;
         mhRule = 3;
@@ -268,7 +268,7 @@ block_99:
                 if ((*(s8 *)((u8 *)&mhRule + 0x11)) == 0) {
                     memset(&(*(s8 *)((u8 *)&mhRule + 0x12)), 0, 0x3D);
                 }
-                (*(s8 *)((u8 *)&lb_sys + 0x1E)) = 0;
+                (*(s8 *)((u8 *)&lb_sys + LBM(0x1E))) = 0;
                 cnWrap_SoundRequest(0, M2C_ERROR(/* Read from unset register $a1 */), M2C_ERROR(/* Read from unset register $a2 */), M2C_ERROR(/* Read from unset register $a3 */));
                 return 1;
             }

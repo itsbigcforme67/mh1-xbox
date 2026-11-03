@@ -86,7 +86,7 @@ void plaza_setMyCommentTrans(s32 arg0, s32 arg1, s32 arg2) {
     temp_s0_5 = ((s16) ((temp_s0_4 + 0x16)));
     flfntLocate(arg0, (s32) temp_s0_5);
     font_print(&lit_2316, (*(s32 * *)((u8 *)&tl_mail_tbl + 0x1C)));
-    temp_a2 = (*(u8 *)((u8 *)&User_data + 0xC23));
+    temp_a2 = (*(u8 *)((u8 *)&User_data + UDMO(0xC23)));
     if (temp_a2 != 0) {
         sprintf(&spC0, (*(s32 *)((u8 *)&net_etc_mes_tbl + 0x1C)), temp_a2, (*(s32 *)((u8 *)&hunter_appellation + (temp_a2 * 4))));
     } else {

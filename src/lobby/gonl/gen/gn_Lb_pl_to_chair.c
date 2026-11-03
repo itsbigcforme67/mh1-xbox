@@ -33,12 +33,12 @@ void Lb_pl_to_chair(void) {
     temp_s1 = &player_work + temp_a2;
     if ((*(u8 *)((u8 *)&game_w + 0x14)) == 0x4D) {
         if (lb_sys != 0x1A) {
-            (*(s32 *)((u8 *)&lb_sys + 0x8)) = 0;
+            (*(s32 *)((u8 *)&lb_sys + LBM(0x8))) = 0;
             Lb_send_chair_release(temp_s1, &player_work, temp_a2, temp_a3);
             lb_sys = 0;
             return;
         }
-        (*(s32 *)((u8 *)&lb_sys + 0x8)) = 0;
+        (*(s32 *)((u8 *)&lb_sys + LBM(0x8))) = 0;
         var_a2 = 0;
         lb_sys = 0;
 loop_13:
@@ -47,11 +47,11 @@ loop_13:
             goto block_15;
         }
         if (temp_v1 == 1) {
-            if ((*(u16 *)((u8 *)(var_s2) + 0)) != (*(u8 *)((u8 *)&lb_sys + 0x7A))) {
+            if ((*(u16 *)((u8 *)(var_s2) + 0)) != (*(u8 *)((u8 *)&lb_sys + LBM(0x7A)))) {
                 goto block_9;
             }
 block_15:
-            Lb_send_pl_warp(temp_s1, (s32) (*(u8 *)((u8 *)&lb_sys + 0x7A)), var_a2, (s32) temp_a3);
+            Lb_send_pl_warp(temp_s1, (s32) (*(u8 *)((u8 *)&lb_sys + LBM(0x7A))), var_a2, (s32) temp_a3);
             goto block_16;
         }
 block_9:

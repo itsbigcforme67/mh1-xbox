@@ -157,11 +157,11 @@ void Set_userdata(PLW *pl) {
 }
 
 void ItemCopy_Pl2Ud(PLW *pl) {
-    memcpy((u8 *)User_data + 0x37C, (u8 *)pl + 0x828, 0x50);
+    memcpy((u8 *)User_data + UDMO(0x37C), (u8 *)pl + 0x828, 0x50);
 }
 
 void ItemCopy_Ud2Pl(PLW *pl) {
-    memcpy((u8 *)pl + 0x828, (u8 *)User_data + 0x37C, 0x50);
+    memcpy((u8 *)pl + 0x828, (u8 *)User_data + UDMO(0x37C), 0x50);
 }
 
 void Gold_add(int n) {

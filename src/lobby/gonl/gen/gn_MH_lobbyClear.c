@@ -22,6 +22,6 @@ void MH_lobbyClear(void) {
     (*(s8 *)((u8 *)((*(void **)&cw)) + 0xB6F)) = 0;
     memset(&(*(s32 *)((u8 *)&BsProxyUrlstr + 0x110)), 0, 0xC0);
     Lb_clearChatList(M2C_ERROR(/* Read from unset register $a0 */), M2C_ERROR(/* Read from unset register $a1 */), M2C_ERROR(/* Read from unset register $a2 */), M2C_ERROR(/* Read from unset register $a3 */));
-    (*(u8 *)((u8 *)&lb_sys + 0x93)) = (*(u8 *)&lb_gbyte_2EF2A4);
+    (*(u8 *)((u8 *)&lb_sys + LBM(0x93))) = (*(u8 *)&lb_gbyte_2EF2A4);
 }
 

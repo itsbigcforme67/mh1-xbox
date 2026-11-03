@@ -23,12 +23,12 @@ void Lb_send_pl_pos(void) {
 
     temp_a2 = (*(u8 *)((u8 *)&game_w + 0x3A));
     temp_a1 = temp_a2 * 0xA00;
-    temp_v1 = (*(s8 *)((u8 *)&lb_sys + 0x85)) - 1;
-    (*(s8 *)((u8 *)&lb_sys + 0x85)) = temp_v1;
+    temp_v1 = (*(s8 *)((u8 *)&lb_sys + LBM(0x85))) - 1;
+    (*(s8 *)((u8 *)&lb_sys + LBM(0x85))) = temp_v1;
     temp_s2 = &player_work + temp_a1;
-    if (((((s8) ((s32) temp_v1))) <= 0) && ((*(s8 *)((u8 *)&lb_sys + 0x19)) == 4) && ((sp48 = (s16) (s32) (*(f32 *)((u8 *)(temp_s2) + 0xAC)), sp4A = (s16) (s32) (*(f32 *)((u8 *)(temp_s2) + 0xB4)), sp4C = (*(u8 *)((u8 *)(temp_s2) + 0x736)), ((((s8) (lobby_func_0059A590(&sp48, temp_a1, temp_a2)))) == 0)) || ((*(u8 *)((u8 *)(temp_s2) + 0x15)) == 0x2C))) {
-        (*(s8 *)((u8 *)&lb_sys + 0x86)) = 0;
-        (*(s8 *)((u8 *)&lb_sys + 0x85)) = (s8) (*(u16 *)&lbSendInterval);
+    if (((((s8) ((s32) temp_v1))) <= 0) && ((*(s8 *)((u8 *)&lb_sys + LBM(0x19))) == 4) && ((sp48 = (s16) (s32) (*(f32 *)((u8 *)(temp_s2) + 0xAC)), sp4A = (s16) (s32) (*(f32 *)((u8 *)(temp_s2) + 0xB4)), sp4C = (*(u8 *)((u8 *)(temp_s2) + 0x736)), ((((s8) (lobby_func_0059A590(&sp48, temp_a1, temp_a2)))) == 0)) || ((*(u8 *)((u8 *)(temp_s2) + 0x15)) == 0x2C))) {
+        (*(s8 *)((u8 *)&lb_sys + LBM(0x86))) = 0;
+        (*(s8 *)((u8 *)&lb_sys + LBM(0x85))) = (s8) (*(u16 *)&lbSendInterval);
         lastSend = (f32) sp48;
         (*(f32 *)((u8 *)&lastSend + 0x8)) = (f32) sp4A;
         (*(s16 *)((u8 *)&lastSend + 0x12)) = (s16) sp4C;

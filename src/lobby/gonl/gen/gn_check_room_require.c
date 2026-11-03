@@ -15,7 +15,7 @@ s32 check_room_require(void) {
     s32 temp_v0;
     u16 temp_s0;
 
-    temp_s0 = *Lbs_GetRoomInfo((*(u8 *)((u8 *)&lb_sys + 0x7E)));
+    temp_s0 = *Lbs_GetRoomInfo((*(u8 *)((u8 *)&lb_sys + LBM(0x7E))));
     temp_v0 = lobby_func_00559C30((s32) temp_s0, M2C_ERROR(/* Read from unset register $a1 */), M2C_ERROR(/* Read from unset register $a2 */), M2C_ERROR(/* Read from unset register $a3 */));
     temp_a0 = temp_s0 & 0xFFFF;
     if (temp_a0 >= 0xC350) {

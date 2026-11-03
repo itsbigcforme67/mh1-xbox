@@ -31,11 +31,11 @@ void Lb_check_newCommer(void) {
             } else {
 block_5:
                 flCompact(temp_a0);
-                (*(u8 *)((u8 *)&lb_sys + 0x8F)) = 3;
+                (*(u8 *)((u8 *)&lb_sys + LBM(0x8F))) = 3;
             }
             return;
         }
-        if ((*(u8 *)((u8 *)&lb_sys + 0x8F)) == 0) {
+        if ((*(u8 *)((u8 *)&lb_sys + LBM(0x8F))) == 0) {
             if (lb_member_changeCheck() == 1) {
                 temp_a0_2 = (*(u8 *)((u8 *)&game_w + 0x14));
                 if (temp_a0_2 != 0x4C) {
@@ -45,11 +45,11 @@ block_5:
                 } else {
 block_12:
                     flCompact(temp_a0_2);
-                    (*(u8 *)((u8 *)&lb_sys + 0x8F)) = 3;
+                    (*(u8 *)((u8 *)&lb_sys + LBM(0x8F))) = 3;
                 }
                 return;
             }
-            if ((*(u8 *)((u8 *)&lb_sys + 0x8F)) == 0) {
+            if ((*(u8 *)((u8 *)&lb_sys + LBM(0x8F))) == 0) {
                 lb_member_inCheck();
                 temp_a0_3 = (*(u8 *)((u8 *)&game_w + 0x14));
                 if (temp_a0_3 != 0x4D) {
@@ -68,9 +68,9 @@ block_18:
                         var_s0 += 0xA00;
                     } while (var_s1 < 0xA);
                 }
-                if ((*(u8 *)((u8 *)&lb_sys + 0x94)) == 1) {
-                    Lb_send_statusReq((*(u8 *)((u8 *)&lb_sys + 0x94)));
-                    (*(u8 *)((u8 *)&lb_sys + 0x94)) = 0;
+                if ((*(u8 *)((u8 *)&lb_sys + LBM(0x94))) == 1) {
+                    Lb_send_statusReq((*(u8 *)((u8 *)&lb_sys + LBM(0x94))));
+                    (*(u8 *)((u8 *)&lb_sys + LBM(0x94))) = 0;
                 }
             }
         }

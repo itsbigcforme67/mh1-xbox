@@ -27,10 +27,15 @@ typedef struct EM29_TYPE {
     s32 se;             /* 0x8 sound when broken */
 } EM29_TYPE;
 
+#ifdef VERSION_MH2
+#include "mh2_layouts.h"
+#else
 typedef struct QUEST_W {
     u8 _pad00[8];
-    s16 x08;            /* 0x08 non-zero: a quest is running */
+    qno_t x08;            /* 0x08 non-zero: a quest is running */
 } QUEST_W;
+
+#endif
 
 extern EM29_TYPE em29_type_tbl[];
 extern QUEST_W quest_w;

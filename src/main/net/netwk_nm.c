@@ -900,7 +900,7 @@ int ms_network_end(void) {
 }
 
 void network_work_init(void) {
-    memset(&net_common_w, 0, 0x94);
+    memset(&net_common_w, 0, MH2V(0x94, 0xE0));
 }
 
 int ms_net_end_wait(void) {

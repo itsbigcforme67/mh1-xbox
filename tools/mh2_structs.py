@@ -11,6 +11,9 @@ opcode and registers) that gives votes: field offset in MH1 -> offset in MH2.
   mh2_structs.py show STRUCT    votes for one struct as a table
   mh2_structs.py gen            write include/mh2_plw.h, mh2_emw.h, mh2_ofs.h from the votes and config/mh2/struct_map.txt
   mh2_structs.py cnet           write include/cnet_mh2.h (CnetSys_w and CNO) from include/lbnet.h and config/mh2/cnet_map.txt
+  mh2_structs.py layouts        write include/mh2_layouts.h from config/mh2/layouts.txt (QUEST_W and the other smaller structs, each with its offset macro)
+  mh2_structs.py gvotes         for every global: symbol + offset in our code -> absolute address in the MH2 twin, build/mh2/probe/gvotes.tsv
+  mh2_structs.py gshow NAME [g] the votes for one global (g: G's form only), counts only
 
 config/mh2/struct_map.txt holds hand corrections: STRUCT MH1_OFFSET MH2_OFFSET [NEWTYPE]. SHLW and EFTW are probed for `show`
 only; their few moves are guards in shell.h and eft.h. C that reaches PLW or EMW by number goes through MH2_OFS(p, o) (include/
@@ -263,10 +266,17 @@ def gen():
         lines = []
         over = []
         pos = 0
+        # a field with real evidence keeps its place; one that only follows its neighbour gives way to it
+        solid = lambda h: h == "hand" or h.startswith("votes") and int(h.split()[1]) >= 2
+        taken = bytearray(SIZES[name])
+        for n_, o_, s_, d_, h_ in placed:
+            if solid(h_) and n_ + s_ <= SIZES[name] and not any(taken[n_:n_ + s_]):
+                taken[n_:n_ + s_] = b"\1" * s_
         for new, off, size, decl, how in placed:
             r = re.match(r"(?:struct\s+)?(\w+)\s*(\*)?", decl.strip())
             al = 4 if r.group(2) or "\n" in decl and "s32" in decl else ALIGN.get(r.group(1), 1)
-            if new < pos or new + size > SIZES[name] or new % al:     # a padded field would move all after it
+            weak_hit = not solid(how) and any(taken[new:new + size])
+            if weak_hit or new < pos or new + size > SIZES[name] or new % al:     # a padded field would move all after it
                 over.append((new, off, size, decl, how))
                 continue
             if new > pos:
@@ -324,6 +334,213 @@ def show(name):
     for off in sorted(v):
         c = v[off]
         print("%04X" % off, " ".join("%s:%d" % ("%04X" % k if k >= 0 else "?", n) for k, n in c.most_common(5)))
+
+
+# lb_sys, PitMenu by raw MH1 number. LBM: votes from aligned code against G's layout (include/lbsys_g.h has the struct); head 0x10 bytes,
+# then the 0xF00-byte block the lobby memsets, then the fields. PMO: include/menu.h.
+LBM = """#define LBM(o) ((o) < 0x64 ? (o) + 0xF26 : (o) == 0x64 ? 0xF14 : (o) == 0x66 ? 0xF3A : (o) == 0x68 ? 0 : (o) == 0x6C ? 8 : (o) < 0x74 ? (o) + 0xECB : \\
+    (o) == 0x74 ? 0xF10 : (o) == 0x76 ? 0xF12 : (o) == 0x78 ? 0xF3F : (o) == 0x7C ? 0xF40 : (o) == 0x80 ? 0xC : (o) < 0x88 ? (o) + 0xEC3 : (o) + 0xEC0)
+#define PMO(o) ((o) < 0xC ? (o) : (o) == 0xC ? 0x3A : (o) == 0xE ? 0x3C : (o) == 0xF ? 0x3C : (o) < 0x14 ? (o) + 0x1C : (o) == 0x14 ? 0x17 : (o) == 0x15 ? 0x1A : \\
+    (o) == 0x16 ? 0x18 : (o) == 0x17 ? 0x1B : (o) < 0x1C ? (o) + 4 : (o) == 0x1C ? 0x39 : (o) == 0x1D ? 0x38 : (o) + 0x1F)
+"""
+
+# User_data by raw number, MH1's or G's: G's numbers from 0x74C on are above anything MH1 has. Runs read from MH2's f_ud (include/ud.h);
+# 0xC3F and the log at 0xD76.. follow the nearest run, which is a guess.
+UDMO = """/* UDMO(o): an MH1 or G offset in User_data -> MH2's */
+#define UDMO(o) ((o) < 0x1C ? (o) : (o) < 0x20 ? (o) + 0x40 : (o) < 0x24 ? (o) + 0x2964 : (o) < 0x1C4 ? ((o) < 0x44 ? (o) + 0x40 : (o) + 0x78) : \\
+    (o) < 0x354 ? (o) + 0x1668 : (o) < 0x374 ? (o) + 0x1CA8 : (o) < 0x37B ? (o) + 0x1CC8 : (o) == 0x37B ? 0x2726 : (o) < 0x3CD ? (o) + 0x1CC4 : (o) < 0x3D2 ? (o) + 0x1CC4 : \\
+    (o) < 0x3D8 ? 0x209E + ((o) - 0x3D2) * 12 : (o) < 0x456 ? (o) + 0x1D03 : (o) < 0x45C ? (o) + 0x1D30 : (o) < 0x74C ? (o) + 0x1D36 : \\
+    (o) < 0xBFC ? (o) + 0x10E0 : (o) < 0xC1C ? (o) + 0x1400 : (o) < 0xC23 ? (o) + 0x1420 : (o) == 0xC23 ? 0x2726 : (o) < 0xC75 ? (o) + 0x141C : \\
+    (o) < 0xC7A ? (o) + 0x141C : (o) < 0xC7F ? 0x209E + ((o) - 0xC7A) * 12 : (o) < 0xC80 ? (o) + 0x141C : (o) < 0xCFE ? (o) + 0x145B : (o) + 0x1488)
+"""
+
+
+# --- layouts: smaller structs, listed by hand with how each place is known (config/mh2/layouts.txt) ---
+def field_size(decl, sizes):
+    d = decl.strip().rstrip(";")
+    n = 1
+    for x in re.findall(r"\[([^\]]+)\]", d):
+        n *= eval(x, {"__builtins__": {}})
+    if "*" in d:
+        return 4 * n
+    if d.startswith("union {"):
+        k = d.split()[2]
+        return 4 if "*" in d.split(";")[0] or k.startswith("QW_X") else sizes[k]
+    if d.startswith("struct {"):
+        return sizes[d[:d.index("}") + 1]] * n
+    if d.startswith("QW_X"):
+        return 4
+    return sizes[d.split()[0]] * n
+
+
+def layouts():
+    sizes = {"u8": 1, "s8": 1, "char": 1, "u16": 2, "s16": 2, "u32": 4, "s32": 4, "f32": 4, "QPAIR": 4, "struct { s8 a, b; }": 2}
+    structs = []
+    for l in open(C.P("config/mh2/layouts.txt")):
+        l = l.split("#", 1)[0].strip()
+        if not l:
+            continue
+        if l.startswith("STRUCT"):
+            f = l.split()
+            structs.append((f[1], int(f[2], 16), f[3], []))
+        elif l.startswith("SIZE"):
+            f = l.split()
+            sizes[f[1]] = int(f[2], 0)
+        else:
+            head, _s, note = l.partition(" ; ")
+            old, new, decl = head.split(None, 2)
+            structs[-1][3].append((int(new, 16), None if old == "-" else int(old, 16), decl, note))
+    out = ["#ifndef MH2_LAYOUTS_H", "#define MH2_LAYOUTS_H",
+           "/* Generated by tools/mh2_structs.py layouts from config/mh2/layouts.txt: do not edit. Offsets as MH2 has them; the comment gives", 
+           " * MH1's offset and how the place is known. `guess` means the field's MH2 place was not found. */",
+           "typedef struct QPAIR { s16 v; s8 f; u8 _pad3; } QPAIR;",
+           "#ifndef QW_X64_T        /* a few files read the mission data as bytes */", "#define QW_X64_T struct MISSION *", "#endif",
+           "#ifndef QW_X94_T", "#define QW_X94_T struct MISSION2 *", "#endif"]
+    ofs = ["/* Generated by tools/mh2_structs.py layouts: an MH1 offset -> MH2's, for C that reaches these structs by number. */"]
+    for name, size, macro, fields in structs:
+        fields.sort(key=lambda t: t[0])
+        out.append("typedef struct %s {" % name)
+        pos = 0
+        for new, old, decl, note in fields:
+            if new < pos:
+                raise SystemExit("%s: 0x%X overlaps" % (name, new))
+            if new > pos:
+                out.append("    u8 _pad%03X[0x%X];" % (pos, new - pos))
+            out.append("    %-28s /* 0x%03X%s: %s */" % (decl, new, "" if old is None else " (MH1 0x%03X)" % old, note))
+            pos = new + field_size(decl, sizes)
+        if pos > size:
+            raise SystemExit("%s: fields run to 0x%X" % (name, pos))
+        if pos < size:
+            out.append("    u8 _pad%03X[0x%X];" % (pos, size - pos))
+        out.append("} %s;" % name)
+        olds = sorted((old, field_size(decl, sizes), new) for new, old, decl, _n in fields if old is not None)
+        chain = ""
+        for k, (old, sz, new) in enumerate(olds):
+            nxt = olds[k + 1][0] if k + 1 < len(olds) else 0x100000
+            chain += "(o) < 0x%X ? (o) + (%d) : " % (nxt, new - old)
+        ofs.append("#define %s(o) (%s(o))" % (macro, chain))
+    ofs.append(UDMO)
+    ofs.append(LBM)
+    out += ["#endif", ""]
+    open(C.P("include/mh2_layouts.h"), "w").write("\n".join(out))
+    open(C.P("include/mh2_lay_ofs.h"), "w").write("\n".join(ofs + [""]))
+    print("mh2_layouts.h:", " ".join("%s %d fields" % (s[0], len(s[3])) for s in structs))
+
+
+# --- gvotes: a field of a struct that is a global is reached as lui/lo of symbol + offset, so the pad is not needed: the relocations
+# of our object say which symbol and offset, the instruction pair of the twin says which address. ---
+def align(mine, o):
+    """index in ours -> index in the twin, on opcode and registers, immediates left out"""
+    op = lambda w: w >> 16 if w >> 26 in IMM_OPS or w >> 26 == 0x0F else (w >> 26) if w >> 26 in (2, 3) else w
+    if len(mine) == len(o):
+        return {i: i for i in range(len(mine))}
+    if max(len(mine), len(o)) >= 2000:
+        return {}
+    import difflib
+    pairs = {}
+    for bl in difflib.SequenceMatcher(None, [op(w) for w in mine], [op(w) for w in o], False).get_matching_blocks():
+        for k in range(bl.size):
+            pairs[bl.a + k] = bl.b + k
+    return pairs
+
+
+MEM_OPS = {0x20, 0x21, 0x22, 0x23, 0x24, 0x25, 0x26, 0x27, 0x28, 0x29, 0x2A, 0x2B, 0x2C, 0x2D, 0x2E, 0x31, 0x37, 0x39, 0x3F, 0x1A, 0x1B, 0x1E, 0x1F}
+CALLER = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 24, 25, 31}
+
+
+def track(words, rel=None):
+    """index -> (symbol or None, value) for each instruction that uses an address: a lui pair, or an offset from a register that holds
+    one. Straight line through the function, so a branch can fool it; these are votes. rel: {index: (type, symbol)} for our object,
+    whose words hold the addends; the twin's words hold the addresses."""
+    reg = {}
+    out = {}
+    for i, w in enumerate(words):
+        op, rs, rt = w >> 26, w >> 21 & 31, w >> 16 & 31
+        r = (rel or {}).get(i)
+        imm = C.sext(w & 0xFFFF)
+        if op == 0x0F:
+            reg[rt] = (r[1] if r else None, (w & 0xFFFF) << 16)
+            continue
+        if op == 9 or op in MEM_OPS:
+            if rs in reg:
+                s, v = reg[rs]
+                v = (v + imm) & 0xFFFFFFFF
+                out[i] = (s, v)
+                if op == 9:
+                    reg[rt] = (s, v)
+                    continue
+            if op == 9 or op in (0x20, 0x21, 0x23, 0x24, 0x25, 0x37):
+                reg.pop(rt, None)
+            continue
+        if op == 0:
+            reg.pop(w >> 11 & 31, None)
+        elif op == 3 or op == 0 and w & 0x3F == 9:
+            for k in CALLER:
+                reg.pop(k, None)
+        elif 8 <= op <= 14:
+            reg.pop(rt, None)
+    return out
+
+
+def gvotes_of(path, gform, hint, out):
+    p = C.compile_one(path, gform=gform)
+    if not p:
+        return
+    ob = C.Obj(p)
+    for name, sh, val, sz in ob.funcs:
+        tw = hint.get(re.sub(r"_[0-9A-F]{6,8}$", "", name)) or hint.get(name)
+        if not tw or sz < 8:
+            continue
+        m, at = tw[0]
+        load, data = C.image(m)[:2]
+        n = C.func_sizes().get((m, at), sz) // 4
+        if at - load + n * 4 > len(data):
+            continue
+        mine = struct.unpack_from("<%dI" % (sz // 4), ob.d, ob.S[sh][4] + val)
+        o = struct.unpack_from("<%dI" % n, data, at - load)
+        pairs = align(mine, o)
+        rel = {(off - val) // 4: (t, y) for off, t, y in ob.rel[sh] if val <= off < val + sz and t == C.HI}
+        ours, theirs = track(mine, rel), track(o)
+        for i, (y, v) in ours.items():
+            if y is None or ob.syms[y][5] != 0:
+                continue
+            j = pairs.get(i)
+            v = v - 0x100000000 if v >= 0x80000000 else v
+            good = j in theirs and mine[i] >> 26 == o[j] >> 26
+            out[(ob.syms[y][0], v, theirs[j][1] if good else 0, path, gform)] += 1
+
+
+def gvotes():
+    hint = C.hints()
+    C.func_sizes()
+    os.makedirs(PROBE, exist_ok=True)
+    out = collections.Counter()
+    paths = C.sources()
+    work = [(p, False) for p in paths] + [(p, True) for p in paths]
+    with ThreadPoolExecutor(C.JOBS) as pool:
+        list(pool.map(lambda t: gvotes_of(t[0], t[1], hint, out), work))
+    with open(os.path.join(PROBE, "gvotes.tsv"), "w") as fh:
+        for (s, add, tg, path, g), n in sorted(out.items()):
+            fh.write("%s\t%d\t%d\t%s\t%d\t%d\n" % (s, add, tg, path, g, n))
+    print(len(out), "rows")
+
+
+def gshow(name, gonly=False):
+    c = collections.defaultdict(collections.Counter)
+    for l in open(os.path.join(PROBE, "gvotes.tsv")):
+        s, add, tg, path, g, n = l.split("\t")
+        if s == name and (not gonly or g == "1"):
+            c[int(add)][int(tg)] += int(n)
+    tot = collections.Counter()
+    for add in c:
+        for tg, n in c[add].items():
+            if tg:
+                tot[tg - add] += n
+    base = tot.most_common(1)[0][0] if tot else 0
+    print("commonest base 0x%X" % base)
+    for add in sorted(c):
+        print("%6X" % add, " ".join("%s:%d" % ("%06X(%s%X)" % (k, "-" if k - add - base < 0 else "+", abs(k - add - base)) if k else "?", n)
+                                    for k, n in c[add].most_common(6)))
 
 
 # --- CnetSys_w: laid out by hand-read runs (config/mh2/cnet_map.txt), not by the probe: its fields are reached by global + offset,
@@ -429,5 +646,11 @@ if __name__ == "__main__":
         gen()
     elif a and a[0] == "cnet":
         cnet()
+    elif a and a[0] == "layouts":
+        layouts()
+    elif a and a[0] == "gvotes":
+        gvotes()
+    elif a and a[0] == "gshow":
+        gshow(a[1], len(a) > 2)
     else:
         sys.exit(__doc__)

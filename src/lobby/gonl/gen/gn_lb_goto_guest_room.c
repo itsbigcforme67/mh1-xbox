@@ -27,15 +27,15 @@ void lb_goto_guest_room(void *arg0, s16 arg1) {
         }
         Gold_add(-(*(s32 *)((u8 *)&g_lb_5FC59C + (arg1 * 4))));
         cnWrap_SoundRequest(8, M2C_ERROR(/* Read from unset register $a1 */), M2C_ERROR(/* Read from unset register $a2 */), M2C_ERROR(/* Read from unset register $a3 */));
-        temp_a0 = &(*(u8 *)((u8 *)&User_data + 0xC3F)) + arg1;
+        temp_a0 = &(*(u8 *)((u8 *)&User_data + UDMO(0xC3F))) + arg1;
         temp_v1 = *temp_a0;
         if ((s32) temp_v1 < 0x96) {
             *temp_a0 = temp_v1 + 1;
         }
         /* fallthrough */
     case 2:
-        (*(s8 *)((u8 *)&lb_sys + 0x7C)) = 0;
-        (*(s8 *)((u8 *)&lb_sys + 0x19)) = 5;
+        (*(s8 *)((u8 *)&lb_sys + LBM(0x7C))) = 0;
+        (*(s8 *)((u8 *)&lb_sys + LBM(0x19))) = 5;
         (*(s16 *)((u8 *)(arg0) + 0x73A)) = arg1;
         temp_a1 = (*(void **)&cw);
         (*(u8 *)((u8 *)(temp_a1) + 0xFA63)) = (u8) ((*(u8 *)((u8 *)(temp_a1) + 0xFA63)) | ((1 << (arg1 - 0x51)) & 0xFF));

@@ -112,14 +112,14 @@ s32 NetAutoLoad(void);
 
 
 void dialog_open_set(s8 arg0, s8 arg1) {
-    M2C_FIELD(&net_common_w, s8 *, 0x7D) = arg0;
-    M2C_FIELD(&net_common_w, s8 *, 0x7E) = arg1;
-    M2C_FIELD(&net_common_w, s8 *, 0x7C) = 0x64;
-    M2C_FIELD(&net_common_w, s16 *, 4) = 8;
-    M2C_FIELD(&net_common_w, s16 *, 6) = 0x744;
+    M2C_FIELD(&net_common_w, s8 *, NCO(0x7D)) = arg0;
+    M2C_FIELD(&net_common_w, s8 *, NCO(0x7E)) = arg1;
+    M2C_FIELD(&net_common_w, s8 *, NCO(0x7C)) = 0x64;
+    M2C_FIELD(&net_common_w, s16 *, NCO(4)) = 8;
+    M2C_FIELD(&net_common_w, s16 *, NCO(6)) = 0x744;
 }
 
 void dialog_close_set(s8 arg0) {
-    M2C_FIELD(&net_common_w, s8 *, 0x7D) = arg0;
-    M2C_FIELD(&net_common_w, s8 *, 0x7C) = 0x6E;
+    M2C_FIELD(&net_common_w, s8 *, NCO(0x7D)) = arg0;
+    M2C_FIELD(&net_common_w, s8 *, NCO(0x7C)) = 0x6E;
 }

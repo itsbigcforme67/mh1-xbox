@@ -27,12 +27,12 @@ void lobby_func_0059A270(void) {
     u8 *temp_v1;
 
     flMemset(&lb_sys, 0, 0x98);
-    (*(s8 *)((u8 *)&lb_sys + 0x95)) = 1;
+    (*(s8 *)((u8 *)&lb_sys + LBM(0x95))) = 1;
     var_a3 = 0;
     var_a2 = &player_work;
     var_a1 = &lb_player;
     var_a0 = &client_work;
-    (*(u8 *)((u8 *)&lb_sys + 0x93)) = (*(u8 *)&lb_gbyte_2EF2A4);
+    (*(u8 *)((u8 *)&lb_sys + LBM(0x93))) = (*(u8 *)&lb_gbyte_2EF2A4);
     do {
         (*(s32 **)((u8 *)(var_a1) + 0)) = var_a2;
         (*(s8 *)((u8 *)(var_a0) + 0xB64)) = 0;

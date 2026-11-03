@@ -38,23 +38,23 @@ s32 *sub_main_func_004C8F90(s32 arg0, s32 arg1, s32 arg2, s32 arg3) {
             var_a4 += 6;
             var_a5 = ((s16) ((var_a5 + 1)));
         } while (var_a0 < 0x64);
-        (*(s32 *)((u8 *)(&g_main_2FF154) + 0x12C)) = (s32) (*(s32 *)((u8 *)(&User_data) + 0xDE8));
-        (*(s32 *)((u8 *)(&g_main_2FF154) + 0x130)) = (s32) (*(s32 *)((u8 *)(&User_data) + 0xDEC));
-        (*(s32 *)((u8 *)(&g_main_2FF154) + 0x134)) = (s32) (*(s32 *)((u8 *)(&User_data) + 0xC1C));
-        (*(u8 *)((u8 *)(&g_main_2FF154) + 0x138)) = (u8) (*(u8 *)((u8 *)(&User_data) + 0xC23));
+        (*(s32 *)((u8 *)(&g_main_2FF154) + 0x12C)) = (s32) (*(s32 *)((u8 *)&User_data + UDMO(0xDE8)));
+        (*(s32 *)((u8 *)(&g_main_2FF154) + 0x130)) = (s32) (*(s32 *)((u8 *)&User_data + UDMO(0xDEC)));
+        (*(s32 *)((u8 *)(&g_main_2FF154) + 0x134)) = (s32) (*(s32 *)((u8 *)&User_data + UDMO(0xC1C)));
+        (*(u8 *)((u8 *)(&g_main_2FF154) + 0x138)) = (u8) (*(u8 *)((u8 *)&User_data + UDMO(0xC23)));
         return &(*(s32 *)((u8 *)&view_work + 0x80));
     case 1:
-        (*(u8 *)((u8 *)(&(*(u8 *)((u8 *)&view_work + 0x64))) + 0)) = (u8) (*(u8 *)((u8 *)(&User_data) + 0xC75));
-        (*(u16 *)((u8 *)(&(*(u8 *)((u8 *)&view_work + 0x64))) + 2)) = (u16) (*(u16 *)((u8 *)(&User_data) + 0xC76));
-        (*(u8 *)((u8 *)(&(*(u8 *)((u8 *)&view_work + 0x64))) + 1)) = (u8) (*(u8 *)((u8 *)(&User_data) + 0xC7B));
-        (*(u8 *)((u8 *)(&(*(u8 *)((u8 *)&view_work + 0x64))) + 4)) = (u8) (*(u8 *)((u8 *)(&User_data) + 0xC7C));
-        (*(u8 *)((u8 *)(&(*(u8 *)((u8 *)&view_work + 0x64))) + 5)) = (u8) (*(u8 *)((u8 *)(&User_data) + 0xC7D));
-        (*(u8 *)((u8 *)(&(*(u8 *)((u8 *)&view_work + 0x64))) + 6)) = (u8) (*(u8 *)((u8 *)(&User_data) + 0xC7E));
-        (*(u8 *)((u8 *)(&(*(u8 *)((u8 *)&view_work + 0x64))) + 7)) = (u8) (*(u8 *)((u8 *)(&User_data) + 0xC7A));
-        (*(s32 *)((u8 *)(&(*(u8 *)((u8 *)&view_work + 0x64))) + 8)) = (s32) (*(s32 *)((u8 *)(&User_data) + 0xDE8));
-        (*(s32 *)((u8 *)(&(*(u8 *)((u8 *)&view_work + 0x64))) + 0xC)) = (s32) (*(s32 *)((u8 *)(&User_data) + 0xDEC));
-        (*(s32 *)((u8 *)(&(*(u8 *)((u8 *)&view_work + 0x64))) + 0x10)) = (s32) (*(s32 *)((u8 *)(&User_data) + 0x1C));
-        (*(u8 *)((u8 *)(&(*(u8 *)((u8 *)&view_work + 0x64))) + 0x14)) = (u8) (*(u8 *)((u8 *)(&User_data) + 0xC23));
+        (*(u8 *)((u8 *)(&(*(u8 *)((u8 *)&view_work + 0x64))) + 0)) = (u8) (*(u8 *)((u8 *)&User_data + UDMO(0xC75)));
+        (*(u16 *)((u8 *)(&(*(u8 *)((u8 *)&view_work + 0x64))) + 2)) = (u16) (*(u16 *)((u8 *)&User_data + UDMO(0xC76)));
+        (*(u8 *)((u8 *)(&(*(u8 *)((u8 *)&view_work + 0x64))) + 1)) = (u8) (*(u8 *)((u8 *)&User_data + UDMO(0xC7B)));
+        (*(u8 *)((u8 *)(&(*(u8 *)((u8 *)&view_work + 0x64))) + 4)) = (u8) (*(u8 *)((u8 *)&User_data + UDMO(0xC7C)));
+        (*(u8 *)((u8 *)(&(*(u8 *)((u8 *)&view_work + 0x64))) + 5)) = (u8) (*(u8 *)((u8 *)&User_data + UDMO(0xC7D)));
+        (*(u8 *)((u8 *)(&(*(u8 *)((u8 *)&view_work + 0x64))) + 6)) = (u8) (*(u8 *)((u8 *)&User_data + UDMO(0xC7E)));
+        (*(u8 *)((u8 *)(&(*(u8 *)((u8 *)&view_work + 0x64))) + 7)) = (u8) (*(u8 *)((u8 *)&User_data + UDMO(0xC7A)));
+        (*(s32 *)((u8 *)(&(*(u8 *)((u8 *)&view_work + 0x64))) + 8)) = (s32) (*(s32 *)((u8 *)&User_data + UDMO(0xDE8)));
+        (*(s32 *)((u8 *)(&(*(u8 *)((u8 *)&view_work + 0x64))) + 0xC)) = (s32) (*(s32 *)((u8 *)&User_data + UDMO(0xDEC)));
+        (*(s32 *)((u8 *)(&(*(u8 *)((u8 *)&view_work + 0x64))) + 0x10)) = (s32) (*(s32 *)((u8 *)&User_data + UDMO(0x1C)));
+        (*(u8 *)((u8 *)(&(*(u8 *)((u8 *)&view_work + 0x64))) + 0x14)) = (u8) (*(u8 *)((u8 *)&User_data + UDMO(0xC23)));
         return &(*(s32 *)((u8 *)&view_work + 0x50));
     default:
         return NULL;

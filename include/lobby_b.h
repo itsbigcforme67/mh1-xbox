@@ -11,7 +11,7 @@
 #undef pNet
 
 #include "lbsys_g.h"
-#ifdef VERSION_MHG
+#if defined(VERSION_MHG) || defined(VERSION_MH2)
 typedef LBSYS_G LBSYS_B;
 #else
 typedef struct LBSYS_B {          /* lb_sys, 0x90 bytes (same object as LBSYS) */

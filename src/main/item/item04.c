@@ -2,7 +2,7 @@
 /* item_nm - dropped item work (SLPM_654.95 0x0011CDF0-0x0011D940, main.bin): the 64-slot field item pool
  * (free-slot stack, doubly linked list of live items, per-frame move and "is a player close enough to pick it up"
  * check) and the item preparation (mix recipe) tables: lookup of a recipe by its two ingredients, success rate,
- * the "known recipes" bit list in User_data+0x3D8 (66 bits). Field names are guesses from use. */
+ * the "known recipes" bit list in User_data + UDMO(0x3D8) (66 bits). Field names are guesses from use. */
 #include "gwx.h"
 #include "types.h"
 #include "itemprep.h"

@@ -1602,7 +1602,7 @@ void PlayerStatusWindow(u8 *pl, int tab) {
         font_print(lit_3593, (s16)*(f32 *)(pl + 0x928));
         flfntLocate(0x21C, 0x106);
         font_print(lit_3593, (s16)*(f32 *)(pl + 0x92C));
-        Put_comment(0x132, 0x126, 0x14, (u8 *)&User_data + 0x3F4);
+        Put_comment(0x132, 0x126, 0x14, (u8 *)&User_data + UDMO(0x3F4));
         return;
     case 1:
         PlayerEquipmentWindow((PLW *)pl);

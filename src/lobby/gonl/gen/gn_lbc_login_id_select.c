@@ -143,7 +143,7 @@ void lbc_login_id_select(s32 unused_a0, s32 unused_a1, s32 arg2, s32 arg3) {
         (*(s8 *)((u8 *)((*(void **)&cw)) + 0xFA65)) = 0;
         Set_userdata((u8 *)&player_work + ((*(u8 *)((u8 *)&game_w + 0x3A)) * 0xA00));
         temp_s2 = temp_s1 * 0x11;
-        memcpy((*(void **)&cw) + temp_s2 + 0x2B, &(*(s32 *)((u8 *)&User_data + 0x8)), 0x10);
+        memcpy((*(void **)&cw) + temp_s2 + 0x2B, &(*(s32 *)((u8 *)&User_data + UDMO(0x8))), 0x10);
         temp_v1_3 = (*(void **)&cw);
         temp_s0 = temp_s1 * 8;
         if ((*(s8 *)((u8 *)((temp_s0 + temp_v1_3)) + 0xB)) == 0) {

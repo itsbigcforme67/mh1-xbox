@@ -112,6 +112,6 @@ s32 NetAutoLoad(void);
 
 
 void SaveNetFile_init(void) {
-    M2C_FIELD(&net_common_w, s8 *, 0x7C) = 0;
-    M2C_FIELD(&net_common_w, s8 *, 0x7D) = 0;
+    M2C_FIELD(&net_common_w, s8 *, NCO(0x7C)) = 0;
+    M2C_FIELD(&net_common_w, s8 *, NCO(0x7D)) = 0;
 }

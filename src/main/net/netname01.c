@@ -45,7 +45,7 @@ void Net_disp_net_name(int kind) {
     memset(buf, 0, 0x80);
     switch (kind) {
     case 0:
-        sprintf(t1, lit_409_00370840, net_common_w + 0x16);
+        sprintf(t1, lit_409_00370840, net_common_w + NCO(0x16));
         han2zen(t1, buf);
         break;
     case 1:
@@ -60,25 +60,25 @@ void Net_disp_net_name(int kind) {
         }
         break;
     case 3:
-        if (*(s8 *)(net_common_w + 0x14) == 0) {
+        if (*(s8 *)(net_common_w + NCO(0x14)) == 0) {
             strcpy(buf, lit_410_00370848);
         } else {
             strcpy(buf, lit_411_00370850);
         }
         break;
     case 4:
-        if (*(s8 *)(net_common_w + 0x14) != 0) {
-            sprintf(t2, lit_409_00370840, net_common_w + 0x23);
+        if (*(s8 *)(net_common_w + NCO(0x14)) != 0) {
+            sprintf(t2, lit_409_00370840, net_common_w + NCO(0x23));
             han2zen(t2, buf);
         }
         break;
     case 5:
-        sprintf(t3, lit_412_00370858, *(s16 *)(net_common_w + 4));
+        sprintf(t3, lit_412_00370858, *(s16 *)(net_common_w + NCO(4)));
         han2zen(t3, buf);
         strcat(buf, lit_413_00370860);
         break;
     case 6:
-        sprintf(buf, lit_414_00370868, *(s32 *)(net_common_w + 0x80));
+        sprintf(buf, lit_414_00370868, *(s32 *)(net_common_w + NCO(0x80)));
         break;
     case 7:
     case 8:

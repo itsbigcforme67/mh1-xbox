@@ -32,7 +32,7 @@ s32 Lbc_ReserveRoom(s32 unused_a0, s32 unused_a1, s32 arg2, s32 arg3) {
 loop_6:
         if ((*(u8 *)((u8 *)(var_a0) + 0x16)) == 1) {
             (*(s8 *)((u8 *)&ClassInfo + 0x8)) = (s8) (*(u16 *)((u8 *)&RoomInfo + (var_a2 * 0x15C)));
-            (*(s8 *)((u8 *)&lb_sys + 0x7E)) = var_a2;
+            (*(s8 *)((u8 *)&lb_sys + LBM(0x7E))) = var_a2;
         } else {
             var_a2 += 1;
             var_a0 += 0x15C;

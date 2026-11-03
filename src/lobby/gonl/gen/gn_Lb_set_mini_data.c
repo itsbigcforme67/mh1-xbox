@@ -36,11 +36,11 @@ void Lb_set_mini_data(void *arg0) {
     sp49 = (*(u8 *)((u8 *)(temp_s0) + 0x11));
     sp32 = (*(u8 *)&g_main_2EF2A8);
     sp40 = (*(u8 *)((u8 *)(temp_s0) + 0x916));
-    sp31 = (*(u8 *)((u8 *)&User_data + 0xC23));
-    (*(s16 *)((u8 *)(&sp3A) + 0)) = (s16) (*(s16 *)((u8 *)(&(*(u16 *)((u8 *)&User_data + 0xC74))) + 0));
-    (*(s16 *)((u8 *)(&sp3A) + 2)) = (s16) (*(s16 *)((u8 *)(&(*(u16 *)((u8 *)&User_data + 0xC74))) + 2));
-    (*(s16 *)((u8 *)(&sp3A) + 4)) = (s16) (*(s16 *)((u8 *)(&(*(u16 *)((u8 *)&User_data + 0xC74))) + 4));
-    sp30 = Get_weapon_job(&(*(u16 *)((u8 *)&User_data + 0xC74)));
+    sp31 = (*(u8 *)((u8 *)&User_data + UDMO(0xC23)));
+    (*(s16 *)((u8 *)(&sp3A) + 0)) = (s16) (*(s16 *)((u8 *)(&(*(u16 *)((u8 *)&User_data + UDMO(0xC74)))) + 0));
+    (*(s16 *)((u8 *)(&sp3A) + 2)) = (s16) (*(s16 *)((u8 *)(&(*(u16 *)((u8 *)&User_data + UDMO(0xC74)))) + 2));
+    (*(s16 *)((u8 *)(&sp3A) + 4)) = (s16) (*(s16 *)((u8 *)(&(*(u16 *)((u8 *)&User_data + UDMO(0xC74)))) + 4));
+    sp30 = Get_weapon_job(&(*(u16 *)((u8 *)&User_data + UDMO(0xC74))));
     if (sp30 == 5) {
         var_v0 = 1;
         goto block_3;
@@ -50,8 +50,8 @@ void Lb_set_mini_data(void *arg0) {
 block_3:
         sp30 = var_v0;
     }
-    sp48 = (*(u8 *)((u8 *)&User_data + 0x3));
-    sp4A = (*(u8 *)((u8 *)&User_data + 0xC7F));
+    sp48 = (*(u8 *)((u8 *)&User_data + UDMO(0x3)));
+    sp4A = (*(u8 *)((u8 *)&User_data + UDMO(0xC7F)));
     memcpy(arg0, &sp30, 0x1C);
 }
 

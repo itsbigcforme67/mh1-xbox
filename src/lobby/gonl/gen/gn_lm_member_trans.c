@@ -73,7 +73,7 @@ void lm_member_trans(s32 unused_a0, s32 unused_a1, s32 unused_a2, s32 arg3) {
                 if ((*(u8 *)((u8 *)(var_s4) + 0)) != 0) {
                     var_fp = (*(s32 *)&cw) + var_s3 + 0x394;
                     if (Online_ck() == 1) {
-                        if ((*(u8 *)((u8 *)&PitMenu + 0x14)) != 0) {
+                        if ((*(u8 *)((u8 *)&PitMenu + PMO(0x14))) != 0) {
                             var_fp = var_s7;
                         }
                         *var_s6 = (*(u8 *)((u8 *)(((*(s32 *)&cw) + var_s3)) + 0x3AA));

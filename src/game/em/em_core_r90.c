@@ -8,12 +8,17 @@ u16 calc_vec_ang(f32, f32, f32, f32);   /* (declared before its first use) */
 unsigned char hit_line_sphr2(void *, EM_SPOT *, f32);   /* (declared before its first use) */
 #endif
 
+#ifdef VERSION_MH2
+#include "mh2_layouts.h"
+#else
 typedef struct QUEST_W {
     u8 _pad00[8];
-    s16 no;             /* 0x08 current quest */
+    qno_t no;             /* 0x08 current quest */
     u8 _pad0A[0x14E - 0xA];
     s8 x14E;            /* 0x14E */
 } QUEST_W;
+
+#endif
 
 extern QUEST_W quest_w;
 extern s8 senko_cnt;

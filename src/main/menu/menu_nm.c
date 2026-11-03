@@ -459,15 +459,15 @@ int juchu_chk(void) {
 }
 
 void Menu_quest_i(void) {
-    if (FLDS16(quest_w, 0x24) == 0x63) {
+    if (FLDS16(quest_w, QWO(0x24)) == 0x63) {
         lpPit->x47 = 4;
-    } else if (FLDS16(quest_w, 8) == 0x65 || FLDS16(quest_w, 8) == 0x6B || FLDS16(quest_w, 8) == 0xCE) {
+    } else if (FLDS16(quest_w, QWO(8)) == 0x65 || FLDS16(quest_w, QWO(8)) == 0x6B || FLDS16(quest_w, QWO(8)) == 0xCE) {
         lpPit->x47 = 3;
-    } else if (FLD32(quest_w, 0x40) & 1) {
+    } else if (FLD32(quest_w, QWO(0x40)) & 1) {
         lpPit->x47 = 0;
-    } else if (FLD32(quest_w, 0x40) & 2) {
+    } else if (FLD32(quest_w, QWO(0x40)) & 2) {
         lpPit->x47 = 1;
-    } else if (FLD32(quest_w, 0x40) & 4) {
+    } else if (FLD32(quest_w, QWO(0x40)) & 4) {
         lpPit->x47 = 2;
     }
     juchu_chk();
@@ -959,7 +959,7 @@ void menu_data_mix_sub(int sw) {
 
 #ifdef VERSION_MHG
 /* G (main 0x11C490): circle (0x200) switches between the log's pages and one monster's page; left / right turn
- * the page (0-2) or step through the monsters in the list (User_data+0xC98 bits) */
+ * the page (0-2) or step through the monsters in the list (User_data + UDMO(0xC98) bits) */
 void menu_data_monster_sub(int sw) {
     int a = sw & 0xFFFF;
     s8 m;
@@ -1715,7 +1715,7 @@ void Pit_mv_lb(void) {
     case 1:
         if (Online_ck() == 1) {
             Join_pl_chk();
-            FLDS8(PitMenu, 0x22) = 0;
+            FLDS8(PitMenu, PMO(0x22)) = 0;
         }
         switch (PitMenu.open) {
         case 0:
@@ -1845,7 +1845,7 @@ void Pit_mv(void) {
         }
         if (Online_ck() == 1) {
             Join_pl_chk();
-            FLDS8(PitMenu, 0x22) = 0;
+            FLDS8(PitMenu, PMO(0x22)) = 0;
         }
         switch (PitMenu.open) {
         case 0:

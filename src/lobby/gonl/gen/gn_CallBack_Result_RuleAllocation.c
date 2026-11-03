@@ -27,10 +27,10 @@ void CallBack_Result_RuleAllocation(s64 arg0) {
         cnLBS_Get_ServerMessage((*(void **)&cw) + 0xF75D);
         Lb_eat_to_bell((s32) ((*(void **)&cw) + 0xF75D), M2C_ERROR(/* Read from unset register $a1 */), M2C_ERROR(/* Read from unset register $a2 */), M2C_ERROR(/* Read from unset register $a3 */));
         (*(s8 *)&D_0035EFEB) = 0;
-        (*(s32 *)((u8 *)&lb_sys + 0x8)) = 1;
+        (*(s32 *)((u8 *)&lb_sys + LBM(0x8))) = 1;
         lb_sys = 0x19;
         (*(u8 *)((u8 *)((*(void **)&cw)) + 0xB9D)) = 0U;
-        (*(s8 *)((u8 *)&lb_sys + 0x1C)) = 0;
+        (*(s8 *)((u8 *)&lb_sys + LBM(0x1C))) = 0;
     }
 }
 

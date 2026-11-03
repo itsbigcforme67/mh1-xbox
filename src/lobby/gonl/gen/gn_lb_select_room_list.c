@@ -53,7 +53,7 @@ block_9:
                 return 1;
             }
 block_10:
-            (*(u8 *)((u8 *)&lb_sys + 0x7E)) = (*(u8 *)((u8 *)((*(void **)&pNet)) + 0x28));
+            (*(u8 *)((u8 *)&lb_sys + LBM(0x7E))) = (*(u8 *)((u8 *)((*(void **)&pNet)) + 0x28));
             (*(s32 *)&joinQuest) = (s32) (*(u16 *)((u8 *)(temp_v0) + 0));
             cnWrap_SoundRequest(0, M2C_ERROR(/* Read from unset register $a1 */), M2C_ERROR(/* Read from unset register $a2 */), M2C_ERROR(/* Read from unset register $a3 */));
             return 0;

@@ -159,21 +159,21 @@ void Pit_disp_quest(void) {
         return;
     case 1:
         flfntLocate(0x1C1, 0xA2);
-        font_print_quest_money(*(s32 *)(*(u8 **)(quest_w + 0x94) + 8));
+        font_print_quest_money(*(s32 *)(*(u8 **)(quest_w + QWO(0x94)) + 8));
         flfntLocate(0x1C1, 0xB6);
-        font_print_quest_money(*(s32 *)(*(u8 **)(quest_w + 0x94) + 4));
+        font_print_quest_money(*(s32 *)(*(u8 **)(quest_w + QWO(0x94)) + 4));
         flfntLocate(0x1C1, 0xDE);
         font_print_quest_time(1);
         flfntLocate(0x1C1, 0xF2);
-        font_print_uf(map_name[*(s32 *)(*(u8 **)(quest_w + 0x94) + 0x14)]);
+        font_print_uf(map_name[*(s32 *)(*(u8 **)(quest_w + QWO(0x94)) + 0x14)]);
         flfntLocate(0x167, 0x12E);
-        if ((*(u8 **)(quest_w + 0x94))[3] == 0) {
+        if ((*(u8 **)(quest_w + QWO(0x94)))[3] == 0) {
             font_print_uf(lit_2128);
         }
         break;
     case 2:
         flfntLocate(0x1E5, 0xA2);
-        font_print_quest_lv((*(u8 **)(quest_w + 0x94))[2]);
+        font_print_quest_lv((*(u8 **)(quest_w + QWO(0x94)))[2]);
         flfntLocate(0x167, 0xDE);
         font_print_uf(Quest_str_get(1));
         flfntLocate(0x167, 0x12E);

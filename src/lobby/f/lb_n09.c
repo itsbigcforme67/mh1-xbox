@@ -7,7 +7,7 @@ extern u8 D_3F3415[16];
 extern PLW player_work[];
 
 void Clear_lobby_ram(void) {
-    flMemset(&lb_sys, 0, 0x90);
+    flMemset(&lb_sys, 0, MH2V(0x90, 0xF68));
     client_work[0x2BFE] = 0;
     lb_player[0].pl = &player_work[0];
     lb_player[1].pl = (PLW *)D_3E55F0;

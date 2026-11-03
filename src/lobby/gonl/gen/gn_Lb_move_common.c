@@ -64,16 +64,16 @@ void Lb_move_common(void) {
         }
         var_a0 += 1;
     } while (var_a0 < 0xAU);
-    if ((*(s8 *)((u8 *)&lb_sys + 0x7D)) != 0) {
-        (*(s8 *)((u8 *)&lb_sys + 0x7D)) -= 1;
+    if ((*(s8 *)((u8 *)&lb_sys + LBM(0x7D))) != 0) {
+        (*(s8 *)((u8 *)&lb_sys + LBM(0x7D))) -= 1;
     }
-    if ((*(u8 *)((u8 *)&lb_sys + 0x88)) != 0) {
-        (*(u8 *)((u8 *)&lb_sys + 0x88)) -= 1;
+    if ((*(u8 *)((u8 *)&lb_sys + LBM(0x88))) != 0) {
+        (*(u8 *)((u8 *)&lb_sys + LBM(0x88))) -= 1;
     }
-    if ((*(u8 *)((u8 *)&lb_sys + 0x8F)) != 0) {
-        (*(u8 *)((u8 *)&lb_sys + 0x8F)) -= 1;
+    if ((*(u8 *)((u8 *)&lb_sys + LBM(0x8F))) != 0) {
+        (*(u8 *)((u8 *)&lb_sys + LBM(0x8F))) -= 1;
     }
-    (*(u8 *)((u8 *)&lb_sys + 0x90)) += 1;
+    (*(u8 *)((u8 *)&lb_sys + LBM(0x90))) += 1;
     (*(s16 *)((u8 *)&lbShop + 0x8C)) = Lb_shop_sw(0);
     Lb_check_newCommer();
     memset((*(void **)&cw) + 3, 0, 8);
@@ -89,11 +89,11 @@ void Lb_move_common(void) {
         var_s2 += 0x5C;
         var_s1 += 0xA00;
     } while (var_s0 < 0xAU);
-    if ((*(s32 *)((u8 *)&lb_sys + 0x80)) != 0) {
-        temp_v0_4 = (*(s32 *)((u8 *)&lb_sys + 0x80)) - 1;
-        (*(s32 *)((u8 *)&lb_sys + 0x80)) = temp_v0_4;
-        if ((temp_v0_4 == 0) && ((*(s32 *)((u8 *)&lb_sys + 0xC)) != 0)) {
-            Npc_se_req((*(s32 *)((u8 *)&lb_sys + 0xC)), (s32) (*(s8 *)((u8 *)&lb_sys + 0x84)), (*(s32 *)((u8 *)&lb_sys + 0xC)) + 0xAC, 2);
+    if ((*(s32 *)((u8 *)&lb_sys + LBM(0x80))) != 0) {
+        temp_v0_4 = (*(s32 *)((u8 *)&lb_sys + LBM(0x80))) - 1;
+        (*(s32 *)((u8 *)&lb_sys + LBM(0x80))) = temp_v0_4;
+        if ((temp_v0_4 == 0) && ((*(s32 *)((u8 *)&lb_sys + LBM(0xC))) != 0)) {
+            Npc_se_req((*(s32 *)((u8 *)&lb_sys + LBM(0xC))), (s32) (*(s8 *)((u8 *)&lb_sys + LBM(0x84))), (*(s32 *)((u8 *)&lb_sys + LBM(0xC))) + 0xAC, 2);
         }
     }
     ItemCopy_Ud2Pl(&player_work + ((*(u8 *)((u8 *)&game_w + 0x3A)) * 0xA00));

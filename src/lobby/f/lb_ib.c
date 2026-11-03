@@ -12,9 +12,9 @@ extern u8 *ib;
 #define IBCT u8
 #define IBCURW(w) F(u8, F(u8, (w), IBO(3)) + (int)(w), 8)
 #endif
-/* item box slots: 4 bytes per slot at User_data + 0x37C (u16 item id, s16 amount) */
+/* item box slots: 4 bytes per slot at User_data + UDMO(0x37C) (u16 item id, s16 amount) */
 typedef struct IBS4 { u16 w[2]; } IBS4;
-/* pouch (User_data + 0x1C4) and item box (User_data + 0x37C) slots, 4 bytes each: u16 item id, s16 amount */
+/* pouch (User_data + UDMO(0x1C4)) and item box (User_data + UDMO(0x37C)) slots, 4 bytes each: u16 item id, s16 amount */
 #define UPID(i) F(u16, User_data + (i) * 4, 0x1C4)
 #define UPNUM(i) F(s16, User_data + (i) * 4, 0x1C6)
 #define IBID2(i) F(u16, User_data + (i) * 4, 0x37C)
@@ -372,9 +372,9 @@ void selling_price_disp_sub(void) {
 /* edit a quantity byte with the d-pad: mode 0 = two decimal digits, otherwise two octal digits (hi << 3 | lo) */
 #ifdef VERSION_MHG
 /* G (lobby 0x5527F0): the cursor is a 16-bit slot number, page * 100 + row * 10 + column; the box has 1 to 3 pages (the
- * expansions bought: User_data+0xC97 bits 0 and 1, sub_main 0x4C9290 / 0x4C9220); L/R keys 0x80 / 0x08 turn the page. Both the box
+ * expansions bought: User_data + UDMO(0xC97) bits 0 and 1, sub_main 0x4C9290 / 0x4C9220); L/R keys 0x80 / 0x08 turn the page. Both the box
  * and the equipment grid use it (mode is gone). */
-static int ib_pages(void) { return 1 + (User_data[0xC97] & 1) + ((User_data[0xC97] >> 1) & 1); }
+static int ib_pages(void) { return 1 + (User_data[UDMO(0xC97)] & 1) + ((User_data[UDMO(0xC97)] >> 1) & 1); }
 int ib_cursor_norm(int v)      /* sub_main 0x4C9290: a negative slot wraps by +100, a page past the last one is the last page */
 {
     int mx, pg;
@@ -544,15 +544,15 @@ u8 *ib_tidy_sorted(int equip)
 static void ib_tidy_apply(int equip)
 {
     u8 *v = ib_tidy_sorted(equip);
-    int n = (1 + (User_data[0xC97] & 1) + ((User_data[0xC97] >> 1) & 1)) * 100, i, k;
+    int n = (1 + (User_data[UDMO(0xC97)] & 1) + ((User_data[UDMO(0xC97)] >> 1) & 1)) * 100, i, k;
     if (!equip) {
-        memcpy(User_data + 0x74C, v, 4 * n);
+        memcpy(User_data + UDMO(0x74C), v, 4 * n);
         return;
     }
     for (k = 0; k < 6; k++) {
-        u16 *wi = (u16 *)(User_data + 0xCFE + 2 * k);
+        u16 *wi = (u16 *)(User_data + UDMO(0xCFE) + 2 * k);
         if (*wi != 0xFFFF) {
-            u8 *want = User_data + 0x44 + 6 * *wi;
+            u8 *want = User_data + UDMO(0x44) + 6 * *wi;
             u16 nw = 0xFFFF;
             for (i = 0; i < n; i++)
                 if (want[0] != 0 && v[6 * i] != 0 && !memcmp(v + 6 * i + 1, want + 1, 5)) {
@@ -562,12 +562,12 @@ static void ib_tidy_apply(int equip)
             *wi = nw;
         }
     }
-    memcpy(User_data + 0x44, v, 6 * n);
+    memcpy(User_data + UDMO(0x44), v, 6 * n);
 }
 /* main 0x21DFA0 (village): the pouch with the gaps closed, sorted, copied to the player work */
 void Pouch_tidy_village(void)
 {
-    u8 *l = User_data + 0xC24;
+    u8 *l = User_data + UDMO(0xC24);
     int i, j, n = 0;
     for (i = 0; i < 20; i++) {
         if (*(u16 *)(l + 4 * i) != 0) {
@@ -1325,7 +1325,7 @@ menu:
     return pad;
 }
 
-/* item box "equipment change" tab: move equipment between the equipment box (User_data + 0x44, 6 byte slots) and the character */
+/* item box "equipment change" tab: move equipment between the equipment box (User_data + UDMO(0x44), 6 byte slots) and the character */
 s32 itembox_equipchange(s32 pad) {
     u8 *u;
     int ok;
@@ -1772,7 +1772,7 @@ void PutArrow();
 void flfntSetSize();
 void SetFilterMode();
 u8 ib_tidy_buf[0x708] __attribute__((aligned(4)));
-static int ib_stock_n(void) { return (1 + (User_data[0xC97] & 1) + ((User_data[0xC97] >> 1) & 1)) * 100; }
+static int ib_stock_n(void) { return (1 + (User_data[UDMO(0xC97)] & 1) + ((User_data[UDMO(0xC97)] >> 1) & 1)) * 100; }
 
 /* the merged and sorted copy of the box (equip == 0: items, stacked up to each item's maximum, by id; else the stored
  * equipment in use, by kind/id order of storage), a pointer to the entries (4 or 6 bytes each) */
@@ -1782,8 +1782,8 @@ u8 *ib_tidy_view(int equip) {
     if (!equip) {
         u16 *t = (u16 *)ib_tidy_buf;
         for (i = 0; i < n; i++) {
-            u16 id = *(u16 *)(User_data + 0x74C + 4 * i);
-            int num = *(s16 *)(User_data + 0x74E + 4 * i);
+            u16 id = *(u16 *)(User_data + UDMO(0x74C) + 4 * i);
+            int num = *(s16 *)(User_data + UDMO(0x74E) + 4 * i);
             int mx;
             if (id == 0)
                 continue;
@@ -1815,7 +1815,7 @@ u8 *ib_tidy_view(int equip) {
     } else {
         for (i = 0; i < n; i++)
             if (User_data[0x44 + 6 * i] != 0) {
-                memcpy(ib_tidy_buf + 6 * m, User_data + 0x44 + 6 * i, 6);
+                memcpy(ib_tidy_buf + 6 * m, User_data + UDMO(0x44) + 6 * i, 6);
                 m++;
             }
     }
@@ -1854,7 +1854,7 @@ void ItemboxWindowX(int cur, int flags, f32 base) {
     u8 *data, *d;
     u8 *e;
 
-    data = tidy ? ib_tidy_view(equip) : (equip ? User_data + 0x44 : User_data + 0x74C);
+    data = tidy ? ib_tidy_view(equip) : (equip ? User_data + UDMO(0x44) : User_data + UDMO(0x74C));
     if (tidy && cur >= 0)
         cur = (s16)cur % 100;
     page = (s16)cur / 100;
@@ -2010,9 +2010,9 @@ void ItemboxWindowX(int cur, int flags, f32 base) {
             }
             if (flags & 4) {
                 if (!equip) {
-                    Disp_help_mess(1, (u16)(*(u16 *)(User_data + 0x74C + idx * 4) + 0x18));
+                    Disp_help_mess(1, (u16)(*(u16 *)(User_data + UDMO(0x74C) + idx * 4) + 0x18));
                 } else if (User_data[0x44 + idx * 6] != 0) {
-                    EquipmentDescriptionWindow(User_data + 0x44 + idx * 6, (int)base, 184, flags & 3, 0);
+                    EquipmentDescriptionWindow(User_data + UDMO(0x44) + idx * 6, (int)base, 184, flags & 3, 0);
                 }
             }
         }
@@ -2021,7 +2021,7 @@ void ItemboxWindowX(int cur, int flags, f32 base) {
         *(s16 *)(lb_item_box_base + 0x10) = 144.0f + base;
         DispFrameMessageA(lb_item_box_base + 0x10, 0, alpha);
         flfntSetSize(25, 20);
-        font_print_ex((int)(180.0f + base), 27, 0, lit_1928, *(s32 *)(User_data + 0x20));
+        font_print_ex((int)(180.0f + base), 27, 0, lit_1928, *(s32 *)(User_data + UDMO(0x20)));
     }
 }
 #else
@@ -2107,7 +2107,7 @@ void ItemboxWindowX(int cur, int flags, f32 base) {
         mode80 = flags & 0x80;
         mode100 = flags & 0x100;
         mode200 = flags & 0x200;
-        e = User_data + 0x44;
+        e = User_data + UDMO(0x44);
         for (i = 0; i < 0x40; i = (s16)(i + 1), e += 6) {
             if (e[0] != 0) {
                 ic.x = 0.8f * ((x0 - 146.0f) + 36.0f * (f32)(i & 7));

@@ -23,7 +23,7 @@ typedef struct EM19W {
 
 typedef struct QUEST_W {
     u8 _pad00[8];
-    s16 no;             /* 0x08 quest number */
+    qno_t no;             /* 0x08 quest number */
 } QUEST_W;
 
 #define ANG2DEG(a) (360.0f * (f32)(a) / 65536.0f)
@@ -1333,7 +1333,7 @@ int rt_story_quest(void);
         }
     }
 #if defined(VERSION_MHG) && !defined(__MWERKS__)
-    else if (*(u16 *)((u8 *)&quest_w + 8) == 10046 && em->stg == 70 && Event_flag_ck(26) == 0) {
+    else if (*(u16 *)((u8 *)&quest_w + QWO(8)) == 10046 && em->stg == 70 && Event_flag_ck(26) == 0) {
         if (game_w.info_stop == 1 && em->mode != 6) {      /* G (game 0x617510) */
             em19_act_set(em, 6, 1, 1);
         }

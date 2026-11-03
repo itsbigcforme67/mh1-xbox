@@ -58,10 +58,10 @@ void gold_disp(GAME_W *t)
     case 0:
         flfntLocate(0x176, 0x16F);
         font_print_sp(lit_473_00386690, t->x08 / 30);
-        sprintf(buf, lit_474_003866B0, (u8 *)&User_data + 8);
+        sprintf(buf, lit_474_003866B0, (u8 *)&User_data + UDMO(8));
         flfntLocate((s16)(0x140 - strlen_sp(buf) * 18 / 4), 0x46);
         font_print_sp(lit_467_00386620, buf);
-        sprintf(buf, lit_475_003866D0, *(s32 *)((u8 *)&User_data + 0x20));
+        sprintf(buf, lit_475_003866D0, *(s32 *)((u8 *)&User_data + UDMO(0x20)));
         flfntLocate((s16)(0x140 - strlen_sp(buf) * 18 / 4), 0x127);
         font_print_sp(lit_467_00386620, buf);
         break;

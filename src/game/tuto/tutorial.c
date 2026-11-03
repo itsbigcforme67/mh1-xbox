@@ -12,7 +12,7 @@ unsigned short Get_tuto_id(void *);   /* (declared before its first use) */
 /* quest_w (0x3C7440): only the quest number is used here. */
 typedef struct QUEST_W {
     u8 _pad00[8];
-    s16 no;             /* 0x08 current quest */
+    qno_t no;             /* 0x08 current quest */
 } QUEST_W;
 
 /* quest_t_stin_tbl: per quest, rows of 8 bytes {stage, flag, ... -1}. */

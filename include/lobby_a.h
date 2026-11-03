@@ -26,7 +26,7 @@ typedef struct LBPLAYER { PLW *pl; u8 x04[0x10]; u8 _pad14[0x24 - 0x14]; s8 x24;
 extern LBPLAYER lb_player[8];
 
 #include "lbsys_g.h"
-#ifdef VERSION_MHG
+#if defined(VERSION_MHG) || defined(VERSION_MH2)
 typedef LBSYS_G LBSYS;
 #else
 typedef struct LBSYS {         /* lb_sys 0x90 bytes */
@@ -110,7 +110,7 @@ extern LBQUEST *lb_quest_all[0xC8];
 extern int mission_area;
 typedef struct MHRULE { s8 x00; u8 _pad01[6]; s8 x07; char pass[9]; s8 x11; char msg[0x3D]; s8 x4F; u8 _pad50[4]; u32 quest; u8 x58; u8 _pad59[3]; u32 x5C; u8 _pad60[8]; } MHRULE; /* guild room rule 0x68 bytes */
 extern MHRULE mhRule;
-extern s32 User_gold;          /* User_data + 0x20 */
+extern s32 User_gold;          /* User_data + UDMO(0x20) */
 void Gold_add();
 void cnWrap_SoundRequest();
 void Lbc_init_network_work();

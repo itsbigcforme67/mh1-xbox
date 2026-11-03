@@ -57,7 +57,7 @@ void bgm_server(void) {
         int r = Quest_clear_ck(1);
         if (r != 0) {
             if (r == 1) {
-                if (*(s32 *)(quest_w + 0x40) & 2) {
+                if (*(s32 *)(quest_w + QWO(0x40)) & 2) {
                     game_w[0x11] = 7;
                     *(u16 *)(game_w + 0x26) = 0x50;
                 } else {

@@ -7,7 +7,7 @@ extern u8 PitMenu;
 void plaza_chat_log_disp_line(s32 arg0) {
     s32 var_a1;
 
-    var_a1 = (*(u8 *)((u8 *)&PitMenu + 0x26)) - (arg0 & 0xFF);
+    var_a1 = (*(u8 *)((u8 *)&PitMenu + PMO(0x26))) - (arg0 & 0xFF);
     if (var_a1 != 0) {
         do {
             var_a1 -= 1;

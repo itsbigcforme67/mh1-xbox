@@ -101,7 +101,7 @@ void lb_disp_name(void *arg0) {
 block_17:
                     if (((*(u8 *)((u8 *)(var_s3) + 0x14)) != 0) || ((u32) ((*(u8 *)((u8 *)(var_s3) + 0x15)) - 0x4C) >= 2U)) {
                         var_s0 = var_s7 + 8;
-                        if ((Online_ck() == 1) && ((*(u8 *)((u8 *)&PitMenu + 0x14)) != 0)) {
+                        if ((Online_ck() == 1) && ((*(u8 *)((u8 *)&PitMenu + PMO(0x14))) != 0)) {
                             var_s0 = var_s7;
                         }
                         temp_s1 = (s32) (lobby_func_0059DA90(var_s0, M2C_ERROR(/* Read from unset register $a1 */), M2C_ERROR(/* Read from unset register $a2 */), M2C_ERROR(/* Read from unset register $a3 */)) << 0x30) >> 0x30;
@@ -158,7 +158,7 @@ block_17:
                                     var_s2_2 = ((s16) (temp_s5));
                                     var_s0_2 = ((s16) (temp_s6));
                                     var_s5 = var_s2_2 - 4;
-                                    Lb_put_job((s32) (((s16) ((var_s0_2 - 0x16)))), (s32) (((s16) (var_s5))), 0x16, -1, (s32) (((s8) (Get_weapon_job(&(*(s32 *)((u8 *)&User_data + 0xC74)))))), 0);
+                                    Lb_put_job((s32) (((s16) ((var_s0_2 - 0x16)))), (s32) (((s16) (var_s5))), 0x16, -1, (s32) (((s8) (Get_weapon_job(&(*(s32 *)((u8 *)&User_data + UDMO(0xC74))))))), 0);
                                 } else {
                                     var_s2_2 = ((s16) (temp_s5));
                                     var_s0_2 = ((s16) (temp_s6));

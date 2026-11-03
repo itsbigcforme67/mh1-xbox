@@ -39,6 +39,8 @@
 #define MAHI_MAX 3
 #endif
 #ifdef VERSION_MH2
+#undef IPREP_LIST
+#define IPREP_LIST 0x20DB /* 0x5D6B3B, Item_preparation_list_chk */
 #undef ITEM_ROW
 #define ITEM_ROW 24 /* one Item_data row in MH2 (UseItemChk: id * 24) */
 #define PLW_AT(i) ((PLW *)((u8 *)player_work + (i) * 0x970)) /* player work is 0x970 bytes in MH2 */

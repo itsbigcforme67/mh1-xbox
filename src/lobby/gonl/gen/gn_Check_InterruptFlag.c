@@ -69,7 +69,7 @@ s32 Check_InterruptFlag(s32 arg0, s32 unused_a1, s32 arg2, s32 arg3) {
                 Lb_eat_to_bell((s32) ((*(void **)&cw) + 0xF75D), M2C_ERROR(/* Read from unset register $a1 */), M2C_ERROR(/* Read from unset register $a2 */), M2C_ERROR(/* Read from unset register $a3 */));
                 (*(s8 *)&D_0035EFEB) = 0;
                 lb_sys = 0x17;
-                (*(s32 *)((u8 *)&lb_sys + 0x8)) = 1;
+                (*(s32 *)((u8 *)&lb_sys + LBM(0x8))) = 1;
                 (*(s8 *)((u8 *)((*(void **)&cw)) + 0xBA9)) = 0;
                 (*(s8 *)((u8 *)((*(void **)&cw)) + 0xB9D)) = 0;
                 Lbc_init_network_work(M2C_ERROR(/* Read from unset register $a0 */), M2C_ERROR(/* Read from unset register $a1 */), M2C_ERROR(/* Read from unset register $a2 */), M2C_ERROR(/* Read from unset register $a3 */));
