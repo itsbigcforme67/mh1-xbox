@@ -251,12 +251,22 @@ def keep_sections(path, keep, absolute):
     hdr = [struct.unpack_from("<10I", d, shoff + i * shentsize) for i in range(shnum)]
     tab = bytes(d[hdr[shstrndx][4]:hdr[shstrndx][4] + hdr[shstrndx][5]])
     comment = tab.index(b".comment\0")
+    sy = next(h for h in hdr if h[1] == 2)
+    if keep.startswith("@"):         # by name (config/mh2/hand_parts.txt): `@func,func` and `name=address,...`
+        strs = bytes(d[hdr[sy[6]][4]:hdr[sy[6]][4] + hdr[sy[6]][5]])
+        idx = {}
+        for k in range(sy[5] // 16):
+            at = sy[4] + k * 16
+            no = struct.unpack_from("<I", d, at)[0]
+            idx[strs[no:strs.index(b"\0", no)].decode()] = (k, struct.unpack_from("<H", d, at + 14)[0])
+        keep = ",".join(str(idx[n][1]) for n in keep[1:].split(","))
+        if absolute != "-":
+            absolute = ",".join("%d=%s" % (idx[x.split("=")[0]][0], x.split("=")[1]) for x in absolute.split(","))
     kept = set(int(x) for x in keep.split(","))
     dropped = set(i for i, h in enumerate(hdr) if h[2] & 2 and h[5] and h[1] in (1, 8) and i not in kept)
     for i in dropped:
         struct.pack_into("<I", d, shoff + i * shentsize, comment)
     fixed = dict((int(x.split("=")[0]), int(x.split("=")[1], 16)) for x in absolute.split(",")) if absolute != "-" else {}
-    sy = next(h for h in hdr if h[1] == 2)
     for k in range(sy[5] // 16):
         at = sy[4] + k * 16
         val, info, sh = struct.unpack_from("<I", d, at + 4)[0], d[at + 12], struct.unpack_from("<H", d, at + 14)[0]

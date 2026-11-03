@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """mh2_own.py - check Monster Hunter 2 C written by hand (src/mh2/MODULE/*.c) against the original bytes.
 
-Each file holds one function named like plsel_func_00D61710. Compiles it with the MH2 compiler
+Each file holds functions named like plsel_func_00D61710, or by a name in the map. Compiles it with the MH2 compiler
 setup and compares every instruction with the disc's module (build/mh2/split), relocated
 fields masked. Prints a side-by-side on a difference with -v. The full build is the final word.
 
@@ -24,8 +24,10 @@ def main():
     v = "-v" in args
     files = [a for a in args if a != "-v"]
     size = {}
+    name = {}
     for r in csv.DictReader(open(C.P("docs/survey/mh2_map.csv"), encoding="utf-8")):
         size[(r["mh2_module"], int(r["mh2_addr"], 16))] = int(r["size"])
+        name.setdefault(r["name"], int(r["mh2_addr"], 16))
     bad = 0
     os.makedirs(C.P("build/mh2/own"), exist_ok=True)
     for f in files:
@@ -41,7 +43,8 @@ def main():
         ob = C.Obj(C.P(obj))
         load, image = C.image(mod)[:2]
         for n, sh, val, sz in ob.funcs:
-            addr = int(re.search(r"([0-9A-F]{8})$", n).group(1), 16)
+            m = re.search(r"([0-9A-F]{8})$", n)
+            addr = int(m.group(1), 16) if m else name[n]
             code = ob.d[ob.S[sh][4] + val:ob.S[sh][4] + val + sz]
             o = image[addr - load:addr - load + size.get((mod, addr), sz)]
             mk = {r[0] - val: C.MASK.get(r[1], 0) for r in ob.rel[sh] if val <= r[0] < val + sz}
