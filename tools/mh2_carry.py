@@ -354,11 +354,21 @@ def compile_one(path, cc=CC, tmp=None, gform=False):
     src = os.path.join("src", path + ".c")
     if os.path.exists(P(obj)) and os.path.getmtime(P(obj)) >= max(os.path.getmtime(P(src)), _hdr):
         return P(obj)
-    try:
-        p = subprocess.run([WIBO, P("tools/compilers", cc, "mwccps2.exe")] + OPT + BASE + (["-DVERSION_MHG"] if gform else []) + [src, "-o", obj],
-                           cwd=ROOT,
-                           capture_output=True, text=True, timeout=120)
-    except subprocess.TimeoutExpired:
+    # the first register after emptying the cache lost 12-17 files on 3 Nov (17 "do not compile", 5 of them really G-only); the
+    # same files compiled one by one right after, so they were missing from the carry for nothing. Cause not seen (a timeout on a
+    # busy, niced machine is the guess). Each compile gets a second try with a longer limit.
+    p = None
+    for limit in (120, 600):
+        try:
+            p = subprocess.run([WIBO, P("tools/compilers", cc, "mwccps2.exe")] + OPT + BASE + (["-DVERSION_MHG"] if gform else []) + [src, "-o", obj],
+                               cwd=ROOT,
+                               capture_output=True, text=True, timeout=limit)
+            if not p.returncode and os.path.exists(P(obj)):
+                break
+        except subprocess.TimeoutExpired:
+            p = None
+    if p is None:
+        print("mh2_carry: %s timed out twice" % src, file=sys.stderr)
         return None
     if p.returncode or not os.path.exists(P(obj)):
         return None
