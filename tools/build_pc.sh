@@ -534,6 +534,8 @@ ALIASES_A="D_63BBB0=enemy_scale \
 FNDEFS=$(for a in $ALIASES_A; do case "$a" in func_*) printf '%s ' "-D$a" ;; esac; done)
 ALIASES_A=$(for a in $ALIASES_A; do case "$a" in func_*) ;; *) echo "$a" ;; esac; done)
 ALIASES="$ALIASES $ALIASES_A $NETALIASES"
+# MH2: placeholder function names as aliases of their paired host functions (config/mh2/pc_fn_names.txt)
+[ "$VERSION" = mh2 ] && [ -f config/mh2/pc_fn_names.txt ] && ALIASES="$ALIASES $(sed 's/#.*//' config/mh2/pc_fn_names.txt | tr -s ' \n' '  ')"
 if [ -n "$PC_SYS" ]; then
     SYS="$PC_SYS"
 elif echo 'int main(void){return 0;}' | gcc -m32 -x c - -o build/pc/.m32test $LIBS 2>/dev/null; then
@@ -698,6 +700,10 @@ for f in $GAME; do
     # between it and the direct-connect co-op; the EE-timer clock is the host's (rt_mcs.c CngNetTimeGet)
     case "$f" in src/main/aq/aq_nm.c) ABI="$ABI -DAQ_data_put=mcs_AQ_data_put" ;; src/main/net/netsyn07_nm.c) ABI="$ABI -Dnet_start_ck=mcs_net_start_ck" ;;
         src/main/net/mcsls_nm.c) ABI="$ABI -Dmcsls_force_drop=mcs_force_drop" ;; src/main/net/cnmsg_nm.c) ABI="$ABI -DCngNetTimeGet=ps2_CngNetTimeGet" ;; esac
+    # MH2: light_init is the host's (src/pc/rt/rt_mh2.c: MH2 has no pl_light_tbl)
+    case "$f" in src/main/model/light_init_nm.c) [ "$VERSION" = mh2 ] && ABI="$ABI -Dlight_init=g_light_init" ;;
+        src/main/model/light_nm.c) [ "$VERSION" = mh2 ] && ABI="$ABI -Dlight_change_normal=g_light_change_normal -Dpl_light_change=g_pl_light_change" ;;
+        src/game/em/em_cmd_nm.c) [ "$VERSION" = mh2 ] && ABI="$ABI -Dem_cmd_init=g_em_cmd_init" ;; esac
     case "$f" in src/main/item/item_nm.c) ABI="-Dinit_item_work=ps2_init_item_work -Dclr_item_work=ps2_clr_item_work -Dmove_item=ps2_move_item -Ditem_check=ps2_item_check -Dpush_item_work=ps2_push_item_work" ;; src/main/tu/sk_all.c) ABI="-DSoftKeyboard_set=sk_real_set -DSoftKeyboard_move=sk_real_move -DSoftKeyboard_exit=sk_real_exit" ;; esac
     cc_obj_p "$b" "$CC $INC $GAMEFLAGS $ABI $SYS -c $src -o $o"
     OBJS="$OBJS $o"
@@ -773,7 +779,7 @@ OBJS="$OBJS build/pc/rt_memstat.o"
 python3 tools/gen_rt_meta.py build/pc/rt_meta.c
 cc_obj rt_meta "$CC $CFLAGS $SYS -w -c build/pc/rt_meta.c -o build/pc/rt_meta.o"
 OBJS="$OBJS build/pc/rt_meta.o"
-for f in $NETRT $([ -n "$COV" ] && echo rt_cov) rt_ver rt_game rt_fl rt_flmat rt_data rt_overlay rt_main rt_eft rt_motion rt_pad rt_player rt_hit rt_cam rt_light rt_snd rt_pl rt_abi rt_em rt_quest rt_flow rt_menu rt_2d rt_hud_gun rt_font rt_village rt_mc rt_save rt_boot rt_movie rt_prof rt_log rt_pick rt_text rt_text_sp rt_dbg rt_ref; do
+for f in $NETRT $([ -n "$COV" ] && echo rt_cov) rt_ver rt_game rt_fl rt_flmat rt_data rt_overlay rt_main rt_eft rt_motion rt_pad rt_player rt_hit rt_cam rt_light rt_snd rt_pl rt_abi rt_em rt_quest rt_flow rt_menu rt_2d rt_hud_gun rt_font rt_village rt_mc rt_save rt_boot rt_movie rt_prof rt_log rt_pick rt_text rt_text_sp rt_dbg rt_ref rt_mh2; do
     # shellcheck disable=SC2086
     XF=""; [ $f = rt_log ] && XF="-D_GNU_SOURCE"   # ucontext / sigaltstack
     [ $f = rt_menu ] && XF="-DMH1_NO_UTF8"       # include/plf.h declares memset(void *, int, int)

@@ -1,0 +1,17 @@
+# MH2 addresses and sizes of tables the PC imports (tools/gen_rt_tables.py; read after config/mhg/pc_data.txt, whose G addresses
+# mean nothing for MH2). Per-stage tables run 199 entries in MH2 (G: 92): the host arrays need MH2's size.
+stage_hit_data_w = 0x00421DA0; // size:0x31C noptr    # load_stage_hit (sub_main 0x3289C0) reads it by stage; ends where the next table starts
+stage_start_pos = 0x0043F0A0; // size:0x940 noptr    # {x, y, z} per stage up to stage_start_ang (197 entries and 4 bytes: where it ends is a guess)
+stage_start_ang = 0x0043F9E0; // size:0x190    # u16 per stage (G 0xB8)
+ground_tbl_add = 0x0043FB70; // size:0x31C allptr    # per-stage pointer tables 0x320 apart; words point into gm_sub (0x92xxxx) and sub_main bss
+shadow_tbl_add = 0x0043FE90; // size:0x31C
+light_tbl_add = 0x004401B0; // size:0x31C
+diffuse_tbl_add = 0x004404D0; // size:0x31C
+wall_tbl_add = 0x004407F0; // size:0x31C allptr
+# Em_Taisei_Set (game 0x7077F0) reads five per-kind tables (35 kinds); by the EMW field each one fills (sleep_tol 0x6FC, poison_tol
+# 0x704, mahi_tol 0x70E, sleep2_tol 0x716, and the new 0x7D4 from 0x8BD550). data_map.txt has sleep2 at poison's table and sleep at the
+# new one; these are what the PC imports.
+em_sleep_data_tbl = 0x008BDA00; // size:0x8C
+em_poison_data_tbl = 0x008BCCB0; // size:0x8C
+em_mahi_data_tbl = 0x008BD180; // size:0x8C
+em_sleep2_data_tbl = 0x008BDB50; // size:0x8C

@@ -48,22 +48,32 @@ static void (*em_model_fn)(int slot, int kind);
 void rt_set_em_model_loader(void (*fn)(int slot, int kind)) { em_model_fn = fn; }
 void em_create_model(int slot)
 {
-    int kind = PU8(&game_w, 0x28 + slot);
+    int kind = game_w.x28[slot];
     {   /* test aid RT_QEM_KIND "from:to" (rt_em.c): the model slot of kind `from` holds kind `to` */
         int from, to;
         if (getenv("RT_QEM_KIND") && sscanf(getenv("RT_QEM_KIND"), "%d:%d", &from, &to) == 2 && kind == from)
-            PU8(&game_w, 0x28 + slot) = (u8)(kind = to);
+            game_w.x28[slot] = (u8)(kind = to);
     }
-    if (!em_prog_tbl[kind] || !((void **)em_prog_tbl[kind])[0] || !((void **)em_prog_tbl[kind])[3]) {
+    if (!em_prog_tbl[kind] || !((void **)em_prog_tbl[kind])[0] || !((void **)em_prog_tbl[kind])[3]
+#ifdef VERSION_MH2
+        || !getenv("RT_MH2_EM")     /* monsters only with RT_MH2_EM=1 until their set-up runs (docs/mh2/hunt.md blocker 4) */
+#endif
+        ) {
         /* [0] local init and [3] the per-tick effect script (em_effect_move)
          * are called unconditionally: both must be ported */
         if (qtrace())
             fprintf(stderr, "rt_quest: monster kind %d not ported, not spawned\n", kind);
-        PU8(&game_w, 0x28 + slot) = 0;
+        game_w.x28[slot] = 0;
         return;
     }
     if (qtrace())
         fprintf(stderr, "rt_quest: em_create_model slot %d kind %d\n", slot, kind);
+#ifdef VERSION_MH2
+    {   /* MH2 loads the kind's command tables first (Quest_next_em_set: gm_sub 0x90AB00(game_w.x2E, kind), rt_mh2.c) */
+        void rt_mh2_em_cmd_load(int level, int kind);
+        rt_mh2_em_cmd_load(game_w.x2E, kind);
+    }
+#endif
     if (em_model_fn)
         em_model_fn(slot, kind);      /* the host's model and the motions of the slot */
     rt_snd_em_add(kind);              /* its sounds (port 6) */
@@ -153,8 +163,15 @@ void func_5A8170(void *e) { Em09_item_sub((EMW *)e); }
 extern s32 *Fish_hani_tbl[];
 void func_5589F0(int stage)
 {
-    s32 *sp = Fish_hani_tbl[stage];
+    s32 *sp;
     int n;
+#ifdef VERSION_MH2
+    /* MH2: Fish_hani_tbl has no address yet (the host's array is G's 90 zero entries and stages run to 198): no fish */
+    (void)sp; (void)n; (void)stage;
+    rt_log_standin("MH2 Fish_set (Fish_hani_tbl not found)");
+    return;
+#endif
+    sp = Fish_hani_tbl[stage];
     for (; sp && sp[4] >= 0; sp += 6)
         for (n = sp[5]; n > 0; n--)
             Eft23_set(sp[4], (f32 *)sp);

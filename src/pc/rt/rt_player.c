@@ -44,7 +44,12 @@ extern u8 Gun_data[][GUN_ROW];
 extern u8 Battle_type[];
 extern u8 User_data[];
 
-#define PF(pl, T, o) (*(T *)((u8 *)(pl) + (o)))
+#ifdef VERSION_MH2     /* raw MH1 PLW offsets: MH2 moved most (include/mh2_ofs.h); other bases (User_data) keep theirs */
+#define RT_PLO(p, o) ((const u8 *)(p) >= (const u8 *)player_work && (const u8 *)(p) < (const u8 *)player_work + 8 * 0x970 ? MH2_OFS_PLW(o) : (o))
+#else
+#define RT_PLO(p, o) (o)
+#endif
+#define PF(pl, T, o) (*(T *)((u8 *)(pl) + RT_PLO(pl, o)))
 static int pl_ticks, quest_base;    /* player ticks of the run; at the current quest's start (aid_tick) */
 
 /* Weapon: Ken_data id (sword type 6) or Gun_data id (type 7). Default:
