@@ -1192,6 +1192,56 @@ static int mh2_adx_wav(int no, const char *out)
     return 0;
 }
 
+/* --model snd:PACK:PROG:NOTE (test aid): AFS01 pack PACK (MOMO v3), the note's sample decoded and written as a 48 kHz wav (nearest
+ * sample, no filter) to the --shot path */
+static int mh2_snd_wav(const char *arg, const char *out)
+{
+    fmt_afs a;
+    char path[1024];
+    size_t n = 0;
+    uint8_t *d;
+    snd_pack sp;
+    snd_note sn;
+    int pack = 0, prog = 0, note = 60, rate = 0, ns = 0, loop, k, nf;
+    uint32_t off;
+    int16_t *pcm, *lr;
+    sscanf(arg, "%d:%d:%d", &pack, &prog, &note);
+    snprintf(path, sizeof path, "%s/AFS01.AFS", getenv("RT_STREAM_DIR") ? getenv("RT_STREAM_DIR") : mh2_disc);
+    if (fmt_afs_open(&a, path) != 0) {
+        fprintf(stderr, "%s: not found (the streams are only on the disc image: --install)\n", path);
+        return 1;
+    }
+    d = fmt_afs_read(&a, pack, &n);
+    fmt_afs_close(&a);
+    if (!d || fmt_snd_open(&sp, d, n) != 0) {
+        fprintf(stderr, "AFS01 entry %d: not a sound pack this reader knows\n", pack);
+        free(d);
+        return 1;
+    }
+    printf("AFS01 entry %d: MOMO v%d, %d programs, %d samples, %d VAGs, BD %u bytes\n", pack, sp.v3 ? 3 : 2, sp.nprog, sp.nsmpl,
+           sp.nvagi, (unsigned)sp.bd_size);
+    if (fmt_snd_resolve(&sp, prog, note, &sn) != 0 || fmt_snd_vag(&sp, sn.vag, &off, &rate) != 0 || rate <= 0) {
+        fprintf(stderr, "program %d note %d: no sample\n", prog, note);
+        free(d);
+        return 1;
+    }
+    pcm = fmt_vag_decode(sp.bd + off, sp.bd_size - off, &ns, &loop);
+    nf = (int)((double)ns * 48000.0 / (rate * sn.ratio));
+    lr = calloc((size_t)nf + 1, 4);
+    for (k = 0; lr && k < nf; k++) {
+        int i = (int)((double)k * rate * sn.ratio / 48000.0);
+        lr[2 * k] = lr[2 * k + 1] = pcm[i < ns ? i : ns - 1];
+    }
+    printf("program %d note %d: VAG %d at 0x%X, %d Hz, ratio %.3f, vol %.2f, pan %.2f, %d samples, loop %d\n", prog, note, sn.vag,
+           (unsigned)off, rate, sn.ratio, sn.vol, sn.pan, ns, loop);
+    if (lr && out)
+        write_wav(out, lr, (size_t)nf);
+    free(lr);
+    free(pcm);
+    free(d);
+    return 0;
+}
+
 static int mh2_model_shot(const char *name, const char *shot, int W, int H)
 {
     fl_model m;
@@ -1202,6 +1252,8 @@ static int mh2_model_shot(const char *name, const char *shot, int W, int H)
     float lo[3] = { 1e30f, 1e30f, 1e30f }, hi[3] = { -1e30f, -1e30f, -1e30f }, eye[3], tar[3], r = 0, az = getenv("RT_MODEL_AZ") ? (float)atof(getenv("RT_MODEL_AZ")) : 0.7f;
     int i, v, c, f;
     flmat camw, view, proj, id;
+    if (!strncmp(name, "snd:", 4))
+        return mh2_snd_wav(name + 4, shot);
     if (!strncmp(name, "adx:", 4))
         return mh2_adx_wav(atoi(name + 4), shot);
     if (strstr(name, ".tex"))

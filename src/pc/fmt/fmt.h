@@ -193,6 +193,8 @@ typedef struct {
     int nprog, nsset, nsmpl, nvagi;
     const uint8_t *tsbd;                        /* 16-byte SE entries, NULL in .snp */
     int ntsbd;
+    int v3;                                     /* MH2's packs (MOMO version 3): "Head" HD with Prog/Smpl/Vagi, no Sset, and a
+                                                   "dbsT" SE table of 32-byte entries (not read: tsbd stays NULL) */
 } snd_pack;
 
 typedef struct {

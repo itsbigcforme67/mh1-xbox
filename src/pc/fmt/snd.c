@@ -54,6 +54,25 @@ int fmt_snd_open(snd_pack *p, const uint8_t *d, size_t n)
         return -1;
     p->hd = d + hd_off;
     p->bd = d + bd_off;
+    if (!memcmp(p->hd, "Head", 4)) {
+        /* MH2 (MOMO version 3, read from AFS01's packs, not from the game's code): chunks with plain 4-byte tags, each
+         * tag, u32 size, u32 max index, u32 0xFFFFFFFF, then the entries. Head (0x20): tag, size, 1, HD size, BD size, then the
+         * Prog, Smpl and Vagi offsets. Prog: max + 1 u32 offsets from the chunk start (0xFFFFFFFF none), as SCEI's.
+         * Smpl: 12-byte entries; Vagi: 16-byte entries {BD offset, size, flags, rate} (sizes add up: 0x10 + n * size = chunk size) */
+        uint32_t po = U32(p->hd + 20), so = U32(p->hd + 24), vo = U32(p->hd + 28);
+        if (hd_off + po + 16 > n || hd_off + so + 16 > n || hd_off + vo + 16 > n || memcmp(p->hd + po, "Prog", 4) ||
+            memcmp(p->hd + so, "Smpl", 4) || memcmp(p->hd + vo, "Vagi", 4))
+            return -1;
+        p->v3 = 1;
+        p->bd_size = U32(p->hd + 16);
+        p->prog = p->hd + po;
+        p->nprog = (int)U32(p->prog + 8) + 1;
+        p->smpl = p->hd + so;
+        p->nsmpl = (int)U32(p->smpl + 8) + 1;
+        p->vagi = p->hd + vo;
+        p->nvagi = (int)U32(p->vagi + 8) + 1;
+        return 0;
+    }
     head = p->hd + 0x10;                       /* SCEIHead */
     if (memcmp(head, "IECSdaeH", 8) != 0)
         return -1;
@@ -96,11 +115,44 @@ int fmt_snd_has_prog(const snd_pack *p, int prog)
  * SceHdSplitBlock order). Sample set: u8 vel curve, vel low, vel high,
  * u8 count, u16 samples[]. Sample (0x2A): u16 VAG index, ..., +0x0B base
  * note, +0x0C detune, +0x0D pan, +0x10 volume. */
-int fmt_snd_resolve(const snd_pack *p, int prog, int note, snd_note *out)
+/* MH2 (v3): program = 8-byte head {u8 splits, ?, u8 volume, u8 pan, ...} then 14-byte splits {?, ?, u8 low note, u8 high note,
+ * u16 bend down, u16 bend up (cents: 200 and 400 seen), u8 volume, u8 pan, ?, ?, u16 Smpl index}; Smpl {?, ?, ?, ?, ?, u8 base note,
+ * u8 volume, u8 pan, ?, ?, u16 Vagi index}. Field meanings past the note range and the indexes are guesses from the values. */
+static int resolve_v3(const snd_pack *p, int prog, int note, snd_note *out)
 {
     const uint8_t *pg = entry(p->prog, p->nprog, prog);
+    int k;
+    if (!pg)
+        return -1;
+    for (k = 0; k < pg[0]; k++) {
+        const uint8_t *sp = pg + 8 + 14 * k, *smp;
+        int si = U16(sp + 12);
+        if (note < sp[2] || note > sp[3])
+            continue;
+        if (si >= p->nsmpl)
+            return -1;
+        smp = p->smpl + 16 + 12 * si;
+        out->vag = U16(smp + 10);
+        out->ratio = powf(2.0f, (float)(note - smp[5]) / 12.0f);
+        out->vol = (pg[2] / 127.0f) * (sp[8] / 127.0f) * (smp[6] / 127.0f);
+        out->bend_lo = U16(sp + 4) / 100.0f;
+        out->bend_hi = U16(sp + 6) / 100.0f;
+        out->pan = ((int)pg[3] + sp[9] + smp[7] - 3 * 64) / 64.0f;
+        if (out->pan < -1.0f) out->pan = -1.0f;
+        if (out->pan > 1.0f) out->pan = 1.0f;
+        return 0;
+    }
+    return -1;
+}
+
+int fmt_snd_resolve(const snd_pack *p, int prog, int note, snd_note *out)
+{
+    const uint8_t *pg;
     int k, ns, sz;
 
+    if (p->v3)
+        return resolve_v3(p, prog, note, out);
+    pg = entry(p->prog, p->nprog, prog);
     if (!pg)
         return -1;
     ns = pg[4];
@@ -133,7 +185,16 @@ int fmt_snd_resolve(const snd_pack *p, int prog, int note, snd_note *out)
 
 int fmt_snd_vag(const snd_pack *p, int vag, uint32_t *off, int *rate)
 {
-    const uint8_t *v = entry(p->vagi, p->nvagi, vag);
+    const uint8_t *v;
+    if (p->v3) {
+        if (vag < 0 || vag >= p->nvagi)
+            return -1;
+        v = p->vagi + 16 + 16 * vag;
+        *off = U32(v);
+        *rate = (int)U32(v + 12);
+        return *off < p->bd_size ? 0 : -1;
+    }
+    v = entry(p->vagi, p->nvagi, vag);
     if (!v)
         return -1;
     *off = U32(v);
