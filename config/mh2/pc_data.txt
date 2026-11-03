@@ -20,3 +20,9 @@ em_sleep2_data_tbl = 0x008BDB50; // size:0x8C
 em_lv_rate_tbl = 0x0090D470; // size:0x128        # per kind: rows of {f32 hp, attack, defence} by level (EMW+0x98A)
 em_vital_tbl = 0x0090DB30; // size:0x128          # per kind: s16 hit points per variant
 camera_data_tbl = 0x004224E0; // size:0x31C noptr    # per stage, 199 entries (index 199 starts the next table); WALK: the host array had MH1's 100, Get_cam_grid_XZ divided by zero on stage 110
+# em_prog_tbl: gm_sub 0x90DE10, 74 kinds (em_init_sub 0x903EE0 indexes it by kind: lbu kind, sll 2, D_0090DE10); data_map.txt's 0x90DE70 is
+# its kind-24 entry, so the host's kind N read kind N+24's program table and kinds past 49 read the u16 table after it (HOST round 4)
+em_prog_tbl = 0x0090DE10; // size:0x128
+# HitWallPlayer (sub_main 0x330EB0) reads the monster's wall spheres from game 0x8B9FC0 by kind (74 pointers, to 0x8BA0E8); the G address
+# the PC had from config/mhg/pc_data.txt read junk and kind 10 crashed in the first em_move (HOST round 4). The online table D_7F1980 is not placed.
+em_hit_push_tbl = 0x008B9FC0; // size:0x128

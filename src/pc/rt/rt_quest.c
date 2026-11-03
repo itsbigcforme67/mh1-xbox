@@ -44,6 +44,9 @@ void net_send_sys(int kind, int pl) { (void)kind; (void)pl; }
  * program (em_prog_tbl, game.bin) is not ported yet gets no model slot
  * (game_w+0x28[slot] back to 0), so Em_direct_set does not spawn it. */
 extern void *em_prog_tbl[];
+#ifdef VERSION_MH2
+int rt_mh2_em_family(int kind);
+#endif
 static void (*em_model_fn)(int slot, int kind);
 void rt_set_em_model_loader(void (*fn)(int slot, int kind)) { em_model_fn = fn; }
 void em_create_model(int slot)
@@ -57,6 +60,7 @@ void em_create_model(int slot)
     if (!em_prog_tbl[kind] || !((void **)em_prog_tbl[kind])[0] || !((void **)em_prog_tbl[kind])[3]
 #ifdef VERSION_MH2
         || !getenv("RT_MH2_EM")     /* monsters only with RT_MH2_EM=1 until their set-up runs (docs/mh2/hunt.md blocker 4) */
+        || !rt_mh2_em_family(kind)  /* a kind MH2 added with no G family on the PC (rt_mh2.c): G's per-kind tables end at 35/51 */
 #endif
         ) {
         /* [0] local init and [3] the per-tick effect script (em_effect_move)

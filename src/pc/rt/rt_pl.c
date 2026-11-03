@@ -77,7 +77,12 @@ extern s16 *Pl_slash_tbl[];
 extern u8 User_data[];
 
 extern u8 player_work[];
-static void *player_work_ptr(int n) { return player_work + 0xA00 * (n & 7); }
+#ifdef VERSION_MH2
+#define RT_PLW_STRIDE 0x970     /* MH2's player_work entry (mh2-shared's include/version.h PLW_STRIDE: use that once merged) */
+#else
+#define RT_PLW_STRIDE 0xA00
+#endif
+static void *player_work_ptr(int n) { return player_work + RT_PLW_STRIDE * (n & 7); }
 
 static int rt_pl_trace(void)
 {
@@ -231,7 +236,7 @@ void (*rt_hunter_draw_hook)(int no);
 static void boot_hunter(void *pl)
 {
     if (rt_hunter_draw_hook && rt_boot_active())
-        rt_hunter_draw_hook((int)(((u8 *)pl - (u8 *)player_work) / 0xA00));
+        rt_hunter_draw_hook((int)(((u8 *)pl - (u8 *)player_work) / RT_PLW_STRIDE));
 }
 void player_trans(void *pl, int a) { (void)a; boot_hunter(pl); }
 void Lb_player_trans(void *pl, int a) { (void)pl; (void)a; }

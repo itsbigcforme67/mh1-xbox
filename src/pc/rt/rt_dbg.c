@@ -37,8 +37,13 @@ const char *rt_afs_name(int idx);           /* viewer.c: the AFS entry's file na
 int rt_village_active(void);
 int rt_flow_mode(void);
 
+#ifdef VERSION_MH2
+#define PLW_SIZE 0x970      /* MH2's player_work and em_work strides (include/version.h PLW_STRIDE on mh2-shared; mh2_ofs.h sizes) */
+#define EMW_SIZE 0x9D0
+#else
 #define PLW_SIZE 0xA00
 #define EMW_SIZE 0xA10
+#endif
 static u8 *master(void) { return player_work + PLW_SIZE * (game_w[GWX(0xD1)] < 10 ? game_w[GWX(0xD1)] : 0); }
 static s16 quest_no_now(void) { return *(s16 *)(quest_w + 8); }
 
