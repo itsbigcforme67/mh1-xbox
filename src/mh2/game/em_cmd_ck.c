@@ -1,6 +1,11 @@
-/* Monster Hunter 2: em_cmd_ck, the monster command interpreter's main loop. Written from our own disassembly of the owner's disc, on MH1's C. The name map
-   has many of these handlers wrong (docs/mh2/quest.md): a name here is the map's name for that address, the opcode is what counts. */
+/* Monster Hunter 2: em_cmd_ck, the monster command interpreter's main loop. Written from our own disassembly of the owner's disc, on MH1's C. Handler
+   names are config/mh2/func_fix.txt's, by opcode (docs/mh2/data.md); em_cmd_opNN are new in MH2, real names unknown. */
 #include "em_cmd.h"
+
+u8 *em_cmd_op1F();
+u8 *em_cmd_op37();
+u8 *em_cmd_op73();
+u8 *em_cmd_op76();
 
 u8 *em_cmd_near_pos_ck_mh2_00729CE0();
 u8 *em_cmd_area_move_ck();

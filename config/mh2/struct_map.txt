@@ -4,6 +4,7 @@ EMW A00 984
 EMW A03 987
 EMW A04 988
 PLW 35F 35B # votes for 0x002 are stray; 0x360/0x362 move by -4
+PLW 362 35E u16 # wpn_ammo: lhu 862 in Pl_scope_ck, Pl_silencer_ck, Pl_barrel_ck (sub_main 0x3B54C0..); the probe's 2 votes for 0x30C lost these two parts (merge of 3 Nov)
 PLW 736 680 u16 # stage number: lhu in MH2
 EMW 736 680 u16
 EMW 9F4 978 # only [0xC] is used by name (em08_aic); place unverified

@@ -98,16 +98,15 @@ typedef struct PLW {
     u8 _pad2BE[0x2];
     u16   work300; /* 0x2C0, MH1 0x300: votes 2 */
     s16   vital; /* 0x2C2, MH1 0x302: votes 22 */
-    u8 _pad2C4[0x48];
-    u16   wpn_ammo; /* 0x30C, MH1 0x362: votes 2 */
-    u8 _pad30E[0x2];
+    u8 _pad2C4[0x4C];
     s8    work350; /* 0x310, MH1 0x350: no votes, as the field before */
     s8    work351; /* 0x311, MH1 0x351: no votes, as the field before */
     u8    work352[6]; /* 0x312, MH1 0x352: no votes, as the field before */
     u8 _pad318[0x43];
     u8    work35F; /* 0x35B, MH1 0x35F: hand */
     u16   wpn_kind; /* 0x35C, MH1 0x360: votes 2 */
-    u8 _pad35E[0xE];
+    u16   wpn_ammo; /* 0x35E, MH1 0x362: hand */
+    u8 _pad360[0xC];
     PLSW  sw; /* 0x36C, MH1 0x364: votes 187 */
     u8    st; /* 0x390, MH1 0x388: votes 28 */
     u8 _pad391[0x1];
