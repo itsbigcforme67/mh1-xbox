@@ -1147,6 +1147,51 @@ static int mh2_tex_shot(const char *name, fmt_blob pack, const char *shot, int W
     return 0;
 }
 
+/* --model adx:N (test aid): AFS00 entry N (an ADX stream; AFS00 is on the disc only, tools: --install) decoded into the --shot path as
+ * a 48 kHz stereo wav, up to RT_ADX_SECONDS (20). Mono and other rates are written as they come out (the header says which) */
+static int mh2_adx_wav(int no, const char *out)
+{
+    fmt_afs a;
+    char path[1024];
+    size_t n = 0;
+    uint8_t *d;
+    adx_info h;
+    int16_t *pcm, row[32 * 2];
+    int32_t hist[2][2] = { { 0, 0 }, { 0, 0 } };
+    uint32_t o, frames = 0, max;
+    snprintf(path, sizeof path, "%s/AFS00.AFS", getenv("RT_STREAM_DIR") ? getenv("RT_STREAM_DIR") : mh2_disc);
+    if (fmt_afs_open(&a, path) != 0) {
+        fprintf(stderr, "%s: not found (the streams are only on the disc image: --install)\n", path);
+        return 1;
+    }
+    d = fmt_afs_read(&a, no, &n);
+    fmt_afs_close(&a);
+    if (!d || fmt_adx_header(&h, d, n) != 0 || h.ch < 1 || h.ch > 2) {
+        fprintf(stderr, "AFS00 entry %d: not an ADX stream\n", no);
+        free(d);
+        return 1;
+    }
+    max = (uint32_t)h.rate * (getenv("RT_ADX_SECONDS") ? (uint32_t)atoi(getenv("RT_ADX_SECONDS")) : 20u);
+    if (max > h.total)
+        max = h.total;
+    pcm = calloc((size_t)max + 32, 4);
+    for (o = h.data; pcm && frames < max && o + (uint32_t)(h.block * h.ch) <= n; o += (uint32_t)(h.block * h.ch)) {
+        int k;
+        fmt_adx_row(&h, d + o, hist, row);
+        for (k = 0; k < 32 && frames < max; k++, frames++) {
+            pcm[2 * frames] = row[h.ch * k];
+            pcm[2 * frames + 1] = row[h.ch * k + h.ch - 1];
+        }
+    }
+    printf("AFS00 entry %d: ADX %d ch, %d Hz, %u samples, loop %d; %u written to %s\n", no, h.ch, h.rate, (unsigned)h.total, h.loop,
+           (unsigned)frames, out);
+    if (pcm && out)
+        write_wav(out, pcm, frames);
+    free(pcm);
+    free(d);
+    return 0;
+}
+
 static int mh2_model_shot(const char *name, const char *shot, int W, int H)
 {
     fl_model m;
@@ -1157,6 +1202,8 @@ static int mh2_model_shot(const char *name, const char *shot, int W, int H)
     float lo[3] = { 1e30f, 1e30f, 1e30f }, hi[3] = { -1e30f, -1e30f, -1e30f }, eye[3], tar[3], r = 0, az = getenv("RT_MODEL_AZ") ? (float)atof(getenv("RT_MODEL_AZ")) : 0.7f;
     int i, v, c, f;
     flmat camw, view, proj, id;
+    if (!strncmp(name, "adx:", 4))
+        return mh2_adx_wav(atoi(name + 4), shot);
     if (strstr(name, ".tex"))
         return mh2_tex_shot(name, link, shot, W, H);
     if (!link.p) {
