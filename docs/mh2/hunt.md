@@ -1,7 +1,9 @@
-# MH Dos: `--quest` on the game's own code (HUNT agent, 3 Nov 2026)
+# MH Dos (MH2): `--quest` on the game's own code (HUNT agent, 3 Nov 2026)
 
-Host side only (src/pc, tools/build_pc*.sh, config/mh2/pc_*.txt). Read from the owner's disc with throwaway scripts; seen in hidden
-runs of build/mh2/pc/mhview_2. Community mh2-decomp not opened. "Guess" marks what was not checked.
+- **Scope:** host side only (src/pc, tools/build_pc*.sh, config/mh2/pc_*.txt).
+- **Source:** read from the owner's disc with throwaway scripts, and seen in hidden runs of build/mh2/pc/mhview_2. The
+  community mh2-decomp repo was not opened.
+- **Proof:** "guess" marks what was not checked. Code written here for the PC is not byte-checked.
 
 ## What runs
 
@@ -23,7 +25,7 @@ Monsters are off by default on MH2 until blocker 4 is done: `RT_MH2_EM=1` spawns
 
 | function | address | note |
 |---|---|---|
-| Quest_start | sub_main 0x3A11A0 | G's with MH2's .mib header: same offsets to +0x30; x14E from +0x48 (G +0x34); +0x3C/+0x40 into quest_w+0x530/+0x534; +0x38 relocated in place; info +0x0C reward, +0x10 fee, +0x1C time, +0x24 table; bytes +0x5E..+0x60 to x165; 0x9D gets (time-1)/9000 (layouts.txt calls 0x9D x168: swapped with x169, guess), 0x15A from 0x44B450[rnd & 15]. Skipped: 0x18D750, 0x3A7FC0, 0x366950, 0x3A3DF0, 0x36B110, 0x3A8060, 0x3A3E20, NPCZoomInCameraCancel, game 0x6EE380, the d/n and 0-2 file pick (0x18D970, 0x18DA70; RT_MIB) |
+| Quest_start | sub_main 0x3A11A0 | G's with MH2's .mib header: same offsets to +0x30; x14E from +0x48 (G +0x34); +0x3C/+0x40 into quest_w+0x530/+0x534; +0x38 relocated in place; info +0x0C reward, +0x10 fee, +0x1C time, +0x24 table; bytes +0x5E..+0x60 to x165; 0x9D gets (time-1)/9000 (layouts.txt calls 0x9D x168: swapped with x169, guess; **Conflict** with config/mh2/layouts.txt, not settled), 0x15A from 0x44B450[rnd & 15]. Skipped: 0x18D750, 0x3A7FC0, 0x366950, 0x3A3DF0, 0x36B110, 0x3A8060, 0x3A3E20, NPCZoomInCameraCancel, game 0x6EE380, the d/n and 0-2 file pick (0x18D970, 0x18DA70; RT_MIB) |
 | Quest_pl_stage_init(0xFF) | sub_main 0x3A1D00 | inside Quest_start: +0x5D random pick from gm_sub 0x9316B0 by quest_w.rnd[master], else the player start table |
 | light_init | sub_main 0x332F80 | MH2 has no pl_light_tbl: set 1 from 0x332C70 (stage_work env block, else rows 0x41EC00/0x41ECF0/0x41EC60) |
 | light_change_normal, pl_light_change | 0x333770, 0x333640 | guess that these are the twins (place and shape); 0x333770 passes n as the stage (as the asm does) |
@@ -39,6 +41,7 @@ em_cmd_nm.c em_cmd_init. Fish_set (rt_quest.c) is skipped on MH2 (no Fish_hani_t
   size. stage_start_pos's end is a guess (0x940, up to stage_start_ang).
 - Em_Taisei_Set (game 0x7077F0) reads five tables; by the EMW field each fills: sleep 0x8BDA00, poison 0x8BCCB0, mahi 0x8BD180,
   sleep2 0x8BDB50, the new one (+0x7D4) 0x8BD550. data_map.txt has em_sleep2_data_tbl at 0x8BCCB0 and em_sleep_data_tbl at 0x8BD550.
+  **Conflict:** this reading (by the EMW field each table fills) and data_map.txt name these addresses differently. Not settled.
 - pc_fn_names.txt: 60 MH2 placeholder function names (game_func_..., sub_main_func_...) aliased to the host function that
   config/mh2/func_pairs.txt pairs them with ('table' pairs, score >= 0.9, defined on the host). Function pointers in MH2 data
   otherwise import as NULL: pl_prog_tbl[0] (pl01_adr_tbl) needed pl_local_init / pl01_effect_move.

@@ -1,6 +1,30 @@
 # Status log
 
-## 2026-10-04, session 1: PS2 Monster Hunter G survey
+A dated log, oldest entry first and the latest at the end. Each entry says what was done, how it was checked, and what
+came next. A short summary of where things stand comes first.
+
+## Where things stand (3 Nov 2026)
+
+Gathered from the entries below during the readability pass of 3 Nov. Numbers are the last ones recorded; see the entry
+named for each.
+
+- **MH1 (Japanese, the test bench).** All five modules rebuild byte-identical. 59.668% of the code matched (7,204 of
+  12,585 functions; 12 Oct). The PC build plays the whole single-player game and the online town against our own server.
+  The real Xbox runs a full quest loop at ~30 fps with sound and saves (13 Oct). **Conflict:** CLAUDE.md still says
+  "about 8% of all code matches as of 5 Oct"; the log has 13% on 5 Oct evening and 59.668% on 12 Oct.
+- **MH G (the main release).** Rebuilds byte-identical (7 modules) with `VERSION=mhg`. 19.8% matched (15 Oct, last number in
+  this log). Village and all 98 offline quests on the PC; installed on the real Xbox and runs the village at 30 game frames a
+  second (29 Oct). English: 47% official text on 15 Oct; the source order (Freedom first) was decided on 28 Oct
+  (docs/DECISIONS.md).
+- **MH2 / Dos.** Main and all 12 overlays rebuild byte-identical (13 of 13, tools/mh2_check.py). 2,290 functions, 6.66%
+  matched at the merge of 3 Nov; 6.88% after the CODE+HUNT merge later that day (commit message). The PC build draws the
+  title and runs the start of a quest up to the blockers in docs/mh2/hunt.md. No MH2 game code has been checked in an
+  emulator: proof is bytes only. Xbox not tried.
+- **Gap in this log:** there are no entries for 16-28 Oct 2026. Decisions of those days are in docs/DECISIONS.md; agent
+  hand-overs of 23-29 Oct are in docs/agents/COORDINATOR.md ("Current assignments").
+- **Next:** MH2: docs/mh2/hunt.md "Blockers for CODE" and docs/mh2_port.md section 6. G and MH1: docs/agents/COORDINATOR.md.
+
+## 4 Oct 2026, session 1: PS2 Monster Hunter G survey
 
 Source: owner's image "Monster Hunter G (Japan).iso" (4,206,362,624 bytes),
 extracted to disc/mhg/ (gitignored). MH1 not yet supplied.
@@ -45,130 +69,13 @@ extracted to disc/mhg/ (gitignored). MH1 not yet supplied.
 - The LZSS decoder matches sizes but has not been compared with the game's
   own decompression routine.
 
-- eft22 (the fishing float, include/uki.h) matches except eft22_end_init
-  (4 instructions: the 35.0f/27.0f flight-time constant lands in v1 where
-  ours uses v0; an 8k-candidate permuter run found nothing). Split into
-  eft22.c / eft22b.c, near-match in eft22_nm.c. The 2956-byte eft22_m
-  matched. Findings, each checked with tools/check.py:
-  - MWCC tests switch cases in reverse source order: the original's
-    0x60, 0x63, 0x62 sequence comes from `case 0x62: case 0x63: case 0x60:`.
-  - A two-way pick written `if (c == 0) lim = 50; else lim = 20;` matched;
-    every ternary spelling gave movz instead of movn.
-  - A `switch` with one case plus default compiles differently from the
-    same `if`/`else` (eft22_t, eft22_line_sub).
-  - eft22_se_req ignores its first argument and passes 1 to se_req2.
-  - PLW +0x8E8 holds the bait kind here (0x60/0x62/0x63 make the float drift
-    gently), so the "fish_time" name from eft23 is unverified.
-
-- eft15 (sprite bursts, nine types) and eft14 (sparks and flashes, eleven
-  types) both match as single files. Findings, each checked with
-  tools/check.py:
-  - eft14_m00's two UV-frame searches keep a loop counter `j` that is
-    never read. Our build dropped it until the same variable was also used
-    for the UV nibble in the type 3/6 branch (`j = p->uv & 0xF; ...`): a
-    variable with other uses keeps its increments.
-  - Keyframe reads: `d = eft15_data[idx++]; eft_vec_linear(p->lag, d, ...)`
-    matches; passing `eft15_data[idx++]` straight in loads lag first and
-    shifts registers (eft08 already used the local; the permuter found it
-    again).
-  - Loops that spawn sprites index the work directly (`w[i].lag = ...`).
-    Stepping a pointer (`p++`) emits its increment after the other
-    induction variables instead of first (eft14_i00, eft15_i).
-  - eft15_m's joint switch has no default: the original leaves `joint`
-    unset there and the register still holds the 4 from an earlier
-    compare. Writing `default: joint = 4;` adds code.
-  - `if ((ew = pull_eft_work(1)) != 0)` tests v0 directly; a separate
-    assignment tests the saved copy (Eft15_set, eft14_set, Eft14_set3/4).
-  - `&mw->clay[p->lag] + 27` and `&mw->clay[p->lag + 27]` differ.
-  - A plain int passed to make_mat_srt's u16 argument gives the `andi
-    0xFFFF` at the call; a u16 local does not.
-  - `ew->arg <= 1U` gives the original's `sltiu at`; `< 2` and `<= 1` give
-    slti.
-  - Argument evaluation order shows parameter order: Eft14_set3 is
-    (pos, arg, scale, pl) and eft_trans_sub is (clay, mat, flag, alpha,
-    mats), since the float is set up before the pointer after it.
-  - Some float constants are one ulp off the obvious decimal (0x3C75C290 =
-    0.015000001f, 0x3C23D70B = 0.010000001f); write them that way.
-  - Local declaration order sets saved-register order. For eft15_t a
-    brute-force over the 120 orders of five declaration groups found the
-    matching one (`ew, p, mw` first, then `mats, cl, flag, order`).
-  - A drot field read with `lhu` in `rot += drot` is still s16 (eft14 and
-    eft15 both match only with s16).
-  - Those two fixes plus the eft15_m layout made eft10_m match (it had
-    been 191 instructions off). Its last 5 instructions were the order of
-    the six table reads at the top: a brute force over the 720 orders found
-    num, all, idx, step, time, tt. In eft10 `drot` is u16 (the original
-    loads rot first there).
-
-- eft12 (cooking: the barbecue spit, smoke cloud, meat on the spit with
-  its smell, the thrown egg and steam) matches in full, 28 functions. New
-  GAME_W fields: x1E (smoke UV scroll), x80[4] (per player, copied into the
-  smell) and meat_num (0x211). Findings, each checked with tools/check.py:
-  - Loop increments are emitted in the order of the for-expression.
-    eft12_m01 matched only as `for (i = 0, r = rotz77; i < 4; i++, p++,
-    r++)` with `p->rot += *r`; indexing `rotz77[i]` let the compiler add
-    its own pointer after `p`.
-  - Argument types show in the caller: a parameter declared s16 is passed
-    on unextended (Eft12_set3, eft12_set_sh), an int is sign-extended
-    before the call.
-  - Colour words are built `((g << 8) | ((a << 24) | (r << 16))) | b`;
-    the plain left-to-right OR chain swaps one operand pair.
-  - A store placed before a call lands in its delay slot: eft12_t01 clears
-    enmaku_flag before clay_attr_reset(), not after.
-  - `game_w.x1E` (u8) converted with a signed cvt needed `(f32)(int)`.
-  - Six u8 colour locals had to be declared bone r,g,b then meat r,g,b to
-    get the saved-register order.
-
-- eft18 (blasts and debris, twelve types; type 4 throws rocks that fall
-  to the ground) matches except eft18_m00 (2 instructions: the owner and
-  joint loads for get_joint_wmat come out in the other order) and
-  eft18_set_com (7: the original leaves the delay slot after `beqz ew`
-  empty). Split into eft18.c / eft18b.c / eft18c.c, near-match in
-  eft18_nm.c. Findings, each checked with tools/check.py:
-  - A `p++` at the end of the loop body is emitted before the compiler's
-    own induction variables; in the for-expression it comes after them
-    (eft18_i00 matched only with `p++;` as the last statement).
-  - Reading a table entry through a pointer (`sp = &tbl[k]; a = *sp;
-    b = *sp;`) reloads it after each store, as the original does;
-    `tbl[k]` three times is loaded once.
-  - Ternary conditions test the variable itself: `(i ? -0x4000 : 0x4000)`
-    gave the original's movz on i; `i == 0 ? ... : ...` did not.
-  - eft18_i02 adds the rock's sideways offset to its velocity, not its
-    position (checked: the stores go to +0x08..0x10, the velocity).
-  - New SHLW field pos0 (0x3C), used by Eft18_set3 to size the effect by
-    the distance from pos2.
-
-- set14 (a stage overlay with scrolling masked textures; on stages 51-53
-  two of five layers fade at random intervals) matches except set14_trans,
-  its draw function (still assembly, last in the file so no split).
-  set14_m repeats the same mask-timer code for stages 51, 52 and 53; it
-  matched written out three times.
-
-- shell22 (cannon rounds, stage cannons on stages 12/25, debris, and rocks
-  dropped on stages 11/28/30) matches except shell22_i and shell22_h.
-  Split into shell22.c / shell22b.c / shell22c.c, near-match in
-  shell22_nm.c. Findings, each checked with tools/check.py:
-  - shell22_trans matched only with `goto end;` for its model checks: the
-    original branches straight to the function end there, while its
-    switch defaults (`return`) go through their own jump blocks.
-  - Confirmed again across several switches: compare chains test the cases
-    in reverse source order, and the bodies are laid out in source order.
-  - A shell spawner's `u16` angle argument shows up as lhu at the call
-    (Eft18_set5 is declared with u16 angles here).
-  - The landing test `g = 50 + GetGroundShellHit(); if (y <= g) { y = g;
-    ...}` keeps the store inside the branch.
-  - Small gp tables need their real sizes declared (shell22_tbl is 4
-    bytes).
-  - check.py reports one difference in shell22_trans only because the
-    original names its draw helper disp_sub; the built bytes match.
-
 ### Next
 
 1. Owner supplies Japanese MH1. Survey it the same way. The plan's base
    choice hinges on whether MH1's executable really has symbols.
 2. Look into the compiler question (see DECISIONS.md, Open).
 
-## 2026-10-04, session 1 (cont.): Japanese MH1 survey
+## 4 Oct 2026, session 1 (cont.): Japanese MH1 survey
 
 Source: owner's image "Monster Hunter (Japan).iso" (4,000,579,584 bytes),
 extracted to disc/mh1/. SYSTEM.CNF boots `SLPM_654.95`, VER 1.02.
@@ -218,7 +125,7 @@ extracted to disc/mh1/. SYSTEM.CNF boots `SLPM_654.95`, VER 1.02.
    disambiguating duplicate static names by address.
 3. Inventory data formats (.apx, .amo, .ahi, *_amh.bin, *_tex.bin).
 
-## 2026-10-04, session 1 (cont.): identifying the compiler build
+## 4 Oct 2026, session 1 (cont.): identifying the compiler build
 
 Downloaded (owner approved): wibo 1.2.0 (decompals/wibo, Win32 loader for
 Linux) and mwcps2 3.0b52-030722, 3.0.1b74-030811, 3.0.1b75-030916,
@@ -271,7 +178,7 @@ Owner approved further downloads; added 3.0b50-030527, 3.0b38-030307,
    relocations, byte-identical rebuild of main.
 2. Keep a growing match set in tools/matchtest/ to narrow the 3.0 build.
 
-## 2026-10-04, session 1 (cont.): Phase 1 - matching build of main
+## 4 Oct 2026, session 1 (cont.): Phase 1, matching build of main
 
 ### Verified
 
@@ -599,22 +506,132 @@ How it works (each step was checked, not assumed):
   - set19: three `*pos++` reads compile to two combined increments and one
     separate, which is how the original reads its position tables.
 
-### Next
+### Update: effects, set14 and shell22 (date not recorded)
 
-1. Remaining shells (00, 03, 06, 08, 09, 10, 12, 14, 22: bigger, with
-   draw code) and set*/eft* in game.bin.
-2. Larger player and monster files as PLW/EMW fill in.
-3. normal_char_set: a 30-minute permuter run (~608k candidates) found
-   nothing better than the one-instruction difference; its "best" outputs
-   only change behaviour (wrong constants). Further evidence that the
-   quirk is the compiler build, not the source. Left parked. Good first targets: small leaf functions in
-   main's player/monster code, building up shared headers (PLW, EMW...)
-   as offsets are confirmed.
-2. Infer Capcom's file boundaries in the big text blocks (needed before
-   whole files can be compiled as C).
-3. Data typing per object (strings in .data vs .rodata) as C files appear.
+These notes used to sit under "Not verified / guesses" of the 4 Oct G survey, where they did not belong. They are
+matching notes from the Phase 1 work, each checked with tools/check.py. The day they were written was not recorded. The
+effects update above says "eft10 too, see below" and the eft15 notes here explain how eft10_m came to match, so they
+probably belong to the same day (a guess).
 
-### shell06b (bowgun shots, second half) - 4 Oct 2026
+- eft22 (the fishing float, include/uki.h) matches except eft22_end_init
+  (4 instructions: the 35.0f/27.0f flight-time constant lands in v1 where
+  ours uses v0; an 8k-candidate permuter run found nothing). Split into
+  eft22.c / eft22b.c, near-match in eft22_nm.c. The 2956-byte eft22_m
+  matched. Findings, each checked with tools/check.py:
+  - MWCC tests switch cases in reverse source order: the original's
+    0x60, 0x63, 0x62 sequence comes from `case 0x62: case 0x63: case 0x60:`.
+  - A two-way pick written `if (c == 0) lim = 50; else lim = 20;` matched;
+    every ternary spelling gave movz instead of movn.
+  - A `switch` with one case plus default compiles differently from the
+    same `if`/`else` (eft22_t, eft22_line_sub).
+  - eft22_se_req ignores its first argument and passes 1 to se_req2.
+  - PLW +0x8E8 holds the bait kind here (0x60/0x62/0x63 make the float drift
+    gently), so the "fish_time" name from eft23 is unverified.
+
+- eft15 (sprite bursts, nine types) and eft14 (sparks and flashes, eleven
+  types) both match as single files. Findings, each checked with
+  tools/check.py:
+  - eft14_m00's two UV-frame searches keep a loop counter `j` that is
+    never read. Our build dropped it until the same variable was also used
+    for the UV nibble in the type 3/6 branch (`j = p->uv & 0xF; ...`): a
+    variable with other uses keeps its increments.
+  - Keyframe reads: `d = eft15_data[idx++]; eft_vec_linear(p->lag, d, ...)`
+    matches; passing `eft15_data[idx++]` straight in loads lag first and
+    shifts registers (eft08 already used the local; the permuter found it
+    again).
+  - Loops that spawn sprites index the work directly (`w[i].lag = ...`).
+    Stepping a pointer (`p++`) emits its increment after the other
+    induction variables instead of first (eft14_i00, eft15_i).
+  - eft15_m's joint switch has no default: the original leaves `joint`
+    unset there and the register still holds the 4 from an earlier
+    compare. Writing `default: joint = 4;` adds code.
+  - `if ((ew = pull_eft_work(1)) != 0)` tests v0 directly; a separate
+    assignment tests the saved copy (Eft15_set, eft14_set, Eft14_set3/4).
+  - `&mw->clay[p->lag] + 27` and `&mw->clay[p->lag + 27]` differ.
+  - A plain int passed to make_mat_srt's u16 argument gives the `andi
+    0xFFFF` at the call; a u16 local does not.
+  - `ew->arg <= 1U` gives the original's `sltiu at`; `< 2` and `<= 1` give
+    slti.
+  - Argument evaluation order shows parameter order: Eft14_set3 is
+    (pos, arg, scale, pl) and eft_trans_sub is (clay, mat, flag, alpha,
+    mats), since the float is set up before the pointer after it.
+  - Some float constants are one ulp off the obvious decimal (0x3C75C290 =
+    0.015000001f, 0x3C23D70B = 0.010000001f); write them that way.
+  - Local declaration order sets saved-register order. For eft15_t a
+    brute-force over the 120 orders of five declaration groups found the
+    matching one (`ew, p, mw` first, then `mats, cl, flag, order`).
+  - A drot field read with `lhu` in `rot += drot` is still s16 (eft14 and
+    eft15 both match only with s16).
+  - Those two fixes plus the eft15_m layout made eft10_m match (it had
+    been 191 instructions off). Its last 5 instructions were the order of
+    the six table reads at the top: a brute force over the 720 orders found
+    num, all, idx, step, time, tt. In eft10 `drot` is u16 (the original
+    loads rot first there).
+
+- eft12 (cooking: the barbecue spit, smoke cloud, meat on the spit with
+  its smell, the thrown egg and steam) matches in full, 28 functions. New
+  GAME_W fields: x1E (smoke UV scroll), x80[4] (per player, copied into the
+  smell) and meat_num (0x211). Findings, each checked with tools/check.py:
+  - Loop increments are emitted in the order of the for-expression.
+    eft12_m01 matched only as `for (i = 0, r = rotz77; i < 4; i++, p++,
+    r++)` with `p->rot += *r`; indexing `rotz77[i]` let the compiler add
+    its own pointer after `p`.
+  - Argument types show in the caller: a parameter declared s16 is passed
+    on unextended (Eft12_set3, eft12_set_sh), an int is sign-extended
+    before the call.
+  - Colour words are built `((g << 8) | ((a << 24) | (r << 16))) | b`;
+    the plain left-to-right OR chain swaps one operand pair.
+  - A store placed before a call lands in its delay slot: eft12_t01 clears
+    enmaku_flag before clay_attr_reset(), not after.
+  - `game_w.x1E` (u8) converted with a signed cvt needed `(f32)(int)`.
+  - Six u8 colour locals had to be declared bone r,g,b then meat r,g,b to
+    get the saved-register order.
+
+- eft18 (blasts and debris, twelve types; type 4 throws rocks that fall
+  to the ground) matches except eft18_m00 (2 instructions: the owner and
+  joint loads for get_joint_wmat come out in the other order) and
+  eft18_set_com (7: the original leaves the delay slot after `beqz ew`
+  empty). Split into eft18.c / eft18b.c / eft18c.c, near-match in
+  eft18_nm.c. Findings, each checked with tools/check.py:
+  - A `p++` at the end of the loop body is emitted before the compiler's
+    own induction variables; in the for-expression it comes after them
+    (eft18_i00 matched only with `p++;` as the last statement).
+  - Reading a table entry through a pointer (`sp = &tbl[k]; a = *sp;
+    b = *sp;`) reloads it after each store, as the original does;
+    `tbl[k]` three times is loaded once.
+  - Ternary conditions test the variable itself: `(i ? -0x4000 : 0x4000)`
+    gave the original's movz on i; `i == 0 ? ... : ...` did not.
+  - eft18_i02 adds the rock's sideways offset to its velocity, not its
+    position (checked: the stores go to +0x08..0x10, the velocity).
+  - New SHLW field pos0 (0x3C), used by Eft18_set3 to size the effect by
+    the distance from pos2.
+
+- set14 (a stage overlay with scrolling masked textures; on stages 51-53
+  two of five layers fade at random intervals) matches except set14_trans,
+  its draw function (still assembly, last in the file so no split).
+  set14_m repeats the same mask-timer code for stages 51, 52 and 53; it
+  matched written out three times.
+
+- shell22 (cannon rounds, stage cannons on stages 12/25, debris, and rocks
+  dropped on stages 11/28/30) matches except shell22_i and shell22_h.
+  Split into shell22.c / shell22b.c / shell22c.c, near-match in
+  shell22_nm.c. Findings, each checked with tools/check.py:
+  - shell22_trans matched only with `goto end;` for its model checks: the
+    original branches straight to the function end there, while its
+    switch defaults (`return`) go through their own jump blocks.
+  - Confirmed again across several switches: compare chains test the cases
+    in reverse source order, and the bodies are laid out in source order.
+  - A shell spawner's `u16` angle argument shows up as lhu at the call
+    (Eft18_set5 is declared with u16 angles here).
+  - The landing test `g = 50 + GetGroundShellHit(); if (y <= g) { y = g;
+    ...}` keeps the store inside the branch.
+  - Small gp tables need their real sizes declared (shell22_tbl is 4
+    bytes).
+  - check.py reports one difference in shell22_trans only because the
+    original names its draw helper disp_sub; the built bytes match.
+
+### Update: shell06b and shell06 (bowgun shots), 4 Oct 2026
+
 src/game/shell/shell06b.c, 0x62C4D0-0x62D4C4 (19 functions, all byte-match,
 checked with tools/check.py and `tools/rebuild.sh game` = game OK). Types in
 include/shell06.h: the shot keeps a work block at sh+0x18 (SH06W), and damage
@@ -643,7 +660,23 @@ row plus silencer/long-barrel rows. Matching notes:
   which is now in eft18.c (0x551830-0x552CF8, rodata to 0x6857EC).
   Verified: check.py OK and `tools/rebuild.sh game` = game OK.
 
-## 2026-10-05: PS2Recomp feasibility test, Wii MH G, first model off the disc
+### Next
+
+1. Remaining shells (00, 03, 06, 08, 09, 10, 12, 14, 22: bigger, with
+   draw code) and set*/eft* in game.bin.
+2. Larger player and monster files as PLW/EMW fill in. Good first targets:
+   small leaf functions in main's player/monster code, building up shared
+   headers (PLW, EMW...) as offsets are confirmed.
+3. normal_char_set: a 30-minute permuter run (~608k candidates) found
+   nothing better than the one-instruction difference; its "best" outputs
+   only change behaviour (wrong constants). Further evidence that the
+   quirk is the compiler build, not the source. Left parked. (Solved
+   later: `case 0: default:`, see "Update: player file 0x14F030".)
+4. Infer Capcom's file boundaries in the big text blocks (needed before
+   whole files can be compiled as C).
+5. Data typing per object (strings in .data vs .rodata) as C files appear.
+
+## 5 Oct 2026: PS2Recomp feasibility test, Wii MH G, first model off the disc
 
 ### Verified
 - Agent A's tools/clay_dump.py exports em01_amh.bin (Rathalos) from
@@ -673,7 +706,7 @@ row plus silencer/long-barrel rows. Matching notes:
 ### Not verified
 - That recompiled code runs: the runtime was not built or linked yet.
 
-## 2026-10-05 (later): pause point, handover
+## 5 Oct 2026 (later): pause point, handover
 
 - 1095/12585 functions match (10.3%); all five modules rebuild byte-identical
   (verified with tools/rebuild.sh after the last merges). Everything merged is pushed.
@@ -690,18 +723,22 @@ row plus silencer/long-barrel rows. Matching notes:
 - Usage pacing (hourly check, pause at ~88%) was a session-only cron; recreate it
   when resuming agents.
 
-## 2026-10-05 (evening): agents resumed, merges
+## 5 Oct 2026 (evening): agents resumed, merges
 
 - Owner: no scheduled usage checks; keep going until told to stop; 32-bit PC host confirmed.
 - Merged all branches (A twice more, B, C twice, D, E, F); all five modules byte-identical
-  after each merge. tools/build.py now skips src/pc/. Progress: total         12585    3481696   456520 13.112% 1467 of 12585 functions decompiled 
+  after each merge. tools/build.py now skips src/pc/.
+- Progress (tools/progress.py): 1,467 of 12,585 functions; 456,520 of 3,481,696 bytes (13.112%).
 - PC runtime (agent A): all decompiled set/eft/shell C runs natively; trans_stage written
   (near-match C) fixes the floor holes; all 88 stages render (contact sheets in
   ../mh1-wt/A/build/show/A/stages/). Plan for player+monster with input: docs/pc.md "Plan".
 - Running: A motion system + pad backend; B f_em_*; C f_menu display code; D weapon/rail cam/hit;
   E f_quest/f_stage; F f_pl.
 
-## 2026-10-05 (afternoon): 35% matched, PC hunt works
+## 5 or 6 Oct 2026: 35% matched, PC hunt works
+
+(This heading used to say "2026-10-05 (afternoon)". It comes after the 5 Oct evening entry, which had 13.1%, so the date or
+the time of day is probably wrong: likely 6 Oct. Kept in its place in the order of progress.)
 
 ```
 main           6525    1516544   304460 20.076%
@@ -726,7 +763,7 @@ All five modules byte-identical after every merge; main pushed.
   E when it finishes: memory-card run, IME near-matches); F lobby 0x5C4E60-end.
 - Owner said (5 Oct): keep going until told to stop; no scheduled usage checks.
 
-## 7 Oct 2026 checkpoint (coordinator)
+## 7 Oct 2026: checkpoint (coordinator)
 
 - 55.3% matched overall (6902 / 12585 functions): game 93.2%, select 90.8%, yn 68.9%, main ~39%, lobby ~35.5%.
 - PC build: power-on -> title -> character creation -> Kokoto -> quests -> reward -> save/continue
@@ -738,7 +775,7 @@ All five modules byte-identical after every merge; main pushed.
   (one TU per original file; literal addresses -> symbol fields; never pkill -f).
 - Coordinator: check-then-push only (rebuild all five OK + build_pc builds), one check at a time.
 
-## 2026-10-07 checkpoint: paused at the weekly usage limit
+## 7 Oct 2026: checkpoint, paused at the weekly usage limit
 
 All agents stopped cleanly by the coordinator. main = origin/main, verified:
 rebuild.sh OK x5, build_pc.sh builds, test_quest_loop / test_progression /
@@ -771,7 +808,7 @@ Next when resuming:
    gains; near-match grinding mostly doesn't.
 5. Owner may play-test the PC build and report bugs (tools/play.sh).
 
-## 2026-10-08 checkpoint
+## 8 Oct 2026: checkpoint
 
 main = origin/main (a963743f+): rebuild OK x5; PC tests all pass (quest_loop, progression,
 urgent, name_entry, movie, frog, all_quests 38/38, audio, log, activities 35, pick), online and
@@ -791,7 +828,7 @@ matched C for ~160 main files (agent B), semdiff review of near-match copies (ag
 Open: vine climbing (needs location), Monoblos tail cut visual, em_ride_sub (Lao back) untested in
 play, Xbox hardware runs, PS2 reference comparison (PCSX2/BIOS or ESP32 pad + debug ELF plan).
 
-## 2026-10-10 checkpoint
+## 10 Oct 2026: checkpoint
 
 main = origin/main (1ff526d7): rebuild OK x5; all 13 PC tests, test_online, test_online_town,
 test_coop (incl relay, hostleave), tools/server/test_server.py pass; Xbox links; Windows builds.
@@ -810,13 +847,17 @@ Owner decisions: no robot playtesting (human F8 reports); keep code tidy (remove
 workarounds); OpenAL on hold; PS2 online via a patched game is acceptable.
 Waiting on owner: Xbox setup/files, PS2 setup, English questions, server hosting/name/
 invite-only/DNAS note, MH Oldschool message.
-Later 10-11 Oct (65f0c343, all checks pass incl. test_online_guest/test_online_event): F tidy-up (one monster draw
+### Later, 10-11 Oct 2026 (65f0c343, all checks pass incl. test_online_guest/test_online_event)
+
+F tidy-up (one monster draw
 path, 123 dead weak stand-ins, ~30 near-match copies, docs/pc.md handover) and 26 host overrides
 replaced by matched C (faint camera, bowgun upgrades, chat phrases, item pool); B online round 3 (guest
 rooms solo per game rule, town weapons, event quest download+start, patch refusal, personal data
 not sent). Survey of other games: docs/survey/mhg_vs_mh1.md (G ~52% reuse, MH2 ~17%, MHP ~0%; no
 US MH1 disc on this machine).
-Then (4d6c683b, all 21 checks pass): B rounds 4-6 (event quest to reward + saved; Windows/Wine vs
+### Then (4d6c683b, all 21 checks pass)
+
+B rounds 4-6 (event quest to reward + saved; Windows/Wine vs
 mh1-server; invite-only server with SQLite accounts/hunters, stored mail, crash recovery, config file,
 "Run your own server" + public-launch gap list in docs/server.md; room rules = players/password/
 message, enforced by server; game's HTML message renderer ported; password join tested with
@@ -826,7 +867,7 @@ scripted hunt luck-proof (RT_PL_ITEMS_MIN); monster-slot model-work leak fixed; 
 (no lost items). Left: Material_set_sub, get_mdlw_ptr, init_eft/shell_work in char editor.
 Agents idle; online next steps wait on owner decisions (hosting, name, PS2 cross-play).
 
-## 2026-10-11: real Xbox and xemu
+## 11 Oct 2026: real Xbox and xemu
 
 Hardware bench (docs/xbox.md "Real Xbox bench setup" and later sections): Evolution X Xbox on
 DHCP (192.168.1.116 now; was .115), capture card, RetroKM pad Atom. Laptop has 192.168.1.166 as
@@ -853,8 +894,9 @@ is NOT darker in our renderer (xemu = PC); the hardware capture is ~25-30 levels
 screen: the video chain (NTSC-J black level vs the HDMI adapter, or adapter/capture brightness).
 Owner check when convenient: capture a retail game's dark scene through the same chain.
 
-Later 11-12 Oct (f49c80b4, all 21 PC tests + online, rebuild OK x5, both Xbox builds): worker F
-merged: the first player loop runs in xemu (new game, character, save, village, quest 131, hunt,
+### Later, 11-12 Oct 2026 (f49c80b4, all 21 PC tests + online, rebuild OK x5, both Xbox builds)
+
+Worker F merged: the first player loop runs in xemu (new game, character, save, village, quest 131, hunt,
 carve, deliver, reward, village, bed save; CONTINUE loads it): tools/xemu_quest_loop.sh (~10 min,
 passes). Scripted input/env on the Xbox (D:\data\input.txt, env.txt), FATX formatter for the
 xemu HDD (tools/xbox_fatx.py), pdclib fixes (fopen w+/r+, sscanf floats), hunter no longer floats
@@ -863,15 +905,18 @@ xemu HDD (tools/xbox_fatx.py), pdclib fixes (fopen w+/r+, sscanf floats), hunter
 xemu (AC97 stalls). Next on hardware: run the same loop on the real Xbox (needs input.txt in
 E:\Games\MH1\data, i.e. one FTP copy or a loader that fetches it).
 
-12 Oct (b494a2ff, rebuild OK x5, all 22 PC tests incl. the new test_soak + online, both Xbox builds):
-worker F memory round merged: free memory flat over quest loops (xemu: village 16.5 MB, after
+### 12 Oct 2026 (b494a2ff, rebuild OK x5, all 22 PC tests incl. the new test_soak + online, both Xbox builds)
+
+Worker F memory round merged: free memory flat over quest loops (xemu: village 16.5 MB, after
 quest 3 15.8 MB; was 10 -> 6 MB after one loop). 2D texture GC, motion/NPC file GC, host model
 GC, collision areas 1 MB -> 288 KB. Gameplay bugs fixed on the way: village motions overwrote
 the hunter's weapon motions (rebuilt per quest now), second delivery quest cleared at once
 (delivery stock reset at quest start). Soak tests: tools/test_soak.sh, tools/xemu_soak.sh.
 Open: ~130 KB/loop still lost in xemu only (allocator?). Recording: run_xemu.sh --record.
 
-12 Oct, later (c1128dc3, rebuild OK x5, all 22 PC tests + online, both Xbox builds): 59.668%
+### 12 Oct 2026, later (c1128dc3, rebuild OK x5, all 22 PC tests + online, both Xbox builds)
+
+59.668% matched
 (main 45.989%, 7204 of 12585 functions). Workers B (gameplay side of main: player, menu, emw,
 `case 0: default:` compiler quirk solved) and C (engine side: flps0, omake whole file, usbkbdm,
 fltex02, flswap, tx03; host pad driver and system_w_set replaced by matched f_ioread) merged.
@@ -886,7 +931,7 @@ both sides' bases); kept on branch c-merge-attempt-1, C fixed it on its branch. 
 generated stubs (src/main/npc/npcb.c, npcc.c) left by a failed rebuild break the next one:
 after a failed merge check `git status --untracked-files=all src`.
 
-## 2026-10-13 checkpoint (hand-over to a fresh session)
+## 13 Oct 2026: checkpoint (hand-over to a fresh session)
 
 Start here: CLAUDE.md, then docs/agents/COORDINATOR.md (owner's standing decisions, rules,
 current assignments, Xbox bench), then this section, then docs/xbox.md from "Real Xbox bench
@@ -907,7 +952,7 @@ Waiting on the owner: decisions on online hosting/name/PS2 cross-play, English (
 translation permission, title art), a remote power button for the Xbox (idea), a DHCP
 reservation for the Xbox and laptop, own BIOS dump (optional; dumper reads the mirror now).
 
-## 2026-10-13 evening: MH1 polish round merged, G is the main target, then paused
+## 13 Oct 2026 (evening): MH1 polish round merged, G is the main target, then paused
 
 Owner decisions (docs/DECISIONS.md): Monster Hunter G is the main release; one codebase for MH1
 JP / MH1 US / G with a version switch and a start-up launcher; priorities G > MH1 JP > MH1 US.
@@ -926,7 +971,7 @@ Merged and checked (tools/full_check.sh all ok incl. online; VERSION=mhg rebuild
   byte-identical (VERSION=mhg), 7.5% matched, all G data loads in our readers; docs/mhg.md.
 Owner Xbox tests pending: see COORDINATOR.md "Current assignments". Paused after this push.
 
-## 2026-10-13/14: Monster Hunter G comes up on the PC (owner asleep from 14 Oct ~2 am)
+## 13-14 Oct 2026: Monster Hunter G comes up on the PC (owner asleep from 14 Oct ~2 am)
 
 G on the PC engine (tools/build_pc_mhg.sh, hidden by default): title -> menu -> NEW GAME ->
 character creation -> save -> CONTINUE -> Kokoto village (walk the village, item box); G quest 10
@@ -941,7 +986,9 @@ G registrations proven from a clean build (docs/agents/BRIEF.md).
 Open for the owner: agent F's Xbox audio fix (silent after a warm relaunch) is unmerged on
 agent-F and needs a hardware test (docs/agents/COORDINATOR.md); bed "quit game? yes" drops to
 the Forest camp.
-Overnight 14 Oct (merged, clean rebuild 5+7 OK, MH1 PC + quest loop, G PC build): G 15.5%.
+### Overnight, 14 Oct 2026 (merged, clean rebuild 5+7 OK, MH1 PC + quest loop, G PC build)
+
+G 15.5%.
 A: G monster level / hit-zone state / size set as G does; subspecies kinds 0x24/0x2D/0x32; reward
 list without supply-box items (stray "1:0" first entry left); armour tables at G sizes; 21 timer
 tables. Choice for owner review (docs/REVIEW.md): the PC keeps MH1's monster-work (EMW) layout,
@@ -950,7 +997,7 @@ damage per hit, not won by the script in 900 s. Still zero in G: Shell_data, St_
 em_hp_vital_tbl, monster_data. C: f_pl registered (40 of 41 parts; pl_mv004 jump-table order).
 Next: G camera layout (C's notes), those zero tables, quest failure and a G-only monster quest.
 
-## 2026-10-14/15: G playable on the PC, installed on the Xbox
+## 14-15 Oct 2026: G playable on the PC, installed on the Xbox
 
 See docs/agents/COORDINATOR.md "State 15 Oct" for the summary. Highlights: G village and all 98 offline
 quests on the PC; G 19.8% matched; G 47% official English; G installed on the real Xbox through the
@@ -959,7 +1006,7 @@ loader's HTTP data install (FTP to Evolution X stalls on big files); Xbox sound 
 prototypes/demo surveyed (docs/FINDS.md). OOM crashes: wiping build/raw before a G rebuild made wibo
 loop (BRIEF.md rules).
 
-## 2026-10-29: G on the real Xbox, driven by the coordinator
+## 29 Oct 2026: G on the real Xbox, driven by the coordinator
 
 The coordinator now runs the real Xbox alone (power servo, capture card, scripted pad; docs/agents/COORDINATOR.md
 "Xbox bench"). Build 2aa6993a / 57e1ab1f, G nv2a through the loader. Verified on hardware:
@@ -979,13 +1026,14 @@ The coordinator now runs the real Xbox alone (power servo, capture card, scripte
 Open: a ~200 ms frame every ~90 s in the village (log "load: pause ... other", very regular; the owner suspects the
 capture card, not checked); no audio through the capture card yet (RetroTINK HDMI gives none); Kut-Ku not fought.
 
-## 2026-10-29 late: two Xbox fixes checked on hardware
+## 29 Oct 2026 (late): two Xbox fixes checked on hardware
+
 - Village pause gone: the log files reserve 4 MB, so the FATX disk no longer stops the game every ~90 s to grow them
   (4.5 min idle in the village, no pause).
 - Cold-start black screen (rare, 1 in ~25): the audio setup no longer reads the sound chip's registers (the reads never
   worked: always 0000) and only writes them. 15 of 15 cold starts fine afterwards; likely fixed, not proven.
 
-## 2026-11-02: Monster Hunter 2 Phase 1, first matching C (docs/mh2.md)
+## 2 Nov 2026: Monster Hunter 2 Phase 1, first matching C (docs/mh2.md)
 
 Owner's change of 1 Nov: MH2 is split and decompiled by us, from the owner's disc. Branch of an isolated worktree; the
 community mh2-decomp repo was not opened.
@@ -1006,7 +1054,7 @@ Next: data slots for carried C, then the 300 files that compile but differ (docs
   No file under src/main, src/mhg, src/lobby, src/game, config/mhg or include changed on this branch, so this is
   not from the MH2 work; src/main/menu/menu09.c last changed in the G commits of 1 Nov. Left alone for the G side.
 
-## 2026-11-02: MH2 data slots, carrying C at 3.74% (docs/mh2.md section 5)
+## 2 Nov 2026: MH2 data slots, carrying C at 3.74% (docs/mh2.md section 5)
 
 Decided alone, the owner being away. Community mh2-decomp not opened.
 
@@ -1026,7 +1074,7 @@ Decided alone, the owner being away. Community mh2-decomp not opened.
 
 Next: the small files in mh2_differ.csv by family (docs/mh2.md section 6).
 
-## 2026-11-02: MH2, four branches merged into one design, 6.37% (docs/mh2.md section 5)
+## 2 Nov 2026: MH2 near-misses, four branches merged into one design, 6.37% (docs/mh2.md section 5)
 
 Decided alone, the owner being away. Community mh2-decomp not opened.
 
@@ -1042,12 +1090,14 @@ Decided alone, the owner being away. Community mh2-decomp not opened.
 - Verified: build/mh2/carry emptied, build/mh2/src/mh2/parts deleted, register, full tools/mh2_rebuild.sh, tools/mh2_check.py 13 of 13 identical. MH1 by the steps of tools/rebuild.sh at -j 2: 5 OK. G the same way: 7 OK.
   tools/build_pc.sh builds build/pc/mhview. MH1, G and PC were run on the commit before the last header change, which touched only mh2_emw.h and mh2_ofs.h (MH2 only). PC build only: not run, full_check.sh is the owner's.
 - Not run in any emulator: proof is bytes only. What is a guess is listed in docs/mh2.md.
+- Later the same day (this was a separate short entry, "MH Dos near-misses, four agents merged", now folded in here):
+  carried code 3.74% to 6.37% (2,268 of 17,034 functions). Verified on the merged tree: full check 47 of 47, mh2_check
+  13 of 13 identical. The first full check failed 6 runtime steps (`MH2V` hid addresses from `tools/pc_abs.py`); fixed
+  (docs/mh2.md 5.3). Next: remaining struct layouts in docs/mh2.md.
+  **Conflict:** the bullet "Verified" above says full_check.sh was not run (it is the owner's); this bullet says 47 of 47
+  passed. Probably run later by the coordinator, but the log does not say who ran it.
 
 Next: docs/mh2.md section 6.
-
-## 2 Nov 2026: MH Dos near-misses, four agents merged
-
-Carried code 3.74% to 6.37% (2,268 of 17,034 functions). Verified on the merged tree: full check 47 of 47, mh2_check 13 of 13 identical. First full check failed 6 runtime steps (`MH2V` hid addresses from `tools/pc_abs.py`), fixed. Nothing of MH2 has run: proof is bytes only. Next: remaining struct layouts in docs/mh2.md.
 
 ## 2 Nov 2026: MH Dos on the PC, first step: the title screen (docs/mh2_port.md)
 
@@ -1081,3 +1131,18 @@ docs/mh2.md and docs/mh2_port.md section 6 now say what of the plan is done.
 - Nothing of MH2's game code has run: proof is bytes, plus drawing checks on the PC.
 
 Next: docs/mh2_port.md section 6, the part after "What is left".
+
+## 3 Nov 2026 (later): MH Dos, CODE and HUNT merged
+
+Written during the readability pass of 3 Nov, from the commit messages and the two area notes. Nothing was re-run for this
+entry. Details: docs/mh2/code.md and docs/mh2/hunt.md.
+
+- CODE agent, byte-matched: stage_set_set (sub_main 0x378A30), game 0x80D270 and 0x75FBF0 (two monster act_sets, with their
+  jump tables), em01_senkai_sub (game 0x70A290, 3,136 bytes). Near-match 0x3A2E30 went from 117 to 96 instructions off.
+  func_fix: em_cmd_myemtype_sel is 0x72B3A0 (opcode 0x70, as in G).
+- mh2_carry.py retries a failed compile once with a longer limit (the first register after an empty cache had lost 12
+  files).
+- HUNT agent: `--quest 1014` on the PC runs G's quest path on MH2's own Quest_start set-up. It draws stage 110, the hunter
+  in the game camera and the HUD, then stops at the blockers listed in docs/mh2/hunt.md. Monsters only with `RT_MH2_EM=1`.
+- Progress after the merge: 6.88%, per the message of commit 0a67047 (docs/survey/mh2_differ.csv regenerated). The
+  function count was not recorded.

@@ -1,24 +1,43 @@
-# Monster Hunter (PS2, 2004) to original Xbox: phase 0 kit
+# Monster Hunter (PS2) to PC and the original Xbox
 
 **Just want to play?** With your own disc image of the Japanese PS2 game: `./mh1 linux DISC.iso` (or `windows`,
 `xbox`) builds the game and sets it up. Requirements, controls, saves and co-op: [docs/PLAYING.md](docs/PLAYING.md).
+
 **Testing on your own Xbox?** [docs/TESTERS.md](docs/TESTERS.md): `tools/make_release.sh G.iso` makes the Xbox folder
 and the PC build, plus what to test and how to report.
-(The rest of this file is the project's plan and the developer tools.)
 
-This is the starting point for the port, not the port. It holds the two tools
-needed to measure the job, and the plan they feed into. Nothing here contains
-Capcom code or data: you supply files from your own disc. The repo does carry
-symbol names and addresses read from the game's executable
-(docs/survey/mh1_symbols.csv, config/symbol_addrs.txt) and archive file
+The rest of this file is the project's plan and the developer tools.
+
+## What this repo is
+
+A hobby preservation project. It decompiles Capcom's PS2 Monster Hunter games to C and runs that C on a new platform
+layer for PC and the original Xbox. Three games share one tree:
+
+| Game | Disc | State | Read first |
+|---|---|---|---|
+| Monster Hunter (MH1, 2004) | Japanese SLPM_654.95 (has symbols) | the test bench; plays on PC and Xbox | docs/STATUS.md |
+| Monster Hunter G (PS2) | Japanese SLPM_658.69 | the main release (docs/DECISIONS.md, 13 Oct); plays on PC and on the real Xbox (docs/STATUS.md, 15 and 29 Oct) | docs/mhg.md |
+| Monster Hunter 2 / Dos | Japanese SLPM_662.80, 1.04 | split and matching started; PC port at an early stage | docs/mh2.md, docs/mh2_port.md |
+
+The game C is checked byte for byte against the owner's own disc with the original PS2 compiler. Neither the disc nor the
+compilers are in this repo.
+
+Nothing here contains Capcom code or data: you supply files from your own disc. The repo does carry symbol names and
+addresses read from the game's executable (docs/survey/mh1_symbols.csv, config/symbol_addrs.txt) and archive file
 listings, as decompilation projects commonly do.
 
+The sections "Step 1" to "Step 3" below are the original phase 0 kit: the tools that measured the job before it started.
+They are kept because they still work and still describe how the data was first read.
+
 ## Decisions already made
+
+The first decisions, from 3-4 Oct 2026. Later ones changed some of them (G became the main release on 13 Oct; G's English
+comes from Monster Hunter Freedom first, then MH1 US, on 28 Oct). docs/DECISIONS.md has the full list and the current state.
 
 | Question | Decision | Why |
 |---|---|---|
 | Which build to port | Japanese (NTSC-J) | Its executable ships with a symbol table, and it is the version the community servers speak to. The US/EU builds use different netcode that nobody has revived. |
-| English | Second string table plus a language toggle | English text can come from the community MH1j translation (with the authors' permission) or be retranslated. |
+| English | Second string table plus a language toggle | English text can come from the community MH1j translation (with the authors' permission) or be retranslated. (Later: official English from the player's own US disc and Freedom; see docs/DECISIONS.md.) |
 | Xbox SDK | nxdk (open source) | Gives a GPU library (pbkit), vertex program and register combiner compilers, an lwIP network stack, SDL2 and USB. Avoids the leaked Microsoft XDK. |
 | Method | Decompile to portable C, then retarget | Static recompilation tools for PS2 are too immature and too heavy for a 733 MHz, 64 MB machine. |
 | Online | Same wire protocol as the PS2 client, DNAS removed | Lets an Xbox client share lobbies with PS2 and PCSX2 players, if the server operators agree. |
@@ -88,6 +107,7 @@ docs/survey/mh1_symbols.csv):
 and lobby (from AFS_DATA.AFS). The DNAS overlays are not built: they are
 Sony network security code that gets replaced.
 
+Monster Hunter G uses the same steps with `VERSION=mhg` (docs/DECISIONS.md, "How G lives in the repo: a VERSION switch").
 Monster Hunter 2 has its own steps: docs/mh2.md (`tools/mh2_rebuild.sh`, `tools/mh2_check.py`).
 
 To decompile code:
@@ -113,6 +133,8 @@ m2c: `git clone https://github.com/matt-kempster/m2c tools/m2c` and
 inferred source files (f_<prefix>, g_<first function> for gaps).
 
 ## Roadmap
+
+Where each phase stands is in docs/STATUS.md (latest entries at the end, summary at the top).
 
 **Phase 0. Survey (this kit).** Symbol census, data inventory, compiler ID.
 
@@ -149,9 +171,14 @@ scripts.
 
 ## Known unknowns
 
-- Size of the game code (Step 1 answers this).
-- How many distinct VU1 programs and framebuffer effects the renderer uses.
-- Whether any intro or cutscene video needs a new decoder.
+These were written before the survey. Answers found since are in brackets.
+
+- Size of the game code (Step 1 answers this). [Answered 4 Oct 2026: roughly 3.2 MB / 790k instructions of game code in
+  MH1, docs/STATUS.md.]
+- How many distinct VU1 programs and framebuffer effects the renderer uses. [Partly: MH1 has 250 named VU1 programs in
+  127 .vutext sections, docs/STATUS.md 4 Oct. Framebuffer effects not counted here.]
+- Whether any intro or cutscene video needs a new decoder. [The movies are Sofdec MPEG-2; decided to use libmpeg2,
+  docs/DECISIONS.md.]
 - Whether the game's network-delivered patches (stored on the memory card on
   PS2) are required for normal play.
 
