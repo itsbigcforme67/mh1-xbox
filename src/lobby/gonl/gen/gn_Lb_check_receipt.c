@@ -69,7 +69,7 @@ block_8:
         lb_check_chair((void *) temp_s2, temp_s1, M2C_ERROR(/* Read from unset register $a2 */), M2C_ERROR(/* Read from unset register $a3 */));
         return;
     case 9:
-        (*(u16 *)((u8 *)&lb_sys + 0x14)) &= ~(1 << (*(s8 *)((u8 *)(arg1) + 1)));
+        (*(u16 *)((u8 *)&lb_sys + LBM(0x14))) &= ~(1 << (*(s8 *)((u8 *)(arg1) + 1)));
         return;
     case 20:
         temp_a0 = &player_work + ((var_a0 & 0xFF) * 0xA00);

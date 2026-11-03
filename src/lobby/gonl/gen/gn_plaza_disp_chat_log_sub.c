@@ -32,13 +32,13 @@ void plaza_disp_chat_log_sub(s32 arg0, s32 arg1, s32 arg2) {
     u8 *var_s0;
     u8 *var_s5;
 
-    if ((*(u8 *)((u8 *)&PitMenu + 0x26)) != 0) {
+    if ((*(u8 *)((u8 *)&PitMenu + PMO(0x26))) != 0) {
         flfntSetSize(0x12, 0x12);
         if ((Plaza_get_chat_line_num() >= 0xAU) && !(arg1 & 0xFF)) {
             temp_a1 = arg0 & 0xFF;
             var_s1 = 0x124;
-            var_s3 = (*(u8 *)((u8 *)&PitMenu + 0x26)) - temp_a1;
-            var_s4 = ((*(u8 *)((u8 *)&PitMenu + 0x25)) - 1) - temp_a1;
+            var_s3 = (*(u8 *)((u8 *)&PitMenu + PMO(0x26))) - temp_a1;
+            var_s4 = ((*(u8 *)((u8 *)&PitMenu + PMO(0x25))) - 1) - temp_a1;
             if (var_s3 != 0) {
 loop_5:
                 temp_s4 = var_s4 & 0x3F;
@@ -79,9 +79,9 @@ block_16:
                 }
             }
         } else {
-            var_s4_2 = (*(u8 *)((u8 *)&PitMenu + 0x26));
+            var_s4_2 = (*(u8 *)((u8 *)&PitMenu + PMO(0x26)));
             var_s3_2 = 0x7C;
-            var_s2_2 = (*(u8 *)((u8 *)&PitMenu + 0x25)) - var_s4_2;
+            var_s2_2 = (*(u8 *)((u8 *)&PitMenu + PMO(0x25))) - var_s4_2;
             if (var_s4_2 != 0) {
 loop_21:
                 temp_s2 = var_s2_2 & 0x3F;

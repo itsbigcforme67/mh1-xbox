@@ -17,7 +17,7 @@ typedef struct LB_PIT {
 
 /* lb_sys (0x006EAE50, size 0x90): lobby town system state */
 #include "lbsys_g.h"
-#ifdef VERSION_MHG
+#if defined(VERSION_MHG) || defined(VERSION_MH2)
 typedef LBSYS_G LB_SYS;
 #else
 typedef struct LB_SYS {

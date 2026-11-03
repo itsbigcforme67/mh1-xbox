@@ -58,7 +58,7 @@ void Lb_act_set(void *arg0, u8 arg1, u8 arg2) {
 block_14:
         if (ck_pl_send(arg0) != 0) {
             if (((*(u8 *)((u8 *)(arg0) + 0x15)) == 0x4D) && ((*(u8 *)((u8 *)&game_w + 0x14)) == 0x4D)) {
-                (*(u16 *)((u8 *)&lb_sys + 0x14)) &= ~(1 << *(*(u16 **)((u8 *)(arg0) + 0x878)));
+                (*(u16 *)((u8 *)&lb_sys + LBM(0x14))) &= ~(1 << *(*(u16 **)((u8 *)(arg0) + 0x878)));
             }
             gonl_send_pl_status0(arg0);
         }

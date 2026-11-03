@@ -34,8 +34,8 @@ void lb_goto_guest_room(void *arg0, s16 arg1) {
         }
         /* fallthrough */
     case 2:
-        (*(s8 *)((u8 *)&lb_sys + 0x7C)) = 0;
-        (*(s8 *)((u8 *)&lb_sys + 0x19)) = 5;
+        (*(s8 *)((u8 *)&lb_sys + LBM(0x7C))) = 0;
+        (*(s8 *)((u8 *)&lb_sys + LBM(0x19))) = 5;
         (*(s16 *)((u8 *)(arg0) + 0x73A)) = arg1;
         temp_a1 = (*(void **)&cw);
         (*(u8 *)((u8 *)(temp_a1) + 0xFA63)) = (u8) ((*(u8 *)((u8 *)(temp_a1) + 0xFA63)) | ((1 << (arg1 - 0x51)) & 0xFF));

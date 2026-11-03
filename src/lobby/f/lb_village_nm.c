@@ -2025,7 +2025,7 @@ block_48:
 #ifdef VERSION_MHG
                     /* G (lobby 0x597F78 ..): the talk kind of the NPC chooses the mode by the story (get_questLevelNum); G's new numbers are
                      * translated to MH1's (this port keeps MH1's x68 numbers: G n = MH1 n-1 for 4..17, n-2 from 19; G 49 = the story event
-                     * (here 47), G 3 = a second counter page (here 2 with the counter work's page byte 2)). lb_sys+4 is the story event number. */
+                     * (here 47), G 3 = a second counter page (here 2 with the counter work's page byte 2)). lb_sys + LBM(4) is the story event number. */
                     {
                         u8 *sys = (u8 *)lb_sys;
                         u8 kind = M2C_FIELD(temp_s0, u8 *, 0xE);
@@ -5462,7 +5462,7 @@ block_37:
 
 #ifdef VERSION_MHG
 /* G (lobby 0x591EE0): the hint is printed as "%s%s" with the separator (net_etc_mes_tbl[6], a full-width colon) in front;
- * the room price is appended with sprintf + strcat; a blink counter at lb_sys+0x91 / +0x92 is new; nothing is drawn while the
+ * the room price is appended with sprintf + strcat; a blink counter at lb_sys + LBM(0x91) / +0x92 is new; nothing is drawn while the
  * hunter's action is one of 14 busy ones (lobby_func_00595530, but 93 itself is drawn); Lb_put_gold gets a position (30).
  * The two rule-message lines (talk modes 8 / 0x28 in MH1's numbering: guild rule sheet, online) lack G's pulsing frame
  * (lobby_func_005926C0): not ported. */
@@ -5510,7 +5510,7 @@ void Lb_put_help(u8 *arg0) {
     }
     flfntSetSize(0x14, 0x14);
     if (h0[0] == 0 && x68 != 8) {
-        lb_sys[0x92] = 1;
+        lb_sys[LBM(0x92)] = 1;
         lb_put_sprite();
         return;
     }
@@ -5524,11 +5524,11 @@ void Lb_put_help(u8 *arg0) {
         lb_put_sprite();
         return;
     }
-    if (lb_sys[0x92] == 1) {
-        lb_sys[0x92] = 0;
-        lb_sys[0x91] = 40;
-    } else if (--lb_sys[0x91] <= 0) {
-        lb_sys[0x91] = 40;
+    if (lb_sys[LBM(0x92)] == 1) {
+        lb_sys[LBM(0x92)] = 0;
+        lb_sys[LBM(0x91)] = 40;
+    } else if (--lb_sys[LBM(0x91)] <= 0) {
+        lb_sys[LBM(0x91)] = 40;
     }
     switch (M2C_FIELD(tgt, u16 *, 2)) {
     case 19:

@@ -105,8 +105,8 @@ u8 Reibun_select_mv(int pad, u8 sel) {
 
 int Cockpit_chat_chk(void) {
     #ifdef VERSION_MHG
-    return PitMenu[0x24] != 0; /* G: 7 bytes later */
+    return PitMenu[PMO(0x24)] != 0; /* G: 7 bytes later */
 #else
-    return PitMenu[0x1D] != 0;
+    return PitMenu[PMO(0x1D)] != 0;
 #endif
 }

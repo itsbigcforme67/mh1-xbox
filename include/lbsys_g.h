@@ -6,7 +6,9 @@
  * code that addresses lb_sys by a raw byte offset. In an MH1 build LBSYS_OFS is the identity. */
 #include "types.h"
 
-#ifdef VERSION_MHG
+#ifdef VERSION_MH2
+#define LBSYS_OFS(o) LBM(o)
+#elif defined(VERSION_MHG)
 #define LBSYS_OFS(o) ((o) < 0x64 ? (o) + 0x16 : (o) == 0x64 ? 0x14 : (o) == 0x66 ? 0x7A : (o) == 0x68 ? 0 : (o) == 0x6C ? 8 : \
     (o) < 0x74 ? (o) - 0x70 + 0x7B : (o) == 0x74 ? 0x10 : (o) == 0x76 ? 0x12 : (o) == 0x78 ? 0x7F : (o) == 0x7C ? 0x80 : \
     (o) == 0x80 ? 0xC : (o) < 0x87 ? (o) : (o) < 0x8D ? (o) + 1 : (o) + 2)
@@ -40,6 +42,46 @@
     ((o) >= 0x2F6E && (o) < 0x2F9A) ? (o) - 0x2F6E + 0xED6 : ((o) >= 0x32BE && (o) < 0x35D0) ? (o) + 0xC48C : \
     ((o) >= 0x35D0 && (o) < 0x3600) ? (o) - 0x35D2 + 0xFA5E : (o))
 
+#endif
+#ifdef VERSION_MH2
+/* MH2's lb_sys at 0x8BDC10, 0xF68 bytes (copied whole, 0x17FE20). Votes from aligned code: x68 0, x6C 8, x80 0xC, x74 0xF10, x04 0xF2A, x06 0xF2C,
+ * x72 0xF3D, x78 0xF3F, x7C 0xF40, x85 0xF48, x8D 0xF4D, x8E 0xF4E. Others follow G's order; the strings shrink, their sizes are a guess. */
+typedef struct LBSYS_G {
+    s32 x68;                   /* 0x000 */
+    s32 gx04;                  /* 0x004 */
+    s32 x6C;                   /* 0x008 */
+    s32 x80;                   /* 0x00C */
+    u8 x10[0xF00];             /* 0x010 cleared whole in 16 places */
+    s16 x74;                   /* 0xF10 */
+    u16 x76;                   /* 0xF12 */
+    union { u16 x64; u16 chair_mask; };   /* 0xF14 */
+    u8 _pad00[0xF27 - 0xF16];
+    s8 x01;                    /* 0xF27 */
+    s8 x02;                    /* 0xF28 */
+    s8 x03;                    /* 0xF29 */
+    s8 x04;                    /* 0xF2A */
+    s8 x05;                    /* 0xF2B */
+    s8 x06;                    /* 0xF2C */
+    union { s8 x07; s8 step; };           /* 0xF2D */
+    s8 x08;                    /* 0xF2E */
+    u8 _pad09;                 /* 0xF2F */
+    union { s8 x0A; u8 _s0[5]; };         /* 0xF30 guess */
+    union { s8 x28; u8 _s1[5]; };         /* 0xF35 guess */
+    u8 x66;                    /* 0xF3A */
+    u8 x70;                    /* 0xF3B */
+    s8 x71;                    /* 0xF3C */
+    s8 x72;                    /* 0xF3D */
+    union { u8 x73; u8 _pad73; };   /* 0xF3E */
+    u8 x78;                    /* 0xF3F */
+    s32 x7C;                   /* 0xF40 */
+    u8 _padF44[3];
+    union {
+        struct { s8 x84; s8 x85; s8 x86; u8 x87; u8 _p[2]; u8 x8D; u8 x8E; };   /* 0xF47: x85, x8D, x8E by votes */
+        u8 x88[8];
+    };
+    u8 _padF4F[0xF68 - 0xF4F];
+} LBSYS_G;
+#elif defined(VERSION_MHG)
 typedef struct LBSYS_G {       /* at 0x6548F0, 0x98 bytes; comments: G offset (MH1 name) */
     s32 x68;                   /* 0x00 talk/event mode, the exit code Local_main tests (0x22 = quest, 0x27 = title) */
     s32 gx04;                  /* 0x04 G only */
@@ -75,8 +117,11 @@ typedef struct LBSYS_G {       /* at 0x6548F0, 0x98 bytes; comments: G offset (M
     union { u8 x88[8]; struct { u8 _p[6]; u8 x8D; u8 x8E; }; };   /* 0x89 */
     u8 _pad91[0x98 - 0x91];
 } LBSYS_G;
-#else
+#endif
+#if !defined(VERSION_MHG) || defined(VERSION_MH2)
+#ifndef VERSION_MH2
 #define LBSYS_OFS(o) (o)
+#endif
 #define PNET_OFS(o) (o)
 #define CW_OFS(o) (o)
 #endif

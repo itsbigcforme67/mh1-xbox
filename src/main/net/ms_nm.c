@@ -264,7 +264,7 @@ void ms_net_patch_set_init(void) {
     net_common_w.x11 = 1;
 }
 
-/* ms_net_patch_set (0x2687E0, 6920 bytes): the "patch download" menu state machine (state in net_common_w+0x89,
+/* ms_net_patch_set (0x2687E0, 6920 bytes): the "patch download" menu state machine (state in net_common_w + NCO(0x89),
  * sub step +0x8A). Written from the m2c draft; field meanings are guesses. */
 #define NCU8(o) (*((u8 *)&net_common_w + (o)))
 #define NCS8(o) (*((s8 *)&net_common_w + (o)))

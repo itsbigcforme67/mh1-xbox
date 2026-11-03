@@ -75,13 +75,13 @@ block_6:
         }
         temp_v1 = temp_s0 & 0xFFFF;
         if (temp_v1 & 0x20) {
-            (*(u8 *)((u8 *)&lb_sys + 0x7E)) = (*(u8 *)((u8 *)((*(void **)&pNet)) + 0x28));
-            Lbs_GetRoomInfo((*(u8 *)((u8 *)&lb_sys + 0x7E)), temp_a1);
+            (*(u8 *)((u8 *)&lb_sys + LBM(0x7E))) = (*(u8 *)((u8 *)((*(void **)&pNet)) + 0x28));
+            Lbs_GetRoomInfo((*(u8 *)((u8 *)&lb_sys + LBM(0x7E))), temp_a1);
             cnWrap_SoundRequest(0, M2C_ERROR(/* Read from unset register $a1 */), M2C_ERROR(/* Read from unset register $a2 */), M2C_ERROR(/* Read from unset register $a3 */));
             return 0;
         }
         if (temp_v1 & 0x40) {
-            (*(s8 *)((u8 *)&lb_sys + 0x1C)) = 0xF;
+            (*(s8 *)((u8 *)&lb_sys + LBM(0x1C))) = 0xF;
             cnWrap_SoundRequest(3, (s32) temp_a1, M2C_ERROR(/* Read from unset register $a2 */), M2C_ERROR(/* Read from unset register $a3 */));
             return 3;
         }

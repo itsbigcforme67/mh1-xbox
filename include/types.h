@@ -22,5 +22,9 @@ typedef u16 qno_t;              /* quest number in copies of quest_w's head: lhu
 typedef u8 stg_t;
 typedef s16 qno_t;
 #define QWO(o) (o)
+#define UDMO(o) (o)
+#define NCO(o) (o)
+#define LBM(o) (o)
+#define PMO(o) (o)
 #endif
 #endif

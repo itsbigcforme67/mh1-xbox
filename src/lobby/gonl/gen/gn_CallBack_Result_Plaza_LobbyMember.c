@@ -103,7 +103,7 @@ block_18:
             (*(u8 *)((u8 *)((*(void **)&cw)) + 0xFA5D)) = (u8) (*(u8 *)((u8 *)&game_w + 0x3C));
             temp_a0 = (*(void **)&cw);
             (*(u8 *)((u8 *)(temp_a0) + 0xB9D)) = (u8) ((*(u8 *)((u8 *)(temp_a0) + 0xB9D)) + 1);
-            (*(s8 *)((u8 *)&lb_sys + 0x1A)) = 0;
+            (*(s8 *)((u8 *)&lb_sys + LBM(0x1A))) = 0;
             return;
         }
         To_LogOut(4, (s32) temp_a1, (s32) (temp_a1 + 0xBA9), arg3);

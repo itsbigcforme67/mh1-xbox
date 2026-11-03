@@ -146,7 +146,7 @@ block_43:
     (*(u8 *)((u8 *)((*(void **)&pNet)) + 0x31)) = 0U;
     font_set_stack_no(0);
     var_a1 = 0;
-    var_a3 = &(*(u8 *)((u8 *)&lb_sys + 0xA0));
+    var_a3 = &(*(u8 *)((u8 *)&lb_sys + LBM(0xA0)));
     var_a2 = 0;
     do {
         temp_v0_3 = (*(u16 *)var_a3);

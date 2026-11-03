@@ -150,7 +150,7 @@ u8 Reibun_select_mv(int pad, u8 sel) {
 }
 
 int Cockpit_chat_chk(void) {
-    return PitMenu[0x1D] != 0;
+    return PitMenu[PMO(0x1D)] != 0;
 }
 
 int UseItemChk(u8 *pl, int slot) {

@@ -26,7 +26,7 @@ typedef struct LBPLAYER { PLW *pl; u8 x04[0x10]; u8 _pad14[0x24 - 0x14]; s8 x24;
 extern LBPLAYER lb_player[8];
 
 #include "lbsys_g.h"
-#ifdef VERSION_MHG
+#if defined(VERSION_MHG) || defined(VERSION_MH2)
 typedef LBSYS_G LBSYS;
 #else
 typedef struct LBSYS {         /* lb_sys 0x90 bytes */

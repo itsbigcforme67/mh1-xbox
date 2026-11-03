@@ -63,26 +63,26 @@ void Lb_stage_load(u8 arg0, s32 arg1) {
 
     temp_a0 = (*(u8 *)((u8 *)&game_w + 0x3A));
     temp_s0 = &player_work + (temp_a0 * 0xA00);
-    if ((Online_ck(temp_a0) == 1) || ((*(s8 *)((u8 *)&lb_sys + 0x16)) == 0)) {
-        if ((*(u8 *)((u8 *)&lb_sys + 0x7B)) == 0) {
+    if ((Online_ck(temp_a0) == 1) || ((*(s8 *)((u8 *)&lb_sys + LBM(0x16))) == 0)) {
+        if ((*(u8 *)((u8 *)&lb_sys + LBM(0x7B))) == 0) {
             Lb_load_player_all();
         }
         flCompact();
     }
     (*(u8 *)((u8 *)(temp_s0) + 0x736)) = arg0;
-    (*(s32 *)((u8 *)&lb_sys + 0x8)) = 0;
-    if ((Online_ck() == 1) || ((*(s8 *)((u8 *)&lb_sys + 0x16)) == 0)) {
+    (*(s32 *)((u8 *)&lb_sys + LBM(0x8))) = 0;
+    if ((Online_ck() == 1) || ((*(s8 *)((u8 *)&lb_sys + LBM(0x16))) == 0)) {
         stage_w_init();
         (*(s8 *)((u8 *)&stage_work + 0x1)) = 1;
     }
     set_viewproj(0);
     view_reset();
     fade_reset();
-    if ((Online_ck() == 1) || ((*(s8 *)((u8 *)&lb_sys + 0x16)) == 0)) {
+    if ((Online_ck() == 1) || ((*(s8 *)((u8 *)&lb_sys + LBM(0x16))) == 0)) {
         st_model_load((s32) arg0);
         Lbc_connect();
     }
-    if ((Online_ck() == 1) || ((*(s8 *)((u8 *)&lb_sys + 0x16)) == 0)) {
+    if ((Online_ck() == 1) || ((*(s8 *)((u8 *)&lb_sys + LBM(0x16))) == 0)) {
         Lb_pl_init(arg1);
     }
     light_init(arg0);
@@ -113,7 +113,7 @@ void Lb_stage_load(u8 arg0, s32 arg1) {
     } else if ((arg0 == 0x57) && (get_questLevelNum(0x2E) == 0)) {
         Set06_set(0);
     }
-    if ((*(s8 *)((u8 *)&lb_sys + 0x7C)) == -1) {
+    if ((*(s8 *)((u8 *)&lb_sys + LBM(0x7C))) == -1) {
         switch (arg0) {                             /* switch 2; irregular */
         case 0x57:                                  /* switch 2 */
             (*(f32 *)((u8 *)(temp_s0) + 0xAC)) = (f32) (*(f32 *)((u8 *)(&(*(u8 *)((u8 *)&lb_start_pos + 0xD0))) + 0));
@@ -158,7 +158,7 @@ void Lb_stage_load(u8 arg0, s32 arg1) {
             (*(s32 *)((u8 *)(temp_s0) + 0xA4)) = (s32) (0 & 0xFFFF);
             break;
         }
-    } else if ((*(s8 *)((u8 *)&lb_sys + 0x7C)) == 0) {
+    } else if ((*(s8 *)((u8 *)&lb_sys + LBM(0x7C))) == 0) {
         switch (arg0) {                             /* switch 3; irregular */
         case 0x4D:                                  /* switch 3 */
             if ((*(u8 *)((u8 *)((*(void **)&cw)) + 0xFA5E)) == 0) {
@@ -232,7 +232,7 @@ block_55:
             (*(s32 *)((u8 *)(temp_s0) + 0xA4)) = (s32) (*(u16 *)((u8 *)(&(*(u8 *)((u8 *)&lb_start_pos + 0xF0))) + 0xC));
             break;
         default:                                    /* switch 3 */
-            temp_v1_5 = (*(s32 *)((u8 *)&St_unique_tbl + (arg0 * 4))) + ((*(s8 *)((u8 *)&lb_sys + 0x7C)) * 0x18);
+            temp_v1_5 = (*(s32 *)((u8 *)&St_unique_tbl + (arg0 * 4))) + ((*(s8 *)((u8 *)&lb_sys + LBM(0x7C))) * 0x18);
             (*(f32 *)((u8 *)(temp_s0) + 0xAC)) = (f32) (*(f32 *)((u8 *)(temp_v1_5) + 4));
             (*(f32 *)((u8 *)(temp_s0) + 0xB0)) = (f32) (*(f32 *)((u8 *)(temp_v1_5) + 8));
             (*(f32 *)((u8 *)(temp_s0) + 0xB4)) = (f32) (*(f32 *)((u8 *)(temp_v1_5) + 0xC));
@@ -241,7 +241,7 @@ block_55:
             break;
         }
     } else {
-        temp_v1_6 = (*(s32 *)((u8 *)&St_unique_tbl + (arg0 * 4))) + ((*(s8 *)((u8 *)&lb_sys + 0x7C)) * 0x18);
+        temp_v1_6 = (*(s32 *)((u8 *)&St_unique_tbl + (arg0 * 4))) + ((*(s8 *)((u8 *)&lb_sys + LBM(0x7C))) * 0x18);
         (*(f32 *)((u8 *)(temp_s0) + 0xAC)) = (f32) (*(f32 *)((u8 *)(temp_v1_6) + 4));
         (*(f32 *)((u8 *)(temp_s0) + 0xB0)) = (f32) (*(f32 *)((u8 *)(temp_v1_6) + 8));
         (*(f32 *)((u8 *)(temp_s0) + 0xB4)) = (f32) (*(f32 *)((u8 *)(temp_v1_6) + 0xC));

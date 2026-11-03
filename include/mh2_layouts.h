@@ -92,4 +92,70 @@ typedef struct QUEST_W {
     u16 x188;                    /* 0x558: code new third word, q_net_send_em_capture */
     u8 _pad55A[0x6];
 } QUEST_W;
+typedef struct NETCW {
+    u8 x00;                      /* 0x000 (MH1 0x000): code */
+    u8 step;                     /* 0x001 (MH1 0x001): code sb:87 */
+    u8 sub;                      /* 0x002 (MH1 0x002): code */
+    u8 x03;                      /* 0x003 (MH1 0x003): code */
+    s16 timer;                   /* 0x004 (MH1 0x004): code */
+    s16 x06;                     /* 0x006 (MH1 0x006): code */
+    s16 x08;                     /* 0x008 (MH1 0x008): code */
+    s16 x0A;                     /* 0x00A (MH1 0x00A): code */
+    u8 x0C;                      /* 0x00C (MH1 0x00C): guess no code seen */
+    u8 _pad00D[0x3];
+    u8 x10;                      /* 0x010 (MH1 0x010): code byte, name by order */
+    u8 _pad011[0x1];
+    u8 x12;                      /* 0x012 (MH1 0x012): guess */
+    u8 x13;                      /* 0x013 (MH1 0x013): code byte, name by order */
+    u8 x14;                      /* 0x014 (MH1 0x014): code byte, name by order */
+    u8 x11;                      /* 0x015 (MH1 0x011): code vote */
+    s8 x15;                      /* 0x016 (MH1 0x015): guess */
+    u8 _pad017[0x1];
+    u8 x29;                      /* 0x018 (MH1 0x029): code votes, net_yesno */
+    u8 x2A;                      /* 0x019 (MH1 0x02A): code net_connect_draw */
+    u8 x2B;                      /* 0x01A (MH1 0x02B): code */
+    u8 _pad01B[0x1];
+    s32 x2C;                     /* 0x01C (MH1 0x02C): code 76 votes */
+    u8 x28;                      /* 0x020 (MH1 0x028): guess */
+    s8 ia;                       /* 0x021 (MH1 0x032): code lobby 0x7CFC70 lb, name by use */
+    s8 ib;                       /* 0x022 (MH1 0x033): code */
+    u8 x30;                      /* 0x023 (MH1 0x030): code vote */
+    u8 x36;                      /* 0x024 (MH1 0x036): guess */
+    u8 x37;                      /* 0x025 (MH1 0x037): guess */
+    u8 x34;                      /* 0x026 (MH1 0x034): code vote */
+    u8 x35;                      /* 0x027 (MH1 0x035): code vote */
+    u8 x38;                      /* 0x028 (MH1 0x038): code */
+    u8 x39;                      /* 0x029 (MH1 0x039): code */
+    u8 x3A;                      /* 0x02A (MH1 0x03A): code */
+    u8 x3B;                      /* 0x02B (MH1 0x03B): code */
+    u8 x3C;                      /* 0x02C (MH1 0x03C): code */
+    u8 x3D;                      /* 0x02D (MH1 0x03D): code */
+    s8 x3E;                      /* 0x02E (MH1 0x03E): code */
+    s8 x3F;                      /* 0x02F (MH1 0x03F): code */
+    u8 qa[8];                    /* 0x030 (MH1 0x040): order lists at 0x30..0x5F in lobby 0x7D01A0, six of 8 bytes where MH1 has four */
+    u8 ka[8];                    /* 0x038 (MH1 0x048): order */
+    u8 qb[8];                    /* 0x040 (MH1 0x050): order */
+    u8 kb[8];                    /* 0x048 (MH1 0x058): order */
+    u8 _pad050[0x10];
+    s16 x60;                     /* 0x060 (MH1 0x060): code */
+    s16 x62;                     /* 0x062 (MH1 0x062): code */
+    u8 x0D;                      /* 0x064 (MH1 0x00D): code votes */
+    u8 x0E;                      /* 0x065 (MH1 0x00E): code lb:62; a guess that this is x0E, by the neighbour */
+    s16 x7A;                     /* 0x066 (MH1 0x07A): code vote */
+    s8 x7C;                      /* 0x068 (MH1 0x07C): code 40 votes */
+    s8 x7D;                      /* 0x069 (MH1 0x07D): code */
+    s8 x7E;                      /* 0x06A (MH1 0x07E): code */
+    s8 x7F;                      /* 0x06B (MH1 0x07F): code */
+    s8 x79;                      /* 0x06C (MH1 0x079): guess */
+    u8 _pad06D[0x13];
+    s32 x80;                     /* 0x080 (MH1 0x080): code vote */
+    s32 x84;                     /* 0x084 (MH1 0x084): code order */
+    u8 _pad088[0x2];
+    u8 x89;                      /* 0x08A (MH1 0x089): code */
+    u8 x8A;                      /* 0x08B (MH1 0x08A): code */
+    s8 x8B;                      /* 0x08C (MH1 0x08B): code order */
+    s8 x8C;                      /* 0x08D (MH1 0x08C): code vote */
+    char x8D[5];                 /* 0x08E (MH1 0x08D): order */
+    u8 _pad093[0x4D];
+} NETCW;
 #endif

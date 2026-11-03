@@ -168,7 +168,7 @@ void lbc_login_init(s32 unused_a0, s32 arg1, s32 arg2, s32 arg3) {
         (*(u8 *)((u8 *)(temp_v1_4) + 0xB9C)) = (u8) ((*(u8 *)((u8 *)(temp_v1_4) + 0xB9C)) + 1);
         memset(&sp40, 0, 0x40);
         sp40 = 1;
-        sp41 = (*(s8 *)((u8 *)&net_common_w + 0x12));
+        sp41 = (*(s8 *)((u8 *)&net_common_w + NCO(0x12)));
         sp60 = (*(s32 *)&stage_hit_area_f);
         strncpy(&sp42, &(*(s32 *)((u8 *)&bsCsvWork + 0x11)), 0xA);
         strncpy(&sp4D, &bsCsvWork, 0x10);

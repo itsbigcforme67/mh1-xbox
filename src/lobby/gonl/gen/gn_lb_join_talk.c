@@ -11,7 +11,7 @@ void lb_join_talk(void) {
     u8 *temp_a1;
 
     temp_a1 = (*(s32 *)((u8 *)&lb_pit + 0x4)) + ((*(s8 *)((u8 *)&lb_pit + 0x8)) * 8);
-    if (((*(s8 *)((u8 *)&lb_sys + 0x1C)) != 0xE) && ((*(s8 *)((u8 *)&lb_sys + 0x1C)) != 0x12) && ((*(s8 *)((u8 *)&lb_sys + 0x1C)) != 2) && ((*(s8 *)((u8 *)&lb_sys + 0x1C)) != 9) && ((*(s8 *)((u8 *)&lb_sys + 0x1C)) != 7)) {
+    if (((*(s8 *)((u8 *)&lb_sys + LBM(0x1C))) != 0xE) && ((*(s8 *)((u8 *)&lb_sys + LBM(0x1C))) != 0x12) && ((*(s8 *)((u8 *)&lb_sys + LBM(0x1C))) != 2) && ((*(s8 *)((u8 *)&lb_sys + LBM(0x1C))) != 9) && ((*(s8 *)((u8 *)&lb_sys + LBM(0x1C))) != 7)) {
         return;
     }
     (*(s8 *)((u8 *)&lb_pit + 0xB)) = NPC_Message((*(void **)((u8 *)(temp_a1) + 4)), lb_pit, (s32) (*(u16 *)((u8 *)(temp_a1) + 0)), (s32) (*(s8 *)((u8 *)&lb_pit + 0x9)));

@@ -118,11 +118,11 @@ void ncm_str_disp_sub(char *s, int x, int y, int col, int col2, int size) {
         flfntSetPalette(col2);
         switch (p[1]) {
         case 0x73:
-            flfntPrintf(ncm_slot_str_tbl[*(s8 *)(net_common_w + 0x79) + 1]);
+            flfntPrintf(ncm_slot_str_tbl[*(s8 *)(net_common_w + NCO(0x79)) + 1]);
             x += size;
             break;
         case 0x79:
-            flfntPrintf(lit_445_00373450, *(s16 *)(net_common_w + 0x7A));
+            flfntPrintf(lit_445_00373450, *(s16 *)(net_common_w + NCO(0x7A)));
             x += quarter;
             break;
         case 0x31:
@@ -290,9 +290,9 @@ void Ncm_br_mc_mssage_disp(int no) {
         }
         break;
     }
-    if (*(s8 *)(net_common_w + 0x8C) != 0) {
-        *(s8 *)(net_common_w + 0x8C) = 0;
-        ncm_str_disp_sub((char *)(net_common_w + 0x8D), (640 - (s16)strlen((char *)(net_common_w + 0x8D)) * 11) / 2, 0x14C, col2, col2, 0x16);
+    if (*(s8 *)(net_common_w + NCO(0x8C)) != 0) {
+        *(s8 *)(net_common_w + NCO(0x8C)) = 0;
+        ncm_str_disp_sub((char *)(net_common_w + NCO(0x8D)), (640 - (s16)strlen((char *)(net_common_w + NCO(0x8D))) * 11) / 2, 0x14C, col2, col2, 0x16);
     }
 }
 

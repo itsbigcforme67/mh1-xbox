@@ -329,6 +329,14 @@ def show(name):
         print("%04X" % off, " ".join("%s:%d" % ("%04X" % k if k >= 0 else "?", n) for k, n in c.most_common(5)))
 
 
+# lb_sys, PitMenu by raw MH1 number. LBM: votes from aligned code against G's layout (include/lbsys_g.h has the struct); head 0x10 bytes,
+# then the 0xF00-byte block the lobby memsets, then the fields. PMO: include/menu.h.
+LBM = """#define LBM(o) ((o) < 0x64 ? (o) + 0xF26 : (o) == 0x64 ? 0xF14 : (o) == 0x66 ? 0xF3A : (o) == 0x68 ? 0 : (o) == 0x6C ? 8 : (o) < 0x74 ? (o) + 0xECB : \\
+    (o) == 0x74 ? 0xF10 : (o) == 0x76 ? 0xF12 : (o) == 0x78 ? 0xF3F : (o) == 0x7C ? 0xF40 : (o) == 0x80 ? 0xC : (o) < 0x88 ? (o) + 0xEC3 : (o) + 0xEC0)
+#define PMO(o) ((o) < 0xC ? (o) : (o) == 0xC ? 0x3A : (o) == 0xE ? 0x3C : (o) == 0xF ? 0x3C : (o) < 0x14 ? (o) + 0x1C : (o) == 0x14 ? 0x17 : (o) == 0x15 ? 0x1A : \\
+    (o) == 0x16 ? 0x18 : (o) == 0x17 ? 0x1B : (o) < 0x1C ? (o) + 4 : (o) == 0x1C ? 0x39 : (o) == 0x1D ? 0x38 : (o) + 0x1F)
+"""
+
 # User_data by raw number, MH1's or G's: G's numbers from 0x74C on are above anything MH1 has. Runs read from MH2's f_ud (include/ud.h);
 # 0xC3F and the log at 0xD76.. follow the nearest run, which is a guess.
 UDMO = """/* UDMO(o): an MH1 or G offset in User_data -> MH2's */
@@ -404,6 +412,7 @@ def layouts():
             chain += "(o) < 0x%X ? (o) + (%d) : " % (nxt, new - old)
         ofs.append("#define %s(o) (%s(o))" % (macro, chain))
     ofs.append(UDMO)
+    ofs.append(LBM)
     out += ["#endif", ""]
     open(C.P("include/mh2_layouts.h"), "w").write("\n".join(out))
     open(C.P("include/mh2_lay_ofs.h"), "w").write("\n".join(ofs + [""]))

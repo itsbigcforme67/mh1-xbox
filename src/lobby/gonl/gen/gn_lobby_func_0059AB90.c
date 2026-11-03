@@ -27,10 +27,10 @@ void lobby_func_0059AB90(void *arg0, s32 arg1, s32 arg2, s32 arg3) {
         sp34 = ((s32) (*(u16 *)((u8 *)(arg0) + 0xE)) >> 8) & 0xFFFF;
         sp38 = (*(u8 *)((u8 *)(arg0) + 0x8EC));
         if (lobby_func_00595530((s32) (*(u8 *)((u8 *)(arg0) + 0x14)), (s32) (*(u8 *)((u8 *)(arg0) + 0x15)), arg2, arg3) == 1) {
-            sp35 = (*(u8 *)((u8 *)&lb_sys + 0x7A));
+            sp35 = (*(u8 *)((u8 *)&lb_sys + LBM(0x7A)));
         } else if (((*(u8 *)((u8 *)(arg0) + 0x14)) == 0) && ((*(u8 *)((u8 *)(arg0) + 0x15)) == 0x4D)) {
             sp35 = (u8) *(*(u16 **)((u8 *)(arg0) + 0x878));
-            (*(u16 *)((u8 *)&lb_sys + 0x14)) &= ~(1 << sp35);
+            (*(u16 *)((u8 *)&lb_sys + LBM(0x14))) &= ~(1 << sp35);
         }
         lb_send_dataTU(0xA, 0xA, &sp30, arg1);
     }

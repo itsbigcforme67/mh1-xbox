@@ -22,7 +22,7 @@ void lb_rule_seet_trans(void *arg0) {
 
     var_s0 = &lb_rule_exp;
     font_set_stack_no((*(s32 *)((u8 *)(arg0) + 0x18)));
-    if ((*(s8 *)((u8 *)&lb_sys + 0x1E)) == 1) {
+    if ((*(s8 *)((u8 *)&lb_sys + LBM(0x1E))) == 1) {
         flfntSetSize(0x12, 0x12);
         font_print_double(0x175, 0x46, 1, 6, g_lb_636864);
         font_print_double(0x157, 0x68, 1, 6, (*(void * *)((u8 *)&tl_msg_tbl + 0x34)));

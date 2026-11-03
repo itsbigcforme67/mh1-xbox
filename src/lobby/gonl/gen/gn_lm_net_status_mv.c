@@ -25,7 +25,7 @@ s32 lm_net_status_mv(s32 arg0, s32 unused_a1, s32 arg2, s32 arg3) {
         return 0x40;
     }
     (*(u8 *)((u8 *)((*(void **)&pNet)) + 0x29)) = Lb_cursorUD((s32) (*(u8 *)((u8 *)((*(void **)&pNet)) + 0x29)), 7, arg2, arg3);
-    (*(s16 *)((u8 *)&PitMenu + 0x12)) = (*(u8 *)((u8 *)((*(void **)&pNet)) + 0x29)) + 0x13;
+    (*(s16 *)((u8 *)&PitMenu + PMO(0x12))) = (*(u8 *)((u8 *)((*(void **)&pNet)) + 0x29)) + 0x13;
 block_7:
     return arg0;
 }

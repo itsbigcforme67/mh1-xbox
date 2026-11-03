@@ -37,10 +37,10 @@ void lb_set_pl_status(s32 arg0, void *arg1) {
         if (lobby_func_00595530((s32) (*(u8 *)((u8 *)(&sp30) + 6)), (s32) (*(u8 *)((u8 *)(&sp30) + 7)), M2C_ERROR(/* Read from unset register $a2 */), M2C_ERROR(/* Read from unset register $a3 */)) == 1) {
             temp_v1_2 = (*(u8 *)((u8 *)(&sp30) + 5));
             if (((s32) temp_v1_2 > 0) && ((s32) temp_v1_2 < 0xB)) {
-                (*(u16 *)((u8 *)&lb_sys + 0x14)) |= 1 << temp_v1_2;
+                (*(u16 *)((u8 *)&lb_sys + LBM(0x14))) |= 1 << temp_v1_2;
             }
         } else if (((*(u8 *)((u8 *)(&sp30) + 6)) == 0) && ((*(u8 *)((u8 *)(&sp30) + 7)) == 0x4D)) {
-            (*(u16 *)((u8 *)&lb_sys + 0x14)) &= ~(1 << (*(u8 *)((u8 *)(&sp30) + 5)));
+            (*(u16 *)((u8 *)&lb_sys + LBM(0x14))) &= ~(1 << (*(u8 *)((u8 *)(&sp30) + 5)));
         }
         temp_a3 = (*(u8 *)((u8 *)(&sp30) + 7));
         if ((temp_a3 == 0x4C) && ((*(u8 *)((u8 *)(temp_s1) + 0x14)) == 0) && (temp_a3 != (*(u8 *)((u8 *)(temp_s1) + 0x15)))) {

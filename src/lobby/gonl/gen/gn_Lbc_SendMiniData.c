@@ -38,7 +38,7 @@ s32 Lbc_SendMiniData(s32 unused_a0, s32 arg1, s32 arg2, s32 arg3) {
     memcpy(&my_user_mini_data, &sp10, 0x40);
     memcpy((u8 *)&lbCommer + ((*(u8 *)((u8 *)&game_w + 0x3A)) * 0x5C) + 0x1C, &sp10, 0x40);
     cnLBS_Send_UserMiniData(&sp10, 0x40, &CallBack_Result_SendUserMiniData);
-    (*(s8 *)((u8 *)&lb_sys + 0x7F)) = 0;
+    (*(s8 *)((u8 *)&lb_sys + LBM(0x7F))) = 0;
     return 0;
 }
 

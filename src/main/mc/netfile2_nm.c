@@ -129,31 +129,31 @@ s32 NetFileCreate(void) {
     s32 var_s0;
     u8 temp_a1;
 
-    temp_a1 = M2C_FIELD(&net_common_w, u8 *, 2);
+    temp_a1 = M2C_FIELD(&net_common_w, u8 *, NCO(2));
     var_s0 = 0;
     switch (temp_a1) {                              /* switch 1; irregular */
     case 0x0:                                       /* switch 1 */
-        M2C_FIELD(&net_common_w, u8 *, 2) = 0x7FU;
-        M2C_FIELD(&net_common_w, s16 *, 4) = 0x14;
-        M2C_FIELD(&net_common_w, s8 *, 3) = 0;
-        M2C_FIELD(&net_common_w, s16 *, 0xA) = 0;
+        M2C_FIELD(&net_common_w, u8 *, NCO(2)) = 0x7FU;
+        M2C_FIELD(&net_common_w, s16 *, NCO(4)) = 0x14;
+        M2C_FIELD(&net_common_w, s8 *, NCO(3)) = 0;
+        M2C_FIELD(&net_common_w, s16 *, NCO(0xA)) = 0;
         break;
     case 0x7F:                                      /* switch 1 */
         if (Net_Icon_Data_Load(0) != 0) {
-            M2C_FIELD(&net_common_w, s8 *, 3) = 0;
-            M2C_FIELD(&net_common_w, u8 *, 2) = 1U;
+            M2C_FIELD(&net_common_w, s8 *, NCO(3)) = 0;
+            M2C_FIELD(&net_common_w, u8 *, NCO(2)) = 1U;
             var_v0 = 0x14;
-            var_at = (s16 *)(net_common_w + 4);
+            var_at = (s16 *)(net_common_w + NCO(4));
 block_323:
             *var_at = var_v0;
         }
         break;
     case 0x1:                                       /* switch 1 */
-        temp_v0 = M2C_FIELD(&net_common_w, s16 *, 4) - 1;
-        M2C_FIELD(&net_common_w, s16 *, 4) = temp_v0;
+        temp_v0 = M2C_FIELD(&net_common_w, s16 *, NCO(4)) - 1;
+        M2C_FIELD(&net_common_w, s16 *, NCO(4)) = temp_v0;
         if (((s16) temp_v0) <= 0) {
-            M2C_FIELD(&net_common_w, s8 *, 0x31) = 0;
-            M2C_FIELD(&net_common_w, u8 *, 2) = (u8) (temp_a1 + 1);
+            M2C_FIELD(&net_common_w, s8 *, NCO(0x31)) = 0;
+            M2C_FIELD(&net_common_w, u8 *, NCO(2)) = (u8) (temp_a1 + 1);
             Net_McWorkInit(2);
             M2C_FIELD(&system_w, s8 *, 0x3C) = 0;
             Def_net_data_set();
@@ -165,48 +165,48 @@ block_323:
         Ncm_menu_disp_req(0xB);
         temp_v0_2 = net_swdata();
         if (temp_v0_2 & 0x1000) {
-            if (M2C_FIELD(&net_common_w, s16 *, 0xA) != 1) {
+            if (M2C_FIELD(&net_common_w, s16 *, NCO(0xA)) != 1) {
                 net_set_se_cur();
-                M2C_FIELD(&net_common_w, s16 *, 0xA) = 1;
+                M2C_FIELD(&net_common_w, s16 *, NCO(0xA)) = 1;
             } else {
                 net_set_se_cur();
-                M2C_FIELD(&net_common_w, s16 *, 0xA) = 0;
+                M2C_FIELD(&net_common_w, s16 *, NCO(0xA)) = 0;
             }
         } else if (temp_v0_2 & 0x2000) {
-            if (M2C_FIELD(&net_common_w, s16 *, 0xA) != 0) {
+            if (M2C_FIELD(&net_common_w, s16 *, NCO(0xA)) != 0) {
                 net_set_se_cur();
-                M2C_FIELD(&net_common_w, s16 *, 0xA) = 0;
+                M2C_FIELD(&net_common_w, s16 *, NCO(0xA)) = 0;
             } else {
                 net_set_se_cur();
-                M2C_FIELD(&net_common_w, s16 *, 0xA) = 1;
+                M2C_FIELD(&net_common_w, s16 *, NCO(0xA)) = 1;
             }
         }
         if (net_shot_ok_ck(1) != 0) {
             Ncm_spr_kill(0x40000);
             Ncm_spr_kill(0x80000);
             Ncm_spr_kill(0x100000);
-            M2C_FIELD(&net_common_w, s16 *, 4) = 0x14;
-            M2C_FIELD(&net_common_w, u8 *, 2) = (u8) (M2C_FIELD(&net_common_w, u8 *, 2) + 1);
-            M2C_FIELD(&net_common_w, u8 *, 0xD) = (u8) M2C_FIELD(&net_common_w, s16 *, 0xA);
-            M2C_FIELD(&net_common_w, s8 *, 0x79) = (s8) M2C_FIELD(&net_common_w, s16 *, 0xA);
-            M2C_FIELD(&net_common_w, s16 *, 0x7A) = McActAvailSet(data_load_ptr + 0x12000, M2C_FIELD(&net_common_w, s16 *, 0xA));
-            McActSave0Set(M2C_FIELD(&net_common_w, s8 *, 0x79), data_load_ptr, 0);
+            M2C_FIELD(&net_common_w, s16 *, NCO(4)) = 0x14;
+            M2C_FIELD(&net_common_w, u8 *, NCO(2)) = (u8) (M2C_FIELD(&net_common_w, u8 *, NCO(2)) + 1);
+            M2C_FIELD(&net_common_w, u8 *, NCO(0xD)) = (u8) M2C_FIELD(&net_common_w, s16 *, NCO(0xA));
+            M2C_FIELD(&net_common_w, s8 *, NCO(0x79)) = (s8) M2C_FIELD(&net_common_w, s16 *, NCO(0xA));
+            M2C_FIELD(&net_common_w, s16 *, NCO(0x7A)) = McActAvailSet(data_load_ptr + 0x12000, M2C_FIELD(&net_common_w, s16 *, NCO(0xA)));
+            McActSave0Set(M2C_FIELD(&net_common_w, s8 *, NCO(0x79)), data_load_ptr, 0);
             M2C_FIELD(&system_w, s8 *, 0x3C) = 1;
         } else if (net_shot_ng_ck(0x40000) != 0) {
             Ncm_spr_kill(0x40000);
             Ncm_spr_kill(0x80000);
             Ncm_spr_kill2(0x100000);
-            M2C_FIELD(&net_common_w, u8 *, 2) = 0x32U;
+            M2C_FIELD(&net_common_w, u8 *, NCO(2)) = 0x32U;
             var_v0 = 0x14;
-            var_at = (s16 *)(net_common_w + 4);
+            var_at = (s16 *)(net_common_w + NCO(4));
             goto block_323;
         }
         break;
     case 0x3:                                       /* switch 1 */
         Ncm_mssage_disp_req(8);
-        if (M2C_FIELD(&net_common_w, s16 *, 4) != 0) {
-            temp_v0_3 = M2C_FIELD(&net_common_w, s16 *, 4) - 1;
-            M2C_FIELD(&net_common_w, s16 *, 4) = temp_v0_3;
+        if (M2C_FIELD(&net_common_w, s16 *, NCO(4)) != 0) {
+            temp_v0_3 = M2C_FIELD(&net_common_w, s16 *, NCO(4)) - 1;
+            M2C_FIELD(&net_common_w, s16 *, NCO(4)) = temp_v0_3;
             if (((s16) temp_v0_3) <= 0) {
                 goto block_67;
             }
@@ -214,56 +214,56 @@ block_323:
 block_67:
             McActMain();
             temp_v0_4 = McActResult();
-            M2C_FIELD(&net_common_w, s16 *, 6) = temp_v0_4;
+            M2C_FIELD(&net_common_w, s16 *, NCO(6)) = temp_v0_4;
             switch (temp_v0_4) {                    /* switch 2; irregular */
             case 0:                                 /* switch 2 */
-                M2C_FIELD(&net_common_w, s8 *, 0x31) = 1;
-                M2C_FIELD(&net_common_w, s16 *, 4) = 0x14;
-                M2C_FIELD(&net_common_w, s8 *, 0x29) = 1;
-                M2C_FIELD(&net_common_w, u8 *, 2) = (u8) (M2C_FIELD(&net_common_w, u8 *, 2) + 1);
+                M2C_FIELD(&net_common_w, s8 *, NCO(0x31)) = 1;
+                M2C_FIELD(&net_common_w, s16 *, NCO(4)) = 0x14;
+                M2C_FIELD(&net_common_w, s8 *, NCO(0x29)) = 1;
+                M2C_FIELD(&net_common_w, u8 *, NCO(2)) = (u8) (M2C_FIELD(&net_common_w, u8 *, NCO(2)) + 1);
                 Ncm_spr_D_MENU_set(0, 2);
                 McActCheckSet();
                 break;
             case -253:                              /* switch 2 */
-                M2C_FIELD(&net_common_w, s8 *, 0x31) = 0;
-                M2C_FIELD(&net_common_w, s16 *, 4) = 0x14;
-                M2C_FIELD(&net_common_w, s8 *, 0x29) = 1;
-                M2C_FIELD(&net_common_w, u8 *, 2) = (u8) (M2C_FIELD(&net_common_w, u8 *, 2) + 1);
+                M2C_FIELD(&net_common_w, s8 *, NCO(0x31)) = 0;
+                M2C_FIELD(&net_common_w, s16 *, NCO(4)) = 0x14;
+                M2C_FIELD(&net_common_w, s8 *, NCO(0x29)) = 1;
+                M2C_FIELD(&net_common_w, u8 *, NCO(2)) = (u8) (M2C_FIELD(&net_common_w, u8 *, NCO(2)) + 1);
                 Ncm_spr_D_MENU_set(0, 2);
                 McActCheckSet();
                 break;
             case -255:                              /* switch 2 */
-                M2C_FIELD(&net_common_w, u8 *, 2) = 0xAU;
-                M2C_FIELD(&net_common_w, s16 *, 4) = 0x1E;
-                M2C_FIELD(&net_common_w, s8 *, 0x29) = 1;
+                M2C_FIELD(&net_common_w, u8 *, NCO(2)) = 0xAU;
+                M2C_FIELD(&net_common_w, s16 *, NCO(4)) = 0x1E;
+                M2C_FIELD(&net_common_w, s8 *, NCO(0x29)) = 1;
                 Ncm_spr_D_MENU_set(0, 2);
                 M2C_FIELD(&system_w, s8 *, 0x3C) = 0;
                 break;
             case -254:                              /* switch 2 */
-                M2C_FIELD(&net_common_w, u8 *, 2) = 0x28U;
-                M2C_FIELD(&net_common_w, s16 *, 4) = 0x1E;
-                M2C_FIELD(&net_common_w, s8 *, 0x29) = 1;
+                M2C_FIELD(&net_common_w, u8 *, NCO(2)) = 0x28U;
+                M2C_FIELD(&net_common_w, s16 *, NCO(4)) = 0x1E;
+                M2C_FIELD(&net_common_w, s8 *, NCO(0x29)) = 1;
                 Ncm_spr_D_MENU_set(0, 2);
                 McActCheckSet();
                 break;
             case -252:                              /* switch 2 */
-                M2C_FIELD(&net_common_w, u8 *, 2) = 0x14U;
-                M2C_FIELD(&net_common_w, s16 *, 4) = 0x1E;
-                M2C_FIELD(&net_common_w, s8 *, 0x29) = 1;
+                M2C_FIELD(&net_common_w, u8 *, NCO(2)) = 0x14U;
+                M2C_FIELD(&net_common_w, s16 *, NCO(4)) = 0x1E;
+                M2C_FIELD(&net_common_w, s8 *, NCO(0x29)) = 1;
                 Ncm_spr_D_MENU_set(0, 2);
                 M2C_FIELD(&system_w, s8 *, 0x3C) = 0;
                 break;
             case -256:                              /* switch 2 */
-                M2C_FIELD(&net_common_w, u8 *, 2) = 0x3CU;
-                M2C_FIELD(&net_common_w, s16 *, 4) = 0x1E;
-                M2C_FIELD(&net_common_w, s8 *, 0x29) = 1;
+                M2C_FIELD(&net_common_w, u8 *, NCO(2)) = 0x3CU;
+                M2C_FIELD(&net_common_w, s16 *, NCO(4)) = 0x1E;
+                M2C_FIELD(&net_common_w, s8 *, NCO(0x29)) = 1;
                 Ncm_spr_D_MENU_set(0, 2);
                 M2C_FIELD(&system_w, s8 *, 0x3C) = 0;
                 break;
             case 117:                               /* switch 2 */
-                M2C_FIELD(&net_common_w, u8 *, 2) = 0x50U;
-                M2C_FIELD(&net_common_w, s16 *, 4) = 0x1E;
-                M2C_FIELD(&net_common_w, s8 *, 0x29) = 1;
+                M2C_FIELD(&net_common_w, u8 *, NCO(2)) = 0x50U;
+                M2C_FIELD(&net_common_w, s16 *, NCO(4)) = 0x1E;
+                M2C_FIELD(&net_common_w, s8 *, NCO(0x29)) = 1;
                 Ncm_spr_D_MENU_set(0, 2);
                 M2C_FIELD(&system_w, s8 *, 0x3C) = 0;
                 break;
@@ -272,23 +272,23 @@ block_67:
         break;
     case 0x4:                                       /* switch 1 */
         McActMain();
-        if (McActConChk(M2C_FIELD(&net_common_w, s8 *, 0x79)) == 0) {
-            M2C_FIELD(&net_common_w, s8 *, 0x29) = 0;
-            M2C_FIELD(&net_common_w, u8 *, 2) = 0x46U;
-            M2C_FIELD(&net_common_w, s16 *, 4) = 0x1E;
+        if (McActConChk(M2C_FIELD(&net_common_w, s8 *, NCO(0x79))) == 0) {
+            M2C_FIELD(&net_common_w, s8 *, NCO(0x29)) = 0;
+            M2C_FIELD(&net_common_w, u8 *, NCO(2)) = 0x46U;
+            M2C_FIELD(&net_common_w, s16 *, NCO(4)) = 0x1E;
             Ncm_spr_kill(0x40000);
             Ncm_spr_kill(0x80000);
             Ncm_spr_kill2(0x100000);
         } else {
-            if (M2C_FIELD(&net_common_w, s8 *, 0x31) == 1) {
+            if (M2C_FIELD(&net_common_w, s8 *, NCO(0x31)) == 1) {
                 Ncm_mssage_disp_req(0x54);
             } else {
                 Ncm_mssage_disp_req(0x51);
             }
             Ncm_menu_disp_req(4);
-            if (M2C_FIELD(&net_common_w, s16 *, 4) != 0) {
-                temp_v0_5 = M2C_FIELD(&net_common_w, s16 *, 4) - 1;
-                M2C_FIELD(&net_common_w, s16 *, 4) = temp_v0_5;
+            if (M2C_FIELD(&net_common_w, s16 *, NCO(4)) != 0) {
+                temp_v0_5 = M2C_FIELD(&net_common_w, s16 *, NCO(4)) - 1;
+                M2C_FIELD(&net_common_w, s16 *, NCO(4)) = temp_v0_5;
                 if (((s16) temp_v0_5) <= 0) {
                     goto block_96;
                 }
@@ -297,20 +297,20 @@ block_96:
                 temp_v0_6 = net_yesno_operation_move();
                 switch (temp_v0_6) {                /* switch 3; irregular */
                 case 1:                             /* switch 3 */
-                    M2C_FIELD(&net_common_w, s8 *, 3) = 0;
-                    M2C_FIELD(&net_common_w, s16 *, 4) = 0x14;
-                    M2C_FIELD(&net_common_w, u8 *, 2) = (u8) (M2C_FIELD(&net_common_w, u8 *, 2) + 1);
+                    M2C_FIELD(&net_common_w, s8 *, NCO(3)) = 0;
+                    M2C_FIELD(&net_common_w, s16 *, NCO(4)) = 0x14;
+                    M2C_FIELD(&net_common_w, u8 *, NCO(2)) = (u8) (M2C_FIELD(&net_common_w, u8 *, NCO(2)) + 1);
                     Ncm_spr_kill(0x40000);
                     Ncm_spr_kill(0x80000);
                     Ncm_spr_kill(0x100000);
                     memset(data_load_ptr, 0, 0x1BEC);
                     memcpy(data_load_ptr, &CNFile, 0x1BEC);
                     check_sum_set_cn_file(data_load_ptr);
-                    McActSaveSet(M2C_FIELD(&net_common_w, u8 *, 0xD), data_load_ptr);
+                    McActSaveSet(M2C_FIELD(&net_common_w, u8 *, NCO(0xD)), data_load_ptr);
                     break;
                 case -1:                            /* switch 3 */
-                    M2C_FIELD(&net_common_w, u8 *, 2) = 9U;
-                    M2C_FIELD(&net_common_w, s16 *, 4) = 0x14;
+                    M2C_FIELD(&net_common_w, u8 *, NCO(2)) = 9U;
+                    M2C_FIELD(&net_common_w, s16 *, NCO(4)) = 0x14;
                     Ncm_spr_kill(0x40000);
                     Ncm_spr_kill(0x80000);
                     if (net_shot_ok_ck(0) != 0) {
@@ -326,9 +326,9 @@ block_96:
         break;
     case 0x5:                                       /* switch 1 */
         Ncm_mssage_disp_req(9);
-        if (M2C_FIELD(&net_common_w, s16 *, 4) != 0) {
-            temp_v0_7 = M2C_FIELD(&net_common_w, s16 *, 4) - 1;
-            M2C_FIELD(&net_common_w, s16 *, 4) = temp_v0_7;
+        if (M2C_FIELD(&net_common_w, s16 *, NCO(4)) != 0) {
+            temp_v0_7 = M2C_FIELD(&net_common_w, s16 *, NCO(4)) - 1;
+            M2C_FIELD(&net_common_w, s16 *, NCO(4)) = temp_v0_7;
             if (((s16) temp_v0_7) <= 0) {
                 goto block_110;
             }
@@ -338,26 +338,26 @@ block_110:
             temp_v0_8 = McActResult();
             switch (temp_v0_8) {                    /* switch 4; irregular */
             case 0:                                 /* switch 4 */
-                M2C_FIELD(&net_common_w, s8 *, 3) = 0;
+                M2C_FIELD(&net_common_w, s8 *, NCO(3)) = 0;
                 M2C_FIELD(&system_w, s8 *, 0x3C) = 0;
-                M2C_FIELD(&net_common_w, s16 *, 4) = 0x12C;
-                M2C_FIELD(&net_common_w, u8 *, 2) = (u8) (M2C_FIELD(&net_common_w, u8 *, 2) + 1);
+                M2C_FIELD(&net_common_w, s16 *, NCO(4)) = 0x12C;
+                M2C_FIELD(&net_common_w, u8 *, NCO(2)) = (u8) (M2C_FIELD(&net_common_w, u8 *, NCO(2)) + 1);
                 break;
             case -254:                              /* switch 4 */
-                M2C_FIELD(&net_common_w, s8 *, 3) = 0;
-                M2C_FIELD(&net_common_w, s8 *, 0x29) = 0;
-                M2C_FIELD(&net_common_w, u8 *, 2) = 0x28U;
-                M2C_FIELD(&net_common_w, s16 *, 4) = 0x1E;
+                M2C_FIELD(&net_common_w, s8 *, NCO(3)) = 0;
+                M2C_FIELD(&net_common_w, s8 *, NCO(0x29)) = 0;
+                M2C_FIELD(&net_common_w, u8 *, NCO(2)) = 0x28U;
+                M2C_FIELD(&net_common_w, s16 *, NCO(4)) = 0x1E;
                 Ncm_spr_D_MENU_set(0, 2);
                 McActCheckSet();
                 break;
             case 117:                               /* switch 4 */
             case -256:                              /* switch 4 */
             case -255:                              /* switch 4 */
-                M2C_FIELD(&net_common_w, s8 *, 3) = 0;
-                M2C_FIELD(&net_common_w, s8 *, 0x29) = 1;
-                M2C_FIELD(&net_common_w, u8 *, 2) = 0x1EU;
-                M2C_FIELD(&net_common_w, s16 *, 4) = 0x1E;
+                M2C_FIELD(&net_common_w, s8 *, NCO(3)) = 0;
+                M2C_FIELD(&net_common_w, s8 *, NCO(0x29)) = 1;
+                M2C_FIELD(&net_common_w, u8 *, NCO(2)) = 0x1EU;
+                M2C_FIELD(&net_common_w, s16 *, NCO(4)) = 0x1E;
                 Ncm_spr_D_MENU_set(0, 2);
                 M2C_FIELD(&system_w, s8 *, 0x3C) = 0;
                 break;
@@ -366,60 +366,60 @@ block_110:
         break;
     case 0x6:                                       /* switch 1 */
         Ncm_mssage_disp_req(0xA);
-        temp_v0_9 = M2C_FIELD(&net_common_w, s16 *, 4) - 1;
-        M2C_FIELD(&net_common_w, s16 *, 4) = temp_v0_9;
+        temp_v0_9 = M2C_FIELD(&net_common_w, s16 *, NCO(4)) - 1;
+        M2C_FIELD(&net_common_w, s16 *, NCO(4)) = temp_v0_9;
         if (((s16) temp_v0_9) > 0) {
-            if (M2C_FIELD(&net_common_w, s16 *, 4) < 0x10F) {
+            if (M2C_FIELD(&net_common_w, s16 *, NCO(4)) < 0x10F) {
                 Ncm_mssage_disp_option_req(0xA);
                 if (net_shot_ok_ck(2) != 0) {
-                    M2C_FIELD(&net_common_w, s16 *, 4) = 0x12C;
-                    M2C_FIELD(&net_common_w, u8 *, 2) = (u8) (M2C_FIELD(&net_common_w, u8 *, 2) + 1);
+                    M2C_FIELD(&net_common_w, s16 *, NCO(4)) = 0x12C;
+                    M2C_FIELD(&net_common_w, u8 *, NCO(2)) = (u8) (M2C_FIELD(&net_common_w, u8 *, NCO(2)) + 1);
                 }
             }
         } else {
-            M2C_FIELD(&net_common_w, s16 *, 4) = 0x12C;
-            M2C_FIELD(&net_common_w, u8 *, 2) = (u8) (M2C_FIELD(&net_common_w, u8 *, 2) + 1);
+            M2C_FIELD(&net_common_w, s16 *, NCO(4)) = 0x12C;
+            M2C_FIELD(&net_common_w, u8 *, NCO(2)) = (u8) (M2C_FIELD(&net_common_w, u8 *, NCO(2)) + 1);
         }
         break;
     case 0x7:                                       /* switch 1 */
         Ncm_mssage_disp_req(7);
-        temp_v0_10 = M2C_FIELD(&net_common_w, s16 *, 4) - 1;
-        M2C_FIELD(&net_common_w, s16 *, 4) = temp_v0_10;
+        temp_v0_10 = M2C_FIELD(&net_common_w, s16 *, NCO(4)) - 1;
+        M2C_FIELD(&net_common_w, s16 *, NCO(4)) = temp_v0_10;
         if (((s16) temp_v0_10) > 0) {
-            if (M2C_FIELD(&net_common_w, s16 *, 4) < 0xD3) {
+            if (M2C_FIELD(&net_common_w, s16 *, NCO(4)) < 0xD3) {
                 Ncm_mssage_disp_option_req(7);
                 if (net_shot_ok_ck(2) != 0) {
-                    M2C_FIELD(&net_common_w, u8 *, 2) = (u8) (M2C_FIELD(&net_common_w, u8 *, 2) + 1);
+                    M2C_FIELD(&net_common_w, u8 *, NCO(2)) = (u8) (M2C_FIELD(&net_common_w, u8 *, NCO(2)) + 1);
                 }
             }
         } else {
-            M2C_FIELD(&net_common_w, u8 *, 2) = (u8) (M2C_FIELD(&net_common_w, u8 *, 2) + 1);
+            M2C_FIELD(&net_common_w, u8 *, NCO(2)) = (u8) (M2C_FIELD(&net_common_w, u8 *, NCO(2)) + 1);
         }
         break;
     case 0x8:                                       /* switch 1 */
         var_s0 = 1;
         break;
     case 0x9:                                       /* switch 1 */
-        if (M2C_FIELD(&net_common_w, s16 *, 6) == 0) {
+        if (M2C_FIELD(&net_common_w, s16 *, NCO(6)) == 0) {
             Ncm_mssage_disp_req(0x54);
         } else {
             Ncm_mssage_disp_req(0x51);
         }
-        temp_v0_11 = M2C_FIELD(&net_common_w, s16 *, 4) - 1;
-        M2C_FIELD(&net_common_w, s16 *, 4) = temp_v0_11;
+        temp_v0_11 = M2C_FIELD(&net_common_w, s16 *, NCO(4)) - 1;
+        M2C_FIELD(&net_common_w, s16 *, NCO(4)) = temp_v0_11;
         if (((s16) temp_v0_11) <= 0) {
-            M2C_FIELD(&net_common_w, u8 *, 2) = 1U;
+            M2C_FIELD(&net_common_w, u8 *, NCO(2)) = 1U;
             var_v0 = 0x14;
-            var_at = (s16 *)(net_common_w + 4);
+            var_at = (s16 *)(net_common_w + NCO(4));
             goto block_323;
         }
         break;
     case 0xA:                                       /* switch 1 */
         Ncm_mssage_disp_req(0x52);
         Ncm_menu_disp_req(4);
-        if (M2C_FIELD(&net_common_w, s16 *, 4) != 0) {
-            temp_v0_12 = M2C_FIELD(&net_common_w, s16 *, 4) - 1;
-            M2C_FIELD(&net_common_w, s16 *, 4) = temp_v0_12;
+        if (M2C_FIELD(&net_common_w, s16 *, NCO(4)) != 0) {
+            temp_v0_12 = M2C_FIELD(&net_common_w, s16 *, NCO(4)) - 1;
+            M2C_FIELD(&net_common_w, s16 *, NCO(4)) = temp_v0_12;
             if (((s16) temp_v0_12) <= 0) {
                 goto block_143;
             }
@@ -428,14 +428,14 @@ block_143:
             temp_v0_13 = net_yesno_operation_move();
             switch (temp_v0_13) {                   /* switch 5; irregular */
             case 1:                                 /* switch 5 */
-                M2C_FIELD(&net_common_w, u8 *, 2) = (u8) (M2C_FIELD(&net_common_w, u8 *, 2) + 1);
+                M2C_FIELD(&net_common_w, u8 *, NCO(2)) = (u8) (M2C_FIELD(&net_common_w, u8 *, NCO(2)) + 1);
                 Ncm_spr_kill(0x40000);
                 Ncm_spr_kill(0x80000);
                 Ncm_spr_kill(0x100000);
                 break;
             case -1:                                /* switch 5 */
-                M2C_FIELD(&net_common_w, u8 *, 2) = 0xCU;
-                M2C_FIELD(&net_common_w, s16 *, 4) = 0x14;
+                M2C_FIELD(&net_common_w, u8 *, NCO(2)) = 0xCU;
+                M2C_FIELD(&net_common_w, s16 *, NCO(4)) = 0x14;
                 Ncm_spr_kill(0x40000);
                 Ncm_spr_kill(0x80000);
                 if (net_shot_ok_ck(0) != 0) {
@@ -452,21 +452,21 @@ block_143:
         break;
     case 0xC:                                       /* switch 1 */
         Ncm_mssage_disp_req(0x52);
-        temp_v0_14 = M2C_FIELD(&net_common_w, s16 *, 4) - 1;
-        M2C_FIELD(&net_common_w, s16 *, 4) = temp_v0_14;
+        temp_v0_14 = M2C_FIELD(&net_common_w, s16 *, NCO(4)) - 1;
+        M2C_FIELD(&net_common_w, s16 *, NCO(4)) = temp_v0_14;
         if (((s16) temp_v0_14) <= 0) {
-            M2C_FIELD(&net_common_w, u8 *, 2) = 1U;
+            M2C_FIELD(&net_common_w, u8 *, NCO(2)) = 1U;
             var_v0 = 0x14;
-            var_at = (s16 *)(net_common_w + 4);
+            var_at = (s16 *)(net_common_w + NCO(4));
             goto block_323;
         }
         break;
     case 0x14:                                      /* switch 1 */
         Ncm_mssage_disp_req(0x53);
         Ncm_menu_disp_req(4);
-        if (M2C_FIELD(&net_common_w, s16 *, 4) != 0) {
-            temp_v0_15 = M2C_FIELD(&net_common_w, s16 *, 4) - 1;
-            M2C_FIELD(&net_common_w, s16 *, 4) = temp_v0_15;
+        if (M2C_FIELD(&net_common_w, s16 *, NCO(4)) != 0) {
+            temp_v0_15 = M2C_FIELD(&net_common_w, s16 *, NCO(4)) - 1;
+            M2C_FIELD(&net_common_w, s16 *, NCO(4)) = temp_v0_15;
             if (((s16) temp_v0_15) <= 0) {
                 goto block_159;
             }
@@ -475,14 +475,14 @@ block_159:
             temp_v0_16 = net_yesno_operation_move();
             switch (temp_v0_16) {                   /* switch 6; irregular */
             case 1:                                 /* switch 6 */
-                M2C_FIELD(&net_common_w, u8 *, 2) = (u8) (M2C_FIELD(&net_common_w, u8 *, 2) + 1);
+                M2C_FIELD(&net_common_w, u8 *, NCO(2)) = (u8) (M2C_FIELD(&net_common_w, u8 *, NCO(2)) + 1);
                 Ncm_spr_kill(0x40000);
                 Ncm_spr_kill(0x80000);
                 Ncm_spr_kill(0x100000);
                 break;
             case -1:                                /* switch 6 */
-                M2C_FIELD(&net_common_w, u8 *, 2) = 0x16U;
-                M2C_FIELD(&net_common_w, s16 *, 4) = 0x14;
+                M2C_FIELD(&net_common_w, u8 *, NCO(2)) = 0x16U;
+                M2C_FIELD(&net_common_w, s16 *, NCO(4)) = 0x14;
                 Ncm_spr_kill(0x40000);
                 Ncm_spr_kill(0x80000);
                 if (net_shot_ok_ck(0) != 0) {
@@ -499,25 +499,25 @@ block_159:
         break;
     case 0x16:                                      /* switch 1 */
         Ncm_mssage_disp_req(0x53);
-        temp_v0_17 = M2C_FIELD(&net_common_w, s16 *, 4) - 1;
-        M2C_FIELD(&net_common_w, s16 *, 4) = temp_v0_17;
+        temp_v0_17 = M2C_FIELD(&net_common_w, s16 *, NCO(4)) - 1;
+        M2C_FIELD(&net_common_w, s16 *, NCO(4)) = temp_v0_17;
         if (((s16) temp_v0_17) <= 0) {
-            M2C_FIELD(&net_common_w, u8 *, 2) = 1U;
+            M2C_FIELD(&net_common_w, u8 *, NCO(2)) = 1U;
             var_v0 = 0x14;
-            var_at = (s16 *)(net_common_w + 4);
+            var_at = (s16 *)(net_common_w + NCO(4));
             goto block_323;
         }
         break;
     case 0x1E:                                      /* switch 1 */
-        if (M2C_FIELD(&net_common_w, s8 *, 0x31) == 0) {
+        if (M2C_FIELD(&net_common_w, s8 *, NCO(0x31)) == 0) {
             Ncm_mssage_disp_req(0x55);
         } else {
             Ncm_mssage_disp_req(0x70);
         }
         Ncm_menu_disp_req(4);
-        if (M2C_FIELD(&net_common_w, s16 *, 4) != 0) {
-            temp_v0_18 = M2C_FIELD(&net_common_w, s16 *, 4) - 1;
-            M2C_FIELD(&net_common_w, s16 *, 4) = temp_v0_18;
+        if (M2C_FIELD(&net_common_w, s16 *, NCO(4)) != 0) {
+            temp_v0_18 = M2C_FIELD(&net_common_w, s16 *, NCO(4)) - 1;
+            M2C_FIELD(&net_common_w, s16 *, NCO(4)) = temp_v0_18;
             if (((s16) temp_v0_18) <= 0) {
                 goto block_178;
             }
@@ -526,14 +526,14 @@ block_178:
             temp_v0_19 = net_yesno_operation_move();
             switch (temp_v0_19) {                   /* switch 7; irregular */
             case 1:                                 /* switch 7 */
-                M2C_FIELD(&net_common_w, u8 *, 2) = (u8) (M2C_FIELD(&net_common_w, u8 *, 2) + 1);
+                M2C_FIELD(&net_common_w, u8 *, NCO(2)) = (u8) (M2C_FIELD(&net_common_w, u8 *, NCO(2)) + 1);
                 Ncm_spr_kill(0x40000);
                 Ncm_spr_kill(0x80000);
                 Ncm_spr_kill(0x100000);
                 break;
             case -1:                                /* switch 7 */
-                M2C_FIELD(&net_common_w, u8 *, 2) = 0x20U;
-                M2C_FIELD(&net_common_w, s16 *, 4) = 0x14;
+                M2C_FIELD(&net_common_w, u8 *, NCO(2)) = 0x20U;
+                M2C_FIELD(&net_common_w, s16 *, NCO(4)) = 0x14;
                 Ncm_spr_kill(0x40000);
                 Ncm_spr_kill(0x80000);
                 if (net_shot_ok_ck(0) != 0) {
@@ -549,36 +549,36 @@ block_178:
         var_s0 = -1;
         break;
     case 0x20:                                      /* switch 1 */
-        if (M2C_FIELD(&net_common_w, s8 *, 0x31) == 0) {
+        if (M2C_FIELD(&net_common_w, s8 *, NCO(0x31)) == 0) {
             Ncm_mssage_disp_req(0x55);
         } else {
             Ncm_mssage_disp_req(0x70);
         }
-        temp_v0_20 = M2C_FIELD(&net_common_w, s16 *, 4) - 1;
-        M2C_FIELD(&net_common_w, s16 *, 4) = temp_v0_20;
+        temp_v0_20 = M2C_FIELD(&net_common_w, s16 *, NCO(4)) - 1;
+        M2C_FIELD(&net_common_w, s16 *, NCO(4)) = temp_v0_20;
         if (((s16) temp_v0_20) <= 0) {
-            M2C_FIELD(&net_common_w, u8 *, 2) = 1U;
+            M2C_FIELD(&net_common_w, u8 *, NCO(2)) = 1U;
             var_v0 = 0x14;
-            var_at = (s16 *)(net_common_w + 4);
+            var_at = (s16 *)(net_common_w + NCO(4));
             goto block_323;
         }
         break;
     case 0x28:                                      /* switch 1 */
         Ncm_mssage_disp_req(0x56);
         Ncm_menu_disp_req(4);
-        if (M2C_FIELD(&net_common_w, s16 *, 4) != 0) {
-            temp_v0_21 = M2C_FIELD(&net_common_w, s16 *, 4) - 1;
-            M2C_FIELD(&net_common_w, s16 *, 4) = temp_v0_21;
+        if (M2C_FIELD(&net_common_w, s16 *, NCO(4)) != 0) {
+            temp_v0_21 = M2C_FIELD(&net_common_w, s16 *, NCO(4)) - 1;
+            M2C_FIELD(&net_common_w, s16 *, NCO(4)) = temp_v0_21;
             if (((s16) temp_v0_21) <= 0) {
                 goto block_197;
             }
         } else {
 block_197:
             McActMain();
-            if (McActConChk(M2C_FIELD(&net_common_w, s8 *, 0x79)) == 0) {
-                M2C_FIELD(&net_common_w, s8 *, 0x29) = 0;
-                M2C_FIELD(&net_common_w, u8 *, 2) = 0x46U;
-                M2C_FIELD(&net_common_w, s16 *, 4) = 0x1E;
+            if (McActConChk(M2C_FIELD(&net_common_w, s8 *, NCO(0x79))) == 0) {
+                M2C_FIELD(&net_common_w, s8 *, NCO(0x29)) = 0;
+                M2C_FIELD(&net_common_w, u8 *, NCO(2)) = 0x46U;
+                M2C_FIELD(&net_common_w, s16 *, NCO(4)) = 0x1E;
                 Ncm_spr_kill(0x40000);
                 Ncm_spr_kill(0x80000);
                 Ncm_spr_kill2(0x100000);
@@ -587,16 +587,16 @@ block_197:
                 temp_v0_22 = net_yesno_operation_move();
                 switch (temp_v0_22) {               /* switch 8; irregular */
                 case 1:                             /* switch 8 */
-                    M2C_FIELD(&net_common_w, s16 *, 4) = 0x14;
-                    M2C_FIELD(&net_common_w, u8 *, 2) = (u8) (M2C_FIELD(&net_common_w, u8 *, 2) + 1);
+                    M2C_FIELD(&net_common_w, s16 *, NCO(4)) = 0x14;
+                    M2C_FIELD(&net_common_w, u8 *, NCO(2)) = (u8) (M2C_FIELD(&net_common_w, u8 *, NCO(2)) + 1);
                     Ncm_spr_kill(0x40000);
                     Ncm_spr_kill(0x80000);
                     Ncm_spr_kill(0x100000);
-                    McActFormatSet(M2C_FIELD(&net_common_w, u8 *, 0xD));
+                    McActFormatSet(M2C_FIELD(&net_common_w, u8 *, NCO(0xD)));
                     break;
                 case -1:                            /* switch 8 */
-                    M2C_FIELD(&net_common_w, u8 *, 2) = 0x31U;
-                    M2C_FIELD(&net_common_w, s16 *, 4) = 0x14;
+                    M2C_FIELD(&net_common_w, u8 *, NCO(2)) = 0x31U;
+                    M2C_FIELD(&net_common_w, s16 *, NCO(4)) = 0x14;
                     Ncm_spr_kill(0x40000);
                     Ncm_spr_kill(0x80000);
                     if (net_shot_ok_ck(0) != 0) {
@@ -612,80 +612,80 @@ block_197:
         break;
     case 0x29:                                      /* switch 1 */
         Ncm_mssage_disp_req(0x57);
-        if (M2C_FIELD(&net_common_w, s16 *, 4) != 0) {
-            var_v0 = M2C_FIELD(&net_common_w, s16 *, 4) - 1;
-            var_at = (s16 *)(net_common_w + 4);
+        if (M2C_FIELD(&net_common_w, s16 *, NCO(4)) != 0) {
+            var_v0 = M2C_FIELD(&net_common_w, s16 *, NCO(4)) - 1;
+            var_at = (s16 *)(net_common_w + NCO(4));
             goto block_323;
         }
         McActMain();
         temp_v0_23 = McActResult();
         switch (temp_v0_23) {                       /* switch 9; irregular */
         case 0:                                     /* switch 9 */
-            M2C_FIELD(&net_common_w, s16 *, 4) = 0x12C;
-            M2C_FIELD(&net_common_w, u8 *, 2) = (u8) (M2C_FIELD(&net_common_w, u8 *, 2) + 1);
+            M2C_FIELD(&net_common_w, s16 *, NCO(4)) = 0x12C;
+            M2C_FIELD(&net_common_w, u8 *, NCO(2)) = (u8) (M2C_FIELD(&net_common_w, u8 *, NCO(2)) + 1);
             McActCheckSet();
             break;
         case -256:                                  /* switch 9 */
             M2C_FIELD(&system_w, s8 *, 0x3C) = 0;
             var_v0 = 0x14;
-            M2C_FIELD(&net_common_w, u8 *, 2) = 0x2DU;
-            var_at = (s16 *)(net_common_w + 4);
+            M2C_FIELD(&net_common_w, u8 *, NCO(2)) = 0x2DU;
+            var_at = (s16 *)(net_common_w + NCO(4));
             goto block_323;
         }
         break;
     case 0x2A:                                      /* switch 1 */
         Ncm_mssage_disp_req(0x6C);
         McActMain();
-        if (McActConChk(M2C_FIELD(&net_common_w, s8 *, 0x79)) == 0) {
-            M2C_FIELD(&net_common_w, s8 *, 0x29) = 0;
-            M2C_FIELD(&net_common_w, u8 *, 2) = 0x46U;
+        if (McActConChk(M2C_FIELD(&net_common_w, s8 *, NCO(0x79))) == 0) {
+            M2C_FIELD(&net_common_w, s8 *, NCO(0x29)) = 0;
+            M2C_FIELD(&net_common_w, u8 *, NCO(2)) = 0x46U;
             var_v0 = 0x1E;
-            var_at = (s16 *)(net_common_w + 4);
+            var_at = (s16 *)(net_common_w + NCO(4));
             goto block_323;
         }
-        temp_v0_24 = M2C_FIELD(&net_common_w, s16 *, 4) - 1;
-        M2C_FIELD(&net_common_w, s16 *, 4) = temp_v0_24;
+        temp_v0_24 = M2C_FIELD(&net_common_w, s16 *, NCO(4)) - 1;
+        M2C_FIELD(&net_common_w, s16 *, NCO(4)) = temp_v0_24;
         if (((s16) temp_v0_24) <= 0) {
-            M2C_FIELD(&net_common_w, s8 *, 3) = 0;
-            M2C_FIELD(&net_common_w, u8 *, 2) = 5U;
-            M2C_FIELD(&net_common_w, s16 *, 4) = 0x14;
+            M2C_FIELD(&net_common_w, s8 *, NCO(3)) = 0;
+            M2C_FIELD(&net_common_w, u8 *, NCO(2)) = 5U;
+            M2C_FIELD(&net_common_w, s16 *, NCO(4)) = 0x14;
             memset(data_load_ptr, 0, 0x1BEC);
             memcpy(data_load_ptr, &CNFile, 0x1BEC);
             check_sum_set_cn_file(data_load_ptr);
-            McActSaveSet(M2C_FIELD(&net_common_w, u8 *, 0xD), data_load_ptr);
-        } else if (M2C_FIELD(&net_common_w, s16 *, 4) < 0x10E) {
+            McActSaveSet(M2C_FIELD(&net_common_w, u8 *, NCO(0xD)), data_load_ptr);
+        } else if (M2C_FIELD(&net_common_w, s16 *, NCO(4)) < 0x10E) {
             Ncm_mssage_disp_option_req(0x6C);
             if (net_shot_ok_ck(2) != 0) {
-                M2C_FIELD(&net_common_w, s8 *, 3) = 0;
-                M2C_FIELD(&net_common_w, u8 *, 2) = 5U;
-                M2C_FIELD(&net_common_w, s16 *, 4) = 0x14;
+                M2C_FIELD(&net_common_w, s8 *, NCO(3)) = 0;
+                M2C_FIELD(&net_common_w, u8 *, NCO(2)) = 5U;
+                M2C_FIELD(&net_common_w, s16 *, NCO(4)) = 0x14;
                 memset(data_load_ptr, 0, 0x1BEC);
                 memcpy(data_load_ptr, &CNFile, 0x1BEC);
                 check_sum_set_cn_file(data_load_ptr);
-                McActSaveSet(M2C_FIELD(&net_common_w, u8 *, 0xD), data_load_ptr);
+                McActSaveSet(M2C_FIELD(&net_common_w, u8 *, NCO(0xD)), data_load_ptr);
             }
         }
         break;
     case 0x2D:                                      /* switch 1 */
-        if (M2C_FIELD(&net_common_w, s16 *, 4) != 0) {
-            temp_v0_25 = M2C_FIELD(&net_common_w, s16 *, 4) - 1;
-            M2C_FIELD(&net_common_w, s16 *, 4) = temp_v0_25;
+        if (M2C_FIELD(&net_common_w, s16 *, NCO(4)) != 0) {
+            temp_v0_25 = M2C_FIELD(&net_common_w, s16 *, NCO(4)) - 1;
+            M2C_FIELD(&net_common_w, s16 *, NCO(4)) = temp_v0_25;
             if (((s16) temp_v0_25) <= 0) {
                 goto block_234;
             }
         } else {
 block_234:
-            M2C_FIELD(&net_common_w, s16 *, 4) = 0x1E;
-            M2C_FIELD(&net_common_w, u8 *, 2) = (u8) (M2C_FIELD(&net_common_w, u8 *, 2) + 1);
+            M2C_FIELD(&net_common_w, s16 *, NCO(4)) = 0x1E;
+            M2C_FIELD(&net_common_w, u8 *, NCO(2)) = (u8) (M2C_FIELD(&net_common_w, u8 *, NCO(2)) + 1);
             Ncm_spr_D_MENU_set(0, 2, 0x2D);
         }
         break;
     case 0x2E:                                      /* switch 1 */
         Ncm_mssage_disp_req(0x6F);
         Ncm_menu_disp_req(4);
-        if (M2C_FIELD(&net_common_w, s16 *, 4) != 0) {
-            temp_v0_26 = M2C_FIELD(&net_common_w, s16 *, 4) - 1;
-            M2C_FIELD(&net_common_w, s16 *, 4) = temp_v0_26;
+        if (M2C_FIELD(&net_common_w, s16 *, NCO(4)) != 0) {
+            temp_v0_26 = M2C_FIELD(&net_common_w, s16 *, NCO(4)) - 1;
+            M2C_FIELD(&net_common_w, s16 *, NCO(4)) = temp_v0_26;
             if (((s16) temp_v0_26) <= 0) {
                 goto block_239;
             }
@@ -694,14 +694,14 @@ block_239:
             temp_v0_27 = net_yesno_operation_move();
             switch (temp_v0_27) {                   /* switch 10; irregular */
             case 1:                                 /* switch 10 */
-                M2C_FIELD(&net_common_w, u8 *, 2) = (u8) (M2C_FIELD(&net_common_w, u8 *, 2) + 1);
+                M2C_FIELD(&net_common_w, u8 *, NCO(2)) = (u8) (M2C_FIELD(&net_common_w, u8 *, NCO(2)) + 1);
                 Ncm_spr_kill(0x40000);
                 Ncm_spr_kill(0x80000);
                 Ncm_spr_kill(0x100000);
                 break;
             case -1:                                /* switch 10 */
-                M2C_FIELD(&net_common_w, u8 *, 2) = 1U;
-                M2C_FIELD(&net_common_w, s16 *, 4) = 0x14;
+                M2C_FIELD(&net_common_w, u8 *, NCO(2)) = 1U;
+                M2C_FIELD(&net_common_w, s16 *, NCO(4)) = 0x14;
                 Ncm_spr_kill(0x40000);
                 Ncm_spr_kill(0x80000);
                 if (net_shot_ok_ck(0) != 0) {
@@ -718,32 +718,32 @@ block_239:
         break;
     case 0x31:                                      /* switch 1 */
         Ncm_mssage_disp_req(0x56);
-        temp_v0_28 = M2C_FIELD(&net_common_w, s16 *, 4) - 1;
-        M2C_FIELD(&net_common_w, s16 *, 4) = temp_v0_28;
+        temp_v0_28 = M2C_FIELD(&net_common_w, s16 *, NCO(4)) - 1;
+        M2C_FIELD(&net_common_w, s16 *, NCO(4)) = temp_v0_28;
         if (((s16) temp_v0_28) <= 0) {
-            M2C_FIELD(&net_common_w, s8 *, 3) = 0;
-            M2C_FIELD(&net_common_w, u8 *, 2) = 1U;
+            M2C_FIELD(&net_common_w, s8 *, NCO(3)) = 0;
+            M2C_FIELD(&net_common_w, u8 *, NCO(2)) = 1U;
             var_v0 = 0x14;
-            var_at = (s16 *)(net_common_w + 4);
+            var_at = (s16 *)(net_common_w + NCO(4));
             goto block_323;
         }
         break;
     case 0x32:                                      /* switch 1 */
-        temp_v0_29 = M2C_FIELD(&net_common_w, s16 *, 4) - 1;
-        M2C_FIELD(&net_common_w, s16 *, 4) = temp_v0_29;
+        temp_v0_29 = M2C_FIELD(&net_common_w, s16 *, NCO(4)) - 1;
+        M2C_FIELD(&net_common_w, s16 *, NCO(4)) = temp_v0_29;
         if (((s16) temp_v0_29) <= 0) {
-            M2C_FIELD(&net_common_w, u8 *, 2) = (u8) (temp_a1 + 1);
-            M2C_FIELD(&net_common_w, s16 *, 4) = 0x14;
-            M2C_FIELD(&net_common_w, s8 *, 0x29) = 1;
+            M2C_FIELD(&net_common_w, u8 *, NCO(2)) = (u8) (temp_a1 + 1);
+            M2C_FIELD(&net_common_w, s16 *, NCO(4)) = 0x14;
+            M2C_FIELD(&net_common_w, s8 *, NCO(0x29)) = 1;
             Ncm_spr_D_MENU_set(0, 2, 0x32);
         }
         break;
     case 0x33:                                      /* switch 1 */
         Ncm_mssage_disp_req(0x5C);
         Ncm_menu_disp_req(4);
-        if (M2C_FIELD(&net_common_w, s16 *, 4) != 0) {
-            temp_v0_30 = M2C_FIELD(&net_common_w, s16 *, 4) - 1;
-            M2C_FIELD(&net_common_w, s16 *, 4) = temp_v0_30;
+        if (M2C_FIELD(&net_common_w, s16 *, NCO(4)) != 0) {
+            temp_v0_30 = M2C_FIELD(&net_common_w, s16 *, NCO(4)) - 1;
+            M2C_FIELD(&net_common_w, s16 *, NCO(4)) = temp_v0_30;
             if (((s16) temp_v0_30) <= 0) {
                 goto block_257;
             }
@@ -752,15 +752,15 @@ block_257:
             temp_v0_31 = net_yesno_operation_move();
             switch (temp_v0_31) {                   /* switch 11; irregular */
             case 1:                                 /* switch 11 */
-                M2C_FIELD(&net_common_w, s16 *, 4) = 0x14;
-                M2C_FIELD(&net_common_w, u8 *, 2) = (u8) (M2C_FIELD(&net_common_w, u8 *, 2) + 1);
+                M2C_FIELD(&net_common_w, s16 *, NCO(4)) = 0x14;
+                M2C_FIELD(&net_common_w, u8 *, NCO(2)) = (u8) (M2C_FIELD(&net_common_w, u8 *, NCO(2)) + 1);
                 Ncm_spr_kill(0x40000);
                 Ncm_spr_kill(0x80000);
                 Ncm_spr_kill(0x100000);
                 break;
             case -1:                                /* switch 11 */
-                M2C_FIELD(&net_common_w, u8 *, 2) = 1U;
-                M2C_FIELD(&net_common_w, s16 *, 4) = 0x14;
+                M2C_FIELD(&net_common_w, u8 *, NCO(2)) = 1U;
+                M2C_FIELD(&net_common_w, s16 *, NCO(4)) = 0x14;
                 Ncm_spr_kill(0x40000);
                 Ncm_spr_kill(0x80000);
                 if (net_shot_ok_ck(0) != 0) {
@@ -773,10 +773,10 @@ block_257:
         }
         break;
     case 0x34:                                      /* switch 1 */
-        temp_v0_32 = M2C_FIELD(&net_common_w, s16 *, 4) - 1;
-        M2C_FIELD(&net_common_w, s16 *, 4) = temp_v0_32;
+        temp_v0_32 = M2C_FIELD(&net_common_w, s16 *, NCO(4)) - 1;
+        M2C_FIELD(&net_common_w, s16 *, NCO(4)) = temp_v0_32;
         if (((s16) temp_v0_32) <= 0) {
-            M2C_FIELD(&net_common_w, u8 *, 2) = (u8) (temp_a1 + 1);
+            M2C_FIELD(&net_common_w, u8 *, NCO(2)) = (u8) (temp_a1 + 1);
         case 0x35:                                  /* switch 1 */
             var_s0 = -1;
         }
@@ -784,9 +784,9 @@ block_257:
     case 0x3C:                                      /* switch 1 */
         Ncm_mssage_disp_req(0x5B);
         Ncm_menu_disp_req(4);
-        if (M2C_FIELD(&net_common_w, s16 *, 4) != 0) {
-            temp_v0_33 = M2C_FIELD(&net_common_w, s16 *, 4) - 1;
-            M2C_FIELD(&net_common_w, s16 *, 4) = temp_v0_33;
+        if (M2C_FIELD(&net_common_w, s16 *, NCO(4)) != 0) {
+            temp_v0_33 = M2C_FIELD(&net_common_w, s16 *, NCO(4)) - 1;
+            M2C_FIELD(&net_common_w, s16 *, NCO(4)) = temp_v0_33;
             if (((s16) temp_v0_33) <= 0) {
                 goto block_271;
             }
@@ -795,14 +795,14 @@ block_271:
             temp_v0_34 = net_yesno_operation_move();
             switch (temp_v0_34) {                   /* switch 12; irregular */
             case 1:                                 /* switch 12 */
-                M2C_FIELD(&net_common_w, u8 *, 2) = (u8) (M2C_FIELD(&net_common_w, u8 *, 2) + 1);
+                M2C_FIELD(&net_common_w, u8 *, NCO(2)) = (u8) (M2C_FIELD(&net_common_w, u8 *, NCO(2)) + 1);
                 Ncm_spr_kill(0x40000);
                 Ncm_spr_kill(0x80000);
                 Ncm_spr_kill(0x100000);
                 break;
             case -1:                                /* switch 12 */
-                M2C_FIELD(&net_common_w, u8 *, 2) = 0x3EU;
-                M2C_FIELD(&net_common_w, s16 *, 4) = 0x14;
+                M2C_FIELD(&net_common_w, u8 *, NCO(2)) = 0x3EU;
+                M2C_FIELD(&net_common_w, s16 *, NCO(4)) = 0x14;
                 Ncm_spr_kill(0x40000);
                 Ncm_spr_kill(0x80000);
                 if (net_shot_ok_ck(0) != 0) {
@@ -819,35 +819,35 @@ block_271:
         break;
     case 0x3E:                                      /* switch 1 */
         Ncm_mssage_disp_req(0x5B);
-        temp_v0_35 = M2C_FIELD(&net_common_w, s16 *, 4) - 1;
-        M2C_FIELD(&net_common_w, s16 *, 4) = temp_v0_35;
+        temp_v0_35 = M2C_FIELD(&net_common_w, s16 *, NCO(4)) - 1;
+        M2C_FIELD(&net_common_w, s16 *, NCO(4)) = temp_v0_35;
         if (((s16) temp_v0_35) <= 0) {
-            M2C_FIELD(&net_common_w, u8 *, 2) = 1U;
+            M2C_FIELD(&net_common_w, u8 *, NCO(2)) = 1U;
             var_v0 = 0x14;
-            var_at = (s16 *)(net_common_w + 4);
+            var_at = (s16 *)(net_common_w + NCO(4));
             goto block_323;
         }
         break;
     case 0x46:                                      /* switch 1 */
-        temp_v0_36 = M2C_FIELD(&net_common_w, s16 *, 4) - 1;
-        M2C_FIELD(&net_common_w, s16 *, 4) = temp_v0_36;
+        temp_v0_36 = M2C_FIELD(&net_common_w, s16 *, NCO(4)) - 1;
+        M2C_FIELD(&net_common_w, s16 *, NCO(4)) = temp_v0_36;
         if (((s16) temp_v0_36) <= 0) {
-            M2C_FIELD(&net_common_w, u8 *, 2) = (u8) (temp_a1 + 1);
-            M2C_FIELD(&net_common_w, s16 *, 4) = 0x14;
-            M2C_FIELD(&net_common_w, s8 *, 0x29) = 1;
+            M2C_FIELD(&net_common_w, u8 *, NCO(2)) = (u8) (temp_a1 + 1);
+            M2C_FIELD(&net_common_w, s16 *, NCO(4)) = 0x14;
+            M2C_FIELD(&net_common_w, s8 *, NCO(0x29)) = 1;
             Ncm_spr_D_MENU_set(0, 2, 0x3E);
         }
         break;
     case 0x47:                                      /* switch 1 */
-        if (M2C_FIELD(&net_common_w, s8 *, 0x31) == 0) {
+        if (M2C_FIELD(&net_common_w, s8 *, NCO(0x31)) == 0) {
             Ncm_mssage_disp_req(0x6B);
         } else {
             Ncm_mssage_disp_req(0x71);
         }
         Ncm_menu_disp_req(4);
-        if (M2C_FIELD(&net_common_w, s16 *, 4) != 0) {
-            temp_v0_37 = M2C_FIELD(&net_common_w, s16 *, 4) - 1;
-            M2C_FIELD(&net_common_w, s16 *, 4) = temp_v0_37;
+        if (M2C_FIELD(&net_common_w, s16 *, NCO(4)) != 0) {
+            temp_v0_37 = M2C_FIELD(&net_common_w, s16 *, NCO(4)) - 1;
+            M2C_FIELD(&net_common_w, s16 *, NCO(4)) = temp_v0_37;
             if (((s16) temp_v0_37) <= 0) {
                 goto block_292;
             }
@@ -856,14 +856,14 @@ block_292:
             temp_v0_38 = net_yesno_operation_move();
             switch (temp_v0_38) {                   /* switch 13; irregular */
             case 1:                                 /* switch 13 */
-                M2C_FIELD(&net_common_w, u8 *, 2) = (u8) (M2C_FIELD(&net_common_w, u8 *, 2) + 1);
+                M2C_FIELD(&net_common_w, u8 *, NCO(2)) = (u8) (M2C_FIELD(&net_common_w, u8 *, NCO(2)) + 1);
                 Ncm_spr_kill(0x40000);
                 Ncm_spr_kill(0x80000);
                 Ncm_spr_kill(0x100000);
                 break;
             case -1:                                /* switch 13 */
-                M2C_FIELD(&net_common_w, u8 *, 2) = 0x49U;
-                M2C_FIELD(&net_common_w, s16 *, 4) = 0x14;
+                M2C_FIELD(&net_common_w, u8 *, NCO(2)) = 0x49U;
+                M2C_FIELD(&net_common_w, s16 *, NCO(4)) = 0x14;
                 Ncm_spr_kill(0x40000);
                 Ncm_spr_kill(0x80000);
                 if (net_shot_ok_ck(0) != 0) {
@@ -879,26 +879,26 @@ block_292:
         var_s0 = -1;
         break;
     case 0x49:                                      /* switch 1 */
-        if (M2C_FIELD(&net_common_w, s8 *, 0x31) == 0) {
+        if (M2C_FIELD(&net_common_w, s8 *, NCO(0x31)) == 0) {
             Ncm_mssage_disp_req(0x6B);
         } else {
             Ncm_mssage_disp_req(0x71);
         }
-        temp_v0_39 = M2C_FIELD(&net_common_w, s16 *, 4) - 1;
-        M2C_FIELD(&net_common_w, s16 *, 4) = temp_v0_39;
+        temp_v0_39 = M2C_FIELD(&net_common_w, s16 *, NCO(4)) - 1;
+        M2C_FIELD(&net_common_w, s16 *, NCO(4)) = temp_v0_39;
         if (((s16) temp_v0_39) <= 0) {
-            M2C_FIELD(&net_common_w, u8 *, 2) = 1U;
+            M2C_FIELD(&net_common_w, u8 *, NCO(2)) = 1U;
             var_v0 = 0x14;
-            var_at = (s16 *)(net_common_w + 4);
+            var_at = (s16 *)(net_common_w + NCO(4));
             goto block_323;
         }
         break;
     case 0x50:                                      /* switch 1 */
         Ncm_mssage_disp_req(0x77);
         Ncm_menu_disp_req(4);
-        if (M2C_FIELD(&net_common_w, s16 *, 4) != 0) {
-            temp_v0_40 = M2C_FIELD(&net_common_w, s16 *, 4) - 1;
-            M2C_FIELD(&net_common_w, s16 *, 4) = temp_v0_40;
+        if (M2C_FIELD(&net_common_w, s16 *, NCO(4)) != 0) {
+            temp_v0_40 = M2C_FIELD(&net_common_w, s16 *, NCO(4)) - 1;
+            M2C_FIELD(&net_common_w, s16 *, NCO(4)) = temp_v0_40;
             if (((s16) temp_v0_40) <= 0) {
                 goto block_311;
             }
@@ -907,14 +907,14 @@ block_311:
             temp_v0_41 = net_yesno_operation_move();
             switch (temp_v0_41) {                   /* switch 14; irregular */
             case 1:                                 /* switch 14 */
-                M2C_FIELD(&net_common_w, u8 *, 2) = (u8) (M2C_FIELD(&net_common_w, u8 *, 2) + 1);
+                M2C_FIELD(&net_common_w, u8 *, NCO(2)) = (u8) (M2C_FIELD(&net_common_w, u8 *, NCO(2)) + 1);
                 Ncm_spr_kill(0x40000);
                 Ncm_spr_kill(0x80000);
                 Ncm_spr_kill(0x100000);
                 break;
             case -1:                                /* switch 14 */
-                M2C_FIELD(&net_common_w, u8 *, 2) = 0x52U;
-                M2C_FIELD(&net_common_w, s16 *, 4) = 0x14;
+                M2C_FIELD(&net_common_w, u8 *, NCO(2)) = 0x52U;
+                M2C_FIELD(&net_common_w, s16 *, NCO(4)) = 0x14;
                 Ncm_spr_kill(0x40000);
                 Ncm_spr_kill(0x80000);
                 if (net_shot_ok_ck(0) != 0) {
@@ -931,12 +931,12 @@ block_311:
         break;
     case 0x52:                                      /* switch 1 */
         Ncm_mssage_disp_req(0x77);
-        temp_v0_42 = M2C_FIELD(&net_common_w, s16 *, 4) - 1;
-        M2C_FIELD(&net_common_w, s16 *, 4) = temp_v0_42;
+        temp_v0_42 = M2C_FIELD(&net_common_w, s16 *, NCO(4)) - 1;
+        M2C_FIELD(&net_common_w, s16 *, NCO(4)) = temp_v0_42;
         if (((s16) temp_v0_42) <= 0) {
-            M2C_FIELD(&net_common_w, u8 *, 2) = 1U;
+            M2C_FIELD(&net_common_w, u8 *, NCO(2)) = 1U;
             var_v0 = 0x14;
-            var_at = (s16 *)(net_common_w + 4);
+            var_at = (s16 *)(net_common_w + NCO(4));
             goto block_323;
         }
         break;
@@ -949,9 +949,9 @@ s32 Net_Icon_Data_Load(s32 arg0) {
     s32 var_s0;
 
     var_s0 = 0;
-    switch (M2C_FIELD(&net_common_w, u8 *, 3)) {    /* irregular */
+    switch (M2C_FIELD(&net_common_w, u8 *, NCO(3))) {    /* irregular */
     case 0:
-        M2C_FIELD(&net_common_w, u8 *, 3) = (u8) (M2C_FIELD(&net_common_w, u8 *, 3) + 1);
+        M2C_FIELD(&net_common_w, u8 *, NCO(3)) = (u8) (M2C_FIELD(&net_common_w, u8 *, NCO(3)) + 1);
         if (arg0 == 0) {
             load_file_mdl(data_load_ptr + 0x12000, 0x6D4);
         } else {
@@ -959,7 +959,7 @@ s32 Net_Icon_Data_Load(s32 arg0) {
         }
         break;
     case 1:
-        M2C_FIELD(&net_common_w, u8 *, 3) = (u8) (M2C_FIELD(&net_common_w, u8 *, 3) + 1);
+        M2C_FIELD(&net_common_w, u8 *, NCO(3)) = (u8) (M2C_FIELD(&net_common_w, u8 *, NCO(3)) + 1);
         /* fallthrough */
     case 2:
         var_s0 = 1;
@@ -982,65 +982,65 @@ s32 SaveNetFile(void) {
     u8 temp_a3;
 
     var_s0 = 0;
-    switch (M2C_FIELD(&net_common_w, u8 *, 2)) {    /* switch 1; irregular */
+    switch (M2C_FIELD(&net_common_w, u8 *, NCO(2))) {    /* switch 1; irregular */
     case 0x0:                                       /* switch 1 */
-        M2C_FIELD(&net_common_w, u8 *, 2) = (u8) (M2C_FIELD(&net_common_w, u8 *, 2) + 1);
-        M2C_FIELD(&net_common_w, s8 *, 3) = 0;
+        M2C_FIELD(&net_common_w, u8 *, NCO(2)) = (u8) (M2C_FIELD(&net_common_w, u8 *, NCO(2)) + 1);
+        M2C_FIELD(&net_common_w, s8 *, NCO(3)) = 0;
         Net_McWorkInit(2);
-        M2C_FIELD(&net_common_w, u8 *, 0xD) = (u8) net_sel_drive;
-        M2C_FIELD(&net_common_w, u8 *, 0x79) = (u8) M2C_FIELD(&net_common_w, u8 *, 0xD);
+        M2C_FIELD(&net_common_w, u8 *, NCO(0xD)) = (u8) net_sel_drive;
+        M2C_FIELD(&net_common_w, u8 *, NCO(0x79)) = (u8) M2C_FIELD(&net_common_w, u8 *, NCO(0xD));
         McActCheckSet();
         McActMain();
         M2C_FIELD(&system_w, s8 *, 0x3C) = 1;
         break;
     case 0x1:                                       /* switch 1 */
         if (Net_Icon_Data_Load(0) != 0) {
-            M2C_FIELD(&net_common_w, s8 *, 3) = 0;
-            M2C_FIELD(&net_common_w, s16 *, 4) = 0x14;
-            temp_a1 = M2C_FIELD(&net_common_w, u8 *, 2) + 1;
-            M2C_FIELD(&net_common_w, u8 *, 2) = temp_a1;
-            M2C_FIELD(&net_common_w, s16 *, 0x7A) = McActAvailSet(data_load_ptr + 0x12000, temp_a1);
-            McActSave0Set(M2C_FIELD(&net_common_w, u8 *, 0xD), data_load_ptr, 0);
+            M2C_FIELD(&net_common_w, s8 *, NCO(3)) = 0;
+            M2C_FIELD(&net_common_w, s16 *, NCO(4)) = 0x14;
+            temp_a1 = M2C_FIELD(&net_common_w, u8 *, NCO(2)) + 1;
+            M2C_FIELD(&net_common_w, u8 *, NCO(2)) = temp_a1;
+            M2C_FIELD(&net_common_w, s16 *, NCO(0x7A)) = McActAvailSet(data_load_ptr + 0x12000, temp_a1);
+            McActSave0Set(M2C_FIELD(&net_common_w, u8 *, NCO(0xD)), data_load_ptr, 0);
         }
         break;
     case 0x2:                                       /* switch 1 */
         Ncm_mssage_disp_req(8);
-        if (M2C_FIELD(&net_common_w, s16 *, 4) != 0) {
-            M2C_FIELD(&net_common_w, s16 *, 4) = (s16) (M2C_FIELD(&net_common_w, s16 *, 4) - 1);
+        if (M2C_FIELD(&net_common_w, s16 *, NCO(4)) != 0) {
+            M2C_FIELD(&net_common_w, s16 *, NCO(4)) = (s16) (M2C_FIELD(&net_common_w, s16 *, NCO(4)) - 1);
         } else {
             McActMain();
             temp_v0 = McActResult();
             switch (temp_v0) {                      /* switch 2; irregular */
             case 0:                                 /* switch 2 */
-                temp_a3 = M2C_FIELD(&net_common_w, u8 *, 2);
-                M2C_FIELD(&net_common_w, s16 *, 4) = 0x14;
-                M2C_FIELD(&net_common_w, u8 *, 2) = (u8) (temp_a3 + 1);
-                M2C_FIELD(&net_common_w, u8 *, 0x79) = (u8) M2C_FIELD(&net_common_w, u8 *, 0xD);
+                temp_a3 = M2C_FIELD(&net_common_w, u8 *, NCO(2));
+                M2C_FIELD(&net_common_w, s16 *, NCO(4)) = 0x14;
+                M2C_FIELD(&net_common_w, u8 *, NCO(2)) = (u8) (temp_a3 + 1);
+                M2C_FIELD(&net_common_w, u8 *, NCO(0x79)) = (u8) M2C_FIELD(&net_common_w, u8 *, NCO(0xD));
                 memset(data_load_ptr, 0, 0x1BEC, temp_a3);
                 memcpy(data_load_ptr, &CNFile, 0x1BEC);
                 check_sum_set_cn_file(data_load_ptr);
-                McActSaveSet(M2C_FIELD(&net_common_w, u8 *, 0xD), data_load_ptr);
+                McActSaveSet(M2C_FIELD(&net_common_w, u8 *, NCO(0xD)), data_load_ptr);
                 break;
             case -255:                              /* switch 2 */
-                M2C_FIELD(&net_common_w, u8 *, 2) = 0x14U;
-                M2C_FIELD(&net_common_w, s16 *, 6) = 0x744;
-                M2C_FIELD(&net_common_w, s16 *, 4) = 0x1E;
+                M2C_FIELD(&net_common_w, u8 *, NCO(2)) = 0x14U;
+                M2C_FIELD(&net_common_w, s16 *, NCO(6)) = 0x744;
+                M2C_FIELD(&net_common_w, s16 *, NCO(4)) = 0x1E;
                 McActCheckSet();
                 break;
             case -256:                              /* switch 2 */
                 M2C_FIELD(&system_w, s8 *, 0x3C) = 0;
-                M2C_FIELD(&net_common_w, u8 *, 2) = 0x28U;
-                M2C_FIELD(&net_common_w, s16 *, 4) = 0x12C;
+                M2C_FIELD(&net_common_w, u8 *, NCO(2)) = 0x28U;
+                M2C_FIELD(&net_common_w, s16 *, NCO(4)) = 0x12C;
                 break;
             case -251:                              /* switch 2 */
                 M2C_FIELD(&system_w, s8 *, 0x3C) = 0;
-                M2C_FIELD(&net_common_w, u8 *, 2) = 0x32U;
-                M2C_FIELD(&net_common_w, s16 *, 4) = 0x12C;
+                M2C_FIELD(&net_common_w, u8 *, NCO(2)) = 0x32U;
+                M2C_FIELD(&net_common_w, s16 *, NCO(4)) = 0x12C;
                 break;
             default:                                /* switch 2 */
-                M2C_FIELD(&net_common_w, u8 *, 2) = 0x1EU;
-                M2C_FIELD(&net_common_w, s16 *, 6) = 0x744;
-                M2C_FIELD(&net_common_w, s16 *, 4) = 0x1E;
+                M2C_FIELD(&net_common_w, u8 *, NCO(2)) = 0x1EU;
+                M2C_FIELD(&net_common_w, s16 *, NCO(6)) = 0x744;
+                M2C_FIELD(&net_common_w, s16 *, NCO(4)) = 0x1E;
                 McActCheckSet();
                 break;
             }
@@ -1048,8 +1048,8 @@ s32 SaveNetFile(void) {
         break;
     case 0x3:                                       /* switch 1 */
         Ncm_mssage_disp_req(9);
-        if (M2C_FIELD(&net_common_w, s16 *, 4) != 0) {
-            M2C_FIELD(&net_common_w, s16 *, 4) = (s16) (M2C_FIELD(&net_common_w, s16 *, 4) - 1);
+        if (M2C_FIELD(&net_common_w, s16 *, NCO(4)) != 0) {
+            M2C_FIELD(&net_common_w, s16 *, NCO(4)) = (s16) (M2C_FIELD(&net_common_w, s16 *, NCO(4)) - 1);
         } else {
             McActMain();
             temp_v0_2 = McActResult();
@@ -1058,37 +1058,37 @@ s32 SaveNetFile(void) {
                 break;
             case 0:                                 /* switch 3 */
                 M2C_FIELD(&system_w, s8 *, 0x3C) = 0;
-                M2C_FIELD(&net_common_w, s16 *, 4) = 0x12C;
-                M2C_FIELD(&net_common_w, u8 *, 2) = (u8) (M2C_FIELD(&net_common_w, u8 *, 2) + 1);
+                M2C_FIELD(&net_common_w, s16 *, NCO(4)) = 0x12C;
+                M2C_FIELD(&net_common_w, u8 *, NCO(2)) = (u8) (M2C_FIELD(&net_common_w, u8 *, NCO(2)) + 1);
                 break;
             case -255:                              /* switch 3 */
-                M2C_FIELD(&net_common_w, u8 *, 2) = 0x14U;
-                M2C_FIELD(&net_common_w, s16 *, 6) = 0x744;
-                M2C_FIELD(&net_common_w, s16 *, 4) = 0x1E;
+                M2C_FIELD(&net_common_w, u8 *, NCO(2)) = 0x14U;
+                M2C_FIELD(&net_common_w, s16 *, NCO(6)) = 0x744;
+                M2C_FIELD(&net_common_w, s16 *, NCO(4)) = 0x1E;
                 McActCheckSet();
                 break;
             case -251:                              /* switch 3 */
             case -256:                              /* switch 3 */
                 M2C_FIELD(&system_w, s8 *, 0x3C) = 0;
-                M2C_FIELD(&net_common_w, u8 *, 2) = 0x28U;
-                M2C_FIELD(&net_common_w, s16 *, 4) = 0x12C;
+                M2C_FIELD(&net_common_w, u8 *, NCO(2)) = 0x28U;
+                M2C_FIELD(&net_common_w, s16 *, NCO(4)) = 0x12C;
                 break;
             }
         }
         break;
     case 0x4:                                       /* switch 1 */
         Ncm_mssage_disp_req(0xA);
-        temp_v0_3 = M2C_FIELD(&net_common_w, s16 *, 4) - 1;
-        M2C_FIELD(&net_common_w, s16 *, 4) = temp_v0_3;
+        temp_v0_3 = M2C_FIELD(&net_common_w, s16 *, NCO(4)) - 1;
+        M2C_FIELD(&net_common_w, s16 *, NCO(4)) = temp_v0_3;
         if (((s16) temp_v0_3) > 0) {
-            if (M2C_FIELD(&net_common_w, s16 *, 4) < 0x10F) {
+            if (M2C_FIELD(&net_common_w, s16 *, NCO(4)) < 0x10F) {
                 Ncm_mssage_disp_option_req(0xA);
                 if (net_shot_ok_ck(2) != 0) {
-                    M2C_FIELD(&net_common_w, u8 *, 2) = (u8) (M2C_FIELD(&net_common_w, u8 *, 2) + 1);
+                    M2C_FIELD(&net_common_w, u8 *, NCO(2)) = (u8) (M2C_FIELD(&net_common_w, u8 *, NCO(2)) + 1);
                 }
             }
         } else {
-            M2C_FIELD(&net_common_w, u8 *, 2) = (u8) (M2C_FIELD(&net_common_w, u8 *, 2) + 1);
+            M2C_FIELD(&net_common_w, u8 *, NCO(2)) = (u8) (M2C_FIELD(&net_common_w, u8 *, NCO(2)) + 1);
         }
         break;
     case 0x5:                                       /* switch 1 */
@@ -1098,10 +1098,10 @@ s32 SaveNetFile(void) {
         Ncm_mssage_disp_req(0xD);
         Ncm_mssage_disp_req(0xE);
         dialog_limit_disp(0);
-        if (M2C_FIELD(&net_common_w, s16 *, 6) > 0) {
-            if (M2C_FIELD(&net_common_w, s16 *, 4) > 0) {
+        if (M2C_FIELD(&net_common_w, s16 *, NCO(6)) > 0) {
+            if (M2C_FIELD(&net_common_w, s16 *, NCO(4)) > 0) {
                 if (net_shot_ok_ck(2) != 0) {
-                    M2C_FIELD(&net_common_w, u8 *, 2) = (u8) (M2C_FIELD(&net_common_w, u8 *, 2) + 1);
+                    M2C_FIELD(&net_common_w, u8 *, NCO(2)) = (u8) (M2C_FIELD(&net_common_w, u8 *, NCO(2)) + 1);
                     McActStopSet();
                     Ncm_spr_kill(0x200);
                     M2C_FIELD(&system_w, s8 *, 0x3C) = 0;
@@ -1109,10 +1109,10 @@ s32 SaveNetFile(void) {
                     goto block_62;
                 }
             } else {
-                M2C_FIELD(&net_common_w, s16 *, 4) = (s16) (M2C_FIELD(&net_common_w, s16 *, 4) - 1);
+                M2C_FIELD(&net_common_w, s16 *, NCO(4)) = (s16) (M2C_FIELD(&net_common_w, s16 *, NCO(4)) - 1);
 block_62:
                 McActMain();
-                temp_v0_4 = McActConChk(M2C_FIELD(&net_common_w, u8 *, 0xD));
+                temp_v0_4 = McActConChk(M2C_FIELD(&net_common_w, u8 *, NCO(0xD)));
                 switch (temp_v0_4) {                /* switch 4; irregular */
                 case 0:                             /* switch 4 */
                     break;
@@ -1120,13 +1120,13 @@ block_62:
                 case 2:                             /* switch 4 */
                 case 1:                             /* switch 4 */
                     McActStopSet();
-                    M2C_FIELD(&net_common_w, u8 *, 2) = 0x19U;
-                    M2C_FIELD(&net_common_w, s16 *, 4) = 0xA;
+                    M2C_FIELD(&net_common_w, u8 *, NCO(2)) = 0x19U;
+                    M2C_FIELD(&net_common_w, s16 *, NCO(4)) = 0xA;
                     break;
                 }
             }
         } else {
-            M2C_FIELD(&net_common_w, u8 *, 2) = (u8) (M2C_FIELD(&net_common_w, u8 *, 2) + 1);
+            M2C_FIELD(&net_common_w, u8 *, NCO(2)) = (u8) (M2C_FIELD(&net_common_w, u8 *, NCO(2)) + 1);
             McActStopSet();
             Ncm_spr_kill(0x200);
             M2C_FIELD(&system_w, s8 *, 0x3C) = 0;
@@ -1136,25 +1136,25 @@ block_62:
         var_s0 = -1;
         break;
     case 0x19:                                      /* switch 1 */
-        temp_v0_5 = M2C_FIELD(&net_common_w, s16 *, 4) - 1;
-        M2C_FIELD(&net_common_w, s16 *, 4) = temp_v0_5;
+        temp_v0_5 = M2C_FIELD(&net_common_w, s16 *, NCO(4)) - 1;
+        M2C_FIELD(&net_common_w, s16 *, NCO(4)) = temp_v0_5;
         if (((s16) temp_v0_5) > 0) {
             McActMain();
         } else {
-            M2C_FIELD(&net_common_w, s8 *, 3) = 0;
-            M2C_FIELD(&net_common_w, u8 *, 2) = 2U;
-            M2C_FIELD(&net_common_w, s16 *, 4) = 0x14;
-            McActSave0Set(M2C_FIELD(&net_common_w, u8 *, 0xD), data_load_ptr, 0);
+            M2C_FIELD(&net_common_w, s8 *, NCO(3)) = 0;
+            M2C_FIELD(&net_common_w, u8 *, NCO(2)) = 2U;
+            M2C_FIELD(&net_common_w, s16 *, NCO(4)) = 0x14;
+            McActSave0Set(M2C_FIELD(&net_common_w, u8 *, NCO(0xD)), data_load_ptr, 0);
         }
         break;
     case 0x1E:                                      /* switch 1 */
         Ncm_mssage_disp_req(0xF);
         Ncm_mssage_disp_req(0x10);
         dialog_limit_disp(0);
-        if (M2C_FIELD(&net_common_w, s16 *, 6) > 0) {
-            if (M2C_FIELD(&net_common_w, s16 *, 4) > 0) {
+        if (M2C_FIELD(&net_common_w, s16 *, NCO(6)) > 0) {
+            if (M2C_FIELD(&net_common_w, s16 *, NCO(4)) > 0) {
                 if (net_shot_ok_ck(2) != 0) {
-                    M2C_FIELD(&net_common_w, u8 *, 2) = 0x15U;
+                    M2C_FIELD(&net_common_w, u8 *, NCO(2)) = 0x15U;
                     McActStopSet();
                     Ncm_spr_kill(0x200);
                     M2C_FIELD(&system_w, s8 *, 0x3C) = 0;
@@ -1162,23 +1162,23 @@ block_62:
                     goto block_83;
                 }
             } else {
-                M2C_FIELD(&net_common_w, s16 *, 4) = (s16) (M2C_FIELD(&net_common_w, s16 *, 4) - 1);
+                M2C_FIELD(&net_common_w, s16 *, NCO(4)) = (s16) (M2C_FIELD(&net_common_w, s16 *, NCO(4)) - 1);
 block_83:
                 McActMain();
-                temp_v0_6 = McActConChk(M2C_FIELD(&net_common_w, u8 *, 0xD));
+                temp_v0_6 = McActConChk(M2C_FIELD(&net_common_w, u8 *, NCO(0xD)));
                 switch (temp_v0_6) {                /* switch 5; irregular */
                 case 3:                             /* switch 5 */
                 case 1:                             /* switch 5 */
                 case 2:                             /* switch 5 */
                     break;
                 case 0:                             /* switch 5 */
-                    M2C_FIELD(&net_common_w, u8 *, 2) = 0x23U;
+                    M2C_FIELD(&net_common_w, u8 *, NCO(2)) = 0x23U;
                     McActCheckSet();
                     break;
                 }
             }
         } else {
-            M2C_FIELD(&net_common_w, u8 *, 2) = 0x15U;
+            M2C_FIELD(&net_common_w, u8 *, NCO(2)) = 0x15U;
             McActStopSet();
             Ncm_spr_kill(0x200);
             M2C_FIELD(&system_w, s8 *, 0x3C) = 0;
@@ -1188,10 +1188,10 @@ block_83:
         Ncm_mssage_disp_req(0xF);
         Ncm_mssage_disp_req(0x10);
         dialog_limit_disp(0);
-        if (M2C_FIELD(&net_common_w, s16 *, 6) > 0) {
-            if (M2C_FIELD(&net_common_w, s16 *, 4) > 0) {
+        if (M2C_FIELD(&net_common_w, s16 *, NCO(6)) > 0) {
+            if (M2C_FIELD(&net_common_w, s16 *, NCO(4)) > 0) {
                 if (net_shot_ok_ck(2) != 0) {
-                    M2C_FIELD(&net_common_w, u8 *, 2) = 0x15U;
+                    M2C_FIELD(&net_common_w, u8 *, NCO(2)) = 0x15U;
                     McActStopSet();
                     Ncm_spr_kill(0x200);
                     M2C_FIELD(&system_w, s8 *, 0x3C) = 0;
@@ -1199,10 +1199,10 @@ block_83:
                     goto block_97;
                 }
             } else {
-                M2C_FIELD(&net_common_w, s16 *, 4) = (s16) (M2C_FIELD(&net_common_w, s16 *, 4) - 1);
+                M2C_FIELD(&net_common_w, s16 *, NCO(4)) = (s16) (M2C_FIELD(&net_common_w, s16 *, NCO(4)) - 1);
 block_97:
                 McActMain();
-                temp_v0_7 = McActConChk(M2C_FIELD(&net_common_w, u8 *, 0xD));
+                temp_v0_7 = McActConChk(M2C_FIELD(&net_common_w, u8 *, NCO(0xD)));
                 switch (temp_v0_7) {                /* switch 6; irregular */
                 case 0:                             /* switch 6 */
                     break;
@@ -1210,13 +1210,13 @@ block_97:
                 case 2:                             /* switch 6 */
                 case 1:                             /* switch 6 */
                     McActStopSet();
-                    M2C_FIELD(&net_common_w, u8 *, 2) = 0x19U;
-                    M2C_FIELD(&net_common_w, s16 *, 4) = 0xA;
+                    M2C_FIELD(&net_common_w, u8 *, NCO(2)) = 0x19U;
+                    M2C_FIELD(&net_common_w, s16 *, NCO(4)) = 0xA;
                     break;
                 }
             }
         } else {
-            M2C_FIELD(&net_common_w, u8 *, 2) = 0x15U;
+            M2C_FIELD(&net_common_w, u8 *, NCO(2)) = 0x15U;
             McActStopSet();
             Ncm_spr_kill(0x200);
             M2C_FIELD(&system_w, s8 *, 0x3C) = 0;
@@ -1226,18 +1226,18 @@ block_97:
         Ncm_mssage_disp_req(0xB);
         Ncm_mssage_disp_req(0xC);
         dialog_limit_disp(0);
-        if (M2C_FIELD(&net_common_w, s16 *, 6) > 0) {
-            if (M2C_FIELD(&net_common_w, s16 *, 4) > 0) {
+        if (M2C_FIELD(&net_common_w, s16 *, NCO(6)) > 0) {
+            if (M2C_FIELD(&net_common_w, s16 *, NCO(4)) > 0) {
                 if (net_shot_ok_ck(2) != 0) {
-                    M2C_FIELD(&net_common_w, u8 *, 2) = 0x29U;
+                    M2C_FIELD(&net_common_w, u8 *, NCO(2)) = 0x29U;
                     Ncm_spr_kill(0x200);
                     M2C_FIELD(&system_w, s8 *, 0x3C) = 0;
                 }
             } else {
-                M2C_FIELD(&net_common_w, s16 *, 4) = (s16) (M2C_FIELD(&net_common_w, s16 *, 4) - 1);
+                M2C_FIELD(&net_common_w, s16 *, NCO(4)) = (s16) (M2C_FIELD(&net_common_w, s16 *, NCO(4)) - 1);
             }
         } else {
-            M2C_FIELD(&net_common_w, u8 *, 2) = 0x29U;
+            M2C_FIELD(&net_common_w, u8 *, NCO(2)) = 0x29U;
             Ncm_spr_kill(0x200);
             M2C_FIELD(&system_w, s8 *, 0x3C) = 0;
         }
@@ -1249,18 +1249,18 @@ block_97:
         Ncm_mssage_disp_req(0x75);
         Ncm_mssage_disp_req(0xC);
         dialog_limit_disp(0);
-        if (M2C_FIELD(&net_common_w, s16 *, 6) > 0) {
-            if (M2C_FIELD(&net_common_w, s16 *, 4) > 0) {
+        if (M2C_FIELD(&net_common_w, s16 *, NCO(6)) > 0) {
+            if (M2C_FIELD(&net_common_w, s16 *, NCO(4)) > 0) {
                 if (net_shot_ok_ck(2) != 0) {
-                    M2C_FIELD(&net_common_w, u8 *, 2) = 0x33U;
+                    M2C_FIELD(&net_common_w, u8 *, NCO(2)) = 0x33U;
                     Ncm_spr_kill(0x200);
                     M2C_FIELD(&system_w, s8 *, 0x3C) = 0;
                 }
             } else {
-                M2C_FIELD(&net_common_w, s16 *, 4) = (s16) (M2C_FIELD(&net_common_w, s16 *, 4) - 1);
+                M2C_FIELD(&net_common_w, s16 *, NCO(4)) = (s16) (M2C_FIELD(&net_common_w, s16 *, NCO(4)) - 1);
             }
         } else {
-            M2C_FIELD(&net_common_w, u8 *, 2) = 0x33U;
+            M2C_FIELD(&net_common_w, u8 *, NCO(2)) = 0x33U;
             Ncm_spr_kill(0x200);
             M2C_FIELD(&system_w, s8 *, 0x3C) = 0;
         }
@@ -1278,12 +1278,12 @@ s32 SaveGameFileNet2(void) {
     s32 var_s0;
     s8 temp_a0;
 
-    temp_a0 = M2C_FIELD(&net_common_w, s8 *, 0x7C);
+    temp_a0 = M2C_FIELD(&net_common_w, s8 *, NCO(0x7C));
     var_s0 = 0;
     switch (temp_a0) {                              /* switch 1; irregular */
     case 0x0:                                       /* switch 1 */
-        M2C_FIELD(&net_common_w, s8 *, 0x7C) = (s8) (temp_a0 + 1);
-        M2C_FIELD(&net_common_w, s8 *, 3) = 0;
+        M2C_FIELD(&net_common_w, s8 *, NCO(0x7C)) = (s8) (temp_a0 + 1);
+        M2C_FIELD(&net_common_w, s8 *, NCO(3)) = 0;
         Net_McWorkInit(0);
         memset(data_load_ptr, 0, 0x16800);
         M2C_FIELD(&system_w, s8 *, 0x3C) = 1;
@@ -1291,146 +1291,146 @@ s32 SaveGameFileNet2(void) {
     case 0x1:                                       /* switch 1 */
         Ncm_mssage_disp_req(8);
         if (Net_Icon_Data_Load(1) != 0) {
-            M2C_FIELD(&net_common_w, s8 *, 3) = 0;
-            M2C_FIELD(&net_common_w, s16 *, 4) = 0x14;
-            M2C_FIELD(&net_common_w, s8 *, 0x7C) = (s8) (M2C_FIELD(&net_common_w, s8 *, 0x7C) + 1);
-            M2C_FIELD(&net_common_w, s16 *, 0x7A) = McActAvailSet(data_load_ptr);
-            McActSave0Set(M2C_FIELD(&net_common_w, s8 *, 0x79), data_load_ptr, 1);
+            M2C_FIELD(&net_common_w, s8 *, NCO(3)) = 0;
+            M2C_FIELD(&net_common_w, s16 *, NCO(4)) = 0x14;
+            M2C_FIELD(&net_common_w, s8 *, NCO(0x7C)) = (s8) (M2C_FIELD(&net_common_w, s8 *, NCO(0x7C)) + 1);
+            M2C_FIELD(&net_common_w, s16 *, NCO(0x7A)) = McActAvailSet(data_load_ptr);
+            McActSave0Set(M2C_FIELD(&net_common_w, s8 *, NCO(0x79)), data_load_ptr, 1);
         }
         break;
     case 0x2:                                       /* switch 1 */
         Ncm_mssage_disp_req(8);
-        if (M2C_FIELD(&net_common_w, s16 *, 4) != 0) {
-            M2C_FIELD(&net_common_w, s16 *, 4) = (s16) (M2C_FIELD(&net_common_w, s16 *, 4) - 1);
+        if (M2C_FIELD(&net_common_w, s16 *, NCO(4)) != 0) {
+            M2C_FIELD(&net_common_w, s16 *, NCO(4)) = (s16) (M2C_FIELD(&net_common_w, s16 *, NCO(4)) - 1);
         } else {
             McActMain();
-            M2C_FIELD(&net_common_w, s16 *, 6) = McActResult();
-            switch (M2C_FIELD(&net_common_w, s16 *, 6)) { /* switch 2; irregular */
+            M2C_FIELD(&net_common_w, s16 *, NCO(6)) = McActResult();
+            switch (M2C_FIELD(&net_common_w, s16 *, NCO(6))) { /* switch 2; irregular */
             case 0:                                 /* switch 2 */
-                if (McActNewChk(M2C_FIELD(&net_common_w, s8 *, 0x79)) != 0) {
-                    M2C_FIELD(&net_common_w, s8 *, 0x7C) = 0x14;
-                    M2C_FIELD(&net_common_w, s16 *, 4) = 0x14;
+                if (McActNewChk(M2C_FIELD(&net_common_w, s8 *, NCO(0x79))) != 0) {
+                    M2C_FIELD(&net_common_w, s8 *, NCO(0x7C)) = 0x14;
+                    M2C_FIELD(&net_common_w, s16 *, NCO(4)) = 0x14;
                 } else if (save_data_load_game_for_net(0) != 0) {
-                    M2C_FIELD(&net_common_w, s16 *, 6) = -0x100;
+                    M2C_FIELD(&net_common_w, s16 *, NCO(6)) = -0x100;
                 default:                            /* switch 2 */
-                    M2C_FIELD(&net_common_w, s8 *, 0x7C) = 0x3C;
-                    M2C_FIELD(&net_common_w, s16 *, 4) = 0x14;
+                    M2C_FIELD(&net_common_w, s8 *, NCO(0x7C)) = 0x3C;
+                    M2C_FIELD(&net_common_w, s16 *, NCO(4)) = 0x14;
                 } else {
-                    M2C_FIELD(&net_common_w, s8 *, 0x7C) = 3;
-                    M2C_FIELD(&net_common_w, s16 *, 4) = 0x14;
+                    M2C_FIELD(&net_common_w, s8 *, NCO(0x7C)) = 3;
+                    M2C_FIELD(&net_common_w, s16 *, NCO(4)) = 0x14;
                 }
                 break;
             case -255:                              /* switch 2 */
-                M2C_FIELD(&net_common_w, s16 *, 4) = 0x14;
-                M2C_FIELD(&net_common_w, s8 *, 0x7C) = 0x1E;
+                M2C_FIELD(&net_common_w, s16 *, NCO(4)) = 0x14;
+                M2C_FIELD(&net_common_w, s8 *, NCO(0x7C)) = 0x1E;
                 break;
             case -254:                              /* switch 2 */
             case -253:                              /* switch 2 */
             case -252:                              /* switch 2 */
-                M2C_FIELD(&net_common_w, s8 *, 0x7C) = 0xA;
-                M2C_FIELD(&net_common_w, s16 *, 4) = 0x14;
+                M2C_FIELD(&net_common_w, s8 *, NCO(0x7C)) = 0xA;
+                M2C_FIELD(&net_common_w, s16 *, NCO(4)) = 0x14;
                 break;
             }
         }
         break;
     case 0x3:                                       /* switch 1 */
-        M2C_FIELD(&net_common_w, s8 *, 0x7C) = 4;
+        M2C_FIELD(&net_common_w, s8 *, NCO(0x7C)) = 4;
         save_data_store_sys_foe_net();
-        McActSaveSet(M2C_FIELD(&net_common_w, s8 *, 0x79), data_load_ptr);
+        McActSaveSet(M2C_FIELD(&net_common_w, s8 *, NCO(0x79)), data_load_ptr);
         break;
     case 0x4:                                       /* switch 1 */
         Ncm_mssage_disp_req(0x48);
         McActMain();
-        M2C_FIELD(&net_common_w, s16 *, 6) = McActResult();
-        switch (M2C_FIELD(&net_common_w, s16 *, 6)) { /* switch 3; irregular */
+        M2C_FIELD(&net_common_w, s16 *, NCO(6)) = McActResult();
+        switch (M2C_FIELD(&net_common_w, s16 *, NCO(6))) { /* switch 3; irregular */
         case -1:                                    /* switch 3 */
             break;
         case 0:                                     /* switch 3 */
-            M2C_FIELD(&net_common_w, s8 *, 0x7C) = 5;
+            M2C_FIELD(&net_common_w, s8 *, NCO(0x7C)) = 5;
             decode_data_for_net((void *)data_load_ptr);
             check_sum_set(&card_w);
             break;
         default:                                    /* switch 3 */
-            M2C_FIELD(&net_common_w, s8 *, 0x7D) = 0;
-            M2C_FIELD(&net_common_w, s8 *, 0x7C) = 0x3C;
+            M2C_FIELD(&net_common_w, s8 *, NCO(0x7D)) = 0;
+            M2C_FIELD(&net_common_w, s8 *, NCO(0x7C)) = 0x3C;
             break;
         }
         break;
     case 0x5:                                       /* switch 1 */
-        M2C_FIELD(&net_common_w, s8 *, 0x7C) = (s8) (temp_a0 + 1);
-        M2C_FIELD(&net_common_w, s16 *, 4) = 0x12C;
+        M2C_FIELD(&net_common_w, s8 *, NCO(0x7C)) = (s8) (temp_a0 + 1);
+        M2C_FIELD(&net_common_w, s16 *, NCO(4)) = 0x12C;
         M2C_FIELD(&system_w, s8 *, 0x3C) = 0;
         /* fallthrough */
     case 0x6:                                       /* switch 1 */
         Ncm_mssage_disp_req(0x49);
-        temp_v0 = M2C_FIELD(&net_common_w, s16 *, 4) - 1;
-        M2C_FIELD(&net_common_w, s16 *, 4) = temp_v0;
+        temp_v0 = M2C_FIELD(&net_common_w, s16 *, NCO(4)) - 1;
+        M2C_FIELD(&net_common_w, s16 *, NCO(4)) = temp_v0;
         if (((s16) temp_v0) < 0xF1) {
-            if (M2C_FIELD(&net_common_w, s16 *, 4) != 0) {
+            if (M2C_FIELD(&net_common_w, s16 *, NCO(4)) != 0) {
                 if (net_shot_ok_ck(2) != 0) {
                     goto block_60;
                 }
             } else {
 block_60:
-                M2C_FIELD(&net_common_w, s8 *, 0x7D) = 0;
-                M2C_FIELD(&net_common_w, s8 *, 0x7C) = 0x5A;
+                M2C_FIELD(&net_common_w, s8 *, NCO(0x7D)) = 0;
+                M2C_FIELD(&net_common_w, s8 *, NCO(0x7C)) = 0x5A;
             }
         }
         break;
     case 0xA:                                       /* switch 1 */
-        M2C_FIELD(&net_common_w, s8 *, 0x7C) = (s8) (temp_a0 + 1);
-        M2C_FIELD(&net_common_w, s16 *, 6) = 0x744;
+        M2C_FIELD(&net_common_w, s8 *, NCO(0x7C)) = (s8) (temp_a0 + 1);
+        M2C_FIELD(&net_common_w, s16 *, NCO(6)) = 0x744;
         M2C_FIELD(&system_w, s8 *, 0x3C) = 0;
         break;
     case 0xB:                                       /* switch 1 */
         Ncm_mssage_disp_req(0x4A);
         dialog_limit_disp(0);
         if (net_shot_ok_ck(2) != 0) {
-            M2C_FIELD(&net_common_w, s8 *, 0x7C) = 0x5B;
-        } else if (M2C_FIELD(&net_common_w, s16 *, 6) == 0) {
-            M2C_FIELD(&net_common_w, s8 *, 0x7C) = 0x5C;
+            M2C_FIELD(&net_common_w, s8 *, NCO(0x7C)) = 0x5B;
+        } else if (M2C_FIELD(&net_common_w, s16 *, NCO(6)) == 0) {
+            M2C_FIELD(&net_common_w, s8 *, NCO(0x7C)) = 0x5C;
         }
         break;
     case 0x14:                                      /* switch 1 */
-        M2C_FIELD(&net_common_w, s8 *, 0x7C) = (s8) (temp_a0 + 1);
-        M2C_FIELD(&net_common_w, s16 *, 6) = 0x744;
+        M2C_FIELD(&net_common_w, s8 *, NCO(0x7C)) = (s8) (temp_a0 + 1);
+        M2C_FIELD(&net_common_w, s16 *, NCO(6)) = 0x744;
         M2C_FIELD(&system_w, s8 *, 0x3C) = 0;
         break;
     case 0x15:                                      /* switch 1 */
         Ncm_mssage_disp_req(0x69);
         dialog_limit_disp(0);
         if (net_shot_ok_ck(2) != 0) {
-            M2C_FIELD(&net_common_w, s8 *, 0x7C) = 0x5B;
-        } else if (M2C_FIELD(&net_common_w, s16 *, 6) == 0) {
-            M2C_FIELD(&net_common_w, s8 *, 0x7C) = 0x5C;
+            M2C_FIELD(&net_common_w, s8 *, NCO(0x7C)) = 0x5B;
+        } else if (M2C_FIELD(&net_common_w, s16 *, NCO(6)) == 0) {
+            M2C_FIELD(&net_common_w, s8 *, NCO(0x7C)) = 0x5C;
         }
         break;
     case 0x1E:                                      /* switch 1 */
-        M2C_FIELD(&net_common_w, s8 *, 0x7C) = (s8) (temp_a0 + 1);
-        M2C_FIELD(&net_common_w, s16 *, 6) = 0x744;
+        M2C_FIELD(&net_common_w, s8 *, NCO(0x7C)) = (s8) (temp_a0 + 1);
+        M2C_FIELD(&net_common_w, s16 *, NCO(6)) = 0x744;
         M2C_FIELD(&system_w, s8 *, 0x3C) = 0;
         break;
     case 0x1F:                                      /* switch 1 */
         Ncm_mssage_disp_req(0x4B);
         dialog_limit_disp(0);
         if (net_shot_ok_ck(2) != 0) {
-            M2C_FIELD(&net_common_w, s8 *, 0x7C) = 0x5B;
-        } else if (M2C_FIELD(&net_common_w, s16 *, 6) == 0) {
-            M2C_FIELD(&net_common_w, s8 *, 0x7C) = 0x5C;
+            M2C_FIELD(&net_common_w, s8 *, NCO(0x7C)) = 0x5B;
+        } else if (M2C_FIELD(&net_common_w, s16 *, NCO(6)) == 0) {
+            M2C_FIELD(&net_common_w, s8 *, NCO(0x7C)) = 0x5C;
         }
         break;
     case 0x3C:                                      /* switch 1 */
-        M2C_FIELD(&net_common_w, s8 *, 0x7C) = (s8) (temp_a0 + 1);
-        M2C_FIELD(&net_common_w, s16 *, 6) = 0x744;
+        M2C_FIELD(&net_common_w, s8 *, NCO(0x7C)) = (s8) (temp_a0 + 1);
+        M2C_FIELD(&net_common_w, s16 *, NCO(6)) = 0x744;
         M2C_FIELD(&system_w, s8 *, 0x3C) = 0;
         break;
     case 0x3D:                                      /* switch 1 */
         Ncm_mssage_disp_req(0x4C);
         dialog_limit_disp(0);
         if (net_shot_ok_ck(2) != 0) {
-            M2C_FIELD(&net_common_w, s8 *, 0x7C) = 0x5B;
-        } else if (M2C_FIELD(&net_common_w, s16 *, 6) == 0) {
-            M2C_FIELD(&net_common_w, s8 *, 0x7C) = 0x5C;
+            M2C_FIELD(&net_common_w, s8 *, NCO(0x7C)) = 0x5B;
+        } else if (M2C_FIELD(&net_common_w, s16 *, NCO(6)) == 0) {
+            M2C_FIELD(&net_common_w, s8 *, NCO(0x7C)) = 0x5C;
         }
         break;
     case 0x5A:                                      /* switch 1 */
@@ -1438,8 +1438,8 @@ block_60:
         var_s0 = 1;
 block_90:
         M2C_FIELD(&system_w, s8 *, 0x3C) = 0;
-        M2C_FIELD(&net_common_w, s8 *, 0x7D) = 0;
-        M2C_FIELD(&net_common_w, s8 *, 0x7C) = 0;
+        M2C_FIELD(&net_common_w, s8 *, NCO(0x7D)) = 0;
+        M2C_FIELD(&net_common_w, s8 *, NCO(0x7C)) = 0;
         break;
     case 0x5B:                                      /* switch 1 */
         var_s0 = -1;
@@ -1453,17 +1453,17 @@ block_90:
 
 
 void dialog_open_set(s8 arg0, s8 arg1) {
-    M2C_FIELD(&net_common_w, s8 *, 0x7D) = arg0;
-    M2C_FIELD(&net_common_w, s8 *, 0x7E) = arg1;
-    M2C_FIELD(&net_common_w, s8 *, 0x7C) = 0x64;
-    M2C_FIELD(&net_common_w, s16 *, 4) = 8;
-    M2C_FIELD(&net_common_w, s16 *, 6) = 0x744;
+    M2C_FIELD(&net_common_w, s8 *, NCO(0x7D)) = arg0;
+    M2C_FIELD(&net_common_w, s8 *, NCO(0x7E)) = arg1;
+    M2C_FIELD(&net_common_w, s8 *, NCO(0x7C)) = 0x64;
+    M2C_FIELD(&net_common_w, s16 *, NCO(4)) = 8;
+    M2C_FIELD(&net_common_w, s16 *, NCO(6)) = 0x744;
 }
 
 
 void dialog_close_set(s8 arg0) {
-    M2C_FIELD(&net_common_w, s8 *, 0x7D) = arg0;
-    M2C_FIELD(&net_common_w, s8 *, 0x7C) = 0x6E;
+    M2C_FIELD(&net_common_w, s8 *, NCO(0x7D)) = arg0;
+    M2C_FIELD(&net_common_w, s8 *, NCO(0x7C)) = 0x6E;
 }
 
 
@@ -1485,11 +1485,11 @@ s32 arg1;
     u8 *temp_a0_2;
     u8 *temp_a2_3;
 
-    if (M2C_FIELD(&net_common_w, s16 *, 6) > 0) {
-        M2C_FIELD(&net_common_w, s16 *, 6) = (s16) (M2C_FIELD(&net_common_w, s16 *, 6) - 1);
+    if (M2C_FIELD(&net_common_w, s16 *, NCO(6)) > 0) {
+        M2C_FIELD(&net_common_w, s16 *, NCO(6)) = (s16) (M2C_FIELD(&net_common_w, s16 *, NCO(6)) - 1);
     }
-    temp_a2 = (u32) M2C_FIELD(&net_common_w, s16 *, 6) >> 0x1F;
-    temp_a0 = M2C_FIELD(&net_common_w, s16 *, 6) / 60;
+    temp_a2 = (u32) M2C_FIELD(&net_common_w, s16 *, NCO(6)) >> 0x1F;
+    temp_a0 = M2C_FIELD(&net_common_w, s16 *, NCO(6)) / 60;
     temp_a2_2 = temp_a0 + temp_a2;
     temp_v1 = ((temp_a0 + temp_a2) / 10) + (temp_a2_2 >> 0x1F);
     var_v0 = &sp28;
@@ -1503,7 +1503,7 @@ s32 arg1;
     M2C_FIELD(var_v0, s8 *, 0) = (s8) M2C_FIELD(temp_a2_3, s8 *, 0);
     M2C_FIELD(var_v0, s8 *, 1) = (s8) M2C_FIELD(temp_a2_3, s8 *, 1);
     M2C_FIELD(var_v0, s8 *, 2) = 0;
-    flfntSetSize(0x16, 0x16, temp_a2_3, M2C_FIELD(&net_common_w, s16 *, 6));
+    flfntSetSize(0x16, 0x16, temp_a2_3, M2C_FIELD(&net_common_w, s16 *, NCO(6)));
     temp_v1_2 = 0x280 - (((s16) strlen(&sp28)) * 0xB);
     var_v0_2 = temp_v1_2 >> 1;
     if (temp_v1_2 < 0) {
@@ -1529,17 +1529,17 @@ s32 arg1;
         flfntSetZ(0x44548000);
         return;
     case 2:
-        memset((net_common_w + 0x8D), 0, 5);
-        strcpy((net_common_w + 0x8D), &sp28);
-        M2C_FIELD(&net_common_w, s8 *, 0x8C) = 1;
+        memset((net_common_w + NCO(0x8D)), 0, 5);
+        strcpy((net_common_w + NCO(0x8D)), &sp28);
+        M2C_FIELD(&net_common_w, s8 *, NCO(0x8C)) = 1;
         return;
     }
 }
 
 
 void SaveNetFile_init(void) {
-    M2C_FIELD(&net_common_w, s8 *, 0x7C) = 0;
-    M2C_FIELD(&net_common_w, s8 *, 0x7D) = 0;
+    M2C_FIELD(&net_common_w, s8 *, NCO(0x7C)) = 0;
+    M2C_FIELD(&net_common_w, s8 *, NCO(0x7D)) = 0;
 }
 
 
@@ -1553,15 +1553,15 @@ s32 SaveNetFile_ForLobby(void) {
     s8 temp_a1;
 
     var_s0 = 0;
-    switch (M2C_FIELD(&net_common_w, s8 *, 0x7C)) { /* switch 1; irregular */
+    switch (M2C_FIELD(&net_common_w, s8 *, NCO(0x7C))) { /* switch 1; irregular */
     case 0x0:                                       /* switch 1 */
-        M2C_FIELD(&net_common_w, s8 *, 0x7C) = (s8) (M2C_FIELD(&net_common_w, s8 *, 0x7C) + 1);
-        M2C_FIELD(&net_common_w, s8 *, 3) = 0;
+        M2C_FIELD(&net_common_w, s8 *, NCO(0x7C)) = (s8) (M2C_FIELD(&net_common_w, s8 *, NCO(0x7C)) + 1);
+        M2C_FIELD(&net_common_w, s8 *, NCO(3)) = 0;
         Net_McWorkInit(2);
         Last_sel_drive = M2C_FIELD(&card_w, s32 *, 0x18);
-        M2C_FIELD(&net_common_w, u8 *, 0xD) = (u8) net_sel_drive;
-        M2C_FIELD(&net_common_w, u8 *, 0x79) = (u8) M2C_FIELD(&net_common_w, u8 *, 0xD);
-        M2C_FIELD(&card_w, s32 *, 0x18) = (s32) (s8) M2C_FIELD(&net_common_w, u8 *, 0x79);
+        M2C_FIELD(&net_common_w, u8 *, NCO(0xD)) = (u8) net_sel_drive;
+        M2C_FIELD(&net_common_w, u8 *, NCO(0x79)) = (u8) M2C_FIELD(&net_common_w, u8 *, NCO(0xD));
+        M2C_FIELD(&card_w, s32 *, 0x18) = (s32) (s8) M2C_FIELD(&net_common_w, u8 *, NCO(0x79));
         memset(data_load_ptr, 0, 0x1BEC);
         memcpy(data_load_ptr, &CNFile, 0x1BEC);
         dialog_open_set(1, 0x3A);
@@ -1569,19 +1569,19 @@ s32 SaveNetFile_ForLobby(void) {
     case 0x1:                                       /* switch 1 */
         *(s8 *)0x6B2A2C = 1;
         if (Net_Icon_Data_Load(0) != 0) {
-            M2C_FIELD(&net_common_w, s8 *, 3) = 0;
-            M2C_FIELD(&net_common_w, s16 *, 4) = 0x14;
-            temp_a1 = M2C_FIELD(&net_common_w, s8 *, 0x7C) + 1;
-            M2C_FIELD(&net_common_w, s8 *, 0x7C) = temp_a1;
-            M2C_FIELD(&net_common_w, s16 *, 0x7A) = McActAvailSet(data_load_ptr + 0x12000, temp_a1);
-            McActSave0Set(M2C_FIELD(&net_common_w, u8 *, 0xD), data_load_ptr, 0);
+            M2C_FIELD(&net_common_w, s8 *, NCO(3)) = 0;
+            M2C_FIELD(&net_common_w, s16 *, NCO(4)) = 0x14;
+            temp_a1 = M2C_FIELD(&net_common_w, s8 *, NCO(0x7C)) + 1;
+            M2C_FIELD(&net_common_w, s8 *, NCO(0x7C)) = temp_a1;
+            M2C_FIELD(&net_common_w, s16 *, NCO(0x7A)) = McActAvailSet(data_load_ptr + 0x12000, temp_a1);
+            McActSave0Set(M2C_FIELD(&net_common_w, u8 *, NCO(0xD)), data_load_ptr, 0);
         }
         break;
     case 0x2:                                       /* switch 1 */
         *(s8 *)0x6B2A2C = 1;
         McActMain();
-        M2C_FIELD(&net_common_w, s16 *, 0xA) = McActResult();
-        switch (M2C_FIELD(&net_common_w, s16 *, 0xA)) { /* switch 2; irregular */
+        M2C_FIELD(&net_common_w, s16 *, NCO(0xA)) = McActResult();
+        switch (M2C_FIELD(&net_common_w, s16 *, NCO(0xA))) { /* switch 2; irregular */
         case 0:                                     /* switch 2 */
             dialog_close_set(3);
             break;
@@ -1604,33 +1604,33 @@ s32 SaveNetFile_ForLobby(void) {
         memset(data_load_ptr, 0, 0x1BEC);
         memcpy(data_load_ptr, &CNFile, 0x1BEC);
         check_sum_set_cn_file(data_load_ptr);
-        McActSaveSet(M2C_FIELD(&net_common_w, u8 *, 0xD), data_load_ptr);
+        McActSaveSet(M2C_FIELD(&net_common_w, u8 *, NCO(0xD)), data_load_ptr);
         break;
     case 0x4:                                       /* switch 1 */
         *(s8 *)0x6B2A2C = 1;
         McActMain();
-        M2C_FIELD(&net_common_w, s16 *, 0xA) = McActResult();
-        if (M2C_FIELD(&net_common_w, s16 *, 0xA) != -1) {
+        M2C_FIELD(&net_common_w, s16 *, NCO(0xA)) = McActResult();
+        if (M2C_FIELD(&net_common_w, s16 *, NCO(0xA)) != -1) {
             dialog_close_set(5);
         }
         break;
     case 0x5:                                       /* switch 1 */
-        if (M2C_FIELD(&net_common_w, s16 *, 0xA) != 0) {
-            M2C_FIELD(&net_common_w, s8 *, 0x7C) = 0x3C;
-            M2C_FIELD(&net_common_w, s8 *, 0x7D) = 0;
+        if (M2C_FIELD(&net_common_w, s16 *, NCO(0xA)) != 0) {
+            M2C_FIELD(&net_common_w, s8 *, NCO(0x7C)) = 0x3C;
+            M2C_FIELD(&net_common_w, s8 *, NCO(0x7D)) = 0;
         } else {
             dialog_open_set(6, 0x3C);
         }
         break;
     case 0x6:                                       /* switch 1 */
-        M2C_FIELD(&net_common_w, s8 *, 0x7C) = (s8) (M2C_FIELD(&net_common_w, s8 *, 0x7C) + 1);
-        M2C_FIELD(&net_common_w, s16 *, 4) = 0x12C;
+        M2C_FIELD(&net_common_w, s8 *, NCO(0x7C)) = (s8) (M2C_FIELD(&net_common_w, s8 *, NCO(0x7C)) + 1);
+        M2C_FIELD(&net_common_w, s16 *, NCO(4)) = 0x12C;
         /* fallthrough */
     case 0x7:                                       /* switch 1 */
         *(s8 *)0x6B2A2C = 1;
-        temp_v0 = M2C_FIELD(&net_common_w, s16 *, 4) - 1;
-        M2C_FIELD(&net_common_w, s16 *, 4) = temp_v0;
-        if ((((s16) temp_v0) < 0xF1) && ((M2C_FIELD(&net_common_w, s16 *, 4) == 0) || (net_joy_ok_ck_each(0, 0x3C) != 0))) {
+        temp_v0 = M2C_FIELD(&net_common_w, s16 *, NCO(4)) - 1;
+        M2C_FIELD(&net_common_w, s16 *, NCO(4)) = temp_v0;
+        if ((((s16) temp_v0) < 0xF1) && ((M2C_FIELD(&net_common_w, s16 *, NCO(4)) == 0) || (net_joy_ok_ck_each(0, 0x3C) != 0))) {
             dialog_close_set(0x5A);
         }
         break;
@@ -1642,10 +1642,10 @@ s32 SaveNetFile_ForLobby(void) {
         *(s8 *)0x6B2A2C = 1;
         dialog_limit_disp(1, 0x3C);
         McActMain();
-        if (McActConChk(M2C_FIELD(&net_common_w, u8 *, 0xD)) != 0) {
+        if (McActConChk(M2C_FIELD(&net_common_w, u8 *, NCO(0xD))) != 0) {
             dialog_close_set(0);
         } else if (net_joy_ok_ck_each(0) == 0) {
-            if (M2C_FIELD(&net_common_w, s16 *, 6) == 0) {
+            if (M2C_FIELD(&net_common_w, s16 *, NCO(6)) == 0) {
                 goto block_65;
             }
         } else {
@@ -1657,10 +1657,10 @@ block_65:
         *(s8 *)0x6B2A2C = 1;
         dialog_limit_disp(1, 0x3C);
         McActMain();
-        if (McActConChk(M2C_FIELD(&net_common_w, u8 *, 0xD)) == 0) {
-            M2C_FIELD(&net_common_w, s8 *, 0x7C) = 0x1F;
+        if (McActConChk(M2C_FIELD(&net_common_w, u8 *, NCO(0xD))) == 0) {
+            M2C_FIELD(&net_common_w, s8 *, NCO(0x7C)) = 0x1F;
         } else if (net_joy_ok_ck_each(0) == 0) {
-            if (M2C_FIELD(&net_common_w, s16 *, 6) == 0) {
+            if (M2C_FIELD(&net_common_w, s16 *, NCO(6)) == 0) {
                 goto block_72;
             }
         } else {
@@ -1674,7 +1674,7 @@ block_72:
         *(s8 *)0x6B2A2C = 1;
         if (net_joy_ok_ck_each(0) != 0) {
             dialog_close_set(0x5B);
-        } else if (M2C_FIELD(&net_common_w, s16 *, 6) == 0) {
+        } else if (M2C_FIELD(&net_common_w, s16 *, NCO(6)) == 0) {
             dialog_close_set(0x5C);
         }
         break;
@@ -1688,8 +1688,8 @@ block_72:
     case 0x5A:                                      /* switch 1 */
         var_s0 = 1;
 block_83:
-        M2C_FIELD(&net_common_w, s8 *, 0x7D) = 0;
-        M2C_FIELD(&net_common_w, s8 *, 0x7C) = 0;
+        M2C_FIELD(&net_common_w, s8 *, NCO(0x7D)) = 0;
+        M2C_FIELD(&net_common_w, s8 *, NCO(0x7C)) = 0;
         M2C_FIELD(&card_w, s32 *, 0x18) = (s32) Last_sel_drive;
         break;
     case 0x5B:                                      /* switch 1 */
@@ -1699,49 +1699,49 @@ block_83:
         var_s0 = -1;
         goto block_83;
     case 0x64:                                      /* switch 1 */
-        M2C_FIELD(&net_common_w, s8 *, 0x7C) = (s8) (M2C_FIELD(&net_common_w, s8 *, 0x7C) + 1);
-        func_591BE0(M2C_FIELD(&net_common_w, s8 *, 0x7E), 0);
+        M2C_FIELD(&net_common_w, s8 *, NCO(0x7C)) = (s8) (M2C_FIELD(&net_common_w, s8 *, NCO(0x7C)) + 1);
+        func_591BE0(M2C_FIELD(&net_common_w, s8 *, NCO(0x7E)), 0);
         break;
     case 0x65:                                      /* switch 1 */
         *(s8 *)0x6B2A2C = 1;
-        temp_v0_2 = M2C_FIELD(&net_common_w, s16 *, 4) - 1;
-        M2C_FIELD(&net_common_w, s16 *, 4) = temp_v0_2;
+        temp_v0_2 = M2C_FIELD(&net_common_w, s16 *, NCO(4)) - 1;
+        M2C_FIELD(&net_common_w, s16 *, NCO(4)) = temp_v0_2;
         if (((s16) temp_v0_2) == 0) {
-            M2C_FIELD(&net_common_w, s8 *, 0x7C) = (s8) M2C_FIELD(&net_common_w, s8 *, 0x7D);
-            M2C_FIELD(&net_common_w, s8 *, 0x7D) = 0;
+            M2C_FIELD(&net_common_w, s8 *, NCO(0x7C)) = (s8) M2C_FIELD(&net_common_w, s8 *, NCO(0x7D));
+            M2C_FIELD(&net_common_w, s8 *, NCO(0x7D)) = 0;
         }
         break;
     case 0x6E:                                      /* switch 1 */
-        M2C_FIELD(&net_common_w, s8 *, 0x7C) = (s8) (M2C_FIELD(&net_common_w, s8 *, 0x7C) + 1);
-        M2C_FIELD(&net_common_w, s16 *, 4) = 8;
+        M2C_FIELD(&net_common_w, s8 *, NCO(0x7C)) = (s8) (M2C_FIELD(&net_common_w, s8 *, NCO(0x7C)) + 1);
+        M2C_FIELD(&net_common_w, s16 *, NCO(4)) = 8;
         break;
     case 0x6F:                                      /* switch 1 */
-        temp_v0_3 = M2C_FIELD(&net_common_w, s16 *, 4) - 1;
-        M2C_FIELD(&net_common_w, s16 *, 4) = temp_v0_3;
+        temp_v0_3 = M2C_FIELD(&net_common_w, s16 *, NCO(4)) - 1;
+        M2C_FIELD(&net_common_w, s16 *, NCO(4)) = temp_v0_3;
         if (((s16) temp_v0_3) == 0) {
-            M2C_FIELD(&net_common_w, s8 *, 0x7C) = (s8) M2C_FIELD(&net_common_w, s8 *, 0x7D);
-            M2C_FIELD(&net_common_w, s8 *, 0x7D) = 0;
+            M2C_FIELD(&net_common_w, s8 *, NCO(0x7C)) = (s8) M2C_FIELD(&net_common_w, s8 *, NCO(0x7D));
+            M2C_FIELD(&net_common_w, s8 *, NCO(0x7D)) = 0;
         }
         break;
     case 0x78:                                      /* switch 1 */
-        M2C_FIELD(&net_common_w, s8 *, 0x7C) = (s8) (M2C_FIELD(&net_common_w, s8 *, 0x7C) + 1);
+        M2C_FIELD(&net_common_w, s8 *, NCO(0x7C)) = (s8) (M2C_FIELD(&net_common_w, s8 *, NCO(0x7C)) + 1);
         break;
     case 0x79:                                      /* switch 1 */
-        temp_v0_4 = M2C_FIELD(&net_common_w, s16 *, 4) - 1;
-        M2C_FIELD(&net_common_w, s16 *, 4) = temp_v0_4;
+        temp_v0_4 = M2C_FIELD(&net_common_w, s16 *, NCO(4)) - 1;
+        M2C_FIELD(&net_common_w, s16 *, NCO(4)) = temp_v0_4;
         if (((s16) temp_v0_4) == 0) {
-            M2C_FIELD(&net_common_w, s8 *, 0x7C) = (s8) M2C_FIELD(&net_common_w, s8 *, 0x7D);
-            M2C_FIELD(&net_common_w, s8 *, 0x7D) = 0;
+            M2C_FIELD(&net_common_w, s8 *, NCO(0x7C)) = (s8) M2C_FIELD(&net_common_w, s8 *, NCO(0x7D));
+            M2C_FIELD(&net_common_w, s8 *, NCO(0x7D)) = 0;
         }
         break;
     case 0x82:                                      /* switch 1 */
-        M2C_FIELD(&net_common_w, s8 *, 0x7C) = (s8) (M2C_FIELD(&net_common_w, s8 *, 0x7C) + 1);
+        M2C_FIELD(&net_common_w, s8 *, NCO(0x7C)) = (s8) (M2C_FIELD(&net_common_w, s8 *, NCO(0x7C)) + 1);
         break;
     case 0x83:                                      /* switch 1 */
-        temp_v0_5 = M2C_FIELD(&net_common_w, s16 *, 4) - 1;
-        M2C_FIELD(&net_common_w, s16 *, 4) = temp_v0_5;
+        temp_v0_5 = M2C_FIELD(&net_common_w, s16 *, NCO(4)) - 1;
+        M2C_FIELD(&net_common_w, s16 *, NCO(4)) = temp_v0_5;
         if (((s16) temp_v0_5) == 0) {
-            M2C_FIELD(&net_common_w, s8 *, 0x7C) = 0x6E;
+            M2C_FIELD(&net_common_w, s8 *, NCO(0x7C)) = 0x6E;
         }
         break;
     }
@@ -1759,79 +1759,79 @@ s32 SaveNetFileBr(void) {
     s8 temp_a1;
     s8 temp_a1_2;
 
-    temp_a1 = M2C_FIELD(&net_common_w, s8 *, 0x7C);
+    temp_a1 = M2C_FIELD(&net_common_w, s8 *, NCO(0x7C));
     var_s0 = 0;
     switch (temp_a1) {                              /* switch 1; irregular */
     case 0x0:                                       /* switch 1 */
-        M2C_FIELD(&net_common_w, s8 *, 3) = 0;
+        M2C_FIELD(&net_common_w, s8 *, NCO(3)) = 0;
         Net_McWorkInit(2);
-        M2C_FIELD(&net_common_w, s8 *, 0x8C) = 0;
-        M2C_FIELD(&net_common_w, u8 *, 0xD) = (u8) net_sel_drive;
-        M2C_FIELD(&net_common_w, u8 *, 0x79) = (u8) M2C_FIELD(&net_common_w, u8 *, 0xD);
+        M2C_FIELD(&net_common_w, s8 *, NCO(0x8C)) = 0;
+        M2C_FIELD(&net_common_w, u8 *, NCO(0xD)) = (u8) net_sel_drive;
+        M2C_FIELD(&net_common_w, u8 *, NCO(0x79)) = (u8) M2C_FIELD(&net_common_w, u8 *, NCO(0xD));
         dialog_open_set(1, 0x1D);
         break;
     case 0x1:                                       /* switch 1 */
         if (Net_Icon_Data_Load(0) != 0) {
-            M2C_FIELD(&net_common_w, s8 *, 0x7D) = 0;
-            temp_a1_2 = M2C_FIELD(&net_common_w, s8 *, 0x7C) + 1;
-            M2C_FIELD(&net_common_w, s8 *, 0x7C) = temp_a1_2;
-            M2C_FIELD(&net_common_w, s16 *, 0x7A) = McActAvailSet(data_load_ptr + 0x12000, temp_a1_2);
-            McActSave0Set(M2C_FIELD(&net_common_w, u8 *, 0xD), data_load_ptr, 0);
+            M2C_FIELD(&net_common_w, s8 *, NCO(0x7D)) = 0;
+            temp_a1_2 = M2C_FIELD(&net_common_w, s8 *, NCO(0x7C)) + 1;
+            M2C_FIELD(&net_common_w, s8 *, NCO(0x7C)) = temp_a1_2;
+            M2C_FIELD(&net_common_w, s16 *, NCO(0x7A)) = McActAvailSet(data_load_ptr + 0x12000, temp_a1_2);
+            McActSave0Set(M2C_FIELD(&net_common_w, u8 *, NCO(0xD)), data_load_ptr, 0);
         }
         break;
     case 0x2:                                       /* switch 1 */
         McActMain();
-        M2C_FIELD(&net_common_w, s16 *, 0xA) = McActResult();
-        switch (M2C_FIELD(&net_common_w, s16 *, 0xA)) { /* switch 2; irregular */
+        M2C_FIELD(&net_common_w, s16 *, NCO(0xA)) = McActResult();
+        switch (M2C_FIELD(&net_common_w, s16 *, NCO(0xA))) { /* switch 2; irregular */
         case 0:                                     /* switch 2 */
-            M2C_FIELD(&net_common_w, s8 *, 0x7C) = (s8) (M2C_FIELD(&net_common_w, s8 *, 0x7C) + 1);
+            M2C_FIELD(&net_common_w, s8 *, NCO(0x7C)) = (s8) (M2C_FIELD(&net_common_w, s8 *, NCO(0x7C)) + 1);
             break;
         case -251:                                  /* switch 2 */
         case -256:                                  /* switch 2 */
-            M2C_FIELD(&net_common_w, s8 *, 0x7C) = 0x3C;
+            M2C_FIELD(&net_common_w, s8 *, NCO(0x7C)) = 0x3C;
             break;
         case -255:                                  /* switch 2 */
-            M2C_FIELD(&net_common_w, s8 *, 0x7C) = 0x1E;
+            M2C_FIELD(&net_common_w, s8 *, NCO(0x7C)) = 0x1E;
             break;
         case -254:                                  /* switch 2 */
         case -253:                                  /* switch 2 */
         case -252:                                  /* switch 2 */
-            M2C_FIELD(&net_common_w, s8 *, 0x7C) = 0x46;
+            M2C_FIELD(&net_common_w, s8 *, NCO(0x7C)) = 0x46;
             break;
         }
-        M2C_FIELD(&net_common_w, s8 *, 0x7D) = 0;
+        M2C_FIELD(&net_common_w, s8 *, NCO(0x7D)) = 0;
         break;
     case 0x3:                                       /* switch 1 */
         dialog_open_set(4, 0x31);
         memset(data_load_ptr, 0, 0x1BEC);
         memcpy(data_load_ptr, &CNFile, 0x1BEC);
         check_sum_set_cn_file(data_load_ptr);
-        McActSaveSet(M2C_FIELD(&net_common_w, u8 *, 0xD), data_load_ptr);
+        McActSaveSet(M2C_FIELD(&net_common_w, u8 *, NCO(0xD)), data_load_ptr);
         break;
     case 0x4:                                       /* switch 1 */
         McActMain();
-        M2C_FIELD(&net_common_w, s16 *, 0xA) = McActResult();
-        if (M2C_FIELD(&net_common_w, s16 *, 0xA) != -1) {
+        M2C_FIELD(&net_common_w, s16 *, NCO(0xA)) = McActResult();
+        if (M2C_FIELD(&net_common_w, s16 *, NCO(0xA)) != -1) {
             dialog_close_set(5);
         }
         break;
     case 0x5:                                       /* switch 1 */
-        if (M2C_FIELD(&net_common_w, s16 *, 0xA) != 0) {
-            M2C_FIELD(&net_common_w, s8 *, 0x7C) = 0x3C;
-            M2C_FIELD(&net_common_w, s8 *, 0x7D) = 0;
+        if (M2C_FIELD(&net_common_w, s16 *, NCO(0xA)) != 0) {
+            M2C_FIELD(&net_common_w, s8 *, NCO(0x7C)) = 0x3C;
+            M2C_FIELD(&net_common_w, s8 *, NCO(0x7D)) = 0;
         } else {
             dialog_open_set(6, 0x32);
         }
         break;
     case 0x6:                                       /* switch 1 */
-        M2C_FIELD(&net_common_w, s8 *, 0x7C) = (s8) (temp_a1 + 1);
-        M2C_FIELD(&net_common_w, s16 *, 4) = 0x12C;
+        M2C_FIELD(&net_common_w, s8 *, NCO(0x7C)) = (s8) (temp_a1 + 1);
+        M2C_FIELD(&net_common_w, s16 *, NCO(4)) = 0x12C;
         /* fallthrough */
     case 0x7:                                       /* switch 1 */
-        temp_v0 = M2C_FIELD(&net_common_w, s16 *, 4) - 1;
-        M2C_FIELD(&net_common_w, s16 *, 4) = temp_v0;
+        temp_v0 = M2C_FIELD(&net_common_w, s16 *, NCO(4)) - 1;
+        M2C_FIELD(&net_common_w, s16 *, NCO(4)) = temp_v0;
         if (((s16) temp_v0) < 0xF1) {
-            if (M2C_FIELD(&net_common_w, s16 *, 4) != 0) {
+            if (M2C_FIELD(&net_common_w, s16 *, NCO(4)) != 0) {
                 if (net_shot_ok_ck(2, temp_a1) != 0) {
                     goto block_59;
                 }
@@ -1848,10 +1848,10 @@ block_59:
     case 0x1F:                                      /* switch 1 */
         dialog_limit_disp(2, temp_a1);
         McActMain();
-        if (McActConChk((s8) M2C_FIELD(&net_common_w, u8 *, 0x79)) != 0) {
+        if (McActConChk((s8) M2C_FIELD(&net_common_w, u8 *, NCO(0x79))) != 0) {
             dialog_close_set(0);
         } else if (net_shot_ok_ck(2) == 0) {
-            if (M2C_FIELD(&net_common_w, s16 *, 6) == 0) {
+            if (M2C_FIELD(&net_common_w, s16 *, NCO(6)) == 0) {
                 goto block_67;
             }
         } else {
@@ -1866,7 +1866,7 @@ block_67:
         dialog_limit_disp(2, temp_a1);
         if (net_shot_ok_ck(2) != 0) {
             dialog_close_set(0x5B);
-        } else if (M2C_FIELD(&net_common_w, s16 *, 6) == 0) {
+        } else if (M2C_FIELD(&net_common_w, s16 *, NCO(6)) == 0) {
             dialog_close_set(0x5C);
         }
         break;
@@ -1877,10 +1877,10 @@ block_67:
     case 0x47:                                      /* switch 1 */
         dialog_limit_disp(2, temp_a1);
         McActMain();
-        if (McActConChk((s8) M2C_FIELD(&net_common_w, u8 *, 0x79)) == 0) {
+        if (McActConChk((s8) M2C_FIELD(&net_common_w, u8 *, NCO(0x79))) == 0) {
             dialog_close_set(0x1F);
         } else if (net_shot_ok_ck(2) == 0) {
-            if (M2C_FIELD(&net_common_w, s16 *, 6) == 0) {
+            if (M2C_FIELD(&net_common_w, s16 *, NCO(6)) == 0) {
                 goto block_80;
             }
         } else {
@@ -1891,10 +1891,10 @@ block_80:
     case 0x5A:                                      /* switch 1 */
         var_s0 = 1;
 block_82:
-        M2C_FIELD(&net_common_w, s8 *, 0x7D) = 0;
-        M2C_FIELD(&net_common_w, s8 *, 0x7C) = 0;
-        M2C_FIELD(&net_common_w, s16 *, 4) = 0;
-        M2C_FIELD(&net_common_w, s16 *, 6) = 0;
+        M2C_FIELD(&net_common_w, s8 *, NCO(0x7D)) = 0;
+        M2C_FIELD(&net_common_w, s8 *, NCO(0x7C)) = 0;
+        M2C_FIELD(&net_common_w, s16 *, NCO(4)) = 0;
+        M2C_FIELD(&net_common_w, s16 *, NCO(6)) = 0;
         break;
     case 0x5B:                                      /* switch 1 */
         var_s0 = -1;
@@ -1903,51 +1903,51 @@ block_82:
         var_s0 = -1;
         goto block_82;
     case 0x64:                                      /* switch 1 */
-        M2C_FIELD(&net_common_w, s8 *, 0x7C) = (s8) (temp_a1 + 1);
-        func_5E5D20(mc_bs_chg(M2C_FIELD(&net_common_w, s8 *, 0x7E)));
+        M2C_FIELD(&net_common_w, s8 *, NCO(0x7C)) = (s8) (temp_a1 + 1);
+        func_5E5D20(mc_bs_chg(M2C_FIELD(&net_common_w, s8 *, NCO(0x7E))));
         break;
     case 0x65:                                      /* switch 1 */
-        temp_v0_2 = M2C_FIELD(&net_common_w, s16 *, 4) - 1;
-        M2C_FIELD(&net_common_w, s16 *, 4) = temp_v0_2;
+        temp_v0_2 = M2C_FIELD(&net_common_w, s16 *, NCO(4)) - 1;
+        M2C_FIELD(&net_common_w, s16 *, NCO(4)) = temp_v0_2;
         if (((s16) temp_v0_2) == 0) {
-            M2C_FIELD(&net_common_w, s8 *, 0x7C) = (s8) M2C_FIELD(&net_common_w, s8 *, 0x7D);
-            M2C_FIELD(&net_common_w, s8 *, 0x7D) = 0;
+            M2C_FIELD(&net_common_w, s8 *, NCO(0x7C)) = (s8) M2C_FIELD(&net_common_w, s8 *, NCO(0x7D));
+            M2C_FIELD(&net_common_w, s8 *, NCO(0x7D)) = 0;
         }
         break;
     case 0x6E:                                      /* switch 1 */
-        M2C_FIELD(&net_common_w, s8 *, 0x7C) = (s8) (temp_a1 + 1);
-        M2C_FIELD(&net_common_w, s16 *, 4) = 8;
+        M2C_FIELD(&net_common_w, s8 *, NCO(0x7C)) = (s8) (temp_a1 + 1);
+        M2C_FIELD(&net_common_w, s16 *, NCO(4)) = 8;
         func_5E5D30(temp_a1);
-        M2C_FIELD(&net_common_w, s8 *, 0x7E) = 0;
+        M2C_FIELD(&net_common_w, s8 *, NCO(0x7E)) = 0;
         break;
     case 0x6F:                                      /* switch 1 */
-        temp_v0_3 = M2C_FIELD(&net_common_w, s16 *, 4) - 1;
-        M2C_FIELD(&net_common_w, s16 *, 4) = temp_v0_3;
+        temp_v0_3 = M2C_FIELD(&net_common_w, s16 *, NCO(4)) - 1;
+        M2C_FIELD(&net_common_w, s16 *, NCO(4)) = temp_v0_3;
         if (((s16) temp_v0_3) == 0) {
-            M2C_FIELD(&net_common_w, s8 *, 0x7C) = (s8) M2C_FIELD(&net_common_w, s8 *, 0x7D);
-            M2C_FIELD(&net_common_w, s8 *, 0x7D) = 0;
+            M2C_FIELD(&net_common_w, s8 *, NCO(0x7C)) = (s8) M2C_FIELD(&net_common_w, s8 *, NCO(0x7D));
+            M2C_FIELD(&net_common_w, s8 *, NCO(0x7D)) = 0;
         }
         break;
     case 0x78:                                      /* switch 1 */
-        M2C_FIELD(&net_common_w, s8 *, 0x7C) = (s8) (temp_a1 + 1);
+        M2C_FIELD(&net_common_w, s8 *, NCO(0x7C)) = (s8) (temp_a1 + 1);
         break;
     case 0x79:                                      /* switch 1 */
-        temp_v0_4 = M2C_FIELD(&net_common_w, s16 *, 4) - 1;
-        M2C_FIELD(&net_common_w, s16 *, 4) = temp_v0_4;
+        temp_v0_4 = M2C_FIELD(&net_common_w, s16 *, NCO(4)) - 1;
+        M2C_FIELD(&net_common_w, s16 *, NCO(4)) = temp_v0_4;
         if (((s16) temp_v0_4) == 0) {
-            M2C_FIELD(&net_common_w, s8 *, 0x7C) = (s8) M2C_FIELD(&net_common_w, s8 *, 0x7D);
-            M2C_FIELD(&net_common_w, s8 *, 0x7D) = 0;
+            M2C_FIELD(&net_common_w, s8 *, NCO(0x7C)) = (s8) M2C_FIELD(&net_common_w, s8 *, NCO(0x7D));
+            M2C_FIELD(&net_common_w, s8 *, NCO(0x7D)) = 0;
         }
         break;
     case 0x82:                                      /* switch 1 */
-        M2C_FIELD(&net_common_w, s8 *, 0x7C) = (s8) (temp_a1 + 1);
-        M2C_FIELD(&net_common_w, s8 *, 0x7E) = 0;
+        M2C_FIELD(&net_common_w, s8 *, NCO(0x7C)) = (s8) (temp_a1 + 1);
+        M2C_FIELD(&net_common_w, s8 *, NCO(0x7E)) = 0;
         break;
     case 0x83:                                      /* switch 1 */
-        temp_v0_5 = M2C_FIELD(&net_common_w, s16 *, 4) - 1;
-        M2C_FIELD(&net_common_w, s16 *, 4) = temp_v0_5;
+        temp_v0_5 = M2C_FIELD(&net_common_w, s16 *, NCO(4)) - 1;
+        M2C_FIELD(&net_common_w, s16 *, NCO(4)) = temp_v0_5;
         if (((s16) temp_v0_5) == 0) {
-            M2C_FIELD(&net_common_w, s8 *, 0x7C) = 0x6E;
+            M2C_FIELD(&net_common_w, s8 *, NCO(0x7C)) = 0x6E;
         }
         break;
     }
@@ -2101,14 +2101,14 @@ s32 NetAutoLoad(void) {
     s32 var_s0;
 
     var_s0 = 0;
-    switch (M2C_FIELD(&net_common_w, u8 *, 2)) {    /* switch 1; irregular */
+    switch (M2C_FIELD(&net_common_w, u8 *, NCO(2))) {    /* switch 1; irregular */
     case 0:                                         /* switch 1 */
-        M2C_FIELD(&net_common_w, s16 *, 4) = 0x14;
-        M2C_FIELD(&net_common_w, s8 *, 3) = 0;
+        M2C_FIELD(&net_common_w, s16 *, NCO(4)) = 0x14;
+        M2C_FIELD(&net_common_w, s8 *, NCO(3)) = 0;
         err_status_no_card = 0;
-        M2C_FIELD(&net_common_w, u8 *, 2) = (u8) (M2C_FIELD(&net_common_w, u8 *, 2) + 1);
+        M2C_FIELD(&net_common_w, u8 *, NCO(2)) = (u8) (M2C_FIELD(&net_common_w, u8 *, NCO(2)) + 1);
         err_status_no_file = 0;
-        M2C_FIELD(&net_common_w, s8 *, 0x79) = 0;
+        M2C_FIELD(&net_common_w, s8 *, NCO(0x79)) = 0;
         err_status_ng_err = 0;
         McActInit(0);
         M2C_FIELD(&system_w, s8 *, 0x3C) = 1;
@@ -2117,105 +2117,105 @@ block_118:
         return var_s0;
     case 1:                                         /* switch 1 */
         Ncm_mssage_disp_req(0x5F);
-        temp_v0 = M2C_FIELD(&net_common_w, s16 *, 4) - 1;
-        M2C_FIELD(&net_common_w, s16 *, 4) = temp_v0;
+        temp_v0 = M2C_FIELD(&net_common_w, s16 *, NCO(4)) - 1;
+        M2C_FIELD(&net_common_w, s16 *, NCO(4)) = temp_v0;
         if (((s16) temp_v0) > 0) {
-            M2C_FIELD(&net_common_w, u8 *, 2) = (u8) (M2C_FIELD(&net_common_w, u8 *, 2) + 1);
-            McActSave0Set(M2C_FIELD(&net_common_w, s8 *, 0x79), data_load_ptr, 1);
+            M2C_FIELD(&net_common_w, u8 *, NCO(2)) = (u8) (M2C_FIELD(&net_common_w, u8 *, NCO(2)) + 1);
+            McActSave0Set(M2C_FIELD(&net_common_w, s8 *, NCO(0x79)), data_load_ptr, 1);
         }
         goto block_118;
     case 2:                                         /* switch 1 */
         Ncm_mssage_disp_req(0x5F);
         McActMain();
-        M2C_FIELD(&net_common_w, s16 *, 6) = McActResult();
-        switch (M2C_FIELD(&net_common_w, s16 *, 6)) { /* switch 2; irregular */
+        M2C_FIELD(&net_common_w, s16 *, NCO(6)) = McActResult();
+        switch (M2C_FIELD(&net_common_w, s16 *, NCO(6))) { /* switch 2; irregular */
         case 0:                                     /* switch 2 */
         case -251:                                  /* switch 2 */
-            M2C_FIELD(&net_common_w, s16 *, 4) = 0x14;
-            M2C_FIELD(&net_common_w, u8 *, 2) = (u8) (M2C_FIELD(&net_common_w, u8 *, 2) + 1);
+            M2C_FIELD(&net_common_w, s16 *, NCO(4)) = 0x14;
+            M2C_FIELD(&net_common_w, u8 *, NCO(2)) = (u8) (M2C_FIELD(&net_common_w, u8 *, NCO(2)) + 1);
             /* fallthrough */
         case -1:                                    /* switch 2 */
             return 0;
         case -255:                                  /* switch 2 */
-            err_status_no_card |= (s8) (1 << M2C_FIELD(&net_common_w, s8 *, 0x79));
+            err_status_no_card |= (s8) (1 << M2C_FIELD(&net_common_w, s8 *, NCO(0x79)));
         default:                                    /* switch 2 */
 block_37:
-            if (M2C_FIELD(&net_common_w, s8 *, 0x79) == 0) {
-                M2C_FIELD(&net_common_w, s8 *, 0x79) = (s8) (M2C_FIELD(&net_common_w, s8 *, 0x79) + 1);
-                M2C_FIELD(&net_common_w, u8 *, 2) = 1U;
-                M2C_FIELD(&net_common_w, s16 *, 4) = 0xA;
+            if (M2C_FIELD(&net_common_w, s8 *, NCO(0x79)) == 0) {
+                M2C_FIELD(&net_common_w, s8 *, NCO(0x79)) = (s8) (M2C_FIELD(&net_common_w, s8 *, NCO(0x79)) + 1);
+                M2C_FIELD(&net_common_w, u8 *, NCO(2)) = 1U;
+                M2C_FIELD(&net_common_w, s16 *, NCO(4)) = 0xA;
             } else if (err_status_no_card == 3) {
-                M2C_FIELD(&net_common_w, u8 *, 2) = 0xAU;
-                M2C_FIELD(&net_common_w, s16 *, 4) = 0x14;
+                M2C_FIELD(&net_common_w, u8 *, NCO(2)) = 0xAU;
+                M2C_FIELD(&net_common_w, s16 *, NCO(4)) = 0x14;
             } else if ((err_status_no_card | err_status_no_file) == 3) {
-                M2C_FIELD(&net_common_w, u8 *, 2) = 0x14U;
-                M2C_FIELD(&net_common_w, s16 *, 4) = 0x14;
+                M2C_FIELD(&net_common_w, u8 *, NCO(2)) = 0x14U;
+                M2C_FIELD(&net_common_w, s16 *, NCO(4)) = 0x14;
             } else {
-                M2C_FIELD(&net_common_w, u8 *, 2) = 0x28U;
-                M2C_FIELD(&net_common_w, s16 *, 4) = 0x14;
-                M2C_FIELD(&net_common_w, s8 *, 0x79) = (s8) ((err_status_ng_err & 1) == 0);
+                M2C_FIELD(&net_common_w, u8 *, NCO(2)) = 0x28U;
+                M2C_FIELD(&net_common_w, s16 *, NCO(4)) = 0x14;
+                M2C_FIELD(&net_common_w, s8 *, NCO(0x79)) = (s8) ((err_status_ng_err & 1) == 0);
             }
             goto block_118;
         case -252:                                  /* switch 2 */
         case -253:                                  /* switch 2 */
         case -254:                                  /* switch 2 */
-            err_status_no_file |= (s8) (1 << M2C_FIELD(&net_common_w, s8 *, 0x79));
+            err_status_no_file |= (s8) (1 << M2C_FIELD(&net_common_w, s8 *, NCO(0x79)));
             goto block_37;
         case -256:                                  /* switch 2 */
-            err_status_ng_err |= (s8) (1 << M2C_FIELD(&net_common_w, s8 *, 0x79));
+            err_status_ng_err |= (s8) (1 << M2C_FIELD(&net_common_w, s8 *, NCO(0x79)));
             goto block_37;
         }
         break;
     case 3:                                         /* switch 1 */
         Ncm_mssage_disp_req(0x60);
-        temp_v0_2 = M2C_FIELD(&net_common_w, s16 *, 4) - 1;
-        M2C_FIELD(&net_common_w, s16 *, 4) = temp_v0_2;
+        temp_v0_2 = M2C_FIELD(&net_common_w, s16 *, NCO(4)) - 1;
+        M2C_FIELD(&net_common_w, s16 *, NCO(4)) = temp_v0_2;
         if (((s16) temp_v0_2) > 0) {
-            M2C_FIELD(&net_common_w, u8 *, 2) = (u8) (M2C_FIELD(&net_common_w, u8 *, 2) + 1);
-            McActLoadSet(M2C_FIELD(&net_common_w, s8 *, 0x79), data_load_ptr);
+            M2C_FIELD(&net_common_w, u8 *, NCO(2)) = (u8) (M2C_FIELD(&net_common_w, u8 *, NCO(2)) + 1);
+            McActLoadSet(M2C_FIELD(&net_common_w, s8 *, NCO(0x79)), data_load_ptr);
         }
         goto block_118;
     case 4:                                         /* switch 1 */
         McActMain();
-        M2C_FIELD(&net_common_w, s16 *, 6) = McActResult();
-        switch (M2C_FIELD(&net_common_w, s16 *, 6)) { /* switch 3; irregular */
+        M2C_FIELD(&net_common_w, s16 *, NCO(6)) = McActResult();
+        switch (M2C_FIELD(&net_common_w, s16 *, NCO(6))) { /* switch 3; irregular */
         case 0:                                     /* switch 3 */
             if (save_data_load_game_for_net(1) == 0) {
                 M2C_FIELD(&system_w, s8 *, 0x3C) = 0;
-                M2C_FIELD(&net_common_w, s16 *, 4) = 0x12C;
-                Last_sel_drive = (s32) M2C_FIELD(&net_common_w, s8 *, 0x79);
-                M2C_FIELD(&net_common_w, u8 *, 2) = (u8) (M2C_FIELD(&net_common_w, u8 *, 2) + 1);
+                M2C_FIELD(&net_common_w, s16 *, NCO(4)) = 0x12C;
+                Last_sel_drive = (s32) M2C_FIELD(&net_common_w, s8 *, NCO(0x79));
+                M2C_FIELD(&net_common_w, u8 *, NCO(2)) = (u8) (M2C_FIELD(&net_common_w, u8 *, NCO(2)) + 1);
             case -1:                                /* switch 3 */
                 return 0;
             }
         case -256:                                  /* switch 3 */
-            M2C_FIELD(&net_common_w, u8 *, 2) = 0x1EU;
-            M2C_FIELD(&net_common_w, s16 *, 4) = 0x14;
+            M2C_FIELD(&net_common_w, u8 *, NCO(2)) = 0x1EU;
+            M2C_FIELD(&net_common_w, s16 *, NCO(4)) = 0x14;
             goto block_118;
         case -255:                                  /* switch 3 */
-            M2C_FIELD(&net_common_w, u8 *, 2) = 0xAU;
-            M2C_FIELD(&net_common_w, s16 *, 4) = 0x14;
+            M2C_FIELD(&net_common_w, u8 *, NCO(2)) = 0xAU;
+            M2C_FIELD(&net_common_w, s16 *, NCO(4)) = 0x14;
             goto block_118;
         case -252:                                  /* switch 3 */
         case -253:                                  /* switch 3 */
         case -254:                                  /* switch 3 */
-            M2C_FIELD(&net_common_w, u8 *, 2) = 0x14U;
-            M2C_FIELD(&net_common_w, s16 *, 4) = 0x14;
+            M2C_FIELD(&net_common_w, u8 *, NCO(2)) = 0x14U;
+            M2C_FIELD(&net_common_w, s16 *, NCO(4)) = 0x14;
             goto block_118;
         }
         break;
     case 5:                                         /* switch 1 */
         Ncm_mssage_disp_req(0x61);
-        temp_v0_3 = M2C_FIELD(&net_common_w, s16 *, 4) - 1;
-        M2C_FIELD(&net_common_w, s16 *, 4) = temp_v0_3;
+        temp_v0_3 = M2C_FIELD(&net_common_w, s16 *, NCO(4)) - 1;
+        M2C_FIELD(&net_common_w, s16 *, NCO(4)) = temp_v0_3;
         if (((s16) temp_v0_3) <= 0) {
             M2C_FIELD(&system_w, s8 *, 0x3C) = 0;
-            M2C_FIELD(&net_common_w, u8 *, 2) = (u8) (M2C_FIELD(&net_common_w, u8 *, 2) + 1);
-        } else if (M2C_FIELD(&net_common_w, s16 *, 4) < 0xF0) {
+            M2C_FIELD(&net_common_w, u8 *, NCO(2)) = (u8) (M2C_FIELD(&net_common_w, u8 *, NCO(2)) + 1);
+        } else if (M2C_FIELD(&net_common_w, s16 *, NCO(4)) < 0xF0) {
             Ncm_mssage_disp_option_req(0x61);
             if (net_shot_ok_ck(2) != 0) {
                 M2C_FIELD(&system_w, s8 *, 0x3C) = 0;
-                M2C_FIELD(&net_common_w, u8 *, 2) = (u8) (M2C_FIELD(&net_common_w, u8 *, 2) + 1);
+                M2C_FIELD(&net_common_w, u8 *, NCO(2)) = (u8) (M2C_FIELD(&net_common_w, u8 *, NCO(2)) + 1);
             }
         }
         goto block_118;
@@ -2224,23 +2224,23 @@ block_37:
         goto block_118;
     case 10:                                        /* switch 1 */
         Ncm_mssage_disp_req(0x64);
-        temp_v0_4 = M2C_FIELD(&net_common_w, s16 *, 4) - 1;
-        M2C_FIELD(&net_common_w, s16 *, 4) = temp_v0_4;
+        temp_v0_4 = M2C_FIELD(&net_common_w, s16 *, NCO(4)) - 1;
+        M2C_FIELD(&net_common_w, s16 *, NCO(4)) = temp_v0_4;
         if (((s16) temp_v0_4) <= 0) {
-            M2C_FIELD(&net_common_w, s16 *, 4) = 0x12C;
-            M2C_FIELD(&net_common_w, u8 *, 2) = (u8) (M2C_FIELD(&net_common_w, u8 *, 2) + 1);
+            M2C_FIELD(&net_common_w, s16 *, NCO(4)) = 0x12C;
+            M2C_FIELD(&net_common_w, u8 *, NCO(2)) = (u8) (M2C_FIELD(&net_common_w, u8 *, NCO(2)) + 1);
         }
         goto block_118;
     case 11:                                        /* switch 1 */
         Ncm_mssage_disp_req(0x64);
-        temp_v0_5 = M2C_FIELD(&net_common_w, s16 *, 4) - 1;
-        M2C_FIELD(&net_common_w, s16 *, 4) = temp_v0_5;
+        temp_v0_5 = M2C_FIELD(&net_common_w, s16 *, NCO(4)) - 1;
+        M2C_FIELD(&net_common_w, s16 *, NCO(4)) = temp_v0_5;
         if (((s16) temp_v0_5) <= 0) {
-            M2C_FIELD(&net_common_w, u8 *, 2) = (u8) (M2C_FIELD(&net_common_w, u8 *, 2) + 1);
-        } else if (M2C_FIELD(&net_common_w, s16 *, 4) < 0xF0) {
+            M2C_FIELD(&net_common_w, u8 *, NCO(2)) = (u8) (M2C_FIELD(&net_common_w, u8 *, NCO(2)) + 1);
+        } else if (M2C_FIELD(&net_common_w, s16 *, NCO(4)) < 0xF0) {
             Ncm_mssage_disp_option_req(0x64);
             if (net_shot_ok_ck(2) != 0) {
-                M2C_FIELD(&net_common_w, u8 *, 2) = (u8) (M2C_FIELD(&net_common_w, u8 *, 2) + 1);
+                M2C_FIELD(&net_common_w, u8 *, NCO(2)) = (u8) (M2C_FIELD(&net_common_w, u8 *, NCO(2)) + 1);
             }
         }
         goto block_118;
@@ -2250,23 +2250,23 @@ block_37:
         goto block_118;
     case 20:                                        /* switch 1 */
         Ncm_mssage_disp_req(0x63);
-        temp_v0_6 = M2C_FIELD(&net_common_w, s16 *, 4) - 1;
-        M2C_FIELD(&net_common_w, s16 *, 4) = temp_v0_6;
+        temp_v0_6 = M2C_FIELD(&net_common_w, s16 *, NCO(4)) - 1;
+        M2C_FIELD(&net_common_w, s16 *, NCO(4)) = temp_v0_6;
         if (((s16) temp_v0_6) <= 0) {
-            M2C_FIELD(&net_common_w, s16 *, 4) = 0x12C;
-            M2C_FIELD(&net_common_w, u8 *, 2) = (u8) (M2C_FIELD(&net_common_w, u8 *, 2) + 1);
+            M2C_FIELD(&net_common_w, s16 *, NCO(4)) = 0x12C;
+            M2C_FIELD(&net_common_w, u8 *, NCO(2)) = (u8) (M2C_FIELD(&net_common_w, u8 *, NCO(2)) + 1);
         }
         goto block_118;
     case 21:                                        /* switch 1 */
         Ncm_mssage_disp_req(0x63);
-        temp_v0_7 = M2C_FIELD(&net_common_w, s16 *, 4) - 1;
-        M2C_FIELD(&net_common_w, s16 *, 4) = temp_v0_7;
+        temp_v0_7 = M2C_FIELD(&net_common_w, s16 *, NCO(4)) - 1;
+        M2C_FIELD(&net_common_w, s16 *, NCO(4)) = temp_v0_7;
         if (((s16) temp_v0_7) <= 0) {
-            M2C_FIELD(&net_common_w, u8 *, 2) = (u8) (M2C_FIELD(&net_common_w, u8 *, 2) + 1);
-        } else if (M2C_FIELD(&net_common_w, s16 *, 4) < 0xF0) {
+            M2C_FIELD(&net_common_w, u8 *, NCO(2)) = (u8) (M2C_FIELD(&net_common_w, u8 *, NCO(2)) + 1);
+        } else if (M2C_FIELD(&net_common_w, s16 *, NCO(4)) < 0xF0) {
             Ncm_mssage_disp_option_req(0x63);
             if (net_shot_ok_ck(2) != 0) {
-                M2C_FIELD(&net_common_w, u8 *, 2) = (u8) (M2C_FIELD(&net_common_w, u8 *, 2) + 1);
+                M2C_FIELD(&net_common_w, u8 *, NCO(2)) = (u8) (M2C_FIELD(&net_common_w, u8 *, NCO(2)) + 1);
             }
         }
         goto block_118;
@@ -2274,36 +2274,36 @@ block_37:
         var_s0 = -1;
         goto block_118;
     case 30:                                        /* switch 1 */
-        if (M2C_FIELD(&net_common_w, s16 *, 6) == 0) {
+        if (M2C_FIELD(&net_common_w, s16 *, NCO(6)) == 0) {
             Ncm_mssage_disp_req(0x78);
         } else {
             Ncm_mssage_disp_req(0x62);
         }
-        temp_v0_8 = M2C_FIELD(&net_common_w, s16 *, 4) - 1;
-        M2C_FIELD(&net_common_w, s16 *, 4) = temp_v0_8;
+        temp_v0_8 = M2C_FIELD(&net_common_w, s16 *, NCO(4)) - 1;
+        M2C_FIELD(&net_common_w, s16 *, NCO(4)) = temp_v0_8;
         if (((s16) temp_v0_8) <= 0) {
-            M2C_FIELD(&net_common_w, s16 *, 4) = 0x12C;
-            M2C_FIELD(&net_common_w, u8 *, 2) = (u8) (M2C_FIELD(&net_common_w, u8 *, 2) + 1);
+            M2C_FIELD(&net_common_w, s16 *, NCO(4)) = 0x12C;
+            M2C_FIELD(&net_common_w, u8 *, NCO(2)) = (u8) (M2C_FIELD(&net_common_w, u8 *, NCO(2)) + 1);
         }
         goto block_118;
     case 31:                                        /* switch 1 */
-        if (M2C_FIELD(&net_common_w, s16 *, 6) == 0) {
+        if (M2C_FIELD(&net_common_w, s16 *, NCO(6)) == 0) {
             Ncm_mssage_disp_req(0x78);
         } else {
             Ncm_mssage_disp_req(0x62);
         }
-        temp_v0_9 = M2C_FIELD(&net_common_w, s16 *, 4) - 1;
-        M2C_FIELD(&net_common_w, s16 *, 4) = temp_v0_9;
+        temp_v0_9 = M2C_FIELD(&net_common_w, s16 *, NCO(4)) - 1;
+        M2C_FIELD(&net_common_w, s16 *, NCO(4)) = temp_v0_9;
         if (((s16) temp_v0_9) <= 0) {
-            M2C_FIELD(&net_common_w, u8 *, 2) = (u8) (M2C_FIELD(&net_common_w, u8 *, 2) + 1);
-        } else if (M2C_FIELD(&net_common_w, s16 *, 4) < 0xF0) {
-            if (M2C_FIELD(&net_common_w, s16 *, 6) == 0) {
+            M2C_FIELD(&net_common_w, u8 *, NCO(2)) = (u8) (M2C_FIELD(&net_common_w, u8 *, NCO(2)) + 1);
+        } else if (M2C_FIELD(&net_common_w, s16 *, NCO(4)) < 0xF0) {
+            if (M2C_FIELD(&net_common_w, s16 *, NCO(6)) == 0) {
                 Ncm_mssage_disp_option_req(0x78);
             } else {
                 Ncm_mssage_disp_option_req(0x62);
             }
             if (net_shot_ok_ck(2) != 0) {
-                M2C_FIELD(&net_common_w, u8 *, 2) = (u8) (M2C_FIELD(&net_common_w, u8 *, 2) + 1);
+                M2C_FIELD(&net_common_w, u8 *, NCO(2)) = (u8) (M2C_FIELD(&net_common_w, u8 *, NCO(2)) + 1);
             }
         }
         goto block_118;
@@ -2312,23 +2312,23 @@ block_37:
         goto block_118;
     case 40:                                        /* switch 1 */
         Ncm_mssage_disp_req(0x6A);
-        temp_v0_10 = M2C_FIELD(&net_common_w, s16 *, 4) - 1;
-        M2C_FIELD(&net_common_w, s16 *, 4) = temp_v0_10;
+        temp_v0_10 = M2C_FIELD(&net_common_w, s16 *, NCO(4)) - 1;
+        M2C_FIELD(&net_common_w, s16 *, NCO(4)) = temp_v0_10;
         if (((s16) temp_v0_10) <= 0) {
-            M2C_FIELD(&net_common_w, s16 *, 4) = 0x12C;
-            M2C_FIELD(&net_common_w, u8 *, 2) = (u8) (M2C_FIELD(&net_common_w, u8 *, 2) + 1);
+            M2C_FIELD(&net_common_w, s16 *, NCO(4)) = 0x12C;
+            M2C_FIELD(&net_common_w, u8 *, NCO(2)) = (u8) (M2C_FIELD(&net_common_w, u8 *, NCO(2)) + 1);
         }
         goto block_118;
     case 41:                                        /* switch 1 */
         Ncm_mssage_disp_req(0x6A);
-        temp_v0_11 = M2C_FIELD(&net_common_w, s16 *, 4) - 1;
-        M2C_FIELD(&net_common_w, s16 *, 4) = temp_v0_11;
+        temp_v0_11 = M2C_FIELD(&net_common_w, s16 *, NCO(4)) - 1;
+        M2C_FIELD(&net_common_w, s16 *, NCO(4)) = temp_v0_11;
         if (((s16) temp_v0_11) <= 0) {
-            M2C_FIELD(&net_common_w, u8 *, 2) = (u8) (M2C_FIELD(&net_common_w, u8 *, 2) + 1);
-        } else if (M2C_FIELD(&net_common_w, s16 *, 4) < 0xF0) {
+            M2C_FIELD(&net_common_w, u8 *, NCO(2)) = (u8) (M2C_FIELD(&net_common_w, u8 *, NCO(2)) + 1);
+        } else if (M2C_FIELD(&net_common_w, s16 *, NCO(4)) < 0xF0) {
             Ncm_mssage_disp_option_req(0x6A);
             if (net_shot_ok_ck(2) != 0) {
-                M2C_FIELD(&net_common_w, u8 *, 2) = (u8) (M2C_FIELD(&net_common_w, u8 *, 2) + 1);
+                M2C_FIELD(&net_common_w, u8 *, NCO(2)) = (u8) (M2C_FIELD(&net_common_w, u8 *, NCO(2)) + 1);
             }
         }
         goto block_118;

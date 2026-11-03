@@ -4,6 +4,9 @@
  * f_ms, f_ncm). Offsets from matched code; names are guesses. */
 #include "types.h"
 
+#ifdef VERSION_MH2
+#include "mh2_layouts.h"
+#else
 typedef struct NETCW {
     u8 x00;             /* 0x00 menu state (ms_network_sub dispatches on it) */
     u8 step;            /* 0x01 step within the state */
@@ -68,5 +71,6 @@ typedef struct NETCW {
     char x8D[5];        /* 0x8D remaining-time digits copy (dialog_limit_disp) */
     u8 pad92[0x94 - 0x92];
 } NETCW;
+#endif
 extern NETCW net_common_w;
 #endif

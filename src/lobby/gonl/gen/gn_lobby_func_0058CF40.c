@@ -18,7 +18,7 @@ s32 lobby_func_0058CF40(s32 arg0, s32 arg1, s32 arg2, s32 arg3) {
     (*(s8 *)((u8 *)((*(void **)&pNet)) + 0x28)) = 4;
     lobby_func_0059F6C0((*(s32 *)((u8 *)&lb_ibox_str + ((*(s16 *)((u8 *)(((void **)g_main_2EEE70)[1]) + 0x1A)) * 4))), M2C_ERROR(/* Read from unset register $a1 */), M2C_ERROR(/* Read from unset register $a2 */), M2C_ERROR(/* Read from unset register $a3 */));
     SetMessageHaltFlag();
-    (*(s8 *)((u8 *)&PitMenu + 0x10)) = 0;
+    (*(s8 *)((u8 *)&PitMenu + PMO(0x10))) = 0;
     return 0;
 }
 

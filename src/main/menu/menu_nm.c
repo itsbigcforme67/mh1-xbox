@@ -1715,7 +1715,7 @@ void Pit_mv_lb(void) {
     case 1:
         if (Online_ck() == 1) {
             Join_pl_chk();
-            FLDS8(PitMenu, 0x22) = 0;
+            FLDS8(PitMenu, PMO(0x22)) = 0;
         }
         switch (PitMenu.open) {
         case 0:
@@ -1845,7 +1845,7 @@ void Pit_mv(void) {
         }
         if (Online_ck() == 1) {
             Join_pl_chk();
-            FLDS8(PitMenu, 0x22) = 0;
+            FLDS8(PitMenu, PMO(0x22)) = 0;
         }
         switch (PitMenu.open) {
         case 0:

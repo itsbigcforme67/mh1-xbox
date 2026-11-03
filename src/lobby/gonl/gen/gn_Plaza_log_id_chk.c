@@ -17,12 +17,12 @@ u32 Plaza_log_id_chk(s32 **arg0) {
     s32 var_s1;
     u8 var_s2;
 
-    var_s2 = (*(u8 *)((u8 *)&PitMenu + 0x26));
+    var_s2 = (*(u8 *)((u8 *)&PitMenu + PMO(0x26)));
     if (var_s2 == 0) {
         *arg0 = NULL;
         return 0U;
     }
-    var_s3 = &(*(s32 *)((u8 *)&PitMenu + 0x2A));
+    var_s3 = &(*(s32 *)((u8 *)&PitMenu + PMO(0x2A)));
     var_s1 = 0;
     if (var_s2 != 0) {
         var_s0 = arg0;

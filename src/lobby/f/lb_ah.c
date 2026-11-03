@@ -72,7 +72,7 @@ void Lb_put_unique_act_hint(PLW *pl, int a)
             if (lb_sys.x66 == 0x10) {
                 return;
             }
-            Lb_put_hint(1, (*((u8 *)&lb_sys + 0x95) == 1) ? 2 : 3);
+            Lb_put_hint(1, (*((u8 *)&lb_sys + LBM(0x95)) == 1) ? 2 : 3);
             return;
         }
         if (cw[CW_OFS(0x35D6)] != 0) {
