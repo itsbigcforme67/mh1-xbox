@@ -3,7 +3,7 @@
 
 Line: `module 0xADDR name how sim # evidence` (sim: opcode-sequence ratio against the reference of that name, or -). Name `-` takes a wrong name away (the address goes back to module_func_ADDR).
 Updates docs/survey/mh2_map.csv and config/mh2/symbols/*.txt in place; running it twice changes nothing. tools/mh2_map.py runs it last.
-A name given here leaves any other address that held it: that address becomes module_func_ADDR unless the file names it too.
+A name given here leaves any other address of its module that held it: that address becomes module_func_ADDR unless the file names it too.
 Usage: python3 tools/mh2_funcfix.py
 """
 import csv
@@ -24,21 +24,26 @@ def main():
         if len(f) >= 4:
             fix[(f[0], int(f[1], 16))] = (f[2], f[3], f[4])
     # byte-matched C is proof: a name carried C calls at an address (config/mh2/c_aliases.txt) is not moved off it
+    # Names are global (resident main/sub_main symbols reach every overlay's link); NAME_mh2_ADDR is NAME; the C's placeholder
+    # names (func_ADDR) say nothing.
     al = {}
     if os.path.exists(P("config/mh2/c_aliases.txt")):
         for l in open(P("config/mh2/c_aliases.txt")):
             f = l.split()
             if len(f) == 3 and not l.startswith("#"):
-                al.setdefault(f[1], set()).add((f[0], int(f[2], 16)))
+                n = re.sub(r"_mh2_[0-9A-F]{8}$", "", f[1])
+                if not re.match(r"^(\w+_)?func_[0-9A-Fa-f]{8}$", n):
+                    al.setdefault(n, set()).add((f[0], int(f[2], 16)))
     at = {}
     for n, s in al.items():
         for k in s:
             at.setdefault(k, set()).add(n)
     for k, v in list(fix.items()):
-        if (v[0] in al and k not in al[v[0]]) or at.get(k, set()) - {v[0]}:
+        if (v[0] in al and al[v[0]] != {k}) or at.get(k, set()) - {v[0]}:     # C holds it elsewhere too: leave it
             print("mh2_funcfix: %s 0x%08X %s left out: byte-matched C says otherwise" % (k[0], k[1], v[0]))
             del fix[k]
     names = set(v[0] for v in fix.values())
+    mnames = set((k[0], v[0]) for k, v in fix.items())     # a name leaves other addresses of its own module only: overlays repeat names
     refs = {}
     for src, d, mods in (("mh1", "config/symbols", ("game", "main", "lobby", "select", "yn")),
                          ("g", "config/mhg/symbols", ("game", "main", "sub_main", "lobby", "nethttp", "select", "yn"))):
@@ -60,7 +65,7 @@ def main():
                 ref = refs.get(new, ("", "", ""))
                 r["class"] = "edited" if ref[0] else "mh2-only"
                 r["how"], r["sim"], r["src"], r["ref_module"], r["ref_addr"] = (fix[k][1], "" if fix[k][2] == "-" else fix[k][2]) + ref
-        elif r["name"] in names:
+        elif (r["mh2_module"], r["name"]) in mnames:
             new = "-"
             r["class"], r["how"], r["sim"], r["src"], r["ref_module"], r["ref_addr"] = "mh2-only", "", "", "", "", ""
         if new is None:

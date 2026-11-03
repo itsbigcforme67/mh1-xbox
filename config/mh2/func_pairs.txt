@@ -143,10 +143,6 @@ game 0x00724AB0 Em_Taisei_Ck mh1 game 0x00559DC0 items 0.55
 game 0x00725260 sleep_stock_set g game 0x00583A40 items 1.00
 game 0x00725460 em_mahi_dmg_timer_set g game 0x00583B40 items 1.00
 game 0x00725490 em_sleep_dmg_timer_set g game 0x00583B70 items 1.00
-game 0x007279D0 em_cmd_area_move_ck mh1 game 0x0055C440 order 0.80
-game 0x00727AE0 em_cmd_stand_ck g game 0x00585BE0 order 1.00
-game 0x007292F0 em_cmd_mind_ck g game 0x00587190 order 1.00
-game 0x0072A370 em_cmd_type_sel g game 0x00587DC0 order 1.00
 game 0x0072B3A0 em_cmd_myemtype_sel g game 0x00588740 order 1.00
 game 0x0072CF20 game_func_0058A020 g game 0x0058A020 order 0.92
 game 0x00731480 game_func_0058DD00 g game 0x0058DD00 order 1.00
@@ -759,6 +755,7 @@ lobby 0x007249D0 BsRequestCheck g lobby 0x005B64B0 order 0.60
 lobby 0x0072C0A0 stockShadowPageNum mh1 lobby 0x005E2430 order 0.90
 lobby 0x0072E340 SoftKeyboard mh1 lobby 0x005E43C0 order 0.80
 lobby 0x0072E4D0 BsSoftKbdSprTrans mh1 lobby 0x005E4520 order 0.64
+lobby 0x0072EE60 BsCursorTask mh1 lobby 0x005E4D40 order 0.86
 lobby 0x0072FBC0 BsMcSetupIDPW mh1 lobby 0x005E5990 order 0.87
 lobby 0x00730830 BsKeySet g lobby 0x005B6FC0 order 0.58
 lobby 0x00730AE0 BsUrlBaseSet g lobby 0x005B71D0 order 0.83

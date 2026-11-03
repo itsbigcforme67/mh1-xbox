@@ -1196,7 +1196,7 @@ game,0x007275E0,332,em_cmd_kehai_ck,shape,exact,1.00,mh1,game,0x0055C1E0
 game,0x00727730,260,em_cmd_ninshiki_ck,shape,exact,1.00,mh1,game,0x0055C330
 game,0x00727840,384,em_cmd_area_move_ck,edited,opcode,0.77,g,game,0x00585A50
 game,0x007279C0,12,em_cmd_main_jump,edited,opcode,0.67,g,game,0x00585BD0
-game,0x007279D0,268,game_func_007279D0,ambiguous,,,,,
+game,0x007279D0,268,em_cmd_stand_ck,edited,opcode,1.00,g,game,0x00585BE0
 game,0x00727AE0,268,em_cmd_op1F,mh2-only,opcode-new,,,,
 game,0x00727BF0,268,em_cmd_fly_ck,shape,exact,1.00,mh1,game,0x0055C6E0
 game,0x00727D00,16,em_cmd_body_status_set,edited,opcode,1.00,g,game,0x00585E00
@@ -1216,7 +1216,7 @@ game,0x00728CB0,104,em_cmd_area_route_set,shape,exact,1.00,mh1,game,0x0055D620
 game,0x00728D20,344,em_cmd_area_route_move,edited,ngram,0.86,mh1,game,0x0055D690
 game,0x00728E80,28,em_cmd_area_route_ck,edited,opcode,0.57,g,game,0x00586E40
 game,0x00728EA0,1104,em_cmd_escape_area_set,edited,opcode,0.66,g,game,0x00586E60
-game,0x007292F0,268,game_func_007292F0,ambiguous,,,,,
+game,0x007292F0,268,em_cmd_mind_ck,edited,opcode,1.00,g,game,0x00587190
 game,0x00729400,376,em_cmd_mind_no_ck,edited,opcode,0.63,g,game,0x005872A0
 game,0x00729580,468,em_cmd_mind_sel,shape,neighbour,1.00,mh1,game,0x0055DD40
 game,0x00729760,52,em_cmd_mind_move_end,shape,exact,1.00,mh1,game,0x0055DF20
@@ -1228,7 +1228,7 @@ game,0x00729E60,512,em_cmd_emtype_ck,edited,opcode,0.70,g,game,0x00587AA0
 game,0x0072A060,260,em_cmd_repeat_cnt_set,shape,exact,1.00,mh1,game,0x0055E610
 game,0x0072A170,12,em_cmd_repeat_cnt_clr,shape,exact,1.00,mh1,game,0x0055E720
 game,0x0072A180,16,em_cmd_demo_flag_set,edited,opcode,1.00,g,game,0x00587DB0
-game,0x0072A190,468,game_func_0072A190,ambiguous,,,,,
+game,0x0072A190,468,em_cmd_type_sel,edited,opcode,1.00,g,game,0x00587DC0
 game,0x0072A370,468,game_func_0072A370,ambiguous,,,,,
 game,0x0072A550,516,em_cmd_op76,mh2-only,opcode-new,,,,
 game,0x0072A760,524,game_func_0072A760,mh2-only,,,,,
@@ -6375,7 +6375,7 @@ lobby,0x0072C6F0,104,receiveID,edited,ngram,0.92,mh1,lobby,0x005E2A30
 lobby,0x0072C760,96,To_DisplayDialog,rewritten,callsite,0.36,mh1,lobby,0x005E2A90
 lobby,0x0072C7C0,356,finalAccount,edited,ngram,0.89,mh1,lobby,0x005E2AC0
 lobby,0x0072C930,216,UpdateEndpoint,edited,ngram,0.84,mh1,lobby,0x005E2C00
-lobby,0x0072CA10,80,kb_input_ck_enter,edited,ngram,0.76,mh1,main,0x00162CA0
+lobby,0x0072CA10,80,skipShadowImage,edited,order,0.89,g,lobby,0x005AB650
 lobby,0x0072CA60,224,setUpDnLtRtBlank,edited,callsite,0.67,mh1,lobby,0x005E2D10
 lobby,0x0072CB40,8,lobby_func_0072CB40,mh2-only,,,,,
 lobby,0x0072CB50,164,BsBgImgCharSet,edited,ngram,0.95,mh1,lobby,0x005E2DE0
@@ -6405,7 +6405,7 @@ lobby,0x0072E270,196,SoftKeyboardInitialize,edited,ngram,0.84,mh1,lobby,0x005E43
 lobby,0x0072E340,108,lobby_func_0072E340,mh2-only,,,,,
 lobby,0x0072E3B0,8,lobby_func_0072E3B0,mh2-only,,,,,
 lobby,0x0072E3C0,164,BsSoftKbdCharSet,edited,ngram,0.92,mh1,lobby,0x005E4430
-lobby,0x0072E470,96,BsCursorTask,edited,ngram,0.86,mh1,lobby,0x005E4D40
+lobby,0x0072E470,96,BsSoftKbdTask,edited,order,0.86,g,lobby,0x005B2DE0
 lobby,0x0072E4D0,2216,lobby_func_0072E4D0,mh2-only,,,,,
 lobby,0x0072ED80,8,lobby_func_0072ED80,mh2-only,,,,,
 lobby,0x0072ED90,196,BsCursorCharSet,edited,ngram,0.91,mh1,lobby,0x005E4C90
@@ -7561,7 +7561,7 @@ lobby,0x00798A90,216,lb_pl_mv077,edited,ngram,0.85,g,lobby,0x00595490
 lobby,0x00798B70,200,lobby_func_00798B70,mh2-only,,,,,
 lobby,0x00798C40,168,lobby_func_00798C40,mh2-only,,,,,
 lobby,0x00798CF0,956,lb_pl_mv076,edited,ngram,0.73,g,lobby,0x00595600
-lobby,0x007990B0,80,skipShadowImage,edited,ngram,0.84,mh1,lobby,0x005E2CC0
+lobby,0x007990B0,80,lobby_func_007990B0,mh2-only,,,,,
 lobby,0x00799100,144,lobby_func_00799100,ambiguous,,,,,
 lobby,0x00799190,224,lb_pl_mv079,edited,ngram,0.98,mh1,lobby,0x005D1B60
 lobby,0x00799270,1128,lobby_func_00799270,mh2-only,,,,,
