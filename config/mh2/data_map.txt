@@ -15,7 +15,7 @@ game shell00_hit_t08 0x00897370 medium content:3.0,sim=1.00
 game shell16_hit_t03 0x008975A0 medium bytes:1.1+layout:1.8,sim=0.76
 game shell00_body_tbl 0x00897760 medium ref:1.5+refseq:0.9
 game shell00_atk_tbl 0x008977B0 medium bytes:1.4+chunk:2.5,sim=0.95
-game shell00_tbl 0x00898128 medium ptr-out:2.0
+game shell00_tbl 0x00898128 high ptr-out:2.0+refseq:1.5
 game shell01_hit_t00 0x00898130 high content:2.0+layout:2.0+ptr-in:2.0,sim=1.00
 game shell01_hit_t01 0x00898180 high content:3.0+layout:2.0+ptr-in:2.0,sim=1.00
 game shell01_hit_t02 0x00898200 high content:3.0+layout:2.0+ptr-in:2.0,sim=1.00
@@ -554,7 +554,6 @@ game set11_st28_eft_pos 0x008B0BA0 high chunk:3.0+content:3.0+ref:2.0+refseq:2.0
 game uv_pos00_00678370 0x008B0BE0 medium bytes:1.5+ref:1.3,sim=1.00
 game set14_st42_pos_tbl 0x008B0C60 high chunk:3.0+content:3.0+refseq:1.3,sim=1.00
 game set14_st53_pos_tbl 0x008B0C90 high chunk:3.0+content:3.0,sim=1.00
-game set14_st51_pos_tbl 0x008B0CD0 low bytes:1.0+ref:1.3,sim=0.65
 game set14_st90_pos_tbl_g 0x008B0CD0 high chunk:3.0+content:3.0,sim=1.00
 game set14_st52_pos_tbl 0x008B0D10 medium ref:1.3,sim=0.52
 game set14_st42_mask_tbl 0x008B0DA0 medium bytes:1.5+refseq:1.3,sim=1.00
@@ -673,12 +672,13 @@ game em22_kehai_add_tbl 0x008BBA70 medium ptr-in:2.0
 game em_kehai_add_tbl 0x008BBA90 medium refseq:1.8
 game em01_hate_add_tbl 0x008BBBC0 medium content:3.0,sim=1.00
 game em04_hate_add_tbl 0x008BBCB0 medium bytes:1.3+layout:1.9,sim=0.88
-game em09_hate_add_tbl 0x008BBDA0 low bytes:1.5+layout:2.0,sim=1.00
-game em12_hate_add_tbl 0x008BBE40 low content:2.0+layout:2.0,sim=1.00
-game em16_hate_add_tbl 0x008BBEE0 low content:2.0+layout:2.0,sim=1.00
+game em09_hate_add_tbl 0x008BBDA0 high bytes:1.5+layout:2.0+ptr-in:2.0,sim=1.00
+game em12_hate_add_tbl 0x008BBE40 high content:2.0+layout:2.0+ptr-in:2.0,sim=1.00
+game em16_hate_add_tbl 0x008BBEE0 high content:2.0+layout:2.0+ptr-in:2.0,sim=1.00
 game em22_hate_add_tbl 0x008BBF80 medium content:3.0,sim=1.00
-game em27_hate_add_tbl 0x008BC020 medium content:3.0+layout:2.0,sim=1.00
-game em29_hate_add_tbl 0x008BC0C0 high content:2.0+layout:2.0,sim=1.00
+game em27_hate_add_tbl 0x008BC020 high content:3.0+layout:2.0+ptr-in:2.0,sim=1.00
+game em29_hate_add_tbl 0x008BC0C0 high content:2.0+layout:2.0+ptr-in:2.0,sim=1.00
+game em_hate_add_tbl 0x008BC200 medium refseq:1.1
 game em01_hate_sub_tbl 0x008BC330 high chunk:3.0+content:3.0,sim=1.00
 game em27_hate_sub_tbl 0x008BC340 medium content:3.0,sim=1.00
 game em_hate_sub_tbl 0x008BC350 high ref:1.9+refseq:1.2
@@ -799,7 +799,7 @@ game em33_ikari_data_tbl 0x008BE110 medium content:3.0+ptr-in:2.0,sim=1.00
 game em_special_dmg_tbl 0x008BE8F0 low refseq:0.6
 game em_eye_dmg_timer_tbl 0x008BEAC0 high chunk:3.0+content:3.0,sim=1.00
 game em02_runaway_timer_tbl 0x008BEB60 low bytes:-1.0+refseq:0.2,sim=0.00
-game em_egg_action_flag_tbl 0x008BEEB0 medium content:3.0,sim=1.00
+game em_egg_action_flag_tbl 0x008BEEB0 medium content:3.0+refseq:1.1,sim=1.00
 game em_action_priority_tbl 0x008BEF00 high chunk:3.0+content:3.0+ref:3.2+refseq:2.5,sim=1.00
 game em01_nest_tbl 0x008BF150 medium ptr-in:2.0,sim=0.58
 game em06_nest_tbl 0x008BF160 medium ptr-in:2.0,sim=0.50
@@ -831,7 +831,6 @@ game st34_land_pos 0x008C00A0 medium content:3.0,sim=1.00
 game st35_land_pos 0x008C00C0 high chunk:3.0+content:3.0,sim=1.00
 game st36_land_pos 0x008C00F0 high chunk:3.0+content:3.0,sim=1.00
 game st37_land_pos 0x008C0120 high chunk:3.0+content:3.0,sim=1.00
-game em21_sub_contents_e1_0066F3E0 0x008C0130 low bytes:-1.0+ref:2.8+refseq:1.9,sim=0.00
 game st38_land_pos 0x008C0178 high content:2.0+layout:2.5,sim=1.00
 game st39_land_pos 0x008C0190 medium content:3.0,sim=1.00
 game st49_land_pos 0x008C0190 medium bytes:1.2+layout:1.8,sim=0.83
@@ -1200,7 +1199,7 @@ game hire_down_tbl2_0066EE00 0x008C8D60 high content:2.0+layout:2.5+ptr-in:2.0,s
 game hire_down_tbl3_006592E0 0x008C8D80 medium content:2.0,sim=1.00
 game hire_down_tbl3_0066EE20 0x008C8D80 high content:2.0+layout:2.5+ptr-in:2.0,sim=1.00
 game hire_down_add_tbl_0066EE40 0x008C8DA0 medium ref:1.9+refseq:0.7
-game hire_start_timer_tbl0_003893D0 0x008C8DB0 high content:2.0+layout:2.0,sim=1.00
+game hire_start_timer_tbl0_003893D0 0x008C8DB0 high content:2.0+layout:2.0+refseq:1.9,sim=1.00
 game hire_start_timer_tbl1_003893D8 0x008C8DB8 medium bytes:1.5+refseq:0.7,sim=1.00
 game hire_remove_timer_tbl0_003893E0 0x008C8DC0 high bytes:1.5+ref:1.9+refseq:1.3,sim=1.00
 game hire_remove_timer_tbl1_003893E8 0x008C8DC8 high bytes:1.5+ref:1.9+refseq:1.3,sim=1.00
@@ -1310,6 +1309,7 @@ game alpha_type0_74_00645680 0x008CE580 high content:3.0+layout:2.0,sim=1.00
 game eft10_type0_pos 0x008CE5A0 high c:9.0
 game eft10_data 0x008CE5F0 high ref:1.8+refseq:2.5
 game eft10_num 0x008CE600 high c:9.0
+game eft10_all_time 0x008CE608 medium bytes:1.5+refseq:1.8,sim=1.00
 game roty_key0c 0x008CE610 medium bytes:1.1+layout:1.8,sim=0.75
 game eft10_param 0x008CE618 medium ref:1.8,sim=0.50
 game scale77 0x008CE620 high chunk:3.0+content:3.0+ref:1.8+refseq:1.8,sim=1.00
@@ -1862,6 +1862,7 @@ game lit_260_00689ED0 0x008EC130 medium ref:1.3
 game lit_189_00689E00 0x008EC180 medium ref:3.0
 game lit_651_00689E90 0x008EC210 medium ref:1.8+refseq:1.1
 game lit_779_00689EB0 0x008EC230 high ref:1.9+refseq:1.9
+game set14_st51_pos_tbl 0x008EC270 low bytes:-1.0+refseq:1.3,sim=0.05
 game set14_st03_mask_tbl 0x008EC290 medium refseq:1.3,sim=0.25
 game lit_135_00689F10 0x008EC390 medium ref:1.6+refseq:1.0
 game lit_1223_00685080 0x008EC3B0 low refseq:0.3
@@ -1915,6 +1916,7 @@ game lit_963_00689DE0 0x008ED930 low ref:2.0+refseq:0.7
 game lit_3358 0x008EDC00 medium ref:1.4+refseq:0.5
 game lit_3452 0x008EDCE0 medium ref:1.4+refseq:0.5
 game lit_355_006888E0 0x008EE090 medium ref:1.6+refseq:0.5
+game v_counter 0x008EE264 medium refseq:1.3
 game lit_2004 0x008EE640 medium ref:1.8+refseq:0.6
 game lit_2058 0x008EE730 medium ref:1.9+refseq:0.7
 game lit_2087 0x008EE770 medium ref:1.9+refseq:0.7
@@ -2981,6 +2983,7 @@ lobby lit_2047 0x007F1FB0 low bytes:-1.0+refseq:0.5,sim=0.17
 lobby btn_menu_sub 0x007F1FC8 low bytes:0.9+refseq:0.5,sim=0.62
 lobby tbl 0x007F2048 high ref:1.8+refseq:1.8
 lobby plData 0x007F2050 high bytes:1.4+ref:1.8+refseq:2.5,sim=0.96
+lobby g_lb_63E8D0 0x007F2090 low bytes:-1.0+refseq:1.3,sim=0.09
 lobby npcMv54 0x007F7B70 high bytes:1.2+chunk:3.0,sim=0.80
 lobby npcMv55 0x007F7BA0 medium bytes:1.4+chunk:2.4,sim=0.93
 lobby npcMv57 0x007F7F40 medium bytes:1.3+layout:1.8,sim=0.84
@@ -3004,11 +3007,13 @@ lobby net_etc_mes_tbl 0x0080C05C medium ptr-out:2.0+ref:0.7
 lobby lit_273_0065EC20 0x0080C07C low bytes:-1.0+refseq:0.9,sim=0.00
 lobby lb_rule_msg_etc 0x0080C090 medium ptr-out:2.0
 lobby lit_596_0035B158 0x0080C124 low refseq:0.5,sim=0.25
+lobby tl_mail_tbl 0x0080C4D8 low refseq:0.5
 lobby g_main_2EF06C 0x0080C520 low refseq:0.8
+lobby g_sub_527D34 0x0080C530 low refseq:1.3
+lobby tl_job_tbl 0x0080C590 low refseq:0.5
 lobby lb_num_str 0x0080C680 high ptr-out:6.0+refseq:0.9
 lobby lit_688_00664CB0 0x0080C6AC low bytes:-1.0+refseq:0.3,sim=0.00
 lobby lb_rule_member 0x0080C6B0 medium ref:1.6+refseq:1.0
-lobby tl_mail_tbl 0x0080C6C8 low refseq:0.3
 lobby shop_warning 0x0080C710 medium ref:1.8+refseq:1.1
 lobby verify_button_0038A008 0x0080CA9C low bytes:-1.0+refseq:0.9,sim=0.08
 lobby lit_492_0065E760 0x0080CDC0 low bytes:-1.0+refseq:1.1,sim=0.00
@@ -3064,8 +3069,8 @@ lobby lit_579_006686E0 0x00825DD0 medium ref:1.2
 lobby lit_1034_00655590 0x0082E990 medium refseq:1.1
 lobby lit_1122_006555B0 0x0082E9F0 medium ref:1.8+refseq:0.6
 lobby g_lb_63E248 0x008382A0 medium content:2.0,sim=1.00
-lobby tl_job_tbl 0x008383A8 low refseq:0.3
-lobby g_lb_63E128 0x008383B0 low refseq:0.3,sim=0.28
+lobby lit_2316 0x008383A8 medium bytes:1.5+refseq:0.6,sim=1.00
+lobby g_lb_63E128 0x008383B0 low refseq:0.5,sim=0.28
 lobby lit_695_00664CB8 0x00838478 low bytes:-1.0+refseq:0.3,sim=0.00
 lobby g_lb_644C58 0x00838598 high layout:2.5+ref:3.0
 lobby lit_336_0065E008 0x008385A8 high bytes:1.5+ref:3.0,sim=1.00
@@ -3130,11 +3135,11 @@ lobby lit_6153 0x00839320 medium content:3.0+ref:1.4+refseq:1.4,sim=1.00
 lobby lit_6154 0x00839330 high content:3.0+ref:1.4+refseq:1.4,sim=1.00
 lobby lit_6155 0x00839340 medium content:3.0+ref:1.4+refseq:1.4,sim=1.00
 lobby lit_6156 0x00839350 medium content:3.0+ref:1.4+refseq:1.4,sim=1.00
-lobby lit_6157 0x00839360 high content:3.0+layout:2.5,sim=1.00
+lobby lit_6157 0x00839360 high content:3.0+layout:2.5+refseq:1.4,sim=1.00
 lobby lit_6158 0x00839370 medium content:3.0+refseq:1.4,sim=1.00
 lobby lit_6159 0x00839380 medium content:3.0+refseq:1.4,sim=1.00
 lobby lit_6160 0x00839390 medium content:3.0+refseq:1.4,sim=1.00
-lobby lit_6161 0x008393A0 high content:3.0+layout:2.5,sim=1.00
+lobby lit_6161 0x008393A0 high content:3.0+layout:2.5+refseq:1.4,sim=1.00
 lobby lit_6162 0x008393B0 medium content:3.0+refseq:1.4,sim=1.00
 lobby lit_6163 0x008393C0 high content:3.0+refseq:1.4,sim=1.00
 lobby lit_6164 0x008393D0 high content:3.0+ref:1.4+refseq:0.8,sim=1.00
@@ -3523,7 +3528,7 @@ lobby lit_543_00655878 0x0083AFC0 high bytes:1.2+ref:1.8+refseq:1.1,sim=0.83
 lobby lit_956_00664A40 0x0083B180 medium ref:1.6+refseq:1.0
 lobby lit_783_00668440 0x0083B350 low refseq:0.8
 lobby lit_1923_00668480 0x0083B370 high bytes:1.5+ref:1.6+refseq:2.5,sim=1.00
-lobby lit_1924 0x0083B378 high content:2.0+layout:2.5,sim=1.00
+lobby lit_1924 0x0083B378 high content:2.0+layout:2.5+refseq:1.6,sim=1.00
 lobby lit_1925 0x0083B380 high chunk:3.0+content:3.0+ref:1.6+refseq:1.6,sim=1.00
 lobby lit_1926 0x0083B398 high content:3.0+ref:1.6+refseq:1.6,sim=1.00
 lobby lit_1928 0x0083B3A0 high bytes:1.5+ref:1.6+refseq:1.0,sim=1.00
@@ -3535,7 +3540,6 @@ lobby g_lb_63E8C0 0x0083B500 medium bytes:1.5+ref:1.3,sim=1.00
 lobby g_lb_63E2E0 0x0083B508 medium content:2.0,sim=1.00
 lobby g_lb_63E8C8 0x0083B508 medium bytes:1.5+ref:1.3,sim=1.00
 lobby g_lb_63E2E8 0x0083B510 medium content:2.0,sim=1.00
-lobby g_lb_63E8D0 0x0083B510 low ref:1.3,sim=0.34
 lobby lit_1020_0065DE80 0x0083B750 medium ref:1.6+refseq:0.5
 lobby lit_2418 0x0083B810 high content:3.0+refseq:0.4,sim=1.00
 lobby lit_2419 0x0083B818 medium content:3.0,sim=1.00
@@ -3721,6 +3725,7 @@ lobby lit_3543 0x00846DA0 high content:2.0+layout:2.5+ptr-in:2.0,sim=1.00
 lobby lit_3544 0x00846DA8 high bytes:1.5+layout:2.5+ptr-in:2.0,sim=1.00
 lobby lit_3631 0x00846DB0 high ref:1.7+refseq:1.7
 lobby lit_3836 0x00846DE0 medium ref:1.5+refseq:0.9
+lobby lobby_client_top_menu_jmp_1131 0x00846E10 low refseq:0.8
 lobby lit_452_0065E820 0x00846E70 high chunk:3.0+content:3.0+ref:1.9+refseq:0.7,sim=1.00
 lobby lit_548_0065E870 0x00846EA0 medium ref:1.5+refseq:0.9
 lobby lit_575_0065E890 0x00846EC0 medium ref:1.8+refseq:0.6
@@ -3737,8 +3742,10 @@ lobby lit_416_00370880 0x00847170 medium ref:1.7+refseq:1.0
 lobby lit_270_0065C830 0x008497DC medium chunk:2.7,sim=0.54
 lobby g_main_302CB0 0x0084A348 low ref:1.2+refseq:2.4
 lobby pl_infoget_ctr 0x0084A358 high ref:4.8+refseq:2.5
-lobby CnetSys_g 0x0084A440 low ref:16.2+refseq:2.5
 lobby CnetSys_w 0x0084A440 high ref:33.4+refseq:2.5
+lobby Now_wait_lbs_task 0x0084B6B0 medium refseq:1.2
+lobby lit_1740_0065DF70 0x00850A10 low bytes:-1.0+refseq:0.4,sim=0.00
+lobby CnetSys_g 0x00852F48 medium ref:2.8
 lobby g_lb_72E07E 0x00881416 high ref:13.2+refseq:2.5
 lobby st03_to_st01_next_stage_pos_00676340 0x00885018 low bytes:-1.0+refseq:0.2,sim=0.00
 lobby g_lb_731162 0x0088504C high ref:6.0
@@ -4392,6 +4399,7 @@ main pad_dma_buf 0x0024BC00 high ref:1.7+refseq:1.7
 main MtapSlotMax 0x0024BD80 high ref:1.7+refseq:2.5
 main flPadFASS 0x0024BD88 high ref:3.6+refseq:2.5
 main flPadFixedAnalogSelectSwitch 0x0024BD90 high c:9.0
+main adxw 0x0026F470 medium refseq:1.3
 main lit_165_00371D70 0x002C2110 low bytes:-1.0+ptr-in:2.0,sim=0.00
 main adxt 0x002E3758 high c:9.0
 main emsnd_p 0x002E3890 high c:9.0
@@ -5472,7 +5480,7 @@ sub_main aa_cull 0x0042FBD0 high chunk:3.0+content:3.0+ref:1.9+refseq:0.7,sim=1.
 sub_main aa_alpha_src 0x0042FBE0 high content:2.0+ref:1.8,sim=1.00
 sub_main aa_alpha_ope 0x0042FC08 medium bytes:1.5+ref:1.8,sim=1.00
 sub_main aa_filt 0x0042FC18 medium bytes:1.5+ref:1.8,sim=1.00
-sub_main aa_addr 0x0042FC20 medium content:3.0,sim=1.00
+sub_main aa_addr 0x0042FC20 high content:3.0+refseq:1.1,sim=1.00
 sub_main parts_tex 0x0042FCF0 medium ref:1.7+refseq:0.6
 sub_main cfg_default 0x0042FD50 low bytes:1.1+layout:1.8,sim=0.75
 sub_main disp_pl_rgb 0x004306C0 high chunk:3.0+content:3.0+ref:1.6+refseq:1.6,sim=1.00
@@ -5796,7 +5804,6 @@ sub_main item_list_title 0x00445FC0 medium ref:1.5+refseq:0.9
 sub_main frame_status_sub_0064DDF0 0x00446060 low bytes:-1.0+ref:1.3,sim=0.16
 sub_main gstat_sub 0x00446064 low ref:0.8+refseq:0.5
 sub_main gstat_str 0x00446080 medium ref:1.6
-sub_main g_sub_527D34 0x004460A4 low ref:0.8+refseq:0.3
 sub_main gskill_mark 0x004460C8 medium ref:1.6+refseq:0.6
 sub_main menu_stat_icon_tbl1 0x004460D0 low bytes:-1.0+refseq:1.0,sim=0.00
 sub_main gequip_str 0x004460E0 medium ref:1.4+refseq:0.5
@@ -5810,6 +5817,7 @@ sub_main lv12str 0x004461EC low refseq:0.5,sim=0.25
 sub_main equip_exp_str_sw_attr 0x00446260 medium ref:1.7+refseq:0.6
 sub_main tuto_str_tbl 0x004462F0 medium ptr-out:2.0
 sub_main lb_shop_msg 0x00446304 low bytes:-1.0+ptr-out:2.0,sim=0.14
+sub_main em21_sub_contents_e1_0066F3E0 0x00446324 low bytes:-1.0+refseq:1.0,sim=0.24
 sub_main info_str0 0x004469C0 low refseq:0.5
 sub_main info_str2 0x00446AA0 low refseq:0.9
 sub_main info_str3 0x00446AD8 medium ref:1.7+refseq:1.0
@@ -5915,6 +5923,7 @@ sub_main Gun_Grow_Up_Tbl_C 0x0045E9F0 high chunk:3.0+content:3.0,sim=1.00
 sub_main Gun_Grow_Up_Tbl_D 0x0045EA70 high chunk:3.0+content:3.0,sim=1.00
 sub_main Gun_Grow_Up_DATA 0x0045EAF0 medium refseq:1.9
 sub_main LBarrel_Grow_Up_Tbl 0x0045EB00 high content:3.0+ref:1.4+refseq:2.5,sim=1.00
+sub_main Silencer_Grow_Up_Tbl 0x0045EB20 medium refseq:2.5
 sub_main hit_se_tbl 0x0045EF10 high bytes:1.5+ref:1.4+refseq:0.8,sim=0.99
 sub_main hit_se7 0x0045EF5C high bytes:1.5+ref:1.4+refseq:0.5,sim=1.00
 sub_main s_gauge_tbl 0x0045EFC0 medium content:3.0,sim=1.00
@@ -8340,6 +8349,7 @@ sub_main MySnapHandle 0x0059D818 medium ref:1.5
 sub_main MyGateway 0x0059D8A8 high ref:5.3+refseq:2.5
 sub_main MyNetmask 0x0059D8B0 high ref:3.4+refseq:2.5
 sub_main MyIPAddr 0x0059D8B8 high ref:7.1+refseq:2.5
+sub_main InetSys 0x0059D8BC low refseq:0.5
 sub_main NdgNegoMode 0x0059D8C8 high ref:3.4+refseq:2.5
 sub_main MyPassword 0x0059D8D0 high ref:4.9+refseq:2.5
 sub_main MySnapRegWeb 0x0059D8D0 low refseq:1.5
@@ -8351,9 +8361,9 @@ sub_main MyDialOutline 0x0059DBE0 high ref:4.9+refseq:1.5
 sub_main MyDialNumber 0x0059DBF0 high ref:1.8+refseq:2.5
 sub_main MyDialType 0x0059DCE0 high c:9.0
 sub_main MyEtherInitMode 0x0059DCE8 high ref:8.8+refseq:2.5
-sub_main SrvType 0x0059DCE8 low ref:1.5
 sub_main SrvPort 0x0059DCF0 high ref:1.5+refseq:2.5
 sub_main SrvDomain 0x0059DD00 medium ref:1.5
+sub_main SrvType 0x0059DE00 low refseq:1.5
 sub_main LoadedDeviceType 0x0059DE08 high ref:1.3+refseq:2.1
 sub_main TotalDeviceNum 0x0059DE10 high c:9.0
 sub_main UsbDeviceNum 0x0059DE18 high c:9.0
@@ -8435,11 +8445,12 @@ sub_main tmp_friend_data 0x005C3910 low ref:3.0
 sub_main LobbyInfo 0x005C4330 high ref:8.2+refseq:2.5
 sub_main g_lb_6DE120 0x005C4330 low ref:3.0
 sub_main PlazaInfo 0x005C81D0 high ref:10.1+refseq:2.5
-sub_main lit_2316 0x005C81EA low bytes:-1.0+ref:1.3,sim=0.00
+sub_main ClassInfo 0x005C81E4 low refseq:0.2
 sub_main room_member_mini_data 0x005CA4A0 high ref:3.1+refseq:1.9
 sub_main room_member_handle 0x005CA8A0 high ref:3.1+refseq:1.9
 sub_main my_user_mini_data 0x005CA920 high ref:9.4+refseq:2.5
 sub_main my_user_handle 0x005CAA20 high ref:6.9+refseq:2.5
+sub_main LbsInfoWork 0x005CAA50 low refseq:0.7
 sub_main ConnectLbsId 0x005CAA70 high c:9.0
 sub_main LbsTryedWork 0x005CAA90 high c:9.0
 sub_main lbs_select_timer 0x005CADB8 high ref:1.4+refseq:2.5

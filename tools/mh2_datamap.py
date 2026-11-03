@@ -835,9 +835,13 @@ class Mapper:
             allv = collections.defaultdict(lambda: collections.defaultdict(collections.Counter))
             lay, con = self.m_content_layout(list(self.names) if rnd == 0 else todo)
             rs = self.m_refseq()
+            def fits(n, k):                 # a vote that can stand: not inside an object another name holds (as the loop below)
+                kn = self.known_at(k[0], k[1])
+                return kn is None or kn == n or n in self.base_known or kn in self.alias.get(n, ())
             for n, c in rs.items():         # aligned instructions outrank an order: refseq sums over many functions and can pile onto a neighbour
+                live = [k for k in code.get(n, ()) if fits(n, k)]      # unless every code vote is a misaligned one
                 for k in list(c):
-                    if n in code and k not in code[n]:
+                    if live and k not in live:
                         del c[k]
                     else:
                         c[k] = min(c[k], 2.5)
