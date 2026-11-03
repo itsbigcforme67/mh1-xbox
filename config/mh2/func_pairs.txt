@@ -1675,6 +1675,7 @@ sub_main 0x0035A350 func_002212D0 g main 0x002212D0 items 0.65
 sub_main 0x0035A9A0 func_00221900 g main 0x00221900 order 0.86
 sub_main 0x0035AB20 Menu_chatlog_i g main 0x00221B10 order 0.76
 sub_main 0x0035AE80 func_00221E00 g main 0x00221E00 order 0.64
+sub_main 0x0035BE30 Put_receive_mark g main 0x00222800 items 0.40
 sub_main 0x0035D5A0 func_00223610 g main 0x00223610 items 1.00
 sub_main 0x0035D5D0 func_00223640 g main 0x00223640 items 0.92
 sub_main 0x0035D7C0 func_00223840 g main 0x00223840 items 0.73

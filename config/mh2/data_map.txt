@@ -831,6 +831,7 @@ game st34_land_pos 0x008C00A0 medium content:3.0,sim=1.00
 game st35_land_pos 0x008C00C0 high chunk:3.0+content:3.0,sim=1.00
 game st36_land_pos 0x008C00F0 high chunk:3.0+content:3.0,sim=1.00
 game st37_land_pos 0x008C0120 high chunk:3.0+content:3.0,sim=1.00
+game g_main_300A7B 0x008C013F medium refseq:1.5
 game st38_land_pos 0x008C0178 high content:2.0+layout:2.5,sim=1.00
 game st39_land_pos 0x008C0190 medium content:3.0,sim=1.00
 game st49_land_pos 0x008C0190 medium bytes:1.2+layout:1.8,sim=0.83
@@ -3535,7 +3536,7 @@ lobby lit_1928 0x0083B3A0 high bytes:1.5+ref:1.6+refseq:1.0,sim=1.00
 lobby lit_2148 0x0083B3C8 high bytes:1.5+ref:1.8+refseq:0.6,sim=1.00
 lobby lit_1137_00664A60 0x0083B428 medium content:2.0,sim=1.00
 lobby em14_stay_timer_tbl 0x0083B458 low bytes:-1.0+ptr-in:2.0,sim=0.11
-lobby g_lb_63E880 0x0083B4B8 high chunk:3.0+content:3.0+ref:1.8+refseq:1.8,sim=1.00
+lobby g_lb_63E880 0x0083B4B8 high chunk:3.0+content:3.0+ref:1.8+refseq:2.5,sim=1.00
 lobby g_lb_63E8C0 0x0083B500 medium bytes:1.5+ref:1.3,sim=1.00
 lobby g_lb_63E2E0 0x0083B508 medium content:2.0,sim=1.00
 lobby g_lb_63E8C8 0x0083B508 medium bytes:1.5+ref:1.3,sim=1.00
@@ -3781,7 +3782,7 @@ lobby pit_work 0x008B2B58 low refseq:0.5
 lobby ib 0x008B4370 high ref:24.3+refseq:2.5
 lobby item_box 0x008B4380 medium ref:1.5+refseq:0.9
 lobby lb_menu_w 0x008B4400 medium ref:1.5+refseq:0.9
-lobby join_member 0x008B4960 medium ref:1.6+refseq:0.9
+lobby join_member 0x008B4960 high ref:1.6+refseq:2.5
 lobby statData 0x008B4C70 low bytes:-1.0+refseq:1.4,sim=0.00
 lobby pl_name_tbl 0x008B4CA0 high ref:1.8+refseq:2.5
 lobby sw_flag_1260 0x008B4CC8 high ref:1.3+refseq:2.5
@@ -4552,8 +4553,9 @@ plsel card_list_frame_tbl_00357850 0x00D78C10 medium ref:1.9+refseq:0.7
 plsel pf_reward_menu 0x00D78E90 medium bytes:1.1+layout:1.8,sim=0.75
 plsel pf_reward_time 0x00D78EB0 medium bytes:0.9+refseq:1.0,sim=0.62
 plsel button_00 0x00D78EC8 medium bytes:1.5+refseq:1.9,sim=1.00
-plsel verify_button_00387D30 0x00D78ED0 medium bytes:1.5+refseq:1.0,sim=1.00
+plsel verify_button_00387D30 0x00D78ED0 medium bytes:1.5+layout:2.0,sim=1.00
 plsel reward_item_base 0x00D78EE0 medium ref:1.5+refseq:0.9,sim=0.44
+plsel reward_w 0x00D7BE60 medium refseq:1.6
 select view_type 0x006C7D80 medium content:2.0,sim=1.00
 select help_mess_005387B0 0x006C7D90 high ref:3.9+refseq:2.5,sim=0.31
 select default_reibun 0x006CAB60 high c:9.0
@@ -5563,7 +5565,7 @@ sub_main em01_stay_timer_tbl 0x00432660 low bytes:-1.0+ref:1.8+refseq:0.6,sim=0.
 sub_main em01_runaway_timer_tbl 0x00432664 low bytes:-1.0+ref:1.8+refseq:0.6,sim=0.22
 sub_main menu_stat_icon_tbl2 0x004326B8 low refseq:1.0,sim=0.38
 sub_main job_atk_adj_tbl 0x004326C0 high bytes:1.4+chunk:3.0+ref:3.0+refseq:2.5,sim=0.94
-sub_main chat_font_color 0x00432710 high bytes:1.5+ref:3.7+refseq:2.2,sim=1.00
+sub_main chat_font_color 0x00432710 high bytes:1.5+ref:3.7+refseq:2.5,sim=1.00
 sub_main pit_help_item_str 0x004329B0 medium ptr-in:2.0
 sub_main pit_help_str_tbl 0x00433880 medium ref:1.5+refseq:0.9
 sub_main weapon_exp 0x004338C0 medium ref:1.4+refseq:0.5
@@ -5573,6 +5575,8 @@ sub_main moji_color_rare_2099 0x0043AB48 high c:9.0
 sub_main minisight_tbl 0x0043ABD0 low bytes:1.0+refseq:0.4,sim=0.65
 sub_main help_mess_00354680 0x0043AC00 medium bytes:0.9+refseq:1.8,sim=0.62
 sub_main pf_chat_log_base 0x0043AC40 medium ref:1.4+refseq:1.5,sim=0.50
+sub_main receive_mark_pos 0x0043AC60 low refseq:0.5,sim=0.25
+sub_main pf_receive_mark 0x0043AC78 low refseq:0.5,sim=0.31
 sub_main gskill_ex1 0x0043AE50 medium ref:1.5+refseq:0.5,sim=0.38
 sub_main gskill_ex2 0x0043AE68 low bytes:-1.0+refseq:0.5,sim=0.00
 sub_main gskill_ex3 0x0043AE68 medium ref:1.5,sim=0.38
@@ -5817,7 +5821,7 @@ sub_main lv12str 0x004461EC low refseq:0.5,sim=0.25
 sub_main equip_exp_str_sw_attr 0x00446260 medium ref:1.7+refseq:0.6
 sub_main tuto_str_tbl 0x004462F0 medium ptr-out:2.0
 sub_main lb_shop_msg 0x00446304 low bytes:-1.0+ptr-out:2.0,sim=0.14
-sub_main em21_sub_contents_e1_0066F3E0 0x00446324 low bytes:-1.0+refseq:1.0,sim=0.24
+sub_main em21_sub_contents_e1_0066F3E0 0x00446324 low bytes:-1.0+refseq:0.8,sim=0.24
 sub_main info_str0 0x004469C0 low refseq:0.5
 sub_main info_str2 0x00446AA0 low refseq:0.9
 sub_main info_str3 0x00446AD8 medium ref:1.7+refseq:1.0
@@ -6133,7 +6137,6 @@ sub_main kuituki_time_tbl 0x00469DA0 medium ref:1.7+refseq:0.6,sim=0.50
 sub_main eft22_pl_rgb 0x00469DB0 medium refseq:1.0,sim=0.44
 sub_main result_str 0x00469E00 medium ref:1.5
 sub_main pit_help_reward_str 0x0046A0A0 medium ptr-in:2.0
-sub_main reward_w 0x0046A0C8 medium refseq:1.6
 sub_main lit_59_00358300 0x0046A100 high content:2.0+ptr-in:2.0,sim=1.00
 sub_main lit_60_00358308 0x0046A108 high content:2.0+ptr-in:2.0,sim=1.00
 sub_main lit_61_00358310 0x0046A110 high content:2.0+ptr-in:2.0,sim=1.00
@@ -8421,8 +8424,7 @@ sub_main flash_flag 0x005BACE0 high ref:1.7+refseq:2.5
 sub_main flash_timer 0x005BACE8 high ref:1.7+refseq:2.5
 sub_main enmaku_flag 0x005BACF0 high ref:3.7+refseq:2.5
 sub_main enmaku_alpha 0x005BACF8 high ref:3.7+refseq:2.5
-sub_main PitMenu 0x005BB080 high ref:12.5+refseq:2.5
-sub_main g_main_300A7B 0x005BB0B3 medium ref:0.7
+sub_main PitMenu 0x005BB080 high c:9.0
 sub_main quest_price 0x005BC4A0 high c:9.0
 sub_main DROP_TIMEOUT 0x005BC4F0 low bytes:-1.0+refseq:0.8,sim=0.00
 sub_main MCSLS_SWIN_LIMIT 0x005BC4F8 low bytes:-1.0+ref:1.4+refseq:0.8,sim=0.00
@@ -8460,7 +8462,9 @@ sub_main FirstURL 0x005CADD0 high c:9.0
 sub_main bsCsvWork 0x005CAED0 high ref:3.1+refseq:2.5
 sub_main bsSysWork 0x005CAED0 low refseq:1.8
 sub_main Friend_data 0x005D4A00 high c:9.0
+sub_main User_data 0x005D4A60 high c:9.0
 sub_main CNFile 0x005D6AA0 high c:9.0
+sub_main quest_w 0x005D8260 high c:9.0
 sub_main set19_s73_s75_pos_tbl 0x005D87A4 low refseq:0.3
 sub_main lit_2396 0x005D87B4 low bytes:-1.0+refseq:1.2,sim=0.00
 sub_main no_send_timer 0x005D87B8 low refseq:1.4
