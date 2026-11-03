@@ -573,6 +573,11 @@ typedef struct {
 
 #define HUNTER_PARTS 6
 static const char *pl_slot[HUNTER_PARTS] = { "reg", "face", "hair", "body", "arm", "wst" };
+#ifdef VERSION_MH2
+#define PL_TEX_EXT "tm2"            /* MH2's part textures are one TIM2 each (m_body000.tm2) */
+#else
+#define PL_TEX_EXT "apx"
+#endif
 
 typedef struct {
     fl_skel master;                  /* legs AHI: the animated skeleton */
@@ -727,7 +732,7 @@ static int hunter_load(hunter *h, const int *num, int legs_id, int upper_id)
         char name[64], tname[64];
         fmt_blob link, tex, ahi;
         snprintf(name, sizeof name, "m_%s%03d_amh.bin", pl_slot[s], num[s]);
-        snprintf(tname, sizeof tname, "m_%s%03d.apx", pl_slot[s], num[s]);
+        snprintf(tname, sizeof tname, "m_%s%03d." PL_TEX_EXT, pl_slot[s], num[s]);
         link = load(name, &h->mem[k++]);
         tex = load(tname, &h->mem[k++]);
         if (!link.p)
@@ -769,7 +774,7 @@ static void hunter_relook(hunter *h, int sex, const int *num)
         if (num[s] == h->look[s] && sex == h->sex)
             continue;
         snprintf(name, sizeof name, "%c_%s%03d_amh.bin", sex ? 'f' : 'm', pl_slot[s], num[s]);
-        snprintf(tname, sizeof tname, "%c_%s%03d.apx", sex ? 'f' : 'm', pl_slot[s], num[s]);
+        snprintf(tname, sizeof tname, "%c_%s%03d." PL_TEX_EXT, sex ? 'f' : 'm', pl_slot[s], num[s]);
         link = load(name, &m0);
         tex = load(tname, &m1);
         if (!link.p) {
@@ -1261,14 +1266,34 @@ static int mh2_start_stage(void)
     return (int)mh2_mw(mh2_mw(4));
 }
 
-/* --quest N, what works so far: the mission file names the start stage, which is drawn with its sky and set model, no game code */
+/* The monster records (QEM, 0x3C bytes: +0 kind, +8 the stage of a large one, +0x1C angle, +0x20 x y z; kind 0xFFFF ends a list).
+ * Header +0x18: the quest's own monsters, {count, ?, kind list, QEM list}. Header +0x14: three pointers (the 0-2 choice, a guess)
+ * to per-stage entries {stage, ?, kind list, QEM list} of the small monsters, ended by stage 0 (read from m00001d0/m01014d0,
+ * not from the game's code: a guess that it is what Em_direct_set reads). */
+static uint32_t mh2_qem_list(int stage, int own)
+{
+    uint32_t t = mh2_mw(own ? 0x18 : 0x14), e;
+    if (own)
+        return mh2_mw(t) ? mh2_mw(t + 12) : 0;
+    for (e = mh2_mw(t); e && e + 16 <= mh2_mission_n && mh2_mw(e); e += 16)
+        if ((int)mh2_mw(e) == stage)
+            return mh2_mw(e + 12);
+    return 0;
+}
+
+/* --quest N, what works so far: the mission file names the start stage, which is drawn with its sky and set model, no game code.
+ * The stage's monsters (RT_QUEST_STAGE=1: the stage of the quest's own monster, with it) stand at their places in their bind pose
+ * or first motion (emNN files by kind: guessed), and a hunter (default parts) beside the first; the camera looks at them. */
 static int mh2_quest_shot(int no, const char *shot, int W, int H)
 {
     const char *var = getenv("RT_MIB") ? getenv("RT_MIB") : "d0";
     fl_model st, se;
     uint8_t *k[4];
     fmt_blob l, t;
-    int s, i, v, c, f;
+    int s, i, v, c, f, own, nem = 0, hl = 0;
+    static monster em[8];
+    static hunter hu;
+    float em_at[8][4];
     float lo[3] = { 1e30f, 1e30f, 1e30f }, hi[3] = { -1e30f, -1e30f, -1e30f }, eye[3], tar[3], r = 0;
     float az = getenv("RT_MODEL_AZ") ? (float)atof(getenv("RT_MODEL_AZ")) : 0.7f;
     flmat camw, view, proj, id;
@@ -1277,6 +1302,8 @@ static int mh2_quest_shot(int no, const char *shot, int W, int H)
         return 1;
     }
     s = mh2_start_stage();
+    if (getenv("RT_QUEST_STAGE") && mh2_qem_list(0, 1) && mh2_mw(mh2_qem_list(0, 1)) != 0xFFFF)
+        s = (int)mh2_mw(mh2_qem_list(0, 1) + 8);
     printf("quest %d (m%05d%s.mib, %u bytes): start stage %d\n", no, no, var, (unsigned)mh2_mission_n, s);
     l = load_stage_file(0x2EC950, s, &k[0]);
     t = load_stage_file(0x2EDB40, s, &k[1]);
@@ -1305,6 +1332,54 @@ static int mh2_quest_shot(int no, const char *shot, int W, int H)
     eye[0] = tar[0] + sinf(az) * r * 0.45f;
     eye[1] = tar[1] + r * 0.3f;
     eye[2] = tar[2] + cosf(az) * r * 0.45f;
+    for (own = 1; own >= 0; own--) {        /* the quest's own monster first: the camera looks at the first */
+        uint32_t q = mh2_qem_list(s, own);
+        for (; q && q + 0x3C <= mh2_mission_n && (mh2_mw(q) & 0xFFFF) != 0xFFFF && nem < 8; q += 0x3C) {
+            int kind = mh2_mission[q], id;
+            char a[32], tx[32], tb[32];
+            float *p = em_at[nem];
+            if (own && (int)mh2_mw(q + 8) != s)
+                continue;
+            snprintf(a, sizeof a, "em%02d_amh.bin", kind);
+            snprintf(tx, sizeof tx, "em%02d_tex.bin", kind);
+            snprintf(tb, sizeof tb, "em%02d_tbl.bin", kind);
+            memset(&em[nem], 0, sizeof em[nem]);
+            memcpy(p, mh2_mission + q + 0x20, 12);
+            p[3] = (float)(mh2_mw(q + 0x1C) & 0xFFFF) * (6.2831853f / 65536.0f);
+            if (monster_load(&em[nem], a, tx, tb) != 0) {
+                printf("monster kind %d (%s): not loaded\n", kind, a);
+                continue;
+            }
+            for (id = getenv("RT_EM_BIND") ? 2000 : 0; id < 2000 && em[nem].tbl.p && fl_skel_set_motion(&em[nem].skel, 0, em[nem].tbl, id, FMT_LE) != 0; id++)
+                ;
+            em[nem].skel.root_lock = 1;
+            fl_skel_update(&em[nem].skel, 0);
+            place(em[nem].world, p[0], p[1], p[2], p[3]);
+            printf("monster kind %d (%s%s) at %.0f %.0f %.0f, angle %.2f, motion %d\n", kind, a, own ? ", the quest's own" : "",
+                   p[0], p[1], p[2], p[3], id < 2000 ? id : -1);
+            nem++;
+        }
+    }
+    if (nem) {
+        static const int dflt[HUNTER_PARTS] = { 1, 0, 1, 1, 1, 1 };
+        float *p = em_at[0];
+        hl = hunter_load(&hu, dflt, 1, 101) == 0;
+        printf("hunter: %s\n", hl ? "loaded" : "not loaded");
+        if (hl) {
+            place(hu.world, p[0] + 300.0f, p[1], p[2] + 300.0f, p[3]);
+            hunter_pose(&hu, 0, NULL);
+        }
+        memcpy(tar, p, sizeof tar);
+        if (hl && getenv("RT_QUEST_LOOK_HUNTER")) {
+            tar[0] += 300.0f;
+            tar[2] += 300.0f;
+        }
+        tar[1] += 150.0f;
+        r = getenv("RT_QUEST_CAM") ? (float)atof(getenv("RT_QUEST_CAM")) : 1600.0f;    /* camera distance */
+        eye[0] = tar[0] + sinf(az) * r;
+        eye[1] = tar[1] + r * 0.3f;
+        eye[2] = tar[2] + cosf(az) * r;
+    }
     lookat_world(camw, eye, tar);
     flmat_invert_affine(view, camw);
     flmat_perspective(proj, 1.0f, scene_aspect(), 10.0f, 800000.0f);
@@ -1320,6 +1395,17 @@ static int mh2_quest_shot(int no, const char *shot, int W, int H)
         draw_model_attr(&st, -1);
         if (se.npart)
             draw_model_attr(&se, -1);
+        for (i = 0; i < nem; i++) {
+            fl_model_pose(&em[i].model, (const flmat *)em[i].skel.world, NULL);
+            gfx_set_render_state(GFX_RS_WORLD, (uintptr_t)em[i].world);
+            draw_model_attr(&em[i].model, -1);
+        }
+        if (hl) {
+            gfx_set_render_state(GFX_RS_WORLD, (uintptr_t)hu.world);
+            for (i = 0; i < HUNTER_PARTS; i++)
+                draw_model_attr(&hu.part[i], -1);
+        }
+        gfx_set_render_state(GFX_RS_WORLD, (uintptr_t)id);
         if (f == 2 && shot) {
             uint8_t *rgb = malloc((size_t)W * H * 3);
             gfx_read_pixels(rgb);
