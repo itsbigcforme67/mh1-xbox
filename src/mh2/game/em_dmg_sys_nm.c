@@ -16,6 +16,7 @@ typedef union EMT {
 } EMT;
 #define em (&t->e)
 
+#ifndef EM_TAISEI_IN
 void Em_Damage_Stock();
 void em_hagitori_lv_up();
 void em_eye_dmg_act_set();
@@ -23,6 +24,7 @@ void em_hinshi_end2();
 void em_range_set();
 u8 Em_Taisei_Damage_Check();
 void em_dur_set();
+#endif
 int game_func_00723F20(), game_func_00709060(), game_func_00725570();
 void game_func_007080D0(), game_func_007241E0();
 int sub_main_func_00379AC0(), sub_main_func_003799A0();
