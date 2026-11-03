@@ -74,3 +74,21 @@ Seen (hidden runs, RT_MH2_EM=1 RT_QUEST_TRACE=1, quest 1014):
 Kinds still run G's monster code through rt_mh2.c's em_prog_tbl stand-ins and G's emNN_init through em_init_sub (MH2's
 em_init_sub, gm_sub 0x903EE0, switches over 74 kinds to MH2's own init functions, mostly unnamed): numbers set by G's init
 (em01_init's hit points ...) are G's, read through MH2's tables where the names now point.
+
+## With WALK (mh2-walk 3f849145), tested merged in the worktree, not committed as a merge
+
+WALK's two host changes are in this branch (d914daa6): camera_data_tbl at MH2's 199 stages and the PLW part pointers written
+on MH2 too. On a `git merge --no-commit mh2-walk` of this branch (then aborted): `RT_STEP=1 --quest 1014 --input
+"idle*30,up*120" --time 30` runs 900 ticks, the hunter walks into the sea as docs/mh2/walk.md says, and the quest keeps
+running on MH2's script (op 3, no clear). With RT_MH2_EM=1 the Rathian and both kind-10 monsters finish em_init and the run
+stops in the first em_move (G's f_em_nm.c), as with the FRW patch alone.
+
+## Shared C that reads G's places on MH2 (for WALK; worked around here)
+
+- src/main/font/dsp01.c Game_clear_ck: game_w+0x3E (GW_X0D5); MH2 has the state at +0x40. Renamed away for MH2.
+- src/main/quest/f_quest.c Quest_time_get(1): G's info+0x10, MH2's fee. Renamed away; Quest_timer_reset (same file) still
+  calls G's copy, so rt_em.c sets the timer itself on MH2.
+- src/main/emw/emt02.c em_effect_move: EMT.prog at MH1's 0x3CC (MH2 0x3D0). Host copy wins.
+- src/main/em/f_em_nm.c em_init: EB(0x4E6 + i) for 32 bytes lands over EMW.mdl through MH2_OFS. Host copy wins.
+- src/main/set/set01.c: info_str0 has no MH2 address (low vote 0x4469C0 in data_map.txt), info_str3 (0x446AD8) is sized 0xC
+  but MH2 asks for entry 3.
