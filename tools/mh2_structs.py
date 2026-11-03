@@ -266,10 +266,17 @@ def gen():
         lines = []
         over = []
         pos = 0
+        # a field with real evidence keeps its place; one that only follows its neighbour gives way to it
+        solid = lambda h: h == "hand" or h.startswith("votes") and int(h.split()[1]) >= 2
+        taken = bytearray(SIZES[name])
+        for n_, o_, s_, d_, h_ in placed:
+            if solid(h_) and n_ + s_ <= SIZES[name] and not any(taken[n_:n_ + s_]):
+                taken[n_:n_ + s_] = b"\1" * s_
         for new, off, size, decl, how in placed:
             r = re.match(r"(?:struct\s+)?(\w+)\s*(\*)?", decl.strip())
             al = 4 if r.group(2) or "\n" in decl and "s32" in decl else ALIGN.get(r.group(1), 1)
-            if new < pos or new + size > SIZES[name] or new % al:     # a padded field would move all after it
+            weak_hit = not solid(how) and any(taken[new:new + size])
+            if weak_hit or new < pos or new + size > SIZES[name] or new % al:     # a padded field would move all after it
                 over.append((new, off, size, decl, how))
                 continue
             if new > pos:

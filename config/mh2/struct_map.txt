@@ -10,10 +10,15 @@ EMW 9F4 978 # only [0xC] is used by name (em08_aic); place unverified
 EMW 56A 532 # as PLW
 # from the run-reading pass (config history: A's map). The probe has no vote on these; A's near-matches do show the runs around them
 EMW 824 776 u8 # sb/lbu in em_cmd_sub_contents, x826 votes 778
-EMW 828 77C
-EMW 829 77D
-EMW 82A 77E
+EMW 820 774 u8 # cmd_idx: sb 18, lbu 3 (QUEST)
+EMW 828 77A u16 # sh/lhu 82 uses, right after x827 (QUEST)
+EMW 829 77C u16 # lhu/sh/lh 266 uses (QUEST)
+EMW 82A 77E # byte in the twins that matched; the lh at this offset are another use
 EMW 82B 77F
+EMW 882 998 u16 # after x881 0x997 (QUEST), 66 uses
+EMW 883 99A u16 # 137 uses (QUEST)
+EMW 92F 986 u16 # sh/lhu 44 uses; name from QUEST's reading, not by adjacency
+EMW 95A 98C s16 # sh/lh 42 uses; name from QUEST's reading, not by adjacency
 EMW 600 584
 EMW 6E0 634
 EMW 6E2 636
