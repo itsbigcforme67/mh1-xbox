@@ -1,6 +1,9 @@
-# MH Dos: game task and quest core (QUEST agent, 2 Nov 2026)
+# MH Dos (MH2): game task and quest core (QUEST agent, 2 Nov 2026)
 
-Written from our own disassembly of the owner's disc. Community mh2-decomp not opened. Proof is bytes only: nothing here has run.
+- **Source:** our own disassembly of the owner's disc. The community mh2-decomp repo was not opened.
+- **Proof:** bytes only. Nothing here has run.
+- **Later work:** the CODE agent's round of 3 Nov (docs/mh2/code.md) is newer and wins where the two differ: it re-counted
+  the near-matches below and matched em01_senkai_sub. The old counts are kept, marked "superseded".
 
 ## Byte-matched C (in the MH2 build, tools/mh2_check.py 13 of 13)
 
@@ -17,16 +20,16 @@ Logic read from the code; registers or a few instructions differ, so the bytes d
 
 | function | address | bytes | state |
 |---|---|---|---|
-| Em_Dmg_Sys | game 0x725860 | 2,668 | src/mh2/game/em_dmg_sys_nm.c, em_taisei.c includes it for the PC. em/hit/first land one register off |
+| Em_Dmg_Sys | game 0x725860 | 2,668 | src/mh2/game/em_dmg_sys_nm.c, em_taisei.c includes it for the PC. em/hit/first land one register off (superseded by docs/mh2/code.md: worse than one register; 214 instructions aligned and 8 short, which hunt.md reads as 214 of 667 off) |
 | quest script step | sub_main 0x3A9230 | 3,520 | src/mh2/sub_main/p003A9230_nm.c, 11 instructions differ, two register swaps |
-| quest state machine | sub_main 0x3A2E30 | 2,588 | src/mh2/sub_main/p003A2E30_nm.c, about 8 bytes short, scheduling. The call to 0x3A5880 has a0 = 1 left from a loop: the PC needs that 1 |
+| quest state machine | sub_main 0x3A2E30 | 2,588 | src/mh2/sub_main/p003A2E30_nm.c, about 8 bytes short, scheduling. The call to 0x3A5880 has a0 = 1 left from a loop: the PC needs that 1. (Superseded by docs/mh2/code.md: 117 instructions differed before its round, 96 after.) |
 
 ## What was learned
 
 - **0x3A2E30 is the quest's per-frame state machine**, called from the game task at 0x326E64. It runs by D_5D8260 (0 running, 1 and 2 ending, 3 result) and returns 0, 1, -1, -2.
 - **0x3A9230 steps a quest event script:** 8-byte commands {s16 op, a, b, c} from the pointer at 0x5D82B4, the index in 0x5D827E; op 0x1A is a label, 0x1C jumps to a label, 6/7, 0x28/0x29, 0x2A/0x2B are if/endif pairs, 9/10 a wait, 0x1B a timer with a message. G has no such thing: this script is new in MH2, and the quest flow depends on it. Names are placeholders and every op meaning is a **guess** from the code. Where the script comes from was not looked at.
-- 0x378A30 is per-stage set-up by stage number (a table at 0x4485D0, then calls by stage). 0x33E730 is the pit menu's frame (Game_clear_ck, lpPit). Neither written.
-- em01_senkai_sub (0x70A290) is rewritten: it takes a parameter table as third argument, shared by the flying monsters. MH1's C does not carry. Not written.
+- 0x378A30 is per-stage set-up by stage number (a table at 0x4485D0, then calls by stage). 0x33E730 is the pit menu's frame (Game_clear_ck, lpPit). Neither written here; 0x378A30 (stage_set_set) was byte-matched on 3 Nov (docs/mh2/code.md).
+- em01_senkai_sub (0x70A290) is rewritten: it takes a parameter table as third argument, shared by the flying monsters. MH1's C does not carry. Not written here; byte-matched on 3 Nov (docs/mh2/code.md).
 - game_func_007262D0(em, p, v) stores v in byte 0x95E of EMW (0x9DA in MH1's numbering): the command error. It is called with 2 and 4.
 
 ## EMW fields MH2 changed that the header has wrong (for STRUCTS)
@@ -46,6 +49,10 @@ Read from cmd_target_kind_set against its C, all u16: x828 at 0x77A, x829 at 0x7
 The table below is the state before the merge of 3 Nov. em_cmd_ck.c now uses DATA's names by opcode (config/mh2/func_fix.txt, docs/mh2/data.md).
 
 em_cmd_ck calls each handler by opcode, so MH1's and MH2's tables can be laid side by side. Where they differ, either the map's name is wrong or the opcode moved, not decided here. Many are `game_func_` where a twin is likely. New opcodes in MH2: 0x1F, 0x36, 0x37, 0x69, 0x70-0x7C (from the table).
+
+Note: "new in MH2" here means "not in MH1". docs/mh2/code.md (newer) shows 0x70 already exists in G (G moved
+em_cmd_myemtype_sel from 0x2C to 0x70), so some of these may be G's opcodes rather than MH2's. Only 0x2C/0x70 was checked
+against G; the rest are not settled.
 
 | opcode | MH1 handler | MH2 name now | address |
 |---|---|---|---|

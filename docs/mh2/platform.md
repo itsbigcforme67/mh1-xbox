@@ -1,8 +1,11 @@
-# MH2 platform notes (PLATFORM agent, 2 Nov 2026)
+# MH Dos (MH2): platform notes (PLATFORM agent, 2 Nov 2026)
 
-Host side of MH Dos: format readers, overlays, stage loading, sound, install. Everything here was read from the owner's files
-(disc/mh2, the English v1.03 image) with throwaway scripts or seen in hidden runs of build/mh2/pc/mhview_2. "Guess" marks what was
-not checked against the game's code.
+- **Scope:** the host side: format readers, overlays, stage loading, sound, install.
+- **Source:** the owner's files (disc/mh2, the English v1.03 image), read with throwaway scripts or seen in hidden runs of
+  build/mh2/pc/mhview_2.
+- **Proof:** "guess" marks what was not checked against the game's code.
+- **Updates:** this file is newer than docs/mh2_port.md section 3 on textures, models and the .mib header. Where they disagree,
+  mh2_port.md marks it.
 
 ## Test aids (hidden runs only)
 
@@ -68,7 +71,8 @@ reader (the word does not change the layout).
 
 ## Textures
 
-TIM2 (one picture, version 4): alpha is 0-255 in the files, not doubled. .tex packs: MOMO-style (Meltw, count, offset/size pairs)
+TIM2 (one picture, version 4): alpha is 0-255 in the files, not doubled. This replaces docs/mh2_port.md section 3's earlier "alpha doubled": of a sample
+of 779 pictures none tops out at 0x80 and 762 reach 0xFF (commit c2671f0, comment at src/pc/fmt/apx.c:43-45). .tex packs: MOMO-style (Meltw, count, offset/size pairs)
 read as link files of TIM2 (loading, load_stg, psp_con, q_clear); endroll.tex and gallery.tex are AFS archives of TIM2 files.
 Hunter part textures are one .tm2 per part (viewer: PL_TEX_EXT).
 

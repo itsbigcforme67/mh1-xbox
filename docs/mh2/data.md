@@ -1,7 +1,9 @@
-# MH Dos: data names, function pairs and the pointer call graph (DATA agent, 2 Nov 2026)
+# MH Dos (MH2): data names, function pairs and the pointer call graph (DATA agent, 2 Nov 2026)
 
-docs/mh2_port.md section 6, items 1 and 8. Community mh2-decomp not opened. MH2 has no symbols or relocations, so every name here is
-scored evidence from MH1 (symbols, relocations) and G (our names, config/mhg). What was checked, and how, is below; the rest is a guess.
+- **Task:** docs/mh2_port.md section 6, items 1 and 8.
+- **Source:** MH2 has no symbols or relocations, so every name here is scored evidence from MH1 (symbols, relocations) and
+  G (our names, config/mhg). The community mh2-decomp repo was not opened.
+- **Proof:** what was checked, and how, is below. Everything else is a guess.
 
 ## Tools
 
@@ -77,7 +79,12 @@ relocated (97.7%).
 
 ## em_cmd handlers (QUEST's 47 rows)
 
-Read from QUEST's em_cmd_ck.c (MH2) and src/game/em/em_cmd_r01.c (MH1), handler by handler. **No opcode moved.** All 109 opcodes MH1 has
+Read from QUEST's em_cmd_ck.c (MH2) and src/game/em/em_cmd_r01.c (MH1), handler by handler. **No opcode moved.**
+
+**Correction (3 Nov, docs/mh2/code.md, which is newer):** the opcode 0x2C handler did move, but in G, not in MH2. G put
+em_cmd_myemtype_sel at opcode 0x70 and a new handler at 0x2C; MH2 keeps G's layout. So "no opcode moved" holds against G, not
+against MH1. The paragraph below is kept as written on 2 Nov.
+ All 109 opcodes MH1 has
 sit in MH2 in the same address order as in MH1 (the file kept its order: a moved opcode would break it, none does), and every same-opcode
 pair is either the same code or a plausible edit of it. So all were map errors. config/mh2/func_fix.txt names them by opcode; the
 4 addresses that held a wrong old name and are new opcodes get placeholders em_cmd_op1F, op37, op73, op76 (real names unknown). The ones

@@ -18,23 +18,26 @@ otherwise.
 
 ## Where things stand
 
-Phase 1 done (main and the game overlays select, game, yn, lobby rebuild
-byte-identical); Phase 2 (decompilation) under way: about 8% of all code
-matches as of 5 Oct 2026 (run tools/progress.py). The owner's priority since
+The short, current summary is at the top of docs/STATUS.md ("Where things
+stand"). As of 3 Nov 2026: MH1 rebuilds byte-identical (main, select, game,
+yn, lobby) and 59.668% of its code matches (12 Oct); G rebuilds byte-identical
+(VERSION=mhg) and is the main release; MH2 (Dos) rebuilds byte-identical
+(VERSION=mh2) with about 6.9% matched. Run tools/progress.py (MH1, G) or
+tools/mh2_progress.py (MH2) for today's numbers. The owner's priority since
 5 Oct 2026 is "playable and recognizable first, polished afterwards" (see
 docs/DECISIONS.md): matching stays the correctness check, but stubborn
 functions are parked as near-matches (*_nm.c) and platform work runs in
 parallel. Model, texture and motion formats are understood well enough to
 render posed, textured monsters (docs/formats/, tools/clay_dump.py).
-PS2Recomp (static recompiler) is being tested as a stop-gap for code not yet
-decompiled (docs/STATUS.md).
+PS2Recomp (static recompiler) was tried on 5 Oct 2026 and is no longer part of
+the plan (owner, 3 Nov 2026; docs/DECISIONS.md).
 
 - Work is split between worker agents in git worktrees (../mh1-wt/A..F,
   branches agent-A..F) and a coordinating session that merges into main.
   Agents follow docs/agents/BRIEF.md and keep notes in docs/agents/; the
   coordinating session follows docs/agents/COORDINATOR.md.
 - The owner's discs live in disc/ (gitignored): mh1 (base), mh1_us (US release, SLUS_208.96, stripped), mhg (PS2 G),
-  mhg_wii (Wii MH G), mhp (PSP Portable), mhf (Frontier 1.0 installer).
+  mh2 (PS2 Dos, JP 1.04), mhg_wii (Wii MH G), mhp (PSP Portable), mhf (Frontier 1.0 installer).
 - The owner describes their reverse-engineering experience as "so-so" and
   will rely on Claude for most of the technical work. Keep them in the loop:
   explain findings in plain language and check in before big decisions.

@@ -1,6 +1,7 @@
-# MH2 struct layouts: what is known and how (STRUCTS agent, 2 Nov 2026)
+# MH Dos (MH2): struct layouts, what is known and how (STRUCTS agent, 2 Nov 2026)
 
-Community mh2-decomp not opened. All from our disassembly of the owner's disc and our G/MH1 sources.
+- **Source:** our disassembly of the owner's disc and our G/MH1 sources. The community mh2-decomp repo was not opened.
+- **Proof:** sizes and bases in the table below are proven by a memset or copy in MH2's code. Everything else is marked.
 
 ## Tools
 
@@ -18,7 +19,7 @@ Community mh2-decomp not opened. All from our disassembly of the owner's disc an
 | User_data | 0x5D4A60 | 0x37F8 | copy to the card image, 0x3DB328 and others. The old 0x5D73C4 came from gold |
 | net_common_w | 0x5D46A0 | 0xE0 | two memsets |
 | PitMenu | 0x5BB080 | 0x1420 | memset; the struct in menu.h only reaches its log's end |
-| game_w | 0x6ADCB0 | 0x2BC | seven memsets. docs said 0x2C0 |
+| game_w | 0x6ADCB0 | 0x2BC | seven memsets. An earlier guess in docs/mh2.md said 0x2C0; that guess was wrong |
 | shell_work | 0x5B70D0 | 0x3500 | memset: 64 x 0xD4, which agrees with SHLW 0xD4 if there are 64; the count itself is not proven |
 | system_w | 0x6ADF90 | 0xF4 | memset; MH1's is 0x80. Only moved field seen: little, not laid out |
 | MemcardWork | 0x6AF100 | 0xF4 | memset; MH1 0xA4 votes for 0xCC, not laid out |
