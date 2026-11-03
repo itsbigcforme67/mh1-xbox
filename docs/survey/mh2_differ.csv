@@ -40,6 +40,7 @@ instructions_differ,file,mh2_module,mh2_addr,functions,functions_same,functions_
 1,main/menu/menu17,sub_main,0x00346570,1,0,0,5
 1,mhg/main/menu/menu12_p1,sub_main,0x00347B70,1,0,0,6
 1,mhg/lobby/cnet/cnlbsg_p44,lobby,0x0070ABA0,1,0,0,13
+1,mhg/main/stage/f_stage_p1,sub_main,0x003797A0,3,2,0,17
 1,mhg/lobby/cnet/cnlbse_p39,lobby,0x00707060,1,0,0,18
 1,mhg/lobby/cnet/cnlbse_p40,lobby,0x007070B0,1,0,0,18
 1,mhg/lobby/cnet/cnlbse_p41,lobby,0x00707100,1,0,0,19
@@ -106,10 +107,10 @@ instructions_differ,file,mh2_module,mh2_addr,functions,functions_same,functions_
 5,mhg/main/fl/fldma01_p1,main,0x0017A820,3,2,0,209
 5,mhg/main/sys/adxs04_p1,sub_main,0x00324080,12,8,1,476
 6,lobby/f/lb_z59,lobby,0x00740D20,1,0,0,16
-6,mhg/main/stage/f_stage_p1,sub_main,0x003797A0,3,1,1,17
 6,lobby/f/lb_z103,lobby,0x007A81A0,1,0,0,21
 6,mhg/lobby/f/lb_tu_ib_p2,lobby,0x0076CC00,1,0,0,21
 6,lobby/b/lb_bz05,lobby,0x007573E0,3,1,0,30
+6,game/em/em_cmd_r31,game,0x0072B3A0,1,0,0,117
 6,mhg/lobby/f/lb_tu_browser_p1,lobby,0x00722520,6,5,0,129
 6,mhg/main/pad/usbkbdm_p1,sub_main,0x002F98B0,6,4,1,175
 6,mhg/main/pl/f_pl_p9,game,0x00714230,4,3,0,365
@@ -550,6 +551,7 @@ instructions_differ,file,mh2_module,mh2_addr,functions,functions_same,functions_
 161,main/emw/emw02,sub_main,0x00377E10,17,8,3,525
 163,yn/ui31,yn,0x00ACADD0,1,0,0,216
 163,game/shell/shell23,game,0x006D7E70,6,1,4,243
+163,main/stage/f_stage,sub_main,0x003794E0,6,2,2,287
 165,lobby/b/lb_by123,lobby,0x007754D0,3,0,2,177
 165,lobby/f/lb_ao01,lobby,0x0070EA70,6,0,3,206
 165,lobby/f/lb_url,lobby,0x00730B40,25,18,3,1040
@@ -557,7 +559,6 @@ instructions_differ,file,mh2_module,mh2_addr,functions,functions_same,functions_
 166,main/game/flow02,sub_main,0x00328390,8,5,2,279
 166,mhg/main/pl/f_pl_p17,game,0x007BAF20,6,0,1,309
 168,mhg/main/menu/menu_gunmes_p1,sub_main,0x00351230,2,0,1,226
-168,main/stage/f_stage,sub_main,0x003794E0,6,1,3,287
 169,main/eft/eft26,sub_main,0x003D2710,7,4,1,292
 169,mhg/main/pl/f_pl_p26,game,0x0071C980,5,0,0,473
 171,mhg/main/ud/f_ud_p9,sub_main,0x003BACB0,3,0,2,201
@@ -676,6 +677,8 @@ instructions_differ,file,mh2_module,mh2_addr,functions,functions_same,functions_
 555,mhg/main/quest/f_quest_p18,sub_main,0x003A77E0,8,1,1,638
 576,mhg/main/quest/f_quest_p19,sub_main,0x003A77E0,5,0,0,503
 576,game/em/em08,game,0x007DE3F0,11,0,5,748
+585,main/stage/stage_set,sub_main,0x00378A30,1,0,0,396
+585,mhg/main/stage/stage_set_g,sub_main,0x00378A30,1,0,0,396
 590,select/edit03,select,0x006AFF30,9,1,5,569
 591,mhg/main/quest/f_quest_p5,sub_main,0x003A77E0,5,0,0,644
 612,game/em/em02,game,0x0081AE00,13,0,7,906
