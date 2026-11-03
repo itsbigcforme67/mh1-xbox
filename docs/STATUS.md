@@ -16,13 +16,13 @@ named for each.
   this log). Village and all 98 offline quests on the PC; installed on the real Xbox and runs the village at 30 game frames a
   second (29 Oct). English: 47% official text on 15 Oct; the source order (Freedom first) was decided on 28 Oct
   (docs/DECISIONS.md).
-- **MH2 / Dos.** Main and all 12 overlays rebuild byte-identical (13 of 13, tools/mh2_check.py). 2,290 functions, 6.66%
-  matched at the merge of 3 Nov; 6.88% after the CODE+HUNT merge later that day (commit message). The PC build draws the
-  title and runs the start of a quest up to the blockers in docs/mh2/hunt.md. No MH2 game code has been checked in an
-  emulator: proof is bytes only. Xbox not tried.
+- **MH2 / Dos.** Main and all 12 overlays rebuild byte-identical (13 of 13, tools/mh2_check.py). 2,310 functions, 6.95%
+  matched (3 Nov, rounds 3 and 4 below). On the PC, `--quest 1014` runs MH2's own quest flow: the hunter walks, both quest
+  monsters run MH2's em_move every tick, and the time-up and clear paths reach the result screen (mode 5), where they crash
+  in records_update. Xbox not tried.
 - **Gap in this log:** there are no entries for 16-28 Oct 2026. Decisions of those days are in docs/DECISIONS.md; agent
   hand-overs of 23-29 Oct are in docs/agents/COORDINATOR.md ("Current assignments").
-- **Next:** MH2: docs/mh2/hunt.md "Blockers for CODE" and docs/mh2_port.md section 6. G and MH1: docs/agents/COORDINATOR.md.
+- **Next:** MH2: the "Next" lists of docs/mh2/host.md and docs/mh2/shared.md. G and MH1: docs/agents/COORDINATOR.md.
 
 ## 4 Oct 2026, session 1: PS2 Monster Hunter G survey
 
@@ -1164,3 +1164,27 @@ entry. Details: docs/mh2/code.md and docs/mh2/hunt.md.
 - Still open, need a run with the disc: the MH2 sleep table names (docs/mh2/hunt.md vs data_map.txt) and quest_w byte 0x9D
   (x168 or x169). The date of the "5 or 6 Oct" entry cannot be checked: git history starts on 29 Oct.
 - Docs only; no C, header, tool or config file changed.
+
+## 3 Nov 2026 (night): MH Dos rounds 3 and 4 (WALK + QUEST, then SHARED + HOST)
+
+Two agents at a time (the laptop runs hot). Each round merged into main, then the full check (47 of 47), carry register,
+mh2_rebuild and mh2_check (13 of 13 identical), plus hidden PC runs of quest 1014.
+- Round 3, 6.88% to 6.92%. WALK (docs/mh2/walk.md): FRW, HENT, PLLC, EFT01/EFT13 MH2 views in shared C; PLW part pointers
+  at 0xD0; 866 func_pairs names folded into the PC's symbol view; data_load_ptr / pl_area_top swapped back. QUEST
+  (docs/mh2/quest_flow.md): MH2's quest state machine 0x3A2E30 and script 0x3A9230 as host C in place of G's
+  Quest_condition_judging; quest 1014 no longer clears at tick 7. Result: the hunter walks off the beach into the sea.
+  The first full check failed kr_returns / kr_returns_g: five host declarations said int where the game function returns
+  u8 / s16. Fixed before the push.
+- Round 4, 6.95%. SHARED (docs/mh2/shared.md): Game_clear_ck, Quest_time_get / Quest_timer_reset (MISSION2), EMT.prog
+  0x3D0, em_init's part flags at EMW 0x4C8, HCHR / HSHL / PLX MH2 views, PLW_STRIDE 0x970, 9 hit functions matched,
+  info_str0..3 placed. HOST (docs/mh2/host.md): MH2's em_move 0x904CF0 and the quest monster set-up as host C; em_prog_tbl
+  is at 0x90DE10 (data_map's 0x90DE70 is its kind-24 entry). With RT_MH2_EM=1 the quest runs 900 ticks; the Rathian sits
+  in em_fly00 because its motion layer is never set up. Both quest end paths reach mode 5 and crash in records_update
+  (hunt_group_tbl NULL on MH2).
+- At the merge: dropped the host Game_clear_ck, Quest_time_get, em_effect_move and the timer workaround (shared C reads
+  MH2's places now); restored config/mhg/pc_ptrs.txt, which an MH2 branch had regenerated from an empty build/mhg.
+- The cloud readability pass (docs only, plus docs/READABILITY_REPORT.md, suggestions for the C) merged the same night.
+
+Next: the monster's motion set-up on MH2's EMW (em_char_set, em_frame_check's speed at 0x884); hunt_group_tbl or MH2's
+result code; stage 120's camera; the per-stage tables at 199 entries; MH2's CameraWork. Reports: docs/mh2/host.md,
+docs/mh2/shared.md.
