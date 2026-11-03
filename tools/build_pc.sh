@@ -704,8 +704,9 @@ for f in $GAME; do
     case "$f" in src/main/model/light_init_nm.c) [ "$VERSION" = mh2 ] && ABI="$ABI -Dlight_init=g_light_init" ;;
         src/main/model/light_nm.c) [ "$VERSION" = mh2 ] && ABI="$ABI -Dlight_change_normal=g_light_change_normal -Dpl_light_change=g_pl_light_change" ;;
         src/game/em/em_cmd_nm.c) [ "$VERSION" = mh2 ] && ABI="$ABI -Dem_cmd_init=g_em_cmd_init" ;;
-        src/main/quest/f_quest.c|src/main/quest/f_quest_nm.c)   # MH2: its own judging 0x3A2E30 and Quest_time_get 0x3A1FC0 (src/pc/rt/rt_mh2_quest.c)
-            [ "$VERSION" = mh2 ] && ABI="$ABI -DQuest_condition_judging=g_Quest_condition_judging -DQuest_time_get=g_Quest_time_get" ;;
+        src/main/quest/f_quest.c|src/main/quest/f_quest_nm.c)   # MH2: its own judging 0x3A2E30 and Quest_time_get 0x3A1FC0 (src/pc/rt/rt_mh2_quest.c);
+            # Quest_em_init_set 0x3A2030 / Quest_next_em_set 0x3A4370 (src/pc/rt/rt_mh2_em.c: G's scan the model slots at G's game_w+0x28)
+            [ "$VERSION" = mh2 ] && ABI="$ABI -DQuest_condition_judging=g_Quest_condition_judging -DQuest_time_get=g_Quest_time_get -DQuest_em_init_set=g_Quest_em_init_set -DQuest_next_em_set=g_Quest_next_em_set" ;;
         src/main/font/dsp01.c) [ "$VERSION" = mh2 ] && ABI="$ABI -DGame_clear_ck=g_Game_clear_ck" ;; esac   # (reads G's game_w+0x3E)
     case "$f" in src/main/item/item_nm.c) ABI="-Dinit_item_work=ps2_init_item_work -Dclr_item_work=ps2_clr_item_work -Dmove_item=ps2_move_item -Ditem_check=ps2_item_check -Dpush_item_work=ps2_push_item_work" ;; src/main/tu/sk_all.c) ABI="-DSoftKeyboard_set=sk_real_set -DSoftKeyboard_move=sk_real_move -DSoftKeyboard_exit=sk_real_exit" ;; esac
     cc_obj_p "$b" "$CC $INC $GAMEFLAGS $ABI $SYS -c $src -o $o"

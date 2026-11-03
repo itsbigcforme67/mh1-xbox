@@ -27,7 +27,7 @@ extern u8 *mission_area;
 void Ext_pick_point_init(void);
 int ran_suu();
 unsigned char Get_hunter_rank();
-void quest_em_init();
+void rt_mh2_quest_em_init(void);
 void rt_quest_mem_init(void);
 void rt_mh2_quest_targets_init(void);
 
@@ -81,26 +81,34 @@ static int start_stage(void)
  * (gm_sub is loaded as an extra image, rt_addr reads it). Words of other ranges were relocated by the import already. */
 void *rt_host_sym(const char *n);
 size_t rt_table_size(const char *name);
-/* em_prog_tbl (gm_sub 0x90DE70, 35 kinds): each kind's table {local init, local init, ?, effect move, two more functions MH2
- * added, then data}. MH2's monster functions have no names the PC knows, so those slots import as NULL and em_create_model
- * refuses the kind. Stand-in: G's functions of the same kind number (emNN_local_init, emNN_effect_move, host C) in a copy of
- * the table. Whether MH2's kind N is G's kind N is checked for kind 1 only (its model is em01, the Rathian); for the other
- * kinds it is a guess. RT_MH2_EM_PROG=0 turns this off. */
+/* em_prog_tbl (gm_sub 0x90DE10, 74 kinds, config/mh2/pc_data.txt): each kind's table {local init, local init, ?, effect move,
+ * two more functions MH2 added, then data}. MH2's monster functions have no names the PC knows, so those slots import as NULL
+ * and em_create_model refuses the kind. Stand-in: G's functions of the kind's family (emNN_local_init, emNN_effect_move, host
+ * C) in a copy of the table. The family is the G main MH2's own em_move dispatch (gm_sub 0x904AB0, jump table 0x932FC0) calls
+ * for the kind, and em_init_sub's (0x903EE0, table 0x932E90) groups the kinds the same way; that the G functions do what MH2's
+ * do is a guess (checked for kind 1 only: its model is em01, the Rathian). RT_MH2_EM_PROG=0 turns this off. */
 extern void *em_prog_tbl[];
 static void rt_nop_em(void *em) { (void)em; }
+/* G family per MH2 kind (0: none on the PC) */
+static const u8 em_family[74] = {
+    1, 1, 2, 3, 4, 4, 20, 7, 8, 9, 10, 1, 12, 16, 14, 15, 16, 17, 18, 19,
+    20, 21, 17, 9, 19, 12, 14, 27, 27, 29, 16, 27, 4, 33, 8, 16, 2, 1, 20, 20,
+    40, 1, 1, 14, 14, 15, 21, 17, 0, 1, 7, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 3, 12, 2, 0, 0 };
+int rt_mh2_em_family(int kind) { return kind >= 0 && kind < 74 ? em_family[kind] : 0; }
 static void em_prog_fix(void)
 {
-    static void *copy[35][16];
+    static void *copy[74][16];
     char a[48], b[48];
     int k, j;
     if (getenv("RT_MH2_EM_PROG") && !atoi(getenv("RT_MH2_EM_PROG")))
         return;
-    for (k = 1; k < 35; k++) {
+    for (k = 1; k < 74; k++) {
         void **t = em_prog_tbl[k], *init, *eff;
-        if (!t || (t[0] && t[3]))
+        if (!t || (t[0] && t[3]) || !em_family[k])
             continue;
-        snprintf(a, sizeof a, "em%02d_local_init", k);
-        snprintf(b, sizeof b, "em%02d_effect_move", k);
+        snprintf(a, sizeof a, "em%02d_local_init", em_family[k]);
+        snprintf(b, sizeof b, "em%02d_effect_move", em_family[k]);
         init = rt_host_sym(a);
         eff = rt_host_sym(b);
         if (!init || !eff)
@@ -221,7 +229,7 @@ int rt_mh2_quest_start(int no)
     }
     /* 0x3A7FC0 / 0x3A3DF0 (clear) and 0x3A8060 / 0x3A3E20 (fill): the quest's targets and item checks (rt_mh2_quest.c) */
     rt_mh2_quest_targets_init();
-    quest_em_init();
+    rt_mh2_quest_em_init();      /* MH2's entry layout (rt_mh2_em.c); G's quest_em_init wrote G's places */
     /* NPCZoomInCameraCancel, game 0x6EE380(0), gm_sub 0x90AAA0: skipped */
     rt_log("MH2 quest %d: mission %u bytes, start stage %d, time %d, reward %d, fee %d, flags 0x%X", no, (unsigned)n, st,
            quest_w.x10, quest_w.x14, quest_w.x18, (unsigned)quest_w.x40);

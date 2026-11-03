@@ -705,6 +705,9 @@ int rt_quest_monster_stage(int *kind)
         return -1;
     if (kind)
         *kind = q->id;
+#ifdef VERSION_MH2
+    return *(u16 *)((u8 *)q + 8) == 0xFFFF ? -1 : *(u16 *)((u8 *)q + 8);     /* MH2's entry: the stage is the u16 at +8 */
+#endif
     return (u8)q->x07;
 }
 
