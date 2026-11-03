@@ -1076,6 +1076,72 @@ static int test_hold_ticks(int ticks)
 #ifdef VERSION_MH2
 /* --model NAME (test aid, docs/mh2/platform.md): one *_amh.bin of DATA.BIN with its *_tex.bin, whole, unlit and unposed, from a
  * camera fitted to its bounds; a --shot of it. RT_MODEL_AZ turns the camera (radians). No game code runs. */
+/* --model X.tex: the pictures of a .tex pack side by side (MOMO packs through the link reader; endroll.tex and gallery.tex are AFS
+ * archives of TIM2 files, opened in place: RT_TEX_FIRST picks the first entry shown) */
+static const char *mh2_disc;
+static int mh2_tex_shot(const char *name, fmt_blob pack, const char *shot, int W, int H)
+{
+    gfx_texture *tx[16];
+    int nt = 0, i, f, first = getenv("RT_TEX_FIRST") ? atoi(getenv("RT_TEX_FIRST")) : 0;
+    uint8_t hd[4] = { 0 };
+    int idx = fmt_afs_find(&afs, name);
+    fmt_afs_read_at(&afs, idx, 0, hd, 4);
+    if (!memcmp(hd, "AFS", 3)) {
+        fmt_afs sub;
+        char path[1024];
+        snprintf(path, sizeof path, "%s/DATA.BIN", mh2_disc);
+        if (fmt_afs_open_nested(&sub, &afs, path, idx) != 0)
+            return 1;
+        printf("%s: AFS of %u files\n", name, (unsigned)sub.count);
+        for (i = first; i < (int)sub.count && nt < 16; i++) {
+            size_t n;
+            uint8_t *p = fmt_afs_read(&sub, i, &n);
+            fmt_blob b = { p, n };
+            apx_image img;
+            if (p && fmt_apx_decode(&img, b, FMT_LE) == 0) {
+                tx[nt++] = gfx_create_texture(img.w, img.h, img.rgba);
+                printf("  %d: %dx%d\n", i, img.w, img.h);
+                free(img.rgba);
+            }
+            free(p);
+        }
+        fmt_afs_close(&sub);
+    } else {
+        printf("%s: %d pictures\n", name, fmt_link_count(pack, FMT_LE));
+        for (i = first; i < fmt_link_count(pack, FMT_LE) && nt < 16; i++) {
+            apx_image img;
+            if (fmt_apx_decode(&img, fmt_link_entry(pack, i, FMT_LE), FMT_LE) == 0) {
+                tx[nt++] = gfx_create_texture(img.w, img.h, img.rgba);
+                printf("  %d: %dx%d\n", i, img.w, img.h);
+                free(img.rgba);
+            }
+        }
+    }
+    for (f = 0; f < 3; f++) {
+        gfx_begin_frame(0x304050);
+        gfx_set_render_state(GFX_RS_BLEND, 1);
+        gfx_set_render_state(GFX_RS_ALPHA_REF, 0);
+        for (i = 0; i < nt; i++) {
+            int cols = nt <= 1 ? 1 : nt <= 4 ? 2 : 4;
+            float cw = 640.0f / cols, ch = 448.0f / ((nt + cols - 1) / cols), x0 = (i % cols) * cw, y0 = (i / cols) * ch;
+            float pos[12] = { x0, y0, x0 + cw, y0, x0, y0 + ch, x0 + cw, y0, x0 + cw, y0 + ch, x0, y0 + ch };
+            static const float st[12] = { 0, 0, 1, 0, 0, 1, 1, 0, 1, 1, 0, 1 };
+            gfx_set_render_state(GFX_RS_TEXTURE, (uintptr_t)tx[i]);
+            gfx_draw_2d(640, 448, 6, pos, st, NULL);
+        }
+        gfx_set_render_state(GFX_RS_TEXTURE, 0);
+        if (f == 2 && shot) {
+            uint8_t *rgb = malloc((size_t)W * H * 3);
+            gfx_read_pixels(rgb);
+            write_png(shot, W, H, rgb);
+            printf("wrote %s\n", shot);
+            free(rgb);
+        }
+        gfx_end_frame();
+    }
+    return 0;
+}
+
 static int mh2_model_shot(const char *name, const char *shot, int W, int H)
 {
     fl_model m;
@@ -1086,6 +1152,8 @@ static int mh2_model_shot(const char *name, const char *shot, int W, int H)
     float lo[3] = { 1e30f, 1e30f, 1e30f }, hi[3] = { -1e30f, -1e30f, -1e30f }, eye[3], tar[3], r = 0, az = getenv("RT_MODEL_AZ") ? (float)atof(getenv("RT_MODEL_AZ")) : 0.7f;
     int i, v, c, f;
     flmat camw, view, proj, id;
+    if (strstr(name, ".tex"))
+        return mh2_tex_shot(name, link, shot, W, H);
     if (!link.p) {
         fprintf(stderr, "%s: not read\n", name);
         return 1;
@@ -1144,7 +1212,6 @@ static int mh2_model_shot(const char *name, const char *shot, int W, int H)
 /* mib.afs inside DATA.BIN: 6 files per quest, m<no><d|n><0-2>.mib, stored as they are. What d/n and 0-2 pick is read from sub_main
  * 0x3A1718-0x3A17A8: a base index + 3 x one flag + another counter (day and night, and a second choice: which is which is not settled).
  * The header is 0x74 bytes of offsets from the file start. docs/mh2/platform.md has the fields. */
-static const char *mh2_disc;
 static uint8_t *mh2_mission;
 static size_t mh2_mission_n;
 
@@ -3114,9 +3181,9 @@ int main(int argc, char **argv)
 #ifdef VERSION_MH2
     /* The host's quest and stage scaffolding below reads tables MH2 does not have names for yet: --boot goes straight
      * to the boot tasks, and nothing else runs (docs/mh2_port.md) */
+    mh2_disc = disc;
     if (mh2_model)
         return mh2_model_shot(mh2_model, shot, W, H);
-    mh2_disc = disc;
     if (quest_no && !boot)
         return mh2_quest_shot(quest_no, shot, W, H);
     if (!boot) {
