@@ -29,11 +29,11 @@ extern u8 quest_w[], game_w[], player_work[];
 extern u8 *mission_area;
 
 int Online_ck();
-int set01_set2();
-int set01_set();
-int set01_set2_use_mem();
+u8 set01_set2();
+u8 set01_set();
+u8 set01_set2_use_mem();
 unsigned char Get_hunter_rank();
-int Pl_item_num_ck();
+s16 Pl_item_num_ck();
 s16 act_ck();
 int adx_se_set();
 int se_req();

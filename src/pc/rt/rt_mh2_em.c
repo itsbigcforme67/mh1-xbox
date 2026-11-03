@@ -18,7 +18,7 @@
 extern u8 quest_w[], game_w[], player_work[];
 void em_work_set(), em_wall_bit_set(), em_search_data_set(), em_range_set(), Ikari_Data_Set(), em_tsuushin_set();
 void em_init_sub(), em_dur_init(), World_calc(), enemy_mk();
-int Em_max_parts_get();
+u8 Em_max_parts_get();
 void em_cmd_init(u8 *em);      /* rt_mh2.c (game 0x7262E0) */
 void Ext_pick_point_clr();
 

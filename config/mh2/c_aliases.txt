@@ -3648,8 +3648,8 @@ sub_main dakuten_1257 0x00418760
 sub_main dakuten_ck 0x00317C30
 sub_main dakuten_ck_han 0x00319500
 sub_main dakuten_ck_ten 0x003194F0
-sub_main data_load_ptr 0x006AE004
-sub_main data_load_ptr_mh2_006ADFE8 0x006ADFE8
+sub_main data_load_ptr 0x006ADFE8
+sub_main data_load_ptr_mh2_006AE004 0x006AE004
 sub_main delwd 0x002FDB60
 sub_main dic_close 0x002FC250
 sub_main dic_delete 0x002FD980
@@ -3679,6 +3679,8 @@ sub_main efct_circle 0x00351690
 sub_main eft01_d 0x003C8100
 sub_main eft01_e 0x003C81D0
 sub_main eft01_m 0x003C7D20
+sub_main eft01_move 0x003C7AE0
+sub_main eft01_set 0x003C8D40
 sub_main eft01_t 0x003C8400
 sub_main eft02_move 0x003C8E10
 sub_main eft02_set 0x003CA1A0
@@ -3989,6 +3991,8 @@ sub_main frame_check 0x002E5C60
 sub_main frame_check2 0x002E5D70
 sub_main frame_check3 0x002E5DD0
 sub_main frame_init 0x002E5190
+sub_main frame_init_b 0x002E5520
+sub_main frame_move 0x002E5780
 sub_main free_bsmemlist 0x00303E30
 sub_main free_chmemlist 0x00303D90
 sub_main free_entid_tab 0x002FF0D0
@@ -4021,6 +4025,9 @@ sub_main func_002E4CB0 0x002E4CB0
 sub_main func_002E5020 0x002E5020
 sub_main func_002E5030 0x002E5030
 sub_main func_002E5070 0x002E5070
+sub_main func_002E5780 0x002E5780
+sub_main func_002E5C60 0x002E5C60
+sub_main func_002E5D70 0x002E5D70
 sub_main func_002E5DC0 0x002E5DC0
 sub_main func_002E5DD0 0x002E5DD0
 sub_main func_002E5E40 0x002E5E40
@@ -4967,6 +4974,7 @@ sub_main func_003C7AE0 0x003C7AE0
 sub_main func_003C7B70 0x003C7B70
 sub_main func_003C8100 0x003C8100
 sub_main func_003C81D0 0x003C81D0
+sub_main func_003C8D40 0x003C8D40
 sub_main func_003C8E10 0x003C8E10
 sub_main func_003C9520 0x003C9520
 sub_main func_003CA1A0 0x003CA1A0
@@ -4993,6 +5001,7 @@ sub_main func_003CD8A0 0x003CD8A0
 sub_main func_003CD9C0 0x003CD9C0
 sub_main func_003CF070 0x003CF070
 sub_main func_003CF100 0x003CF100
+sub_main func_003D0240 0x003D0240
 sub_main func_003D0DD0 0x003D0DD0
 sub_main func_003D0EA0 0x003D0EA0
 sub_main func_003D1F30 0x003D1F30
@@ -5320,12 +5329,13 @@ sub_main plAMOGetTextureHead 0x002F6D30
 sub_main plAMOSetMaterialData 0x002F6C30
 sub_main plBMPGetPixelAddressFromImage 0x002F8F00
 sub_main plCreateMotionSetFromAAN 0x002F5490
+sub_main plFCVFcurveInterpolateHermite 0x002F8F70
 sub_main plMakePlaneFromPoints 0x002F93B0
 sub_main plMemset 0x00183350
 sub_main plReport 0x001832E0
 sub_main plSetupFOVClipPlanes 0x002F9480
-sub_main pl_area_top 0x006ADFE8
-sub_main pl_area_top_mh2_006AE004 0x006AE004
+sub_main pl_area_top 0x006AE004
+sub_main pl_area_top_mh2_006ADFE8 0x006ADFE8
 sub_main pl_atck_data_set2 0x003B09B0
 sub_main pl_atck_data_set_shl2 0x003B09C0
 sub_main pl_body_make 0x003ACB00
@@ -5345,6 +5355,7 @@ sub_main pl_motion_load 0x00328920
 sub_main pl_move 0x00722600
 sub_main pl_st_set 0x003ABE50
 sub_main pl_sw_set 0x003AC670
+sub_main pl_velocity_sub 0x002E50B0
 sub_main pl_voice_req 0x003AC9A0
 sub_main player_all_load_mh2_00327D40 0x00327D40
 sub_main player_init0 0x0039A0A0
