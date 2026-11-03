@@ -3,43 +3,43 @@
 #include "em_cmd.h"
 
 u8 *em_cmd_near_pos_ck_mh2_00729CE0();
-u8 *game_func_00727840();
-u8 *game_func_007279C0();
-u8 *game_func_007279D0();
-u8 *game_func_00727D00();
-u8 *game_func_007287A0();
-u8 *game_func_00728AD0();
-u8 *game_func_00728E80();
-u8 *game_func_00728EA0();
-u8 *game_func_007292F0();
-u8 *game_func_00729400();
-u8 *game_func_007297A0();
-u8 *game_func_00729E60();
-u8 *game_func_0072A180();
-u8 *game_func_0072A190();
+u8 *em_cmd_area_move_ck();
+u8 *em_cmd_main_jump();
+u8 *em_cmd_stand_ck();
+u8 *em_cmd_body_status_set();
+u8 *em_cmd_pl_target_set();
+u8 *em_cmd_stage_no_sel();
+u8 *em_cmd_area_route_ck();
+u8 *em_cmd_escape_area_set();
+u8 *em_cmd_mind_ck();
+u8 *em_cmd_mind_no_ck();
+u8 *em_cmd_pl_ang_sel();
+u8 *em_cmd_emtype_ck();
+u8 *em_cmd_demo_flag_set();
+u8 *em_cmd_type_sel();
 u8 *game_func_0072A370();
 u8 *game_func_0072A760();
 u8 *game_func_0072A970();
-u8 *game_func_0072B240();
+u8 *game_func_005885E0();
 u8 *game_func_0072B3A0();
-u8 *game_func_0072B580();
-u8 *game_func_0072C300();
-u8 *game_func_0072C470();
-u8 *game_func_0072CB70();
+u8 *em_cmd_smell_set();
+u8 *em_cmd_before_stage_ck();
+u8 *em_cmd_before_stage_sel();
+u8 *em_cmd_em_hp_vital_add();
 u8 *game_func_0072CF20();
-u8 *game_func_0072D780();
-u8 *game_func_0072D790();
-u8 *game_func_0072EA00();
-u8 *game_func_0072EFC0();
-u8 *game_func_0072F650();
+u8 *em_cmd_timer_set();
+u8 *em_cmd_pl_land_target();
+u8 *em_cmd_boss_pl_target_set();
+u8 *em_cmd_my_floor_ck();
+u8 *em_cmd_runaway_timer_set();
 u8 *game_func_0072F9C0();
 u8 *game_func_0072FAF0();
 u8 *game_func_0072FC20();
-u8 *game_func_00730490();
-u8 *game_func_00730540();
+u8 *em_cmd_contents();
+u8 *em_cmd_target_set();
 u8 *game_func_00731480();
-u8 *game_func_007314A0();
-u8 *game_func_007314B0();
+u8 *em_cmd_demo_start();
+u8 *em_cmd_wait_set();
 u8 *game_func_007316A0();
 u8 *game_func_007317C0();
 u8 *game_func_00731AF0();
@@ -82,7 +82,7 @@ void em_cmd_ck(EMW *em) {
                 p = em_cmd_ninshiki_ck(em, p + 1);
                 break;
             case 0x3:
-                p = game_func_00727840(em, p + 1);
+                p = em_cmd_area_move_ck(em, p + 1);
                 break;
             case 0x4:
                 *(u8 *)&em->cmd_idx = 0;
@@ -100,22 +100,22 @@ void em_cmd_ck(EMW *em) {
                 run = 0;
                 break;
             case 0x6:
-                p = game_func_00730540(em, p + 1);
+                p = em_cmd_target_set(em, p + 1);
                 break;
             case 0x7:
-                p = game_func_007279C0(em, p + 1);
+                p = em_cmd_main_jump(em, p + 1);
                 break;
             case 0x8:
-                p = game_func_007279D0(em, p + 1);
+                p = em_cmd_stand_ck(em, p + 1);
                 break;
             case 0x1F:
-                p = em_cmd_stand_ck(em, p + 1);
+                p = em_cmd_op1F(em, p + 1);
                 break;
             case 0x9:
                 p = em_cmd_fly_ck(em, p + 1);
                 break;
             case 0xA:
-                p = game_func_00727D00(em, p + 1);
+                p = em_cmd_body_status_set(em, p + 1);
                 break;
             case 0xB:
                 p = em_cmd_mode_ck(em, p + 1);
@@ -127,7 +127,7 @@ void em_cmd_ck(EMW *em) {
                 p = em_cmd_flag_clear(em, p + 1);
                 break;
             case 0xE:
-                p = em_cmd_emtype_ck(em, p + 1);
+                p = em_cmd_stage_no_ck(em, p + 1);
                 break;
             case 0xF:
                 p = em_cmd_route_set(em, p + 1);
@@ -142,13 +142,13 @@ void em_cmd_ck(EMW *em) {
                 p = em_cmd_find_ck(em, p + 1);
                 break;
             case 0x13:
-                p = game_func_007287A0(em, p + 1);
+                p = em_cmd_pl_target_set(em, p + 1);
                 break;
             case 0x14:
                 p = em_cmd_angle_ck(em, p + 1);
                 break;
             case 0x15:
-                p = game_func_00728AD0(em, p + 1);
+                p = em_cmd_stage_no_sel(em, p + 1);
                 break;
             case 0x16:
                 p = em_cmd_action_set(em, p + 1);
@@ -160,16 +160,16 @@ void em_cmd_ck(EMW *em) {
                 p = em_cmd_area_route_move(em, p + 1);
                 break;
             case 0x19:
-                p = game_func_00728E80(em, p + 1);
+                p = em_cmd_area_route_ck(em, p + 1);
                 break;
             case 0x1A:
-                p = game_func_00728EA0(em, p + 1);
+                p = em_cmd_escape_area_set(em, p + 1);
                 break;
             case 0x1B:
-                p = game_func_007292F0(em, p + 1);
+                p = em_cmd_mind_ck(em, p + 1);
                 break;
             case 0x1C:
-                p = game_func_00729400(em, p + 1);
+                p = em_cmd_mind_no_ck(em, p + 1);
                 break;
             case 0x1D:
                 p = em_cmd_mind_sel(em, p + 1);
@@ -178,7 +178,7 @@ void em_cmd_ck(EMW *em) {
                 p = em_cmd_mind_move_end(em, p + 1);
                 break;
             case 0x20:
-                p = game_func_007297A0(em, p + 1);
+                p = em_cmd_pl_ang_sel(em, p + 1);
                 break;
             case 0x21:
                 p = em_cmd_thirst_ck(em, p + 1);
@@ -190,7 +190,7 @@ void em_cmd_ck(EMW *em) {
                 p = em_cmd_near_pos_ck_mh2_00729CE0(em, p + 1);
                 break;
             case 0x23:
-                p = game_func_00729E60(em, p + 1);
+                p = em_cmd_emtype_ck(em, p + 1);
                 break;
             case 0x24:
                 p = em_cmd_repeat_cnt_set(em, p + 1);
@@ -199,10 +199,10 @@ void em_cmd_ck(EMW *em) {
                 p = em_cmd_repeat_cnt_clr(em, p + 1);
                 break;
             case 0x26:
-                p = game_func_0072A180(em, p + 1);
+                p = em_cmd_demo_flag_set(em, p + 1);
                 break;
             case 0x27:
-                p = game_func_0072A190(em, p + 1);
+                p = em_cmd_type_sel(em, p + 1);
                 break;
             case 0x28:
                 p = em_cmd_all_pl_same_stage_ck(em, p + 1);
@@ -217,13 +217,13 @@ void em_cmd_ck(EMW *em) {
                 p = em_cmd_flag_ck(em, p + 1);
                 break;
             case 0x2C:
-                p = game_func_0072B240(em, p + 1);
+                p = game_func_005885E0(em, p + 1);
                 break;
             case 0x70:
                 p = game_func_0072B3A0(em, p + 1);
                 break;
             case 0x2D:
-                p = game_func_0072B580(em, p + 1);
+                p = em_cmd_smell_set(em, p + 1);
                 break;
             case 0x2E:
                 p = em_cmd_search_data_set(em, p + 1);
@@ -250,7 +250,7 @@ void em_cmd_ck(EMW *em) {
                 p = em_cmd_ikari_ck(em, p + 1);
                 break;
             case 0x37:
-                p = em_cmd_male_ck(em, p + 1);
+                p = em_cmd_op37(em, p + 1);
                 break;
             case 0x38:
                 p = em_cmd_water_ck(em, p + 1);
@@ -268,10 +268,10 @@ void em_cmd_ck(EMW *em) {
                 p = em_cmd_boss_atk_ck(em, p + 1);
                 break;
             case 0x3D:
-                p = game_func_0072C300(em, p + 1);
+                p = em_cmd_before_stage_ck(em, p + 1);
                 break;
             case 0x3E:
-                p = game_func_0072C470(em, p + 1);
+                p = em_cmd_before_stage_sel(em, p + 1);
                 break;
             case 0x3F:
                 p = em_cmd_ground_area_move(em, p + 1);
@@ -280,7 +280,7 @@ void em_cmd_ck(EMW *em) {
                 p = em_cmd_em_mode_change(em, p + 1);
                 break;
             case 0x41:
-                p = game_func_0072CB70(em, p + 1);
+                p = em_cmd_em_hp_vital_add(em, p + 1);
                 break;
             case 0x42:
                 p = em_cmd_horm_pos_ang_ck(em, p + 1);
@@ -301,10 +301,10 @@ void em_cmd_ck(EMW *em) {
                 p = em_cmd_fish_ok_ck(em, p + 1);
                 break;
             case 0x48:
-                p = game_func_0072D780(em, p + 1);
+                p = em_cmd_timer_set(em, p + 1);
                 break;
             case 0x49:
-                p = game_func_0072D790(em, p + 1);
+                p = em_cmd_pl_land_target(em, p + 1);
                 break;
             case 0x4A:
                 p = em_cmd_pl_look_ck(em, p + 1);
@@ -349,7 +349,7 @@ void em_cmd_ck(EMW *em) {
                 p = em_cmd_quest_no_sel(em, p + 1);
                 break;
             case 0x58:
-                p = game_func_0072EA00(em, p + 1);
+                p = em_cmd_boss_pl_target_set(em, p + 1);
                 break;
             case 0x59:
                 p = em_cmd_tenjo_ck(em, p + 1);
@@ -367,7 +367,7 @@ void em_cmd_ck(EMW *em) {
                 p = em_cmd_smell_set_ck(em, p + 1);
                 break;
             case 0x5E:
-                p = game_func_0072EFC0(em, p + 1);
+                p = em_cmd_my_floor_ck(em, p + 1);
                 break;
             case 0x5F:
                 p = em_cmd_st25_pl_target_sel(em, p + 1);
@@ -376,13 +376,13 @@ void em_cmd_ck(EMW *em) {
                 p = em_cmd_st25_gate_ck(em, p + 1);
                 break;
             case 0x61:
-                p = game_func_0072F650(em, p + 1);
+                p = em_cmd_runaway_timer_set(em, p + 1);
                 break;
             case 0x62:
                 p = em_cmd_dansa_sel(em, p + 1);
                 break;
             case 0x63:
-                p = em_cmd_stage_no_ck(em, p + 1);
+                p = em_cmd_male_ck(em, p + 1);
                 break;
             case 0x64:
                 p = em_cmd_target_pl_hate_ck(em, p + 1);
@@ -403,7 +403,7 @@ void em_cmd_ck(EMW *em) {
                 p = em_cmd_rnd32(em, p + 1);
                 break;
             case 0x81:
-                p = game_func_00730490(em, p + 1);
+                p = em_cmd_contents(em, p + 1);
                 break;
             case 0x82:
                 p = em_cmd_sub_contents(em, p + 1);
@@ -429,10 +429,10 @@ void em_cmd_ck(EMW *em) {
                 p = game_func_00731480(em, p + 1);
                 break;
             case 0x92:
-                p = game_func_007314A0(em, p + 1);
+                p = em_cmd_demo_start(em, p + 1);
                 break;
             case 0x93:
-                p = game_func_007314B0(em, p + 1);
+                p = em_cmd_wait_set(em, p + 1);
                 break;
             case 0x94:
                 p = em_cmd_em_atk_bit(em, p + 1);
@@ -444,7 +444,7 @@ void em_cmd_ck(EMW *em) {
                 p = game_func_007317C0(em, p + 1);
                 break;
             case 0x73:
-                p = em_cmd_stage_no_sel(em, p + 1);
+                p = em_cmd_op73(em, p + 1);
                 break;
             case 0x74:
                 p = game_func_00731AF0(em, p + 1);
@@ -453,7 +453,7 @@ void em_cmd_ck(EMW *em) {
                 p = game_func_0072A370(em, p + 1);
                 break;
             case 0x76:
-                p = em_cmd_type_sel(em, p + 1);
+                p = em_cmd_op76(em, p + 1);
                 break;
             case 0x77:
                 p = game_func_0072F9C0(em, p + 1);

@@ -343,7 +343,8 @@ int rt_dbg_item_max(int id)
 
 int rt_dbg_in_quest(void) { return !rt_village_active() && rt_flow_mode() >= 2 && rt_flow_mode() <= 5; }
 
-/* MH2: wrong, G's offset (rt_ver_mhg() is true on MH2). MH2's User_data (0x5D4A60, 0x37F8 bytes): warehouse 500 x 12 at 0xBC, item box 500 at 0x182C, pouch 0x2040, worn equipment 0x2090, gold 0x2984; to switch with STRUCTS' UDMO()/MH2 UDW (also money, rank, EQ_BASE below) */
+/* MH2's User_data (0x5D4A60, 0x37F8 bytes): warehouse 500 x 12 at 0xBC, item box 500 at 0x182C, pouch 0x2040, worn equipment 0x2090, gold 0x2984.
+ * UDO and UDMO (include/mh2_lay_ofs.h) map MH1's and G's offsets there; both are the plain offset outside MH2 */
 static u8 *inv(int which, int *n)
 {
     if (which == DBG_POUCH) {
@@ -379,11 +380,11 @@ void rt_dbg_inv_set(int which, int slot, int id, int count)
            slot, id, count);
 }
 
-int rt_dbg_money(void) { return *(s32 *)(User_data + 0x20); }
+int rt_dbg_money(void) { return *(s32 *)(User_data + UDMO(0x20)); }
 void rt_dbg_set_money(int v)
 {
-    *(s32 *)(User_data + 0x20) = v < 0 ? 0 : v > 9999999 ? 9999999 : v;     /* Gold_add's range */
-    rt_log("debug menu: money %d", *(s32 *)(User_data + 0x20));
+    *(s32 *)(User_data + UDMO(0x20)) = v < 0 ? 0 : v > 9999999 ? 9999999 : v;     /* Gold_add's range */
+    rt_log("debug menu: money %d", *(s32 *)(User_data + UDMO(0x20)));
 }
 
 /* hunter rank: User_data+0x37B (MH1), +0xC23 (G, include/ud.h UDW). Both rows were MH1-only until the cross-game
@@ -393,11 +394,11 @@ void rt_dbg_set_money(int v)
 #else
 #define UD_RANK 0x37B
 #endif
-int rt_dbg_hr(void) { return User_data[UD_RANK]; }
+int rt_dbg_hr(void) { return User_data[UDMO(UD_RANK)]; }
 void rt_dbg_set_hr(int v)
 {
-    User_data[UD_RANK] = (u8)(v < 0 ? 0 : v > 99 ? 99 : v);
-    rt_log("debug menu: hunter rank %d", User_data[UD_RANK]);
+    User_data[UDMO(UD_RANK)] = (u8)(v < 0 ? 0 : v > 99 ? 99 : v);
+    rt_log("debug menu: hunter rank %d", User_data[UDMO(UD_RANK)]);
 }
 void Quest_clear_bit_set(int n);
 #ifdef VERSION_MHG
@@ -466,10 +467,10 @@ const char *rt_dbg_equip_name(int kind, int id)
 static const int arm_ofs[DBG_EQ_N] = { 0, 0, 1, 2, 3, 4, 0 };      /* head body arm waist leg -> armour byte (leg first) */
 int rt_dbg_equip_get(int kind)
 {
-    u8 *e = User_data + EQ_BASE;
+    u8 *e = User_data + UDMO(EQ_BASE);
     if (kind == DBG_EQ_MELEE || kind == DBG_EQ_GUN)
         return e[1] == (kind == DBG_EQ_GUN ? 7 : 6) ? *(u16 *)(e + 2) : -1;
-    return e[6 + arm_ofs[kind]];
+    return User_data[UDMO(EQ_BASE + 6 + arm_ofs[kind])];     /* MH2: one armour piece per 12 bytes */
 }
 
 #ifndef VERSION_MHG
@@ -481,13 +482,13 @@ int rt_dbg_equip_set(int kind, int id)
 {
     static const int game_kind[DBG_EQ_N] = { 6, 7, 2, 3, 4, 5, 0 };     /* the equipment box's kinds */
 #ifdef VERSION_MHG
-    u8 *e = User_data + EQ_BASE;
+    u8 *e = User_data + UDMO(EQ_BASE);
     if (kind == DBG_EQ_MELEE || kind == DBG_EQ_GUN) {
         e[1] = (u8)game_kind[kind];
         *(u16 *)(e + 2) = (u16)id;
         *(u16 *)(e + 4) = 0;
     } else
-        e[6 + arm_ofs[kind]] = (u8)id;
+        User_data[UDMO(EQ_BASE + 6 + arm_ofs[kind])] = (u8)id;
 #else
     u8 idx = Warehouse_equip_stack(User_data, (s8)game_kind[kind], (s16)id, 0);
     if (idx == 0xFF) {
