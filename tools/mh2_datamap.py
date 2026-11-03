@@ -230,13 +230,21 @@ def fsize_of(ref, mod, a, want):
     return sz // 4 if sz else want
 
 
-def read_pairs():
+def read_pairs(extra=True):
     out = []
     for r in csv.DictReader(open(P("docs/survey/mh2_map.csv"))):
         if not r["ref_addr"]:
             continue
         out.append((r["mh2_module"], int(r["mh2_addr"], 16), int(r["size"]), r["class"], float(r["sim"] or 0), r["src"],
                     r["ref_module"], int(r["ref_addr"], 16)))
+    p = P("config/mh2/func_pairs.txt")                  # tools/mh2_pairmore.py: read as edited pairs
+    if extra and os.path.exists(p):
+        sizes = {(r["mh2_module"], int(r["mh2_addr"], 16)): int(r["size"]) for r in csv.DictReader(open(P("docs/survey/mh2_map.csv")))}
+        for l in open(p):
+            f = l.split()
+            if l[0] != "#" and len(f) == 8:
+                k = (f[0], int(f[1], 16))
+                out.append((f[0], k[1], sizes[k], "edited", float(f[7]) if f[6] == "items" else 0.7, f[3], f[4], int(f[5], 16)))
     return out
 
 
