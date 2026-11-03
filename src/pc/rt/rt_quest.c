@@ -56,7 +56,7 @@ void em_create_model(int slot)
     }
     if (!em_prog_tbl[kind] || !((void **)em_prog_tbl[kind])[0] || !((void **)em_prog_tbl[kind])[3]
 #ifdef VERSION_MH2
-        || getenv("RT_MH2_NO_EM")   /* test aid: no monsters (the hunter alone on the quest's stage) */
+        || !getenv("RT_MH2_EM")     /* monsters only with RT_MH2_EM=1 until their set-up runs (docs/mh2/hunt.md blocker 4) */
 #endif
         ) {
         /* [0] local init and [3] the per-tick effect script (em_effect_move)

@@ -24,13 +24,20 @@
 #include <stdlib.h>
 #include <string.h>
 
-#define PS8(p, o)  (*(s8 *)((u8 *)(p) + (o)))
-#define PU8(p, o)  (*(u8 *)((u8 *)(p) + (o)))
-#define PS16(p, o) (*(s16 *)((u8 *)(p) + (o)))
-#define PU16(p, o) (*(u16 *)((u8 *)(p) + (o)))
-#define PS32(p, o) (*(s32 *)((u8 *)(p) + (o)))
-#define PU32(p, o) (*(u32 *)((u8 *)(p) + (o)))
-#define PF32(p, o) (*(f32 *)((u8 *)(p) + (o)))
+#ifdef VERSION_MH2
+/* the raw offsets below are MH1's PLW offsets: MH2 moved most (include/mh2_ofs.h); only bases inside player_work map */
+#include "mh2_ofs.h"
+#define RT_PLO(p, o) ((const u8 *)(p) >= (const u8 *)player_work && (const u8 *)(p) < (const u8 *)player_work + 8 * 0x970 ? MH2_OFS_PLW(o) : (o))
+#else
+#define RT_PLO(p, o) (o)
+#endif
+#define PS8(p, o)  (*(s8 *)((u8 *)(p) + RT_PLO(p, o)))
+#define PU8(p, o)  (*(u8 *)((u8 *)(p) + RT_PLO(p, o)))
+#define PS16(p, o) (*(s16 *)((u8 *)(p) + RT_PLO(p, o)))
+#define PU16(p, o) (*(u16 *)((u8 *)(p) + RT_PLO(p, o)))
+#define PS32(p, o) (*(s32 *)((u8 *)(p) + RT_PLO(p, o)))
+#define PU32(p, o) (*(u32 *)((u8 *)(p) + RT_PLO(p, o)))
+#define PF32(p, o) (*(f32 *)((u8 *)(p) + RT_PLO(p, o)))
 #define GW8(o)  PU8(&game_w, GWX(o))     /* MH1 offsets; G's through include/gwx.h */
 #define GW16(o) PU16(&game_w, o)
 
@@ -281,13 +288,22 @@ void func_60E2B0(void *pl, int a) { (void)pl; (void)a; }   /* lobby Eft25_set */
  * sets are not used by the host motion layer. The world matrices are
  * filled each frame from the host skeleton (rt_player_parts). */
 static u8 parts_work_h[8][0x1600] __attribute__((aligned(16)));
+#ifdef VERSION_MH2
+static u8 *mh2_parts[8][32];
+#endif
 void flmatInit(f32 *m);
 void parts_init(void *pl)
 {
     int i;
     u8 *b = parts_work_h[PU16(pl, 0xC) & 7];
     for (i = 0; i < 32; i++, b += 0xB0) {
+#ifdef VERSION_MH2
+        /* MH2: where the 32 part pointers live is not known (MH1 0x110..0x18F; MH2 has other fields there, mh2_plw.h): the
+         * host keeps its blocks to itself (rt_player_parts) */
+        mh2_parts[PU16(pl, 0xC) & 7][i] = b;
+#else
         PU32(pl, 0x110 + i * 4) = (u32)(uintptr_t)b;
+#endif
         memset(b, 0, 0xB0);
         b[0] = 0;
         ((f32 *)b)[0] = ((f32 *)b)[5] = ((f32 *)b)[10] = ((f32 *)b)[15] = 1.0f;
@@ -306,7 +322,11 @@ void rt_player_parts(int no, const float *world, int n)
     int i;
     rt_actor_joints(pl, world, n);
     for (i = 0; i < 32 && i < n; i++) {
+#ifdef VERSION_MH2
+        u8 *b = mh2_parts[no & 7][i];
+#else
         u8 *b = (u8 *)(uintptr_t)PU32(pl, 0x110 + i * 4);
+#endif
         if (b)
             memcpy(b + 0x40, world + 16 * i, 64);
     }

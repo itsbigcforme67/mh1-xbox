@@ -737,7 +737,7 @@ int rt_monster_spawn(int kind, const float pos[3], int ang_y)
     QEM *q, dflt;
     EMW *em;
 #ifdef VERSION_MH2
-    if (getenv("RT_MH2_NO_EM"))     /* test aid (rt_quest.c): the hunter alone */
+    if (!getenv("RT_MH2_EM"))       /* monsters only with RT_MH2_EM=1 (rt_quest.c) */
         return -1;
 #endif
     if (quest_w.no != 0) {
