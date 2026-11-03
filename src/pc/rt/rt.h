@@ -32,6 +32,7 @@ uint32_t rt_va_mh1(int set, uint32_t mh1);
 uint32_t rt_ovl_vram(void);
 /* G's resident sub_main.bin (0x4A0C80, after main's .bss): part of main's space */
 void rt_set_sub_main(uint8_t *bin, size_t n);   /* takes ownership */
+void rt_add_overlay(uint8_t *bin, size_t n);    /* MH2: gm_sub, plsel; takes ownership */
 
 /* ------------------------------------------------------------ PS2 memory */
 /* Main ELF (SLPM_654.95) and the game.bin overlay (vram 0x533980), kept in
@@ -40,6 +41,7 @@ int rt_load_elf(const char *path);
 void rt_set_overlay(uint8_t *bin, size_t n);   /* takes ownership */
 /* Pointer to `n` bytes at PS2 address `va`, or NULL if not in a loaded image. */
 const uint8_t *rt_addr(uint32_t va, size_t n);
+uint32_t rt_va_of_host(const void *host);             /* a host pointer into a loaded image back to its PS2 address, 0 if none */
 /* 1 if the range is .bss (zero at start) of the ELF or the overlay. */
 int rt_in_bss(uint32_t va, size_t n);
 /* Zeroed host memory standing in for PS2 .bss at va (pointers in data

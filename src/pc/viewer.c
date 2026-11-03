@@ -86,7 +86,9 @@ static void drop(uint8_t **keep)
 
 /* stages: MH1 0-87, G 0-91 (G's per-stage tables have 92 entries; 88-91 are G's own stages, e.g. 88 for event quest
  * 60029, the GALLERY's scene 13) */
-#ifdef VERSION_MHG
+#ifdef VERSION_MH2
+#define NSTAGE 199              /* the per-stage tables of sub_main run 199 long: entry 199 is the next table's cockpit.amo */
+#elif defined(VERSION_MHG)
 #define NSTAGE 92
 #else
 #define NSTAGE 88
@@ -96,7 +98,14 @@ static void drop(uint8_t **keep)
 static fmt_blob load_stage_file(uint32_t table, int stage, uint8_t **keep)
 {
     fmt_blob none = { NULL, 0 };
+#ifdef VERSION_MH2
+    /* read from load_stage_model (sub_main 0x328760), 0x334AC0, load_stage_hit and 0x33CED0: the tables have no names yet.
+     * Stages 131 and 132 have day and night files (0x42F370...), not handled: the table's first */
+    uint32_t t2 = table == 0x2EC950 ? 0x421A80 : table == 0x2EDB40 ? 0x425510 : table == 0x2ECD70 ? 0x4220C0 : table == 0x2EF130 ? 0x42EE40 : 0;
+    const uint8_t *p = t2 ? rt_addr(t2 + 4 * (uint32_t)stage, 4) : NULL;
+#else
     const uint8_t *p = RTVA(table) ? rt_addr(RTVA(table) + 4 * (uint32_t)stage, 4) : NULL;    /* MH1 address; G: by name */
+#endif
     int32_t idx;
     *keep = NULL;
     if (!p || stage < 0 || stage >= NSTAGE)
@@ -564,6 +573,11 @@ typedef struct {
 
 #define HUNTER_PARTS 6
 static const char *pl_slot[HUNTER_PARTS] = { "reg", "face", "hair", "body", "arm", "wst" };
+#ifdef VERSION_MH2
+#define PL_TEX_EXT "tm2"            /* MH2's part textures are one TIM2 each (m_body000.tm2) */
+#else
+#define PL_TEX_EXT "apx"
+#endif
 
 typedef struct {
     fl_skel master;                  /* legs AHI: the animated skeleton */
@@ -718,7 +732,7 @@ static int hunter_load(hunter *h, const int *num, int legs_id, int upper_id)
         char name[64], tname[64];
         fmt_blob link, tex, ahi;
         snprintf(name, sizeof name, "m_%s%03d_amh.bin", pl_slot[s], num[s]);
-        snprintf(tname, sizeof tname, "m_%s%03d.apx", pl_slot[s], num[s]);
+        snprintf(tname, sizeof tname, "m_%s%03d." PL_TEX_EXT, pl_slot[s], num[s]);
         link = load(name, &h->mem[k++]);
         tex = load(tname, &h->mem[k++]);
         if (!link.p)
@@ -760,7 +774,7 @@ static void hunter_relook(hunter *h, int sex, const int *num)
         if (num[s] == h->look[s] && sex == h->sex)
             continue;
         snprintf(name, sizeof name, "%c_%s%03d_amh.bin", sex ? 'f' : 'm', pl_slot[s], num[s]);
-        snprintf(tname, sizeof tname, "%c_%s%03d.apx", sex ? 'f' : 'm', pl_slot[s], num[s]);
+        snprintf(tname, sizeof tname, "%c_%s%03d." PL_TEX_EXT, sex ? 'f' : 'm', pl_slot[s], num[s]);
         link = load(name, &m0);
         tex = load(tname, &m1);
         if (!link.p) {
@@ -985,6 +999,9 @@ static int play = 0, sw_trace = 0;          /* --play: the pad drives the hunter
 int rt_net_test(const char *scenario);
 static const char *nettest;               /* --nettest SCENARIO: headless online test, no window */
 #endif
+#ifdef VERSION_MH2
+static const char *mh2_model;               /* --model NAME */
+#endif
 static int boot = 0, booting = 0;           /* --boot: from power-on (rt_boot.c) */
 static int dbg_arg = 0;                     /* --debug-menu 1 / --no-debug-menu 2 */
 static const char *script = NULL;
@@ -1060,6 +1077,459 @@ static int test_hold_ticks(int ticks)
         at = (int)strtol(list + 1, (char **)&list, 10);
     return 0;
 }
+
+#ifdef VERSION_MH2
+/* --model NAME (test aid, docs/mh2/platform.md): one *_amh.bin of DATA.BIN with its *_tex.bin, whole, unlit and unposed, from a
+ * camera fitted to its bounds; a --shot of it. RT_MODEL_AZ turns the camera (radians). No game code runs. */
+/* --model X.tex: the pictures of a .tex pack side by side (MOMO packs through the link reader; endroll.tex and gallery.tex are AFS
+ * archives of TIM2 files, opened in place: RT_TEX_FIRST picks the first entry shown) */
+static const char *mh2_disc;
+static int mh2_tex_shot(const char *name, fmt_blob pack, const char *shot, int W, int H)
+{
+    gfx_texture *tx[16];
+    int nt = 0, i, f, first = getenv("RT_TEX_FIRST") ? atoi(getenv("RT_TEX_FIRST")) : 0;
+    uint8_t hd[4] = { 0 };
+    int idx = fmt_afs_find(&afs, name);
+    fmt_afs_read_at(&afs, idx, 0, hd, 4);
+    if (!memcmp(hd, "AFS", 3)) {
+        fmt_afs sub;
+        char path[1024];
+        snprintf(path, sizeof path, "%s/DATA.BIN", mh2_disc);
+        if (fmt_afs_open_nested(&sub, &afs, path, idx) != 0)
+            return 1;
+        printf("%s: AFS of %u files\n", name, (unsigned)sub.count);
+        for (i = first; i < (int)sub.count && nt < 16; i++) {
+            size_t n;
+            uint8_t *p = fmt_afs_read(&sub, i, &n);
+            fmt_blob b = { p, n };
+            apx_image img;
+            if (p && fmt_apx_decode(&img, b, FMT_LE) == 0) {
+                tx[nt++] = gfx_create_texture(img.w, img.h, img.rgba);
+                printf("  %d: %dx%d\n", i, img.w, img.h);
+                free(img.rgba);
+            }
+            free(p);
+        }
+        fmt_afs_close(&sub);
+    } else {
+        printf("%s: %d pictures\n", name, fmt_link_count(pack, FMT_LE));
+        for (i = first; i < fmt_link_count(pack, FMT_LE) && nt < 16; i++) {
+            apx_image img;
+            if (fmt_apx_decode(&img, fmt_link_entry(pack, i, FMT_LE), FMT_LE) == 0) {
+                tx[nt++] = gfx_create_texture(img.w, img.h, img.rgba);
+                printf("  %d: %dx%d\n", i, img.w, img.h);
+                free(img.rgba);
+            }
+        }
+    }
+    for (f = 0; f < 3; f++) {
+        gfx_begin_frame(0x304050);
+        gfx_set_render_state(GFX_RS_BLEND, 1);
+        gfx_set_render_state(GFX_RS_ALPHA_REF, 0);
+        for (i = 0; i < nt; i++) {
+            int cols = nt <= 1 ? 1 : nt <= 4 ? 2 : 4;
+            float cw = 640.0f / cols, ch = 448.0f / ((nt + cols - 1) / cols), x0 = (i % cols) * cw, y0 = (i / cols) * ch;
+            float pos[12] = { x0, y0, x0 + cw, y0, x0, y0 + ch, x0 + cw, y0, x0 + cw, y0 + ch, x0, y0 + ch };
+            static const float st[12] = { 0, 0, 1, 0, 0, 1, 1, 0, 1, 1, 0, 1 };
+            gfx_set_render_state(GFX_RS_TEXTURE, (uintptr_t)tx[i]);
+            gfx_draw_2d(640, 448, 6, pos, st, NULL);
+        }
+        gfx_set_render_state(GFX_RS_TEXTURE, 0);
+        if (f == 2 && shot) {
+            uint8_t *rgb = malloc((size_t)W * H * 3);
+            gfx_read_pixels(rgb);
+            write_png(shot, W, H, rgb);
+            printf("wrote %s\n", shot);
+            free(rgb);
+        }
+        gfx_end_frame();
+    }
+    return 0;
+}
+
+/* --model adx:N (test aid): AFS00 entry N (an ADX stream; AFS00 is on the disc only, tools: --install) decoded into the --shot path as
+ * a 48 kHz stereo wav, up to RT_ADX_SECONDS (20). Mono and other rates are written as they come out (the header says which) */
+static int mh2_adx_wav(int no, const char *out)
+{
+    fmt_afs a;
+    char path[1024];
+    size_t n = 0;
+    uint8_t *d;
+    adx_info h;
+    int16_t *pcm, row[32 * 2];
+    int32_t hist[2][2] = { { 0, 0 }, { 0, 0 } };
+    uint32_t o, frames = 0, max;
+    snprintf(path, sizeof path, "%s/AFS00.AFS", getenv("RT_STREAM_DIR") ? getenv("RT_STREAM_DIR") : mh2_disc);
+    if (fmt_afs_open(&a, path) != 0) {
+        fprintf(stderr, "%s: not found (the streams are only on the disc image: --install)\n", path);
+        return 1;
+    }
+    d = fmt_afs_read(&a, no, &n);
+    fmt_afs_close(&a);
+    if (!d || fmt_adx_header(&h, d, n) != 0 || h.ch < 1 || h.ch > 2) {
+        fprintf(stderr, "AFS00 entry %d: not an ADX stream\n", no);
+        free(d);
+        return 1;
+    }
+    max = (uint32_t)h.rate * (getenv("RT_ADX_SECONDS") ? (uint32_t)atoi(getenv("RT_ADX_SECONDS")) : 20u);
+    if (max > h.total)
+        max = h.total;
+    pcm = calloc((size_t)max + 32, 4);
+    for (o = h.data; pcm && frames < max && o + (uint32_t)(h.block * h.ch) <= n; o += (uint32_t)(h.block * h.ch)) {
+        int k;
+        fmt_adx_row(&h, d + o, hist, row);
+        for (k = 0; k < 32 && frames < max; k++, frames++) {
+            pcm[2 * frames] = row[h.ch * k];
+            pcm[2 * frames + 1] = row[h.ch * k + h.ch - 1];
+        }
+    }
+    printf("AFS00 entry %d: ADX %d ch, %d Hz, %u samples, loop %d; %u written to %s\n", no, h.ch, h.rate, (unsigned)h.total, h.loop,
+           (unsigned)frames, out);
+    if (pcm && out)
+        write_wav(out, pcm, frames);
+    free(pcm);
+    free(d);
+    return 0;
+}
+
+/* --model snd:PACK:PROG:NOTE (test aid): AFS01 pack PACK (MOMO v3), the note's sample decoded and written as a 48 kHz wav (nearest
+ * sample, no filter) to the --shot path */
+static int mh2_snd_wav(const char *arg, const char *out)
+{
+    fmt_afs a;
+    char path[1024];
+    size_t n = 0;
+    uint8_t *d;
+    snd_pack sp;
+    snd_note sn;
+    int pack = 0, prog = 0, note = 60, rate = 0, ns = 0, loop, k, nf;
+    uint32_t off;
+    int16_t *pcm, *lr;
+    sscanf(arg, "%d:%d:%d", &pack, &prog, &note);
+    snprintf(path, sizeof path, "%s/AFS01.AFS", getenv("RT_STREAM_DIR") ? getenv("RT_STREAM_DIR") : mh2_disc);
+    if (fmt_afs_open(&a, path) != 0) {
+        fprintf(stderr, "%s: not found (the streams are only on the disc image: --install)\n", path);
+        return 1;
+    }
+    d = fmt_afs_read(&a, pack, &n);
+    fmt_afs_close(&a);
+    if (!d || fmt_snd_open(&sp, d, n) != 0) {
+        fprintf(stderr, "AFS01 entry %d: not a sound pack this reader knows\n", pack);
+        free(d);
+        return 1;
+    }
+    printf("AFS01 entry %d: MOMO v%d, %d programs, %d samples, %d VAGs, BD %u bytes\n", pack, sp.v3 ? 3 : 2, sp.nprog, sp.nsmpl,
+           sp.nvagi, (unsigned)sp.bd_size);
+    if (fmt_snd_resolve(&sp, prog, note, &sn) != 0 || fmt_snd_vag(&sp, sn.vag, &off, &rate) != 0 || rate <= 0) {
+        fprintf(stderr, "program %d note %d: no sample\n", prog, note);
+        free(d);
+        return 1;
+    }
+    pcm = fmt_vag_decode(sp.bd + off, sp.bd_size - off, &ns, &loop);
+    nf = (int)((double)ns * 48000.0 / (rate * sn.ratio));
+    lr = calloc((size_t)nf + 1, 4);
+    for (k = 0; lr && k < nf; k++) {
+        int i = (int)((double)k * rate * sn.ratio / 48000.0);
+        lr[2 * k] = lr[2 * k + 1] = pcm[i < ns ? i : ns - 1];
+    }
+    printf("program %d note %d: VAG %d at 0x%X, %d Hz, ratio %.3f, vol %.2f, pan %.2f, %d samples, loop %d\n", prog, note, sn.vag,
+           (unsigned)off, rate, sn.ratio, sn.vol, sn.pan, ns, loop);
+    if (lr && out)
+        write_wav(out, lr, (size_t)nf);
+    free(lr);
+    free(pcm);
+    free(d);
+    return 0;
+}
+
+static int mh2_model_shot(const char *name, const char *shot, int W, int H)
+{
+    fl_model m;
+    uint8_t *k0, *k1 = NULL;
+    fmt_blob link = load(name, &k0), tex = { NULL, 0 };
+    char tn[64];
+    const char *us = strstr(name, "_amh");
+    float lo[3] = { 1e30f, 1e30f, 1e30f }, hi[3] = { -1e30f, -1e30f, -1e30f }, eye[3], tar[3], r = 0, az = getenv("RT_MODEL_AZ") ? (float)atof(getenv("RT_MODEL_AZ")) : 0.7f;
+    int i, v, c, f;
+    flmat camw, view, proj, id;
+    if (!strncmp(name, "snd:", 4))
+        return mh2_snd_wav(name + 4, shot);
+    if (!strncmp(name, "adx:", 4))
+        return mh2_adx_wav(atoi(name + 4), shot);
+    if (strstr(name, ".tex"))
+        return mh2_tex_shot(name, link, shot, W, H);
+    if (!link.p) {
+        fprintf(stderr, "%s: not read\n", name);
+        return 1;
+    }
+    if (us) {
+        snprintf(tn, sizeof tn, "%.*s_tex.bin", (int)(us - name), name);
+        tex = load(tn, &k1);
+    }
+    if (fl_model_create(&m, fmt_link_entry(link, 0, FMT_LE), fmt_link_entry(link, 1, FMT_LE), tex, 0, FMT_LE) != 0) {
+        fprintf(stderr, "%s: AMO refused\n", name);
+        return 1;
+    }
+    for (i = 0; i < m.amo.npart; i++)
+        for (v = 0; !m.part[i].is_sky && v < m.amo.part[i].nvert; v++)
+            for (c = 0; c < 3; c++) {
+                float x = m.amo.part[i].pos[3 * v + c];
+                lo[c] = x < lo[c] ? x : lo[c];
+                hi[c] = x > hi[c] ? x : hi[c];
+            }
+    for (c = 0; c < 3; c++) {
+        tar[c] = (lo[c] + hi[c]) / 2;
+        r = hi[c] - lo[c] > r ? hi[c] - lo[c] : r;
+    }
+    printf("%s: %d parts, %d materials, %d textures, %d bones, bounds %.0f %.0f %.0f .. %.0f %.0f %.0f\n", name, m.amo.npart, m.amo.nmat,
+           m.ntex, m.skel.nbone, lo[0], lo[1], lo[2], hi[0], hi[1], hi[2]);
+    eye[0] = tar[0] + sinf(az) * r;
+    eye[1] = tar[1] + r * 0.45f;
+    eye[2] = tar[2] + cosf(az) * r;
+    lookat_world(camw, eye, tar);
+    flmat_invert_affine(view, camw);
+    flmat_perspective(proj, 1.0f, scene_aspect(), r / 500 + 1, r * 20 + 1000);
+    flmat_identity(id);
+    for (f = 0; f < 3; f++) {
+        gfx_begin_frame(0x304050);
+        gfx_set_render_state(GFX_RS_PROJECTION, (uintptr_t)proj);
+        gfx_set_render_state(GFX_RS_VIEW, (uintptr_t)view);
+        gfx_set_render_state(GFX_RS_ALPHA_REF, 0x40);
+        gfx_set_render_state(GFX_RS_BLEND, 1);
+        gfx_set_render_state(GFX_RS_WORLD, (uintptr_t)id);
+        gfx_set_render_state(GFX_RS_ZWRITE, 1);
+        draw_model_attr(&m, 0);     /* the sky dome (attribute +0x10) is left out: it would hide a stage from outside */
+        if (f == 2 && shot) {
+            uint8_t *rgb = malloc((size_t)W * H * 3);
+            gfx_read_pixels(rgb);
+            write_png(shot, W, H, rgb);
+            printf("wrote %s\n", shot);
+            free(rgb);
+        }
+        gfx_end_frame();
+    }
+    return 0;
+}
+#endif
+
+#ifdef VERSION_MH2
+/* mib.afs inside DATA.BIN: 6 files per quest, m<no><d|n><0-2>.mib, stored as they are. What d/n and 0-2 pick is read from sub_main
+ * 0x3A1718-0x3A17A8: a base index + 3 x one flag + another counter (day and night, and a second choice: which is which is not settled).
+ * The header is 0x74 bytes of offsets from the file start. docs/mh2/platform.md has the fields. */
+static uint8_t *mh2_mission;
+static size_t mh2_mission_n;
+
+static int mh2_mission_load(int no, const char *var)
+{
+    fmt_afs m;
+    char name[32], path[1024];
+    int i;
+    snprintf(path, sizeof path, "%s/DATA.BIN", mh2_disc);
+    snprintf(name, sizeof name, "m%05d%s.mib", no, var);
+    i = fmt_afs_find(&afs, "mib.afs");
+    if (i < 0 || fmt_afs_open_nested(&m, &afs, path, i) != 0)
+        return -1;
+    i = fmt_afs_find(&m, name);
+    free(mh2_mission);
+    mh2_mission = i >= 0 ? fmt_afs_read(&m, i, &mh2_mission_n) : NULL;
+    fmt_afs_close(&m);
+    return mh2_mission ? 0 : -1;
+}
+
+static uint32_t mh2_mw(uint32_t o)
+{
+    uint32_t v = 0;
+    if (o + 4 <= mh2_mission_n)
+        memcpy(&v, mh2_mission + o, 4);
+    return v;
+}
+
+/* the start stage: Quest_pl_stage_init (sub_main 0x3A1D00). +0x5D of the file 0: the table at header +4, 16 bytes a player, first word the
+ * stage. Else a weighted random pick from a list in gm_sub's data (0x9316B0 by info+0x20, then entry pick - 1): u16 pairs {weight, stage}
+ * ended by 0xFFFF, weights summing to 100 (gm_sub 0x931400-0x931540). The first entry is taken here */
+/* the PS2 address a data word at va holds. The import relocates pointer words in place to host pointers, gm_sub's too (seen: 0x9316C8
+ * held a host address), and rt_is_pointer does not cover the extra overlays: a word that points into a loaded image is turned back.
+ * The 32-bit build's heap sits far above the PS2's 32 MB, so a PS2 address is not taken for a host one. */
+static uint32_t mh2_word_va(uint32_t va)
+{
+    const uint8_t *p = rt_addr(va, 4);
+    uint32_t w = 0, h;
+    if (!p)
+        return 0;
+    memcpy(&w, p, 4);
+    h = w >= 0x02000000u ? rt_va_of_host((const void *)(uintptr_t)w) : 0;
+    return h ? h : w;
+}
+
+static int mh2_start_stage(void)
+{
+    uint32_t info = mh2_mw(0), pick = mh2_mission_n > 0x5D ? mh2_mission[0x5D] : 0;
+    if (pick) {
+        uint32_t l = mh2_word_va(0x9316B0 + 4 * mh2_mw(info + 0x20));
+        const uint8_t *q = NULL;
+        if (l)
+            l = mh2_word_va(l + 4 * (pick - 1));
+        if (l)
+            q = rt_addr(l, 4);
+        if (!q)
+            fprintf(stderr, "start stage: gm_sub's list (0x9316B0 + 4 * %u) not readable\n", (unsigned)mh2_mw(info + 0x20));
+        return q ? q[2] | q[3] << 8 : -1;
+    }
+    return (int)mh2_mw(mh2_mw(4));
+}
+
+/* The monster records (QEM, 0x3C bytes: +0 kind, +8 the stage of a large one, +0x1C angle, +0x20 x y z; kind 0xFFFF ends a list).
+ * Header +0x18: the quest's own monsters, {count, ?, kind list, QEM list}. Header +0x14: three pointers (the 0-2 choice, a guess)
+ * to per-stage entries {stage, ?, kind list, QEM list} of the small monsters, ended by stage 0 (read from m00001d0/m01014d0,
+ * not from the game's code: a guess that it is what Em_direct_set reads). */
+static uint32_t mh2_qem_list(int stage, int own)
+{
+    uint32_t t = mh2_mw(own ? 0x18 : 0x14), e;
+    if (own)
+        return mh2_mw(t) ? mh2_mw(t + 12) : 0;
+    for (e = mh2_mw(t); e && e + 16 <= mh2_mission_n && mh2_mw(e); e += 16)
+        if ((int)mh2_mw(e) == stage)
+            return mh2_mw(e + 12);
+    return 0;
+}
+
+/* --quest N, what works so far: the mission file names the start stage, which is drawn with its sky and set model, no game code.
+ * The stage's monsters (RT_QUEST_STAGE=1: the stage of the quest's own monster, with it) stand at their places in their bind pose
+ * or first motion (emNN files by kind: guessed), and a hunter (default parts) beside the first; the camera looks at them. */
+static int mh2_quest_shot(int no, const char *shot, int W, int H)
+{
+    const char *var = getenv("RT_MIB") ? getenv("RT_MIB") : "d0";
+    fl_model st, se;
+    uint8_t *k[4];
+    fmt_blob l, t;
+    int s, i, v, c, f, own, nem = 0, hl = 0;
+    static monster em[8];
+    static hunter hu;
+    float em_at[8][4];
+    float lo[3] = { 1e30f, 1e30f, 1e30f }, hi[3] = { -1e30f, -1e30f, -1e30f }, eye[3], tar[3], r = 0;
+    float az = getenv("RT_MODEL_AZ") ? (float)atof(getenv("RT_MODEL_AZ")) : 0.7f;
+    flmat camw, view, proj, id;
+    if (mh2_mission_load(no, var) != 0) {
+        fprintf(stderr, "quest %d: no mission file m%05d%s.mib\n", no, no, var);
+        return 1;
+    }
+    s = mh2_start_stage();
+    if (getenv("RT_QUEST_STAGE") && mh2_qem_list(0, 1) && mh2_mw(mh2_qem_list(0, 1)) != 0xFFFF)
+        s = (int)mh2_mw(mh2_qem_list(0, 1) + 8);
+    printf("quest %d (m%05d%s.mib, %u bytes): start stage %d\n", no, no, var, (unsigned)mh2_mission_n, s);
+    l = load_stage_file(0x2EC950, s, &k[0]);
+    t = load_stage_file(0x2EDB40, s, &k[1]);
+    if (!l.p || fl_model_create(&st, fmt_link_entry(l, 0, FMT_LE), fmt_link_entry(l, 1, FMT_LE), t, 0, FMT_LE) != 0) {
+        fprintf(stderr, "stage %d: load failed\n", s);
+        return 1;
+    }
+    memset(&se, 0, sizeof se);
+    l = load_stage_file(0x2ECD70, s, &k[2]);
+    t = load_stage_file(0x2EF130, s, &k[3]);
+    if (l.p)
+        fl_model_create(&se, fmt_link_entry(l, 0, FMT_LE), fmt_link_entry(l, 1, FMT_LE), t, 0, FMT_LE);
+    for (i = 0; i < st.amo.npart; i++)
+        for (v = 0; !st.part[i].is_sky && v < st.amo.part[i].nvert; v++)
+            for (c = 0; c < 3; c++) {
+                float x = st.amo.part[i].pos[3 * v + c];
+                lo[c] = x < lo[c] ? x : lo[c];
+                hi[c] = x > hi[c] ? x : hi[c];
+            }
+    for (c = 0; c < 3; c++) {
+        tar[c] = (lo[c] + hi[c]) / 2;
+        r = hi[c] - lo[c] > r ? hi[c] - lo[c] : r;
+    }
+    printf("stage %d: %d parts, %d set parts, bounds %.0f %.0f %.0f .. %.0f %.0f %.0f\n", s, st.amo.npart, se.amo.npart,
+           lo[0], lo[1], lo[2], hi[0], hi[1], hi[2]);
+    eye[0] = tar[0] + sinf(az) * r * 0.45f;
+    eye[1] = tar[1] + r * 0.3f;
+    eye[2] = tar[2] + cosf(az) * r * 0.45f;
+    for (own = 1; own >= 0; own--) {        /* the quest's own monster first: the camera looks at the first */
+        uint32_t q = mh2_qem_list(s, own);
+        for (; q && q + 0x3C <= mh2_mission_n && (mh2_mw(q) & 0xFFFF) != 0xFFFF && nem < 8; q += 0x3C) {
+            int kind = mh2_mission[q], id;
+            char a[32], tx[32], tb[32];
+            float *p = em_at[nem];
+            if (own && (int)mh2_mw(q + 8) != s)
+                continue;
+            snprintf(a, sizeof a, "em%02d_amh.bin", kind);
+            snprintf(tx, sizeof tx, "em%02d_tex.bin", kind);
+            snprintf(tb, sizeof tb, "em%02d_tbl.bin", kind);
+            memset(&em[nem], 0, sizeof em[nem]);
+            memcpy(p, mh2_mission + q + 0x20, 12);
+            p[3] = (float)(mh2_mw(q + 0x1C) & 0xFFFF) * (6.2831853f / 65536.0f);
+            if (monster_load(&em[nem], a, tx, tb) != 0) {
+                printf("monster kind %d (%s): not loaded\n", kind, a);
+                continue;
+            }
+            for (id = getenv("RT_EM_BIND") ? 2000 : 0; id < 2000 && em[nem].tbl.p && fl_skel_set_motion(&em[nem].skel, 0, em[nem].tbl, id, FMT_LE) != 0; id++)
+                ;
+            em[nem].skel.root_lock = 1;
+            fl_skel_update(&em[nem].skel, 0);
+            place(em[nem].world, p[0], p[1], p[2], p[3]);
+            printf("monster kind %d (%s%s) at %.0f %.0f %.0f, angle %.2f, motion %d\n", kind, a, own ? ", the quest's own" : "",
+                   p[0], p[1], p[2], p[3], id < 2000 ? id : -1);
+            nem++;
+        }
+    }
+    if (nem) {
+        static const int dflt[HUNTER_PARTS] = { 1, 0, 1, 1, 1, 1 };
+        float *p = em_at[0];
+        hl = hunter_load(&hu, dflt, 1, 101) == 0;
+        printf("hunter: %s\n", hl ? "loaded" : "not loaded");
+        if (hl) {
+            place(hu.world, p[0] + 300.0f, p[1], p[2] + 300.0f, p[3]);
+            hunter_pose(&hu, 0, NULL);
+        }
+        memcpy(tar, p, sizeof tar);
+        if (hl && getenv("RT_QUEST_LOOK_HUNTER")) {
+            tar[0] += 300.0f;
+            tar[2] += 300.0f;
+        }
+        tar[1] += 150.0f;
+        r = getenv("RT_QUEST_CAM") ? (float)atof(getenv("RT_QUEST_CAM")) : 1600.0f;    /* camera distance */
+        eye[0] = tar[0] + sinf(az) * r;
+        eye[1] = tar[1] + r * 0.3f;
+        eye[2] = tar[2] + cosf(az) * r;
+    }
+    lookat_world(camw, eye, tar);
+    flmat_invert_affine(view, camw);
+    flmat_perspective(proj, 1.0f, scene_aspect(), 10.0f, 800000.0f);
+    flmat_identity(id);
+    for (f = 0; f < 3; f++) {
+        gfx_begin_frame(0);
+        gfx_set_render_state(GFX_RS_PROJECTION, (uintptr_t)proj);
+        gfx_set_render_state(GFX_RS_VIEW, (uintptr_t)view);
+        gfx_set_render_state(GFX_RS_ALPHA_REF, 0x40);
+        gfx_set_render_state(GFX_RS_BLEND, 1);
+        gfx_set_render_state(GFX_RS_WORLD, (uintptr_t)id);
+        gfx_set_render_state(GFX_RS_ZWRITE, 1);
+        draw_model_attr(&st, -1);
+        if (se.npart)
+            draw_model_attr(&se, -1);
+        for (i = 0; i < nem; i++) {
+            fl_model_pose(&em[i].model, (const flmat *)em[i].skel.world, NULL);
+            gfx_set_render_state(GFX_RS_WORLD, (uintptr_t)em[i].world);
+            draw_model_attr(&em[i].model, -1);
+        }
+        if (hl) {
+            gfx_set_render_state(GFX_RS_WORLD, (uintptr_t)hu.world);
+            for (i = 0; i < HUNTER_PARTS; i++)
+                draw_model_attr(&hu.part[i], -1);
+        }
+        gfx_set_render_state(GFX_RS_WORLD, (uintptr_t)id);
+        if (f == 2 && shot) {
+            uint8_t *rgb = malloc((size_t)W * H * 3);
+            gfx_read_pixels(rgb);
+            write_png(shot, W, H, rgb);
+            printf("wrote %s\n", shot);
+            free(rgb);
+        }
+        gfx_end_frame();
+    }
+    return 0;
+}
+#endif
 
 /* ------------------------------------------------------------ boot hunters
  * The character creation and continue screens draw their hunter from a
@@ -2556,6 +3026,9 @@ int main(int argc, char **argv)
         }
         else if (!strcmp(argv[i], "--stage") && i + 1 < argc) { stage_no = (int)strtol(argv[++i], NULL, 0); stage_given = 1; }
         else if (!strcmp(argv[i], "--quest") && i + 1 < argc) quest_no = (int)strtol(argv[++i], NULL, 0);
+#ifdef VERSION_MH2
+        else if (!strcmp(argv[i], "--model") && i + 1 < argc) mh2_model = argv[++i];
+#endif
         else if (!strcmp(argv[i], "--play")) play = 1;
         else if (!strcmp(argv[i], "--debug-menu")) dbg_arg = 1;          /* the testers' debug menu on / off (dbgmenu.c) */
         else if (!strcmp(argv[i], "--no-debug-menu")) dbg_arg = 2;
@@ -2806,6 +3279,13 @@ int main(int argc, char **argv)
                 uint8_t *o2 = fmt_afs_read(&oa, fmt_afs_find_mwo(&oa, nm[k]), &n);
                 set[k](o2, o2 ? n : 0);
             }
+            {   /* no table of their own in the runtime: only rt_addr reads them */
+                static const char *const ex[2] = { "gm_sub.bin", "plsel.bin" };
+                for (k = 0; k < 2; k++) {
+                    uint8_t *o2 = fmt_afs_read(&oa, fmt_afs_find_mwo(&oa, ex[k]), &n);
+                    rt_add_overlay(o2, o2 ? n : 0);
+                }
+            }
             fmt_afs_close(&oa);
         }
 #else
@@ -2899,6 +3379,11 @@ int main(int argc, char **argv)
 #ifdef VERSION_MH2
     /* The host's quest and stage scaffolding below reads tables MH2 does not have names for yet: --boot goes straight
      * to the boot tasks, and nothing else runs (docs/mh2_port.md) */
+    mh2_disc = disc;
+    if (mh2_model)
+        return mh2_model_shot(mh2_model, shot, W, H);
+    if (quest_no && !boot)
+        return mh2_quest_shot(quest_no, shot, W, H);
     if (!boot) {
         fprintf(stderr, "MH2: only --boot works so far\n");
         return 1;

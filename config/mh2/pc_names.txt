@@ -9,3 +9,5 @@ sub_main MemcardWork 0x006AF100  # STRUCTS: base (data map agrees)
 sub_main game_w 0x006ADCB0 0x2BC  # address: data map; size: STRUCTS
 sub_main system_w 0x006ADF90 0xF4  # address: data map; size: STRUCTS
 sub_main shell_work 0x005B70D0 0x3500  # address: data map (medium, one edited function); size: STRUCTS
+main ope_mode_00300678 0x0043C980 0x10  # what SetOpeMode (0x3691A0, state 0x0D) indexes
+main filter_mode_00387900 0x0043C978 0x8  # what SetFilterMode (0x369010, state 0x63) indexes

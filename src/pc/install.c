@@ -24,7 +24,23 @@
 
 /* the known files of the Japanese disc this build plays: MH1 (SLPM-65495), or Monster Hunter G (SLPM-65869, VERSION=mhg;
  * the same numbers as tools/disc_files.py) */
-#ifdef VERSION_MHG
+#if defined(VERSION_MH2)
+/* Monster Hunter Dos (SLPM-66280, JP 1.04). The streams AFS00 (ADX), AFS01 (sound packs) and AFS02 (SFD movies) are only on the disc:
+ * the numbers are those of the owner's image named "English v1.03". DATA.BIN and SLPM_662.80 there are the JP 1.04 ones (same CRC as
+ * disc/mh2); whether an unpatched JP image has the same three streams is not known (docs/mh2/platform.md) */
+#define BOOT_FILE "SLPM_662.80"
+#define DATA_FILE "DATA.BIN"
+#define DISC_NAME "Monster Hunter Dos (SLPM-66280)"
+static const struct { const char *name; uint32_t size, crc; int required; } want[] = {
+    { "DATA.BIN", 407248896u, 0xD92FBA8Cu, 1 },
+    { "AFS00.AFS", 1186904064u, 0xFF78F33Bu, 1 },
+    { "AFS01.AFS", 47835136u, 0x2B8B934Cu, 1 },
+    { "AFS02.AFS", 1077581824u, 0x002E3C25u, 1 },
+    { "SLPM_662.80", 822368u, 0xF276750Du, 1 },
+    { "SYSTEM.CNF", 77u, 0x8D41D694u, 0 },
+};
+#define APPDIR_DATA "mh2pc"
+#elif defined(VERSION_MHG)
 #define BOOT_FILE "SLPM_658.69"
 #define DISC_NAME "Monster Hunter G (SLPM-65869)"
 static const struct { const char *name; uint32_t size, crc; int required; } want[] = {
@@ -47,6 +63,9 @@ static const struct { const char *name; uint32_t size, crc; int required; } want
     { "SYSTEM.CNF", 76u, 0x9CF85397u, 0 },
 };
 #endif
+#ifndef DATA_FILE
+#define DATA_FILE "AFS_DATA.AFS"
+#endif
 #define NWANT (int)(sizeof want / sizeof want[0])
 
 int install_is_iso_name(const char *p)
@@ -66,7 +85,7 @@ static int exists(const char *p)
 int install_has_data(const char *dir)
 {
     char p[1024];
-    snprintf(p, sizeof p, "%s/AFS_DATA.AFS", dir);
+    snprintf(p, sizeof p, "%s/" DATA_FILE, dir);
     if (!exists(p))
         return 0;
     snprintf(p, sizeof p, "%s/" BOOT_FILE, dir);

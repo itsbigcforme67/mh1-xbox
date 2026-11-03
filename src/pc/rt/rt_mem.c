@@ -46,6 +46,23 @@ void rt_set_sub_main(uint8_t *bin, size_t n)
     sub_bss = bin && n >= 0x40 ? rd32(bin + 0x14) : 0;
 }
 
+/* MH2's overlays that sit at addresses of their own next to game.bin (gm_sub 0x8FAE00, plsel 0xD60200, docs/mh2/platform.md):
+ * read only through rt_addr and rt_in_bss, like sub_main. Which load together on the PS2 is still an assumption */
+#define MAX_EXTRA 4
+static struct { uint8_t *img; size_t n; uint32_t va, bss; } extra[MAX_EXTRA];
+static int nextra;
+
+void rt_add_overlay(uint8_t *bin, size_t n)
+{
+    if (!bin || n < 0x40 || nextra >= MAX_EXTRA)
+        return;
+    extra[nextra].img = bin;
+    extra[nextra].n = n;
+    extra[nextra].va = rd32(bin + 8);
+    extra[nextra].bss = rd32(bin + 0x14);
+    nextra++;
+}
+
 /* generated per version (tools/gen_rt_meta.py): G's symbols and pointer words */
 typedef struct { uint32_t va, size; const char *name; int func; } rt_meta_sym;
 extern const uint32_t rt_meta_main_data;
@@ -158,9 +175,32 @@ const uint8_t *rt_addr(uint32_t va, size_t n)
         return sub_img + (va - sub_va);
     if (ovl && va >= OVL_GAME_VRAM && va - OVL_GAME_VRAM + n <= ovl_n)
         return ovl + (va - OVL_GAME_VRAM);
+    for (i = 0; i < (unsigned)nextra; i++)
+        if (va >= extra[i].va && va - extra[i].va + n <= extra[i].n)
+            return extra[i].img + (va - extra[i].va);
     if (!elf && main_img && va < main_va && nph && va >= ph[0].vaddr)
         fprintf(stderr, "rt: read of main code at 0x%X after rt_mem_trim (not kept)\n", (unsigned)va);
     return NULL;
+}
+
+/* The PS2 address of a host pointer into one of the loaded images (main data, sub_main, game.bin, the extra overlays), 0 if none.
+ * Data words the import relocated in place hold host pointers: this turns one back into the address the game had. */
+uint32_t rt_va_of_host(const void *host)
+{
+    const uint8_t *h = host;
+    unsigned i;
+    if (!h)
+        return 0;
+    if (main_img && h >= main_img && h < main_img + main_n)
+        return main_va + (uint32_t)(h - main_img);
+    if (sub_img && h >= sub_img && h < sub_img + sub_n)
+        return sub_va + (uint32_t)(h - sub_img);
+    if (ovl && h >= ovl && h < ovl + ovl_n)
+        return OVL_GAME_VRAM + (uint32_t)(h - ovl);
+    for (i = 0; i < (unsigned)nextra; i++)
+        if (h >= extra[i].img && h < extra[i].img + extra[i].n)
+            return extra[i].va + (uint32_t)(h - extra[i].img);
+    return 0;
 }
 
 /* 1 if [va, va + n) is zero-initialised memory (.bss) of the ELF or the
@@ -173,6 +213,9 @@ int rt_in_bss(uint32_t va, size_t n)
             return 1;
     if (sub_img && va >= sub_va + sub_n && va + n <= sub_va + sub_n + sub_bss)
         return 1;
+    for (i = 0; i < (unsigned)nextra; i++)
+        if (va >= extra[i].va + extra[i].n && va + n <= extra[i].va + extra[i].n + extra[i].bss)
+            return 1;
     return ovl && va >= OVL_GAME_VRAM + ovl_n && va + n <= OVL_GAME_VRAM + ovl_n + OVL_GAME_BSS;
 }
 

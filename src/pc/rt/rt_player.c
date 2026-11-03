@@ -63,7 +63,7 @@ void rt_player_game_init(int no)
          * Set_userdata gives it to pl_init. The default above only stands in when there is none (a --quest run without
          * a save). Before 16 Oct 2026 the default was written over the save's on every quest start: a weapon bought,
          * taken from the box or swapped in the debug menu never reached a quest (RELEASE_G GB5 bug 5) */
-        const u8 *e = User_data + (rt_ver_mhg() ? 0xC74 : 0x3CC);
+        const u8 *e = User_data + (rt_ver_mhg() ? 0xC74 : 0x3CC);   /* MH2: wrong, G's offset (rt_ver_mhg() is true on MH2). MH2's User_data (0x5D4A60, 0x37F8 bytes): warehouse 500 x 12 at 0xBC, item box 500 at 0x182C, pouch 0x2040, worn equipment 0x2090, gold 0x2984; to switch with STRUCTS' UDMO()/MH2 UDW */
         int k = e[1], id = *(const u16 *)(e + 2);
         if ((k == 6 && id > 0 && id < nken) || (k == 7 && id >= 0 && id < ngun)) {
             gun = k == 7;
@@ -91,7 +91,7 @@ void rt_player_game_init(int no)
     pl->wpn_kind = (u16)wid;
     pl->work34C = gun ? Gun_data[wid][0] : Ken_data[wid][0];
     pl->kind = Battle_type[pl->work34C];
-    if (rt_ver_mhg()) {     /* G keeps the equipment at User_data+0xC74 (G Get_equip_value 0x4C6BF0) */
+    if (rt_ver_mhg()) {     /* G keeps the equipment at User_data+0xC74 (G Get_equip_value 0x4C6BF0). MH2: worn equipment at 0x2090, not this */
         PF(User_data, u8, 0xC75) = (u8)type;
         PF(User_data, u16, 0xC76) = (u16)wid;
     } else {
@@ -146,7 +146,7 @@ void rt_player_game_init(int no)
          * took the "no save data" branch; cross-game audit) */
         void ItemCopy_Pl2Ud(PLW *), ItemCopy_Ud2Pl(PLW *);
         extern u8 User_data[];
-        int k, any = 0, pouch = rt_ver_mhg() ? 0xC24 : 0x37C;
+        int k, any = 0, pouch = rt_ver_mhg() ? 0xC24 : 0x37C;     /* MH2: pouch at 0x2040, not G's 0xC24 (STRUCTS' UDMO) */
         for (k = 0; k < 0x50; k++)
             any |= User_data[pouch + k];
         if (any && !getenv("RT_PL_ITEMS"))

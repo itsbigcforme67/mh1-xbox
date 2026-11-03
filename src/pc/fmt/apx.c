@@ -41,12 +41,8 @@ int fmt_apx_is_bare(fmt_blob f, int be)
 }
 
 /* TIM2 (MH2's textures, Sony's format). Seen in DATA.BIN (docs/mh2_port.md): version 4, align 16 or 128, one picture, one
- * mip level, 4-bit, 8-bit or 32-bit images, palette 16 or 32 bit. Palette not flagged 0x80 is in the GS's CSM1 order. */
-static uint8_t tim2_alpha(uint8_t a)     /* the GS's 0x80 is opaque; the host's alpha is 0-255 */
-{
-    return (uint8_t)(a >= 0x80 ? 255 : a * 2);
-}
-
+ * mip level, 4-bit, 8-bit or 32-bit images, palette 16 or 32 bit. Palette not flagged 0x80 is in the GS's CSM1 order. Alpha is full
+ * range in the files (0-255, not the GS's 0-0x80): of a sample of 779 pictures none tops out at 0x80, 762 reach 0xFF. */
 static int tim2_decode(apx_image *img, fmt_blob f)
 {
     const uint8_t *h = f.p + (f.p[5] ? 0x80 : 0x10), *px, *pal;
@@ -78,7 +74,6 @@ static int tim2_decode(apx_image *img, fmt_blob f)
     if (it == 3) {
         for (i = 0; i < npx; i++) {
             col32(img->rgba + 4 * i, px + 4 * i, FMT_LE);
-            img->rgba[4 * i + 3] = tim2_alpha(img->rgba[4 * i + 3]);
         }
         return 0;
     }
@@ -89,7 +84,6 @@ static int tim2_decode(apx_image *img, fmt_blob f)
             col32(c, pal + 4 * i, FMT_LE);
         else
             col16(c, fmt_u16(pal + 2 * i, FMT_LE));
-        c[3] = tim2_alpha(c[3]);
         memcpy(&c32[i], c, 4);
     }
     if (it == 5 && !(ct & 0x80) && ncol == 256)     /* CSM1: blocks 8-15 and 16-23 of each 32 swapped */
