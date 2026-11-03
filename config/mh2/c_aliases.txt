@@ -3559,6 +3559,8 @@ sub_main bg_col_tbl 0x00402200
 sub_main bind_rpc_blocking 0x0030A6F0
 sub_main bitpool 0x004036C0
 sub_main body_hit_sub_pl 0x003AFED0
+sub_main body_ptr_ck 0x003C2FB0
+sub_main body_ptr_ck2 0x003C2F60
 sub_main bs_check 0x00301220
 sub_main bs_ctd 0x00304240
 sub_main bs_point 0x003040B0
@@ -3670,6 +3672,8 @@ sub_main disp_kouho 0x00302D10
 sub_main disp_map_sign 0x0034A3E0
 sub_main disp_plt_tbl_1413 0x00418770
 sub_main disp_select 0x00305500
+sub_main dm_skip_ck 0x003C4930
+sub_main dm_vec_calc 0x003C6500
 sub_main dptofp 0x001125E8
 sub_main draw_prim 0x00377330
 sub_main dst_mode_256 0x0043C950
@@ -4854,6 +4858,7 @@ sub_main func_003A1040 0x003A1040
 sub_main func_003A1CA0 0x003A1CA0
 sub_main func_003A1CD0 0x003A1CD0
 sub_main func_003A1F60 0x003A1F60
+sub_main func_003A1FC0 0x003A1FC0
 sub_main func_003A3850 0x003A3850
 sub_main func_003A39F0 0x003A39F0
 sub_main func_003A4650 0x003A4650
@@ -4962,6 +4967,15 @@ sub_main func_003C1EF0 0x003C1EF0
 sub_main func_003C2250 0x003C2250
 sub_main func_003C2390 0x003C2390
 sub_main func_003C2420 0x003C2420
+sub_main func_003C2CF0 0x003C2CF0
+sub_main func_003C2DC0 0x003C2DC0
+sub_main func_003C2E40 0x003C2E40
+sub_main func_003C2F60 0x003C2F60
+sub_main func_003C2FB0 0x003C2FB0
+sub_main func_003C3EB0 0x003C3EB0
+sub_main func_003C4880 0x003C4880
+sub_main func_003C4930 0x003C4930
+sub_main func_003C6500 0x003C6500
 sub_main func_003C6BF0 0x003C6BF0
 sub_main func_003C6C00 0x003C6C00
 sub_main func_003C6C70 0x003C6C70
@@ -5047,7 +5061,6 @@ sub_main game12 0x00326770
 sub_main game13 0x00326B20
 sub_main game5 0x003274F0
 sub_main game_w 0x006ADCB0
-sub_main game_w_mh2_006ADC1B 0x006ADC1B
 sub_main game_w_mh2_006ADD3E 0x006ADD3E
 sub_main get1wd 0x002FCD40
 sub_main getPS2KbData 0x002F9B70
@@ -5091,11 +5104,14 @@ sub_main hchar_addchmem 0x00301140
 sub_main header 0x00585960
 sub_main henkan 0x00300520
 sub_main henkan_mode 0x00588ED0
+sub_main hit_calc_shl 0x003C65A0
 sub_main hit_cap_cap2_sub 0x003BF860
 sub_main hit_cap_cap3_m 0x003C0FC0
 sub_main hit_cap_cap3_sub 0x003C1E90
 sub_main hit_cap_pk 0x003BE140
 sub_main hit_cap_sphr_m 0x003C07E0
+sub_main hit_check 0x003C2E40
+sub_main hit_chk_init 0x003C2DC0
 sub_main hit_data_expand 0x003B0BE0
 sub_main hit_data_on_shl_sub 0x003C6BF0
 sub_main hit_line2_pk 0x003BE060
@@ -5106,6 +5122,7 @@ sub_main hit_sphr_cap_m 0x003C0230
 sub_main hit_sphr_pln 0x003C1EF0
 sub_main hit_sphr_sphr 0x003BE270
 sub_main hit_sphr_sphr3 0x003BE3D0
+sub_main hit_timer_calc 0x003C3EB0
 sub_main hit_timer_calc_shl 0x003C6D90
 sub_main hk_cursor_check 0x00311410
 sub_main hk_cursor_mv 0x003112D0
