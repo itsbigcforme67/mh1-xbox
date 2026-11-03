@@ -87,7 +87,7 @@ def main():
     if os.path.exists(dm):
         for l in open(dm):
             f = l.split()
-            if len(f) == 5 and not l.startswith("#") and f[1] not in have and f[0] in per:
+            if len(f) >= 4 and not l.startswith("#") and f[3] in ("high", "medium") and f[1] not in have and f[0] in per:
                 per[f[0]].append((int(f[2], 16), 0, f[1], False))
                 have.add(f[1])
     for m in per:
@@ -102,6 +102,9 @@ def main():
     m1 = {}
     for fn in ("main", "game", "lobby", "select", "yn"):
         for a, sz, n, f in read_syms(P("config/symbols/%s.txt" % fn)):
+            m1.setdefault(n, sz)
+    for fn in ("main", "game", "lobby", "select", "yn"):        # names only G has
+        for a, sz, n, f in read_syms(P("config/mhg/pc_symbols/%s.txt" % fn)):
             m1.setdefault(n, sz)
     os.makedirs(P("build/mh2/pc/symbols"), exist_ok=True)
     view = {}
