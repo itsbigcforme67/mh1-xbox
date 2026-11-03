@@ -183,6 +183,26 @@ const uint8_t *rt_addr(uint32_t va, size_t n)
     return NULL;
 }
 
+/* The PS2 address of a host pointer into one of the loaded images (main data, sub_main, game.bin, the extra overlays), 0 if none.
+ * Data words the import relocated in place hold host pointers: this turns one back into the address the game had. */
+uint32_t rt_va_of_host(const void *host)
+{
+    const uint8_t *h = host;
+    unsigned i;
+    if (!h)
+        return 0;
+    if (main_img && h >= main_img && h < main_img + main_n)
+        return main_va + (uint32_t)(h - main_img);
+    if (sub_img && h >= sub_img && h < sub_img + sub_n)
+        return sub_va + (uint32_t)(h - sub_img);
+    if (ovl && h >= ovl && h < ovl + ovl_n)
+        return OVL_GAME_VRAM + (uint32_t)(h - ovl);
+    for (i = 0; i < (unsigned)nextra; i++)
+        if (h >= extra[i].img && h < extra[i].img + extra[i].n)
+            return extra[i].va + (uint32_t)(h - extra[i].img);
+    return 0;
+}
+
 /* 1 if [va, va + n) is zero-initialised memory (.bss) of the ELF or the
  * overlay: tables there start as zeros. */
 int rt_in_bss(uint32_t va, size_t n)

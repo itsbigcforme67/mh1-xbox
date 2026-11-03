@@ -1246,22 +1246,35 @@ static uint32_t mh2_mw(uint32_t o)
 }
 
 /* the start stage: Quest_pl_stage_init (sub_main 0x3A1D00). +0x5D of the file 0: the table at header +4, 16 bytes a player, first word the
- * stage. Else a weighted random pick from a list in gm_sub's data (0x9316B0 by info+0x20): the first entry is taken here */
+ * stage. Else a weighted random pick from a list in gm_sub's data (0x9316B0 by info+0x20, then entry pick - 1): u16 pairs {weight, stage}
+ * ended by 0xFFFF, weights summing to 100 (gm_sub 0x931400-0x931540). The first entry is taken here */
+/* the PS2 address a data word at va holds. The import relocates pointer words in place to host pointers, gm_sub's too (seen: 0x9316C8
+ * held a host address), and rt_is_pointer does not cover the extra overlays: a word that points into a loaded image is turned back.
+ * The 32-bit build's heap sits far above the PS2's 32 MB, so a PS2 address is not taken for a host one. */
+static uint32_t mh2_word_va(uint32_t va)
+{
+    const uint8_t *p = rt_addr(va, 4);
+    uint32_t w = 0, h;
+    if (!p)
+        return 0;
+    memcpy(&w, p, 4);
+    h = w >= 0x02000000u ? rt_va_of_host((const void *)(uintptr_t)w) : 0;
+    return h ? h : w;
+}
+
 static int mh2_start_stage(void)
 {
     uint32_t info = mh2_mw(0), pick = mh2_mission_n > 0x5D ? mh2_mission[0x5D] : 0;
     if (pick) {
-        const uint8_t *q = rt_addr(0x9316B0 + 4 * mh2_mw(info + 0x20), 4);
-        uint32_t l;
-        if (q) {
-            memcpy(&l, q, 4);
-            q = rt_addr(l + 4 * (pick - 1), 4);
-        }
-        if (q) {
-            memcpy(&l, q, 4);
-            q = rt_addr(l, 2);
-        }
-        return q ? q[0] | q[1] << 8 : -1;
+        uint32_t l = mh2_word_va(0x9316B0 + 4 * mh2_mw(info + 0x20));
+        const uint8_t *q = NULL;
+        if (l)
+            l = mh2_word_va(l + 4 * (pick - 1));
+        if (l)
+            q = rt_addr(l, 4);
+        if (!q)
+            fprintf(stderr, "start stage: gm_sub's list (0x9316B0 + 4 * %u) not readable\n", (unsigned)mh2_mw(info + 0x20));
+        return q ? q[2] | q[3] << 8 : -1;
     }
     return (int)mh2_mw(mh2_mw(4));
 }
