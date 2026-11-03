@@ -1,0 +1,37 @@
+# Name corrections that outrank tools/mh2_map.py (tools/mh2_funcfix.py). module address name how sim # evidence
+# em_cmd handlers: em_cmd_ck's switch by opcode (src/mh2/game/em_cmd_ck.c on the QUEST branch, MH1's src/game/em/em_cmd_r01.c). All 109 opcodes MH1 has
+# stay in the same order by address, so no opcode moved; these addresses take MH1's name of that opcode. em_cmd_opNN: new in MH2, real name unknown.
+game 0x00727840 em_cmd_area_move_ck opcode 0.77 # opcode 0x03, was game_func_00727840
+game 0x00730540 em_cmd_target_set opcode 0.41 # opcode 0x06, was game_func_00730540
+game 0x007279C0 em_cmd_main_jump opcode 0.67 # opcode 0x07, was game_func_007279C0
+game 0x007279D0 em_cmd_stand_ck opcode 1.00 # opcode 0x08, was game_func_007279D0
+game 0x00727D00 em_cmd_body_status_set opcode 1.00 # opcode 0x0A, was game_func_00727D00
+game 0x007281A0 em_cmd_stage_no_ck opcode 0.79 # opcode 0x0E, was em_cmd_emtype_ck
+game 0x007287A0 em_cmd_pl_target_set opcode 0.71 # opcode 0x13, was game_func_007287A0
+game 0x00728AD0 em_cmd_stage_no_sel opcode 0.68 # opcode 0x15, was game_func_00728AD0
+game 0x00728E80 em_cmd_area_route_ck opcode 0.57 # opcode 0x19, was game_func_00728E80
+game 0x00728EA0 em_cmd_escape_area_set opcode 0.66 # opcode 0x1A, was game_func_00728EA0
+game 0x007292F0 em_cmd_mind_ck opcode 1.00 # opcode 0x1B, was game_func_007292F0
+game 0x00729400 em_cmd_mind_no_ck opcode 0.63 # opcode 0x1C, was game_func_00729400
+game 0x007297A0 em_cmd_pl_ang_sel opcode 0.63 # opcode 0x20, was game_func_007297A0
+game 0x00729E60 em_cmd_emtype_ck opcode 0.70 # opcode 0x23, was game_func_00729E60
+game 0x0072A180 em_cmd_demo_flag_set opcode 1.00 # opcode 0x26, was game_func_0072A180
+game 0x0072A190 em_cmd_type_sel opcode 1.00 # opcode 0x27, was game_func_0072A190
+game 0x0072B240 em_cmd_myemtype_sel opcode 0.72 # opcode 0x2C, was game_func_0072B240
+game 0x0072B580 em_cmd_smell_set opcode 0.75 # opcode 0x2D, was game_func_0072B580
+game 0x0072C300 em_cmd_before_stage_ck opcode 0.80 # opcode 0x3D, was game_func_0072C300
+game 0x0072C470 em_cmd_before_stage_sel opcode 0.67 # opcode 0x3E, was game_func_0072C470
+game 0x0072CB70 em_cmd_em_hp_vital_add opcode 0.67 # opcode 0x41, was game_func_0072CB70
+game 0x0072D780 em_cmd_timer_set opcode 0.55 # opcode 0x48, was game_func_0072D780
+game 0x0072D790 em_cmd_pl_land_target opcode 0.52 # opcode 0x49, was game_func_0072D790
+game 0x0072EA00 em_cmd_boss_pl_target_set opcode 0.64 # opcode 0x58, was game_func_0072EA00
+game 0x0072EFC0 em_cmd_my_floor_ck opcode 0.99 # opcode 0x5E, was game_func_0072EFC0
+game 0x0072F650 em_cmd_runaway_timer_set opcode 0.32 # opcode 0x61, was game_func_0072F650
+game 0x0072F8A0 em_cmd_male_ck opcode 0.96 # opcode 0x63, was em_cmd_stage_no_ck
+game 0x00730490 em_cmd_contents opcode 0.88 # opcode 0x81, was game_func_00730490
+game 0x007314A0 em_cmd_demo_start opcode 1.00 # opcode 0x92, was game_func_007314A0
+game 0x007314B0 em_cmd_wait_set opcode 1.00 # opcode 0x93, was game_func_007314B0
+game 0x00727AE0 em_cmd_op1F opcode-new - # opcode 0x1F, new in MH2, a variant; map had em_cmd_stand_ck
+game 0x0072BC40 em_cmd_op37 opcode-new - # opcode 0x37, new in MH2, a variant; map had em_cmd_male_ck
+game 0x007318F0 em_cmd_op73 opcode-new - # opcode 0x73, new in MH2, a variant; map had em_cmd_stage_no_sel
+game 0x0072A550 em_cmd_op76 opcode-new - # opcode 0x76, new in MH2, a variant; map had em_cmd_type_sel
