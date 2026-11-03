@@ -665,7 +665,14 @@ started:
      * docs/referee.md) */
     game_w.mode = 1;
     game_w.step = 3;
+#ifdef VERSION_MH2
+    {   /* G's Quest_timer_reset calls f_quest.c's own (G) Quest_time_get, which reads MH2's fee: MH2's (rt_mh2_quest.c) */
+        int Quest_time_get(int);
+        quest_w.x10 = Quest_time_get(1);
+    }
+#else
     Quest_timer_reset();
+#endif
     if (getenv("RT_QUEST_TIME"))    /* test aid: the quest's time left (ticks), for time-out tests (online: rt_np.c) */
         quest_w.x10 = atoi(getenv("RT_QUEST_TIME"));
     return quest_w.no == no && quest_w.x94 ? 0 : -1;

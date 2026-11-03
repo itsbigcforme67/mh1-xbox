@@ -703,7 +703,10 @@ for f in $GAME; do
     # MH2: light_init is the host's (src/pc/rt/rt_mh2.c: MH2 has no pl_light_tbl)
     case "$f" in src/main/model/light_init_nm.c) [ "$VERSION" = mh2 ] && ABI="$ABI -Dlight_init=g_light_init" ;;
         src/main/model/light_nm.c) [ "$VERSION" = mh2 ] && ABI="$ABI -Dlight_change_normal=g_light_change_normal -Dpl_light_change=g_pl_light_change" ;;
-        src/game/em/em_cmd_nm.c) [ "$VERSION" = mh2 ] && ABI="$ABI -Dem_cmd_init=g_em_cmd_init" ;; esac
+        src/game/em/em_cmd_nm.c) [ "$VERSION" = mh2 ] && ABI="$ABI -Dem_cmd_init=g_em_cmd_init" ;;
+        src/main/quest/f_quest.c|src/main/quest/f_quest_nm.c)   # MH2: its own judging 0x3A2E30 and Quest_time_get 0x3A1FC0 (src/pc/rt/rt_mh2_quest.c)
+            [ "$VERSION" = mh2 ] && ABI="$ABI -DQuest_condition_judging=g_Quest_condition_judging -DQuest_time_get=g_Quest_time_get" ;;
+        src/main/font/dsp01.c) [ "$VERSION" = mh2 ] && ABI="$ABI -DGame_clear_ck=g_Game_clear_ck" ;; esac   # (reads G's game_w+0x3E)
     case "$f" in src/main/item/item_nm.c) ABI="-Dinit_item_work=ps2_init_item_work -Dclr_item_work=ps2_clr_item_work -Dmove_item=ps2_move_item -Ditem_check=ps2_item_check -Dpush_item_work=ps2_push_item_work" ;; src/main/tu/sk_all.c) ABI="-DSoftKeyboard_set=sk_real_set -DSoftKeyboard_move=sk_real_move -DSoftKeyboard_exit=sk_real_exit" ;; esac
     cc_obj_p "$b" "$CC $INC $GAMEFLAGS $ABI $SYS -c $src -o $o"
     OBJS="$OBJS $o"
@@ -779,7 +782,7 @@ OBJS="$OBJS build/pc/rt_memstat.o"
 python3 tools/gen_rt_meta.py build/pc/rt_meta.c
 cc_obj rt_meta "$CC $CFLAGS $SYS -w -c build/pc/rt_meta.c -o build/pc/rt_meta.o"
 OBJS="$OBJS build/pc/rt_meta.o"
-for f in $NETRT $([ -n "$COV" ] && echo rt_cov) rt_ver rt_game rt_fl rt_flmat rt_data rt_overlay rt_main rt_eft rt_motion rt_pad rt_player rt_hit rt_cam rt_light rt_snd rt_pl rt_abi rt_em rt_quest rt_flow rt_menu rt_2d rt_hud_gun rt_font rt_village rt_mc rt_save rt_boot rt_movie rt_prof rt_log rt_pick rt_text rt_text_sp rt_dbg rt_ref rt_mh2; do
+for f in $NETRT $([ -n "$COV" ] && echo rt_cov) rt_ver rt_game rt_fl rt_flmat rt_data rt_overlay rt_main rt_eft rt_motion rt_pad rt_player rt_hit rt_cam rt_light rt_snd rt_pl rt_abi rt_em rt_quest rt_flow rt_menu rt_2d rt_hud_gun rt_font rt_village rt_mc rt_save rt_boot rt_movie rt_prof rt_log rt_pick rt_text rt_text_sp rt_dbg rt_ref rt_mh2 rt_mh2_quest rt_mh2_em; do
     # shellcheck disable=SC2086
     XF=""; [ $f = rt_log ] && XF="-D_GNU_SOURCE"   # ucontext / sigaltstack
     [ $f = rt_menu ] && XF="-DMH1_NO_UTF8"       # include/plf.h declares memset(void *, int, int)

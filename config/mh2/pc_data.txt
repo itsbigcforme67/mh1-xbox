@@ -15,3 +15,8 @@ em_sleep_data_tbl = 0x008BDA00; // size:0x8C
 em_poison_data_tbl = 0x008BCCB0; // size:0x8C
 em_mahi_data_tbl = 0x008BD180; // size:0x8C
 em_sleep2_data_tbl = 0x008BDB50; // size:0x8C
+# Monster hit points and level rates (game 0x708C70, MH2's form of G's game 0x5499A0; em_def_attack_set 0x708E10 reads the
+# second too): 74 kinds of pointers each (where pointer words into gm_sub stop), QUEST agent round 3
+em_lv_rate_tbl = 0x0090D470; // size:0x128        # per kind: rows of {f32 hp, attack, defence} by level (EMW+0x98A)
+em_vital_tbl = 0x0090DB30; // size:0x128          # per kind: s16 hit points per variant
+camera_data_tbl = 0x004224E0; // size:0x31C noptr    # per stage, 199 entries (index 199 starts the next table); WALK: the host array had MH1's 100, Get_cam_grid_XZ divided by zero on stage 110

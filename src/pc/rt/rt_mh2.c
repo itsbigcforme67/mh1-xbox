@@ -29,6 +29,7 @@ int ran_suu();
 unsigned char Get_hunter_rank();
 void quest_em_init();
 void rt_quest_mem_init(void);
+void rt_mh2_quest_targets_init(void);
 
 /* the mission file m<no><d|n><0-2>.mib, read by the viewer (it has DATA.BIN open): bytes into dst, 0 when missing */
 static size_t (*mib_fn)(int no, u8 *dst, size_t max);
@@ -152,7 +153,7 @@ int rt_mh2_quest_start(int no)
     game_w.x0D0 = 0;
     game_w.x0D5 = 2;
     Ext_pick_point_init();
-    /* 0x3A7FC0, 0x366950, 0x3A3DF0: not known, skipped */
+    /* 0x366950: not known, skipped (0x3A7FC0, 0x3A3DF0: below, with the fill) */
     for (i = 0; i < 15; i++)    /* offline: 15 random bytes (online: the host's), then the quest's own generator 0x3A3850/0x3A39F0 */
         quest_w.rnd[i] = (u8)ran_suu(0);
     memset(quest_w.x1D4, 0, sizeof quest_w.x1D4);   /* 0x20C and 0x34C, 0x50 u16 each */
@@ -218,7 +219,8 @@ int rt_mh2_quest_start(int no)
         const s8 *b = (const s8 *)rt_addr(0x44B450, 16);
         QB(0x15A) = b ? (u8)b[ran_suu(0) & 0xF] : 0;
     }
-    /* 0x3A8060, 0x3A3E20: not known, skipped */
+    /* 0x3A7FC0 / 0x3A3DF0 (clear) and 0x3A8060 / 0x3A3E20 (fill): the quest's targets and item checks (rt_mh2_quest.c) */
+    rt_mh2_quest_targets_init();
     quest_em_init();
     /* NPCZoomInCameraCancel, game 0x6EE380(0), gm_sub 0x90AAA0: skipped */
     rt_log("MH2 quest %d: mission %u bytes, start stage %d, time %d, reward %d, fee %d, flags 0x%X", no, (unsigned)n, st,
