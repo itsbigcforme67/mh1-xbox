@@ -110,7 +110,7 @@ void hit_chk_init(void) {
     int i;
 
     Hit_id_init();
-    for (i = 0, c = (HCHR *)player_work; i < 4; i++, c = (HCHR *)((u8 *)c + 0xA00)) {
+    for (i = 0, c = (HCHR *)player_work; i < 4; i++, c = (HCHR *)((u8 *)c + PLW_STRIDE)) {
         hit_chk_init_sub(c);
     }
     for (i = 0, c = (HCHR *)em_work; i < 20; i++, c = (HCHR *)((u8 *)c + EMW_STRIDE)) {
@@ -128,7 +128,7 @@ void hit_check(void) {
     HCHR *e;
     int k;
 
-    for (i = 0, c = (HCHR *)player_work; i < 4; i++, c = (HCHR *)((u8 *)c + 0xA00)) {
+    for (i = 0, c = (HCHR *)player_work; i < 4; i++, c = (HCHR *)((u8 *)c + PLW_STRIDE)) {
         c->dm_flag = 0;
         c->x7AE = 0;
         c->dm_val[0] = 0;
@@ -151,6 +151,12 @@ void hit_check(void) {
         c->x7CE = 0;
         c->x7C6 = 0;
         c->x7BC = 0;
+#ifdef VERSION_MH2
+        c->m748 = 0;    /* MH2 0x3C2E40 clears four more player fields (no MH1 twin known) */
+        c->m8CC = 0;
+        c->m8D0 = 0;
+        c->m8D4 = 0;
+#endif
 #ifdef VERSION_MHG
         c->x3EB = 0;
 #endif
@@ -178,8 +184,14 @@ void hit_check(void) {
         e->x7CE = 0;
         e->x7C6 = 0;
         e->x7BC = 0;
+#ifdef VERSION_MH2
+        e->m748 = 0;
+#endif
 #ifdef VERSION_MHG
         e->x3EB = 0;
+#endif
+#ifdef VERSION_MH2
+        e->dm_type = 0;
 #endif
     }
     shell_hit_ck();
@@ -803,7 +815,7 @@ HIT_STATIC void shell_hit_ck(void) {
                 hit_chk_sub_shl(sh, own, c);
             skip_em:;
             }
-            for (c = (HCHR *)player_work, i = 0; i < game_w.pl_num; i++, c = (HCHR *)((u8 *)c + 0xA00)) {
+            for (c = (HCHR *)player_work, i = 0; i < game_w.pl_num; i++, c = (HCHR *)((u8 *)c + PLW_STRIDE)) {
                 if (c->be_flag == 0 || c->stg != sh->stg || shell_flag_ck(sh, 0x400) != 0) {
                     continue;
                 }

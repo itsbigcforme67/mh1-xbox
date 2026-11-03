@@ -21,6 +21,21 @@ typedef struct MISSION {
 } MISSION;
 
 /* Info block (quest_w.x94 points at it): time, fees. */
+#ifdef VERSION_MH2
+/* MH2's info block (the .mib's first table): fields keep G's names, at MH2's places, each read from MH2's own code:
+ * sub_main Quest_start 0x3A11A0 (+0x00 lw, +0x0C, +0x10, +0x24), Quest_time_get 0x3A1FC0 (+0x1C), Quest_pl_stage_init
+ * 0x3A1D00 (+0x20, the start-area list). 0x04..0x0B and 0x14..0x1B: not seen used by name. */
+typedef struct MISSION2 {
+    s32 x00;            /* 0x00 flags (quest_w.x40; a word in MH2, G's u16) */
+    u8 _pad04[8];
+    s32 x08;            /* 0x0C reward money (G 0x08) */
+    s32 x0C;            /* 0x10 fee (G 0x0C) */
+    u8 _pad14[0x1C - 0x14];
+    s32 x10;            /* 0x1C time limit (G 0x10) */
+    s32 x14;            /* 0x20 start-area list (G 0x14) */
+    s32 x18;            /* 0x24 table offset (G 0x18) */
+} MISSION2;
+#else
 typedef struct MISSION2 {
     u16 x00;            /* 0x00 */
     u8 _pad02[6];
@@ -30,6 +45,7 @@ typedef struct MISSION2 {
     s32 x14;            /* 0x14 */
     s32 x18;            /* 0x18 */
 } MISSION2;
+#endif
 
 /* One command of the quest condition program (quest_w.x6C): 8 bytes. */
 typedef struct QCMD {

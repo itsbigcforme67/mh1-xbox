@@ -44,7 +44,9 @@
 #undef ITEM_ROW
 #define ITEM_ROW 24 /* one Item_data row in MH2 (UseItemChk: id * 24) */
 #define PLW_AT(i) ((PLW *)((u8 *)player_work + (i) * 0x970)) /* player work is 0x970 bytes in MH2 */
+#define PLW_STRIDE 0x970 /* sizeof one player_work entry (MH2 hit_chk_init 0x3C2DC0: addiu 0x970) */
 #else
+#define PLW_STRIDE 0xA00
 #define PLW_AT(i) (&player_work[i])
 #endif
 #endif

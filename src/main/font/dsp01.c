@@ -1,6 +1,8 @@
 /* dsp01 - loading screen 0x00162DB0-0x00162E20: Game_clear_ck. Whole file in disp3_nm.c. */
 #include "types.h"
-#ifdef VERSION_MHG
+#if defined(VERSION_MH2)
+#define GW_X0D5 0x40 /* MH2 0x36BB10 reads game_w+0x40 (G's +0x3E: MH2 has 2 more bytes from 0x16) */
+#elif defined(VERSION_MHG)
 #define GW_X0D5 0x3E /* G moved x0D5 from 0xD5 */
 #else
 #define GW_X0D5 0xD5
@@ -21,7 +23,7 @@ int strlen(const char *);
 
 
 
-/* Whether the quest result state (game_w+0xD5) counts as cleared, given kind a. */
+/* Whether the quest result state (game_w+0xD5; G +0x3E, MH2 +0x40) counts as cleared, given kind a. */
 int Game_clear_ck(int a) {
     switch (game_w[GW_X0D5]) {
     case 3:

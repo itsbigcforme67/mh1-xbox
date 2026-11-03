@@ -15,3 +15,11 @@ game 0x008BDB50 em_sleep2_data_tbl 0x8C
 game 0x008BCCB0 em_poison_data_tbl 0x8C
 game 0x008BD180 em_mahi_data_tbl 0x8C
 game 0x008BDA00 em_sleep_data_tbl 0x8C
+# set01_i (sub_main 0x380C70, MH2's message banner, now one sprintf per case) indexes four string tables by sw+0x3E: case 0
+# 0x4469C0, case 1 0x446A40 (with item_str 0x464770), case 2 0x446AA0, case 3 0x446AD0 (with the hunter's name, player_work +0x82C).
+# The data map had info_str1 at 0x49FB98 and info_str3 at 0x446AD8 (two entries in, so entry 3 read past it). Sizes run to the next
+# table (MH1: 25, 17, 1, 3 entries); case 5 reads the two words at 0x446AE0 / 0x446AE4 itself (no MH1 twin).
+sub_main 0x004469C0 info_str0 0x80
+sub_main 0x00446A40 info_str1 0x60
+sub_main 0x00446AA0 info_str2 0x30
+sub_main 0x00446AD0 info_str3 0x10

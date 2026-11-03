@@ -425,10 +425,16 @@ void em_init(EMW *em) {
      * HUNT=1; agent C, 28 Oct 2026). */
     if (EB(0x9E2) != 0 && game_w.pl_num > 0) {
         for (i = 0; i < game_w.pl_num; i++) {
+#ifdef VERSION_MH2
+            if (*(u16 *)&player_work[0x970 * i + 0x680] == em->stg && game_w.pl_state[i] == 1) {   /* MH2 0x9049A8: lhu 0x680, stride 0x970 */
+#else
             if (player_work[0xA00 * i + 0x736] == em->stg && game_w.pl_state[i] == 1) {
+#endif
                 EB(0x8C3) = game_w.master == i ? 0 : 1;
                 EB(0x88E) = (u8)i;
-                EB(0x949) = (u8)i;
+#ifndef VERSION_MH2
+                EB(0x949) = (u8)i;  /* MH2's em_init has no such store (src/mh2/gm_sub/em_init_nm.c) */
+#endif
                 break;
             }
         }

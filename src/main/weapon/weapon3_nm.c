@@ -79,7 +79,7 @@ void player_modify(PLW *pl) {
     u8 *mdl;
 
     if (pl->x01 != 0) {
-        mdl = *(u8 **)((u8 *)pl + 0x50C);
+        mdl = *(u8 **)((u8 *)pl + MH2_OFS(pl, 0x50C));   /* MH2 0x4EC (0x376B50) */
         cpAng2Rad_all(&pl->ang, ang);
         flmatMakeScale(&m, pl->scl[0], pl->scl[1], pl->scl[2]);
         flmatRotXYZ33(&m, ang[0], ang[1], ang[2]);

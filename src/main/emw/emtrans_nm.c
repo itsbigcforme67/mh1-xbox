@@ -7,8 +7,13 @@ typedef f32 MAT4[4][4];
 typedef struct EMT {
     u8 _pad00[2];
     u8 kind;
+#ifdef VERSION_MH2
+    u8 _pad03[0x3D0 - 3];
+    void (**prog)(struct EMT *);    /* 0x3D0 in MH2 (gm_sub 0x90A990), as emt02.c */
+#else
     u8 _pad03[0x3CC - 3];
     void (**prog)(struct EMT *);
+#endif
 } EMT;
 
 typedef struct GWT { u8 _pad00[0x1E]; u16 x1E; } GWT;

@@ -10,6 +10,7 @@
  * spawns the hit-mark effects (eft02/06/14/15/16/18). Sharpness (s_gauge_tbl)
  * and monster meat values (em_meat_tbl) scale blade damage.
  * Field names in include/hit.h are mostly by offset. */
+#include "version.h"
 #include "hit.h"
 #include "pl.h"
 #include "em.h"
@@ -92,7 +93,7 @@ void hit_chk_init(void) {
     int i;
 
     Hit_id_init();
-    for (i = 0, c = (HCHR *)player_work; i < 4; i++, c = (HCHR *)((u8 *)c + 0xA00)) {
+    for (i = 0, c = (HCHR *)player_work; i < 4; i++, c = (HCHR *)((u8 *)c + PLW_STRIDE)) {
         hit_chk_init_sub(c);
     }
     for (i = 0, c = (HCHR *)em_work; i < 20; i++, c = (HCHR *)((u8 *)c + 0xA10)) {
@@ -108,7 +109,7 @@ void hit_check(void) {
     HCHR *e;
     int k;
 
-    for (i = 0, c = (HCHR *)player_work; i < 4; i++, c = (HCHR *)((u8 *)c + 0xA00)) {
+    for (i = 0, c = (HCHR *)player_work; i < 4; i++, c = (HCHR *)((u8 *)c + PLW_STRIDE)) {
         c->dm_flag = 0;
         c->x7AE = 0;
         c->dm_val[0] = 0;
@@ -571,7 +572,7 @@ static void shell_hit_ck(void) {
                 hit_chk_sub_shl(sh, own, c);
             skip_em:;
             }
-            for (c = (HCHR *)player_work, i = 0; i < game_w.pl_num; i++, c = (HCHR *)((u8 *)c + 0xA00)) {
+            for (c = (HCHR *)player_work, i = 0; i < game_w.pl_num; i++, c = (HCHR *)((u8 *)c + PLW_STRIDE)) {
                 if (c->be_flag == 0 || c->stg != sh->stg || shell_flag_ck(sh, 0x400) != 0) {
                     continue;
                 }

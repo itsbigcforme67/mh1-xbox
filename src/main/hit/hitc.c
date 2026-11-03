@@ -67,11 +67,7 @@ void func_5547B0(f32 *, s16, int);              /* game.bin Eft18_set2 */
 int func_639FC0(u16, u16);                      /* game.bin Guard_dir_ck */
 
 void hit_data_on_shl_sub(HSHL *sh, HCHR *pl) {
-#ifdef VERSION_MH2
-    *(void **)((u8 *)pl + 0x420) = &sh->hit_time;
-#else
-    pl->x41C = &sh->hit_time;
-#endif
+    pl->x41C = &sh->hit_time;  /* MH2 0x420: include/hit.h */
 }
 
 void hit_shell_minus(HSHL *sh) {
