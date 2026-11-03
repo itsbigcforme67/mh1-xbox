@@ -96,4 +96,4 @@ JP image has the same three streams is unknown: an owner with that image would b
   the BGM table. rt_snd.c still opens AFS00/AFS01 in the disc folder: point it at the install folder.
 - Stage light and fog from the third entry; monsters posed by motion ids the game uses; ground height for the hunter.
 - Movies (AFS02) through the SFD player.
-- User_data uses in src/pc/rt (rt_dbg.c, rt_player.c, rt_flow.c) still read G's offsets on MH2; marked in the code.
+- User_data uses in src/pc/rt (rt_dbg.c, rt_player.c, rt_flow.c) go through UDMO since the merge of 3 Nov; not run in a game.

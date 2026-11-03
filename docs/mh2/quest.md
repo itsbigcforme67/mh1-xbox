@@ -31,7 +31,7 @@ Logic read from the code; registers or a few instructions differ, so the bytes d
 
 ## EMW fields MH2 changed that the header has wrong (for STRUCTS)
 
-Read from cmd_target_kind_set against its C, all u16: x828 at 0x77A, x829 at 0x77C, x882 at 0x998, x883 at 0x99A, x92F at 0x986, x95A at 0x98C (holds x883 << 2 in target_kind_set case 12). cmd_idx at 0x774 is written as a byte by em_cmd_ck. EMW + 0x3D0 is a pointer with a function at +0x18. The header has `u8 x828` at 0x77C, `u8 x829` at 0x77D, x882/x883 at 0x7D6. A cast to any other struct makes MWCC keep the address in a register, so a field must be in EMW itself or reached through a union parameter, which is what EMT in em_core_g_mh2.h does. When the header has them, EMT can go.
+Read from cmd_target_kind_set against its C, all u16: x828 at 0x77A, x829 at 0x77C, x882 at 0x998, x883 at 0x99A, x92F at 0x986, x95A at 0x98C (holds x883 << 2 in target_kind_set case 12). cmd_idx at 0x774 is written as a byte by em_cmd_ck. EMW + 0x3D0 is a pointer with a function at +0x18. The header has `u8 x828` at 0x77C, `u8 x829` at 0x77D, x882/x883 at 0x7D6. A cast to any other struct makes MWCC keep the address in a register, so a field must be in EMW itself or reached through a union parameter, which is what EMT in em_core_g_mh2.h does. When the header has them, EMT can go. (Merge of 3 Nov: STRUCTS' EMW has them and EMT is gone from em_core_g_mh2.h; em_dmg_sys_nm.c keeps its own for + 0x3D0.)
 
 ## Tools
 
@@ -42,6 +42,8 @@ Read from cmd_target_kind_set against its C, all u16: x828 at 0x77A, x829 at 0x7
 - Hand C in src/mh2 is not in the PC build's source list unless a shared file includes it. p003A9230_nm.c and p003A2E30_nm.c are not linked yet.
 
 ## Name map: em_cmd opcode handlers
+
+The table below is the state before the merge of 3 Nov. em_cmd_ck.c now uses DATA's names by opcode (config/mh2/func_fix.txt, docs/mh2/data.md).
 
 em_cmd_ck calls each handler by opcode, so MH1's and MH2's tables can be laid side by side. Where they differ, either the map's name is wrong or the opcode moved, not decided here. Many are `game_func_` where a twin is likely. New opcodes in MH2: 0x1F, 0x36, 0x37, 0x69, 0x70-0x7C (from the table).
 
