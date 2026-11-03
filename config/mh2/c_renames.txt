@@ -529,6 +529,8 @@ build/mh2/src/main/ime/imeu.c.o .rodata .data
 build/mh2/src/main/net/cpinet16.c.o .rodata .data
 build/mh2/src/main/net/cpinet26.c.o .rodata .data
 build/mh2/src/mh2/game/cmd_target.c.o .rodata .data
+build/mh2/src/mh2/game/p0075FBF0.c.o .rodata .data
+build/mh2/src/mh2/game/p0080D270.c.o .rodata .data
 build/mh2/src/mh2/parts/game_em_em02_aib_163.c.o .rodata .data
 build/mh2/src/mh2/parts/game_em_em02_g_510.c.o .rodata .data
 build/mh2/src/mh2/parts/game_em_em03_131.c.o .rodata .data

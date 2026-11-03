@@ -1281,3 +1281,7 @@ game 0x00704120 0x00705518 mh2/game/cmd_target
 game:data 0x008EC4E0 0x008EC5F8 mh2/game/cmd_target
 game 0x00726380 0x007275C4 mh2/game/em_cmd_ck
 sub_main 0x00378A30 0x003794AC mh2/sub_main/p00378A30
+game 0x0080D270 0x0080DCEC mh2/game/p0080D270
+game:data 0x008F2020 0x008F20E4 mh2/game/p0080D270
+game 0x0075FBF0 0x007609A0 mh2/game/p0075FBF0
+game:data 0x008EE4F0 0x008EE5C4 mh2/game/p0075FBF0

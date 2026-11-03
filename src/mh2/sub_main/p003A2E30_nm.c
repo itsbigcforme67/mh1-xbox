@@ -8,11 +8,26 @@ typedef unsigned int u32;
 
 extern u8 D_006ADCB0[], D_006ADCF0, D_006ADCEC, D_006ADCEE, D_006ADED4[];
 extern u8 player_work[];
-extern s8 D_005D8260, D_005D8261, D_005D8266, D_005D87B1;
-extern u16 D_005D8268;
-extern s16 D_005D827E, D_005D83B6, D_005D87B2, D_005D87B4, D_005D87B6;
-extern int D_005D8270, D_005D8274, D_005D8288, D_005D838C, D_005D8388, D_005D8390, D_005D878C;
-extern struct { u8 r, x; } D_005D8300[];
+extern u8 quest_w[];
+#define D_005D8260 (*(s8 *)(quest_w + 0x0))
+#define D_005D8261 (*(s8 *)(quest_w + 0x1))
+#define D_005D8266 (*(s8 *)(quest_w + 0x6))
+#define D_005D87B1 (*(s8 *)(quest_w + 0x551))
+#define D_005D8268 (*(u16 *)(quest_w + 0x8))
+#define D_005D827E (*(s16 *)(quest_w + 0x1E))
+#define D_005D83B6 (*(s16 *)(quest_w + 0x156))
+#define D_005D87B2 (*(s16 *)(quest_w + 0x552))
+#define D_005D87B4 (*(s16 *)(quest_w + 0x554))
+#define D_005D87B6 (*(s16 *)(quest_w + 0x556))
+#define D_005D8270 (*(int *)(quest_w + 0x10))
+#define D_005D8274 (*(int *)(quest_w + 0x14))
+#define D_005D8288 (*(int *)(quest_w + 0x28))
+#define D_005D838C (*(int *)(quest_w + 0x12C))
+#define D_005D8388 (*(int *)(quest_w + 0x128))
+#define D_005D8390 (*(int *)(quest_w + 0x130))
+#define D_005D878C (*(int *)(quest_w + 0x52C))
+typedef struct { u8 r, x; } QRANK;
+#define D_005D8300 ((QRANK *)(quest_w + 0xA0))
 extern int D_00445540, D_00445544, D_00445548, D_0044554C, D_00445550, D_00445598, D_0044559C;
 extern u8 D_005D4A60;
 
