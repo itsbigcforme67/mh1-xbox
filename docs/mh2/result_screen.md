@@ -121,8 +121,9 @@ selling, +0x14. Set by sub_D695A0 (reward_init).
 | 0x2CCC | u16 compared with 100 for unlock 0x63 (**unknown**) |
 | 0x3660 | the unlock bit set (sub_3BD560 test / sub_3BD550 set). Not Omake_flag_ck (0x3BD4F0) |
 
-**Kill counts:** this screen does **not** add the quest's kills to a hunting-log kill array in User_data (G's kills_add, UD+0xD76).
-None of step 0's callees writes one. MH2 may count them at kill time; not checked.
+**Kill counts:** corrected in docs/mh2/result_screen2.md: step 0's sub_3A0040 -> sub_39FC00 adds this quest's kills
+(QW+0x20C) and captures (QW+0x2AC; the "second count", a shape match with G's Quest_enemy_capture) into UD+0x23D2 /
+UD+0x24D2 per kind, on both the cleared and the failed path. Its port plan (section 9) supersedes section 4 here where they differ.
 
 ### Tables the port reads from the disc (never copied into the repo)
 
