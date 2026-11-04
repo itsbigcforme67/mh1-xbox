@@ -259,6 +259,18 @@ typedef struct {
  * old sets reachable for rt_motion_gc, and their files loaded. On the PS2 those old sets
  * were released before (all_motion_free, em_motion_free: stand-ins here). Regions: common
  * 0..499, player n 500 + 300n, monster model slot n 1700 + 600n (create_*_motion). */
+#ifdef VERSION_MH2
+/* MH2 moved the regions (create_pl_motion / create_em_motion in f_frame.c: MOT_PL 710, MOT_EM 1910; MH2's frame_init
+ * sub_main 0x2E5190 adds 710 and 1910): common 0..709, player n 710 + 300n, monster slot n 1910 + 600n (4310 entries,
+ * motion_set_handle_tbl 0x5DA080 up to em_mot_han_ofs 0x5DE3E0; config/mh2/pc_data.txt sizes the host array) */
+#define MOT_COM_N 710
+#define MOT_PL 710
+#define MOT_EM 1910
+#else
+#define MOT_COM_N 500
+#define MOT_PL 500
+#define MOT_EM 1700
+#endif
 static void tbl_clear(int first, int n)
 {
     memset(&motion_set_handle_tbl[first], 0, (size_t)n * sizeof motion_set_handle_tbl[0]);
@@ -268,13 +280,13 @@ static void tbl_clear(int first, int n)
  * the quest's monsters when the village begins (the game creates its own again) */
 void rt_motion_em_release(void)
 {
-    tbl_clear(1700, 4 * 600);
+    tbl_clear(MOT_EM, 4 * 600);
 }
 
 void rt_motion_load_plcom(const uint8_t *tbl)
 {
     pl_area_top = (u8 *)tbl;
-    tbl_clear(0, 500);
+    tbl_clear(0, MOT_COM_N);
     create_plcom_motion();
 }
 
@@ -284,7 +296,7 @@ void rt_motion_load_pl(int no, const uint8_t *tbl)
 {
     pl_area_top = (u8 *)tbl;
     if (no >= 0 && no < 4)
-        tbl_clear(500 + 300 * no, 300);
+        tbl_clear(MOT_PL + 300 * no, 300);
     create_pl_motion(no);
 }
 
@@ -460,7 +472,7 @@ void rt_em_motion_create(int slot, int kind, const uint8_t *tbl)
 {
     pl_area_top = (u8 *)tbl;
     if (slot >= 0 && slot < 4)
-        tbl_clear(1700 + 600 * slot, 600);
+        tbl_clear(MOT_EM + 600 * slot, 600);
     create_em_motion(slot, kind);
 }
 
@@ -480,7 +492,7 @@ void rt_monster_motion_start(int no, int mdl_no, const uint8_t *tbl, int kind, c
     if (getenv("RT_MOTION_SCAN")) {     /* bank 0 (body) motions of this model */
         int first = em_mot_han_ofs[mdl_no][0], last = em_mot_han_ofs[mdl_no][1], slot;
         for (slot = 0; slot < last - first && slot < 100; slot++) {
-            const aan_motion *m = mset_get(motion_set_handle_tbl[mdl_no * 600 + 1700 + first + slot]);
+            const aan_motion *m = mset_get(motion_set_handle_tbl[mdl_no * 600 + MOT_EM + first + slot]);
             float c0[9] = { 0 }, c1[9] = { 0 };
             if (!m)
                 continue;
@@ -499,6 +511,74 @@ void rt_monster_motion_start(int no, int mdl_no, const uint8_t *tbl, int kind, c
         frame_init(w, 0, 0, g);
     }
 }
+
+#ifdef VERSION_MH2
+/* frame_init / frame_init_b on MH2 (sub_main 0x2E5190 / 0x2E5520, not carried): src/main/frame/f_frameb.c's with MH2's
+ * regions (MOT_PL / MOT_EM above). f_frameb.c's copies index MH1's 500 / 1700 and are renamed away for MH2
+ * (tools/build_pc.sh): a monster read empty handles (its motion layers had end 0 and never moved, docs/mh2/host.md Next 1)
+ * and the hunter read the common motions' tail as its own. Host C, not byte-checked: the shared fix is two constants. */
+static u32 *mh2_han(FRW *w, u16 id)
+{
+    int no = id % 1000;
+    u32 *han;
+    if (w->x10 == 0 || (w->x1E != 0 && w->x1F != 0)) {
+        if (id >= 1000)
+            han = &motion_set_handle_tbl[w->id * 300 + MOT_PL] + pl_mot_han_ofs[w->id][no / 100];
+        else
+            han = motion_set_handle_tbl + com_mot_han_ofs[no / 100];
+    } else if (id >= 1000) {
+        han = &motion_set_handle_tbl[w->mdl_no * 600 + MOT_EM] + em_mot_han_ofs[w->mdl_no][no / 100];
+    } else {
+        system_error(lit_277_003584C0, (s16)id, 0, 0);
+        return NULL;
+    }
+    return han + no % 100;      /* (f_frameb.c's two forms of the step are the same) */
+}
+
+void frame_init(FRW *w, int frame, int blend, int n)
+{
+    FRMDL *mdl = w->mdl;
+    u32 *han = mh2_han(w, w->chr[n]);
+    if (!han)
+        return;
+    if (blend != 0) {
+        if (blend < 0) {
+            blend = -blend;
+            w->mt[n].b_dir = -1;
+        } else {
+            w->mt[n].b_dir = 1;
+        }
+        flSetMotionEx(mdl->mot1, *han, n);
+        w->mt[n].b_end = flGetMotionSetTime(*han);
+        w->mt[n].b_loop = flGetMotionSetLoopInfo(*han, &w->mt[n].b_loopfr);
+        w->mt[n].b_frame = frame;
+        w->mt[n].b_cnt = blend + 1;
+        w->mt[n].b_rate = w->mt[n].b_step = 1.0f / (blend + 1);
+        w->mt[n].b_han = han;
+    } else {
+        flSetMotionEx(mdl->mot0, *han, n);
+        w->mt[n].end = flGetMotionSetTime(*han);
+        w->mt[n].loop = flGetMotionSetLoopInfo(*han, &w->mt[n].loopfr);
+        w->mt[n].frame = frame;
+        w->mt[n].b_cnt = 0;
+        w->mt[n].b_dir = 0;
+        w->mt[n].b_han = han;
+    }
+    w->mt[n].stat = 1;
+    if (n == 0) {
+        w->mt[0].ofs[0] = 0.0f;
+        w->mt[0].ofs[1] = 0.0f;
+        w->mt[0].ofs[2] = 0.0f;
+    }
+}
+
+void frame_init_b(FRW *w, int n)
+{
+    u32 *han = mh2_han(w, w->sub_chr[n]);
+    if (han)
+        flSetMotionEx(w->mdl->mot1, *han, n);
+}
+#endif
 
 void rt_monster_get(int no, float pos[3], int *ang_y)
 {

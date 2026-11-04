@@ -660,8 +660,8 @@ void rt_actor_nodes_fill(void)
         if (pw[0xA00 * i])
             rt_actor_nodes_fill_one(pw + 0xA00 * i);
     for (i = 0; i < 20; i++)
-        if (ew[0xA10 * i])
-            rt_actor_nodes_fill_one(ew + 0xA10 * i);
+        if (ew[EMW_STRIDE * i])
+            rt_actor_nodes_fill_one(ew + EMW_STRIDE * i);
 }
 
 /* number of host joints known for an actor (0: none) */

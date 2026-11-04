@@ -233,13 +233,13 @@ int pick_json(const pick_entry_t *e, char *out, int cap)
     case PK_SET: if (t->c == 1) put(&s, ",\"stage\":%d,\"set_model_part\":%d", t->a, t->b);
                  else put(&s, ",\"work\":%d,\"type\":%d,\"arg\":%d", t->a, t->b, t->c); break;
     case PK_MONSTER: case PK_NPC: {
-        const u8 *em = em_work + 0xA10 * (t->a & 31);
+        const u8 *em = em_work + EMW_STRIDE * (t->a & 31);
         put(&s, ",\"slot\":%d,\"model_kind\":%d,\"model_part\":%d,\"motion_id\":%u,\"motion_frame\":%u,\"mode\":%u,\"step\":%u,\"hp\":%d",
             t->a, t->b, t->c, (unsigned)*(const u16 *)(em + 0x2DC), (unsigned)*(const u16 *)(em + 0x2E4), em[0x14], em[0x05], (int)*(const s16 *)(em + 0x302));
         break;
     }
     case PK_HUNTER: case PK_WEAPON: {
-        const u8 *pl = player_work + 0xA00 * (t->a & 7);
+        const u8 *pl = player_work + PLW_STRIDE * (t->a & 7);
         put(&s, ",\"player\":%d,\"hunter_slot\":%d,\"model_part\":%d,\"motion_id\":%u,\"motion_frame\":%u,\"mode\":%u,\"step\":%u,\"hp\":%d",
             t->a, t->b, t->c, (unsigned)*(const u16 *)(pl + 0x2DC), (unsigned)*(const u16 *)(pl + 0x2E4), pl[0x14], pl[0x05], (int)*(const s16 *)(pl + 0x302));
         break;
@@ -301,7 +301,7 @@ char *pick_game_json(void)
     put(&s, ",\"camera\":{\"eye\":[%.1f,%.1f,%.1f],\"target\":[%.1f,%.1f,%.1f],\"roll\":%.3f,\"fov\":%.3f}", eye[0], eye[1], eye[2], tar[0], tar[1], tar[2], roll, fov);
     {
         int m = 0;                                  /* game_w.master: the player slot of this machine */
-        const u8 *pl = player_work + 0xA00 * m;
+        const u8 *pl = player_work + PLW_STRIDE * m;
         rt_player_get(m, p, &ang);
         put(&s, ",\"hunter\":{\"position\":[%.1f,%.1f,%.1f],\"angle\":%d,\"motion_id\":%u,\"motion_frame\":%u,\"mode\":%u,\"step\":%u,\"hp\":%d}",
             p[0], p[1], p[2], ang & 0xFFFF, (unsigned)*(const u16 *)(pl + 0x2DC), (unsigned)*(const u16 *)(pl + 0x2E4), pl[0x14], pl[0x05],
@@ -309,7 +309,7 @@ char *pick_game_json(void)
     }
     put(&s, ",\"monsters_in_area\":[");
     for (i = 0; i < 20; i++) {
-        const u8 *em = em_work + 0xA10 * i;
+        const u8 *em = em_work + EMW_STRIDE * i;
         float q[3];
         if (!em[0] || em[0x736] != game_w[0x14])
             continue;

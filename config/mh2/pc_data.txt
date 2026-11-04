@@ -32,3 +32,7 @@ em_hit_push_tbl = 0x008B9FC0; // size:0x128
 hunt_group_tbl = 0x0044C800; // size:0x128 allptr
 # em_base_size: f32 per kind, 74 kinds (0x44C930..0x44CA58, zero-padded to 0x44CA60); kind 1 (Rathian) 1645.6 as in G (HOST round 5)
 em_base_size = 0x0044C930; // size:0x128
+# motion_set_handle_tbl: MH2's regions are common 0..709, player n 710 + 300n, monster slot n 1910 + 600n (create_pl_motion /
+# create_em_motion MOT_PL / MOT_EM, frame_init sub_main 0x2E5190): 4310 words; the array runs to em_mot_han_ofs at 0x5DE3E0. The
+# MH1 size (0x4010, 4100 words) let monster slot 3 write past the host array (HOST round 5). bss: zeroed, not imported
+motion_set_handle_tbl = 0x005DA080; // size:0x4360
