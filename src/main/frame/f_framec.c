@@ -38,9 +38,9 @@ int frame_check(FRW *w, int n, f32 f) {
     return 0;
 }
 
-/* Monsters: frame 2 is scaled by the animation speed (act_spd at +0x930). */
+/* Monsters: frame 2 is scaled by the animation speed (act_spd at +0x930; MH2 0x884, its em_frame_check sub_main 0x2E5D30). */
 int em_frame_check(FRW *w, int n, f32 f) {
-    f32 spd = *(f32 *)((u8 *)w + 0x930);
+    f32 spd = *(f32 *)((u8 *)w + MH2V(0x930, 0x884));
 
     if (spd != 1.0f && f == 2.0f) {
         f *= spd;

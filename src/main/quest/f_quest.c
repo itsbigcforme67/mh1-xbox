@@ -678,6 +678,11 @@ int arg;
         if (q->x2E & 1) {
             return 0;
         }
+#ifdef VERSION_MH2
+        if (q->m0A == 1) {      /* MH2 0x3A21A0: an entry marked 1 never comes back */
+            return 0;
+        }
+#endif
         if (q->x04 > 0) {
             return 1;
         }
@@ -1166,7 +1171,7 @@ int arg1;
     }
     enemy_insurance_sub(arg0);
     for (i = 0, g = (u8 *)&game_w; i < 4; i++, g++) {
-        v = g[0x28];
+        v = g[GW_EMSLOT];
         if (v > 0) {
             if (list != 0) {
                 p2 = list;
@@ -1194,7 +1199,7 @@ int arg1;
                         found = 0;
                         break;
                     }
-                    if (g[0x28] == *list) {
+                    if (g[GW_EMSLOT] == *list) {
                         found = 1;
                         break;
                     }
@@ -1205,7 +1210,7 @@ int arg1;
                 }
             }
             release_enemy_model((s16)i);
-            g[0x28] = 0;
+            g[GW_EMSLOT] = 0;
         }
     }
 }
@@ -1820,7 +1825,7 @@ int n;
     if (Em_data_st_adrs_get(quest_w.x74, n, 0, quest_w.x3A) != 0) {
         e = (QEM *)Em_data_st_adrs_get(quest_w.x74, n, 1, quest_w.x3A);
         for (;;) {
-            if (e->id < 0) {
+            if (QEM_LAST(e)) {
                 break;
             }
             if (e->x2E & 4) {
@@ -2147,7 +2152,7 @@ static void station_em_set(void)
                 break;
             }
             for (i = 0, g = (u8 *)&game_w; i < 4; i++, g++) {
-                if (g[0x28] == v) {
+                if (g[GW_EMSLOT] == v) {
                     break;
                 }
             }
@@ -2156,8 +2161,8 @@ static void station_em_set(void)
                 continue;
             }
             for (j = 0, h = (u8 *)&game_w; j < 4; j++, h++) {
-                if (h[0x28] <= 0) {
-                    ((u8 *)&game_w)[0x28 + j] = v;
+                if (h[GW_EMSLOT] <= 0) {
+                    ((u8 *)&game_w)[GW_EMSLOT + j] = v;
                     em_create_model(j);
                     break;
                 }
@@ -2200,7 +2205,7 @@ EMW *em;
             e = (QEM *)Em_data_st_adrs_get(quest_w.x74, em->stg, 1, (s8)i);
             if (l0 != 0) {
                 for (;;) {
-                    if (e->id < 0) {
+                    if (QEM_LAST(e)) {
                         break;
                     }
                     if (em->id == e->x0A) {
@@ -2221,7 +2226,7 @@ EMW *em;
         return 0;
     }
     for (;;) {
-        if (e->id < 0) {
+        if (QEM_LAST(e)) {
             break;
         }
         if (em->id == e->x0A) {

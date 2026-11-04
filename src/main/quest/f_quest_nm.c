@@ -194,7 +194,7 @@ EMW *Em_direct_set(QEM *q)
     u8 *p;
 
     for (i = 0, p = (u8 *)&game_w; i < 4; i++, p++) {
-        if (q->id == p[0x28]) {
+        if (q->id == p[GW_EMSLOT]) {
             break;
         }
     }
@@ -261,7 +261,7 @@ int n;
     func_5589F0(n);
     if (n == game_w.x2F) {
         for (g = (u8 *)&game_w, i = 0; i < 4; i++, g++) {
-            if (g[0x28] <= 0) {
+            if (g[GW_EMSLOT] <= 0) {
                 game_w.x28[i] = 0x12;
                 em_create_model(i);
                 break;
@@ -270,7 +270,7 @@ int n;
     }
     if (n == 5 || n == 0x10 || n == 0x29) {
         for (i = 0, g = (u8 *)&game_w; i < 4; i++, g++) {
-            if (g[0x28] <= 0) {
+            if (g[GW_EMSLOT] <= 0) {
                 game_w.x28[i] = 0xA;
                 em_create_model(i);
                 break;
@@ -286,7 +286,7 @@ int n;
                 break;
             }
             for (g = (u8 *)&game_w, i = 0; i < 4; i++, g++) {
-                if (g[0x28] == v) {
+                if (g[GW_EMSLOT] == v) {
                     break;
                 }
             }
@@ -295,8 +295,8 @@ int n;
                 continue;
             }
             for (j = 0, h = (u8 *)&game_w; j < 4; j++, h++) {
-                if (h[0x28] <= 0) {
-                    ((u8 *)&game_w)[0x28 + j] = v;
+                if (h[GW_EMSLOT] <= 0) {
+                    ((u8 *)&game_w)[GW_EMSLOT + j] = v;
                     em_create_model(j);
                     break;
                 }

@@ -155,6 +155,41 @@ typedef struct QUEST_W {
 #endif
 extern QUEST_W quest_w;
 
+/* game_w's four monster model slots (game_w.x28[], quest monster kinds), as a raw offset for the code that scans them byte by
+ * byte. MH2 0x2A: Quest_next_em_clr sub_main 0x3A4228 / 0x3A432C `lbu/sb 0x2A`, Quest_next_em_set 0x3A43B0. */
+#define GW_EMSLOT MH2V(0x28, 0x2A)
+/* End of a QEM list: MH1 and G stop at a negative id, MH2 at id <= 0 (em_work_serch 0x3A7C6C, enemy_insurance_sub 0x3A70EC: blez) */
+#define QEM_LAST(e) MH2V((e)->id < 0, (e)->id <= 0)
+
+#ifdef VERSION_MH2
+/* MH2's monster entry (0x3C bytes, the same size as G's), read from em_work_serch sub_main 0x3A7BF0 (stride 0x3C, id at
+ * +0x34), Quest_enemy_escape 0x3A2660, Quest_enemy_revival_ck 0x3A2150, Quest_enemy_revival_set 0x3A21F0, Quest_enemy_die
+ * 0x3A2460 and Em_direct_set 0x3A3E80. G's field names at MH2's places; m0A / m0B / x36 are MH2's own. */
+typedef struct QEM {
+    s16 id;             /* 0x00 kind (Em_direct_set: EMW.kind) */
+    s16 x02;            /* 0x02 (Em_direct_set: EMW+0x1B) */
+    s8 x04;             /* 0x04 lives left */
+    u8 _pad05;
+    u16 x06;            /* 0x06 (Em_direct_set: a byte to EMW+0x8AF) */
+    u16 x07;            /* 0x08 stage (G: a byte at 0x07; Em_direct_set lhu 0x8 to EMW.stg) */
+    s8 m0A;             /* 0x0A MH2: 1 = no revival (Quest_enemy_revival_ck returns 0) */
+    s8 m0B;             /* 0x0B MH2: 0 = revive at the entry's place, 1 = only if sub_main 0x3A2070 says so (Quest_enemy_revival_set) */
+    s32 x0C;            /* 0x0C */
+    s32 x10;            /* 0x10 */
+    s32 x14;            /* 0x14 */
+    s32 x18;            /* 0x18 (Em_direct_set: a byte to EMW+0x964) */
+    s32 x1C;            /* 0x1C angle */
+    f32 pos[3];         /* 0x20 */
+    s16 x2C;            /* 0x2C */
+    s16 x2E;            /* 0x2E flags: 1 gone, 2, 4 dead, 8 captured */
+    s16 x30;            /* 0x30 size in percent (Em_direct_set: EMW+0x984) */
+    s16 x08;            /* 0x32 hit points (G 0x08) */
+    s8 x0A;             /* 0x34 em_work id, -1 none (G: s16 at 0x0A) */
+    s8 x05;             /* 0x35 counts toward quest_w.x34 (G 0x05) */
+    s8 x36;             /* 0x36 level (Em_direct_set: EMW+0x98A) */
+    u8 _pad37[0x3C - 0x37];
+} QEM;
+#else
 /* One monster entry of the mission's enemy table (0x30 bytes). */
 typedef struct QEM {
     s16 id;             /* 0x00 */
@@ -180,6 +215,7 @@ typedef struct QEM {
     u8 _pad30[0xC];     /* 0x30 (entry size is 0x3C) */
 #endif
 } QEM;
+#endif /* VERSION_MH2 */
 
 /* One extra pick-up point (StiEM_data[20], 0x1C bytes): treasure/hagi spot
  * with a radius, an item id (bit 15: ...) and a remaining count. Guesses. */

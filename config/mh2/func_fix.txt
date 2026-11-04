@@ -84,3 +84,8 @@ game 0x00707E40 gp_ptr_ck hand -
 # CODE agent, 3 Nov: read from the byte-matched src/mh2/sub_main/p00378A30.c against G's stage_set_set (src/main/stage/stage_set.c)
 sub_main 0x00378A30 stage_set_set by-hand - # same flow as G 0x4A0E50: sun block at stage_work+0xC8 (x4D < 2), clr_flash, Shell10/Eft14 at stages 0x11/0x15 with G's numbers
 sub_main 0x003797C0 clr_flash by-hand - # stage_set_set's first call, as in G; clears two halfwords (MH1: two bytes flash_flag, flash_timer)
+# em_effect_move (SHARED, round 5): MH1 0x10EBF0 / G 0x4EDD60 (src/main/emw/emt02.c): lw 0x3D0(a0) (EMT.prog, MH1 0x3CC); lw 0xC; jr. The map made one
+# 0x18-byte function of it and the 2-instruction wrapper after it (j eft01_set with a1 = 0, G's sub_main_func_004EDD70), because a jr through a
+# register does not end a function there. Split, so the carry can place emt02.c.
+gm_sub 0x0090A9A0 gm_sub_func_0090A9A0 split - # starts after em_effect_move's jr $2 + nop; G's twin is sub_main_func_004EDD70
+gm_sub 0x0090A990 em_effect_move shape - # MH1 em_effect_move, offset 0x3CC -> 0x3D0

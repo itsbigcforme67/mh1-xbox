@@ -52,14 +52,14 @@ void frame_init(FRW *w, int frame, int blend, int n) {
 
     if (w->x10 == 0 || (w->x1E != 0 && w->x1F != 0)) {
         if (id >= 1000) {
-            han = &motion_set_handle_tbl[w->id * 300 + 500];
+            han = &motion_set_handle_tbl[w->id * 300 + MH2V(500, 710)];
             han += pl_mot_han_ofs[w->id][no / 100];
         } else {
             han = motion_set_handle_tbl;
             han += com_mot_han_ofs[no / 100];
         }
     } else if (id >= 1000) {
-        han = &motion_set_handle_tbl[w->mdl_no * 600 + 1700];
+        han = &motion_set_handle_tbl[w->mdl_no * 600 + MH2V(1700, 1910)];
         han += em_mot_han_ofs[w->mdl_no][no / 100];
     } else {
         system_error(lit_277_003584C0, (s16)id, 0, 0);
@@ -109,14 +109,14 @@ void frame_init_b(FRW *w, int n) {
 
     if (w->x10 == 0 || (w->x1E != 0 && w->x1F != 0)) {
         if (id >= 1000) {
-            han = &motion_set_handle_tbl[w->id * 300 + 500];
+            han = &motion_set_handle_tbl[w->id * 300 + MH2V(500, 710)];
             han += pl_mot_han_ofs[w->id][no / 100];
         } else {
             han = motion_set_handle_tbl;
             han += com_mot_han_ofs[no / 100];
         }
     } else if (id >= 1000) {
-        han = &motion_set_handle_tbl[w->mdl_no * 600 + 1700];
+        han = &motion_set_handle_tbl[w->mdl_no * 600 + MH2V(1700, 1910)];
         han += em_mot_han_ofs[w->mdl_no][no / 100];
     } else {
         system_error(lit_277_003584C0, (s16)id, 0, 0);
