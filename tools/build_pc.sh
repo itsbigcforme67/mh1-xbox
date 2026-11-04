@@ -709,8 +709,6 @@ for f in $GAME; do
             [ "$VERSION" = mh2 ] && ABI="$ABI -DQuest_condition_judging=g_Quest_condition_judging -DQuest_em_init_set=g_Quest_em_init_set -DQuest_next_em_set=g_Quest_next_em_set" ;;
         src/main/sprite/putspr2.c)    # MH2: stage_fog_set 0x3788F0 has no per-stage table (src/pc/rt/rt_mh2.c)
             [ "$VERSION" = mh2 ] && ABI="$ABI -Dstage_fog_set=g_stage_fog_set" ;;
-        src/main/frame/f_frameb.c)    # MH2: frame_init / frame_init_b with MH2's handle regions are the host's (src/pc/rt/rt_motion.c)
-            [ "$VERSION" = mh2 ] && ABI="$ABI -Dframe_init=g_frame_init -Dframe_init_b=g_frame_init_b" ;;
         src/main/reward/f_reward_g.c)    # MH2: its result screen is plsel 0xD683C0, a host stand-in for now (src/pc/rt/rt_mh2_quest.c)
             [ "$VERSION" = mh2 ] && ABI="$ABI -Dresult_prog=g_result_prog" ;;
         esac

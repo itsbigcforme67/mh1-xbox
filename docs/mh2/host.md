@@ -93,11 +93,10 @@ Host side only; from our own disassembly; seen in hidden runs. Not byte-checked.
 ## Monster motions play
 
 MH2's create_pl_motion / create_em_motion (f_frame.c, MOT_PL 710 / MOT_EM 1910) put the handles at 710 + 300n and 1910 + 600n
-(MH2's frame_init, sub_main 0x2E5190, adds 710 / 1910; it is not carried). f_frameb.c's frame_init read MH1's 500 / 1700: the
-monster's layers got handle 0, end 0, and em_frame_check never let it leave its first act (round 4 Next 1). The PC now has MH2
-frame_init / frame_init_b in src/pc/rt/rt_motion.c (f_frameb.c's renamed away for MH2 by tools/build_pc.sh) and
-motion_set_handle_tbl at MH2's size (0x4360, to em_mot_han_ofs 0x5DE3E0). **For SHARED:** the shared fix is the two constants in
-f_frameb.c under VERSION_MH2 (then the host copy can go).
+(MH2's frame_init, sub_main 0x2E5190, adds 710 / 1910). f_frameb.c's frame_init read MH1's 500 / 1700: the
+monster's layers got handle 0, end 0, and em_frame_check never let it leave its first act (round 4 Next 1). Fixed in f_frameb.c
+under VERSION_MH2 by SHARED (byte-matched, carried); this round's host copy was dropped at the merge. motion_set_handle_tbl is at
+MH2's size (0x4360, to em_mot_han_ofs 0x5DE3E0).
 
     RT_MH2_EM=1 RT_MH2_EM_HERE=1 RT_STEP=1 RT_QUEST_TRACE=1 build/mh2/pc/mhview_2 disc/mh2 --quest 1014 --input "idle*30,up*120" --time 30 --shot x.png
 
