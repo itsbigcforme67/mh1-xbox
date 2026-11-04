@@ -1161,6 +1161,7 @@ gm_sub Em_hagi_point_clr_mh2_003A69E0 0x003A69E0
 gm_sub Quest_enemy_die 0x003A2460
 gm_sub cursor_se 0x0036B9D0
 gm_sub em21_trans_sub 0x00905C80
+gm_sub em_effect_move 0x0090A990
 gm_sub em_erase 0x00905810
 gm_sub flSetRenderState 0x00183F20
 gm_sub flmatInit 0x002ECDD0
@@ -1168,6 +1169,7 @@ gm_sub func_008FB570 0x008FB570
 gm_sub func_008FC180 0x008FC180
 gm_sub func_00905810 0x00905810
 gm_sub func_00905C80 0x00905C80
+gm_sub func_0090A990 0x0090A990
 gm_sub game_w 0x006ADCB0
 gm_sub game_w_mh2_006ADCB2 0x006ADCB2
 gm_sub host_change 0x008FC180
@@ -3276,6 +3278,7 @@ sub_main Eft13_set_scl 0x003D0EA0
 sub_main Eft26_set 0x003D26B0
 sub_main Eft_rendope_set 0x00325150
 sub_main Em_area_ck 0x003E2E80
+sub_main Em_data_com_adrs_get 0x003A0F20
 sub_main Em_data_st_adrs_get 0x003A0F80
 sub_main Em_hagi_point_clr 0x003A6680
 sub_main Em_max_parts_get 0x003E2E60
@@ -3409,6 +3412,8 @@ sub_main Psw 0x006AE0B0
 sub_main PutButtonICON 0x00356020
 sub_main Put_shousai 0x003627A0
 sub_main Quest_clear_ck 0x003A1F60
+sub_main Quest_enemy_escape 0x003A2660
+sub_main Quest_enemy_revival_ck 0x003A2150
 sub_main Quest_error_set 0x003A1CD0
 sub_main Quest_error_set2 0x003A1CA0
 sub_main Quest_failed_set 0x003A0810
@@ -3576,6 +3581,7 @@ sub_main calc_pulen 0x002FEA80
 sub_main calc_vec_ang 0x00336CE0
 sub_main calc_vec_ang2 0x00336D70
 sub_main calc_velocity 0x002E5070
+sub_main cam_cnf_chs 0x0041C830
 sub_main cam_data_area 0x006AE028
 sub_main cam_rail_move_0 0x00321BB0
 sub_main cam_rail_move_sub 0x00321920
@@ -3737,6 +3743,7 @@ sub_main einpc_buf 0x0059B958
 sub_main ekana_buf 0x0059B810
 sub_main em_action_timer_calc 0x003B0920
 sub_main em_effect_pull 0x003E2DB0
+sub_main em_frame_check 0x002E5D30
 sub_main em_frame_check2 0x002E5DC0
 sub_main em_frame_check3 0x002E5E40
 sub_main em_model_data 0x004216F0
@@ -3750,6 +3757,7 @@ sub_main em_rate_clear_g 0x003B07D0
 sub_main em_search_set 0x003E09F0
 sub_main em_sub_model_data 0x00421950
 sub_main em_work 0x005EC580
+sub_main em_work_serch 0x003A7BF0
 sub_main em_yobi_cnt 0x005D8A40
 sub_main em_yobi_stack 0x005D8A70
 sub_main encrypt_str 0x004054B8
@@ -4029,8 +4037,11 @@ sub_main func_002E4CB0 0x002E4CB0
 sub_main func_002E5020 0x002E5020
 sub_main func_002E5030 0x002E5030
 sub_main func_002E5070 0x002E5070
+sub_main func_002E5190 0x002E5190
+sub_main func_002E5520 0x002E5520
 sub_main func_002E5780 0x002E5780
 sub_main func_002E5C60 0x002E5C60
+sub_main func_002E5D30 0x002E5D30
 sub_main func_002E5D70 0x002E5D70
 sub_main func_002E5DC0 0x002E5DC0
 sub_main func_002E5DD0 0x002E5DD0
@@ -4611,6 +4622,7 @@ sub_main func_0031A290 0x0031A290
 sub_main func_0031D980 0x0031D980
 sub_main func_0031D990 0x0031D990
 sub_main func_0031FEC0 0x0031FEC0
+sub_main func_00320470 0x00320470
 sub_main func_00320720 0x00320720
 sub_main func_00320D80 0x00320D80
 sub_main func_003214A0 0x003214A0
@@ -4859,6 +4871,8 @@ sub_main func_003A1CA0 0x003A1CA0
 sub_main func_003A1CD0 0x003A1CD0
 sub_main func_003A1F60 0x003A1F60
 sub_main func_003A1FC0 0x003A1FC0
+sub_main func_003A2150 0x003A2150
+sub_main func_003A2660 0x003A2660
 sub_main func_003A3850 0x003A3850
 sub_main func_003A39F0 0x003A39F0
 sub_main func_003A4650 0x003A4650
@@ -4869,7 +4883,9 @@ sub_main func_003A60F0 0x003A60F0
 sub_main func_003A6680 0x003A6680
 sub_main func_003A6A10 0x003A6A10
 sub_main func_003A7030 0x003A7030
+sub_main func_003A7090 0x003A7090
 sub_main func_003A7130 0x003A7130
+sub_main func_003A7BF0 0x003A7BF0
 sub_main func_003A7F90 0x003A7F90
 sub_main func_003AAD20 0x003AAD20
 sub_main func_003AB5C0 0x003AB5C0
@@ -5223,6 +5239,7 @@ sub_main lit_150_003583C8 0x0046A1C8
 sub_main lit_151_003583D0 0x0046A1D0
 sub_main lit_2155 0x0046CFD8
 sub_main lit_2176 0x0046CFD0
+sub_main lit_277_003584C0 0x0046A1E0
 sub_main lit_294_0036E750 0x0046CAC8
 sub_main lit_295_0036CD70 0x0046A560
 sub_main lit_296_0036CD90 0x0046A580
