@@ -667,7 +667,13 @@ u8 Warehouse_search_space(void) {
     s16 i;
     for (i = 0; i < UD_WARE_N(u); i++) {
         if (u->ware[i].use == 0) {
+#ifdef VERSION_MHG
+            /* G (sub_main) returns a 16-bit index, 0xFFFF when full; the PC keeps MH1's u8 for its many callers,
+             * which only test 0xFF ("box full"): a free slot past 254 must not read as full */
+            return i > 0xFE ? 0xFE : i;
+#else
             return i;
+#endif
         }
     }
     return 0xFF;

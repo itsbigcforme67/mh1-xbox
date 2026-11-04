@@ -129,10 +129,26 @@ static void em20_mat(u8 *em, int clay, int n, rt_em_mat *o)
         memcpy(&o[m].alpha, &mat[m][0x10], 4);
 }
 
+#if defined(VERSION_MHG) && !defined(VERSION_MH2)
+/* G's em_material_sub (sub_main, its 51-entry kind jump table lit_1837) sends each subspecies to its original's
+ * case; kind 36 has its own case (not ported: shown with every material, as before) and 39 goes to em20's
+ * (enemy_trans). Only the case choice is mapped: whether a case tests the kind again inside is not read. */
+static int em_mat_kind_g(int kind)
+{
+    static const u8 base[16] = {   /* kinds 35..50 */
+        13, 36, 1, 6, 39, 40, 11, 1, 14, 26, 15, 21, 17, 22, 11, 7
+    };
+    return kind >= 35 && kind <= 50 ? base[kind - 35] : kind;
+}
+#endif
+
 /* em_material_sub (main 0x10CEA0): the cases per kind */
 static void em_mat(u8 *em, int clay, int n, rt_em_mat *o)
 {
     int kind = PU8(em, 2), m, sel = 0, flag = 0;
+#if defined(VERSION_MHG) && !defined(VERSION_MH2)
+    kind = em_mat_kind_g(kind);
+#endif
     s16 hp;
     float t;
     switch (kind) {
@@ -368,7 +384,11 @@ int rt_em_materials(const void *emp, int clay, int n, rt_em_mat *o)
     }
     if (kind == 9 || kind == 18 || kind == 23)
         em09_mat(em, clay, n, o);
+#if defined(VERSION_MHG) && !defined(VERSION_MH2)
+    else if (kind == 20 || kind == 39)     /* G enemy_trans: kind 39 takes kind 20's material path */
+#else
     else if (kind == 20)
+#endif
         em20_mat(em, clay, n, o);
     else
         em_mat(em, clay, n, o);

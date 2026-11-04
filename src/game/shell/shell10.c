@@ -33,6 +33,7 @@ void flmatMakeScale(FLMAT *, f32, f32, f32);
 void Material_set_sub(s32, CLAY *);
 
 static void shell10_move(SHLW *sh);
+int Pl_Skill_ck(PLW *, int);
 static void shell10_i(SHLW *sh);
 static void shell10_m(SHLW *sh);
 static void shell10_d(SHLW *sh);
@@ -54,11 +55,27 @@ void Shell10_set(f32 *pos, int arg, int stg, PLW *pl) {
         sh->pos2.z = pos[2];
         sh->stg = stg;
         sh->x09 = 1;
+#ifdef VERSION_MHG
+        /* G Shell10_set (game 0x666440): a non-zero arg starts 75 up, not 50; skill 83 sets byte 6 (read by G's
+         * shell10 code; its meaning is not read here) */
+        sh->pos2.y += (sh->arg == 0) ? 50.0f : 75.0f;
+        sh->x06 = 0;
+        if (pl != 0) {
+            if (Pl_master_ck(pl) != 0) {
+                game_w.shl10_num++;
+                sh->x07 = 1;
+            }
+            if (Pl_Skill_ck(pl, 83) == 1) {
+                sh->x06 = 1;
+            }
+        }
+#else
         sh->pos2.y += 50.0f;
         if (pl != 0 && Pl_master_ck(pl) != 0) {
             game_w.shl10_num++;
             sh->x07 = 1;
         }
+#endif
     }
 }
 #endif

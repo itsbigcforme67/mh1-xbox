@@ -70,6 +70,9 @@ void disp_item_list_present(int, void *, void *);
 void put_mix_material(u8, u16);
 extern u8 pfl_quest[];
 extern u8 lit_2124[], lit_2125[], lit_2126[], lit_2127[], lit_2128[];
+#if defined(VERSION_MHG) && !defined(VERSION_MH2)
+extern char *D_00528A80[];              /* sub_main 0x528A80: G's join requirement texts (lb_guild_g.c reads the same) */
+#endif
 extern u8 lit_2155[], lit_2176[], lit_2222[], lit_2242[], lit_2264[], lit_2265[];
 extern u8 lit_2328[], lit_2329[], lit_2330[], lit_2331[], lit_2332[];
 extern u8 lit_2439[], lit_2538[], lit_2539[], lit_2540[], lit_2541[], lit_2542[];
@@ -167,12 +170,25 @@ void Pit_disp_quest(void) {
         flfntLocate(0x1C1, 0xF2);
         font_print_uf(map_name[*(s32 *)(*(u8 **)(quest_w + QWO(0x94)) + 0x14)]);
         flfntLocate(0x167, 0x12E);
+#if defined(VERSION_MHG) && !defined(VERSION_MH2)
+        {   /* G Pit_disp_quest (main 0x11D980): one of G's join texts for every quest, by info row byte 0x1C */
+            u8 j = (*(u8 **)(quest_w + QWO(0x94)))[0x1C];
+            if (j < 0x3C) {             /* lb_guild_g.c's guard */
+                font_print_uf((u8 *)D_00528A80[j]);
+            }
+        }
+#else
         if ((*(u8 **)(quest_w + QWO(0x94)))[3] == 0) {
             font_print_uf(lit_2128);
         }
+#endif
         break;
     case 2:
+#if defined(VERSION_MHG) && !defined(VERSION_MH2)
+        flfntLocate(0x1D3, 0xA2);    /* G: the quest level at x 0x1D3 */
+#else
         flfntLocate(0x1E5, 0xA2);
+#endif
         font_print_quest_lv((*(u8 **)(quest_w + QWO(0x94)))[2]);
         flfntLocate(0x167, 0xDE);
         font_print_uf(Quest_str_get(1));

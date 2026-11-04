@@ -580,6 +580,10 @@ void wyvn_efct_ripple(void);
 void flmatSetZYX33(f32, f32, f32, FLMAT *);
 void flvecApplyMat33(f32 *, f32 *, FLMAT *);
 short Pl_item_num_ck(PLW *, int);
+#if defined(VERSION_MHG) && !defined(VERSION_MH2)
+void g_map_mark_mode(PLW *pl);    /* menu01.c: G main 0x1207E0 */
+int g_map_whole(PLW *pl);         /* menu01.c: G main 0x21EA40 */
+#endif
 typedef struct PFLPS2 {
     s16 s[4];
     u32 col;
@@ -666,6 +670,9 @@ void disp_whole_map(int ofs, f32 x0, f32 scale) {
     f32 lo_x, hi_x, lo_y, hi_y;
 
     me = lpPit->pl;
+#if defined(VERSION_MHG) && !defined(VERSION_MH2)
+    g_map_mark_mode(me);      /* G disp_whole_map (main 0x120180): the monster-mark mode first */
+#endif
     reload_tex(1, 0x119);
     SetTextureStage(0x119);
     SetFilterMode(1);
@@ -695,7 +702,11 @@ void disp_whole_map(int ofs, f32 x0, f32 scale) {
     }
     SetTrnslMode(4, 5);
     SetFilterMode(0);
+#if defined(VERSION_MHG) && !defined(VERSION_MH2)
+    if (g_map_whole(me) == 1) {   /* G main 0x21EA40: the Map-kind skill, else G's map item 506 */
+#else
     if (Pl_Skill_ck(me, 0x2E) == 1 || Pl_item_num_ck(me, 0x8E) != 0) {   /* asm: beqz -> the explored-window branch only WITHOUT the map (item 142) */
+#endif
         q.uv[0] = 0;
         q.uv[1] = 0;
         *(u32 *)&q.uv[2] = 0xF000F0;
@@ -779,6 +790,9 @@ void disp_partial_map(int ofs, f32 x0, f32 scale) {
     SetFilterMode(0);
     flSetRenderState(0x60, 0);
     me = lpPit->pl;
+#if defined(VERSION_MHG) && !defined(VERSION_MH2)
+    g_map_mark_mode(me);      /* G disp_partial_map (main 0x120930) */
+#endif
     t = 32.0f * scale;
     px = 240.0f * (FX(me, 0x754) * lpPit->map_sx);
     py = 240.0f * (FX(me, 0x75C) * lpPit->map_sy);
@@ -1306,6 +1320,12 @@ void disp_timer(void) {
         break;
     case 4:
     case 3:
+#if defined(VERSION_MHG) && !defined(VERSION_MH2)
+        if (*(u32 *)(quest_w + 0x40) & 0x2000) {    /* G disp_timer (main 0x1231A0): a quest flag, not MH1's quest number list */
+            lpPit->time0 = 0;
+        }
+        break;
+#endif
         switch (game_w.quest) {
         case 0xCF:
         case 0x6A:

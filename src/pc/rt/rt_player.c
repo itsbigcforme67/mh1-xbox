@@ -654,7 +654,7 @@ void rt_player_tick(int no)
         tk = aid_tick();
         while (*s) {
             if (atoi(s) == tk) {
-                fprintf(stderr, "rt_player: tick %d faint (Pl_die_set)\n", tk);
+                fprintf(stderr, "rt_player: tick %d faint (Pl_die_set), map %d (game_w+0x2E)\n", tk, game_w.x2E);
                 PF(&player_work[no], s16, 0x302) = 0;
                 Pl_die_set(&player_work[no]);
             }
@@ -745,7 +745,8 @@ void rt_player_tick(int no)
                pl->ang[1] & 0xFFFF, pl->st, pl->sw.now, pl->sw.trg, PF(pl, s16, 0x302), pl->x881, PF(pl, s16, 0x87E),
                PF(pl, s16, 0x918), PF(pl, s16, 0x91A), PF(pl, s16, 0x8C0), game_w.info_stop);
 #ifdef VERSION_MHG
-        printf("pl: g timers 93E %d 93D %d 940 %d vit %d\n", PF(pl, s16, 0x93E), PF(pl, s8, 0x93D), PF(pl, u8, 0x940), pl->vital);
+        printf("pl: g timers 93E %d 93D %d 940 %d vit %d sharp max %d env %d\n", PF(pl, s16, 0x93E), PF(pl, s8, 0x93D), PF(pl, u8, 0x940), pl->vital,
+               PF(pl, s16, 0x884), PF(pl, s16, 0x90C));
 #endif
     }
 }

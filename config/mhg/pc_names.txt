@@ -268,3 +268,7 @@ lobby g_lb_63E880 0x63E880  # tools/mhg_gonl.py: a G address the G online code u
 lobby g_lb_63E8C0 0x63E8C0  # tools/mhg_gonl.py: a G address the G online code uses, no name yet
 lobby g_lb_63E8C8 0x63E8C8  # tools/mhg_gonl.py: a G address the G online code uses, no name yet
 lobby g_lb_63E8D0 0x63E8D0  # tools/mhg_gonl.py: a G address the G online code uses, no name yet
+main frame_mixed_item 0x25E680   # G Pit_disp_item_mix (main 0x11EF00) passes it to DispFrameMessage 4 times (layout = MH1's); was named lit_2540 in the G view (docs/mhg_zero_tables.md row 1)
+sub_main lit_2542 0x5389B0       # G Pit_disp_item_mix: success-rate format through the cell 0x527BE0
+sub_main lit_3659 0x537B40 +     # G disp_shell_name (0x122420, cell 0x2EC5FC) and trans_box (0x124ED0, cell 0x527C0C): the unlimited-count format; same string as lit_1001_00386A58
+sub_main lit_2242 0x538948       # G font_print_Bdragon (0x11DEB0) through the cell 0x527BB0 (the PC build does not take GSTR's cell)

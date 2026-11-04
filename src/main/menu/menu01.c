@@ -73,10 +73,60 @@ int Cockpit_menu_chk_lobby(void) {
 }
 #endif
 
+#if !defined(G_PART) && defined(VERSION_MHG) && !defined(VERSION_MH2)
+u8 sub_main_func_004F0020(PLW *pl, int id);     /* pl53.c: the active skill of skill kind id (0 = none) */
+/* G lpPit+0x96 (in include/menu.h's _pad91): the monster-mark mode of this map draw: 0, 2 / 4 by the Detect skill,
+ * |1 while the psychoserum runs */
+#define PIT_MAP_MODE (((u8 *)lpPit)[0x96])
+s16 Pl_item_num_ck(PLW *pl, int id);
+
+/* G main 0x1207E0 (called first by disp_whole_map and disp_partial_map): the map's monster-mark mode */
+void g_map_mark_mode(PLW *pl) {
+    u8 s = sub_main_func_004F0020(pl, 0x1B);     /* skill kind 0x1B: Detect */
+
+    PIT_MAP_MODE = 0;
+    if (s != 0) {
+        PIT_MAP_MODE = (s == 0x28) ? 4 : 2;  /* 0x28 Auto-marking; any other Detect skill hides the marks */
+    }
+    if (pl->work930 != 0) {                      /* psychoserum running */
+        PIT_MAP_MODE |= 1;
+    }
+}
+
+/* G main 0x21EA40 (from disp_whole_map): is the whole map shown */
+int g_map_whole(PLW *pl) {
+    u8 s = sub_main_func_004F0020(pl, 0x23);     /* skill kind 0x23: Map */
+
+    if (s != 0) {
+        return s == 0x2D;                        /* 0x2D Map always; another Map-kind skill hides it */
+    }
+    return Pl_item_num_ck(pl, 506) != 0;         /* G item 506: the map */
+}
+#endif
+
 #if !defined(G_PART)
 int enemy_mark_chk(PLW *pl, EMW *em) {
     u8 c;
 
+#if defined(VERSION_MHG) && !defined(VERSION_MH2)
+    /* G enemy_mark_chk (main 0x119330) takes only the monster: small monsters by paint only, the others by the
+     * map mode of this draw (g_map_mark_mode), plus 1 when painted; mode 2 alone (another Detect skill) hides them */
+    u8 v;
+
+    (void)pl;
+    if (em->be_flag == 0) {
+        return 0;
+    }
+    c = enemy_icon_tbl[em->kind];
+    if (c == 0xFF || (c & 0xC0) == 0x80) {
+        return em->x56A != 0;
+    }
+    v = PIT_MAP_MODE;
+    if (em->x56A != 0) {
+        v |= 1;
+    }
+    return v == 2 ? 0 : v;
+#endif
     if (em->be_flag == 0) {
         return 0;
     }

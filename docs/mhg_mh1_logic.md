@@ -211,6 +211,30 @@ Rank = how often a player meets it x how visible the error is. "Reached" names w
 Also: fix tools/cov_report_g.py (skip `.L` labels; count VERSION_MHG macros used in the body) and re-run coverage once
 the CPU allows, so the next count starts from today's code.
 
+### Done in round 6 (4 Nov 2026, GFIX; commit on branch g-fix)
+
+Ported under VERSION_MHG, each from G's asm (tools/mhg_fdiff.py / objdump of build/mhg/split), MH1 / G PS2 still 5 / 7 OK:
+- 1 (skill ids): skill_hp_calc, pl_init_sub's sharpness helper (sub_main 0x4F1310), pl_dm_value_sub, Pl_poison_add,
+  pl_guard_ck, Em_Kehai_Hate_Add / em_hate_suu_set, item_theft (also G's 9-item steal list, game 0x6AA920), pl_mv093,
+  Shell10_set. Corrections to the table above, read in the asm: pl_dm_value_sub's +0x90C is the heat / cold area's
+  health-tick interval (Stage_env_ck case, 90 ticks; G skills 156 / 157 / 154 make it 60 / 45 / 180), not a knock-back;
+  skill 44 there is G's id of MH1's 45 (the heat / cold guard). pl_mv093's speed is 2.6 (as pl_mv071), not 1.2.
+  Shell10_set also starts a non-zero arg 75 up (MH1 50) and sets SHLW+6 with skill 83 (its reader not traced).
+  Checked in hidden runs: health 110 / 120 / 130 / 90 / 70 with skills 33 / 34 / 35 / 57 / 59 poked before a camp
+  return (RT_PL_POKE 910, RT_PL_DIE); sharpness max 200 with 0x41; heat interval 60 / 45 / 180 / none with 156 / 157 /
+  154 / 44 on quest 13's volcano.
+- 2 (em_mat): kinds 35-50 mapped to their originals' cases in rt_em.c (36 left as is: its own case is not ported);
+  39 takes em20's path. Not checked by a picture (needs a part break / tail cut shot).
+- 3 (camp table): G's 11 rows imported (pl_camp_pos_g / pl_camp_ang_g). All 98 offline quests give the same camp
+  return as before (maps 1-6 only); rows 0 and 7-10 are on maps no offline quest uses [not checked].
+- 4 (forge box list): the linked copy is src/lobby/b/lb_by154.c (not lb_sh1a.c); runs over UD_WARE_N, page count
+  UD_WARE_N / 100. Warehouse_search_space (ud_nm.c) keeps its u8 and returns 0xFF only when full.
+- 6: failed combine gives 122; map reveal and monster marks (docs/mhg_shop_em20.md item 1; boss_icon_color's new
+  colour not done). The map item 506 shows the whole HUD map, 142 does not (hidden run, green pixels 7002 vs 621).
+- docs/mhg_questend_trade.md items 2, 3, 5 (QuestClearCameraRequest: quests 10033 / 10038 now take camera 22;
+  disp_timer's flag 0x2000; Pit_disp_quest's join line). Zero tables section 4 lines applied (not lit_2128 / lit_826,
+  not the trade lines).
+
 ## 6. The 225 remaining names by system (instructions that differ, registers / immediates masked)
 
 Grouping is by name / file and rough (the "monsters" row holds the item functions whose names contain `em_`).
