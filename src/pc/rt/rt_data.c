@@ -118,7 +118,9 @@ static const struct {
 /* Tables of pointers (one per stage) into the game's data. Each PS2 pointer
  * is translated to the same bytes in the loaded ELF/overlay image; the
  * game C only reads through them. */
-#ifdef VERSION_MHG
+#ifdef VERSION_MH2
+#define RT_NSTG 199             /* MH2: 199 stages (sun_pos_tbl is filled by rt_mh2.c; the other two keep what RTVA finds, unchecked) */
+#elif defined(VERSION_MHG)
 #define RT_NSTG 92              /* G has 92 stages (88-91 its own); at 88 entries stage 88-91 read the next host object */
 #else
 #define RT_NSTG 88

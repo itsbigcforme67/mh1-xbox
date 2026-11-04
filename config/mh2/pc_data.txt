@@ -36,3 +36,20 @@ em_base_size = 0x0044C930; // size:0x128
 # create_em_motion MOT_PL / MOT_EM, frame_init sub_main 0x2E5190): 4310 words; the array runs to em_mot_han_ofs at 0x5DE3E0. The
 # MH1 size (0x4010, 4100 words) let monster slot 3 write past the host array (HOST round 5). bss: zeroed, not imported
 motion_set_handle_tbl = 0x005DA080; // size:0x4360
+# MH2 dropped G's per-stage sun and fog tables (stage_set_set 0x378A30 sets a fixed sun; stage_fog_set 0x3788F0 picks one of two
+# 0x10-byte fog blocks or the stage file's): the G-form host arrays get 199 rows (zeroed; rt_mh2.c points the sun rows at MH2's
+# fixed block) instead of G's 92, which stage 110 / 120 read past (HOST round 5)
+st_sun_tb_tbl = 0x00000000; // size:0x31C
+st_sun_rgba_tbl = 0x00000000; // size:0x31C
+stage_fog_tbl = 0x00000000; // size:0x31C
+# the two fog blocks stage_fog_set (0x3788F0) reads: default (stage 0, stages without an environment block) and stage 0x56's
+mh2_fog_blocks = 0x004485B0; // size:0x20 noptr
+# per-stage f32 heights read by MH2's area move code (game 0x7333D0: lhu EMW+0x680 (stage) << 2, D_008BF9C0; also 0x74D578, 0x782AF4,
+# 0x76BE4C): 199 stages, up to st05_land_pos 0x8BFCE0 (data_map.txt's "low" vote was right) (HOST round 5)
+area_move_high_y_tbl = 0x008BF9C0; // size:0x31C noptr
+# fish_cam_sub (sub_main 0x31D7F0): MH2 keeps a byte per stage (0x41CCC0, 0xFF none) indexing 24-byte rows (0x41C9F0, 25 rows); G's
+# fishcam_ofs_tbl is a pointer per stage: the host array (199 rows; data_map.txt names the byte table so it is first imported as is)
+# is rebuilt from these two by rt_mh2.c at each quest start (HOST round 5)
+fishcam_ofs_tbl = 0x00000000; // size:0x31C
+mh2_fishcam_idx = 0x0041CCC0; // size:0xC7 noptr
+mh2_fishcam_rows = 0x0041C9F0; // size:0x258 noptr
