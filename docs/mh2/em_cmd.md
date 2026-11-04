@@ -238,7 +238,9 @@ Field widths found on the way (MH2 EMW): stg 0x680 u16, x73A 0x684 u16, x828 0x7
 
 Checked against the disassembly while writing: the 0x0E, 0x15, 0x06, 0x1C, 0x23, 0x3D, 0x3E, 0x63, 0x18, 0x1F, 0x37, 0x72, 0x74, 0x76,
 0x77, 0x7C, 0x84 / 0x7B handlers, area_route_rnd32 (0x733B10), NextStage_No_Set (0x733430), MH2's st_mv_ptr_ck (0x7083B0), the
-stage maps (0x3799A0, 0x379A30-0x379B20, main 0x18DA70, 0x18DA00). Corrections to the tables above:
+stage maps (0x3799A0, 0x379A30-0x379B20, main 0x18DA70, 0x18DA00), 0x03 / 0x734260, 0x1A (0x728EA0), 0x61 / 0x7098A0.
+Verified by the byte match: with x822 at 0x775, em_cmd_contents (em_cmd_r20.c) now carries into MH2 (mh2_carry.py register adds
+game 0x730490). Corrections to the tables above:
 - **0x77 has no operand** (next_cmd_search: 2 bytes); it passes when main 0x18DA70() is 0. The "reads one byte" above was wrong.
 - **0x23 kind 74** tests EMW+0x966 of the other monster (the loop also skips empty slots); species are hunt_group_tbl[kind][0]
   (sub_main 0x3BC090, game 0x7097A0 compares two).
@@ -248,13 +250,19 @@ stage maps (0x3799A0, 0x379A30-0x379B20, main 0x18DA70, 0x18DA00). Corrections t
   -> {s32 key, rows} until key -1 or key == byte EMW+0x964 -> rows {u16 stage, pad, u16 *list} until stage 255 or the row whose
   group (0x379AC0) is the monster's stage's group (at most 197). 0x7084B0 is the same for a given stage.
 - **area_route_rnd32** (0x733B10): 6-byte header (u16 count at +4), 8-byte entries (weight byte at +4, u16 stage at +6).
+- **0x1A**: from the monster's neighbour list, take T when it is one; else the neighbour whose direction from em->stg's centre
+  (not the hop's stage: the original always uses em->stg) is closest to T's, skipping first x92E, then the previous hop's stage;
+  stop at the first stage 0x734260 allows, or where 0x7084B0 has no list; at most 20 hops (then x92F is left as it was).
+- **0x734260(em, s)**: 1 for the monster's own stage; else 0x8BF840[kind] -> [0x3799A0(game_w+0x30)] -> u16 list to 0xFFFF,
+  entries from 10000 exact, others by group. 0x03 passes when x73A is not em->stg, not 0xFFFF and 0x734260 allows it.
 - **main 0x18DA00** reads the byte at quest_w+0x549 (0x5D87A9): bit 0 -> 0, bit 1 -> 1, else 2 (setter 0x18DA50(n) = 1 << n).
 - **EMW**: x822 is a byte at 0x775 and x92E a u16 at 0x882 (config/mh2/struct_map.txt; include/mh2_emw.h edited to match, as
   `mh2_structs.py gen` would write it).
 
 What the PC has now (src/game/em/em_cmd_nm.c under VERSION_MH2, src/mh2/sub_main/stage_map.c): MH2's next_cmd_search (the matched
-file, included), the stage maps as C, 0x0E / 0x15 / 0x06 (modes 3, 10, 13) / 0x18 / 0x19 / 0x1A (start only) / 0x1C / 0x23 /
-0x3D / 0x3E / 0x3F (2-byte target only) / 0x63 as MH2's, MH2's em_cmd_ck cases (mode 6 skipped, 0x84 / 0x7B count x39A) with
+file, included), the stage maps as C, 0x03 (game 0x734260's per-kind, per-rank lists at 0x8BF840) / 0x0E / 0x15 / 0x06 (modes 3, 10,
+13) / 0x18 / 0x19 / 0x1A (the 20-hop walk) / 0x1C / 0x23 / 0x3D / 0x3E / 0x3F (2-byte target only) / 0x61 (per-kind
+{stage, value} lists at 0x8BEB60, game 0x7098A0) / 0x63 as MH2's, MH2's em_cmd_ck cases (mode 6 skipped, 0x84 / 0x7B count x39A) with
 the new opcodes: 0x1F, 0x36, 0x37, 0x72 (offline: false), 0x74 (offline: false), 0x76, 0x77, 0x7A, 0x7C written; 0x73, 0x75, 0x79
 (selects: no entry runs) and 0x78 (false) are stand-ins with exact lengths. "No stage" is 0xFFFF in the stage fields
 (EM_STG_NONE). RT_EMCMD_TRACE=1 prints each command run (kind, offset, opcode, sub-byte, stage).
@@ -263,11 +271,12 @@ Seen (`RT_QUEST_STAGE=1 RT_MH2_EM=1 RT_STEP=1 ... --quest 1014 --input "idle*30,
 Rathian's program runs 68 commands in 30 s, every one a known opcode (0x80, 0xFF, 0x2A, 0x05, 0x54, 0x82, 0x81, 0x52, 0x39, 0x1B,
 0x0E, 0x0B, 0x07, 0x76, 0x55, 0x08, 0x02, 0x84, 0x83, 0x17, 0x16, 0x15, 0x13, 0x12, 0x10, 0x0F, 0x09, 0x06), no program resets.
 The Rathian goes mode 1 (acts 3, 7) -> mode 3 act 4 (a fireball: shell08) -> mode 2 (flies, acts 0, 8) across stage 120 and then
-to stage 113 (act 9). Two crashes on the way were fixed: shell08's attack table (config/mh2/pc_data.txt shell08_tbl /
+to stage 113 (act 9); in a 150 s run it lands there, walks, idles and takes off again (117-133 commands, among them 0x18, 0x19,
+0x5B). Two crashes on the way were fixed: shell08's attack table (config/mh2/pc_data.txt shell08_tbl /
 shell08_atk_no at MH2's places, a stand-in: G's shell08 on MH2's tables) and NextStage_No_Set (G's read G's neighbour lists).
 
-Not done: 0x1A's 20-hop walk (takes the target stage directly), 0x3F's route part with MH2's route data (only the 2-byte target is
-MH2's), 0x03 (sub_734260 lists), 0x61, 0xFF case 4, 0x05's target refresh (MH2 calls 0x702EE0, the PC G's em_type_act_set), 0x48
+Not done: 0x3F's route part with MH2's route data (only the 2-byte target is MH2's), 0xFF case 4 (the end of a ground route:
+G's code with G's route layout), 0x05's target refresh (MH2 calls 0x702EE0, the PC G's em_type_act_set), 0x48
 (u16 timer, no x 30), 0x0C / 0x0D / 0x2B flags 8-9, 0x14 / 0x20 / 0x42 / 0x69 live angles, 0x41, 0x45 / 0x52 / 0x53 / 0x54 extra
 tests, 0x83's 3D path, and 0x73 / 0x75 / 0x78 / 0x79. The stage maps are C but not yet registered for the MH2 byte match.
 

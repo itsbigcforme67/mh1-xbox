@@ -72,3 +72,5 @@ D_008BF320 = 0x008BF320; // size:0x128 allptr
 # game 0x734260 (may a kind go to a stage; 0x03, 0x1A): per kind a pointer to per-rank u16 stage lists, EMCMD round 6; 74 kinds
 # assumed (at least 21 kinds have lists; the table's end is not settled)
 D_008BF840 = 0x008BF840; // size:0x128 allptr
+# em_cmd 0x61 (game 0x72F650): per kind a {s16 stage, s16 value} list for the run-away timer, EMCMD round 6; 74 kinds assumed
+D_008BEB60 = 0x008BEB60; // size:0x128 allptr

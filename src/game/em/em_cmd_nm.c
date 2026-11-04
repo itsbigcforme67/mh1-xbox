@@ -3613,10 +3613,31 @@ u8 *em_cmd_st25_gate_ck(EMW *em, u8 *p) {
     return var_a1;
 }
 
+#ifdef VERSION_MH2
+/* MH2 (game 0x72F650): the kind's {s16 stage, s16 value} list (D_008BEB60[kind], ended by stage -1, whose value is the default)
+   through game 0x7098A0: a stage from 10000 is that exact stage, below it the stage's group (0x379AC0). G took
+   em02_runaway_timer_tbl[stage]. (The original has no check for a kind without a list; the PC leaves the timer then.) */
+extern s32 D_008BEB60[];
+u8 *em_cmd_runaway_timer_set(EMW *em, u8 *p) {
+    s16 *l = mh2_ptr(D_008BEB60[em->kind]);
+
+    if (l == NULL) {
+        return p;
+    }
+    for (; l[0] != -1; l += 2) {
+        if (l[0] >= 10000 ? em->stg == l[0] - 10000 : sub_main_func_00379AC0(em->stg) == sub_main_func_00379AC0(l[0])) {
+            break;
+        }
+    }
+    em->runaway_tm = l[1];
+    return p;
+}
+#else
 u8 *em_cmd_runaway_timer_set(EMW *em, u8 *p) {
     em->runaway_tm = em02_runaway_timer_tbl[em->stg];
     return p;
 }
+#endif
 
 u8 *em_cmd_dansa_sel(EMW *em, u8 *p) {
     u8 *q;
