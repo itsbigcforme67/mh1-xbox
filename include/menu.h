@@ -103,7 +103,9 @@ typedef struct PIT_W {              /* pit_work, 0x90 bytes; lpPit points at it 
     u8 x8E;           /* 0x8E option_w+6: chat window size 0-2 */
     u8 _pad8F;
     u8 x8D;           /* 0x90 */
-    u8 _pad91[0x98 - 0x91];
+    u8 _pad91[0x96 - 0x91];
+    u8 map_mode;      /* 0x96 G: monster-mark mode of this map draw (main 0x1207E0): 0, 2 / 4 by the Detect skill, |1 psychoserum */
+    u8 _pad97;
 #else
     u8 x83;           /* 0x83  */
     s8 x84;           /* 0x84  */

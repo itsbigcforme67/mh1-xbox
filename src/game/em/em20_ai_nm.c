@@ -548,6 +548,11 @@ void em20_to_fly(EMW *em, int flag) {
     }
 }
 
+#if defined(VERSION_MHG) && !defined(VERSION_MH2)
+/* G item_theft (game 0x618FD0) first looks for the pouch items of this 9-entry list (game 0x6AA920, config/mhg/pc_data.txt) */
+extern u16 em20_theft_list_g[9];
+#endif
+
 static void item_theft_005EC560(EMW *em, PLW *pl) {
     int list[20];
     int n;
@@ -556,7 +561,25 @@ static void item_theft_005EC560(EMW *em, PLW *pl) {
     u16 id;
 
     if (pl->id == game_w.master && Quest_clear_ck(1) == 0) {
+#ifdef VERSION_MHG
+        if (Pl_Skill_ck(pl, 42) != 1) {    /* G's anti-theft id (MH1 0x2B) */
+#else
         if (Pl_Skill_ck(pl, 0x2B) != 1) {
+#endif
+            n = 0;
+#if defined(VERSION_MHG) && !defined(VERSION_MH2)
+            for (i = 0; i < 20; i++) {
+                if (pl->item[i].id != 0) {
+                    int k;
+                    for (k = 0; k < 9; k++) {
+                        if (pl->item[i].id == em20_theft_list_g[k]) {
+                            list[n++] = i;
+                        }
+                    }
+                }
+            }
+            if (n == 0)
+#endif
             for (i = 0, n = 0; i < 20; i++) {
                 id = pl->item[i].id;
                 if (id != 0) {

@@ -27,6 +27,12 @@ u8 pl_guard_ck(PLW *pl) {
     if (pl->stamina < 0x4B) {
         return 0;
     }
+#ifdef VERSION_MHG
+    /* G pl_guard_ck (game 0x66CF50): a hit whose attack data has bits 0xC0 (PLW+0x3EB) is guarded only with skill 169 */
+    if ((*((u8 *)pl + 0x3EB) & 0xC0) && Pl_Skill_ck(pl, 169) == 0) {
+        return 0;
+    }
+#endif
     switch (pl->kind) {
     case 0:
     case 4:
@@ -35,9 +41,17 @@ u8 pl_guard_ck(PLW *pl) {
             switch (pl->st) {
             case 0:
             case 1:
+#ifdef VERSION_MHG
+                /* G: with skill 79 and PLW+0x940 set, the guard flag is not needed (only the direction) */
+                if (((Pl_Skill_ck(pl, 79) == 1 && *((u8 *)pl + 0x940) != 0) || pl_flag_ck(pl, 0x8000) != 0)
+                    && Guard_dir_ck(pl->ang[1], pl->dm_ang) == 1) {
+                    ret = 1;
+                }
+#else
                 if (pl_flag_ck(pl, 0x8000) != 0 && Guard_dir_ck(pl->ang[1], pl->dm_ang) == 1) {
                     ret = 1;
                 }
+#endif
                 break;
             }
         }

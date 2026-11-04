@@ -1381,6 +1381,16 @@ typedef struct EM_KEHAI_ADD {
 
 extern EM_KEHAI_ADD *em_kehai_add_tbl[];
 extern s32 *em_max_kehai_hate_tbl[];
+#ifndef SK_HATE_MH1_40
+/* G (Em_Kehai_Hate_Add game 0x545640, em_hate_suu_set 0x5481E0) asks for the two attention skills by G's ids, one lower */
+#ifdef VERSION_MHG
+#define SK_HATE_MH1_39 38
+#define SK_HATE_MH1_40 39
+#else
+#define SK_HATE_MH1_39 0x27
+#define SK_HATE_MH1_40 0x28
+#endif
+#endif
 int Pl_Skill_ck(PLW *, int);
 int em_cancel_act_ck(EMW *, u8);
 
@@ -1396,7 +1406,7 @@ void Em_Kehai_Hate_Add(EMW *em, int pl0, u8 kind, s8 lv) {
     if (em->x8F4[pl] < em_max_kehai_hate_tbl[em->kind][em->x916] &&
         em_cancel_act_ck(em, 0x10) == 0 && em->x888 == 0) {
         st = pl_status_ret(pl0);
-        if (Pl_Skill_ck(p, 0x27) != 1 || st == 4) {
+        if (Pl_Skill_ck(p, SK_HATE_MH1_39) != 1 || st == 4) {
             switch (lv) {
             case 0:
                 em->x8F4[pl] += base[kind];
@@ -2623,7 +2633,7 @@ s32 *em_hate_suu_set(EMW *em, u8 type, u8 n) {
 
     switch (type) {
     case 1:
-        if (Pl_Skill_ck(pl, 0x28) == 1) {
+        if (Pl_Skill_ck(pl, SK_HATE_MH1_40) == 1) {
             type = type + 8;
         } else if (Pl_silencer_ck(pl) == 1) {
             type = 0x12;
@@ -2633,9 +2643,9 @@ s32 *em_hate_suu_set(EMW *em, u8 type, u8 n) {
     case 4:
     case 5:
     case 6:
-        if (Pl_Skill_ck(pl, 0x28) == 1) {
+        if (Pl_Skill_ck(pl, SK_HATE_MH1_40) == 1) {
             type = type + 7;
-        } else if (Pl_Skill_ck(pl, 0x27) == 1 && pl_status_ret(n) == 0) {
+        } else if (Pl_Skill_ck(pl, SK_HATE_MH1_39) == 1 && pl_status_ret(n) == 0) {
             type = type + 0xB;
         }
         break;

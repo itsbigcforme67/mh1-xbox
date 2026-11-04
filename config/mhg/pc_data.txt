@@ -719,3 +719,11 @@ em02_rain_ofs_g = 0x002ECFC8; // size:0x20 noptr
 em02_rain2_ofs_g = 0x00695EC0; // size:0xC noptr
 pf_item_box_base = 0x0025E810; // size:0x28    # G's Reference list follows at +0x10 (Pit_disp_data, G 0x125A90); symbols stop at 0x10
 data_list_str = 0x002EC5F0; // size:0x8    # that list's labels: Monster List, Combo List (no name before; the pointer at 0x25E82C landed on another table)
+[game]
+pl_camp_pos_g = 0x006CFF80; // size:0x84 noptr   # G pl_init_sub (sub_main 0x4F1878): 11 camps {x, y, z} indexed by game_w+0x2E (rows 1-7 = MH1's seven hard-coded camps)
+pl_camp_ang_g = 0x006D0010; // size:0x2C noptr   # the same camps' y angles (s32)
+em20_theft_list_g = 0x006AA920; // size:0x12 noptr   # G item_theft (game 0x618FD0): 9 item ids a thief takes first when the pouch has one; else MH1's rule
+[sub_main]
+lit_2540 = 0x00538980; // size:0x28 noptr     # combine box labels: G Pit_disp_item_mix through the cell 0x527BD8; MH1 0x1B. Goes with frame_mixed_item's pc_names line (the old lit_2540 slot)
+lit_2546 = 0x00538A00; // size:0x22 noptr     # combine failed: cell 0x527BF0; MH1 0xB
+lit_4948 = 0x00538B58; // size:0xA noptr      # combination list page number: G disp_mix_list (0x125AF0) cell 0x527C24; MH1 6

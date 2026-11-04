@@ -604,10 +604,21 @@ void Pl_ofs_set(PLW *pl, f32 *pos, int ang) {
 
 #if !defined(G_PART)
 static int skill_hp_calc_00134FF0(PLW *pl) {
+#ifdef VERSION_MHG
+    /* G sub_main 0x4F1220: G's skill ids (Skill_set_PL gives G's numbers), and the three minus-health skills */
+    if (Pl_Skill_ck(pl, 33) == 1) return 10;
+    if (Pl_Skill_ck(pl, 34) == 1) return 20;
+    if (Pl_Skill_ck(pl, 35) == 1) return 30;
+    if (Pl_Skill_ck(pl, 57) == 1) return -10;
+    if (Pl_Skill_ck(pl, 58) == 1) return -20;
+    if (Pl_Skill_ck(pl, 59) == 1) return -30;
+    return 0;
+#else
     if (Pl_Skill_ck(pl, 0x22) == 1) return 10;
     if (Pl_Skill_ck(pl, 0x23) == 1) return 20;
     if (Pl_Skill_ck(pl, 0x24) == 1) return 30;
     return 0;
+#endif
 }
 #endif
 
@@ -617,6 +628,30 @@ static int skill_hp_calc_00134FF0(PLW *pl) {
 
 
 #if !defined(G_PART)
+#ifdef VERSION_MHG
+/* G sub_main 0x4F1310 (called by pl_init_sub where MH1 computes the gauge inline): the sharpness gauge length,
+ * +50 with skill 0x41 (at most 400), -50 with skill 0x42 (at least 150) */
+static void pl_sharp_len_set_g(PLW *pl) {
+    pl->work884 = (s16) ((Ken_data[pl->wpn_kind][3] * 0x32) + 0x96);
+    if (Pl_Skill_ck(pl, 0x41) == 1) {
+        pl->work884 += 0x32;
+        if (pl->work884 > 0x190) {
+            pl->work884 = 0x190;
+        }
+    } else if (Pl_Skill_ck(pl, 0x42) == 1) {
+        pl->work884 -= 0x32;
+        if (pl->work884 < 0x96) {
+            pl->work884 = 0x96;
+        }
+    }
+}
+#ifndef VERSION_MH2
+/* G's camp table (game 0x6CFF80 positions, 0x6D0010 angles, 11 rows; config/mhg/pc_data.txt), indexed by game_w+0x2E.
+ * Rows 1-7 hold MH1's seven hard-coded camps; rows 8-10 are G's own */
+extern f32 pl_camp_pos_g[11][3];
+extern s32 pl_camp_ang_g[11];
+#endif
+#endif
 void pl_init_sub(PLW *pl) {
     s32 temp_a2;
     u16 temp_a1;
@@ -667,7 +702,11 @@ void pl_init_sub(PLW *pl) {
         pl->work8C0 = 0x2A30;
         pl->stamina = (s16) pl->work882;
         temp_a1 = pl->wpn_kind;
+#ifdef VERSION_MHG
+        pl_sharp_len_set_g(pl);
+#else
         pl->work884 = (s16) ((Ken_data[temp_a1][3] * 0x32) + 0x96);
+#endif
         pl->work87E = (s16) pl->work884;
         pl->work887 = Pl_slash_lv_ck(pl, temp_a1);
         pl->work8CC = 0;
@@ -760,6 +799,13 @@ void pl_init_sub(PLW *pl) {
         }
         break;
     case 2:                                         /* switch 1 */
+#if defined(VERSION_MHG) && !defined(VERSION_MH2)
+        /* G pl_init_sub (sub_main 0x4F1878): the camp comes from G's table, no default case */
+        pl->pos[0] = pl_camp_pos_g[game_w.x2E][0];
+        pl->pos[1] = pl_camp_pos_g[game_w.x2E][1];
+        pl->pos[2] = pl_camp_pos_g[game_w.x2E][2];
+        pl->ang[1] = pl_camp_ang_g[game_w.x2E];
+#else
         switch (game_w.stage) {   /* switch 3; irregular */
         case 0x4:                                   /* switch 3 */
             pl->pos[0] = 9150.0f;
@@ -810,13 +856,18 @@ void pl_init_sub(PLW *pl) {
             pl->ang[1] = pl->work570;
             break;
         }
+#endif
         Pl_ofs_set(pl, pl->pos, (u16)pl->ang[1]);
         cpRotMatrix(pl->ang, (f32 *)((u8 *)pl + 0x20));
         pl->x5AC = pl->pos[1];
         pl->ang_y = (s16) pl->ang[1];
+#ifdef VERSION_MHG
+        pl_sharp_len_set_g(pl);
+#else
         temp_a2_2 = pl->wpn_kind;
         temp_a1_2 = Ken_data[temp_a2_2][3];
         pl->work884 = (s16) ((temp_a1_2 * 0x32) + 0x96);
+#endif
         pl->work792 = 0x64;
         if (Pl_master_ck(pl) == 1) {
             pl->work792 = pl->work792 + skill_hp_calc_00134FF0(pl);
@@ -1104,11 +1155,26 @@ static void pl_dm_value_sub(PLW *pl) {
         e = Stage_env_ck(pl->stg);
         switch (e) {
         case 1:
+#ifdef VERSION_MHG
+            /* G pl_dm_value_sub (game 0x54AC70): G's id 44 for MH1's 45, and three G skills that lengthen or shorten
+             * the interval between two heat / cold health ticks */
+            if (Pl_Skill_ck(pl, 44) != 1 && pl->work918 == 0) {
+#else
             if (Pl_Skill_ck(pl, 0x2D) != 1 && pl->work918 == 0) {
+#endif
                 t = pl->work90C - 1;
                 pl->work90C = t;
                 if (t <= 0) {
                     pl->work90C = 0x5A;
+#ifdef VERSION_MHG
+                    if (Pl_Skill_ck(pl, 156) == 1) {
+                        pl->work90C = 60;
+                    } else if (Pl_Skill_ck(pl, 157) == 1) {
+                        pl->work90C = 45;
+                    } else if (Pl_Skill_ck(pl, 154) == 1) {
+                        pl->work90C = 180;
+                    }
+#endif
                     Pl_vital_calc(pl, -1);
                     if (pl->vital <= 0) {
                         pl->vital_red = 0;
@@ -5523,9 +5589,15 @@ static void pl_mv093(PLW *pl, s32 arg1) {
         Pl_basic_flagset(pl, 1, 0, 0);
         if (arg1 == 0) {
             pl_chr_set2(pl, 0x19B, -6, 0);
+#ifdef VERSION_MHG
+            PL_MV071_FAST(pl);    /* G pl_mv093 (game 0x554760): skill 170, as pl_mv071 */
+#endif
             break;
         }
         pl_chr_set2(pl, 0x1A6, -6, 0);
+#ifdef VERSION_MHG
+        PL_MV071_FAST(pl);
+#endif
         break;
     case 1:
         if (pl->work194 == 0) {

@@ -52,7 +52,7 @@ def run(q, env, inp, secs, tag):
     try:
         with open(log, 'w') as f:
             r = subprocess.run(RUN + [EXE, DISC, '--quest', str(q), '--input', inp, '--shot', os.path.join(OUT, tag + '.png'),
-                                '--time', str(secs)], env=e, stdout=(f if os.environ.get('RT_PL_TRACE') or env.get('RT_PL_TRACE') else subprocess.DEVNULL), stderr=f, timeout=900)
+                                '--time', str(secs), '--mute'], env=e, stdout=(f if os.environ.get('RT_PL_TRACE') or env.get('RT_PL_TRACE') else subprocess.DEVNULL), stderr=f, timeout=900)
         rc = r.returncode
     except subprocess.TimeoutExpired:
         rc = 'timeout'

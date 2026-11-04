@@ -1903,6 +1903,11 @@ void Pit_mv(void) {
 #define MIX71 FLD8(*lpPit, 0x71)
 /* Item mixing window: state x7A 0 pick first item, 1 pick second, 2 confirm,
  * 3 waiting, 4 result, 5 show result, 6 re-check items. */
+#ifdef VERSION_MHG
+#define MIX_FAIL_ITEM 0x7A   /* G Menu_mix_mv (main 0x11B8B0): a failed combination gives G's item 122 (MH1 143) */
+#else
+#define MIX_FAIL_ITEM 0x8F
+#endif
 int Menu_mix_mv(int sw) {
     int r = (u16)sw;
     PLW *pl = lpPit->pl;
@@ -2041,7 +2046,7 @@ int Menu_mix_mv(int sw) {
             mix_effect_set(1);
             se_req(7, 0xE, 0);
         } else {
-            lpPit->x78 = 0x8F;
+            lpPit->x78 = MIX_FAIL_ITEM;
             mix_effect_set(2);
             se_req(7, 0xD, 0);
         }
@@ -2057,7 +2062,7 @@ int Menu_mix_mv(int sw) {
         switch ((s16)ItemStockRequest(pl, (u16)lpPit->x78, lpPit->x76, 1)) {
         case 0:
         case 1:
-            if (lpPit->x78 == 0x8F) {
+            if (lpPit->x78 == MIX_FAIL_ITEM) {
                 adx_se_set(pl, 8);
             } else {
                 Pl_item_get_se(pl, (u16)lpPit->x78);

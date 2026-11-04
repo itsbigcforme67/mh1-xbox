@@ -43,6 +43,15 @@ void Pl_poison_add(PLW *pl, s16 add) {
         if (Pl_Skill_ck(pl, 0x13) == 1) {
             add *= 2;
         }
+#ifdef VERSION_MHG
+        /* G Pl_poison_add (game 0x66CCE0): skill 55 triples the poison, then skill 56 multiplies it by four */
+        if (Pl_Skill_ck(pl, 55) == 1) {
+            add *= 3;
+        }
+        if (Pl_Skill_ck(pl, 56) == 1) {
+            add *= 4;
+        }
+#endif
         pl->x7BA += add;
         pl->work7BE = 0x1E;
     }

@@ -8,6 +8,9 @@ extern SEIENT buki_sei_tbl[];
 extern SEIENT bou_sei_tbl[];
 extern SHENT shopTbl[];
 extern EQREC D_3C7004[];
+#if defined(VERSION_MHG) && !defined(UD_WARE_N)
+#define UD_WARE_N(u) ((1 + (((u8 *)(u))[0xC97] & 1) + ((((u8 *)(u))[0xC97] >> 1) & 1)) * 100)   /* G: 100 / 200 / 300 (include/ud.h) */
+#endif
 extern char User_data[];
 extern s32 shop_process2_help[];
 extern char lb_process_kyoukaListProg[];
@@ -123,9 +126,17 @@ void lb_process_set_weaponList(void) {
         t2->id = r->id;
         r++;
         t2++;
+#if defined(VERSION_MHG) && !defined(VERSION_MH2)
+    } while (n < UD_WARE_N(User_data));
+    /* G lb_process_set_weaponList (lobby 0x54A6F0): the box list runs over G's 100 / 200 / 300 entries (sub_main 0x4C9250)
+     * and the page count is 1 + the bought expansions (sub_main 0x4C9220) */
+    lbShop.count = n;
+    lbShop.x6D = UD_WARE_N(User_data) / 100;
+#else
     } while (n < 0x40);
     lbShop.count = 0x40;
     lbShop.x6D = 0xA;
+#endif
     lbShop.x84 = 1;
     lbShop.f30 = (void *)lb_process_kyoukaListProg;
     lbShop.list = shopList;

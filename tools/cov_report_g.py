@@ -46,6 +46,8 @@ for a in addrs:
 # function line ranges per file
 starts = {}
 for n, (f, ln) in where.items():
+    if n.startswith('.L'):      # gcc's local labels (one per jump-table case) are not function starts: they cut bodies short
+        continue
     starts.setdefault(f, []).append((ln, n))
 end_of, srccache = {}, {}
 for f, lst in starts.items():
