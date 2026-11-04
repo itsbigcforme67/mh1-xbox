@@ -69,7 +69,7 @@ asm, not a formula.
 
 A scan for the numbers 35-50 that G added to compare lists of the remaining MH1 functions found: em_material_sub (#1),
 enemy_trans (kind 39 drawn like 20), mlCalcTransEM (38 / 45 / 46 and others), ef_move_sub_005F7800 (38 / 39),
-em_die_rev_0058DD70 (stages 34-39, not kinds), QuestClearCameraRequest (stages 21 / 36 / 46 / 50), set04_trans / set10_m
+em_die_rev_0058DD70 (stages 34-39, not kinds), QuestClearCameraRequest (monster kinds 21 / 36 / 46 / 50, not stages: docs/mhg_questend_trade.md), set04_trans / set10_m
 (G stages 89-91 / kind 50). The other hits were online code or false hits (layout offsets).
 
 ## 3. Ranked: the top 60
@@ -115,7 +115,7 @@ Rank = how often a player meets it x how visible the error is. "Reached" names w
 | # | Function(s) | Reached | What G does differently | What the player notices | Basis |
 |---|---|---|---|---|---|
 | 25 | game3 (src/main/game/f_game.c) | every quest end (clear / fail message) | no font text: G spawns a set object (game 0x659560, its move 0x6595A0 with four states, ~1.7 KB of G-only code to 0x659C40) with game_w+0x3E | MH1's centred font line instead of G's own quest-end display | [asm]; what G draws: compare with a PS2 shot |
-| 26 | QuestClearCameraRequest | every quest clear | own camera choices on stages 21 / 36 / 46 / 50, quest_w fields, a call to sub_main 0x4C8910 | MH1's clear camera on those stages (RELEASE_G 6 lists it as not done) | [asm] |
+| 26 | QuestClearCameraRequest | every quest clear | own camera choices for monster kinds 21 / 36 / 46 / 50 (not stages; docs/mhg_questend_trade.md), quest_w fields, a call to sub_main 0x4C8910 | MH1's clear camera on those stages (RELEASE_G 6 lists it as not done) | [asm] |
 | 27 | disp_timer | every quest HUD | MH1 picks the special clock by a list of quest numbers (101, 103-107, 205-207); G by a quest flag (quest_w+0x40) | G quests with that flag get the normal clock | [asm]; which G quests set it [not checked] |
 | 28 | Menu_mix_mv (pause menu combine) | every combine | a failed combination gives item 0x7A (122); MH1 0x8F (143). Also new steps (sub_main 0x4CC100, mix_item_chk, lpPit+0x91 / 0x92) | a failed combine puts G's item 143 (some other item) in the pouch | [code: PC sets lpPit->x78 = 0x8F; asm: G 122]. The new steps [partly read] |
 | 29 | trans_box (HUD item box) | every hunt | tests quest_w+0x165 and game_w+0x180 before drawing | an item G hides or greys in some quests is drawn | [asm, meaning not read] |
