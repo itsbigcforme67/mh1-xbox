@@ -1339,6 +1339,28 @@ def is_japanese(b):
 LINESPLIT = re.compile(r"^(mc_msg|ms_err|ncm_|McardMsg|yn_dialog|yn_mess|yn_help)")
 
 
+def _jp_chars(b):
+    """kana and kanji characters (as is_japanese counts them) in a Shift-JIS string"""
+    i = n = 0
+    while i < len(b):
+        if td.dbl(b, i):
+            if b[i] >= 0x88 or b[i] == 0x83 or (b[i] == 0x82 and b[i + 1] >= 0x9F):
+                n += 1
+            i += 2
+        else:
+            i += 1
+    return n
+
+
+def not_text(jb, xb):
+    """the candidate English is not text: no run of two letters or digits (ASCII or full-width, as the US memory-card
+    names 'ｇａｍｅ　ｄａｔａ' are) for a Japanese string of three or more
+    kana / kanji. A table slot the US build left pointing into other data reads as a few stray bytes (4 Nov 2026: the
+    MMBB login dialog bs_strtbl_mmbb_dialog, which the US build dropped, paired its 'save complete' / 'deletion
+    complete' rows with '`\\nj'-like bytes of the US lobby, and G took them over as official English)"""
+    return _jp_chars(jb) >= 3 and not re.search(rb"[A-Za-z0-9]{2}|(?:\x82[\x4F-\x58\x60-\x79\x81-\x9A]){2}", xb)
+
+
 def good_english(jb, xb):
     """(ok, reason) for a JP string and its candidate English text"""
     if not xb:
@@ -1347,6 +1369,8 @@ def good_english(jb, xb):
         return False, "same as JP"
     if is_japanese(xb):
         return False, "still Japanese"
+    if not_text(jb, xb):
+        return False, "not text"
     if conv_sig(jb) != conv_sig(xb):
         return False, "format mismatch"
     return True, ""

@@ -1254,3 +1254,6 @@ main:0x2EF0B8	808f3509	-	OK
 sub_main:0x52C340	d0dfafd8	-	\n==Ranged attack hit==\n
 sub_main:0x52C360	c7041ac8	-	Player attack mod = %f\n
 sub_main:0x52C3A0	45f0f07c	-	\n==Other player attack hit==\n
+# --- Multi Matching BB login and NET file screens (lobby)
+lobby:0x638430	c4829d20	-	\n\n\n            Save complete.\n\n\n         Press the ○ button.\n
+lobby:0x638480	71e63075	-	\n\n\n          Deletion complete.\n\n\n         Press the ○ button.\n

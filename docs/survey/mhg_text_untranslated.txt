@@ -450,6 +450,8 @@ lobby:0x638110	online, keyboard, word filter	ours
 lobby:0x638240	online, keyboard, word filter	ours
 lobby:0x6382C0	online, keyboard, word filter	ours
 lobby:0x638340	online, keyboard, word filter	ours
+lobby:0x638430	online, keyboard, word filter	ours
+lobby:0x638480	online, keyboard, word filter	ours
 lobby:0x638500	online, keyboard, word filter	ours
 lobby:0x638520	online, keyboard, word filter	ours
 lobby:0x6385A0	online, keyboard, word filter	ours
