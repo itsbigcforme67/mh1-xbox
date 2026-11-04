@@ -432,17 +432,17 @@ lobby:0x62F15C	code literals (lobby)	G only	in Portable
 lobby:0x631E6C	code literals (lobby)	G only	in Portable
 lobby:0x6373C0	code literals (lobby)	G only
 lobby:0x6373D8	code literals (lobby)	G only
-lobby:0x637620	online, keyboard, word filter	twin without US English	in Portable
-lobby:0x6376E0	online, keyboard, word filter	twin without US English	in Portable
-lobby:0x637780	online, keyboard, word filter	twin without US English	in Portable
-lobby:0x6378A0	online, keyboard, word filter	twin without US English	in Portable
-lobby:0x6379C0	online, keyboard, word filter	twin without US English	in Portable
-lobby:0x637AF0	online, keyboard, word filter	twin without US English	in Portable
-lobby:0x637BF0	online, keyboard, word filter	twin without US English	in Portable
-lobby:0x637C70	online, keyboard, word filter	twin without US English	in Portable
-lobby:0x637D80	online, keyboard, word filter	twin without US English	in Portable
-lobby:0x637E68	online, keyboard, word filter	twin without US English	in Portable
-lobby:0x637E78	online, keyboard, word filter	twin without US English	in Portable
+lobby:0x637620	online, keyboard, word filter	ours	in Portable
+lobby:0x6376E0	online, keyboard, word filter	ours	in Portable
+lobby:0x637780	online, keyboard, word filter	ours	in Portable
+lobby:0x6378A0	online, keyboard, word filter	ours	in Portable
+lobby:0x6379C0	online, keyboard, word filter	ours	in Portable
+lobby:0x637AF0	online, keyboard, word filter	ours	in Portable
+lobby:0x637BF0	online, keyboard, word filter	ours	in Portable
+lobby:0x637C70	online, keyboard, word filter	ours	in Portable
+lobby:0x637D80	online, keyboard, word filter	ours	in Portable
+lobby:0x637E68	online, keyboard, word filter	ours	in Portable
+lobby:0x637E78	online, keyboard, word filter	ours	in Portable
 lobby:0x637E88	online, keyboard, word filter	ours	in Portable
 lobby:0x637EB0	online, keyboard, word filter	ours
 lobby:0x638050	online, keyboard, word filter	ours
@@ -1439,7 +1439,7 @@ main:0x2EF008	village NPC lines and talk [G table]	G only	in Portable
 main:0x2EF010	village NPC lines and talk [G table]	G only	in Portable
 main:0x2EF018	village NPC lines and talk [G table]	G only	in Portable
 main:0x2EF020	village NPC lines and talk [G table]	G only	in Portable
-main:0x2EF0B8	online, keyboard, word filter [G table]	G only	in Portable
+main:0x2EF0B8	online, keyboard, word filter [G table]	ours	in Portable
 main:0x2EF0E8	code literals (main)	ours
 quest:19:0x68	quests	ours
 quest:38:0xAC	quests	ours
@@ -1470,9 +1470,9 @@ sub_main:0x5292C0	code literals (sub_main)	G only
 sub_main:0x529A70	items (names, help)	twin without US English	in Portable
 sub_main:0x529F80	items (names, help)	ours	in Portable
 sub_main:0x529F90	items (names, help) [G table]	ours	in Portable
-sub_main:0x52C340	code literals (sub_main)	G only
-sub_main:0x52C360	code literals (sub_main)	G only
-sub_main:0x52C3A0	code literals (sub_main)	G only
+sub_main:0x52C340	code literals (sub_main)	ours
+sub_main:0x52C360	code literals (sub_main)	ours
+sub_main:0x52C3A0	code literals (sub_main)	ours
 sub_main:0x52C3E0	code literals (sub_main)	ours
 sub_main:0x52C400	code literals (sub_main)	ours
 sub_main:0x52EA60	weapons [G table]	ours
