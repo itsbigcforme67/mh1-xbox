@@ -2640,6 +2640,15 @@ static void village_step(void)
         quest_back();
         return;
     }
+#ifdef VERSION_MH2
+    {   /* MH2's village (its lobby.bin, Local_main) is not ported: the G-form lobby C reads G's absolute addresses
+         * (Lb_set_mini_data crashed on 0x3F34C1). The quest is over and the screen stays dark (rt_flow_mode 6) */
+        static int said;
+        if (!said++)
+            rt_log("village: not ported on MH2; the quest is over (RT_NO_VILLAGE=1 restarts it)");
+        return;
+    }
+#endif
 #ifdef MH1_ONLINE
     if (rt_np_session_end() >= 0)   /* co-op over: the hunter saved, single player again */
         lp = 0;

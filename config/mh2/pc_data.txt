@@ -26,3 +26,9 @@ em_prog_tbl = 0x0090DE10; // size:0x128
 # HitWallPlayer (sub_main 0x330EB0) reads the monster's wall spheres from game 0x8B9FC0 by kind (74 pointers, to 0x8BA0E8); the G address
 # the PC had from config/mhg/pc_data.txt read junk and kind 10 crashed in the first em_move (HOST round 4). The online table D_7F1980 is not placed.
 em_hit_push_tbl = 0x008B9FC0; // size:0x128
+# hunt_group_tbl: sub_main 0x44C800, 74 pointers to 0xFF-terminated lists of a species' kinds (kind k's list starts with k: 0x44C630
+# {0}, 0x44C638 {1, 0x2A, 0x25}, ...); read by the hunt-group helpers 0x3BBBC0-0x3BC090 (lui/addiu D_0044C800, kind << 2), the
+# shape of G's helpers at 0x4C87C4. data_map.txt's 0x44C860 is its kind-24 entry. Ends where em_base_size starts (HOST round 5)
+hunt_group_tbl = 0x0044C800; // size:0x128 allptr
+# em_base_size: f32 per kind, 74 kinds (0x44C930..0x44CA58, zero-padded to 0x44CA60); kind 1 (Rathian) 1645.6 as in G (HOST round 5)
+em_base_size = 0x0044C930; // size:0x128

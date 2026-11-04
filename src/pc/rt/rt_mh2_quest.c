@@ -1065,4 +1065,37 @@ void rt_mh2_quest_targets_init(void)
     tgt_init();
     items_init();
 }
+
+/* MH2's result screen: game5 (sub_main 0x3274F0) calls plsel 0xD683C0, not G's result_prog (sub_main 0x4F4A60, which
+ * f_reward_g.c holds). 0xD683C0 is a new state machine of 26 steps (jump table plsel 0xD7BAD0) over MH2's quest_w / User_data
+ * places and plsel's own screens (frames, texts, reward box at 0xD7BD90); none of it is ported. G's copy ran on MH2 with G's
+ * places and tables: records_update read hunt_group_tbl (now placed at MH2's 0x44C800, config/mh2/pc_data.txt) and
+ * trans_result_1 then drew G's card_list_frame_tbl_00357850, which MH2 keeps in plsel (not imported): exit 139.
+ * HOST STAND-IN (not MH2's logic): no rewards, records, kill counts or clear bits are written, no screen is drawn; after
+ * 30 ticks it leaves for the village the way 0xD683C0's last step does (0xD694A0: game_w mode 6, step 0, all_reset).
+ * f_reward_g.c's result_prog is renamed away for MH2 (tools/build_pc.sh). */
+void all_reset(void);
+void se_stop_all(void);
+void rt_cap_drop(void);
+void result_prog(void)
+{
+    switch (GU8(1)) {               /* game_w step */
+    case 0:
+        se_stop_all();
+        if (getenv("RT_QUEST_TRACE"))
+            fprintf(stderr, "rt_mh2_quest: result (host stand-in): quest %s, state %d\n",
+                    clear_ck(1) == 1 ? "cleared" : "not cleared", G_STATE);
+        GU8(4) = 30;                /* game_w x04: the wait */
+        GU8(1) = 1;
+        break;
+    default:
+        if (GU8(4) > 0 && --GU8(4) > 0)
+            break;
+        GU8(0) = 6;                 /* mode 6: Game_task leaves for the village */
+        GU8(1) = 0;
+        all_reset();
+        rt_cap_drop();              /* the quest clear's frame copy, as f_reward_g.c's to_village */
+        break;
+    }
+}
 #endif
