@@ -75,18 +75,21 @@ int Cockpit_menu_chk_lobby(void) {
 
 #if !defined(G_PART) && defined(VERSION_MHG) && !defined(VERSION_MH2)
 u8 sub_main_func_004F0020(PLW *pl, int id);     /* pl53.c: the active skill of skill kind id (0 = none) */
+/* G lpPit+0x96 (in include/menu.h's _pad91): the monster-mark mode of this map draw: 0, 2 / 4 by the Detect skill,
+ * |1 while the psychoserum runs */
+#define PIT_MAP_MODE (((u8 *)lpPit)[0x96])
 s16 Pl_item_num_ck(PLW *pl, int id);
 
 /* G main 0x1207E0 (called first by disp_whole_map and disp_partial_map): the map's monster-mark mode */
 void g_map_mark_mode(PLW *pl) {
     u8 s = sub_main_func_004F0020(pl, 0x1B);     /* skill kind 0x1B: Detect */
 
-    lpPit->map_mode = 0;
+    PIT_MAP_MODE = 0;
     if (s != 0) {
-        lpPit->map_mode = (s == 0x28) ? 4 : 2;  /* 0x28 Auto-marking; any other Detect skill hides the marks */
+        PIT_MAP_MODE = (s == 0x28) ? 4 : 2;  /* 0x28 Auto-marking; any other Detect skill hides the marks */
     }
     if (pl->work930 != 0) {                      /* psychoserum running */
-        lpPit->map_mode |= 1;
+        PIT_MAP_MODE |= 1;
     }
 }
 
@@ -118,7 +121,7 @@ int enemy_mark_chk(PLW *pl, EMW *em) {
     if (c == 0xFF || (c & 0xC0) == 0x80) {
         return em->x56A != 0;
     }
-    v = lpPit->map_mode;
+    v = PIT_MAP_MODE;
     if (em->x56A != 0) {
         v |= 1;
     }
