@@ -17,12 +17,19 @@ earlier one are noted in both places.
 | Online | Our own server and our own open PS2 patches; PS2, PC and Xbox together; wire protocol kept, DNAS removed | 3 Oct, 15 Oct, 16 Oct |
 | English for G | Monster Hunter Freedom first, MH1 US second, our own lines last; "Dual Blades". The community MH1j patch is a very-low-priority option for later | 25 Oct, 28 Oct, 3 Nov |
 | MH2 (Dos) | We split and decompile it ourselves; PC and Xbox ports like MH1 and G. The community mh2-decomp repo is an allowed source of facts | 1 Nov, 2 Nov, 3 Nov |
+| MH Dos on the Xbox | Its own title: id 4D480003, "Monster Hunter Dos", E:\Games\MH2; the next project after G | 4 Nov |
 | Movies | libmpeg2 | 7 Oct |
 | License | MIT for the project's own code | 15 Oct |
 
 Items still open are in "Open" at the end. Three were settled by the owner on 3 Nov 2026 ("Settled 3 Nov 2026" below).
 
 ## Decided
+
+### MH Dos gets its own Xbox title; it is the next project after G (owner, 4 Nov 2026)
+
+- Owner: "Yes MH dos gets its own space. It's the next project after G." Accepts docs/mh2/xbox.md's proposal: title id
+  4D480003, name "Monster Hunter Dos", folder E:\Games\MH2 (data in E:\Games\MH2\data), loader game id `mh2`.
+- G stays the release in progress; MH Dos work continues alongside, and becomes the main project once G is done.
 
 ### Base on a Japanese PS2 build, not the US/EU build (3 Oct 2026)
 

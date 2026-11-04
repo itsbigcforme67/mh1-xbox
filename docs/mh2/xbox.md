@@ -204,7 +204,7 @@ Every step is for an agent with the laptop's rules (one heavy job at a time, nic
 free; xemu needs `ulimit -v` of about 6 GB). No hardware until step E, and then only the owner.
 
 **A. On the PC, before any Xbox build**
-1. Owner: confirm the identity (4D480003, "Monster Hunter Dos", E:\Games\MH2) or pick another.
+1. ~~Owner: confirm the identity~~ Confirmed by the owner on 4 Nov 2026 (docs/DECISIONS.md).
 2. Measure MH2 on the PC with the tools G used: `RT_MEM=150` on `--boot` (title), `RT_MEM=300` on `--quest 1014`
    (stage 110) and with `RT_QUEST_STAGE=1 RT_MH2_EM=1` (stage 120, Rathian), plus `RT_MEM_FILES=1` and `RT_STACK=1`. This replaces
    the guesses in section 2, and the texture line says how much stays RGBA8 on the Xbox.
