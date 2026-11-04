@@ -69,3 +69,6 @@ shell08_atk_no = 0x0089D930; // size:0x1C noptr
 # MH2's st_mv_ptr_ck (game 0x7083B0, em_cmd_nm.c's NextStage_No_Set for MH2): per kind a pointer to the per-rank neighbour lists,
 # EMCMD round 6; 74 kinds (as the other per-kind tables; the end is not checked)
 D_008BF320 = 0x008BF320; // size:0x128 allptr
+# game 0x734260 (may a kind go to a stage; 0x03, 0x1A): per kind a pointer to per-rank u16 stage lists, EMCMD round 6; 74 kinds
+# assumed (at least 21 kinds have lists; the table's end is not settled)
+D_008BF840 = 0x008BF840; // size:0x128 allptr

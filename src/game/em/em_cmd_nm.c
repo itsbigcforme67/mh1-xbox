@@ -143,6 +143,74 @@ static u8 *mh2_sel16(EMW *em, u8 *p, int code, int (*hit)(EMW *, int))
 /* the em_cmd level byte game_w+0x30 (MH2 offset; the C field x30 sits 2 later under VERSION_MH2) through the rank table */
 #define MH2_CMD_RANK() sub_main_func_003799A0(((u8 *)&game_w)[0x30])
 
+extern s32 D_008BF320[];
+const unsigned char *rt_addr(unsigned int va, unsigned int n);     /* src/pc/rt/rt.h */
+unsigned int rt_va_of_host(const void *host);
+/* a pointer word of the image: a host pointer after the import, or still a PS2 address */
+static void *mh2_ptr(s32 w)
+{
+    if (w == 0)
+        return NULL;
+    if ((u32)w >= 0x02000000u && rt_va_of_host((const void *)(uintptr_t)(u32)w))
+        return (void *)(uintptr_t)(u32)w;
+    return (void *)rt_addr((u32)w, 4);
+}
+static s16 *mh2_st_mv_ptr_ck2(EMW *em, u16 stg)
+{
+    s32 *t = mh2_ptr(D_008BF320[em->kind]);
+    s32 *e;
+    u8 *row;
+    s16 i;
+
+    if (t == NULL)
+        return NULL;
+    e = mh2_ptr(t[((u8 *)&game_w)[0x30]]);
+    if (e == NULL)
+        return NULL;
+    while (e[0] != -1 && e[0] != ((u8 *)em)[0x964])
+        e += 2;
+    row = mh2_ptr(e[1]);
+    if (row == NULL)
+        return NULL;
+    for (i = 0; i < 197; i++, row += 8) {
+        u16 st = *(u16 *)row;
+        if (st == 255 || sub_main_func_00379AC0(st) == sub_main_func_00379AC0(stg))
+            return mh2_ptr(*(s32 *)(row + 4));
+    }
+    return NULL;
+}
+
+/* game 0x7083B0 (the monster's own stage) and 0x7084B0 (a given stage) */
+static s16 *mh2_st_mv_ptr_ck(EMW *em) { return mh2_st_mv_ptr_ck2(em, em->stg); }
+
+/* game 0x734260: may the monster go to stage s? Its own stage: yes. Else per kind (D_008BF840) a pointer per rank (0x3799A0 of
+   game_w+0x30) to a u16 list ended by 0xFFFF: an entry from 10000 is that exact stage (minus 10000), below it a stage group
+   (0x379AC0). No table or no list: no. */
+extern s32 D_008BF840[];
+static int game_func_00734260(EMW *em, u16 s)
+{
+    s32 *t;
+    u16 *l;
+
+    if (em->stg == s)
+        return 1;
+    t = mh2_ptr(D_008BF840[em->kind]);
+    if (t == NULL)
+        return 0;
+    l = mh2_ptr(t[MH2_CMD_RANK()]);
+    if (l == NULL)
+        return 0;
+    for (; *l != 0xFFFF; l++) {
+        if (*l >= 10000) {
+            if (*l - 10000 == s)
+                return 1;
+        } else if (sub_main_func_00379AC0(*l) == sub_main_func_00379AC0(s)) {
+            return 1;
+        }
+    }
+    return 0;
+}
+
 void game_func_007275D0(EMW *em) { em->x39A++; }
 /* 0x1F: posture x388 == 1 (0x08 tests 0, 0x09 tests 2) */
 MH2_COND(em_cmd_op1F, 0x1F, 0, em->x388 == 1)
@@ -748,6 +816,38 @@ u8 *em_cmd_ninshiki_ck(EMW *em, u8 *p) {
     return q;
 }
 
+#ifdef VERSION_MH2
+/* MH2 (game 0x727840): passes when the target stage x73A (u16) is not the monster's own, not 0xFFFF, and allowed for the kind
+   (game 0x734260; G read em_area_mv_tbl[kind][stage]). When not: the target fields are cleared, as G. */
+u8 *em_cmd_area_move_ck(EMW *em, u8 *p) {
+    u8 *q = p;
+    u16 stg;
+
+    switch (*q) {
+    case 0:
+        stg = em->x73A;
+        q += 1;
+        if (em->stg != stg && stg != 0xFFFF && game_func_00734260(em, stg) == 1) {
+            break;
+        }
+        em->x827 = 0;
+        em->x828 = 0;
+        em->x829 = 0;
+        em->x881 = 0;
+        em->x882 = 0;
+        em->x883 = 0;
+        CMD_SKIP(em, q, 3);
+        break;
+    case 1:
+        q = else_ck(em, q + 1, 3);
+        break;
+    case 2:
+        q += 1;
+        break;
+    }
+    return q;
+}
+#else
 u8 *em_cmd_area_move_ck(EMW *em, u8 *p) {
     u16 stg;
     u8 *q;
@@ -790,6 +890,7 @@ u8 *em_cmd_area_move_ck(EMW *em, u8 *p) {
     }
     return q;
 }
+#endif
 
 u8 *em_cmd_main_jump(EMW *em, u8 *p) {
     em->cmd_idx = *p;
@@ -1316,16 +1417,85 @@ u8 *em_cmd_area_route_ck(EMW *em, u8 *p) {
 }
 
 #ifdef VERSION_MH2
-/* MH2 (game 0x728EA0): the target is a 2-byte stage in its current form (0x379B20). MH2 then walks up to 20 hops of u16
-   neighbour lists (game 0x7083B0 / 0x7084B0, allowed by 0x734260) to pick the next stage; that walk is not written yet: the
-   target itself is taken (a guess that only holds next to the target). */
+/* MH2 (game 0x728EA0): flee toward stage T (2 bytes). Up to 20 hops: from the current list of neighbours (0x7083B0, then 0x7084B0
+   of the last hop's stage), take T if it is a neighbour; else the neighbour whose direction from the monster's stage (always
+   em->stg's centre, as the original) is closest to T's, not the one avoided (first x92E, then the previous hop); stop at the
+   first stage the kind may go to (0x734260) or where there is no list. Every stage in its current form (0x379B20). */
 u8 *em_cmd_escape_area_set(EMW *em, u8 *p) {
-    u16 target = sub_main_func_00379B20(CMD_BE16(p));
+    u16 T = CMD_BE16(p);
+    u16 c = T;
+    u16 avoid = em->x92E;
+    u16 prev = em->stg;
+    s16 *conn;
+    s16 ids[8];
+    f32 cur[3], tgt[3], vec[8][3];
+    u16 ang0, a, d, bestd = 0;
+    EM_STG_BOX *b;
+    int hop, i, n, best;
 
     em->x827 = 3;
-    em->x92F = target;
-    em->x829 = target;
-    em->x828 = target;
+    conn = mh2_st_mv_ptr_ck(em);
+    if (conn == NULL) {
+        em->x92F = sub_main_func_00379B20(c);
+        goto done;
+    }
+    for (hop = 0; hop < 20; hop++) {
+        for (i = 0; i < 8 && conn[i] != -1; i++) {      /* (the original reads 8 entries, past the end marker too) */
+            if (sub_main_func_00379B20(T) == sub_main_func_00379B20(conn[i])) {
+                em->x92F = sub_main_func_00379B20(T);
+                goto done;
+            }
+        }
+        b = Stage_data_get(em->stg);
+        cur[0] = b->x + b->w / 2.0f;
+        cur[2] = b->z + b->d / 2.0f;
+        b = Stage_data_get(T);
+        tgt[0] = b->x + b->w / 2.0f;
+        tgt[2] = b->z + b->d / 2.0f;
+        for (n = 0; n < 8 && conn[n] != -1; n++) {
+            b = Stage_data_get(conn[n]);
+            ids[n] = conn[n];
+            vec[n][0] = b->x + b->w / 2.0f;
+            vec[n][2] = b->z + b->d / 2.0f;
+        }
+        if (n == 1) {
+            c = sub_main_func_00379B20(ids[0]);
+        } else {
+            ang0 = Em_Calc_angY(cur, tgt);
+            best = -1;
+            for (i = 0; i < n; i++) {
+                if (avoid != 0xFFFF && avoid == sub_main_func_00379B20(conn[i])) {
+                    continue;
+                }
+                a = Em_Calc_angY(cur, vec[i]);
+                d = a - ang0;
+                if (d >= 0x8001) {
+                    d = 0x10000 - d;
+                }
+                if (best == -1 || d < bestd) {
+                    best = i;
+                    bestd = d;
+                }
+            }
+            if (best >= 0 && conn[best] != -1) {    /* (the original reads conn[-1] when all were skipped) */
+                c = conn[best];
+            }
+        }
+        if (game_func_00734260(em, sub_main_func_00379B20(c)) == 1) {
+            em->x92F = sub_main_func_00379B20(c);
+            goto done;
+        }
+        avoid = prev;
+        prev = sub_main_func_00379B20(c);
+        conn = mh2_st_mv_ptr_ck2(em, c);
+        if (conn == NULL) {
+            em->x92F = sub_main_func_00379B20(c);
+            goto done;
+        }
+    }
+done:
+    em->x829 = em->x92F;
+    em->x828 = em->x92F;
     return p + 2;
 }
 #else
@@ -5144,43 +5314,6 @@ void Em_Next_Stage_Pos(EMW *em) {
    {s32 key, rows} ended by key -1 or key == the byte EMW+0x964 (meaning unknown); the rows {u16 stage, pad, u16 *next} end at
    stage 255 or the row whose group (0x379AC0) is the monster's stage's, at most 197. Returns that row's neighbour list (u16,
    ended by 0xFFFF) or NULL. */
-extern s32 D_008BF320[];
-const unsigned char *rt_addr(unsigned int va, unsigned int n);     /* src/pc/rt/rt.h */
-unsigned int rt_va_of_host(const void *host);
-/* a pointer word of the image: a host pointer after the import, or still a PS2 address */
-static void *mh2_ptr(s32 w)
-{
-    if (w == 0)
-        return NULL;
-    if ((u32)w >= 0x02000000u && rt_va_of_host((const void *)(uintptr_t)(u32)w))
-        return (void *)(uintptr_t)(u32)w;
-    return (void *)rt_addr((u32)w, 4);
-}
-static s16 *mh2_st_mv_ptr_ck(EMW *em)
-{
-    s32 *t = mh2_ptr(D_008BF320[em->kind]);
-    s32 *e;
-    u8 *row;
-    s16 i;
-
-    if (t == NULL)
-        return NULL;
-    e = mh2_ptr(t[((u8 *)&game_w)[0x30]]);
-    if (e == NULL)
-        return NULL;
-    while (e[0] != -1 && e[0] != ((u8 *)em)[0x964])
-        e += 2;
-    row = mh2_ptr(e[1]);
-    if (row == NULL)
-        return NULL;
-    for (i = 0; i < 197; i++, row += 8) {
-        u16 st = *(u16 *)row;
-        if (st == 255 || sub_main_func_00379AC0(st) == sub_main_func_00379AC0(em->stg))
-            return mh2_ptr(*(s32 *)(row + 4));
-    }
-    return NULL;
-}
-
 /* MH2 (game 0x733430): G's with u16 neighbour lists and every stage in its current form (0x379B20) */
 void NextStage_No_Set(EMW *em) {
     f32 cur[3];
