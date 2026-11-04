@@ -334,7 +334,7 @@ static void ikari_end(u8 *em)
     B8(0x9A1) = 0;
 }
 /* sub_main 0x3799A0: the rank table 0x43ED80 (src/mh2/sub_main/stage_map.c) */
-u16 sub_main_func_003799A0(u16 n);
+int sub_main_func_003799A0(u16 n);
 static int stage_map(int n)
 {
     return sub_main_func_003799A0((u16)n);

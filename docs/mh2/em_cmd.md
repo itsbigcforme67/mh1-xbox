@@ -278,7 +278,9 @@ shell08_atk_no at MH2's places, a stand-in: G's shell08 on MH2's tables) and Nex
 Not done: 0x3F's route part with MH2's route data (only the 2-byte target is MH2's), 0xFF case 4 (the end of a ground route:
 G's code with G's route layout), 0x05's target refresh (MH2 calls 0x702EE0, the PC G's em_type_act_set), 0x48
 (u16 timer, no x 30), 0x0C / 0x0D / 0x2B flags 8-9, 0x14 / 0x20 / 0x42 / 0x69 live angles, 0x41, 0x45 / 0x52 / 0x53 / 0x54 extra
-tests, 0x83's 3D path, and 0x73 / 0x75 / 0x78 / 0x79. The stage maps are C but not yet registered for the MH2 byte match.
+tests, 0x83's 3D path, and 0x73 / 0x75 / 0x78 / 0x79. The stage maps sub_main 0x379A30, 0x379A70, 0x379AC0, 0x379B20 **byte-match** (src/mh2/sub_main/stage_map.c, hand line in
+config/mh2/c_files.txt; mh2_check 13 of 13); 0x3799A0 and main 0x18DA70 are in the same file for the PC only. The match fixes
+their shapes: 0x18DA70 returns a byte (the caller masks it, u8 here); 0x379B20's form value is `x1DC == 0 ? 0x18DA70() : 0`.
 
 ## What is guessed or open
 

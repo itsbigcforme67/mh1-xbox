@@ -20,8 +20,8 @@ u8 *game_func_0058DD00(EMW *em, u8 *p);
 #include <stdlib.h>
 #include <stdint.h>
 f32 flvecCalcDistance(f32 *, f32 *);
-u16 sub_main_func_003799A0(u16 n);
-int func_0018DA70(void);
+int sub_main_func_003799A0(u16 n);
+u8 func_0018DA70(void);
 
 /* test aid (PC): RT_EMCMD_TRACE=1 prints every command a monster runs: kind, program offset, opcode, sub-byte, stage */
 static void mh2_cmd_trace(EMW *em, u8 *p)
