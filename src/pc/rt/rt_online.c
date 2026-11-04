@@ -593,7 +593,7 @@ int ms_net_patch_set(void)
  * cnLBS_Get_FileDownloadInfo reports. Burst slot: +0 run, +4 callback, +8 file, +0xC offset, +0x20 in use, +0x21 step,
  * +0x22 result of the last answer (set by the two __cnet_CallBack_Result_* of cnlbs03.c). */
 extern unsigned char rt_lb_mem[];
-#define LBA(a) (rt_lb_mem + ((a) - 0x533980u))
+#define LBA(a) (rt_lb_mem + ((a) - 0x533980u)) /* MH1's overlay base; G's is 0x542600 (rt_ovl_vram(), rt_data.c) */
 typedef struct { s8 val; s8 id; u8 pad[6]; } ON_RES;
 typedef struct { s32 size, received; u8 *ptr; } DL_FILE;
 extern u8 recv_work[];

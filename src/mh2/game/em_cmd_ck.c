@@ -59,7 +59,7 @@ void em_cmd_ck(EMW *em) {
     s32 a;
     s32 b;
 
-    if (em->mode != 5 && em->mode != 6) {
+    if (em->mode != 5 && em->mode != 6) { /* MH1 skipped mode 5 only (em_cmd_nm.c) */
         em->x8BD = 0;
         reset_flag_ck(em);
         if ((p = cancel_prog_ck(em)) == NULL) {
@@ -67,7 +67,7 @@ void em_cmd_ck(EMW *em) {
         }
         while (run) {
             n++;
-            if (n >= 0x3E8) {
+            if (n >= 0x3E8) { /* 1000-step limit against a runaway program: error 2 */
                 game_func_007262D0(em, p, 2);
             }
             if (em->x9DA != 0) {
@@ -90,7 +90,7 @@ void em_cmd_ck(EMW *em) {
                 p = em_cmd_area_move_ck(em, p + 1);
                 break;
             case 0x4:
-                *(u8 *)&em->cmd_idx = 0;
+                *(u8 *)&em->cmd_idx = 0; /* cmd_idx is u8 in MH2 already; the cast is MH1's (u16) form */
                 p = em_cmd_top(em);
                 break;
             case 0x5:
@@ -113,7 +113,7 @@ void em_cmd_ck(EMW *em) {
             case 0x8:
                 p = em_cmd_stand_ck(em, p + 1);
                 break;
-            case 0x1F:
+            case 0x1F: /* cases are in the original's order: new opcodes sit beside the MH1 handler they vary */
                 p = em_cmd_op1F(em, p + 1);
                 break;
             case 0x9:
@@ -221,7 +221,7 @@ void em_cmd_ck(EMW *em) {
             case 0x2B:
                 p = em_cmd_flag_ck(em, p + 1);
                 break;
-            case 0x2C:
+            case 0x2C: /* G moved em_cmd_myemtype_sel from 0x2C to 0x70; game_func_005885E0 is G's address, MH2 0x72B240 */
                 p = game_func_005885E0(em, p + 1);
                 break;
             case 0x70:
@@ -416,7 +416,7 @@ void em_cmd_ck(EMW *em) {
             case 0x83:
                 p = em_cmd_range_ck(em, p + 1);
                 break;
-            case 0x84:
+            case 0x84: /* a no-op in MH1 (em_cmd_nm.c); MH2 runs game_func_007275D0 for 0x84 and 0x7B */
             case 0x7B:
                 game_func_007275D0(em);
                 p += 1;

@@ -547,7 +547,7 @@ s16 func_0022BA20(s16 x, s16 y, int idx, s8 *flag) {
                 } else {
                     flfntLocate(x, y);
                 }
-                func_0012BDD0(s);
+                FONT_PRINT1(s);
             }
             p++;
             s = *p;

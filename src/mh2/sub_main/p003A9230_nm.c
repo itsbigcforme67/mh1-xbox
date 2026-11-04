@@ -4,7 +4,7 @@ typedef unsigned char u8;
 typedef signed char s8;
 typedef short s16;
 typedef unsigned short u16;
-typedef struct { s16 op, a, b, c; } QCMD;
+typedef struct { s16 op, a, b, c; } QCMD; /* local; include/quest.h has its own QCMD {cmd,a,b,c} */
 typedef struct { int t, x; } QMSG;
 
 extern u8 D_006ADCF0, D_006ADFC3, D_006ADCEC, D_006ADED4[];
@@ -58,6 +58,7 @@ int sub_main_func_003AB770();
         *(u16 *)(&D_005D8260 + w[2] * 2 + 0x48C) = *(u16 *)(w + 0x9A4);         \
     }
 
+/* static in this file on purpose: probably the same reason as next_cmd_search.c's game_func_007262D0 (MWCC keeps a register across a same-file static call) */
 static int sub_main_func_003A8990(u16 n) {
     return (D_005D83C0[n].f & 0x31) == 0x31;
 }

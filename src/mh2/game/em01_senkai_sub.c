@@ -35,6 +35,7 @@ typedef struct {
 #define POSY F32(0xB0)
 #define ADJ F32(0x3C0)
 #define CHAR0 U16(0x29C)
+/* MH2 EMW offsets by mh2_emw.h's (MH1) names: 0xA0 ang, 0xB0 pos[1], 0x3C0 adj_z, 0x29C char0, 0x680 stg, 0x154 x194, 0x574 x5AC */
 
 typedef struct {
     u8 _pad00[0x18];
@@ -74,6 +75,7 @@ void em01_senkai_sub(u8 *em, int flags, SENKAI *p) {
         if (ADJ <= 130.0f) {
             break;
         }
+        /* fall through */
     case 1:
         if (a <= p->bk[0].to) {
             bmax = p->bk[0].hi;
@@ -148,7 +150,7 @@ void em01_senkai_sub(u8 *em, int flags, SENKAI *p) {
         } else if (a >= lo && a <= 0x4000) {
             if (TURN >= 0x10000 - t) {
                 ANG(1) -= 0x10000 - TURN;
-                TURN += 0x10000 - TURN;
+                TURN += 0x10000 - TURN; /* = 0x10000, wrapped to 0 by the (u16) below */
             } else {
                 ANG(1) -= t;
                 TURN += t;
@@ -165,7 +167,7 @@ void em01_senkai_sub(u8 *em, int flags, SENKAI *p) {
         if (a < 0x1000) {
             r = 0.1f;
         } else {
-            r = 6.2831855f * a / 65536.0f;
+            r = 6.2831855f * a / 65536.0f; /* angle units (0x10000 = full turn) to radians */
         }
         if (!(flags & 4)) {
             POSY -= r;
@@ -187,7 +189,7 @@ void em01_senkai_sub(u8 *em, int flags, SENKAI *p) {
             top = sd->floor_y;
         }
         if (flags & 0x80) {
-            if (p->c_rise + 1000 == CHAR0) {
+            if (p->c_rise + 1000 == CHAR0) { /* char0 seems to hold motion + 1000 (MH1 em01.c compares 0x3F4 = 1000 + 12); a guess */
                 if (I32(0x154) == 0) {
                     em_char_set(em, p->c_fly, 0, 0);
                 }

@@ -1,4 +1,4 @@
-/* chat_nm - f_chat (SLPM_654.95 0x001755D0-0x0017BF80, main.bin): sprite/frame helpers, chat log, pit-menu
+/* chat_nm - f_chat (SLPM_654.95 0x002755D0-0x0027BF80; main.bin offset 0x1755D0): sprite/frame helpers, chat log, pit-menu
  * windows (status, equipment), reibun (preset phrases). Near-match C, not built; matching runs are
  * built from it as chatNN.c. Field meanings are guesses. */
 #include "types.h"

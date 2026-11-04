@@ -1,5 +1,5 @@
 /* lb_by168 - agent B 0x005C3C10-0x005C40DC: lb_npc_init (near-match C kept for the PC build; the PS2 build links the original bytes, see c_rawfuncs.txt). */
-/* lb_npc_init near-match (agent B, round 7): typed rewrite from the asm, structure and logic follow the original; still differs in the register choices of the 4x8 byte clear loop (the original recomputes em+i each iteration) and a few nop placements. Not built. */
+/* lb_npc_init near-match (agent B, round 7): typed rewrite from the asm, structure and logic follow the original; still differs in the register choices of the 4x8 byte clear loop (the original recomputes em+i each iteration) and a few nop placements. The PS2 build links the original bytes for it (config/c_rawfuncs.txt). */
 #include "lbnpc_proto.h"
 extern s16 npc_disp_parts_00647910[];
 extern u16 *lb_npc_jijii_tbl[];

@@ -11,6 +11,9 @@ typedef float f32;
 #define B(o) (*(u8 *)(em + (o)))
 #define SB(o) (*(s8 *)(em + (o)))
 #define H(o) (*(s16 *)(em + (o)))
+/* MH2 EMW offsets used here, by the names in include/mh2_emw.h (MH1 names): 2 kind, 8 work08, 0xA4 ang[1], 0xAC pos,
+ * 0x2C2 x302, 0x3A2 x39A, 0x59B x617, 0x6DE x792, 0x7DC x888, 0x817 x8C3, 0x884 act_spd, 0x888 tgt_pos, 0x997 x881,
+ * 0x998 x882. */
 
 void pull_em_yobi();
 void em_cdm_act_flag_ck();

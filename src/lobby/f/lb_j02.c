@@ -31,7 +31,7 @@ void lb_pl_mv045(PLW *pl) {
 #else
 void lb_pl_mv045(PLW *pl) {
     u8 s;
-    PLU8(pl, MH2V(0x90B, 0x863)) = 1;
+    PLU8(pl, MH2V(0x90B, 0x863)) = 1; /* 0x863 = MH2_OFS_PLW(0x90B); 0x370 below = MH2_OFS_PLW(0x368): copies of the generated map */
     ItemPickingDeclaration(pl, &pl->x8E6);
     s = pl->x05;
     switch (s) {
