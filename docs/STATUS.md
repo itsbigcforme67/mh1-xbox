@@ -16,10 +16,10 @@ named for each.
   this log). Village and all 98 offline quests on the PC; installed on the real Xbox and runs the village at 30 game frames a
   second (29 Oct). English: 47% official text on 15 Oct; the source order (Freedom first) was decided on 28 Oct
   (docs/DECISIONS.md).
-- **MH2 / Dos.** Main and all 12 overlays rebuild byte-identical (13 of 13, tools/mh2_check.py). 2,310 functions, 6.95%
-  matched (3 Nov, rounds 3 and 4 below). On the PC, `--quest 1014` runs MH2's own quest flow: the hunter walks, both quest
-  monsters run MH2's em_move every tick, and the time-up and clear paths reach the result screen (mode 5), where they crash
-  in records_update. Xbox not tried.
+- **MH2 / Dos.** Main and all 12 overlays rebuild byte-identical (13 of 13, tools/mh2_check.py). 2,319 functions, 6.99%
+  matched (4 Nov, round 5 below). On the PC, `--quest 1014` runs MH2's own quest flow: the hunter walks, the Rathian
+  animates and flies with RT_MH2_EM=1, and both quest end paths finish (the result screen and village are stand-ins).
+  Stage 120 starts. Xbox not tried.
 - **Gap in this log:** there are no entries for 16-28 Oct 2026. Decisions of those days are in docs/DECISIONS.md; agent
   hand-overs of 23-29 Oct are in docs/agents/COORDINATOR.md ("Current assignments").
 - **Next:** MH2: the "Next" lists of docs/mh2/host.md and docs/mh2/shared.md. G and MH1: docs/agents/COORDINATOR.md.
@@ -1188,3 +1188,23 @@ mh2_rebuild and mh2_check (13 of 13 identical), plus hidden PC runs of quest 101
 Next: the monster's motion set-up on MH2's EMW (em_char_set, em_frame_check's speed at 0x884); hunt_group_tbl or MH2's
 result code; stage 120's camera; the per-stage tables at 199 entries; MH2's CameraWork. Reports: docs/mh2/host.md,
 docs/mh2/shared.md.
+
+## 4 Nov 2026: MH Dos round 5 (SHARED + HOST)
+
+Same flow as rounds 3 and 4: two agents, merged into main, full check 47 of 47, carry register, mh2_rebuild, mh2_check
+13 of 13, hidden PC runs (walk, monsters, monster next to the hunter, time-up, clear, stage 120), all exit 0. 6.95% to 6.99%.
+- SHARED (docs/mh2/shared5.md): why the monsters stood still. f_frameb.c's frame_init used MH1's motion handle bases
+  (1700 / 500); MH2's are 1910 / 710. Fixed under VERSION_MH2, plus em_frame_check's speed at 0x884. The Rathian now takes
+  off, flies, lands. Stage 120's default_area_data copies cam_cnf_chs (camarea03.c), so stage 120 starts. QEM MH2 view
+  (quest.h), the model slots at game_w+0x2A, 4 more quest functions matched. tools/mh2_funcfix.py takes `split` lines;
+  0x90A990 is em_effect_move and emt02.c carries whole.
+- HOST (docs/mh2/host.md, "Round 5"): hunt_group_tbl at 0x44C800 and em_base_size at 0x44C930 (found by their readers);
+  MH2's result screen is plsel 0xD683C0 (26 steps), a host stand-in for now that writes no rewards; the village is dark on
+  MH2. Per-stage fog, sun, area_move_high_y_tbl and fishcam_ofs_tbl from MH2's own code and tables (199 stages). Host files
+  use PLW_STRIDE / EMW_STRIDE / ITEM_ROW from version.h.
+- At the merge: both agents fixed frame_init; kept SHARED's byte-matched one and dropped HOST's host copy and its rename.
+
+Next: the monster command scripts (em_cmd) on stage 120 hang: MH2's opcodes 0x0E / 0x15 read the stage as 2 bytes through
+stage maps (tables 0x440E30 / 0x440FC0 to import); get the Rathian on screen and test its hits; MH2's result screen and
+village; MH2's CameraWork; kind 10 stuck in act 0; the remaining host em_work offsets. Reports: docs/mh2/shared5.md,
+docs/mh2/host.md.
