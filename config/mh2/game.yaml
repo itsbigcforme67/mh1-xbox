@@ -285,6 +285,8 @@ segments:
       - [0x080E18, asm, text/game_730018]
       - [0x080F80, c, game/em/em_cmd_r19]
       - [0x0810C8, asm, text/game_7302C8]
+      - [0x081290, c, game/em/em_cmd_r20]
+      - [0x0812D4, asm, text/game_7304D4]
       - [0x0812E0, c, game/em/em_cmd_r36]
       - [0x081338, asm, text/game_730538]
       - [0x0821A0, c, game/em/em_cmd_r37]

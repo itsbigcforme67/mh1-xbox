@@ -644,6 +644,8 @@ segments:
       - [0x095BAC, asm, text/sub_main_3794AC]
       - [0x095EA0, c, mh2/parts/main_stage_f_stage_126]
       - [0x095ED4, asm, text/sub_main_3797D4]
+      - [0x096130, c, mh2/sub_main/stage_map]
+      - [0x0962B8, asm, text/sub_main_379BB8]
       - [0x097380, c, mh2/parts/main_stage_f_stageb_127]
       - [0x0973D4, asm, text/sub_main_37ACD4]
       - [0x09CC30, c, mh2/parts/mhg_main_set_set01_p1_g]

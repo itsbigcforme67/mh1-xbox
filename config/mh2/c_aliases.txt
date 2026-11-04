@@ -257,6 +257,7 @@ game em_cmd_body_status_set 0x00727D00
 game em_cmd_boss_atk_ck 0x0072C1B0
 game em_cmd_boss_same_stage_ck 0x0072D1A0
 game em_cmd_boss_work_ck 0x0072C0A0
+game em_cmd_contents 0x00730490
 game em_cmd_demo_start 0x007314A0
 game em_cmd_egg_cancel_ck 0x0072B730
 game em_cmd_egg_ck 0x0072B5D0
@@ -680,6 +681,7 @@ game func_0072FEB0 0x0072FEB0
 game func_00730000 0x00730000
 game func_00730180 0x00730180
 game func_007302A0 0x007302A0
+game func_00730490 0x00730490
 game func_007304E0 0x007304E0
 game func_007313A0 0x007313A0
 game func_00731410 0x00731410

@@ -59,7 +59,6 @@ instructions_differ,file,mh2_module,mh2_addr,functions,functions_same,functions_
 2,lobby/b/lb_bz73,plsel,0x00D67630,2,1,1,8
 2,mhg/main/net/cnlbs01_p1,lobby,0x00701550,1,0,0,8
 2,mhg/main/flps/fladdm_p2,sub_main,0x002F1B70,1,0,0,10
-2,game/em/em_cmd_r20,game,0x00730490,1,0,0,17
 2,mhg/main/flps/fladdm_p3,sub_main,0x002F1BA0,1,0,0,22
 2,mhg/main/menu/menu05_p1,sub_main,0x00341B30,1,0,0,23
 2,lobby/f/lb_gt01,nethttp,0x008FD480,1,0,0,28
@@ -182,11 +181,11 @@ instructions_differ,file,mh2_module,mh2_addr,functions,functions_same,functions_
 22,main/fl/fm02,main,0x00182010,12,6,6,75
 22,mhg/main/sk/f_sk_p9,sub_main,0x00319FF0,3,1,2,87
 22,mhg/main/pl/f_pl_p44,game,0x00719C50,1,0,0,101
+22,game/em/em_cmd_r04,game,0x00728C70,4,2,0,129
 22,main/emw/emw01,sub_main,0x00377B50,7,2,3,146
 22,main/fl/tarpad03,main,0x0018B4F0,5,4,0,196
 22,main/cp/cp01,sub_main,0x00336B80,18,16,1,627
 23,mhg/main/fl/fs02_p1,main,0x0017FFA0,7,6,0,51
-23,game/em/em_cmd_r04,game,0x00728C70,4,2,0,129
 23,main/ime/imed,sub_main,0x00305C90,19,18,0,292
 24,main/quest/qstb05,sub_main,0x003A0C70,1,0,0,24
 24,main/font/disp101,select,0x006B9A80,1,0,0,27
@@ -371,8 +370,8 @@ instructions_differ,file,mh2_module,mh2_addr,functions,functions_same,functions_
 68,lobby/b/lb_jip01,lobby,0x0076EC90,1,0,0,99
 68,mhg/main/cam/camm_p2,sub_main,0x0031AA40,1,0,0,102
 69,main/model/crmdl01,sub_main,0x0033C220,1,0,0,78
+71,game/em/em_cmd_r24,game,0x00733200,2,1,0,156
 71,main/weapon/weapon_em,sub_main,0x00376640,1,0,0,228
-72,game/em/em_cmd_r24,game,0x00733200,2,1,0,156
 73,main/pl/pl73,sub_main,0x003B3260,1,0,0,42
 73,game/em/em14_r13,game,0x007509E0,3,0,2,75
 73,mhg/main/set/set21_p8,sub_main,0x00387D10,1,0,0,108

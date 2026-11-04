@@ -125,6 +125,7 @@ game 0x0072EA40 0x0072EB4C mh2/parts/game_em_em_cmd_r15_250
 game 0x0072ECB0 0x0072ED30 game/em/em_cmd_r99
 game 0x0072FEB0 0x00730018 mh2/parts/game_em_em_cmd_r18_251
 game 0x00730180 0x007302C8 game/em/em_cmd_r19
+game 0x00730490 0x007304D4 game/em/em_cmd_r20
 game 0x007304E0 0x00730538 game/em/em_cmd_r36
 game 0x007313A0 0x00731404 game/em/em_cmd_r37
 game 0x00731410 0x0073147C mh2/parts/game_em_em_cmd_r22_252
