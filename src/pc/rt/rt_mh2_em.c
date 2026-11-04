@@ -49,19 +49,11 @@ static void missing(const char *what, int kind)
         rt_warn("MH2 monster set-up: %s for kind %d not readable", what, kind);
 }
 
-/* sub_main 0x379AC0: the stage a stage counts as (table 0x440E30 == 1: 0x440FC0's stage, unless 0xFFFF) */
+/* sub_main 0x379AC0: the stage a stage counts as (src/mh2/sub_main/stage_map.c, shared with em_cmd) */
+u16 sub_main_func_00379AC0(u16 s);
 static int stage_group(int st)
 {
-    const s16 *a;
-    const u16 *b;
-    st &= 0xFFFF;
-    if (st == 0xFFFF)
-        return st;
-    a = (const s16 *)rt_addr(0x440E30 + 2 * (uint32_t)st, 2);
-    if (!a || *a != 1)
-        return st;
-    b = (const u16 *)rt_addr(0x440FC0 + 2 * (uint32_t)st, 2);
-    return b && *b != 0xFFFF ? *b : st;
+    return sub_main_func_00379AC0((u16)st);
 }
 /* game 0x7098A0 / 0x7097E0: {s16 stage, s16 value} ended by -1 (value of the end entry the default); a stage from 10000 is that
  * exact stage, below it the stage's group */
@@ -341,11 +333,11 @@ static void ikari_end(u8 *em)
     B8(0x80C) = 0;
     B8(0x9A1) = 0;
 }
-/* sub_main 0x3799A0: the stage table 0x43ED80 (u16; 0xFFFF: the number itself) */
+/* sub_main 0x3799A0: the rank table 0x43ED80 (src/mh2/sub_main/stage_map.c) */
+u16 sub_main_func_003799A0(u16 n);
 static int stage_map(int n)
 {
-    const u16 *t = (const u16 *)rt_addr(0x43ED80 + 2 * (uint32_t)(n & 0xFFFF), 2);
-    return t && *t != 0xFFFF ? *t : n;
+    return sub_main_func_003799A0((u16)n);
 }
 /* sub_main 0x3B5880(side): 1..7 when a hunter on the same side (0x3B5A40) is in action 0x2B0..0x2B6 (char0 0x73), else 0 */
 static int side_action(int side)

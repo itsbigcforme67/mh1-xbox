@@ -12,6 +12,176 @@ u8 *game_func_0058DF20(EMW *em, u8 *p);
 u8 *game_func_0058DD00(EMW *em, u8 *p);
 #endif
 
+#ifdef VERSION_MH2
+/* MH2's new command handlers (game 0x726380's switch; src/mh2/game/em_cmd_ck.c names them). Written for the PC from our own
+   disassembly (docs/mh2/em_cmd.md); not byte-checked. Lengths are MH2's next_cmd_search's. Each condition takes the usual
+   sub-byte: 0 = test (skip to the else / end when false), 1 = else, 2 = end. */
+#include <stdio.h>
+#include <stdlib.h>
+#include <stdint.h>
+f32 flvecCalcDistance(f32 *, f32 *);
+u16 sub_main_func_003799A0(u16 n);
+int func_0018DA70(void);
+
+/* test aid (PC): RT_EMCMD_TRACE=1 prints every command a monster runs: kind, program offset, opcode, sub-byte, stage */
+static void mh2_cmd_trace(EMW *em, u8 *p)
+{
+    static int on = -1;
+    if (on < 0)
+        on = getenv("RT_EMCMD_TRACE") != NULL;
+    if (on)
+        fprintf(stderr, "emcmd k%d +%04X op %02X %02X stg %d\n", em->kind, (unsigned)(p - em->cmd_top) & 0xFFFF, p[0], p[1], em->stg);
+}
+
+#define MH2_COND(name, code, nops, pass)                                    \
+u8 *name(EMW *em, u8 *p) {                                                  \
+    u8 *q = p;                                                              \
+    switch (*q++) {                                                         \
+    case 0:                                                                 \
+        if (!(pass)) {                                                      \
+            q += (nops);                                                    \
+            CMD_SKIP(em, q, code);                                          \
+        } else {                                                            \
+            q += (nops);                                                    \
+        }                                                                   \
+        break;                                                              \
+    case 1:                                                                 \
+        q = else_ck(em, q, code);                                           \
+        break;                                                              \
+    case 2:                                                                 \
+        break;                                                              \
+    }                                                                       \
+    return q;                                                               \
+}
+
+/* a select (sub-byte 0: count, hdr - 1 more bytes (2; 0x79 3), then entries "value, body" with code,1 between them, code,2 = else, code,3 = end).
+   hit(em, v) says when an entry runs; the first that does is taken. Sub-bytes 1 / 2 skip to past the end. */
+static u8 *mh2_sel(EMW *em, u8 *p, int code, int hdr, int (*hit)(EMW *, int))
+{
+    u8 *r;
+    u8 n;
+    s32 i;
+    u16 more;
+
+    switch (*p++) {
+    case 0:
+        n = *p;
+        p += hdr;
+        for (i = 0; i < n; i++) {
+            int v = *p++;
+            if (hit(em, v))
+                break;
+            r = cmd_end_search(em, p, code, 3);
+            p = r;
+            if (r[1] == 2 || r[1] == 3) {
+                p += 2;
+                break;
+            }
+            p += 2;
+        }
+        break;
+    case 1:
+        p += 1;
+    case 2:
+        more = 1;
+        do {
+            p = cmd_end_search(em, p, code, 3);
+            if (p[0] == code && p[1] == 3)
+                more = 0;
+            p = next_cmd_search(em, p);
+        } while (more);
+        break;
+    case 3:
+        break;
+    }
+    return p;
+}
+
+/* the same with 2-byte (big-endian) entries: 0x15, 0x3E */
+static u8 *mh2_sel16(EMW *em, u8 *p, int code, int (*hit)(EMW *, int))
+{
+    u8 *r;
+    u8 n;
+    s32 i;
+    u16 more;
+
+    switch (*p++) {
+    case 0:
+        n = *p;
+        p += 3;
+        for (i = 0; i < n; i++) {
+            int v = CMD_BE16(p);
+            p += 2;
+            if (hit(em, v))
+                break;
+            r = cmd_end_search(em, p, code, 3);
+            p = r;
+            if (r[1] == 2 || r[1] == 3) {
+                p += 2;
+                break;
+            }
+            p += 2;
+        }
+        break;
+    case 1:
+        p += 2;
+    case 2:
+        more = 1;
+        do {
+            p = cmd_end_search(em, p, code, 3);
+            if (p[0] == code && p[1] == 3)
+                more = 0;
+            p = next_cmd_search(em, p);
+        } while (more);
+        break;
+    case 3:
+        break;
+    }
+    return p;
+}
+
+/* the em_cmd level byte game_w+0x30 (MH2 offset; the C field x30 sits 2 later under VERSION_MH2) through the rank table */
+#define MH2_CMD_RANK() sub_main_func_003799A0(((u8 *)&game_w)[0x30])
+
+void game_func_007275D0(EMW *em) { em->x39A++; }
+/* 0x1F: posture x388 == 1 (0x08 tests 0, 0x09 tests 2) */
+MH2_COND(em_cmd_op1F, 0x1F, 0, em->x388 == 1)
+/* 0x36: as 0x22 with the 3D distance */
+MH2_COND(em_cmd_near_pos_ck_mh2_00729CE0, 0x36, 1, flvecCalcDistance(em->pos, em->tgt_pos) <= 100.0f * (f32)q[0])
+/* 0x37: bit 0x200000 of the word at quest_w+0x28 (meaning unknown) */
+MH2_COND(em_cmd_op37, 0x37, 0, *(s32 *)MH2V(0x00000000, 0x005D8288) & 0x200000)
+/* 0x72: sub_main 0x39E400() == 1 (0 offline, rt_mh2.c; guess: "online"): the PC is offline, never true */
+MH2_COND(game_func_007317C0, 0x72, 0, 0)
+/* 0x74: a count byte against x949 & 0x7F, online only (0x39E400); offline it is false and clears nothing. Online path not written. */
+MH2_COND(game_func_00731AF0, 0x74, 1, 0)
+/* 0x77: the form in use (main 0x18DA70) is 0. No operand (docs/mh2/em_cmd.md guessed one byte: next_cmd_search gives 2) */
+MH2_COND(game_func_0072F9C0, 0x77, 0, func_0018DA70() == 0)
+/* 0x78: angle to the target player inside two bytes; not written yet: false (guess) */
+MH2_COND(game_func_0072FC20, 0x78, 2, 0)
+/* 0x7C: the rank (0x3799A0 of game_w+0x30) is 9 or 10 */
+MH2_COND(game_func_0072FAF0, 0x7C, 0, (u16)(MH2_CMD_RANK() - 9) < 2)
+
+static int sel_none(EMW *em, int v) { (void)em; (void)v; return 0; }
+static int sel_rank(EMW *em, int v) { (void)em; return v == (u8)MH2_CMD_RANK(); }
+/* 0x73 (x949 & 0x7F), 0x75 (byte EMW+0x8AF), 0x79 (the kind's function table): not written yet; no entry runs (the else, if
+   any). Guess, until a monster needs them. 0x7A: select on the rank; 0x76: on main 0x18DA00. Selects match by equality (MH2's
+   0x73/0x75/0x76/0x7A are ordered like G's: same result while the entries are sorted). */
+u8 *em_cmd_op73(EMW *em, u8 *p) { return mh2_sel(em, p, 0x73, 3, sel_none); }
+u8 *game_func_0072A370(EMW *em, u8 *p) { return mh2_sel(em, p, 0x75, 3, sel_none); }
+/* main 0x18DA00: 0 / 1 / 2 by bits 0 / 1 of the byte at quest_w+0x549 (setter 0x18DA50(n): 1 << n; what it means is unknown) */
+static int func_0018DA00(void)
+{
+    u8 b = *(u8 *)MH2V(0x00000000, 0x005D87A9);
+    if (b & 1)
+        return 0;
+    return b & 2 ? 1 : 2;
+}
+static int sel_quest_bits(EMW *em, int v) { (void)em; return v == func_0018DA00(); }
+u8 *em_cmd_op76(EMW *em, u8 *p) { return mh2_sel(em, p, 0x76, 3, sel_quest_bits); }
+u8 *game_func_0072A760(EMW *em, u8 *p) { return mh2_sel(em, p, 0x7A, 3, sel_rank); }
+u8 *game_func_0072A970(EMW *em, u8 *p) { return mh2_sel(em, p, 0x79, 4, sel_none); }
+#endif
+
 void em_cmd_init(EMW *em) {
     em->cmd_idx = 0;
     em->x822 = 0;
@@ -59,8 +229,8 @@ void em_cmd_init(EMW *em) {
     em->x929 = -1;
     em->x92D = -1;
     em->x92C = -1;
-    em->x92F = 0xFF;
-    em->x92E = 0xFF;
+    em->x92F = EM_STG_NONE;
+    em->x92E = EM_STG_NONE;
     em->x854 = 0;
     em_atk_bit = 0;
     em->cmd_top = em->cmd_pc;
@@ -80,7 +250,11 @@ void em_cmd_ck(EMW *em) {
     u16 b;
     u8 *q;
 
+#ifdef VERSION_MH2
+    if (em->mode != 5 && em->mode != 6) {     /* MH2 (game 0x726380) skips mode 6 too */
+#else
     if (em->mode != 5) {
+#endif
         em->x8BD = 0;
         reset_flag_ck(em);
         if ((p = cancel_prog_ck(em)) == NULL) {
@@ -100,6 +274,10 @@ void em_cmd_ck(EMW *em) {
                 em_cmd_reset(em);
                 break;
             }
+#ifdef VERSION_MH2
+            if (p != NULL)
+                mh2_cmd_trace(em, p);
+#endif
             switch (*p) {                  /* irregular */
                 case 0x1:
                     p = em_cmd_kehai_ck(em, p + 1);
@@ -427,6 +605,10 @@ void em_cmd_ck(EMW *em) {
                     p = em_cmd_range_ck(em, p + 1);
                     break;
                 case 0x84:
+#ifdef VERSION_MH2
+                case 0x7B:
+                    game_func_007275D0(em);     /* MH2: 0x84 and 0x7B count in x39A */
+#endif
                     p += 1;
                     break;
                 case 0xFF:
@@ -459,6 +641,47 @@ void em_cmd_ck(EMW *em) {
                     break;
                 case 0x99:
                     p = game_func_0058DD00(em, p + 1);
+                    break;
+#endif
+#ifdef VERSION_MH2      /* MH2's new commands (game 0x726380; names as src/mh2/game/em_cmd_ck.c) */
+                case 0x1F:
+                    p = em_cmd_op1F(em, p + 1);
+                    break;
+                case 0x36:
+                    p = em_cmd_near_pos_ck_mh2_00729CE0(em, p + 1);
+                    break;
+                case 0x37:
+                    p = em_cmd_op37(em, p + 1);
+                    break;
+                case 0x72:
+                    p = game_func_007317C0(em, p + 1);
+                    break;
+                case 0x73:
+                    p = em_cmd_op73(em, p + 1);
+                    break;
+                case 0x74:
+                    p = game_func_00731AF0(em, p + 1);
+                    break;
+                case 0x75:
+                    p = game_func_0072A370(em, p + 1);
+                    break;
+                case 0x76:
+                    p = em_cmd_op76(em, p + 1);
+                    break;
+                case 0x77:
+                    p = game_func_0072F9C0(em, p + 1);
+                    break;
+                case 0x78:
+                    p = game_func_0072FC20(em, p + 1);
+                    break;
+                case 0x79:
+                    p = game_func_0072A970(em, p + 1);
+                    break;
+                case 0x7A:
+                    p = game_func_0072A760(em, p + 1);
+                    break;
+                case 0x7C:
+                    p = game_func_0072FAF0(em, p + 1);
                     break;
 #endif
                 default:
@@ -767,11 +990,22 @@ u8 *em_cmd_stage_no_ck(EMW *em, u8 *p) {
     var_a1 = p;
     switch (*var_a1++) {
     case 0:
+#ifdef VERSION_MH2      /* MH2 (game 0x7281A0): 2-byte stage, in its current form (0x379B20) */
+        {
+            u16 st = em->stg;
+            u16 w = sub_main_func_00379B20(CMD_BE16(var_a1));
+            var_a1 += 2;
+            if (st != w) {
+                CMD_SKIP(em, var_a1, 0xE);
+            }
+        }
+#else
         v = *var_a1;
         var_a1 += 1;
         if (em->stg != v) {
             CMD_SKIP(em, var_a1, 0xE);
         }
+#endif
         break;
     case 1:
         var_a1 = else_ck(em, var_a1, 0xE);
@@ -896,7 +1130,7 @@ u8 *em_cmd_pl_target_set(EMW *em, u8 *p) {
     em->x827 = 1;
     em->x828 = 0;
     if (em->x844 == -1) {
-        em->x829 = 0xFF;
+        em->x829 = EM_STG_NONE;
     } else {
         em->x829 = em->x844 & 0xF;
     }
@@ -980,7 +1214,16 @@ block_33:
     return var_s2;
 }
 
+#ifdef VERSION_MH2
+/* MH2 (game 0x728AD0): entries are 2-byte stages; one runs when its group (0x379AC0) is the monster's stage's group. Equality only,
+   every entry is tested (G stopped at the first larger value). Case 1 skips its 2-byte value. */
+static int sel_stage_group(EMW *em, int v) {
+    return sub_main_func_00379AC0(v) == sub_main_func_00379AC0(em->stg);
+}
+u8 *em_cmd_stage_no_sel(EMW *em, u8 *p) { return mh2_sel16(em, p, 0x15, sel_stage_group); }
+#else
 CMD_SEL_FUNC(em_cmd_stage_no_sel, 0x15, u8, u8, em->stg)
+#endif
 
 u8 *em_cmd_action_set(EMW *em, u8 *p) {
     em->x845 = *p;
@@ -1015,14 +1258,25 @@ u8 *em_cmd_area_route_move(EMW *em, u8 *p) {
         return p;
     }
     em->x84D = 1;
-    em->x92E = 0xFF;
+    em->x92E = EM_STG_NONE;
     for (;;) {
+#ifdef VERSION_MH2      /* MH2 (game 0x728D20): u16 route lists (0x8000 = a random pick), each stage in its current form (0x379B20) */
+        {
+            u16 w = ((u16 *)area_route_ptr_set(em, em->x846))[em->x92D];
+            if (w >= 0x8000) {
+                em->x92F = sub_main_func_00379B20(*(u16 *)area_route_rnd32(em, (u8 *)em->cmd_tbl[7][w & 0x7FFF]));
+            } else {
+                em->x92F = sub_main_func_00379B20(w);
+            }
+        }
+#else
         v = area_route_ptr_set(em, em->x846)[em->x92D];
         if (v >= 0x80) {
             em->x92F = *area_route_rnd32(em, (u8 *)em->cmd_tbl[7][v & 0x7F]);
         } else {
             em->x92F = v;
         }
+#endif
         if (em->x92F == em->stg) {
             em->x92D = em->x92D + 1;
             if (!(em->x92C > em->x92D)) {
@@ -1048,7 +1302,11 @@ u8 *em_cmd_area_route_move(EMW *em, u8 *p) {
 }
 
 u8 *em_cmd_area_route_ck(EMW *em, u8 *p) {
+#ifdef VERSION_MH2
+    u16 temp_v1;        /* MH2: x92F / x828 / x829 are u16 */
+#else
     u8 temp_v1;
+#endif
 
     EM_FIELD(em, s8 *, 0x827) = 3;
     temp_v1 = em->x92F;
@@ -1057,6 +1315,20 @@ u8 *em_cmd_area_route_ck(EMW *em, u8 *p) {
     return p;
 }
 
+#ifdef VERSION_MH2
+/* MH2 (game 0x728EA0): the target is a 2-byte stage in its current form (0x379B20). MH2 then walks up to 20 hops of u16
+   neighbour lists (game 0x7083B0 / 0x7084B0, allowed by 0x734260) to pick the next stage; that walk is not written yet: the
+   target itself is taken (a guess that only holds next to the target). */
+u8 *em_cmd_escape_area_set(EMW *em, u8 *p) {
+    u16 target = sub_main_func_00379B20(CMD_BE16(p));
+
+    em->x827 = 3;
+    em->x92F = target;
+    em->x829 = target;
+    em->x828 = target;
+    return p + 2;
+}
+#else
 u8 *em_cmd_escape_area_set(EMW *em, u8 *p) {
     f32 cur[3];
     f32 tgt[3];
@@ -1112,7 +1384,7 @@ u8 *em_cmd_escape_area_set(EMW *em, u8 *p) {
                     best = -1;
                     ang0 = Em_Calc_angY(cur, tgt);
                     for (i = 0; i < n; i++) {
-                        if (em->x92E != 0xFF && em->x92E == conn[i]) {
+                        if (em->x92E != EM_STG_NONE && em->x92E == conn[i]) {
                             continue;
                         }
                         ang[i] = Em_Calc_angY(cur, vec[i]);
@@ -1143,6 +1415,7 @@ u8 *em_cmd_escape_area_set(EMW *em, u8 *p) {
     em->x828 = v;
     return p + 1;
 }
+#endif
 
 u8 *em_cmd_mind_ck(EMW *em, u8 *p) {
     u8 *temp_v0;
@@ -1170,6 +1443,15 @@ u8 *em_cmd_mind_ck(EMW *em, u8 *p) {
     return var_a1;
 }
 
+#ifdef VERSION_MH2
+/* MH2 (game 0x729400): a different command under G's opcode: a select on hit points in percent (x302 * 100 / x792); the
+   first entry whose threshold byte is above the percent runs */
+static int sel_hp_below(EMW *em, int v) {
+    int pct = em->x792 != 0 ? (u8)(em->x302 * 100 / em->x792) : 0;
+    return pct < v;
+}
+u8 *em_cmd_mind_no_ck(EMW *em, u8 *p) { return mh2_sel(em, p, 0x1C, 3, sel_hp_below); }
+#else
 u8 *em_cmd_mind_no_ck(EMW *em, u8 *p) {
     u8 *temp_v0;
     u8 *var_a1;
@@ -1195,6 +1477,7 @@ u8 *em_cmd_mind_no_ck(EMW *em, u8 *p) {
     }
     return var_a1;
 }
+#endif
 
 CMD_SEL_FUNC(em_cmd_mind_sel, 0x1D, u8, u8, em->x88A)
 
@@ -1300,6 +1583,25 @@ u8 *em_cmd_near_pos_ck(EMW *em, u8 *p) {
     return q;
 }
 
+#ifdef VERSION_MH2
+/* MH2 (game 0x729E60): now a select: an entry (a kind) runs when a live monster of that kind's species (sub_main 0x3BC090:
+   hunt_group_tbl[kind][0]) is on this monster's stage; kind 74 means any live monster with EMW+0x966 set */
+extern char *hunt_group_tbl[];
+static int sel_species_here(EMW *em, int v) {
+    EMW *w = em_work;
+    int i;
+    for (i = 0; i < 20; i++, w++) {
+        if (w->be_flag == 0)
+            continue;
+        if (v == 74 ? w->x9E2 == 0 : hunt_group_tbl[w->kind][0] != hunt_group_tbl[(u8)v][0])
+            continue;
+        if (Pl_stg_ck_tw(em, (PLW *)w) & 0xFF)
+            return 1;
+    }
+    return 0;
+}
+u8 *em_cmd_emtype_ck(EMW *em, u8 *p) { return mh2_sel(em, p, 0x23, 3, sel_species_here); }
+#else
 u8 *em_cmd_emtype_ck(EMW *em, u8 *p) {
     u8 *q;
     s8 found;
@@ -1339,6 +1641,7 @@ u8 *em_cmd_emtype_ck(EMW *em, u8 *p) {
     }
     return q;
 }
+#endif
 
 u8 *em_cmd_repeat_cnt_set(EMW *em, u8 *p) {
     u8 *q;
@@ -1963,6 +2266,10 @@ u8 *em_cmd_boss_atk_ck(EMW *em, u8 *p) {
     return q;
 }
 
+#ifdef VERSION_MH2
+/* MH2 (game 0x72C300): 2-byte stage (0xFFFF: false), in its current form (0x379B20), against x92E (u16) */
+MH2_COND(em_cmd_before_stage_ck, 0x3D, 2, CMD_BE16(q) != 0xFFFF && em->x92E == sub_main_func_00379B20(CMD_BE16(q)))
+#else
 u8 *em_cmd_before_stage_ck(EMW *em, u8 *p) {
     u8 *q;
     u8 v;
@@ -2003,8 +2310,17 @@ u8 *em_cmd_before_stage_ck(EMW *em, u8 *p) {
     }
     return q;
 }
+#endif
 
+#ifdef VERSION_MH2
+/* MH2 (game 0x72C470): as 0x15 with 2-byte entries in their current form (0x379B20) against x92E; x92E 0xFFFF never matches */
+static int sel_before_stage(EMW *em, int v) {
+    return em->x92E != 0xFFFF && sub_main_func_00379B20(v) == em->x92E;
+}
+u8 *em_cmd_before_stage_sel(EMW *em, u8 *p) { return mh2_sel16(em, p, 0x3E, sel_before_stage); }
+#else
 CMD_SEL_FUNC_W(em_cmd_before_stage_sel, 0x3E, u8, u8, em->x92E)
+#endif
 
 /* Walks the area routes of this stage (g->pos) to the one that leads to stage `target` (0xFF: the nearest
  * route), then looks along its points for the first one that can be reached: a point whose hit_ck is set is
@@ -2024,7 +2340,11 @@ u8 *em_cmd_ground_area_move(EMW *em, u8 *p) {
     s16 i;
     f32 v1[3];
     s32 found;
+#ifdef VERSION_MH2
+    u16 target;
+#else
     u8 target;
+#endif
     s16 j;
     f32 best;
     u16 stage;
@@ -2032,7 +2352,12 @@ u8 *em_cmd_ground_area_move(EMW *em, u8 *p) {
     f32 v0[3];
 
     em->x8BE = 0;
+#ifdef VERSION_MH2      /* MH2 (game 0x72C610): the target is a 2-byte stage in its current form (0x379B20); the rest as G with u16 stages */
+    target = sub_main_func_00379B20(CMD_BE16(p));
+    p += 2;
+#else
     target = *p++;
+#endif
     EM_FIELD(em, u8 *, 0x9F0) = *p++;
     h = 10.0f * (f32)(u32)EM_FIELD(em, u8 *, 0x9F0);
 #ifndef __MWERKS__
@@ -2049,7 +2374,7 @@ u8 *em_cmd_ground_area_move(EMW *em, u8 *p) {
     }
     em->x73A = target;
     stage = em->x73A;
-    if (stage == 0xFF) {
+    if (stage == EM_STG_NONE) {
         best = -1.0f;
         for (i = 0; i < g->num; i++, wk++) {
             pt = wk->pt;
@@ -2361,7 +2686,7 @@ u8 *em_cmd_pl_land_target(EMW *em, u8 *p) {
     if (em->x844 == -1) {
         em->x827 = 1;
         em->x828 = 0;
-        em->x829 = 0xFF;
+        em->x829 = EM_STG_NONE;
     } else {
         em->x827 = 0xB;
         em->x828 = (u8) (em->x844 & 0xF);
@@ -2837,7 +3162,7 @@ u8 *em_cmd_boss_pl_target_set(EMW *em, u8 *p) {
     em->x827 = 1;
     em->x828 = 0;
     if (b == NULL) {
-        em->x829 = 0xFF;
+        em->x829 = EM_STG_NONE;
     } else {
         em->x829 = b->x617;
     }
@@ -3193,6 +3518,10 @@ u8 *em_cmd_dansa_sel(EMW *em, u8 *p) {
     return q;
 }
 
+#ifdef VERSION_MH2
+/* MH2 (game 0x72F8A0): takes a mask byte; passes when em->type & mask (G: x11 == 0, no operand) */
+MH2_COND(em_cmd_male_ck, 0x63, 1, (em->type & q[0]) != 0)
+#else
 u8 *em_cmd_male_ck(EMW *em, u8 *p) {
     u8 *temp_v0;
     u8 *var_a1;
@@ -3214,6 +3543,7 @@ u8 *em_cmd_male_ck(EMW *em, u8 *p) {
     }
     return var_a1;
 }
+#endif
 
 u8 *em_cmd_target_pl_hate_ck(EMW *em, u8 *p) {
     u8 *q;
@@ -3425,6 +3755,77 @@ u8 *em_cmd_sub_contents(EMW *em, u8 *p) {
     return p;
 }
 
+#ifdef VERSION_MH2
+u8 *em_cmd_target_set(EMW *em, u8 *p) {
+    em->x827 = *p;
+    switch (em->x827) {
+    case 0:
+        em->x827 = 0;
+        p++;
+        em->x828 = *p++;
+        em->x829 = *p++;
+        break;
+    case 1:
+        em->x827 = 1;
+        p++;
+        em->x828 = *p++;
+        em->x829 = *p++;
+        break;
+    case 2:
+    case 4:
+    case 5:
+    case 6:
+        p++;
+        em->x828 = *p++;
+        em->x829 = *p++;
+        break;
+    case 3:             /* MH2 (game 0x730540): a 2-byte stage, in its current form (0x379B20) */
+        p++;
+        em->x828 = *p++;
+        em->x829 = sub_main_func_00379B20(CMD_BE16(p));
+        p += 2;
+        em->x828 = em->x829;
+        em->x73A = em->x829;
+        em->x92F = EM_STG_NONE;
+        break;
+    case 10:
+        em->x827 = 3;
+        p++;
+        em->x828 = *p++;
+        em->x829 = *p++;
+        if (em->x844 == -1) {
+            em->x829 = em->stg & 0xFF;      /* MH2 reads the low byte (lbu) of both */
+        } else {
+            em->x829 = player_work[em->x844].stg & 0xFF;
+        }
+        em->x828 = em->x829;
+        em->x73A = em->x829;
+        em->x92F = EM_STG_NONE;
+        break;
+    case 13:            /* MH2: x829 = the first other live monster on this stage with EMW+0x966 set, 0xFFFF if none (guess:
+                           a monster targets a monster) */
+        p++;
+        em->x828 = *p++;
+        p++;
+        {
+            EMW *w = em_work;
+            int i;
+            for (i = 0; i < 20; i++, w++) {
+                if (w->be_flag != 0 && w->stg == em->stg && w != em && w->x9E2 != 0)
+                    break;
+            }
+            em->x829 = i < 20 ? i : 0xFFFF;
+        }
+        break;
+    default:
+        p++;
+        em->x828 = *p++;
+        em->x829 = *p++;
+        break;
+    }
+    return p;
+}
+#else
 u8 *em_cmd_target_set(EMW *em, u8 *p) {
     em->x827 = *p;
     switch (em->x827) {
@@ -3454,7 +3855,7 @@ u8 *em_cmd_target_set(EMW *em, u8 *p) {
         em->x829 = *p++;
         em->x828 = em->x829;
         em->x73A = em->x829;
-        em->x92F = 0xFF;
+        em->x92F = EM_STG_NONE;
         break;
     case 10:
         em->x827 = 3;
@@ -3468,7 +3869,7 @@ u8 *em_cmd_target_set(EMW *em, u8 *p) {
         }
         em->x828 = em->x829;
         em->x73A = em->x829;
-        em->x92F = 0xFF;
+        em->x92F = EM_STG_NONE;
         break;
     default:
         p++;
@@ -3478,6 +3879,7 @@ u8 *em_cmd_target_set(EMW *em, u8 *p) {
     }
     return p;
 }
+#endif
 
 u8 *em_cmd_range_ck(EMW *em, u8 *p) {
     f32 lim;
@@ -3887,6 +4289,9 @@ u8 *cmd_end_search(EMW *em, u8 *p, int a2, int a3) {
     return p;
 }
 
+#ifdef VERSION_MH2      /* MH2 (game 0x731DA0): its own lengths (2-byte stages, the new commands; docs/mh2/em_cmd.md) */
+#include "../../mh2/game/next_cmd_search.c"
+#else
 u8 *next_cmd_search(EMW *em, u8 *p) {
     u8 *temp_v1_10;
     u8 *temp_v1_16;
@@ -4644,6 +5049,7 @@ u8 *next_cmd_search(EMW *em, u8 *p) {
     }
     return var_a1;
 }
+#endif
 
 u8 *else_ck(EMW *em, u8 *p, int code) {
     int new_var;
@@ -4733,6 +5139,128 @@ void Em_Next_Stage_Pos(EMW *em) {
     em_area_move_init(em);
 }
 
+#ifdef VERSION_MH2
+/* MH2's st_mv_ptr_ck (game 0x7083B0): per kind (D_008BF320) a pointer per rank (game_w+0x30 byte, used as is), each a list of
+   {s32 key, rows} ended by key -1 or key == the byte EMW+0x964 (meaning unknown); the rows {u16 stage, pad, u16 *next} end at
+   stage 255 or the row whose group (0x379AC0) is the monster's stage's, at most 197. Returns that row's neighbour list (u16,
+   ended by 0xFFFF) or NULL. */
+extern s32 D_008BF320[];
+const unsigned char *rt_addr(unsigned int va, unsigned int n);     /* src/pc/rt/rt.h */
+unsigned int rt_va_of_host(const void *host);
+/* a pointer word of the image: a host pointer after the import, or still a PS2 address */
+static void *mh2_ptr(s32 w)
+{
+    if (w == 0)
+        return NULL;
+    if ((u32)w >= 0x02000000u && rt_va_of_host((const void *)(uintptr_t)(u32)w))
+        return (void *)(uintptr_t)(u32)w;
+    return (void *)rt_addr((u32)w, 4);
+}
+static s16 *mh2_st_mv_ptr_ck(EMW *em)
+{
+    s32 *t = mh2_ptr(D_008BF320[em->kind]);
+    s32 *e;
+    u8 *row;
+    s16 i;
+
+    if (t == NULL)
+        return NULL;
+    e = mh2_ptr(t[((u8 *)&game_w)[0x30]]);
+    if (e == NULL)
+        return NULL;
+    while (e[0] != -1 && e[0] != ((u8 *)em)[0x964])
+        e += 2;
+    row = mh2_ptr(e[1]);
+    if (row == NULL)
+        return NULL;
+    for (i = 0; i < 197; i++, row += 8) {
+        u16 st = *(u16 *)row;
+        if (st == 255 || sub_main_func_00379AC0(st) == sub_main_func_00379AC0(em->stg))
+            return mh2_ptr(*(s32 *)(row + 4));
+    }
+    return NULL;
+}
+
+/* MH2 (game 0x733430): G's with u16 neighbour lists and every stage in its current form (0x379B20) */
+void NextStage_No_Set(EMW *em) {
+    f32 cur[3];
+    f32 tgt[3];
+    f32 vec[8][3];
+    s16 ids[8];
+    u16 ang0;
+    u16 ang[8];
+    u16 diff[8];
+    s16 *conn;
+    EM_STG_BOX *b;
+    s32 i;
+    s32 n;
+    s32 ok;
+    s32 best;
+    u16 bestd = 0;
+
+    if (em->x92F == 0xFFFF) {
+        em->x92F = em->x73A & 0xFF;     /* (lbu: the low byte) */
+    }
+    conn = mh2_st_mv_ptr_ck(em);
+    ok = 0;
+    if (conn != NULL) {
+        for (i = 0; i < 8; i++) {
+            if ((u16)em->x73A == sub_main_func_00379B20(conn[i])) {
+                ok = 1;
+                break;
+            }
+            if (conn[i] == -1) {
+                break;
+            }
+        }
+    } else {
+        ok = 1;
+    }
+    if (ok) {
+        return;
+    }
+    b = (EM_STG_BOX *)Stage_data_get(em->stg);
+    cur[0] = b->x + b->w / 2.0f;
+    cur[2] = b->z + b->d / 2.0f;
+    b = (EM_STG_BOX *)Stage_data_get((u16)em->x73A);
+    tgt[0] = b->x + b->w / 2.0f;
+    tgt[2] = b->z + b->d / 2.0f;
+    n = 0;
+    for (i = 0; i < 8 && conn[i] != -1; i++) {
+        b = (EM_STG_BOX *)Stage_data_get(conn[i]);
+        ids[n] = conn[i];
+        vec[n][0] = b->x + b->w / 2.0f;
+        vec[n][2] = b->z + b->d / 2.0f;
+        n++;
+    }
+    if (n == 1) {
+        em->x73A = sub_main_func_00379B20(ids[0]);
+        return;
+    }
+    best = -1;
+    ang0 = Em_Calc_angY(cur, tgt);
+    for (i = 0; i < n; i++) {
+        if (em->x92E != 0xFFFF && em->x92E == sub_main_func_00379B20(conn[i])) {
+            continue;
+        }
+        ang[i] = Em_Calc_angY(cur, vec[i]);
+        diff[i] = ang[i] - ang0;
+        if (diff[i] >= 0x8001) {
+            diff[i] = 0x10000 - diff[i];
+        }
+        if (best == -1) {
+            bestd = diff[i];
+            best = i;
+        } else if (diff[i] < bestd) {
+            best = i;
+            bestd = diff[i];
+        }
+    }
+    if (best >= 0 && conn[best] != -1) {        /* (MH2 reads conn[-1] when every entry was skipped; the PC does not) */
+        em->x73A = sub_main_func_00379B20(conn[best]);
+    }
+}
+#else
 void NextStage_No_Set(EMW *em) {
     s8 ids[8];
     f32 cur[3];
@@ -4750,7 +5278,7 @@ void NextStage_No_Set(EMW *em) {
     u16 bestd;
     s8 id;
 
-    if (em->x92F == 0xFF) {
+    if (em->x92F == EM_STG_NONE) {
         em->x92F = em->x73A;
     }
     conn = st_mv_ptr_ck(em);
@@ -4807,7 +5335,7 @@ void NextStage_No_Set(EMW *em) {
         best = -1;
         ang0 = Em_Calc_angY(cur, tgt);
         for (i = 0; i < n; i = (s8)(i + 1)) {
-            if (em->x92E != 0xFF && em->x92E == conn[i]) {
+            if (em->x92E != EM_STG_NONE && em->x92E == conn[i]) {
                 continue;
             }
             ang[i] = Em_Calc_angY(cur, vec[i]);
@@ -4829,6 +5357,7 @@ void NextStage_No_Set(EMW *em) {
         }
     }
 }
+#endif
 
 #ifdef VERSION_MHG
 /* G (game 0x58F820, from the asm; PC only): the exit side is picked from the SIGNED offset of the next area's
@@ -4961,6 +5490,36 @@ void em_cdm_act_flag_ck(EMW *em) {
     }
 }
 
+#ifdef VERSION_MH2
+/* MH2 (game 0x733B10): a 6-byte header (u16 count at +4), 8-byte entries (weight byte at +4, then the u16 stage at +6);
+   returns the picked entry's stage (as G, a pointer the caller reads; here to a u16) */
+u8 *area_route_rnd32(EMW *em, u8 *a) {
+    u16 n = *(u16 *)(a + 4);
+    u16 i;
+    int cum = 0;
+    u16 rnd = em->x39A & 0x1F;
+    int w;
+
+    a += 6;
+    for (i = 0; i < n; i++) {
+        w = a[4];
+        a += 6;
+        if (w == 0) {
+            a += 2;
+            continue;
+        }
+        if ((u8)w == 0xFF) {
+            break;
+        }
+        cum = (cum + w) & 0xFF;
+        if (rnd < cum) {
+            break;
+        }
+        a += 2;
+    }
+    return a;
+}
+#else
 u8 *area_route_rnd32(EMW *em, u8 *a) {
     u8 n;
     u16 i;
@@ -4991,6 +5550,7 @@ u8 *area_route_rnd32(EMW *em, u8 *a) {
     }
     return a;
 }
+#endif
 
 u8 *set_cmd(EMW *em) {
     u8 f = em->x83B;
@@ -5199,8 +5759,8 @@ void reset_flag_ck(EMW *em) {
         em->x929 = -1;
         em->x92D = -1;
         em->x92C = -1;
-        em->x92F = 0xFF;
-        em->x92E = 0xFF;
+        em->x92F = EM_STG_NONE;
+        em->x92E = EM_STG_NONE;
         em->x854 = 0;
     }
 }

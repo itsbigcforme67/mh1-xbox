@@ -343,6 +343,54 @@ void em10_init(EMW *em) {
     u16 n;
     EM10W *w = (EM10W *)em->ex;
 
+#ifdef VERSION_MH2
+    /* MH2's own init (game 0x797F90; docs/mh2/monsters.md "Kind 10 in act 0"), written from our disassembly, not byte-checked:
+       no per-stage start points (the quest entry's position and angle stay and become the home point) and the pose is 1, so
+       act 0 hands over to the wander acts. The home point (0x688) and the byte G calls x88B (0x7DF) go by MH2 offset: the
+       generated header places home at 0x690 and x88B at 0x437 (both look wrong; not changed here). */
+    em->x40C = 0x63;
+    em->x40E = 0x63;
+    em->x2D4 = 0;
+    em->x6E0 = 0;
+    em->x6E2 = 0;
+    n = (u16)ran_suu(1) & 3;
+    em_act_set(em, 0, 0);
+    em->x2D4 = 1;
+    switch (em->x2D4) {
+    case 0:
+        em_char_set(em, 0, 0, 0);
+        break;
+    case 1:
+    case 2:
+        em_char_set(em, 1, 0, 0);
+        break;
+    }
+    ((f32 *)((u8 *)em + 0x688))[0] = em->pos[0];
+    ((f32 *)((u8 *)em + 0x688))[1] = em->pos[1];
+    ((f32 *)((u8 *)em + 0x688))[2] = em->pos[2];
+    em->x0E = em->ang[1];
+    em->x388 = 0;
+    em->work08 = 0;
+    if (n == 0xFF) {
+        em_act_set(em, 0, 1);
+        em_char_set(em, 2, 0, 0);
+    }
+    em->x302 = 200;
+    em->x792 = 200;
+    em->scale[0] = 1.0f;
+    em->scale[1] = 1.0f;
+    em->scale[2] = 1.0f;
+    em->x839 = 0;
+    *((u8 *)em + 0x7DF) = 1;
+    w->pos[0] = em->pos[0];
+    w->pos[1] = em->pos[1];
+    w->pos[2] = em->pos[2];
+    w->ang = em->ang[1];
+    w->x18 = 0;
+    w->x1A = 0;
+    em_dur_init(em);
+    return;
+#endif
     em->x40C = 0x63;
     em->x40E = 0x63;
     em->x2D4 = 0;

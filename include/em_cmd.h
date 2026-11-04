@@ -47,6 +47,17 @@ typedef struct EM_STG_BOX {
 #define EM_FIELD(p, T, o) (*(T)((u8 *)(p) + (o)))
 #endif
 
+/* "no stage" in the stage fields (x829, x92E, x92F): MH2 widened them to u16 (docs/mh2/em_cmd.md) */
+#define EM_STG_NONE MH2V(0xFF, 0xFFFF)
+
+#ifdef VERSION_MH2
+/* MH2's stage maps (src/mh2/sub_main/stage_map.c): the group a stage counts as, and the form of an area in use now */
+u16 sub_main_func_00379AC0(u16 s);
+u16 sub_main_func_00379B20(u16 s);
+/* a 2-byte stage in the program: big-endian, read byte by byte */
+#define CMD_BE16(q) ((u16)((q)[0] << 8 | (q)[1]))
+#endif
+
 /* Condition failed: skip to the matching else (mode 1) or end (mode 2) marker of command
  * CODE, then past it (and past a following end marker). q is the program pointer. */
 #define CMD_SKIP(em, q, code)                                      \

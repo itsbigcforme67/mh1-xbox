@@ -53,3 +53,19 @@ area_move_high_y_tbl = 0x008BF9C0; // size:0x31C noptr
 fishcam_ofs_tbl = 0x00000000; // size:0x31C
 mh2_fishcam_idx = 0x0041CCC0; // size:0xC7 noptr
 mh2_fishcam_rows = 0x0041C9F0; // size:0x258 noptr
+# The stage maps (src/mh2/sub_main/stage_map.c, sub_main 0x379A30-0x379B20, 0x3799A0; docs/mh2/em_cmd.md section 3), EMCMD round 6:
+# per-stage form class (s16) and the other form's stage (u16, 0xFFFF none), 200 entries each; the rank table read by 0x3799A0
+# (u16, 0xFFFF = the number itself; ends where map_stage_num starts); the form byte main 0x18DA70 reads (bss, 0 on the PC)
+D_00440E30 = 0x00440E30; // size:0x190 noptr
+D_00440FC0 = 0x00440FC0; // size:0x190 noptr
+D_0043ED80 = 0x0043ED80; // size:0x40 noptr
+D_005D4910 = 0x005D4910; // size:0x4 noptr
+# shell08 (fire / beams) attack data, EMCMD round 6: MH2's shell08 init (game 0x6CB310) calls 0x6CB2A0, which does what G's
+# shell08_i line does: pl_atck_data_set_shl(sh, em, (arg is 12 or 24 ? 0 : x07) + D_0089D930[arg], 0x89CFC0). Without these
+# the G code read zeros and the Rathian's first fireball crashed in pl_atck_data_set_shl2. A stand-in: the host runs G's
+# shell08 on MH2's tables; MH2 has more shell types (arg 24 at least; how many is not settled), so only G's 14 are imported.
+shell08_tbl = 0x0089CFC0; // size:0x4 allptr
+shell08_atk_no = 0x0089D930; // size:0x1C noptr
+# MH2's st_mv_ptr_ck (game 0x7083B0, em_cmd_nm.c's NextStage_No_Set for MH2): per kind a pointer to the per-rank neighbour lists,
+# EMCMD round 6; 74 kinds (as the other per-kind tables; the end is not checked)
+D_008BF320 = 0x008BF320; // size:0x128 allptr
