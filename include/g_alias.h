@@ -1,6 +1,10 @@
 /* Differences between the MH1 sources and PS2 Monster Hunter G that the shared C can express with a macro
- * (include first; empty for MH1, the MH1 PC build and the G PC build). Values come from check.py diffs against G.
+ * (include first; plain MH1 values for MH1, the MH1 PC build and the G PC build, except that the G PC online build (MHG_NET)
+ * gets G's GV values). Values come from check.py diffs against G.
  * MHG_PS2: the PS2 compiler building G (the G PC build keeps the MH1 values for things its runtime owns). */
+/* G_PART (874 files): defined only by the src/mhg/ ... _pN.c wrappers (tools/mhg_parts.py), never by the normal build, which
+ * compiles every function. `#if !defined(G_PART) || G_PART == N` keeps a function in G part N (one contiguous G run);
+ * `#if !defined(G_PART)` drops it from every part. */
 #ifndef G_ALIAS_H
 #define G_ALIAS_H
 #if defined(VERSION_MHG) && defined(__MWERKS__)

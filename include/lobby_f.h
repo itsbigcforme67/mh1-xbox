@@ -318,6 +318,7 @@ void Lb_cockpit_move();
 int Lb_check_pl_load();
 int add_prim();
 typedef struct BSCELL { u8 p[0x5C]; } BSCELL;   /* browser table-cell record (0x5C bytes): indexing an ARRAY of structs gives idx*size + base (addu order) */
+/* BSCn(T, b, i, d): field at offset d of element i of an array of n-byte records at b; written this way so the compiler emits the original address math */
 typedef struct BSCELL1 { u8 p[1]; } BSCELL1;
 #define BSC1(T, b, i, d) (*(T *)(((BSCELL1 *)((u8 *)(b) + (d)))[i].p))
 typedef struct BSCELL2 { u8 p[2]; } BSCELL2;

@@ -85,7 +85,7 @@ def make_ah():
         if m and not l.startswith(('#', 'typedef', 'extern')):
             out.append('%s%s();' % (m.group(1), m.group(2)))
         else: out.append(l)
-    t = '\n'.join(out).replace('#ifndef LOBBY_F_H\n#define LOBBY_F_H', '#ifndef LOBBY_A_H\n#define LOBBY_A_H\n/* generated from lobby.h by tools/lbauto.py: function prototypes replaced by K&R declarations */')
+    t = '\n'.join(out).replace('#ifndef LOBBY_F_H\n#define LOBBY_F_H', '#ifndef LOBBY_A_H\n#define LOBBY_A_H\n/* generated from lobby_f.h by tools/lbauto.py (overwritten on each run: edit lobby_f.h): function prototypes replaced by K&R declarations, which change how arguments are passed (a matching trick) */')
     open(os.path.join(ROOT, 'include/lobby_a.h'), 'w').write(t)
 make_ah()
 

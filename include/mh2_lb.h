@@ -4,7 +4,8 @@
 #define MH2_LB_H
 #include "version.h"
 extern char *bsBw;
-typedef struct PLM {           /* the fields of MH2's player work that lobby code uses; 0x970 bytes */
+typedef struct PLM {           /* the fields of MH2's player work that lobby code uses; 0x970 bytes. Offsets are MH2's already:
+                                  never MH2_OFS(plm, o), which would translate them twice (sizeof is 0x970, as for PLW) */
     u8 be_flag;
     u8 _01[0xB];
     u16 id;                    /* 0x0C */
@@ -27,7 +28,6 @@ typedef struct PLM {           /* the fields of MH2's player work that lobby cod
 #define BW8(o)  (*(u8 *)(bsBw + (o)))
 #define BW16(o) (*(u16 *)(bsBw + (o)))
 #define BW32(o) (*(s32 *)(bsBw + (o)))
-#define BW_FIRSTOPEN    BW8(0xE9C)
 #define BW_RETRYCTR     BW8(0xE9D)
 #define BW_MAINRET      (*(s8 *)(bsBw + 0xE98))
 #define BW_NETERROCCUR  BW8(0xE94)

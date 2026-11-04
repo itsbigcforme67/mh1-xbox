@@ -2,6 +2,9 @@
    disassembly. Kept apart because their jump tables need a data slot, which a part of em_core_g cannot have. em_core_g.c includes this for the PC.
    MH2's u16 fields x828 0x77A, x829 0x77C, x882 0x998, x883 0x99A, x92F 0x986 and x95A 0x98C come from include/mh2_emw.h (they went through a
    temporary union until STRUCTS fixed them, merge of 2-3 Nov 2026). */
+/* Built alone (src/mh2/game/cmd_target.c), em_core_g.h's prototypes of these two are renamed to *_ before the definitions;
+ * why is not recorded (commit be27c7b). The #else branch of src/game/em/em_core_g.c is the MH1/G form of the same two
+ * functions: check a fix in one against the other. */
 #ifndef EM_CORE_G_IN
 #define cmd_target_kind_set cmd_target_kind_set_
 #define target_kind_set target_kind_set_
@@ -9,14 +12,13 @@
 #undef cmd_target_kind_set
 #undef target_kind_set
 #endif
-#define HEAD(n) void n(EMW *em, f32 *pos) {
 
 extern EM_STG_POS D_008C1100;
 extern EMW em_work[];
 
 /* Target position for a commanded monster (x827 = target kind, x828/x829
  * its arguments). */
-HEAD(cmd_target_kind_set)
+void cmd_target_kind_set(EMW *em, f32 *pos) {
     EM_POSP p;
     STAGE_DATA *sd;
     EM_STG_POS *g;
@@ -339,7 +341,7 @@ HEAD(cmd_target_kind_set)
     em->x883 = em->x829;
 }
 
-HEAD(target_kind_set)
+void target_kind_set(EMW *em, f32 *pos) {
     EM_POSP p;
     STAGE_DATA *sd;
     EM_STG_POS *g;
@@ -642,4 +644,3 @@ HEAD(target_kind_set)
     em->x829 = em->x883;
 }
 
-#undef HEAD

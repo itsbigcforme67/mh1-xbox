@@ -118,7 +118,7 @@ typedef struct EMW {
     s16 blend1;         /* 0x2EE */
     u8 _pad2F0[0x300 - 0x2F0];
     u16 x300;           /* 0x300 number of animation layers (char0/act_tm0/blend0 are [0] of arrays) */
-    s16 x302;           /* 0x302 compared with 10% of x792 (hit points? guess) */
+    s16 x302;           /* 0x302 current hit points: 0 or less without dm_flag = dead, healed up to x792 (MH2 Em_Dmg_Sys, em_dmg_sys_nm.c) */
     u8 _pad304[0x308 - 0x304];
     EM_HAGI hagi[8];    /* 0x308 */
     u8 _pad348[0x34F - 0x348];
@@ -138,7 +138,7 @@ typedef struct EMW {
     s32 horm_ang;       /* 0x3A4 angle to turn toward (emNN_horm_init, em10 act 10) */
     u8 _pad3A8[0x3AC - 0x3A8];
     s32 x3AC;           /* 0x3AC cleared by em_eye_search_set */
-    struct PLW *x3B0;   /* 0x3B0 target player (em15 fly 33 / atk 2) */
+    struct PLW *x3B0;   /* 0x3B0 target player: &player_work[x617] (em_core_g_mh2.h cmd_target_kind_set; em15 fly 33 / atk 2) */
     f32 rate_x;         /* 0x3B4 rate/jump vector x (em10 act 2); with adj_y, adj_z it is a
                          * f32[3] (em19_rate_add_calc copies all three) */
     f32 adj_y;          /* 0x3B8 fly height correction per frame (fly_adjy2_suby) */
@@ -176,7 +176,7 @@ typedef struct EMW {
     u16 neck_ang;       /* 0x60E current neck angle */
     u8 _pad610[0x616 - 0x610];
     u8 x616;            /* 0x616 player number (em18 mov01 follows player_work[x616]) */
-    s8 x617;            /* 0x617 -1: no ... (em08_fly_act_set) */
+    s8 x617;            /* 0x617 target player index, -1 none (x3B0 = &player_work[x617]; em08_fly_act_set) */
     u8 _pad618[0x6E0 - 0x618];
     u16 x6E0;           /* 0x6E0 em10: item given in a trade */
     u16 x6E2;           /* 0x6E2 em10: item taken in a trade */
@@ -212,7 +212,7 @@ typedef struct EMW {
     s16 x780[4];        /* 0x780 */
     u8 x788[8];         /* 0x788 */
     u8 _pad790[0x792 - 0x790];
-    s16 x792;           /* 0x792 maximum of x302? (guess) */
+    s16 x792;           /* 0x792 maximum hit points (x302 is clamped to it in MH2 Em_Dmg_Sys) */
     s8 x794;            /* 0x794 */
     s8 x795;            /* 0x795 */
     u8 _pad796[0x797 - 0x796];
@@ -271,9 +271,9 @@ typedef struct EMW {
     u16 x822;           /* 0x822 (command interpreter state) */
     u16 x824;           /* 0x824 (command interpreter state) */
     u8 x826;            /* 0x826 (command interpreter state) */
-    u8 x827;            /* 0x827 */
-    u8 x828;            /* 0x828 */
-    u8 x829;            /* 0x829 em08_senkai_pos_no result */
+    u8 x827;            /* 0x827 commanded target kind (copied to x881 by cmd_target_kind_set) */
+    u8 x828;            /* 0x828 target kind argument 1 (copied to x882); u16 in MH2 (mh2_emw.h) */
+    u8 x829;            /* 0x829 target kind argument 2 (copied to x883); em08_senkai_pos_no result; u16 in MH2 */
     s8 x82A;            /* 0x82A (command interpreter state) */
     u8 x82B;            /* 0x82B (command interpreter state) */
     u8 * cmd_route;     /* 0x82C pc inside a route command */
@@ -319,7 +319,7 @@ typedef struct EMW {
     s8 x87F;            /* 0x87F (s8) non-zero: monster state checked in basic_com_ck */
     u8 _pad880[0x881 - 0x880];
     u8 x881;            /* 0x881 target kind, 0 none (1 and 7 seen; 0x934 = its position) */
-    u8 x882;            /* 0x882 */
+    u8 x882;            /* 0x882 copy of x828 (target kind argument 1) */
     u8 x883;            /* 0x883 index into x8C4, 0xFF none */
     s8 x884;            /* 0x884 state flags picking eft19's model */
     s8 x885;            /* 0x885 */
