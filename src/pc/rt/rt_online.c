@@ -191,7 +191,7 @@ void rt_online_enter(void)
         extern u8 em_work[];
         void clr_set_work(void);
         void prim_init(void);
-        memset(em_work, 0, 0xA10 * 20);
+        memset(em_work, 0, EMW_STRIDE * 20);
         clr_set_work();
         prim_init();
     }
@@ -269,7 +269,7 @@ static void town_chat(void)
     }
     if ((e = getenv("RT_LB_WARP")) != NULL) {     /* test aid "tick,x,z[,ang];...": the hunter there at that town tick */
         extern u8 player_work[];
-        u8 *p = player_work + 0xA00 * (game_w[GWX(0xD1)] & 7);
+        u8 *p = player_work + PLW_STRIDE * (game_w[GWX(0xD1)] & 7);
         while (e && *e) {
             int t = 0, a = -1;
             float x, z;
@@ -450,7 +450,7 @@ int rt_online_tick(void)
                     extern u8 em_work[];
                     int k;
                     for (k = 0; k < 20; k++) {
-                        u8 *e = em_work + 0xA10 * k;
+                        u8 *e = em_work + EMW_STRIDE * k;
                         if (e[0] && e[0x1E])
                             fprintf(stderr, "online: stage %d npc slot %d kind %d type %d talk %d pos %.0f %.0f %.0f\n", game_w[0x14],
                                     k, e[2], e[0x1B], e[0x452], *(float *)(e + 0xAC), *(float *)(e + 0xB0), *(float *)(e + 0xB4));
@@ -526,7 +526,7 @@ int rt_online_tick(void)
             extern u8 player_work[];
             int i;
             for (i = 0; i < 8; i++) {
-                u8 *p = player_work + 0xA00 * i;
+                u8 *p = player_work + PLW_STRIDE * i;
                 if (p[0])
                     fprintf(stderr, "online: tick %d slot %d%s \"%.16s\" stage %d pos %.0f %.0f %.0f%s\n", ticks, i,
                             i == game_w[GWX(0xD1)] ? " (me)" : "", (char *)p + 0x8D4, p[0x736], *(float *)(p + 0xAC),
@@ -732,7 +732,7 @@ int rt_online_visible(int slot)
 {
     extern u8 player_work[];
     int Lb_Pl_stg_ck(void *pl);
-    u8 *p = player_work + 0xA00 * (slot & 7);
+    u8 *p = player_work + PLW_STRIDE * (slot & 7);
     return active && phase == O_LOBBY && slot != game_w[GWX(0xD1)] && p[0] && Lb_Pl_stg_ck(p);
 }
 

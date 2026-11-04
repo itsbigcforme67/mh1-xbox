@@ -829,7 +829,7 @@ static void em_poke(u8 *em)
         const char *at = strchr(p, '@'), *end = strchr(p, ';');
         if (at && (!end || at < end))
             t = atoi(at + 1);
-        if (sscanf(p, "%i:%i:%i:%i", &k, &off, &v, &sz) >= 3 && k == PU8(em, 2) && off > 0 && off < 0xA10
+        if (sscanf(p, "%i:%i:%i:%i", &k, &off, &v, &sz) >= 3 && k == PU8(em, 2) && off > 0 && off < EMW_STRIDE
             && (t < 0 || t == rt_tick_count())) {
             if (sz == 4)
                 PS32(em, off) = (s32)v;

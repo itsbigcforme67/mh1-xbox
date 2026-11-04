@@ -44,9 +44,9 @@ extern u16 Rnd_w[2];
 #define QW_SIZE 0x190
 #define UD_SIZE 0x480
 #endif
-#define EM_STRIDE 0xA10         /* the PC's em_work stride (MH1's; G's PS2 has 0xA00, em.h) */
+#define EM_STRIDE EMW_STRIDE    /* the PC's em_work stride (include/version.h: MH1 / G on the PC 0xA10, MH2 0x9D0) */
 #define EM_N 20
-#define PLW_SIZE 0xA00
+#define PLW_SIZE PLW_STRIDE
 
 static FILE *out;
 static int on, started, ptick, rawtick, cur_play;

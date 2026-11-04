@@ -730,9 +730,9 @@ void rt_np_init_slots(void)
         extern u8 em_work[];
         int k;
         for (k = 0; k < 20; k++)
-            if (em_work[0xA10 * k]) {
-                em_work[0xA10 * k + 0x8C3] = (u8)me;
-                em_work[0xA10 * k + 0x88E] = 0;
+            if (em_work[EMW_STRIDE * k]) {
+                em_work[EMW_STRIDE * k + 0x8C3] = (u8)me;
+                em_work[EMW_STRIDE * k + 0x88E] = 0;
             }
     }
     if (rt_mcs_on())
@@ -983,7 +983,7 @@ void rt_np_tick(void)
             static s16 last_hp[20];
             static u8 last_kind[20];
             for (s = 0; s < 20; s++) {
-                u8 *e = em_work + 0xA10 * s;
+                u8 *e = em_work + EMW_STRIDE * s;
                 s16 hp = *(s16 *)(e + 0x302);
                 if (!e[0] || e[2] == 0 || e[0x9E2] == 0) {
                     last_kind[s] = 0;
@@ -1004,7 +1004,7 @@ void rt_np_tick(void)
         if (getenv("RT_NP_EM") && rt_online && k % atoi(getenv("RT_NP_EM")) == 0) {   /* test aid: the monsters as this machine has them */
             extern u8 em_work[];
             for (s = 0; s < 20; s++) {
-                u8 *e = em_work + 0xA10 * s;
+                u8 *e = em_work + EMW_STRIDE * s;
                 if (!e[0] || e[2] == 0)
                     continue;
                 fprintf(stderr, "np-em: tick %d me %d em %d kind %d stg %d hp %d owner %d net %d act %d/%d pos %.0f %.0f master %d\n", k,

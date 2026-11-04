@@ -11,6 +11,12 @@
  * Shift fast, Esc quit. Docs: docs/pc.md.
  */
 #include "../../include/gwx.h"
+#ifdef VERSION_MH2      /* an MH1 offset into an em_work entry, as MH2's 0x9D0-byte EMW has it (include/mh2_ofs.h) */
+#include "../../include/mh2_ofs.h"
+#define EMO(o) MH2_OFS_EMW(o)
+#else
+#define EMO(o) (o)
+#endif
 #include "fl/fl.h"
 #include "rt/rt.h"
 #include "pad/pad.h"
@@ -1996,12 +2002,12 @@ static void sim_tick(void)
         int k;
         for (k = 0; k < 8; k++) {
             unsigned char *w = player_work + 0xA00 * k;
-            if (w[0] && (game_w[0x2E] == 1 || w[0x7EC]))
+            if (w[0] && (game_w[0x2E] == 1 || w[EMO(0x7EC)]))
                 HitWallPlayer(w, 1);
         }
         for (k = 0; k < 20; k++) {
-            unsigned char *w = em_work + 0xA10 * k;
-            if (w[0] && w[0x7EC])
+            unsigned char *w = em_work + EMW_STRIDE * k;
+            if (w[0] && w[EMO(0x7EC)])
                 HitWallPlayer(w, 1);
         }
     }
@@ -2206,14 +2212,14 @@ static void em_slot_sync(int i, int draw, const fl_light *L)
     extern uint8_t em_work[];
     flmat (*jw)[128] = em_jw;
     int j, nb;
-    uint8_t *em = em_work + 0xA10 * i;
+    uint8_t *em = em_work + EMW_STRIDE * i;
     monster *m;
     flmat w;
     float s[3], r[3], t[3];
     int kind = em[2];
     if (!em[0] || em[0x1E] || kind <= 0 || kind >= EM_KINDS || !em_have[kind])
         return;
-    if (em[0x736] != (uint8_t)rt_game_stage())
+    if (em[EMO(0x736)] != (uint8_t)rt_game_stage())
         return;
     m = &em_mdl[kind];
     {   /* mlCalcTransEM's neck turn (rt_em.c) */
@@ -2241,14 +2247,14 @@ static void em_slot_sync(int i, int draw, const fl_light *L)
                 break;
         if (b < nb)
             printf("emdraw t%d slot %d kind %d mot %d frame %.1f pos %.1f %.1f body %.1f %.1f %.1f\n", rt_log_tick(), i,
-                   kind, ((uint16_t *)(em + 0x2DC))[0], *(float *)(em + 0x19C), t[0], t[2], jw[i][b][12],
+                   kind, ((uint16_t *)(em + EMO(0x2DC)))[0], *(float *)(em + EMO(0x19C)), t[0], t[2], jw[i][b][12],
                    jw[i][b][13], jw[i][b][14]);
     }
     static float (*hmax)[1200], (*lmin)[1200];     /* RT_POSE_CHECK, per kind and motion: allocated for the test aid only (375 KB) */
     if (getenv("RT_POSE_CHECK") && rt_monster_motion_ready(i) && (hmax || (hmax = calloc(80, sizeof *hmax)))) {
         lmin = hmax + 40;
         /* test aid: highest joint above the monster's feet per kind (tools/test_activities.py herbivore_pose) */
-        int mo = ((uint16_t *)(em + 0x2DC))[0] % 1200;
+        int mo = ((uint16_t *)(em + EMO(0x2DC)))[0] % 1200;
         float hh = 0;
         for (j = 0; j < nb; j++)
             if (jw[i][j][13] - t[1] > hh)
@@ -2310,7 +2316,7 @@ static void em_pose_now(int i)
     void rt_actor_nodes_fill_one(void *work);
     extern uint8_t em_work[];
     em_slot_sync(i, 0, NULL);
-    rt_actor_nodes_fill_one(em_work + 0xA10 * i);
+    rt_actor_nodes_fill_one(em_work + EMW_STRIDE * i);
 }
 
 /* Village NPC models (npc_create_model -> here): slot = NPC kind. */
@@ -2360,7 +2366,7 @@ static void host_models_gc(void)
         if (!em_have[k])
             continue;
         for (i = 0; i < 20; i++) {
-            const uint8_t *em = em_work + 0xA10 * i;
+            const uint8_t *em = em_work + EMW_STRIDE * i;
             if (em[0] && !em[0x1E] && em[2] == k)
                 break;
         }
@@ -2400,8 +2406,8 @@ static void host_models_gc(void)
         if (!npc_have[k])
             continue;
         for (i = 0; i < 20; i++) {
-            const uint8_t *em = em_work + 0xA10 * i;
-            if (em[0] && em[0x1E] && em[0x34F] == k)
+            const uint8_t *em = em_work + EMW_STRIDE * i;
+            if (em[0] && em[0x1E] && em[EMO(0x34F)] == k)
                 break;
         }
         if (i < 20)
@@ -2424,12 +2430,12 @@ static void npc_draw(const fl_light *L)
     int i, k;
     (void)L;                    /* each NPC gets its own (light_for) */
     for (i = 0; i < 20; i++) {
-        uint8_t *em = em_work + 0xA10 * i;
+        uint8_t *em = em_work + EMW_STRIDE * i;
         monster *m;
         flmat w;
         float s[3], r[3], t[3];
-        int kind = em[0x34F];
-        if (!em[0] || !em[0x1E] || !em[1] || em[0x736] != (uint8_t)rt_game_stage() || kind > 3 || !npc_have[kind])
+        int kind = em[EMO(0x34F)];
+        if (!em[0] || !em[0x1E] || !em[1] || em[EMO(0x736)] != (uint8_t)rt_game_stage() || kind > 3 || !npc_have[kind])
             continue;
         m = &npc_mdl[kind];
         rt_monster_pose(i, &m->skel);
@@ -2442,11 +2448,11 @@ static void npc_draw(const fl_light *L)
             if (b < m->skel.skel.nbone) {
                 float bp[3] = { m->skel.world[b][12], m->skel.world[b][13], m->skel.world[b][14] };
                 printf("npcdraw t%d slot %d kind %d mot %d pos %.1f %.1f local %.1f %.1f %.1f\n", rt_log_tick(), i, kind,
-                       ((uint16_t *)(em + 0x2DC))[0], *(float *)(em + 0xAC), *(float *)(em + 0xB4), bp[0], bp[1], bp[2]);
+                       ((uint16_t *)(em + EMO(0x2DC)))[0], *(float *)(em + 0xAC), *(float *)(em + 0xB4), bp[0], bp[1], bp[2]);
             }
         }
         for (k = 0; k < m->model.npart; k++)    /* villagers: only their own parts are drawn, so only those are skinned */
-            m->model.part[k].skip = kind == 0 && (k >= 0x20 || !em[0x4E6 + k]) && !getenv("RT_POSE_ALL");
+            m->model.part[k].skip = kind == 0 && (k >= 0x20 || !em[EMO(0x4E6) + k]) && !getenv("RT_POSE_ALL");
         memcpy(s, em + 0xB8, sizeof s);
         r[0] = 0;
         r[1] = (float)(*(int32_t *)(em + 0xA4) & 0xFFFF) * (6.2831853f / 65536.0f);
@@ -2460,7 +2466,7 @@ static void npc_draw(const fl_light *L)
         }
         gfx_set_render_state(GFX_RS_WORLD, (uintptr_t)w);
         for (k = 0; k < m->model.npart; k++) {
-            if (kind == 0 && (k >= 0x20 || !em[0x4E6 + k]))
+            if (kind == 0 && (k >= 0x20 || !em[EMO(0x4E6) + k]))
                 continue;
             PICK_FN(PK_NPC, i, kind, k, 0, 0, &m->skel, 0);
             rt_clay_attr_set(part_attr(&m->model, k));
@@ -2640,6 +2646,15 @@ static void village_step(void)
         quest_back();
         return;
     }
+#ifdef VERSION_MH2
+    {   /* MH2's village (its lobby.bin, Local_main) is not ported: the G-form lobby C reads G's absolute addresses
+         * (Lb_set_mini_data crashed on 0x3F34C1). The quest is over and the screen stays dark (rt_flow_mode 6) */
+        static int said;
+        if (!said++)
+            rt_log("village: not ported on MH2; the quest is over (RT_NO_VILLAGE=1 restarts it)");
+        return;
+    }
+#endif
 #ifdef MH1_ONLINE
     if (rt_np_session_end() >= 0)   /* co-op over: the hunter saved, single player again */
         lp = 0;
@@ -2907,8 +2922,8 @@ static void gal_scene_tick(void)
         rt_monster_tick(k);
     bgm_server();
     for (k = 0; k < 20; k++) {
-        uint8_t *w = em_work + 0xA10 * k;
-        if (w[0] && w[0x7EC])
+        uint8_t *w = em_work + EMW_STRIDE * k;
+        if (w[0] && w[EMO(0x7EC)])
             HitWallPlayer(w, 1);
     }
     rt_cam_demo_tick();
@@ -3920,7 +3935,7 @@ mh2_boot:
                 int a, k;
                 rt_player_get(lp, p, &a);
                 for (k = 0; k < 20; k++)
-                    es += ((float *)(em_work + 0xA10 * k + 0xAC))[0] + ((float *)(em_work + 0xA10 * k + 0xAC))[2];
+                    es += ((float *)(em_work + EMW_STRIDE * k + 0xAC))[0] + ((float *)(em_work + EMW_STRIDE * k + 0xAC))[2];
                 fprintf(stderr, "T %d m%d st%d pl %.2f %.2f %.2f %04X em %.2f\n", ticks, rt_flow_mode(),
                         rt_game_stage(), p[0], p[1], p[2], a & 0xFFFF, es);
             }
@@ -4021,7 +4036,7 @@ mh2_boot:
                 int kd = 0, j;
                 sscanf(ce + 1, "%d,%f,%f,%f,%f", &kd, &d, &hh, &yw, &pit);
                 for (j = 0; j < 20; j++)
-                    if (em_work[0xA10 * j] && em_work[0xA10 * j + 2] == kd && em_work[0xA10 * j + 0x736] == (uint8_t)rt_game_stage()) {
+                    if (em_work[EMW_STRIDE * j] && em_work[EMW_STRIDE * j + 2] == kd && em_work[EMW_STRIDE * j + 0x736] == (uint8_t)rt_game_stage()) {
                         sl = j;
                         break;
                     }
@@ -4032,7 +4047,7 @@ mh2_boot:
             if (on_tail) {
                 extern uint8_t em_work[];
                 float tp[3], ty;
-                if (rt_em_cut_tail(em_work + 0xA10 * sl, tp, &ty))
+                if (rt_em_cut_tail(em_work + EMW_STRIDE * sl, tp, &ty))
                     memcpy(p, tp, sizeof tp);
             }
             cam[0] = p[0] + sinf(yw) * d;

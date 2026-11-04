@@ -85,3 +85,60 @@ smell_ck: MH2's takes the monster only; G's host copy gets G's 0x23.
    data_map.txt's candidates (0x4485B0, 0x41CCC0, 0x4416D0) are 0x10 / 0xD0 / 0x10-byte labels, not 199-entry tables: not used.
    Not done.
 5. MH2's Em_Taisei_Ck (0x724AB0), the level / size rolls, MH2-only kinds' mains and inits.
+
+# Round 5 (HOST, 3 Nov 2026)
+
+Host side only; from our own disassembly; seen in hidden runs. Not byte-checked.
+
+## Monster motions play
+
+MH2's create_pl_motion / create_em_motion (f_frame.c, MOT_PL 710 / MOT_EM 1910) put the handles at 710 + 300n and 1910 + 600n
+(MH2's frame_init, sub_main 0x2E5190, adds 710 / 1910; it is not carried). f_frameb.c's frame_init read MH1's 500 / 1700: the
+monster's layers got handle 0, end 0, and em_frame_check never let it leave its first act (round 4 Next 1). The PC now has MH2
+frame_init / frame_init_b in src/pc/rt/rt_motion.c (f_frameb.c's renamed away for MH2 by tools/build_pc.sh) and
+motion_set_handle_tbl at MH2's size (0x4360, to em_mot_han_ofs 0x5DE3E0). **For SHARED:** the shared fix is the two constants in
+f_frameb.c under VERSION_MH2 (then the host copy can go).
+
+    RT_MH2_EM=1 RT_MH2_EM_HERE=1 RT_STEP=1 RT_QUEST_TRACE=1 build/mh2/pc/mhview_2 disc/mh2 --quest 1014 --input "idle*30,up*120" --time 30 --shot x.png
+
+The Rathian goes act 0 -> 16 -> 22 -> 1, rises to y 1703, flies from (1500, 1500) to (5109, 5109), lands, turns (ang 19924 ->
+8192 -> 512), takes off again (trace lines `em_move 0 kind 1 ...`); RT_EM_DRAW_TRACE shows motion 1018 posed with the body at y
+1062. Not seen on screen (the camera looks away from where it flies). Kind 10 animates (motion 1001) but stays in act 0. On its
+own stage (120, without RT_MH2_EM_HERE) the Rathian stays in act 1: the hunter is not there.
+
+## Both quest ends finish
+
+- hunt_group_tbl is sub_main 0x44C800, 74 pointers (lists of a species' kinds, each starting with the kind): read by the helpers
+  0x3BBBC0-0x3BC090. data_map.txt's 0x44C860 is its kind-24 entry. em_base_size 0x44C930 (74 floats). config/mh2/pc_data.txt.
+- MH2's result screen is not G's result_prog: game5 (0x3274F0) calls plsel 0xD683C0, a 26-step state machine over plsel's own
+  screens. **Not ported.** A host stand-in (rt_mh2_quest.c result_prog) waits 30 ticks and leaves as 0xD683C0's last step does
+  (mode 6, step 0, all_reset); no rewards, records, kill counts or clear bits are written.
+- MH2's village is not ported: mode 6 stays dark (viewer.c village_step), the run ends at --time.
+- `RT_QUEST_TIME=200 ... --input "idle*30" --time 40`: result at tick 758, mode 6 at 789, exit 0 (also with RT_MH2_EM=1).
+  `RT_MH2_TARGET=0@100 ... --time 110`: cleared, result at 2,403, mode 6 at 2,434, exit 0.
+
+## Per-stage tables (199 stages)
+
+Found by their readers in MH2's code:
+- stage_fog_set 0x3788F0: no per-stage table; stage 0x56 takes the block 0x4485C0, stage 0 (and any stage without an environment
+  block) 0x4485B0, else stage_work+0x50. Host C in rt_mh2.c; putspr2.c's renamed away for MH2.
+- stage_set_set 0x378A30 (p00378A30.c): fixed sun (5000 x3, lines 0, colours 0xFFFFFF): the sun_pos / st_sun_tb / st_sun_rgba
+  rows all point at that block (rt_mh2.c), host arrays 199 rows.
+- area_move_high_y_tbl: game 0x8BF9C0, f32 per stage (game 0x7333D0: EMW+0x680 << 2), up to st05_land_pos 0x8BFCE0.
+- fishcam_ofs_tbl: MH2's fish_cam_sub (0x31D7F0) keeps a byte per stage (0x41CCC0, 0xFF none) indexing 24-byte rows (0x41C9F0);
+  the host's per-stage pointers are built from them. MH2's per-index field of view (0x41CC50) is not used (G's stays).
+- Not done: St_unique_tbl (lobby only), pl_light_tbl2 (MH2 has none; rt_mh2.c's lights already), stg_eft_mdl_no /
+  stage_sphr_tbl (rt_data.c imports them from addr.txt's mapping of MH1 addresses, 0x441170 / 0x449BB0, unchecked; now 199 rows).
+
+## Host strides
+
+rt.h includes include/version.h: the host uses EMW_STRIDE / PLW_STRIDE / ITEM_ROW (0xA10 / 0xA00 hard-coded before; rt_pl.c's
+and rt_dbg.c's own copies are gone). viewer.c reads em_work by MH2 offsets through EMO() (stage 0x736, motion 0x2DC, model
+0x34F, ...). Other host em_work offsets (rt_em.c, rt_player.c, rt_pick.c ...) are still MH1's on MH2.
+
+## Next
+
+1. The Rathian on screen: put the hunter where it lands, or the camera on it; then its hits on the hunter.
+2. MH2's result screen (plsel 0xD683C0) and the village.
+3. Kind 10 in act 0 (its family's G main may not fit MH2's kind 10).
+4. Host em_work offsets outside viewer.c (rt_em.c rt_em_materials, rt_player.c test aids) through MH2_OFS_EMW.

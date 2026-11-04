@@ -125,6 +125,7 @@ static void em_prog_fix(void)
             fprintf(stderr, "rt_mh2: em_prog_tbl[%d]: G's %s / %s stand in\n", k, a, b);
     }
 }
+static void sun_fixed(void);
 static void gm_sub_ptrs(void)
 {
     static const char *const nm[] = { "ground_tbl_add", "wall_tbl_add", "shadow_tbl_add", "diffuse_tbl_add", "light_tbl_add" };
@@ -150,6 +151,7 @@ int rt_mh2_quest_start(int no)
     int i, st;
     size_t n;
     gm_sub_ptrs();
+    sun_fixed();
     rt_quest_mem_init();
     if (!mib_fn || (n = mib_fn(no, mission_area, 0x40000)) < 0x74) {
         rt_warn("MH2 quest %d: no mission file", no);
@@ -417,5 +419,52 @@ void em_cmd_init(u8 *em)
     EH2(0x77A) = EH2(0x77C) = 0;
     EB2(0x997) = 0;
     EH2(0x998) = EH2(0x99A) = 0;
+}
+
+/* ------------------------------------------------ fog and sun (sub_main 0x3788F0, 0x378A30)
+ * stage_fog_set 0x3788F0: stage 0x56 takes the fog block at 0x4485C0, stage 0 the default 0x4485B0, any other stage the stage file's
+ * environment block (stage_work+0x50) while stage_work+0x4D is set, else the default. Blocks: f32 near, f32 far, colour bytes
+ * r g b a at +8 (default 2000 / 4000, grey). MH2 has no per-stage fog table: putspr2.c's copy read stage_fog_tbl[stage] past the
+ * host array's 92 entries; it is renamed away for MH2 (tools/build_pc.sh). mh2_fog_blocks: config/mh2/pc_data.txt. */
+extern u8 mh2_fog_blocks[0x20];
+void flSetRenderState();
+void stage_fog_set(int n)     /* (u8 n; f_game.h declares it without a prototype) */
+{
+    const u8 *f;
+    n &= 0xFF;
+    if (n == 0x56)
+        f = mh2_fog_blocks + 0x10;
+    else if (n != 0 && SW[0x4D])
+        f = SW + 0x50;
+    else
+        f = mh2_fog_blocks;
+    flSetRenderState(0xF, (f[0xB] << 24) | (f[8] << 16) | (f[9] << 8) | f[0xA]);
+    flSetRenderState(0x10, *(const u32 *)f);
+    flSetRenderState(0x11, *(const u32 *)(f + 4));
+}
+
+/* MH2's stage_set_set (0x378A30, src/mh2/sub_main/p00378A30.c, matched) gives the sun fixed values where G read sun_pos_tbl /
+ * st_sun_tb_tbl / st_sun_rgba_tbl by stage: position (5000, 5000, 5000), lines 0 / 0, eight colours 0xFFFFFF. The PC runs G's
+ * stage_set.c, so every stage's row of the three tables points at that one block (199 stages; the host arrays are sized for
+ * them: rt_data.c RT_NSTG, config/mh2/pc_data.txt). Called once the data is imported (rt_mh2_quest_start). */
+extern f32 *sun_pos_tbl[];
+extern u8 st_sun_tb_tbl[], st_sun_rgba_tbl[], fishcam_ofs_tbl[], mh2_fishcam_idx[], mh2_fishcam_rows[];
+static void sun_fixed(void)     /* and the fishing camera's table (below) */
+{
+    static f32 pos[3] = { 5000.0f, 5000.0f, 5000.0f };
+    static s16 tb[2];
+    static u32 col[8] = { 0xFFFFFF, 0xFFFFFF, 0xFFFFFF, 0xFFFFFF, 0xFFFFFF, 0xFFFFFF, 0xFFFFFF, 0xFFFFFF };
+    int i;
+    for (i = 0; i < 199; i++) {
+        sun_pos_tbl[i] = pos;
+        ((s16 **)st_sun_tb_tbl)[i] = tb;
+        ((u32 **)st_sun_rgba_tbl)[i] = col;
+    }
+    /* fish_cam_sub (sub_main 0x31D7F0, MH2's): a byte per stage at 0x41CCC0 (0xFF: no fishing camera) indexes 24-byte rows at
+     * 0x41C9F0 ({eye offset, target offset}, as G's fishcam_ofs_tbl[stage] points at) and a float per index at 0x41CC50 (the
+     * field of view; G picks it by stage in cam_plEX_fishing: not ported, G's choice stays). camc.c reads G's pointer per stage:
+     * built here from MH2's two tables. The import had read the byte table as pointer words. */
+    for (i = 0; i < 199; i++)
+        ((f32 **)fishcam_ofs_tbl)[i] = mh2_fishcam_idx[i] < 25 ? (f32 *)(mh2_fishcam_rows + 24 * mh2_fishcam_idx[i]) : NULL;
 }
 #endif

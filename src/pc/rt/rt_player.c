@@ -188,7 +188,7 @@ static int target_kind(const char *s)
     for (q = s + 1; q; q = strchr(q, ',') ? strchr(q, ',') + 1 : NULL) {
         int k = atoi(q);
         for (i = 0; i < 20; i++) {
-            u8 *e = em_work + 0xA10 * i;
+            u8 *e = em_work + EMW_STRIDE * i;
             if (e[0] && e[2] == k && *(s16 *)(e + 0x302) > 0)
                 return k;
         }
@@ -207,7 +207,7 @@ int rt_test_target(void)
         int pass, none = 0;
         for (pass = 0; pass < 2 && best < 0; pass++) {      /* living first, then a dead one still lying there (carving) */
             for (i = 0; i < 20; i++) {
-                u8 *e = em_work + 0xA10 * i;
+                u8 *e = em_work + EMW_STRIDE * i;
                 float dx, dz, d;
                 int alive = *(s16 *)(e + 0x302) > 0;
                 if (!e[0] || e[2] != kind || e[0x736] != p->stg || alive != (pass == 0))
@@ -223,7 +223,7 @@ int rt_test_target(void)
         }
         if (best < 0) {     /* none on this stage: an unused slot, so WARP_EM / DMG_MUL / AIM do nothing */
             for (i = 0; i < 20; i++)
-                if (!em_work[0xA10 * i]) {
+                if (!em_work[EMW_STRIDE * i]) {
                     none = i;
                     break;
                 }
@@ -250,7 +250,7 @@ void rt_player_tick(int no)
         extern u8 em_work[];
         static int dead_t = -1;
         int n = atoi(getenv("RT_PL_CARVE")), t = aid_tick();
-        u8 *e = em_work + 0xA10 * rt_test_target();
+        u8 *e = em_work + EMW_STRIDE * rt_test_target();
         if (n < 4)
             n = 4;
         if (e[0] && *(s16 *)(e + 0x302) > 0) {
@@ -269,7 +269,7 @@ void rt_player_tick(int no)
         extern u8 em_work[];
         u16 Em_Calc_angY(f32 *a, f32 *b);
         PLW *p = &player_work[no];
-        u8 *tg = em_work + 0xA10 * rt_test_target();
+        u8 *tg = em_work + EMW_STRIDE * rt_test_target();
         if (tg[0] && (p->flag14 == 0 || p->flag14 == 1) && (p->flag15 == 0 || p->flag15 == 2 || p->flag15 == 3 || p->flag15 == 4))
             p->ang[1] = Em_Calc_angY(p->pos, (f32 *)(tg + 0xAC));
     }
@@ -300,7 +300,7 @@ void rt_player_tick(int no)
         int hit_data_expand(void *chr, void *body, f32 *cap, f32 *sph);
         u16 Em_Calc_angY(f32 *a, f32 *b);
         const char *s = getenv("RT_PL_WARP_EM");
-        u8 *tg = em_work + 0xA10 * (rt_dbg.warp_em_slot >= 0 ? rt_dbg.warp_em_slot : rt_test_target());
+        u8 *tg = em_work + EMW_STRIDE * (rt_dbg.warp_em_slot >= 0 ? rt_dbg.warp_em_slot : rt_test_target());
         int hit = rt_dbg.warp_em_slot >= 0;
         rt_dbg.warp_em_slot = -1;
         tk = aid_tick();
@@ -485,7 +485,7 @@ void rt_player_tick(int no)
             u8 *rt_actor_nodes(const void *work, int *max);
             PLW *p = &player_work[no];
             for (i = 0; i < 20; i++) {
-                u8 *em = em_work + 0xA10 * i;
+                u8 *em = em_work + EMW_STRIDE * i;
                 const f32 *q = em_ride_data[7], *sc = (const f32 *)(em + 0xB8);
                 int max, k, j;
                 u8 *nodes;
@@ -521,7 +521,7 @@ void rt_player_tick(int no)
         int goto2_active = 0;
         sscanf(getenv("RT_PL_GOTO"), "%d,%d", &t0, &goal);
         extern u8 em_work[];
-        u8 *tgt = em_work + 0xA10 * rt_test_target();
+        u8 *tgt = em_work + EMW_STRIDE * rt_test_target();
         if (getenv("RT_PL_GOTO2") && !(getenv("RT_PL_CARVE") && tgt[0] && *(s16 *)(tgt + 0x302) <= 0)) {
                                             /* "tick,stage;tick,stage;...": from each tick on the goal is that stage (egg trips to the nest and the camp);
                                                a stage of -1 hands back to RT_PL_GOTO (e.g. "tick,f": follow the monster again).
@@ -548,7 +548,7 @@ void rt_player_tick(int no)
             int kind = target_kind(getenv("RT_PL_TARGET")), i;
             goal = -1;
             for (i = 0; i < 20 && goal < 0; i++) {
-                u8 *e = em_work + 0xA10 * i;
+                u8 *e = em_work + EMW_STRIDE * i;
                 if (e[0] && e[2] == kind && *(s16 *)(e + 0x302) > 0 && e[0x736] < 0x60)
                     goal = e[0x736];
             }
@@ -573,7 +573,7 @@ void rt_player_tick(int no)
             if (n && tk >= t0 && p->stg == goal && tt && tt[0] == 'k') {
                 int alive = 0, kind = atoi(tt + 1);
                 for (i = 0; i < 20; i++) {
-                    u8 *e = em_work + 0xA10 * i;
+                    u8 *e = em_work + EMW_STRIDE * i;
                     if (e[0] && e[2] == kind && e[0x736] == p->stg && *(s16 *)(e + 0x302) > 0)
                         alive++;
                 }
@@ -923,14 +923,14 @@ void rt_actor_joints(const void *chr, const float *mats, int n);
 extern u8 em_work[];
 void rt_monster_joints(int no, const float *world, int n)
 {
-    rt_actor_joints(em_work + 0xA10 * no, world, n);
+    rt_actor_joints(em_work + EMW_STRIDE * no, world, n);
 }
 
 void hit_check(void);
 void rt_hit_check(void)
 {
     static int tr = -1;
-    u8 *e = em_work + 0xA10 * rt_test_target();
+    u8 *e = em_work + EMW_STRIDE * rt_test_target();
     hit_check();
     if (getenv("RT_PL_SLAY")) {     /* test aid "tick[,kind]": from that player tick on, the living monsters of that kind (default: the
                                        RT_PL_TARGET one) take a lethal hit each tick, as if hit_check had found one: a boss that
@@ -945,9 +945,9 @@ void rt_hit_check(void)
             kind = 0;
         if (rt_tick_count() == t || ((rt_tick_count() - t) % 1000 == 0 && rt_tick_count() > t && getenv("RT_SLAY_DEBUG")))
             fprintf(stderr, "rt_player: RT_PL_SLAY armed at tick %d: target slot %d (kind %d, hp %d, stage %d, hunter stage %d)\n", rt_tick_count(),
-                    (int)((e - em_work) / 0xA10), e[2], *(s16 *)(e + 0x302), e[0x736], player_work[game_w.master].stg);
+                    (int)((e - em_work) / EMW_STRIDE), e[2], *(s16 *)(e + 0x302), e[0x736], player_work[game_w.master].stg);
         for (i = 0; i < 20 && rt_tick_count() >= t && (rt_tick_count() - t) % 120 == 0; i++) {   /* every 120 ticks: a hit every tick keeps a reacting monster in its flinch (the Plesioth in fly18 sets x8BB, which floors hp at 1) */
-            u8 *tg = em_work + 0xA10 * i;
+            u8 *tg = em_work + EMW_STRIDE * i;
             int match = 0, k;
             for (k = 0; k < nk; k++)
                 match |= tg[2] == kinds[k];

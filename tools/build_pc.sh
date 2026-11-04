@@ -707,6 +707,12 @@ for f in $GAME; do
         src/main/quest/f_quest.c|src/main/quest/f_quest_nm.c)   # MH2: its own judging 0x3A2E30 (src/pc/rt/rt_mh2_quest.c);
             # Quest_em_init_set 0x3A2030 / Quest_next_em_set 0x3A4370 (src/pc/rt/rt_mh2_em.c: G's scan the model slots at G's game_w+0x28)
             [ "$VERSION" = mh2 ] && ABI="$ABI -DQuest_condition_judging=g_Quest_condition_judging -DQuest_em_init_set=g_Quest_em_init_set -DQuest_next_em_set=g_Quest_next_em_set" ;;
+        src/main/sprite/putspr2.c)    # MH2: stage_fog_set 0x3788F0 has no per-stage table (src/pc/rt/rt_mh2.c)
+            [ "$VERSION" = mh2 ] && ABI="$ABI -Dstage_fog_set=g_stage_fog_set" ;;
+        src/main/frame/f_frameb.c)    # MH2: frame_init / frame_init_b with MH2's handle regions are the host's (src/pc/rt/rt_motion.c)
+            [ "$VERSION" = mh2 ] && ABI="$ABI -Dframe_init=g_frame_init -Dframe_init_b=g_frame_init_b" ;;
+        src/main/reward/f_reward_g.c)    # MH2: its result screen is plsel 0xD683C0, a host stand-in for now (src/pc/rt/rt_mh2_quest.c)
+            [ "$VERSION" = mh2 ] && ABI="$ABI -Dresult_prog=g_result_prog" ;;
         esac
     case "$f" in src/main/item/item_nm.c) ABI="-Dinit_item_work=ps2_init_item_work -Dclr_item_work=ps2_clr_item_work -Dmove_item=ps2_move_item -Ditem_check=ps2_item_check -Dpush_item_work=ps2_push_item_work" ;; src/main/tu/sk_all.c) ABI="-DSoftKeyboard_set=sk_real_set -DSoftKeyboard_move=sk_real_move -DSoftKeyboard_exit=sk_real_exit" ;; esac
     cc_obj_p "$b" "$CC $INC $GAMEFLAGS $ABI $SYS -c $src -o $o"

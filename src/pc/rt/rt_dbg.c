@@ -37,14 +37,8 @@ const char *rt_afs_name(int idx);           /* viewer.c: the AFS entry's file na
 int rt_village_active(void);
 int rt_flow_mode(void);
 
-#ifdef VERSION_MH2
-#define PLW_SIZE 0x970      /* MH2's player_work and em_work strides (include/version.h PLW_STRIDE on mh2-shared; mh2_ofs.h sizes) */
-#define EMW_SIZE 0x9D0
-#else
-#define PLW_SIZE 0xA00
-#define EMW_SIZE 0xA10
-#endif
-static u8 *master(void) { return player_work + PLW_SIZE * (game_w[GWX(0xD1)] < 10 ? game_w[GWX(0xD1)] : 0); }
+/* player_work / em_work strides: include/version.h PLW_STRIDE, EMW_STRIDE (MH2 0x970 / 0x9D0) */
+static u8 *master(void) { return player_work + PLW_STRIDE * (game_w[GWX(0xD1)] < 10 ? game_w[GWX(0xD1)] : 0); }
 static s16 quest_no_now(void) { return *(s16 *)(quest_w + 8); }
 
 /* ------------------------------------------------------------ hits (each quest tick, after hit_check) */
@@ -53,7 +47,7 @@ void rt_dbg_hits(void)
     int i, k;
     u8 *pl = master();
     for (i = 0; i < 20; i++) {
-        u8 *e = em_work + EMW_SIZE * i;
+        u8 *e = em_work + EMW_STRIDE * i;
         if (!e[0] || *(s16 *)(e + 0x302) <= 0)
             continue;
         if (rt_dbg.kill_req)
@@ -326,11 +320,6 @@ void rt_dbg_area_warp(int stage, const float dest[4])
 /* ------------------------------------------------------------ items */
 extern char *item_str[];
 extern u8 Item_data[];
-#ifdef VERSION_MHG
-#define ITEM_ROW 20
-#else
-#define ITEM_ROW 16
-#endif
 int rt_dbg_item_count(void)
 {
     int a = (int)(rt_table_size("item_str") / 4), b = (int)(rt_table_size("Item_data") / ITEM_ROW);
@@ -516,7 +505,7 @@ void rt_dbg_monsters_hp(int pct)
 {
     int i;
     for (i = 0; i < 20; i++) {
-        u8 *e = em_work + EMW_SIZE * i;
+        u8 *e = em_work + EMW_STRIDE * i;
         int full = *(s16 *)(e + 0x792), v;
         if (!em_live_here(e))
             continue;
@@ -531,7 +520,7 @@ int rt_dbg_monster_slot(void)
 {
     int i, best = -1, bhp = 0;
     for (i = 0; i < 20; i++) {
-        u8 *e = em_work + EMW_SIZE * i;
+        u8 *e = em_work + EMW_STRIDE * i;
         int full = *(s16 *)(e + 0x792);
         if (!em_live_here(e))
             continue;
@@ -557,7 +546,7 @@ int rt_dbg_volumes(rt_dbg_vol *out, int max)
     if (rt_village_active())
         return 0;
     for (i = 0; i < 20 && n < max; i++) {
-        u8 *e = em_work + EMW_SIZE * i;
+        u8 *e = em_work + EMW_STRIDE * i;
         if (!e[0] || e[0x736] != master()[0x736] || !em_body_tbl[e[2]])
             continue;
         for (b = em_body_tbl[e[2]]; *(s16 *)b != -1 && n < max; b += 0x28) {
@@ -578,7 +567,7 @@ int rt_dbg_volumes(rt_dbg_vol *out, int max)
         if (!sh[0] || sh[0xB] != 2 || !*(u8 **)(sh + 0x88))
             continue;
         for (b = *(u8 **)(sh + 0x88); *(s16 *)b != -1 && n < max; b += 0x28) {
-            int k = hit_data_expand(player_work + PLW_SIZE * sh[0xA], b, cap, sph);
+            int k = hit_data_expand(player_work + PLW_STRIDE * sh[0xA], b, cap, sph);
             out[n].kind = 1;
             if (k == 0 && sph[3] > 0) {
                 memcpy(out[n].a, sph, 12);

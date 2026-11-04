@@ -53,7 +53,7 @@ void rt_motion_em_release(void);
 /* what all_reset clears of the world (the village entry; the debug menu's quest start / title) */
 void rt_world_reset(void)
 {
-    memset(em_work, 0, 0xA10 * 20);     /* the quest's monsters are gone (all_reset) */
+    memset(em_work, 0, EMW_STRIDE * 20);     /* the quest's monsters are gone (all_reset) */
     rt_motion_em_release();             /* and their motions (all_reset -> em_motion_free; rt_motion.c) */
     clr_set_work();                     /* and the quest stage's set objects (all_reset -> clr_stg_work) */
     {   /* and every effect and shell (all_reset -> init_move_work): a quest's shell kept moving in the village, reading
@@ -160,9 +160,9 @@ void rt_village_enter(void)
                     snprintf((char *)User_data + 8, 0x10, "%s", getenv("RT_NAME"));
                 if (!User_data[0] && User_data[8])  /* "slot in use", as user_data_copy sets it at character creation: without it a */
                     User_data[0] = 1;               /* bed save of the test hunter loads as "no character data" (CardConld03) */
-                Set_userdata(player_work + 0xA00 * game_w[GWX(0xD1)]);
+                Set_userdata(player_work + PLW_STRIDE * game_w[GWX(0xD1)]);
                 if (getenv("RT_QUEST_TRACE"))
-                    fprintf(stderr, "rt_village: hunter name '%s' (save: '%s')\n", (char *)(player_work + 0xA00 * game_w[GWX(0xD1)] + 0x8D4), (char *)User_data + 8);
+                    fprintf(stderr, "rt_village: hunter name '%s' (save: '%s')\n", (char *)(player_work + PLW_STRIDE * game_w[GWX(0xD1)] + 0x8D4), (char *)User_data + 8);
             }
             if ((q = getenv("RT_WARE")))
                 for (k = 0; k < 64 && sscanf(q, "%i:%i%n", &n, &id, &used) == 2; k++) {
@@ -218,7 +218,7 @@ static void village_accept(int q)
         extern u8 lbCommer[];
         void Lb_set_mini_data();
         int a = game_w[GWX(0xD1)], v = (u8)(Lb_get_quest_type(qq) | 0x40);
-        player_work[0xA00 * a + 0x916] = (u8)v;
+        player_work[PLW_STRIDE * a + 0x916] = (u8)v;
         Lb_set_mini_data(cw + a * 0x2FC + 0x1346, v, a);
         memcpy(lbCommer + a * 0x5C + 0x1C, cw + a * 0x2FC + 0x1346, 0x40);
     }
@@ -274,7 +274,7 @@ int rt_village_tick(void)
         u8 *dm = CameraWork + 4 * 0x100 + 0x80;     /* slot 4's demo work (G) */
         float e[3], t[3], ro, fv;
         rt_cam_view(e, t, &ro, &fv);
-        float *m = (float *)(player_work + 0x60 + 0xA00 * game_w[GWX(0xD1)]);
+        float *m = (float *)(player_work + 0x60 + PLW_STRIDE * game_w[GWX(0xD1)]);
         fprintf(stderr, "vcam: tick %d eye %.0f %.0f %.0f tar %.0f %.0f %.0f roll %.3f fov %.3f | demo no %d st %d pos %d tar %d move %d x66 %d\n", tick, e[0], e[1], e[2], t[0], t[1], t[2], ro, fv,
                 dm[0x4E], (s8)dm[0x4F], dm[0x49], dm[0x4A], dm[0x48], dm[0x66]);(void)m;
         {
@@ -335,7 +335,7 @@ int rt_village_tick(void)
     if (getenv("RT_VILLAGE_TRACE") && tick % 90 == 60) {   /* the stage's NPCs: slot, model kind, type, talk kind, position */
         int i;
         for (i = 0; i < 20; i++) {
-            u8 *e = em_work + 0xA10 * i;
+            u8 *e = em_work + EMW_STRIDE * i;
             if (e[0] && e[0x1E])
                 fprintf(stderr, "rt_village:   npc slot %d kind %d type %d talk %d act %d/%d pos %.0f %.0f %.0f\n", i, e[2], e[0x1B],
                         e[0x452], e[0x14], e[0x15], *(float *)(e + 0xAC), *(float *)(e + 0xB0), *(float *)(e + 0xB4));
@@ -360,7 +360,7 @@ int rt_village_tick(void)
                 *(s32 *)lb_pit, *(void **)(lb_pit + 4), (s8)lb_pit[8], (s8)lb_pit[9], (s8)lb_pit[0xB]);
     }
     if (getenv("RT_FH_TRACE") && (tick % 10 == 0 || getenv("RT_FH_EVERY"))) {      /* the area record under the hunter (player+0x878): kind at +2 */
-        u8 *pl = player_work + 0xA00 * game_w[GWX(0xD1)];
+        u8 *pl = player_work + PLW_STRIDE * game_w[GWX(0xD1)];
         u8 *fh = *(u8 **)(pl + 0x878);
         fprintf(stderr, "rt_village: tick %d fh %p kind %d pos %.0f %.0f\n", tick, (void *)fh, fh ? *(u16 *)(fh + 2) : -1,
                 *(float *)(pl + 0xAC), *(float *)(pl + 0xB4));
@@ -380,7 +380,7 @@ int rt_village_tick(void)
         if (0) {
             int i;
             for (i = 0; i < 20; i++) {
-                u8 *e = em_work + 0xA10 * i;
+                u8 *e = em_work + EMW_STRIDE * i;
                 if (e[0] && e[0x1E])
                     fprintf(stderr, "rt_village:   npc slot %d kind %d type %d talk %d pos %.0f %.0f %.0f\n", i, e[2], e[0x1B],
                             e[0x452], *(float *)(e + 0xAC), *(float *)(e + 0xB0), *(float *)(e + 0xB4));

@@ -14,6 +14,7 @@
 #include <stddef.h>
 #include <stdint.h>
 #include "../gfx/gfx.h"
+#include "../../../include/version.h"  /* EMW_STRIDE, PLW_STRIDE, ITEM_ROW per game version */
 
 /* ------------------------------------------------------------ game version
  * (rt_ver.c, docs/mhg.md): MH1 JP or Monster Hunter G (VERSION=mhg build). */
