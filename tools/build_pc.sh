@@ -98,6 +98,8 @@ QUEST="src/main/evdemo/evdemo.c src/main/quest/f_quest_nm.c src/game/tuto/tutori
        src/main/reward/f_rewardc.c src/main/reward/f_reward4.c src/main/reward/f_rewardd.c \
        src/main/ud/ud_nm.c src/main/font/disp2_nm.c src/main/font/disp1_nm.c"
 EM="$EM src/game/em/em01_ai_nm.c src/game/em/em_cmd_nm.c"
+# MH2: the stage maps the command scripts use (sub_main 0x379A30-0x379B20, docs/mh2/em_cmd.md)
+[ "$VERSION" = mh2 ] && EM="$EM src/mh2/sub_main/stage_map.c"
 # G's quest result module (G rewrote result_prog and the screens around it): f_reward_g.c replaces MH1's first three reward files
 [ -n "$GFORM" ] && QUEST=$(echo " $QUEST " | sed 's# src/main/reward/f_reward.c # #; s# src/main/reward/f_reward2.c # #; s# src/main/reward/f_reward3.c # #')" src/main/reward/f_reward_g.c"
 # More monster families (round 20): the AI draft (emNN_ai_nm.c or the
