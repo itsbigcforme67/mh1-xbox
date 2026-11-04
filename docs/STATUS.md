@@ -16,9 +16,9 @@ named for each.
   this log). Village and all 98 offline quests on the PC; installed on the real Xbox and runs the village at 30 game frames a
   second (29 Oct). English: 47% official text on 15 Oct; the source order (Freedom first) was decided on 28 Oct
   (docs/DECISIONS.md).
-- **MH2 / Dos.** Main and all 12 overlays rebuild byte-identical (13 of 13, tools/mh2_check.py). 2,319 functions, 6.99%
-  matched (4 Nov, round 5 below). On the PC, `--quest 1014` runs MH2's own quest flow: the hunter walks, the Rathian
-  animates and flies with RT_MH2_EM=1, and both quest end paths finish (the result screen and village are stand-ins).
+- **MH2 / Dos.** Main and all 12 overlays rebuild byte-identical (13 of 13, tools/mh2_check.py). 2,319 functions, 7.00%
+  matched (4 Nov, round 6 below). On the PC, `--quest 1014` runs MH2's own quest flow: the hunter walks, the Rathian
+  runs its own command scripts with RT_MH2_EM=1, and both quest end paths finish (the result screen and village are stand-ins).
   Stage 120 starts. Xbox not tried.
 - **Gap in this log:** there are no entries for 16-28 Oct 2026. Decisions of those days are in docs/DECISIONS.md; agent
   hand-overs of 23-29 Oct are in docs/agents/COORDINATOR.md ("Current assignments").
@@ -1208,3 +1208,27 @@ Next: the monster command scripts (em_cmd) on stage 120 hang: MH2's opcodes 0x0E
 stage maps (tables 0x440E30 / 0x440FC0 to import); get the Rathian on screen and test its hits; MH2's result screen and
 village; MH2's CameraWork; kind 10 stuck in act 0; the remaining host em_work offsets. Reports: docs/mh2/shared5.md,
 docs/mh2/host.md.
+
+## 4 Nov 2026: round 6 (GFIX for G + EMCMD for MH Dos), plus MH1 English
+
+Two agents, merged into main, full check 47 of 47, carry register, mh2_rebuild, mh2_check 13 of 13, hidden muted PC runs
+(walk, monsters, monster next to the hunter, time-up, clear, stage 120, stage 120 with monsters), all exit 0. 6.99% to 7.00%.
+- GFIX (G, notes in docs/mhg_mh1_logic.md): G's skill ids for health 33-35 / 57-59, sharpness 0x41 / 0x42, heat and cold
+  (44, ticks 156 / 157 / 154), poison 55 / 56, guarding 169 / 79, attention 38 / 39, anti-theft 42 with G's 9-item list,
+  170, 83. Subspecies kinds 35-50 use their base kind's materials (kind 36's own case not ported). G's 11-row camp table.
+  The forge box list (linked copy is lb_by154.c) shows the whole box. Failed combine gives 0x7A; whole map with the Map skill
+  or item 506. Quest end: clock zero by quest_w+0x40 bit 0x2000, G's join line, clear camera by species. Zero-table section
+  4 lines. Seen in hidden runs: HP 110/120/130/90/70, heat ticks 60/45/180, camp return equal on all 98 offline quests, map
+  reveal, clear camera 22 on 10033 / 10038; test_all_quests_g 100 of 100, test_gvillage 16 of 16. Built, not seen in a run:
+  monster map marks, the combine screen, the forge list past 64, subspecies part breaks.
+- EMCMD (MH Dos, docs/mh2/em_cmd.md section 5): MH2's em_cmd on the PC: next_cmd_search, 2-byte stages (0xFFFF = none),
+  stage maps as byte-matched C (src/mh2/sub_main/stage_map.c), MH2's 0x03 / 0x06 / 0x0E / 0x15 / 0x18 / 0x19 / 0x1A / 0x1C /
+  0x23 / 0x3D-0x3F / 0x61 / 0x63, new opcodes, MH2's NextStage_No_Set. The stage 120 hang is gone: the Rathian runs 68
+  commands in 30 s (fireball, take-off, flies to 113, lands, walks). Kind 10 wanders (MH2's em10_init). Stand-ins: some new
+  opcodes always false, G's shell08 code on MH2 tables.
+- MH1 English from MH1's own JP + US discs (`./mh1 ... --english US.iso`, tools/make_english.sh), no G disc needed.
+- Research: docs/mh2/shell_route.md (MH2 shell08 with 25 types, ground routes by stage group, EMW offset fixes, a height
+  byte written over x9E8).
+
+Next: round 7 from docs/mh2/shell_route.md (header fixes and gp_ck first, then the route handlers, then shell08); G's
+boss_icon_color, Pit_mv's Select mask, the em10 trade step. Open for the owner: the route angle +0x4000 in G (docs/REVIEW.md).

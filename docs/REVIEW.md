@@ -1188,3 +1188,9 @@ Both games unless marked.
 - Dropped in G builds: the `cw` write before Combine; G sets the flag back after a page only when it was clear, and sets lb_sys + 0x94 then.
 - The 20 online pages are now G's m2c drafts (src/lobby/gonl/gen). MH1's stay for the MH1 build. Drafts, not compared with anything.
 
+
+## Question: G route angle +0x4000 (4 Nov 2026, not changed yet)
+- em_cmd_nm.c's 0xFF case 4 adds 0x4000 (a quarter turn) to the route angle it stores. MH1's asm does this; G's and MH2's
+  asm don't (docs/mh2/shell_route.md section 2). So on the PC, G monsters walking a ground route may face a quarter turn
+  off from the PS2 game. Fixing it changes how G plays on the PC, so it waits for your OK. **Fix:** guard the +0x4000 with
+  `#ifndef VERSION_MHG` (G and MH2 both define VERSION_MHG).
