@@ -6,6 +6,7 @@
 #   ./mh1 xbox    DISC [--out DIR] [--online] [--setup]     original Xbox: XBE + data folder  -> dist/xbox/MH1/  (G: dist/xbox/MHG/)
 #                                                           (--online: also the online XBE -> dist/xbox/MH1-online/default.xbe)
 #   ./mh1 check   DISC                                      only check the disc
+#   (Monster Hunter 1)      --english US_DISC               also make the English text table from your own US disc
 #
 # DISC is your own disc image of the JAPANESE Monster Hunter (SLPM-65495) or Monster Hunter G (SLPM-65869) for the
 # PlayStation 2; the game is detected from the disc. The .iso file,
@@ -16,6 +17,9 @@
 #
 #   --out DIR   another output folder        --online   also build the online / co-op version (mhview_online)
 #   --setup     download missing build tools (Windows cross-compiler, 32-bit Linux libraries) when that is possible
+#   --english US_DISC   (Monster Hunter 1) make the English table from your own US Monster Hunter (SLUS-20896) and put it
+#               next to the game (text/en.txt; about 3 minutes). Without it, a table made before (build/text/en_mh1.txt)
+#               is put there; with none the game is in Japanese.
 #   MH1_JOBS=N  compile N files at a time (default: the number of cores)
 # Player guide: docs/PLAYING.md
 set -e
@@ -26,10 +30,11 @@ die() { echo "mh1: $*" >&2; exit 1; }
 say() { echo "== $*"; }
 
 TARGET=$1; [ $# -gt 0 ] && shift
-DISC=""; OUT=""; OUT_GIVEN=""; ONLINE_BUILD=""; SETUP=""
+DISC=""; OUT=""; OUT_GIVEN=""; ONLINE_BUILD=""; SETUP=""; USDISC=""
 while [ $# -gt 0 ]; do
     case "$1" in
         --out) [ $# -ge 2 ] || die "--out needs a folder"; OUT=$2; OUT_GIVEN=1; shift ;;
+        --english) [ $# -ge 2 ] || die "--english needs your US disc image"; USDISC=$2; shift ;;
         --online) ONLINE_BUILD=1 ;;
         --setup) SETUP=1 ;;
         -h|--help) TARGET=help ;;
@@ -40,7 +45,7 @@ while [ $# -gt 0 ]; do
 done
 case "$TARGET" in
     linux|windows|xbox|check) ;;
-    ""|help|-h|--help) sed -n '2,20p' "$0" | sed 's/^# \{0,1\}//'; exit 0 ;;
+    ""|help|-h|--help) sed -n '2,24p' "$0" | sed 's/^# \{0,1\}//'; exit 0 ;;
     *) die "unknown target '$TARGET'. Use: linux, windows, xbox or check (./mh1 --help)" ;;
 esac
 [ -n "$DISC" ] || die "give your disc image: ./mh1 $TARGET /path/to/Monster-Hunter-Japan.iso"
@@ -49,6 +54,10 @@ esac
 case "$DISC" in /*) ;; *) DISC=$PWD/$DISC ;; esac
 [ -n "$OUT" ] || OUT=dist/$TARGET
 case "$OUT" in /*) ;; *) OUT=$PWD/$OUT ;; esac
+if [ -n "$USDISC" ]; then
+    [ -e "$USDISC" ] || die "'$USDISC' (--english) does not exist"
+    case "$USDISC" in /*) ;; *) USDISC=$PWD/$USDISC ;; esac
+fi
 
 # compile several files at a time (tools/build_pc.sh reads MH1_JOBS); set MH1_JOBS=1 to compile one at a time
 [ -n "$MH1_JOBS" ] || MH1_JOBS=$(nproc 2>/dev/null || echo 2)
@@ -63,6 +72,7 @@ python3 tools/disc_files.py check "$DISC" || die "stopping: the disc is not usab
 GAME=$(python3 tools/disc_files.py game "$DISC") || die "cannot tell which game the disc is"
 if [ "$GAME" = mhg ]; then
     [ -z "$ONLINE_BUILD" ] || die "--online is not available for Monster Hunter G (no online play yet, docs/RELEASE_G.md)"
+    [ -z "$USDISC" ] || die "--english is for Monster Hunter 1. G's English also needs the MH1 disc: tools/make_release.sh G.iso --mh1 MH1.iso --english US.iso (docs/PLAYING.md, 'English text')"
     # G goes in its own folder (dist/linux/MHG, dist/windows/MHG, dist/xbox/MHG) unless --out says otherwise
     [ -n "$OUT_GIVEN" ] || { OUT=$OUT/MHG; [ "$TARGET" != xbox ] || OUT=${OUT%/MHG}; }
     say "this is the Japanese Monster Hunter G disc: building the G version (a work in progress)"
@@ -153,6 +163,21 @@ Monster Hunter G opens its game window only when it is here (test runs of the bu
 EOT
 }
 
+# English for Monster Hunter 1 (docs/PLAYING.md "English text"): the table tools/text_map.py makes from the JP disc
+# (the data folder just copied) and your own US disc, where the game looks for it (gfx_opts.c gfx_text_table_find:
+# text/en.txt next to the program / the settings file; on the Xbox E:\Games\MH1\text\en.txt)
+mh1_english() {   # mh1_english DATA_FOLDER GAME_FOLDER
+    if [ -n "$USDISC" ]; then
+        say "making the English text table from your US disc (tools/text_map.py, about 3 minutes, 1 GB of memory)"
+        sh tools/make_english.sh "$USDISC" build/text --jp "$1" --g "$TOP/build/text/no-g" > build/mh1_english.log 2>&1 \
+            || { tail -15 build/mh1_english.log; die "the English table failed; full log: build/mh1_english.log"; }
+    fi
+    if [ -f build/text/en_mh1.txt ]; then
+        mkdir -p "$2/text"; cp build/text/en_mh1.txt "$2/text/en.txt"
+        say "English text: build/text/en_mh1.txt -> $2/text/en.txt (the game starts in English; its settings menu can switch back)"
+    fi
+}
+
 copy_data() {   # copy_data DEST [files]
     say "copying the game files from your disc to $1 (about 925 MB)"
     mkdir -p "$1"
@@ -207,6 +232,7 @@ EOS
     chmod +x "$OUT/play.sh"
     player_marker "$OUT"
     copy_data "$OUT/data" ""
+    mh1_english "$OUT/data" "$OUT"
     say "done. Play with:  $OUT/play.sh"
     ;;
 windows)
@@ -243,6 +269,7 @@ windows)
     [ -z "$ONLINE_BUILD" ] || cp build/win/mhview_online.exe "$OUT/mhview_online.exe"
     [ ! -f docs/PLAYING.md ] || cp docs/PLAYING.md "$OUT/PLAYING.md"
     copy_data "$OUT/data" ""
+    mh1_english "$OUT/data" "$OUT"
     say "done. Copy the folder $OUT to the Windows PC (any place you can write to) and run play.bat in it."
     ;;
 xbox)
@@ -280,6 +307,7 @@ xbox)
     cp build/xbox/nv2a/default.xbe "$OUT/MH1/default.xbe"
     [ ! -f docs/PLAYING.md ] || cp docs/PLAYING.md "$OUT/PLAYING.md"
     copy_data "$OUT/MH1/data" "AFS_DATA.AFS,AFS00.AFS,AFS01.AFS,SLPM_654.95"
+    mh1_english "$OUT/MH1/data" "$OUT/MH1"
     say "done. Copy the folder $OUT/MH1 to your Xbox's hard disk as E:\\Games\\MH1 (so that"
     say "E:\\Games\\MH1\\default.xbe and E:\\Games\\MH1\\data\\AFS_DATA.AFS exist). With curl:"
     say "  tools/xbox_install.sh XBOX_IP \"$OUT/MH1\"     (asks for your Xbox's FTP login; or use any FTP program)"

@@ -3,6 +3,8 @@
 
     python3 tools/text_map.py [--jp disc/mh1] [--us disc/mh1_us] [--g disc/mhg] [-o build/text]
 
+Without G (no SLPM_658.69 in the --g folder) only the MH1 table is made, from the JP and US discs alone; it is the same
+table a run with G makes (the one step that reads G's text comes from tools/text_pairs_mh1_via_g.txt, addresses only).
 Everything is derived on the player's machine from the three discs; the output (the text tables) goes to
 build/text/ (git-ignored) and is never committed. The repository holds only this tool and a report of counts
 and string ids (docs/text_coverage.md, made by --report).
@@ -3162,6 +3164,50 @@ def linesplit_pairs(jp, us, om, cells, funcs_unused=None):
 
 
 
+VIA_G = os.path.join(HERE, "text_pairs_mh1_via_g.txt")
+
+
+def mh1_pairs_via_g(jp, us, g, S, man_g, man_gf, path=VIA_G):
+    """[(JP key, US key)]: MH1 JP strings whose Japanese (blanks at the ends ignored) is the text of a hand-checked G
+    pair (tools/text_pairs_manual.txt), with that pair's US string; in S order. Needs G's text, so the list is also
+    kept in `path` (addresses only), which a run without the G disc reads instead; rewritten here when it changed."""
+    man_text = collections.defaultdict(collections.Counter)
+    first = {}
+    for gk, xk in list(man_g.items()) + list(man_gf.items()):
+        xb = us.cstr(*xk)
+        if xb and not is_japanese(xb):
+            man_text[_norm_jp(g.cstr(*gk))][xb] += 1
+            first.setdefault(xb, xk)
+    out = []
+    for jk in S:
+        jb = jp.cstr(*jk)
+        c = man_text.get(_norm_jp(jb))
+        xb = _one_english(c) if c else None
+        if not xb or len(_norm_jp(jb)) < 2 or not good_english(jb, xb)[0]:
+            continue
+        out.append((jk, first[xb]))
+    body = "".join("jp %s %s\n" % (key_id(jk), key_id(xk)) for jk, xk in out)
+    old = open(path).read() if os.path.exists(path) else ""
+    if old.split("\n# --\n", 1)[-1] != body:
+        with open(path, "w") as f:
+            f.write("# MH1 JP string -> US string, for text_map.py runs without the G disc: the MH1 strings with the same\n"
+                    "# Japanese as a hand-checked G pair of tools/text_pairs_manual.txt (mh1_pairs_via_g). Addresses only, no\n"
+                    "# text. Written by text_map.py when it runs with the G disc; do not edit by hand.\n# --\n" + body)
+        log("updated %s (%d pairs; commit it, runs without the G disc read it)" % (os.path.relpath(path, ROOT), len(out)))
+    return out
+
+
+def mh1_pairs_via_g_file(path=VIA_G):
+    out = []
+    if os.path.exists(path):
+        for line in open(path):
+            f = line.split("#")[0].split()
+            if len(f) == 3 and f[0] == "jp":
+                out.append((x_key(f[1]), x_key(f[2])))
+    log("MH1 pairs from G's hand-checked text: %d, from %s (no G disc)" % (len(out), os.path.relpath(path, ROOT)))
+    return out
+
+
 def run_g(jp, g, funcs, objs, S, cells, GS, cache):
     pr = cached(cache and cache + "_g_code.pkl", lambda: {k: dict(v) for k, v in pair_code(jp, None, g, funcs).items()})
     pr = {k: collections.Counter(v) for k, v in pr.items()}
@@ -3207,10 +3253,13 @@ def main():
     cache = None if args.no_cache else os.path.join(args.out, "cache")
     jp = Img("jp", args.jp, "SLPM_654.95")
     us = Img("us", args.us, "SLUS_208.96")
-    g = Img("g", args.g, "SLPM_658.69")
+    have_g = os.path.isfile(os.path.join(args.g, "SLPM_658.69"))
+    if not have_g:
+        log("no G disc at %s (SLPM_658.69): making only the MH1 table (en_mh1.txt), from the JP and US discs" % args.g)
+    g = Img("g", args.g, "SLPM_658.69") if have_g else None
     funcs, objs = jp_symbols()
     S = jp_strings(jp)
-    GS = g_strings(g)
+    GS = g_strings(g) if have_g else None
     cells = jp_cells(jp, S, objs)
     owner = {}
     for key, (oa, lst) in cells.items():
@@ -3257,7 +3306,7 @@ def main():
     # quests
     Jq = read_quests(args.jp, r"m(\d{3})\.mib$")
     Uq = read_quests(args.us, r"u(\d{3})\.mib$")
-    Gq = read_quests(args.g, r"m(\d{5})\.mib$")
+    Gq = read_quests(args.g, r"m(\d{5})\.mib$") if have_g else None
     qm = quest_match_us(Jq, Uq)
     qp = quest_pairs_us(Jq, Uq, qm)
     nq = 0
@@ -3293,19 +3342,16 @@ def main():
     # hand-checked G pairs (tools/text_pairs_manual.txt, read on both discs) also hold for MH1 strings with the same Japanese:
     # they fill MH1 strings the structure could not pair (the bed's save hint, the shop's yes/no) and win over a position
     # pair that disagrees (the shop menus' 売る had the US "Buy" of the row above)
-    man_text = collections.defaultdict(collections.Counter)
-    for gk, xk in list(man_g.items()) + list(man_gf.items()):
-        xb = us.cstr(*xk)
-        if xb and not is_japanese(xb):
-            man_text[_norm_jp(g.cstr(*gk))][xb] += 1
+    # (the pairs come from G's Japanese text; without G from tools/text_pairs_mh1_via_g.txt, the same pairs saved by a
+    # run with G, so the MH1 table does not need the G disc)
+    via_g = mh1_pairs_via_g(jp, us, g, S, man_g, man_gf) if have_g else mh1_pairs_via_g_file()
     n_add = n_fix = 0
-    for jk in S:
+    for jk, xk in via_g:
         if jk in slot_cov or _fragment(owner, jk):
             continue
         jb = jp.cstr(*jk)
-        c = man_text.get(_norm_jp(jb))
-        xb = _one_english(c) if c else None
-        if not xb or len(_norm_jp(jb)) < 2 or not good_english(jb, xb)[0]:
+        xb = us.cstr(*xk)
+        if not xb or is_japanese(xb) or not good_english(jb, xb)[0]:
             continue
         if jk not in en_jp:
             en_jp[jk] = xb
@@ -3324,6 +3370,12 @@ def main():
     talk_jp = {jk for jk in en_jp if owner.get(jk) and TALK_TABLES.match(owner[jk][1])}
     write_table(os.path.join(args.out, "en_mh1.txt"),
                 {k: (talk_layout(v) if k in talk_jp else v) for k, v in merged(en_jp, slot_cov, slot_jp).items()}, hdr)
+    if not have_g:
+        if args.report or args.ids:
+            log("the coverage report (--report / --ids) covers G and needs the G disc: not written")
+        log("MH1 table written: %s (%d strings); no G table without the G disc" % (
+            os.path.join(args.out, "en_mh1.txt"), len(en_jp)))
+        return dict(jp_strings=len(S), jp_en=len(en_jp), drop=drop)
 
     # ---- G
     omg, outg, rowsg = run_g(jp, g, funcs, objs, S, cells, GS, cache)

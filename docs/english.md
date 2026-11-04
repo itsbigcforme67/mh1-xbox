@@ -396,6 +396,10 @@ repo):
     build/text/en_mhg.txt    ids of G (see "What G needs")
 
 About 3 minutes and 1 GB of RAM (the code-pair search is cached in build/text/cache_*.pkl; `--no-cache` redoes it).
+Without the G disc (no SLPM_658.69 in `--g`; 4 Nov 2026) only en_mh1.txt is made, byte-identical to a run with G: the one
+MH1 step that reads G's Japanese (MH1 strings with the same text as a hand-checked G pair) is saved by every run with G
+in tools/text_pairs_mh1_via_g.txt (addresses only) and read from there. `./mh1 ... --english US.iso` (tools/make_english.sh)
+and `tools/make_release.sh --mh1 MH1.iso --english US.iso` use that path; `--report` / `--ids` still need G.
 The committed report (counts and ids only): docs/text_coverage.md and docs/survey/mhg_text_untranslated.txt (every
 G string id without English, with its area and reason).
 

@@ -12,7 +12,8 @@ fishing, carving, the star-level progression), but expect rough edges (see "Know
 finished by our test scripts, but **nobody has played either game all the way through on the port yet**, so you may
 be the first to find a problem.
 
-The text is Japanese unless you make an English table from your own discs (section "English text"). Online play
+The text is Japanese unless you make an English table from your own discs (section "English text"; for MH1 your
+Japanese and US discs are enough). Online play
 needs a server you run yourself (section "Playing with friends"). Monster Hunter 2 (Dos) is in progress and not
 playable yet.
 
@@ -225,11 +226,17 @@ puts the table next to each game it builds (`text/en.txt` in the Xbox, Linux and
 table before (`build/text/en_mhg.txt`), `./mh1 xbox` with the G disc copies it in by itself. The kit always builds
 the Xbox version too, so it needs the Xbox tools (nxdk, "What you need"); docs/TESTERS.md has the details.
 
-**Monster Hunter 1: English is not ready for players yet.** The English for MH1 is meant to come from your own US
-disc, unchanged (about 83% of MH1's lines have official English; the rest stays Japanese). But `./mh1` does not make
-or install it, and the only tool that does, the same `tools/make_release.sh ... --mh1 MH1.iso --english US.iso`
-command above, **needs a G disc as well**. Without a G disc there is no way yet to get English for MH1. With one, the
-kit puts MH1's table in its MH1 folders too.
+**Monster Hunter 1.** You need your Japanese disc and your own **US** Monster Hunter (SLUS-20896); no G disc. Add
+`--english` to the usual command:
+
+    ./mh1 linux MH1.iso --english US.iso        (or windows / xbox)
+
+`US.iso` can also be a folder with the US disc's files. This makes the table (about 3 minutes and 1 GB of memory, the
+first time; it is kept as `build/text/en_mh1.txt`) and puts it next to the game as `text/en.txt` (Xbox: in the `MH1`
+folder, so it ends up as `E:\Games\MH1\text\en.txt`). Later builds without `--english` put the kept table there by
+themselves. The English is the US disc's own text, unchanged: about 83% of MH1's lines have it (docs/text_coverage.md); the rest
+(some menus, memory card messages, online text) stays Japanese. The testers' kit does the same for MH1 without a G disc:
+`tools/make_release.sh --mh1 MH1.iso --english US.iso` (it builds the Xbox version too, so it needs nxdk).
 
 Where the game looks for the table (if you copy one by hand): Xbox `E:\Games\MH1\text\en.txt` /
 `E:\Games\MHG\text\en.txt` (or `text\en.txt` next to a hand-installed `default.xbe`); PC `text/en.txt` next to the
