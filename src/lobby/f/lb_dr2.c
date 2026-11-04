@@ -872,7 +872,8 @@ extern s32 ParseArg;
 extern u8 ParseReq;
 int parsetag();
 
-/* run the html tag parser for a while (until the timer says stop) and report its state */
+/* run the html tag parser for a while (until the timer says stop) and report its state. The timer is EE timer 0's COUNT
+ * (0x10000000): parse until 0x41 ticks have passed. lb_dr2.c is in the PC build, where that read would fault (untested). */
 s16 *BsParseCheck(int arg0) {
     s32 temp_v1_2;
     u32 temp_s0;

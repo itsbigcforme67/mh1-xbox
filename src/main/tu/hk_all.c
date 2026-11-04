@@ -2,7 +2,7 @@
  * NOT built by tools/build.py: src/main/hk/f_hk.c is the linked version, in which these functions are raw asm stubs (config/c_rawfuncs.txt):
  * HardKeyboard_move, hk_kbd_input, hk_kbd_input_sub, hk_cursor_mv, hk_key_r_cursor, hk_key_kata_hira, roma_ck_sub, kbd_disp_input.
  * Everything else here compiles to the original bytes (tools/check.py on this file, tools/b_tu/ to work on it). Not in build_pc.sh. */
-/* hk_nm - f_hk (SLPM_654.95 0x00164180-0x00167198, main.bin): hardware (USB) keyboard input for the soft keyboard
+/* hk_nm - f_hk (SLPM_654.95 0x00264180-0x00267198; main.bin offset 0x164180): hardware (USB) keyboard input for the soft keyboard
  * state lpSKey, kana/roman conversion, text insert/delete helpers and the input-line display. Near-match C,
  * not built. Field meanings are guesses; lpSKey layout is shared with sk_nm.c. */
 #include "types.h"

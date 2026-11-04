@@ -109,6 +109,7 @@ u8 *next_cmd_search(EMW *em, u8 *p) {
         switch (*p++) {
         case 0:
             p += 3;
+            /* fall through */
         case 1:
             p += 2;
             break;
@@ -149,6 +150,7 @@ u8 *next_cmd_search(EMW *em, u8 *p) {
         switch (*p++) {
         case 0:
             p += 3;
+            /* fall through */
         case 1:
             p += 1;
             break;
@@ -768,6 +770,7 @@ u8 *next_cmd_search(EMW *em, u8 *p) {
         switch (*p++) {
         case 0:
             p += 4;
+            /* fall through */
         case 1:
             p += 1;
             break;
@@ -781,6 +784,7 @@ u8 *next_cmd_search(EMW *em, u8 *p) {
         switch (*p++) {
         case 0:
             p += 3;
+            /* fall through */
         case 1:
             p += 1;
             break;

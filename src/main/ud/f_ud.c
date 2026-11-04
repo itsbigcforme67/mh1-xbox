@@ -1,4 +1,4 @@
-/* udmisc_nm - f_ud tail (SLPM_654.95 0x00271FB0-0x00272400, main.bin): copy of the saved hunter data to and from the
+/* f_ud - SLPM_654.95 0x00271FB0-0x00274E10 (linked; c_rawfuncs.txt functions keep the original bytes): copy of the saved hunter data to and from the
  * memory-card slot block (option_w + 0x10, 0x480 bytes per slot), the pouch copy between User_data and a player work
  * (PLW +0x828), the hunter point to rank conversion (h_rank_tbl: ascending point limits ending in 9999999 = 0x98967F),
  * Set_userdata/Set_equip_data (fill a player work's name, pouch, equipment from the saved data) and Gold_add. */
@@ -547,7 +547,7 @@ s8 Get_pl_id(s8 *key) {
 #if !defined(G_PART) || G_PART == 20
 void Copy_user_id(u8 no)
 {
-  u8 *d = (((u8 *) (&game_w)) + GV(0x1E8, 0x1F6)) - (-(no * 8));
+  u8 *d = (((u8 *) (&game_w)) + GV(0x1E8, 0x1F6)) - (-(no * 8)); /* - -x: probably kept for matching */
   d[0] = my_user_id[0];
   d[1] = my_user_id[1];
   d[2] = my_user_id[2];

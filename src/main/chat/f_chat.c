@@ -1,6 +1,6 @@
-/* chat_nm - f_chat (SLPM_654.95 0x001755D0-0x0017BF80, main.bin): sprite/frame helpers, chat log, pit-menu
- * windows (status, equipment), reibun (preset phrases). Near-match C, not built; matching runs are
- * built from it as chatNN.c. Field meanings are guesses. */
+/* f_chat - SLPM_654.95 0x002755D0-0x0027BF80 (main.bin offset 0x1755D0): sprite/frame helpers, chat log, pit-menu
+ * windows (status, equipment), reibun (preset phrases). Linked whole (config/c_files.txt); the functions listed in
+ * config/c_rawfuncs.txt (DispFrameMessageA, PlayerStatusWindow, ...) link the original bytes. Field meanings are guesses. */
 #include "g_alias.h"
 #include "types.h"
 #include "menu.h"

@@ -6,7 +6,7 @@ typedef struct QPAIR { s16 v; s8 f; u8 _pad3; } QPAIR;
 #ifndef QW_X64_T        /* a few files read the mission data as bytes */
 #define QW_X64_T struct MISSION *
 #endif
-#ifndef QW_X94_T
+#ifndef QW_X94_T        /* a file may retype it before including (reward.h) */
 #define QW_X94_T struct MISSION2 *
 #endif
 typedef struct QUEST_W {

@@ -16,6 +16,9 @@ typedef int s32;
 #define I32(o) (*(int *)(em + (o)))
 #define F32(o) (*(f32 *)(em + (o)))
 #define WDIST (*(f32 *)(w + 0x30))
+/* MH2 EMW offsets used here, by the names in include/mh2_emw.h (MH1 names): 2 kind, 8 work08, 0xA4 ang[1], 0xAC pos,
+ * 0x2C2 x302, 0x3A2 x39A, 0x59B x617, 0x6DE x792, 0x7DC x888, 0x817 x8C3, 0x884 act_spd, 0x888 tgt_pos, 0x997 x881,
+ * 0x998 x882. So B(0x997) == 1 && U16(0x998) == 0 is MH1 em03_act_set's em->x881 == 1 && em->x882 == 0. */
 
 void em_cdm_act_flag_ck();
 void em_act_set2(u8 *em, int kind, u16 no, int arg);
@@ -33,7 +36,8 @@ void game_func_00707CF0(), game_func_00707CC0(), game_func_00702B10(), game_func
 void game_func_0070B390(u8 *em, int a, f32 x, f32 y);
 void sub_main_func_003A2A10(), sub_main_func_0039F810();
 
-/* the distance to the target and the time to get there (MH1: em03_act_set's `common` block) */
+/* the distance to the target and the time to get there (MH1: em03_act_set's `common` block). Ends in `break`: a use followed by
+   a case label is not a fall-through. */
 #define APPROACH(v, slow)                                                       \
     if (B(0x817) != 0) {                                                        \
         if (B(0x997) == 0) {                                                    \
@@ -219,7 +223,7 @@ void game_func_0075FBF0(u8 *em, int kind, u16 no, int arg) {
                 v = 200.0f;
             }
         common:
-            APPROACH(v, 500)
+            APPROACH(v, 500) /* ends in break */
         case 0xC:
         case 0x10:
             e[0] = 300.0f;
@@ -258,7 +262,7 @@ void game_func_0075FBF0(u8 *em, int kind, u16 no, int arg) {
         switch (no) {
         case 2:
             v = 0.0f;
-            APPROACH(v, 600)
+            APPROACH(v, 600) /* ends in break */
         case 4:
             if (B(0x977) == 0 && B(0x817) == 0) {
                 game_func_0075FBF0(em, 0, 0x13, 1);
@@ -278,21 +282,21 @@ void game_func_0075FBF0(u8 *em, int kind, u16 no, int arg) {
                 }
                 switch (B(0x1B)) {
                 case 0:
-                    if (U16(0x3A2) % 100 < 0x4C) {
+                    if (U16(0x3A2) % 100 < 76) {
                         r = 2;
                     } else {
                         r = 1;
                     }
                     break;
                 case 1:
-                    if (U16(0x3A2) % 100 < 0x33) {
+                    if (U16(0x3A2) % 100 < 51) {
                         r = 0;
                     } else {
                         r = 2;
                     }
                     break;
                 case 2:
-                    if (U16(0x3A2) % 100 < 0x3D) {
+                    if (U16(0x3A2) % 100 < 61) {
                         r = 0;
                     } else {
                         r = 1;

@@ -1,6 +1,7 @@
-/* hk_nm - f_hk (SLPM_654.95 0x00164180-0x00167198, main.bin): hardware (USB) keyboard input for the soft keyboard
- * state lpSKey, kana/roman conversion, text insert/delete helpers and the input-line display. Near-match C,
- * not built. Field meanings are guesses; lpSKey layout is shared with sk_nm.c. */
+/* f_hk - SLPM_654.95 0x00264180-0x00267198 (main.bin offset 0x164180): hardware (USB) keyboard input for the soft keyboard
+ * state lpSKey, kana/roman conversion, text insert/delete helpers and the input-line display. Linked (config/c_files.txt);
+ * the functions listed in config/c_rawfuncs.txt link the original bytes, and src/main/tu/hk_all.c has the best C for them.
+ * Field meanings are guesses; lpSKey layout is shared with sk_nm.c. */
 #include "g_alias.h"
 #include "types.h"
 #include "sk_g.h"

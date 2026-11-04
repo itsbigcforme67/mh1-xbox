@@ -1,5 +1,5 @@
 /* G only (SLPM_658.69 0x001DC0D0-0x001DC640): the NPC zoom camera. G adds a manual mode (step byte x21 = 1: the
- * pad moves the camera up/down and in/out around the hunter) and a fixed mode (x21 = 2, stage 0x4D); MH1's version
+ * pad moves the camera up/down and in/out around the hunter) and a fixed mode (x21 = 2, stage 77 = 0x4D); MH1's version
  * is in src/main/cam/camd.c. Function names are the map's. */
 #include "cam.h"
 #include "game.h"
@@ -10,7 +10,7 @@ void AddVector(f32 *, f32 *, f32 *);
 void SubVector(f32 *, f32 *, f32 *);
 void func_00111040(f32 *, f32 *, f32);
 s32 Cockpit_chat_chk(void);
-extern volatile u16 Psw[];
+extern volatile u16 Psw[]; /* Psw[4] = pad 0's PSWE.an (stick directions held), include/ioread.h */
 
 #if !defined(G_PART) || G_PART == 1
 void func_001DC0D0(PLW *npc) { /* NPCZoomInCameraRequest (g_names.txt) */
@@ -18,7 +18,7 @@ void func_001DC0D0(PLW *npc) { /* NPCZoomInCameraRequest (g_names.txt) */
 
     z->req = 1;
     z->npc = npc;
-    z->x2C = 0.5235988f;
+    z->x2C = 0.5235988f; /* pi/6 */
     if (npc != 0) {
         z->x21 = 0;
         flvecCopy(z->pos, npc->pos);
@@ -31,7 +31,7 @@ void func_001DC0D0(PLW *npc) { /* NPCZoomInCameraRequest (g_names.txt) */
 #endif
 
 #if !defined(G_PART) || G_PART == 2
-void func_001DC160(void) {
+void func_001DC160(void) { /* the fixed camera (mode 2) for stage 77 */
     CAMZOOM *z;
 
     if (game_w.stage == 77) {
@@ -45,13 +45,13 @@ void func_001DC160(void) {
         z->tar[0] = 1405.0f;
         z->tar[1] = 51.0f;
         z->tar[2] = 2348.0f;
-        z->x2C = 1.0471976f;
+        z->x2C = 1.0471976f; /* pi/3 */
     }
 }
 #endif
 
 #if !defined(G_PART) || G_PART == 2
-s32 func_001DC1F0(void) {
+s32 func_001DC1F0(void) { /* zoom state: -1 manual mode past 15 frames, 1 manual/fixed, 0 none */
     CAMZOOM *z = &CameraWork.sl[3].d.ex.zoom;
 
     switch (z->step) {
@@ -59,6 +59,7 @@ s32 func_001DC1F0(void) {
         if (z->cnt >= 15) {
             return -1;
         }
+        /* fall through */
     case 2:
         return 1;
     default:

@@ -2,8 +2,9 @@
    disassembly of the owner's disc. Spawns each stage's set objects when a stage is entered. Against G: the sun block takes fixed
    values (G read them from tables per stage), a 4-byte table per stage (0x4485D0) names four more spawns (0xFF = none), and the
    switch covers MH2's stages (up to 0xC4; the day/night copies of a stage share a case). MWCC emits this sparse switch as a compare
-   chain in reverse case order, so the case order below is the original's. Game-side callees go by address; the names in comments
-   are the map's (docs/survey/mh2_map.csv), not checked. */
+   chain in reverse case order, so the case order below is the original's. Game-side callees go by address (func_6F4900 ...:
+   splat's build/mh2/auto/sub_main_undefined_funcs_auto.txt defines them); the names in comments are the map's
+   (docs/survey/mh2_map.csv), not checked. */
 typedef unsigned char u8;
 typedef short s16;
 typedef unsigned short u16;

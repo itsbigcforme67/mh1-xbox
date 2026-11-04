@@ -1,4 +1,4 @@
-/* sk_nm - f_sk (SLPM_654.95 0x0015FA90-0x00162A90, main.bin): soft keyboard (on-screen keyboard used for chat and
+/* sk_nm - f_sk (SLPM_654.95 0x0025FA90-0x00262A90; main.bin offset 0x15FA90): soft keyboard (on-screen keyboard used for chat and
  * phrases): state in lpSKey (struct at 0 .. 0x668 bytes, layout guessed from offsets). Near-match C, not built;
  * matching runs would be built from it as skNN.c. Field meanings are guesses. */
 #include "types.h"

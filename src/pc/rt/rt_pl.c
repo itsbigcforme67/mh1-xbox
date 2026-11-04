@@ -27,6 +27,7 @@
 #ifdef VERSION_MH2
 /* the raw offsets below are MH1's PLW offsets: MH2 moved most (include/mh2_ofs.h); only bases inside player_work map */
 #include "mh2_ofs.h"
+/* 0x970 = MH2's sizeof(PLW); 8 = MH1's player_work entries. The G-form PC build (rt_game.c) has 10: entries 8-9 are not remapped */
 #define RT_PLO(p, o) ((const u8 *)(p) >= (const u8 *)player_work && (const u8 *)(p) < (const u8 *)player_work + 8 * 0x970 ? MH2_OFS_PLW(o) : (o))
 #else
 #define RT_PLO(p, o) (o)

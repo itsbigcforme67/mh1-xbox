@@ -1,7 +1,6 @@
 /*
- * viewer.c - first piece of the PC port: a real-time viewer that loads
- * MH1 data straight from the user's disc files and shows stage 4 with the
- * Rathian (em01) and a hunter, both animating, under a free-fly camera.
+ * viewer.c - entry point of the PC port (it began as a stage-4 model viewer): option parsing, boot, quests, online,
+ * MH2, and the main loop (main() is near the end of the file). Data comes straight from the user's disc files.
  *
  *   build/pc/mhview DISC_DIR [--shot FILE.png] [--frames N] [--size WxH]
  *                            [--cam x,y,z,yaw,pitch] [--time SECONDS]

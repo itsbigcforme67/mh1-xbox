@@ -28,6 +28,8 @@ extern u8 quest_w[];
 #define D_005D878C (*(int *)(quest_w + 0x52C))
 typedef struct { u8 r, x; } QRANK;
 #define D_005D8300 ((QRANK *)(quest_w + 0xA0))
+/* D_005D8260 = quest_w + 0: the quest state (0 running, 1/2 ending, 3 result); D_005D827E = +0x1E: the script index
+   (docs/mh2/quest.md). p003A9230_nm.c declares the same places as plain extern globals. */
 extern int D_00445540, D_00445544, D_00445548, D_0044554C, D_00445550, D_00445598, D_0044559C;
 extern u8 D_005D4A60;
 

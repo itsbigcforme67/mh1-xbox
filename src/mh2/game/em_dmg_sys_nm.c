@@ -2,21 +2,17 @@
    em_taisei.c, which includes this for the PC. NOT byte-matched and not in the MH2 build: 214 of 667 instructions differ (tools/mh2_own.py). The original keeps em in s2 and
    `first` in s1, and holds (s8)i in a saved register across em_dur_set in case 8; ours does neither. EMW + 0x3D0 is EMW.x3CC now (include/em.h). */
 #ifdef EM_TAISEI_IN
-#define HEAD u8 Em_Dmg_Sys(EMW *em, u8 *flag) {
 #else
 #define Em_Dmg_Sys Em_Dmg_Sys_
 #include "em_cmd.h"
 #include "em_sys.h"
 #undef Em_Dmg_Sys
-#define HEAD u8 Em_Dmg_Sys(EMW *em, u8 *flag) {
 #endif
 
 
 #ifndef EM_TAISEI_IN
 void Em_Damage_Stock();
 void em_hagitori_lv_up();
-void em_eye_dmg_act_set();
-void em_hinshi_end2();
 void em_range_set();
 u8 Em_Taisei_Damage_Check();
 void em_dur_set();
@@ -42,7 +38,7 @@ int sub_main_func_00379AC0(), sub_main_func_003799A0();
         }                                \
     }
 
-HEAD
+u8 Em_Dmg_Sys(EMW *em, u8 *flag) {
     int s;
     u8 u;
     s8 i;

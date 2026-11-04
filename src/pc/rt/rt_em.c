@@ -740,7 +740,7 @@ int rt_monster_spawn(int kind, const float pos[3], int ang_y)
     QEM *q, dflt;
     EMW *em;
 #ifdef VERSION_MH2
-    if (!getenv("RT_MH2_EM"))       /* monsters only with RT_MH2_EM=1 (rt_quest.c) */
+    if (!getenv("RT_MH2_EM"))       /* monsters only with RT_MH2_EM=1 until their set-up runs (docs/mh2/hunt.md blocker 4; rt_quest.c has the same gate) */
         return -1;
 #endif
     if (quest_w.no != 0) {

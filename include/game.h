@@ -143,7 +143,7 @@ typedef struct GAME_W {
     u8 _pad022[0x24 - 0x22];
     u8 sw_mask;         /* 0x024 buttons ignored until released (get_sw) */
     u8 _pad025[0x28 - 0x25];
-    u8 x28[4];          /* 0x028 per player quest entry id, cleared by Quest_start (Em_direct_set); pl_demo000 compares with 0x12 (monster-grab demo) */
+    u8 x28[4];          /* 0x028 monster kind per model slot (em_create_model(slot) loads kind x28[slot]; flow_nm.c: e->kind = x28[e->mdl_no]); cleared by Quest_start; pl_demo000 compares with 0x12 (monster-grab demo) */
     u16 quest;          /* 0x02C quest number (SonchoInit: 0x83.. tutorials) */
     u8 x2E;             /* 0x02E 6: em20 fly 9 picks point 1 for monster kind 6 */
     u8 x2F;             /* 0x02F from the mission data (Quest_start); stage start slot index (pl_mv014: stage_start_pos/ang) */

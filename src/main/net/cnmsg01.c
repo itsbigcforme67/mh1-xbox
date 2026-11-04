@@ -182,7 +182,8 @@ int CnInetCheckMcsPacket2(void *msg, s32 *len) {
 extern u8 m_bTimerInitialized;
 extern s32 old_time;
 extern f32 total_time;
-/* Network time in seconds from the EE timer 0 (started on first use): adds the elapsed ticks scaled to seconds. */
+/* Network time in seconds from EE timer 1 (T1_COUNT 0x10000800, T1_MODE 0x10000810; started on first use with mode 0x83 =
+ * count enable, H-blank clock): adds the elapsed H-blanks scaled to seconds (/16/1000*1.0256: about 15,600 per second). */
 #if !defined(G_PART)
 f32 CngNetTimeGet(void) {
     s32 now;
