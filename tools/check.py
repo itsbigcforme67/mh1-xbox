@@ -30,6 +30,9 @@ from mips_dis import dis  # noqa: E402
 
 WIBO = os.path.join(ROOT, "tools/compilers/wibo")
 MWCC = os.path.join(ROOT, "tools/compilers/mwcps2-3.0b52-030722/mwccps2.exe")
+# MH_PS2_COMPILER=native: the native build of the same compiler (as tools/build.py)
+CC = ([os.environ.get("MH_PS2_MWCC") or os.path.join(ROOT, "tools/compilers/mwccps2-b52-native64")]
+      if os.environ.get("MH_PS2_COMPILER") == "native" else [WIBO, MWCC])
 CFLAGS = ["-c", "-O4,p", "-nostdinc", "-stderr", "-Iinclude", "-Ibuild/mhg/raw", "-Ibuild/raw", "-pragma", "divbyzerocheck on"]
 # Capcom built with divide-by-zero checks on (bne/break after every
 # division by a non-constant); see docs/STATUS.md.
@@ -237,9 +240,9 @@ def main():
                                      os.path.isdir(os.path.join(ROOT, "build")) else None) as tmp:
         obj = os.path.relpath(os.path.join(tmp, "check.o"), ROOT)
         src = os.path.relpath(os.path.abspath(args.cfile), ROOT)
-        cc = os.path.join(ROOT, "tools/compilers", args.cc, "mwccps2.exe") if args.cc else MWCC
+        cc = os.path.join(ROOT, "tools/compilers", args.cc, "mwccps2.exe") if args.cc else None
         flags = CFLAGS if not args.flags else [f for f in CFLAGS if not f.startswith("-O")] + args.flags.split()
-        p = subprocess.run([WIBO, cc] + flags + [src, "-o", obj], cwd=ROOT,
+        p = subprocess.run(([WIBO, cc] if cc else CC) + flags + [src, "-o", obj], cwd=ROOT,
                            capture_output=True, text=True)
         if p.returncode:
             sys.exit(p.stdout + p.stderr)

@@ -26,9 +26,13 @@ ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 BU = os.path.join(ROOT, "tools/binutils/bin/mips64r5900el-ps2-elf-")
 AS_FLAGS = ["-EL", "-march=r5900", "-mabi=eabi", "-G0", "-no-pad-sections",
             "-I", os.path.join(ROOT, "include")]
-# Compiler identified 4 Oct 2026 (docs/DECISIONS.md). Run through wibo.
+# Compiler identified 4 Oct 2026 (docs/DECISIONS.md). Run through wibo, or (off by
+# default) with MH_PS2_COMPILER=native the native build of the same compiler, from
+# tools/compilers/mwccps2-b52-native64 (tools/get_native_mwcc.py) or MH_PS2_MWCC.
 WIBO = os.path.join(ROOT, "tools/compilers/wibo")
 MWCC = os.path.join(ROOT, "tools/compilers/mwcps2-3.0b52-030722/mwccps2.exe")
+CC = ([os.environ.get("MH_PS2_MWCC") or os.path.join(ROOT, "tools/compilers/mwccps2-b52-native64")]
+      if os.environ.get("MH_PS2_COMPILER") == "native" else [WIBO, MWCC])
 CFLAGS = ["-c", "-O4,p", "-nostdinc", "-stderr", "-pragma", "divbyzerocheck on"]
 # Capcom built with divide-by-zero checks on (bne/break after every
 # division by a non-constant); see docs/STATUS.md.
@@ -225,7 +229,7 @@ def compile_c(src):
         return None
     os.makedirs(os.path.join(ROOT, os.path.dirname(obj)), exist_ok=True)
     # Relative paths: wibo hands them to a Windows program.
-    err = run([WIBO, MWCC] + CFLAGS + ["-Iinclude"] + (["-Ibuild/mhg/raw", "-Ibuild/raw"] if VERSION == "mhg" else ["-Ibuild/raw"]) + [rel, "-o", obj])
+    err = run(CC + CFLAGS + ["-Iinclude"] + (["-Ibuild/mhg/raw", "-Ibuild/raw"] if VERSION == "mhg" else ["-Ibuild/raw"]) + [rel, "-o", obj])
     if err:
         return err
     for old, new in RENAMES.get(obj, []):
