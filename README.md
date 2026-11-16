@@ -92,6 +92,10 @@ One-time setup (Linux):
     ln -s $HOME/.local/opt/ps2-binutils-2.47 tools/binutils
     # Compiler + loader from decomp.me's release (see docs/RESEARCH.md):
     # tools/compilers/wibo, tools/compilers/mwcps2-3.0b52-030722/
+    # Optional, off by default: a native build of the same compiler
+    # (mweppc's decompilation; identical objects, no wibo):
+    #   python3 tools/get_native_mwcc.py && export MH_PS2_COMPILER=native
+    # (MH_PS2_MWCC=<path> for a locally built one)
 
 Each time (needs disc/mh1/SLPM_654.95, disc/mh1/AFS_DATA.AFS and
 docs/survey/mh1_symbols.csv):
